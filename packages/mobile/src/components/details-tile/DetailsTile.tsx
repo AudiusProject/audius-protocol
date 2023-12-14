@@ -141,6 +141,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   link: {
     color: palette.primary
+  },
+  releaseContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: spacing(1)
   }
 }))
 
@@ -404,17 +410,13 @@ export const DetailsTile = ({
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
                 {track?.release_date ? (
-                  <>
-                    <IconCalendarMonth />
-                    <HarmonyText
-                      color='accent'
-                      strength='strong'
-                      variant='body'
-                    >
-                      Releases on{' '}
+                  <View style={styles.releaseContainer}>
+                    <IconCalendarMonth color='accent' size='m' />
+                    <HarmonyText color='accent' strength='strong' size='l'>
+                      Release on{' '}
                       {moment(track.release_date).format('M/D/YY @ h:mm A')}
                     </HarmonyText>
-                  </>
+                  </View>
                 ) : null}
                 <DetailsTileActionButtons
                   hasReposted={!!hasReposted}

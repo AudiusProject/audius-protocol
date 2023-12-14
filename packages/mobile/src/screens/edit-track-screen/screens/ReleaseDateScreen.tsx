@@ -6,21 +6,19 @@ import {
   remixSettingsSelectors,
   removeNullable
 } from '@audius/common'
+import { TextInput } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import moment from 'moment'
-import { View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useDispatch } from 'react-redux'
 
-import { IconCalendarMonth } from '@audius/harmony-native'
-// import { IconCalendarMonth } from '@audius/harmony'
-
+import { IconCalendarMonth, Text } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
-import { Button, Text } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { staleTrackWorker } from 'app/store/offline-downloads/sagas/offlineQueueSagas/workers/staleTrackWorker'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -38,6 +36,7 @@ const { getTrack, getUser, getStatus } = remixSettingsSelectors
 const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
 
 const remixLinkInputDebounceMs = 1000
+const screenWidth = Dimensions.get('screen').width
 
 const messages = {
   screenTitle: 'Release Date',
@@ -91,6 +90,35 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   changeAvailabilityText: {
     flexDirection: 'row',
     flexWrap: 'wrap'
+  },
+  releaseNowPill: {
+    flexDirection: 'row',
+    borderRadius: 99,
+    backgroundColor: palette.secondary,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    alignItems: 'center',
+    gap: spacing(1)
+  },
+  releaseNowContainer: {
+    flexDirection: 'row',
+    gap: spacing(4)
+  },
+  description: {
+    marginHorizontal: spacing(4),
+    marginTop: spacing(8),
+    marginBottom: spacing(1)
+  },
+  releaseDateInputContainer: {
+    // borderWidth: 1, // Width of the border
+    // borderColor: 'red', // Color of the border
+    // borderRadius: 5, // Optional: if you want rounded corners
+    paddingTop: spacing(4),
+    marginLeft: spacing(-10),
+    width: screenWidth - spacing(12)
+  },
+  releaseDateInput: {
+    marginTop: spacing(4)
   }
 }))
 
@@ -119,16 +147,11 @@ const data: ListSelectionData[] = [
 
 export const ScheduledReleaseRadioField = (props) => {
   const { selected } = props
-  console.log('asdf selected: ', selected)
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
-  const releaseDateMoment = moment(releaseDateValue)
-  const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: releaseDayDayValue }, ,] = useField('release_date_day')
-  console.log('asdf releaseDayDayValue: ', releaseDayDayValue)
 
-  const theme = useThemeVariant()
   const { primary } = useThemeColors()
+  const styles = useStyles()
 
   let initIsDateOpen = false
   if (!releaseDateValue && selected) {
@@ -165,107 +188,107 @@ export const ScheduledReleaseRadioField = (props) => {
     },
     [setReleaseDateValue, setIsTimeOpen]
   )
-  console.log(
-    'asdf sameday or after: ',
-    moment(releaseDateValue),
-    moment().startOf('day'),
-    moment(releaseDateValue).isAfter(moment().startOf('day'))
-  )
 
   return (
     <>
       <View>
-        <Text weight='bold'>Schedule a release date</Text>
-        {selected ? (
-          <TextField
-            name={'release_date_day'}
-            label={'Release Date'}
-            onFocus={() => setIsDateOpen(true)}
-            Icon={IconCalendarMonth}
-            value={
-              releaseDateValue
-                ? moment(releaseDateValue).calendar(null, {
-                    sameDay: '[Today]',
-                    nextDay: '[Tomorrow]',
-                    nextWeek: 'dddd',
-                    lastDay: '[Yesterday]',
-                    lastWeek: '[Last] dddd',
-                    sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
-                  })
-                : undefined
-            }
+        <Text size='l' strength='strong' variant='body'>
+          Schedule a release date
+        </Text>
+        <View style={styles.releaseDateInputContainer}>
+          {selected ? (
+            <TextField
+              name={'release_date_day'}
+              label={'Release Date'}
+              onFocus={() => setIsDateOpen(true)}
+              noGutter
+              style={styles.releaseDateInput}
+              value={
+                releaseDateValue
+                  ? moment(releaseDateValue).calendar(null, {
+                      sameDay: '[Today]',
+                      nextDay: '[Tomorrow]',
+                      nextWeek: 'dddd',
+                      lastDay: '[Yesterday]',
+                      lastWeek: '[Last] dddd',
+                      sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
+                    })
+                  : undefined
+              }
+            />
+          ) : null}
+          {selected &&
+          releaseDateValue &&
+          moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
+            <TextField
+              name={'release_date_time'}
+              label={'Time'}
+              onFocus={() => setIsTimeOpen(true)}
+              noGutter
+              style={styles.releaseDateInput}
+              value={
+                releaseDateValue
+                  ? moment(releaseDateValue).format('h:mm A')
+                  : undefined
+              }
+            />
+          ) : null}
+          <DateTimePickerModal
+            isVisible={isDateOpen}
+            date={releaseDateValue ? new Date(releaseDateValue) : new Date()}
+            mode='date'
+            onConfirm={handleDateChange}
+            onCancel={() => setIsDateOpen(false)}
+            display='inline'
+            themeVariant={'light'}
+            isDarkModeEnabled={false}
+            accentColor={primary}
           />
-        ) : null}
-        {releaseDateValue &&
-        moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
-          <TextField
-            name={'release_date_time'}
-            label={'Time'}
-            onFocus={() => setIsTimeOpen(true)}
-            value={
-              releaseDateValue
-                ? moment(releaseDateValue).format('h:mm A')
-                : undefined
-            }
+          <DateTimePickerModal
+            isVisible={isTimeOpen}
+            date={releaseDateValue ? new Date(releaseDateValue) : new Date()}
+            mode='time'
+            onConfirm={handleTimeChange}
+            onCancel={() => setIsTimeOpen(false)}
+            accentColor={primary}
           />
-        ) : null}
-        <Text>{releaseDateValue}</Text>
-        <DateTimePickerModal
-          isVisible={isDateOpen}
-          date={releaseDateValue ? new Date(releaseDateValue) : new Date()}
-          mode='date'
-          onConfirm={handleDateChange}
-          onCancel={() => setIsDateOpen(false)}
-          display='inline'
-          themeVariant={'light'}
-          isDarkModeEnabled={false}
-          accentColor={primary}
-        />
-        <DateTimePickerModal
-          isVisible={isTimeOpen}
-          date={releaseDateValue ? new Date(releaseDateValue) : new Date()}
-          mode='time'
-          onConfirm={handleTimeChange}
-          onCancel={() => setIsTimeOpen(false)}
-          accentColor={primary}
-        />
-        {releaseDateValue ? (
-          <HelpCallout
-            content={
-              moment(releaseDateValue).isAfter(moment())
-                ? messages.futureReleaseHint
-                : messages.pastReleaseHint
-            }
-          />
-        ) : null}
+          {selected && releaseDateValue ? (
+            <HelpCallout
+              style={styles.releaseDateInput}
+              content={
+                moment(releaseDateValue).isAfter(moment())
+                  ? messages.futureReleaseHint
+                  : messages.pastReleaseHint
+              }
+            />
+          ) : null}
+        </View>
       </View>
     </>
   )
 }
 
-export const ReleaseDateScreen = (selected) => {
+export const ReleaseDateScreen = () => {
+  const [{ value, onChange }] = useField<Nullable<string>>('release_date')
+
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
-    ReleaseDateType.RELEASE_NOW
+    value ? ReleaseDateType.SCHEDULED_RELEASE : ReleaseDateType.RELEASE_NOW
   )
 
-  const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-    newPill: {
-      borderRadius: 10,
-      backgroundColor: palette.secondary,
-      paddingHorizontal: 6,
-      paddingVertical: 2
-    }
-  }))
   const styles = useStyles()
 
-  const ReleaseNowRadioField = (selected) => {
+  const ReleaseNowRadioField = (props) => {
+    const { selected } = props
+    console.log('asdf ReleaseNowRadioField selected', selected)
     return (
-      <View>
-        <Text weight='bold'>Release immediately</Text>
+      <View style={styles.releaseNowContainer}>
+        <Text size='l' strength='strong' variant='body'>
+          Release immediately
+        </Text>
         {selected ? (
-          <View style={styles.newPill}>
-            <IconCalendarMonth />
-            <Text>Today</Text>
+          <View style={styles.releaseNowPill}>
+            <IconCalendarMonth color='staticWhite' />
+            <Text color='staticWhite'>Today</Text>
           </View>
         ) : null}
       </View>
@@ -284,7 +307,6 @@ export const ReleaseDateScreen = (selected) => {
       />
     )
   }
-  const [{ value, onChange }] = useField<Nullable<string>>('release_date')
   console.log('asdf value: ', value)
   const navigation = useNavigation()
   const dispatch = useDispatch()
@@ -302,10 +324,12 @@ export const ReleaseDateScreen = (selected) => {
         screenTitle={'Release Date'}
         icon={IconCalendarMonth}
         header={
-          <Text>
-            Specify a release date for your music or schedule it to be released
-            in the future.
-          </Text>
+          <View style={styles.description}>
+            <Text size='l'>
+              Specify a release date for your music or schedule it to be
+              released in the future.
+            </Text>
+          </View>
         }
         value={releaseDateType}
         onChange={setReleaseDateType}

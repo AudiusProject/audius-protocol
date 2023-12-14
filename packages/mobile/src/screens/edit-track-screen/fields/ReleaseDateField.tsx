@@ -115,7 +115,7 @@ export const ReleaseDateField = (props) => {
       menuScreenName='ReleaseDate'
       label={messages.label}
       value={value}
-      pillValue={value ? moment(value).format('M/D/YY @ h:mmA') : null}
+      pillValue={value ? moment(value).format('M/D/YY @ h:mm A') : null}
       {...props}
     />
   )

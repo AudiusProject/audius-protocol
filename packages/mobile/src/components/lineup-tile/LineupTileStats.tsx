@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 
+import { release } from 'os'
+
 import type {
   ID,
   FavoriteType,
@@ -13,9 +15,11 @@ import {
   favoritesUserListActions,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
-import { View, TouchableOpacity, Text as HarmonyText } from 'react-native'
+import moment from 'moment'
+import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
@@ -32,7 +36,6 @@ import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeT
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
-import moment from 'moment'
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 
@@ -135,7 +138,7 @@ export const LineupTileStats = ({
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
-  const { neutralLight4 } = useThemeColors()
+  const { neutralLight4, accentPurple } = useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -158,7 +161,7 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -184,7 +187,7 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
-        {isUnlisted ? (
+        {isUnlisted && !isScheduledRelease ? (
           <View style={styles.tagContainer}>
             <IconHidden
               fill={neutralLight4}
@@ -196,7 +199,18 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
-        {isUnlisted && releaseDate && moment(releaseDate).isAfter(moment()) ? <HarmonyText>hi</HarmonyText>}
+        {isUnlisted && isScheduledRelease ? (
+          <View style={styles.tagContainer}>
+            <IconCalendarMonth
+              fill={accentPurple}
+              height={spacing(4)}
+              width={spacing(4)}
+            />
+            <Text fontSize='xs' colorValue={accentPurple}>
+              Releases {moment(releaseDate).format('M/D/YY @ h:mm A')}
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
             <>
