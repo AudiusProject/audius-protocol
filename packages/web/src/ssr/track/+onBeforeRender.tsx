@@ -1,14 +1,31 @@
 import type { Maybe } from '@audius/common'
-import { sdk, full as FullSdk, Logger } from '@audius/sdk'
+import {
+  sdk,
+  full as FullSdk,
+  DiscoveryNodeSelector,
+  productionConfig,
+  stagingConfig,
+  developmentConfig
+} from '@audius/sdk'
 import { PageContextServer } from 'vike/types'
 
-const logger = new Logger({ logLevel: 'debug' })
+const sdkConfigs = {
+  production: productionConfig,
+  staging: stagingConfig,
+  development: developmentConfig
+}
 
-// TODO: Configure for different envs
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  bootstrapServices: (
+    sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+    productionConfig
+  ).discoveryNodes
+})
+
 const audiusSdk = sdk({
-  appName: 'audius.co',
+  appName: process.env.VITE_PUBLIC_HOSTNAME ?? 'audius.co',
   services: {
-    logger
+    discoveryNodeSelector
   }
 })
 
