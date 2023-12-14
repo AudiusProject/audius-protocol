@@ -958,9 +958,9 @@ class WebPlayer extends Component {
                     // pathname is not HOME_PAGE. Double check that it is and if not,
                     // just trigger a react router push to the current pathname
                     pathname:
-                      getPathname(this.props.history) === HOME_PAGE
+                      getPathname(this.props.history.location) === HOME_PAGE
                         ? FEED_PAGE
-                        : getPathname(this.props.history),
+                        : getPathname(this.props.history.location),
                     search: includeSearch(this.props.location.search)
                       ? this.props.location.search
                       : ''
