@@ -38,35 +38,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  backButton: {
-    marginLeft: -6
-  },
-  setting: {
-    paddingHorizontal: spacing(6),
-    paddingVertical: spacing(8)
-  },
-  option: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing(5)
-  },
-  inputRoot: {
-    marginTop: spacing(4),
-    paddingVertical: spacing(4),
-    paddingLeft: spacing(4)
-  },
-  input: {
-    fontSize: typography.fontSize.large
-  },
-  changeAvailability: {
-    marginBottom: spacing(16)
-  },
-  changeAvailabilityText: {
-    flexDirection: 'row',
-    flexWrap: 'wrap'
-  },
-  releaseNowPill: {
+  todayPill: {
     flexDirection: 'row',
     borderRadius: 99,
     backgroundColor: palette.secondary,
@@ -85,9 +57,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginBottom: spacing(1)
   },
   releaseDateInputContainer: {
-    // borderWidth: 1, // Width of the border
-    // borderColor: 'red', // Color of the border
-    // borderRadius: 5, // Optional: if you want rounded corners
     paddingTop: spacing(4),
     marginLeft: spacing(-10),
     width: screenWidth - spacing(12)
@@ -167,7 +136,7 @@ export const ScheduledReleaseRadioField = (props) => {
               style={styles.releaseDateInput}
               value={
                 releaseDateValue
-                  ? moment(releaseDateValue).calendar(null, {
+                  ? moment(releaseDateValue).calendar(undefined, {
                       sameDay: '[Today]',
                       nextDay: '[Tomorrow]',
                       nextWeek: 'dddd',
@@ -248,7 +217,7 @@ export const ReleaseNowRadioField = (props) => {
         Release immediately
       </Text>
       {selected ? (
-        <View style={styles.releaseNowPill}>
+        <View style={styles.todayPill}>
           <IconCalendarMonth color='staticWhite' />
           <Text color='staticWhite'>Today</Text>
         </View>
