@@ -306,6 +306,7 @@ const NowPlaying = g(
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
+        isOwner ? OverflowAction.ADD_TO_ALBUM : null,
         !collectible && !track?.is_premium
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,

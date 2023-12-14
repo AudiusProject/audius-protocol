@@ -9,6 +9,7 @@ import {
   cacheCollectionsActions,
   addToCollectionUISelectors
 } from '@audius/common'
+import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -193,7 +194,4 @@ export const AddToCollectionDrawer = () => {
       </View>
     </AppDrawer>
   )
-}
-function capitalize(collectionType: string) {
-  throw new Error('Function not implemented.')
 }
