@@ -7,7 +7,8 @@ import {
   formatCurrencyBalance,
   FeatureFlags,
   useFeatureFlag,
-  PurchaseVendor
+  PurchaseVendor,
+  removeNullable
 } from '@audius/common'
 import BN from 'bn.js'
 import { FlatList, View, TouchableOpacity } from 'react-native'
@@ -87,6 +88,10 @@ export const PaymentMethod = ({
   const purchaseVendor = useSelector(getPurchaseVendor)
   const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
     useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
+  const vendorOptions = [
+    isCoinflowEnabled ? PurchaseVendor.COINFLOW : null,
+    PurchaseVendor.STRIPE
+  ].filter(removeNullable)
 
   // Initial state is coinflow by default, but set to stripe if coinflow is disabled.
   useEffect(() => {
@@ -105,7 +110,10 @@ export const PaymentMethod = ({
         </Text>
       ),
       icon: IconCreditCard,
-      content: <CardSelectionButton selectedVendor={purchaseVendor} />
+      content:
+        vendorOptions.length > 1 ? (
+          <CardSelectionButton selectedVendor={purchaseVendor} />
+        ) : null
     },
     {
       id: PurchaseMethod.CRYPTO,
