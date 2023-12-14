@@ -7,6 +7,7 @@ import {
   usePremiumContentAccess,
   getDogEarType
 } from '@audius/common'
+import moment from 'moment'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -71,13 +72,15 @@ export const LineupTile = ({
   const premiumConditions = isTrack ? item.premium_conditions : null
   const isArtistPick = artist_pick_track_id === id
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
-
+  const isScheduledRelease = item.release_date
+    ? moment(item.release_date).isAfter(moment())
+    : false
   const dogEarType = getDogEarType({
     premiumConditions,
     isOwner,
     doesUserHaveAccess,
     isArtistPick: showArtistPick && isArtistPick,
-    isUnlisted
+    isUnlisted: isUnlisted && !isScheduledRelease
   })
 
   const handlePress = useCallback(() => {

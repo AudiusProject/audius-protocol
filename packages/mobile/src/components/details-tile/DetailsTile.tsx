@@ -249,12 +249,14 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
-
+  const isScheduledRelease = track?.release_date
+    ? moment(track.release_date).isAfter(moment())
+    : false
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
       premiumConditions,
-      isUnlisted
+      isUnlisted: isUnlisted && !isScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
