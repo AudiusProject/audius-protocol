@@ -16,6 +16,7 @@ import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import {
   NOT_FOUND_PAGE,
@@ -23,7 +24,6 @@ import {
   SEARCH_PAGE,
   doesMatchRoute
 } from 'utils/route'
-import { HistoryContext } from 'app/HistoryProvider'
 
 import * as helpers from './helpers'
 const { makeGetCurrent } = queueSelectors
@@ -41,11 +41,9 @@ const getUserId = accountSelectors.getUserId
 class SearchPageProvider extends Component {
   static contextType = HistoryContext
 
-  constructor(props) {
+  constructor(props, context) {
     super(props)
-    const searchResultsCategory = helpers.getCategory(
-      this.context.history.location
-    )
+    const searchResultsCategory = helpers.getCategory(context.history.location)
 
     this.state = {
       searchResultsCategory
@@ -58,7 +56,7 @@ class SearchPageProvider extends Component {
     this.unlisten = this.props.history.listen((location, action) => {
       // Make sure the serach bar shows on every search-navigation
       if (window.scrollTo) window.scrollTo(0, 0)
-      const isTagSearch = helpers.isTagSearch()
+      const isTagSearch = helpers.isTagSearch(this.context.history.location)
       const searchMatch = helpers.getSearchText(this.context.history.location)
 
       const category = helpers.getCategory(this.context.history.location)
@@ -78,7 +76,7 @@ class SearchPageProvider extends Component {
       this.props.scrollToTop()
     })
 
-    const isTagSearch = helpers.isTagSearch()
+    const isTagSearch = helpers.isTagSearch(this.context.history.location)
     const query = isTagSearch
       ? helpers.getSearchTag(this.context.history.location)
       : helpers.getSearchText(this.context.history.location)
@@ -150,7 +148,7 @@ class SearchPageProvider extends Component {
       searchText: helpers.getQuery(this.context.history.location),
       handleViewMoreResults: this.handleViewMoreResults,
       searchResultsCategory: this.state.searchResultsCategory,
-      isTagSearch: helpers.isTagSearch()
+      isTagSearch: helpers.isTagSearch(this.context.history.location)
     }
     return <ContentClass {...injectedProps} />
   }
