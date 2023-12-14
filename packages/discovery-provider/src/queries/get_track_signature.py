@@ -20,6 +20,7 @@ class GetTrackStreamSignature(TypedDict):
 class GetTrackDownloadSignature(TypedDict):
     track: Track
     is_original: bool
+    filename: Optional[str]
     user_data: Optional[str]
     user_signature: Optional[str]
 
@@ -111,9 +112,11 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]
     is_download_gated = track["is_download_gated"]
-    title = track.get["title"]
+    title = track["title"]
     is_original = args.get("is_original", False)
-    filename = track.get("orig_filename", title) if is_original else title
+    filename = args.get("filename")
+    if not filename:
+        filename = track.get("orig_filename", title) if is_original else f"{title}.mp3"
     user_data = args["user_data"]
     user_signature = args["user_signature"]
     is_downloadable = track.get("download", {}).get("is_downloadable")

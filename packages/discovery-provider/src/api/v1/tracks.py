@@ -552,6 +552,11 @@ download_parser.add_argument(
     required=False,
     default=False,
 )
+download_parser.add_argument(
+    "filename",
+    description="""Optional - name of file to download. If not provided, defaults to track original filename or title.""",
+    type=str,
+)
 
 
 @ns.route("/<string:track_id>/download")
@@ -576,7 +581,6 @@ class TrackDownload(Resource):
         Download the original or MP3 file of a track.
         """
         request_args = download_parser.parse_args()
-        is_original = request_args.get("original")
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
         track = info.get("track")
@@ -592,7 +596,8 @@ class TrackDownload(Resource):
         download_signature = get_track_download_signature(
             {
                 "track": track,
-                "is_original": is_original,
+                "is_original": request_args.get("original"),
+                "filename": request_args.get("filename"),
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
             }

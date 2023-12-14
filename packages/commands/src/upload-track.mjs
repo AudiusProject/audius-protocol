@@ -86,11 +86,22 @@ const getDownloadConditions = async ({
   return null
 }
 
-const getDownloadMetadata = (downloadConditions) => {
+const getDownloadMetadata = (isDownloadable, downloadConditions) => {
   if (downloadConditions) {
     return {
       is_download_gated: true,
       download_conditions: downloadConditions,
+      download: {
+        cid: '',
+        is_downloadable: true,
+        requires_follow: false
+      }
+    }
+  }
+  if (isDownloadable) {
+    return {
+      is_download_gated: false,
+      download_conditions: null,
       download: {
         cid: '',
         is_downloadable: true,
@@ -145,6 +156,7 @@ program
     'Manually set a premium conditions object. Cannot be used with -u',
     ''
   )
+  .option('-o, --is-downloadable <is downloadable>', 'Whether track is downloadable')
   .option(
     '-dp, --download-price <download price>',
     'Generate a download conditions object with the given price in cents. Cannot be used with -dc'
@@ -164,10 +176,11 @@ program
         mood,
         genre,
         previewStartSeconds,
-        price,
         license,
         from,
+        price,
         premiumConditions,
+        isDownloadable,
         downloadPrice,
         downloadConditions
       }
@@ -205,6 +218,7 @@ program
         })
 
         const downloadMetadata = getDownloadMetadata(
+          isDownloadable,
           await getDownloadConditions({
             downloadConditions,
             downloadPrice,
