@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.54",
+  "version": "1.5.55",
   "scripts": {
     "start": "vite",
     "start:dev": "env-cmd -f .env.dev npm run -s start",

@@ -17,7 +17,7 @@ export type AvatarProps = PropsWithChildren<{
    * Size
    * @default auto
    */
-  size?: 'auto' | 'small' | 'large'
+  size?: 'auto' | 'small' | 'large' | 'xl'
 
   /**
    * Stroke Width

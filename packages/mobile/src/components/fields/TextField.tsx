@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useField } from 'formik'
 import { Platform, View } from 'react-native'
 
@@ -40,12 +42,21 @@ export const TextField = (props: TextFieldProps) => {
     style,
     styles: stylesProp,
     id,
+    onChangeText,
     ...other
   } = props
 
   const styles = useStyles()
   const [{ value, onChange, onBlur }, { touched, error }] = useField(name)
   const label = required ? `${labelProp} *` : labelProp
+
+  const handleChangeText = useCallback(
+    (text: string) => {
+      onChangeText?.(text)
+      onChange(name)(text)
+    },
+    [onChangeText, onChange, name]
+  )
 
   return (
     <View style={[noGutter ? undefined : styles.root, style]}>
@@ -57,7 +68,7 @@ export const TextField = (props: TextFieldProps) => {
           labelText: [styles.labelText, stylesProp?.labelText]
         }}
         value={value}
-        onChangeText={onChange(name)}
+        onChangeText={handleChangeText}
         onBlur={onBlur(name)}
         returnKeyType='done'
         id={id ?? name}

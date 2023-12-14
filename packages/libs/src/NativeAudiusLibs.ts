@@ -241,6 +241,7 @@ export class AudiusLibs {
     rewardsManagerProgramId,
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
+    paymentRouterProgramId,
     useRelay,
     feePayerSecretKeys,
     confirmationTimeout
@@ -255,6 +256,7 @@ export class AudiusLibs {
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
+      paymentRouterProgramId,
       useRelay,
       feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)
@@ -334,7 +336,7 @@ export class AudiusLibs {
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
-    localStorage = getPlatformLocalStorage()
+    localStorage
   }: AudiusLibsConfig) {
     // set version
 
@@ -391,6 +393,10 @@ export class AudiusLibs {
 
   /** Init services based on presence of a relevant config. */
   async init() {
+    if (!this.localStorage) {
+      this.localStorage = await getPlatformLocalStorage()
+    }
+
     this.userStateManager = new UserStateManager({
       localStorage: this.localStorage
     })

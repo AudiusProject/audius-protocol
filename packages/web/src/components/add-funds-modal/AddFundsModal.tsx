@@ -3,13 +3,19 @@ import { useCallback, useState } from 'react'
 import {
   useAddFundsModal,
   buyUSDCActions,
-  USDCOnRampProvider,
   PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS
+  DEFAULT_PURCHASE_AMOUNT_CENTS,
+  PurchaseVendor,
+  PayExtraPreset,
+  getExtraAmount,
+  StringKeys,
+  usePayExtraPresets
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
+import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
@@ -19,6 +25,7 @@ import { isMobile } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
+import { AddFundsSchema } from './validation'
 
 const messages = {
   addFunds: 'Add Funds',
@@ -33,27 +40,57 @@ export const AddFundsModal = () => {
   const mobile = isMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
+  const presetValues = usePayExtraPresets(
+    StringKeys.COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS
+  )
+  const initialValues = {
+    AMOUNT_PRESET: PayExtraPreset.NONE,
+    CUSTOM_AMOUNT: undefined
+  }
 
   const handleClosed = useCallback(() => {
     setPage('add-funds')
   }, [setPage])
 
   const handleContinue = useCallback(
-    (purchaseMethod: PurchaseMethod) => {
-      if (purchaseMethod === PurchaseMethod.CRYPTO) {
-        setPage('crypto-transfer')
-      } else {
-        dispatch(
-          buyUSDCActions.onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-            }
-          })
-        )
+    ({
+      purchaseMethod,
+      purchaseVendor,
+      amountPreset = PayExtraPreset.NONE,
+      customAmount
+    }: {
+      purchaseMethod: PurchaseMethod
+      purchaseVendor?: PurchaseVendor
+      amountPreset?: PayExtraPreset
+      customAmount?: number
+    }) => {
+      switch (purchaseMethod) {
+        case PurchaseMethod.CRYPTO:
+          setPage('crypto-transfer')
+          break
+        case PurchaseMethod.CARD: {
+          dispatch(
+            buyUSDCActions.onrampOpened({
+              vendor: purchaseVendor || PurchaseVendor.STRIPE,
+              purchaseInfo: {
+                desiredAmount:
+                  amountPreset !== PayExtraPreset.NONE
+                    ? getExtraAmount({
+                        amountPreset,
+                        presetValues,
+                        customAmount
+                      })
+                    : DEFAULT_PURCHASE_AMOUNT_CENTS
+              }
+            })
+          )
+          break
+        }
+        case PurchaseMethod.BALANCE:
+          throw new Error('Add funds not supported with existing balance')
       }
     },
-    [setPage, dispatch]
+    [dispatch, presetValues]
   )
 
   return (
@@ -85,7 +122,13 @@ export const AddFundsModal = () => {
       </ModalHeader>
       <ModalContent className={styles.noPadding}>
         {page === 'add-funds' ? (
-          <AddFunds onContinue={handleContinue} />
+          <Formik
+            initialValues={initialValues}
+            validationSchema={toFormikValidationSchema(AddFundsSchema)}
+            onSubmit={() => undefined} // Not using formik for submit
+          >
+            <AddFunds onContinue={handleContinue} />
+          </Formik>
         ) : (
           <USDCManualTransfer onClose={() => setPage('add-funds')} />
         )}

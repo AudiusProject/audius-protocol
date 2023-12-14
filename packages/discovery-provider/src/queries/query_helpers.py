@@ -225,35 +225,23 @@ def populate_user_metadata(
     )
     track_blocknumber_dict = dict(track_blocknumbers)
 
-    follows_current_user_set = set()
     current_user_followed_user_ids = {}
     current_user_subscribed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
-        # collect all incoming and outgoing follow edges for current user
+        # does current user follow any of requested user ids
         current_user_follow_rows = (
-            session.query(Follow.follower_user_id, Follow.followee_user_id)
+            session.query(Follow.followee_user_id)
             .filter(
                 Follow.is_current == True,
                 Follow.is_delete == False,
-                or_(
-                    and_(
-                        Follow.followee_user_id.in_(user_ids),
-                        Follow.follower_user_id == current_user_id,
-                    ),
-                    and_(
-                        Follow.followee_user_id == current_user_id,
-                        Follow.follower_user_id.in_(user_ids),
-                    ),
-                ),
+                Follow.followee_user_id.in_(user_ids),
+                Follow.follower_user_id == current_user_id,
             )
             .all()
         )
-        for follower_id, following_id in current_user_follow_rows:
-            if follower_id == current_user_id:
-                current_user_followed_user_ids[following_id] = True
-            else:
-                follows_current_user_set.add(follower_id)
+        for [following_id] in current_user_follow_rows:
+            current_user_followed_user_ids[following_id] = True
 
         # collect all outgoing subscription edges for current user
         current_user_subscribed_rows = (
@@ -376,9 +364,6 @@ def populate_user_metadata(
         )
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
-        )
-        user[response_name_constants.does_follow_current_user] = (
-            user_id in follows_current_user_set
         )
 
     return users

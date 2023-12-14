@@ -22,7 +22,9 @@ import {
   usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration,
   usePurchaseMethod,
-  useUSDCBalance
+  useUSDCBalance,
+  PURCHASE_VENDOR,
+  StringKeys
 } from '@audius/common'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
@@ -44,6 +46,7 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
+import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -232,7 +235,9 @@ const RenderForm = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const { specialLightGreen, primary } = useThemeColors()
-  const presetValues = usePayExtraPresets()
+  const presetValues = usePayExtraPresets(
+    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
+  )
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -251,6 +256,12 @@ const RenderForm = ({
 
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+
+  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const purchaseVendor = useSelector(getPurchaseVendor)
+  useEffect(() => {
+    setPurchaseVendor(purchaseVendor)
+  }, [purchaseVendor, setPurchaseVendor])
 
   const { data: balance } = useUSDCBalance({ isPolling: true })
   const { extraAmount } = usePurchaseSummaryValues({
@@ -313,11 +324,11 @@ const RenderForm = ({
                 />
                 {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
                   <PaymentMethod
-                    selectedType={purchaseMethod}
-                    setSelectedType={setPurchaseMethod}
+                    selectedMethod={purchaseMethod}
+                    setSelectedMethod={setPurchaseMethod}
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance
+                    showExistingBalance={!balance?.isZero()}
                   />
                 )}
               </View>
@@ -390,7 +401,10 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
-  const presetValues = usePayExtraPresets()
+  const presetValues = usePayExtraPresets(
+    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
+  )
+
   const {
     data: { contentId: trackId },
     isOpen,

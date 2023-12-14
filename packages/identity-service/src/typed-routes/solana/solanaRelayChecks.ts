@@ -5,7 +5,8 @@ import {
   decodeInstruction,
   isCloseAccountInstruction,
   isTransferCheckedInstruction,
-  isSyncNativeInstruction
+  isSyncNativeInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
@@ -35,6 +36,9 @@ const CLAIMABLE_TOKEN_PROGRAM_ID: string = config.get(
 const REWARDS_MANAGER_PROGRAM_ID: string = config.get(
   'solanaRewardsManagerProgramId'
 )
+const PAYMENT_ROUTER_PROGRAM_ID: string = config.get(
+  'solanaPaymentRouterProgramId'
+)
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 
@@ -52,6 +56,17 @@ const claimableTokenAuthorities = [audioMintAddress, usdcMintAddress].reduce(
     )[0]
   }),
   {} as Record<string, PublicKey>
+)
+
+const [paymentRouterPda, _] = PublicKey.findProgramAddressSync(
+  [Buffer.from('payment_router')],
+  new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
+)
+
+const paymentRouterUSDCTokenAccount = getAssociatedTokenAddressSync(
+  new PublicKey(usdcMintAddress),
+  paymentRouterPda,
+  true
 )
 
 /**
@@ -143,7 +158,12 @@ const assertAllowedTokenProgramInstruction = async (
     const userbank = await (
       await audiusLibsWrapper.getAudiusLibsAsync()
     ).solanaWeb3Manager!.deriveUserBank({ ethAddress: wallet, mint: 'usdc' })
-    if (!destination.equals(userbank)) {
+
+    // Check that destination is either a userbank or a payment router token account
+    if (
+      !destination.equals(userbank) &&
+      !destination.equals(paymentRouterUSDCTokenAccount)
+    ) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
         `Invalid destination account: ${destination.toBase58()}`
@@ -418,6 +438,7 @@ export const assertRelayAllowedInstructions = async (
         )
         break
       case Secp256k1Program.programId.toBase58():
+      case PAYMENT_ROUTER_PROGRAM_ID:
       case MEMO_PROGRAM_ID:
         // All instructions of these programs are allowed
         break

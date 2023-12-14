@@ -5,6 +5,7 @@ import { logger } from '../logger'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
+import { decodeAbi } from '../abi'
 
 type AbuseRule = {
   rule: number
@@ -20,23 +21,38 @@ type AbuseStatus = {
 }
 
 export const antiAbuseMiddleware = async (
-  request: Request,
+  _: Request,
   response: Response,
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
   const { ip, recoveredSigner: user } = response.locals.ctx
-  await detectAbuse(aaoConfig, user, ip, false, next)
+  const decodedAbi = decodeAbi(
+    response.locals.ctx.validatedRelayRequest.encodedABI
+  )
+  const isUserCreate =
+    decodedAbi.action === 'Create' && decodedAbi.entityType === 'User'
+  const isUserDeactivate =
+    user.is_deactivated === false &&
+    decodedAbi.action === 'Update' &&
+    decodedAbi.entityType === 'User' &&
+    JSON.parse(decodedAbi.metadata).data.is_deactivated === true
+  // User creations must be allowed as AAO won't have the user yet,
+  // and deactivations must be allowed even for abuse.
+  if (isUserCreate || isUserDeactivate) {
+    next()
+    return
+  }
+  await detectAbuse(aaoConfig, user, ip, next)
 }
 
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
   user: Users,
   reqIp: string,
-  abbreviated: boolean,
   next: NextFunction
 ) => {
-  // if aao turned off, never detect abuse
+  // if AAO is off or we don't yet have a handle, skip detecting abuse
   if (!aaoConfig.useAao || !user.handle) {
     next()
     return

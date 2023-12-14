@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import type { PurchaseVendor } from '@audius/common'
 import { modalsActions } from '@audius/common'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
@@ -12,10 +13,12 @@ import { spacing } from 'app/styles/spacing'
 const { setVisibility } = modalsActions
 
 type CardSelectionButtonProps = {
-  title: 'Stripe'
+  selectedVendor: PurchaseVendor
 }
 
-export const CardSelectionButton = ({ title }: CardSelectionButtonProps) => {
+export const CardSelectionButton = ({
+  selectedVendor
+}: CardSelectionButtonProps) => {
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
@@ -25,7 +28,7 @@ export const CardSelectionButton = ({ title }: CardSelectionButtonProps) => {
   return (
     <TouchableOpacity onPress={handlePress}>
       <Button
-        title={title}
+        title={selectedVendor}
         variant='commonAlt'
         icon={IconCaretDown}
         size='small'
@@ -38,6 +41,7 @@ export const CardSelectionButton = ({ title }: CardSelectionButtonProps) => {
           }
         }}
         fullWidth
+        onPress={handlePress}
       />
     </TouchableOpacity>
   )

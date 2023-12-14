@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { signInPageMessages as messages } from '@audius/common'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -27,19 +28,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
-
-const messages = {
-  metaTitle: 'Sign In • Audius',
-  metaDescription: 'Sign into your Audius account',
-
-  title: 'Sign Into Audius',
-  emailLabel: 'Email',
-  passwordLabel: 'Password',
-  signIn: 'Sign In',
-  newToAudius: 'New to Audius?',
-  createAccount: 'Create an Account',
-  forgotPassword: 'Forgot password?'
-}
 
 type SignInValues = {
   email: string

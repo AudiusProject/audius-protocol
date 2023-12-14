@@ -90,7 +90,8 @@ export const remoteConfigStringDefaults: {
   [StringKeys.STRIPE_ALLOWED_COUNTRIES_2_LETTER]: '',
   [StringKeys.AUDIO_FEATURES_DEGRADED_TEXT]: null,
   [StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS]: '200,500,1000',
-  [StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS]: ''
+  [StringKeys.COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS]: '200,500,1000',
+  [StringKeys.EXPLORE_PREMIUM_DENIED_USERS]: ''
 }
 
 export const remoteConfigDoubleDefaults: {

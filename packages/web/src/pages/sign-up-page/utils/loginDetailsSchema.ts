@@ -1,8 +1,7 @@
-import { emailSchema } from '@audius/common'
+import { emailSchema, isNotCommonPassword } from '@audius/common'
 import { z } from 'zod'
 
 import { audiusQueryContext } from 'app/AudiusQueryProvider'
-import { isNotCommonPassword } from 'utils/commonPasswordCheck'
 
 // Due to issue with zod merge, manually rewriting
 // https://github.com/colinhacks/zod/issues/454

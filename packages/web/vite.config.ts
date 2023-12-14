@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/],
+        include: [/node_modules/],
         transformMixedEsModules: true
       }
     },
@@ -30,7 +30,6 @@ export default defineConfig(({ mode }) => {
       'process.env': env
     },
     optimizeDeps: {
-      include: ['@audius/sdk/dist/web-libs'],
       esbuildOptions: {
         define: {
           global: 'globalThis'
@@ -110,6 +109,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      host: '0.0.0.0',
       port
     },
     test: {
