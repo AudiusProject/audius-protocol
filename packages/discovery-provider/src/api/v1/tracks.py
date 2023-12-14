@@ -440,6 +440,7 @@ class TrackStream(Resource):
     @record_metrics
     @ns.doc(
         id="""Stream Track""",
+        description="""Stream an mp3 track""",
         params={"track_id": "A Track ID"},
         responses={
             200: "Success",
@@ -558,6 +559,7 @@ class TrackDownload(Resource):
     @record_metrics
     @ns.doc(
         id="""Download Track""",
+        description="""Download an original or mp3 track""",
         params={"track_id": "A Track ID"},
         responses={
             200: "Success",
