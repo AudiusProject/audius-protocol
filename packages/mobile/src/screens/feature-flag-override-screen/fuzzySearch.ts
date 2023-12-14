@@ -21,12 +21,12 @@ function levenshteinDistance(str1: string, str2: string): number {
   return dp[m][n]
 }
 
-export function fuzzySearch(
+export function fuzzySearch<Data extends string>(
   query: string,
-  dataset: string[],
+  dataset: Data[],
   threshold: number
 ) {
-  const results: Array<{ item: string; distance: number }> = []
+  const results: Array<{ item: Data; distance: number }> = []
 
   for (const item of dataset) {
     const lowercaseItem = item.toLowerCase()
