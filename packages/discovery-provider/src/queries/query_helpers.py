@@ -576,7 +576,9 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
 
     track_access = {track["track_id"]: defaultdict() for track in tracks}
     stream_gated_tracks = list(filter(lambda track: track["is_stream_gated"], tracks))
-    download_gated_tracks = list(filter(lambda track: track["is_download_gated"], tracks))
+    download_gated_tracks = list(
+        filter(lambda track: track["is_download_gated"], tracks)
+    )
 
     # stream gated track access
     stream_gated_content_access_args = []
@@ -636,9 +638,14 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
         track_id = track["track_id"]
         has_stream_access = track_access[track_id].get("has_stream_access", True)
         has_download_access = track_access[track_id].get("has_download_access", True)
-        track[response_name_constants.access] = { "stream": has_stream_access, "download": has_download_access }
+        track[response_name_constants.access] = {
+            "stream": has_stream_access,
+            "download": has_download_access,
+        }
         if has_stream_access:
-            track[response_name_constants.stream_signature] = get_gated_content_signature_for_user_wallet(
+            track[
+                response_name_constants.stream_signature
+            ] = get_gated_content_signature_for_user_wallet(
                 {
                     "track_id": track_id,
                     "track_cid": track["track_cid"],

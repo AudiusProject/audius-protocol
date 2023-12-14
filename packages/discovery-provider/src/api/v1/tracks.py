@@ -480,9 +480,7 @@ class TrackStream(Resource):
                 "is_preview": is_preview,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
-                "stream_signature": request_args.get(
-                    "stream_signature"
-                ),
+                "stream_signature": request_args.get("stream_signature"),
             }
         )
         if not stream_signature:
@@ -553,6 +551,7 @@ download_parser.add_argument(
     required=False,
     default=False,
 )
+
 
 @ns.route("/<string:track_id>/download")
 class TrackDownload(Resource):
@@ -1513,9 +1512,7 @@ class NFTGatedPremiumTrackSignatures(Resource):
                 token_ids[i].split("-") if token_ids[i] else []
             )
 
-        signatures = get_nft_gated_track_signatures(
-            decoded_user_id, track_token_id_map
-        )
+        signatures = get_nft_gated_track_signatures(decoded_user_id, track_token_id_map)
         return success_response(signatures)
 
 

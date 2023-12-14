@@ -88,10 +88,16 @@ track = ns.model(
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
-        "track_cid": fields.String(allow_null=True), # remove nullability after backfill
+        "track_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
         "preview_cid": fields.String(allow_null=True),
-        "orig_file_cid": fields.String(allow_null=True), # remove nullability after backfill
-        "orig_filename": fields.String(allow_null=True), # remove nullability after backfill
+        "orig_file_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
+        "orig_filename": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -148,9 +154,7 @@ track_full = ns.clone(
         "is_available": fields.Boolean,
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
-        "stream_signature": fields.Nested(
-            stream_signature, allow_null=True
-        ),
+        "stream_signature": fields.Nested(stream_signature, allow_null=True),
         "is_download_gated": fields.Boolean,
         "download_conditions": fields.Raw(allow_null=True),
         "access": fields.Nested(access),

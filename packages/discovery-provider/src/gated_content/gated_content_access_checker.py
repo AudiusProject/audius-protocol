@@ -154,7 +154,10 @@ class GatedContentAccessChecker:
     #   }
     # }
     def check_access_for_batch(
-        self, session: Session, args: List[GatedContentAccessBatchArgs], is_download: Optional[bool] = False
+        self,
+        session: Session,
+        args: List[GatedContentAccessBatchArgs],
+        is_download: Optional[bool] = False,
     ) -> GatedContentAccessBatchResponse:
         # for now, we only allow tracks to be gated; gated playlists will come later
         valid_args = list(

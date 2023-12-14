@@ -528,8 +528,8 @@ def validate_remixability(params: ManageEntityParameters):
             parent_track_ids,
         )
     )
-    premium_content_batch_access = (
-        gated_content_access_checker.check_access_for_batch(session, args)
+    premium_content_batch_access = gated_content_access_checker.check_access_for_batch(
+        session, args
     )
     if "track" not in premium_content_batch_access:
         return
@@ -566,6 +566,7 @@ def get_remix_parent_track_ids(track_metadata):
 
     return parent_track_ids
 
+
 def validate_downloadability(params: ManageEntityParameters):
     track_metadata = params.metadata
     download = track_metadata.get("download")
@@ -573,7 +574,9 @@ def validate_downloadability(params: ManageEntityParameters):
     is_download_gated = track_metadata.get("is_download_gated")
     download_conditions = track_metadata.get("download_conditions")
     stream_conditions = track_metadata.get("stream_conditions")
-    is_stream_usdc_purchase_gated = stream_conditions and (USDC_PURCHASE_KEY in stream_conditions)
+    is_stream_usdc_purchase_gated = stream_conditions and (
+        USDC_PURCHASE_KEY in stream_conditions
+    )
 
     # if stream gated on usdc purchase, must also be download gated
     if is_stream_usdc_purchase_gated and not is_download_gated:
@@ -596,8 +599,12 @@ def validate_downloadability(params: ManageEntityParameters):
     # if both usdc purchase stream gated and download gated,
     # usdc purchase price must be the same for stream and download conditions
     if is_stream_usdc_purchase_gated and is_download_gated:
-        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
-        download_usdc_purchase_price = download_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
+        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get(
+            "price"
+        )
+        download_usdc_purchase_price = download_conditions.get(
+            USDC_PURCHASE_KEY, {}
+        ).get("price")
         if stream_usdc_purchase_price != download_usdc_purchase_price:
             raise IndexingValidationError(
                 f"Track {params.entity_id} is usdc purchase stream and download gated but has different prices"

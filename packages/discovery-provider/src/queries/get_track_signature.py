@@ -24,7 +24,7 @@ class GetTrackDownloadSignature(TypedDict):
     user_signature: Optional[str]
 
 
-# Returns a dictionary { signature, cid } if user has stream access
+# Returns a dictionary {signature, cid} if user has stream access
 # Returns None otherwise
 def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
@@ -54,16 +54,14 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
                 "is_gated": False,
             }
         )
-        return { "signature": signature, "cid": cid }
+        return {"signature": signature, "cid": cid}
 
     if not authed_user_id:
         return None
 
     if stream_signature:
         # check that authed user is the same as user for whom the gated content signature was signed
-        stream_signature_obj = json.loads(
-            urllib.parse.unquote(stream_signature)
-        )
+        stream_signature_obj = json.loads(urllib.parse.unquote(stream_signature))
         signature_data = json.loads(stream_signature_obj["data"])
 
         if (
@@ -73,7 +71,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
             or signature_data.get("shouldCache", False)
         ):
             return None
-        return { "signature": stream_signature_obj, "cid": cid }
+        return {"signature": stream_signature_obj, "cid": cid}
 
     # build a track instance from the track dict
     track_entity = Track(
@@ -105,17 +103,17 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
             "user_id": authed_user["user_id"],
         }
     )
-    return { "signature": signature, "cid": cid }
+    return {"signature": signature, "cid": cid}
 
 
-# Returns a dictionary { signature, cid, filename } if user has stream access
+# Returns a dictionary {signature, cid, filename} if user has stream access
 # Returns None otherwise
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]
     is_download_gated = track["is_download_gated"]
     title = track.get["title"]
-    filename = track.get("orig_filename", title) if is_original else title
     is_original = args.get("is_original", False)
+    filename = track.get("orig_filename", title) if is_original else title
     user_data = args["user_data"]
     user_signature = args["user_signature"]
     is_downloadable = track.get("download", {}).get("is_downloadable")
@@ -141,7 +139,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
                 "is_gated": False,
             }
         )
-        return { "signature": signature, "cid": cid, "filename": filename }
+        return {"signature": signature, "cid": cid, "filename": filename}
 
     if not authed_user_id:
         return None
@@ -177,4 +175,4 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
             "user_id": authed_user["user_id"],
         }
     )
-    return { "signature": signature, "cid": cid, "filename": filename }
+    return {"signature": signature, "cid": cid, "filename": filename}
