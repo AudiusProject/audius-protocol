@@ -13,7 +13,6 @@ import { Pressable, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
-import { useDrawerState } from 'app/components/drawer'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { ArtistTile } from '../components/ArtistTile'
