@@ -46,7 +46,7 @@ if (parameters) {
 
 try {
   argsEnhancers.forEach((enhancer) => addArgsEnhancer(enhancer))
-} catch {}
+} catch { }
 
 const getStories = () => {
   return {
@@ -60,6 +60,7 @@ const getStories = () => {
     '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx'),
     '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx'),
     '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
+    '../src/harmony-native/FollowButton.stories.tsx': require('../src/harmony-native/components/Button/FollowButton/FollowButton.stories.tsx'),
   }
 }
 

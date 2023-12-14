@@ -26,6 +26,7 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
 
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
@@ -34,6 +35,7 @@ import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -65,6 +67,7 @@ const SAVED_TIMEOUT = 1000
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
+  releaseNow: 'RELEASE NOW',
   isPublishing: 'PUBLISHING',
   repostButtonText: 'repost',
   repostedButtonText: 'reposted',
@@ -188,6 +191,11 @@ export const GiantTrackTile = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
 
+  let isScheduledRelease = false
+  if (!isPublishing && moment.utc(released).isAfter(moment())) {
+    isScheduledRelease = true
+  }
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -218,12 +226,16 @@ export const GiantTrackTile = ({
   }
 
   const renderMakePublicButton = () => {
+    let text = messages.isPublishing
+    if (isUnlisted && !isPublishing) {
+      text = isScheduledRelease ? messages.releaseNow : messages.makePublic
+    }
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
         <EntityActionButton
           type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
-          text={isPublishing ? messages.isPublishing : messages.makePublic}
+          text={text}
           leftIcon={
             isPublishing ? (
               <LoadingSpinner className={styles.spinner} />
@@ -430,6 +442,11 @@ export const GiantTrackTile = ({
       </>
     )
   }
+  const renderScheduledReleaseRow = () => {
+    return (
+      <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    )
+  }
 
   const renderDownloadButtons = () => {
     return (
@@ -450,7 +467,8 @@ export const GiantTrackTile = ({
     ? undefined
     : getDogEarType({
         premiumConditions,
-        isUnlisted
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
       })
 
   const overflowMenuExtraItems = []
@@ -556,6 +574,7 @@ export const GiantTrackTile = ({
 
           <div className={cn(styles.statsSection, fadeIn)}>
             {renderStatsRow()}
+            {renderScheduledReleaseRow()}
           </div>
 
           <div

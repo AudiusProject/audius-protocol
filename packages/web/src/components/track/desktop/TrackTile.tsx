@@ -15,12 +15,14 @@ import {
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
 import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -146,7 +148,8 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
-  trackId
+  trackId,
+  releaseDate
 }: TrackTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -224,11 +227,14 @@ const TrackTile = ({
         doesUserHaveAccess,
         isArtistPick,
         isOwner,
-        isUnlisted,
+        isUnlisted:
+          isUnlisted &&
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
         premiumConditions
       })
 
   let specialContentLabel = null
+  let scheduledReleaseLabel = null
   if (!isLoading) {
     if (isPremium) {
       specialContentLabel = (
@@ -246,6 +252,9 @@ const TrackTile = ({
         </div>
       )
     }
+    scheduledReleaseLabel = (
+      <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
+    )
   }
 
   return (
@@ -337,10 +346,7 @@ const TrackTile = ({
             className={cn(
               typeStyles.body,
               typeStyles.bodyXSmall,
-              styles.socialsRow,
-              {
-                [styles.isHidden]: isUnlisted
-              }
+              styles.socialsRow
             )}
           >
             {isLoading ? (
@@ -348,7 +354,8 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {stats}
+                {scheduledReleaseLabel}
+                {isUnlisted ? null : stats}
               </>
             )}
           </div>

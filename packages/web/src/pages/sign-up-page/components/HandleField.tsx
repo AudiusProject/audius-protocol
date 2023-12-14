@@ -107,7 +107,7 @@ export const HandleField = (props: HandleFieldProps) => {
       maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'
       placeholder={messages.handle}
-      transformValue={(value) => value.replace(/\s/g, '')}
+      transformValueOnChange={(value) => value.replace(/\s/g, '')}
       debouncedValidationMs={1000}
       {...other}
     />
