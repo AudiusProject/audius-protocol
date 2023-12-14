@@ -511,9 +511,8 @@ def process_route_instruction(
 
 def process_payment_router_tx_details(
     session: Session,
-    redis: Redis,
     tx_info: GetTransactionResp,
-    tx_sig,
+    tx_sig: str,
     timestamp,
     challenge_event_bus: ChallengeEventBus,
 ):
@@ -731,7 +730,7 @@ def process_payment_router_txs() -> None:
                 )
 
                 process_payment_router_tx_details(
-                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                    session, tx_info, tx_sig, parsed_timestamp, challenge_bus
                 )
 
                 session.add(
