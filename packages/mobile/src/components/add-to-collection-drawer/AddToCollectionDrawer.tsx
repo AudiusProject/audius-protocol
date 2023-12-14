@@ -22,18 +22,20 @@ import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
 import type { ImageProps } from '../image/FastImage'
 
-const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
+const { addTrackToPlaylist, createAlbum, createPlaylist } =
+  cacheCollectionsActions
+const { getTrackId, getTrackTitle, getTrackIsUnlisted, getCollectionType } =
   addToCollectionUISelectors
-const { getAccountWithOwnPlaylists } = accountSelectors
+const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 
-const messages = {
-  title: 'Add To Playlist',
-  addedToast: 'Added To Playlist!',
-  hiddenAdd: 'You cannot add hidden tracks to a public playlist.'
-}
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  title: `Add To ${capitalize(collectionType)}`,
+  addedToast: `Added To ${capitalize(collectionType)}!`,
+  newCollection: `New ${capitalize(collectionType)}`,
+  hiddenAdd: `You cannot add hidden tracks to a public ${collectionType}.`
+})
 
 const useStyles = makeStyles(() => ({
   buttonContainer: {
@@ -55,10 +57,14 @@ export const AddToCollectionDrawer = () => {
   const { toast } = useToast()
   const dispatch = useDispatch()
   const { onClose } = useDrawerState('AddToCollection')
+  const collectionType = useSelector(getCollectionType)
+  const isAlbumType = collectionType === 'album'
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
-  const user = useSelector(getAccountWithOwnPlaylists)
+  const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
+
+  const messages = getMessages(collectionType)
 
   const renderImage = useCallback(
     (item) => (props?: ImageProps) =>
@@ -72,21 +78,25 @@ export const AddToCollectionDrawer = () => {
     []
   )
 
-  const userPlaylists = user?.playlists ?? []
+  const filteredCollections =
+    (isAlbumType ? account?.albums : account?.playlists) ?? []
 
-  const playlistTrackIdMap = useMemo(() => {
-    const playlists = user?.playlists ?? []
-    return playlists.reduce((acc, playlist) => {
+  const collectionTrackIdMap = useMemo(() => {
+    const collections =
+      (isAlbumType ? account?.albums : account?.playlists) ?? []
+    return collections.reduce((acc, playlist) => {
       const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
       acc[playlist.playlist_id] = trackIds
       return acc
     }, {})
-  }, [user?.playlists])
+  }, [account?.albums, account?.playlists, isAlbumType])
 
-  const addToNewPlaylist = useCallback(() => {
-    const metadata = { playlist_name: trackTitle ?? 'New Playlist' }
+  const addToNewCollection = useCallback(() => {
+    const metadata = {
+      playlist_name: trackTitle ?? messages.newCollection
+    }
     dispatch(
-      createPlaylist(
+      (isAlbumType ? createAlbum : createPlaylist)(
         metadata,
         CreatePlaylistSource.FROM_TRACK,
         trackId,
@@ -94,7 +104,14 @@ export const AddToCollectionDrawer = () => {
       )
     )
     onClose()
-  }, [dispatch, onClose, trackId, trackTitle])
+  }, [
+    dispatch,
+    isAlbumType,
+    messages.newCollection,
+    onClose,
+    trackId,
+    trackTitle
+  ])
 
   const renderCard = useCallback(
     ({ item }: { item: Collection | { _create: boolean } }) =>
@@ -102,7 +119,7 @@ export const AddToCollectionDrawer = () => {
         <AddCollectionCard
           source={CreatePlaylistSource.FROM_TRACK}
           sourceTrackId={trackId}
-          onCreate={addToNewPlaylist}
+          onCreate={addToNewCollection}
         />
       ) : (
         <Card
@@ -111,20 +128,20 @@ export const AddToCollectionDrawer = () => {
           type='collection'
           id={item.playlist_id}
           primaryText={item.playlist_name}
-          secondaryText={user?.name}
+          secondaryText={account?.name}
           onPress={() => {
             if (!trackId) return
 
-            // Don't add if the track is hidden, but playlist is public
+            // Don't add if the track is hidden, but collection is public
             if (isTrackUnlisted && !item.is_private) {
               toast({ content: messages.hiddenAdd })
               return
             }
 
-            const doesPlaylistContainTrack =
-              playlistTrackIdMap[item.playlist_id]?.includes(trackId)
+            const doesCollectionContainTrack =
+              collectionTrackIdMap[item.playlist_id]?.includes(trackId)
 
-            if (doesPlaylistContainTrack) {
+            if (doesCollectionContainTrack) {
               dispatch(
                 openDuplicateAddConfirmation({
                   playlistId: item.playlist_id,
@@ -141,19 +158,21 @@ export const AddToCollectionDrawer = () => {
         />
       ),
     [
-      addToNewPlaylist,
-      dispatch,
-      isTrackUnlisted,
-      onClose,
-      playlistTrackIdMap,
-      renderImage,
-      toast,
       trackId,
-      user?.name
+      addToNewCollection,
+      isTrackUnlisted,
+      account?.name,
+      renderImage,
+      collectionTrackIdMap,
+      onClose,
+      toast,
+      messages.hiddenAdd,
+      messages.addedToast,
+      dispatch
     ]
   )
 
-  if (!user || !trackId || !trackTitle) {
+  if (!account || !trackId || !trackTitle) {
     return null
   }
 
@@ -167,11 +186,14 @@ export const AddToCollectionDrawer = () => {
       <View>
         <CollectionList
           contentContainerStyle={styles.cardList}
-          collection={userPlaylists}
+          collection={filteredCollections}
           showCreatePlaylistTile
           renderItem={renderCard}
         />
       </View>
     </AppDrawer>
   )
+}
+function capitalize(collectionType: string) {
+  throw new Error('Function not implemented.')
 }
