@@ -21,7 +21,8 @@ import {
   AMOUNT_PRESET,
   CENTS_TO_USDC_MULTIPLIER,
   CUSTOM_AMOUNT,
-  PURCHASE_METHOD
+  PURCHASE_METHOD,
+  PURCHASE_VENDOR
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
@@ -50,17 +51,24 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
+
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
     [PURCHASE_METHOD]:
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
-        : PurchaseMethod.CARD
+        : PurchaseMethod.CARD,
+    [PURCHASE_VENDOR]: undefined
   }
 
   const onSubmit = useCallback(
-    ({ customAmount, amountPreset, purchaseMethod }: PurchaseContentValues) => {
+    ({
+      customAmount,
+      amountPreset,
+      purchaseMethod,
+      purchaseVendor
+    }: PurchaseContentValues) => {
       if (isUnlocking || !track?.track_id) return
 
       if (
@@ -77,6 +85,7 @@ export const usePurchaseContentFormConfiguration = ({
         dispatch(
           startPurchaseContentFlow({
             purchaseMethod,
+            purchaseVendor,
             extraAmount,
             extraAmountPreset: amountPreset,
             contentId: track.track_id,

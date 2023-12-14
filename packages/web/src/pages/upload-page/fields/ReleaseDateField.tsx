@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { IconInfo } from '@audius/harmony'
+import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -18,6 +18,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
+import { formatCalendarTime } from 'utils/dateUtils'
 
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
@@ -29,23 +30,10 @@ const messages = {
   title: 'Release Date',
   description:
     'Specify a release date for your music or schedule it to be released in the future. Release date affects sorting on your profile and is visible in track details.',
-  callout: (timePeriod: TimePeriodType) => {
-    if (timePeriod === TimePeriodType.PAST) {
-      return (
-        <>
-          Setting a release date in the past will impact the order tracks appear
-          on your profile.
-        </>
-      )
-    } else {
-      return (
-        <>
-          Your scheduled track will become live on Audius on the date and time
-          you’ve chosen above in your time zone.
-        </>
-      )
-    }
-  }
+  pastReleaseHint:
+    'Setting a release date in the past will impact the order tracks appear on your profile.',
+  futureReleaseHint:
+    "Your scheduled track will become live on Audius on the date and time you've chosen above in your time zone."
 }
 
 const RELEASE_DATE = 'release_date'
@@ -84,33 +72,6 @@ const timeValidationSchema = z.object({
     })
 })
 
-const getScheduledReleaseLabelMessage = (
-  releaseDate: string | null,
-  prefixMessage = ''
-) => {
-  if (!releaseDate) {
-    return 'Today'
-  }
-  const formatReleaseMessage = (releaseDate: string, base: string) => {
-    const isFutureRelease = moment(releaseDate ?? undefined).isAfter(
-      moment.now()
-    )
-    let message = isFutureRelease ? '[' + prefixMessage + '] ' : ''
-    message += base
-    message += isFutureRelease ? ' @ LT' : ''
-    return message
-  }
-
-  return moment(releaseDate ?? undefined).calendar(undefined, {
-    sameDay: formatReleaseMessage(releaseDate, '[Today]'),
-    nextDay: formatReleaseMessage(releaseDate, '[Tomorrow]'),
-    nextWeek: formatReleaseMessage(releaseDate, 'dddd'),
-    lastDay: '[Yesterday]',
-    lastWeek: '[Last] dddd',
-    sameElse: formatReleaseMessage(releaseDate, 'MM/DD/YYYY')
-  })
-}
-
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 
 export const ReleaseDateField = () => {
@@ -118,23 +79,20 @@ export const ReleaseDateField = () => {
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
   const trackReleaseDate = trackReleaseDateField.value
 
-  const [releaseDateTypeField, ,] = useField(RELEASE_DATE_TYPE)
-  const releaseDateType = releaseDateTypeField.value
-  const roundUpHour = moment().add(1, 'hours').minutes(0).seconds(0)
   const initialValues = useMemo(() => {
     return {
       [RELEASE_DATE]: trackReleaseDate ?? undefined,
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
-        : roundUpHour.format('h:mm'),
+        : moment().format('h:mm'),
       [RELEASE_DATE_MERIDIAN]: trackReleaseDate
         ? moment(trackReleaseDate).format('A')
-        : roundUpHour.format('A'),
+        : moment().format('A'),
       [RELEASE_DATE_TYPE]: trackReleaseDate
         ? ReleaseDateType.SCHEDULED_RELEASE
         : ReleaseDateType.RELEASE_NOW
     }
-  }, [trackReleaseDate, releaseDateType])
+  }, [trackReleaseDate])
 
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
@@ -154,10 +112,11 @@ export const ReleaseDateField = () => {
       } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
         adjustedHours = 0
       }
-      const combinedDateTime = truncatedReleaseDate.add(adjustedHours, 'hours')
+      const combinedDateTime = truncatedReleaseDate
+        .add(adjustedHours, 'hours')
+        .add(values[RELEASE_DATE_HOUR].split(':')[1], 'minutes')
 
       setTrackReleaseDate(combinedDateTime.toString() ?? null)
-      // set other fields
     },
     [setTrackReleaseDate]
   )
@@ -165,16 +124,12 @@ export const ReleaseDateField = () => {
   const renderValue = useCallback(() => {
     return (
       <SelectedValue
-        label={getScheduledReleaseLabelMessage(
-          trackReleaseDate,
-          'Scheduled for '
-        )}
+        label={formatCalendarTime(trackReleaseDate, 'Scheduled for ')}
         icon={IconCalendar}
       >
         <input
           className={styles.input}
           name={RELEASE_DATE}
-          value={'hello'}
           aria-readonly
           readOnly
         />
@@ -194,12 +149,10 @@ export const ReleaseDateField = () => {
         validateOnBlur={false}
         onSubmit={onSubmit}
         menuFields={
-          <>
-            <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              <Text>{messages.description}</Text>
-              <RadioItems />
-            </div>
-          </>
+          <Flex direction='column' gap='l'>
+            <Text>{messages.description}</Text>
+            <RadioItems />
+          </Flex>
         }
         renderValue={renderValue}
       />
@@ -208,7 +161,7 @@ export const ReleaseDateField = () => {
 }
 
 const RadioItems = (props: any) => {
-  const [releaseDateTypeField, ,] = useField(RELEASE_DATE_TYPE)
+  const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
   const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
 
   const [, , { setValue: setReleaseDateMeridian }] = useField(
@@ -281,7 +234,7 @@ const RadioItems = (props: any) => {
                 placeholder={'12:00'}
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
-                transformBlurValue={(value) => {
+                transformValueOnBlur={(value) => {
                   if (value.includes(':')) {
                     return value
                   }
@@ -301,7 +254,11 @@ const RadioItems = (props: any) => {
       <ModalContent className={styles.releaseDateHint}>
         <HelpCallout
           icon={<IconInfo />}
-          content={messages.callout(timePeriod)}
+          content={
+            timePeriod === TimePeriodType.PAST
+              ? messages.pastReleaseHint
+              : messages.futureReleaseHint
+          }
         />
       </ModalContent>
     </>
@@ -311,7 +268,6 @@ const RadioItems = (props: any) => {
 export const SelectMeridianField = () => {
   return (
     <DropdownField
-      aria-label={'label'}
       placeholder={ReleaseDateMeridian.AM}
       mount='parent'
       menu={{ items: [ReleaseDateMeridian.AM, ReleaseDateMeridian.PM] }}

@@ -20,7 +20,7 @@ const requiresCurrentUserIdHeader = t.procedure.use(
 )
 
 export async function createContext(opts: any) {
-  let currentUserId = undefined
+  let currentUserId: number | undefined = undefined
   if (opts.req.headers['x-current-user-id']) {
     currentUserId = parseInt(opts.req.headers['x-current-user-id'])
   } else if (opts.req.query['currentUserId']) {

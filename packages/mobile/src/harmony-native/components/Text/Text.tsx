@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { forwardRef } from 'react'
 
 import type { BaseTextProps } from '@audius/harmony'
 import { variantStylesMap } from '@audius/harmony'
@@ -13,7 +13,7 @@ export type TextProps = NativeTextProps &
     textAlign?: TextStyle['textAlign']
   }
 
-export const Text = (props: TextProps) => {
+export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const {
     variant = 'body',
     size = 'm',
@@ -21,6 +21,7 @@ export const Text = (props: TextProps) => {
     style: styleProp,
     color: colorProp = 'default',
     textAlign,
+    shadow,
     ...other
   } = props
   const theme = useTheme()
@@ -31,27 +32,31 @@ export const Text = (props: TextProps) => {
       : theme.color.text[colorProp]
 
   const variantStyles = variantStylesMap[variant]
+  const t = theme.typography
 
-  const textStyles = useMemo((): TextStyle => {
-    const t = theme.typography
-    return css({
-      fontSize: t.size[variantStyles.fontSize[size]],
-      lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
-      fontWeight: t.weight[variantStyles.fontWeight[strength]],
-      fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
-      ...('css' in variantStyles ? variantStyles.css : {}),
-      ...(color && { color }),
-      textAlign
-    })
-  }, [color, size, strength, theme.typography, variantStyles, textAlign])
+  const textStyles: TextStyle = css({
+    fontSize: t.size[variantStyles.fontSize[size]],
+    lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
+    fontWeight: t.weight[variantStyles.fontWeight[strength]],
+    fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
+    ...('css' in variantStyles ? variantStyles.css : {}),
+    ...(color && { color }),
+    ...(shadow && {
+      textShadowColor: 'rgba(0, 0, 0, 0.50)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 5
+    }),
+    textAlign
+  })
 
   const isHeading = variant === 'display' || variant === 'heading'
 
   return (
     <TextBase
+      ref={ref}
       style={[styleProp, textStyles]}
       role={isHeading ? 'heading' : undefined}
       {...other}
     />
   )
-}
+})

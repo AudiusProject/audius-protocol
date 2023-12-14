@@ -340,8 +340,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isPremium,
     tempPremiumConditions,
     fieldVisibility,
-    preview,
-    setIsUnlistedValue
+    preview
   ])
 
   const handleSubmit = useCallback(

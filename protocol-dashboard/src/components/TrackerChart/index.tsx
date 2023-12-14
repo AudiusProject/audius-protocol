@@ -1,1 +1,1 @@
-export { default } from './TrackerChart'
+export { TrackerChart, TrackerMini } from './TrackerChart'

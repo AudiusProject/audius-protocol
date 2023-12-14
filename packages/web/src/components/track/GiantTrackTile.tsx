@@ -15,6 +15,7 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { Mood } from '@audius/sdk'
 import {
   Button,
   ButtonType,
@@ -336,7 +337,7 @@ export const GiantTrackTile = ({
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood] : mood}
+          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
         />
       )
     )
@@ -466,7 +467,8 @@ export const GiantTrackTile = ({
     ? undefined
     : getDogEarType({
         premiumConditions,
-        isUnlisted
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
       })
 
   const overflowMenuExtraItems = []

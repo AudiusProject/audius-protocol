@@ -1,9 +1,16 @@
+import { useCallback } from 'react'
+
 import {
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
   PURCHASE_METHOD,
-  usePurchaseMethod
+  PurchaseVendor,
+  PURCHASE_VENDOR,
+  usePurchaseMethod,
+  PurchaseMethod,
+  StringKeys,
+  AMOUNT_PRESET
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -22,6 +29,7 @@ import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
+  payExtraTitle: 'Pay Extra',
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
@@ -36,9 +44,12 @@ export const PurchaseContentFormFields = ({
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
-  const payExtraAmountPresetValues = usePayExtraPresets()
+  const payExtraAmountPresetValues = usePayExtraPresets(
+    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
+  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -52,6 +63,20 @@ export const PurchaseContentFormFields = ({
     method: purchaseMethod,
     setMethod: setPurchaseMethod
   })
+
+  const handleChangeMethod = useCallback(
+    (method: string) => {
+      setPurchaseMethod(method as PurchaseMethod)
+    },
+    [setPurchaseMethod]
+  )
+
+  const handleChangeVendor = useCallback(
+    (vendor: string) => {
+      setPurchaseVendor(vendor as PurchaseVendor)
+    },
+    [setPurchaseVendor]
+  )
 
   if (isPurchased) {
     return (
@@ -70,8 +95,10 @@ export const PurchaseContentFormFields = ({
     <>
       {isUnlocking || isPurchased ? null : (
         <PayExtraFormSection
+          title={messages.payExtraTitle}
           amountPresets={payExtraAmountPresetValues}
           disabled={isUnlocking}
+          fieldName={AMOUNT_PRESET}
         />
       )}
       <PurchaseSummaryTable
@@ -80,11 +107,12 @@ export const PurchaseContentFormFields = ({
       />
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
-          selectedType={purchaseMethod}
-          setSelectedType={setPurchaseMethod}
+          selectedMethod={purchaseMethod}
+          setSelectedMethod={handleChangeMethod}
+          setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance
+          showExistingBalance={!balanceBN?.isZero()}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

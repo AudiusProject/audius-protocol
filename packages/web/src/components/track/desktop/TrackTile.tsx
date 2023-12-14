@@ -15,6 +15,7 @@ import {
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
@@ -226,7 +227,9 @@ const TrackTile = ({
         doesUserHaveAccess,
         isArtistPick,
         isOwner,
-        isUnlisted,
+        isUnlisted:
+          isUnlisted &&
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
         premiumConditions
       })
 
@@ -352,7 +355,7 @@ const TrackTile = ({
               <>
                 {specialContentLabel}
                 {scheduledReleaseLabel}
-                {!isUnlisted && stats}
+                {isUnlisted ? null : stats}
               </>
             )}
           </div>

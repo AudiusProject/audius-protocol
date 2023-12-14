@@ -485,7 +485,7 @@ PODS:
     - react-native-flipper-performance-plugin/FBDefines (= 0.3.1)
   - react-native-flipper-performance-plugin/FBDefines (0.3.1):
     - React-Core
-  - react-native-get-random-values (1.8.0):
+  - react-native-get-random-values (1.10.0):
     - React-Core
   - react-native-google-cast (4.6.0):
     - React
@@ -660,7 +660,8 @@ PODS:
     - React-Core
   - RNFS (2.18.0):
     - React
-  - RNGestureHandler (1.10.3):
+  - RNGestureHandler (2.14.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - RNImageCropPicker (0.40.0):
     - React-Core
@@ -1157,7 +1158,7 @@ SPEC CHECKSUMS:
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-flipper: fd500c92e89502a8a0e5a87b4bfe8da751ccd435
   react-native-flipper-performance-plugin: 2b873b68da3e368afeaf29c9c7a8c2b0ff908c4f
-  react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
+  react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-google-cast: bbbdbeae552d0b55b59031ed7e12ae832e8c5a53
   react-native-image-picker: bf34f3f516d139ed3e24c5f5a381a91819e349ea
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
@@ -1203,7 +1204,7 @@ SPEC CHECKSUMS:
   RNFBCrashlytics: 94e1f78e2a9aa9e02edbfb0d3f1f0921ce00094b
   RNFingerprintjsPro: 317426b3f0479c4737960f7aa90b0f8a02ac07f9
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
-  RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
+  RNGestureHandler: 32a01c29ecc9bb0b5bf7bc0a33547f61b4dc2741
   RNImageCropPicker: 486e2f7e2b0461ce24321f751410dce1b3b49e6d
   RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285

@@ -80,14 +80,13 @@
   font-weight: var(--font-medium);
   font-size: var(--font-l);
   line-height: 18px;
-  width: 200px;
+  width: 100%;
   padding: 0;
 }
 
 .releaseDateTimePicker {
   align-items: flex-start;
   height: auto;
-  /* margin: 24px 0; */
 }
 .hourInput {
   height: 60px !important;

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext, pickHandleSchema } from '@audius/common'
 import { Paper, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -15,6 +15,7 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
+import { restrictedHandles } from 'utils/restrictedHandles'
 import {
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_FINISH_PROFILE_PAGE
@@ -23,7 +24,6 @@ import {
 import { AccountHeader } from '../components/AccountHeader'
 import { HandleField } from '../components/HandleField'
 import { Heading, Page, PageFooter } from '../components/layout'
-import { generateHandleSchema } from '../utils/handleSchema'
 
 const messages = {
   heading: 'Review Your Handle',
@@ -50,7 +50,7 @@ export const ReviewHandlePage = () => {
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      generateHandleSchema({ audiusQueryContext })
+      pickHandleSchema({ audiusQueryContext, restrictedHandles })
     )
   }, [audiusQueryContext])
 
