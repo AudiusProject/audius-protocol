@@ -1034,3 +1034,144 @@ def test_invalid_playlist_description(app, mocker):
         )
 
         assert total_changes == 0
+
+
+def test_index_add_tracks_to_collections(app, mocker):
+    "Tests adding tracks to albums and playlists. Tracks not owned by the album's owner should be ignored. Playlists allow all."
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    test_metadata = {
+        "AlbumTracklistUpdate": {
+            "playlist_contents": {
+                "track_ids": [
+                    {"time": 1660927554, "track": 1},
+                    {"time": 1660927554, "track": 2},
+                ]
+            }
+        },
+        "PlaylistTracklistUpdate": {
+            "playlist_contents": {
+                "track_ids": [
+                    {"time": 1660927554, "track": 1},
+                    {"time": 1660927554, "track": 2},
+                ]
+            }
+        },
+    }
+
+    album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
+    playlist_tracklist_update_json = json.dumps(
+        test_metadata["PlaylistTracklistUpdate"]
+    )
+
+    tx_receipts = {
+        "UpdateAlbumTracklistUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {album_tracklist_update_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "UpdatePlaylistTracklistUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {playlist_tracklist_update_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+            {"track_id": 2, "owner_id": 2},
+        ],
+        "playlists": [
+            {
+                "playlist_id": PLAYLIST_ID_OFFSET,
+                "playlist_owner_id": 1,
+                "is_album": True,
+            },
+            {
+                "playlist_id": PLAYLIST_ID_OFFSET + 1,
+                "playlist_owner_id": 1,
+                "is_album": False,
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # Validate album got only the single owned track
+        all_playlists: List[Playlist] = session.query(Playlist).all()
+        assert len(all_playlists) == 2
+
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET)
+            .first()
+        )
+        assert album.is_album == True
+        assert len(album.playlist_contents["track_ids"]) == 1
+        assert album.playlist_contents["track_ids"] <= [
+            {"time": 1585336422, "track": 1, "metadata_time": 1660927554}
+        ]
+
+        # Validate playlist got both tracks
+        playlist: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1)
+            .first()
+        )
+        assert playlist.is_album == False
+        assert len(playlist.playlist_contents["track_ids"]) == 2
+        assert playlist.playlist_contents["track_ids"] <= [
+            {"metadata_time": 1660927554, "time": 1585336422, "track": 1},
+            {"metadata_time": 1660927554, "time": 1585336422, "track": 2},
+        ]
