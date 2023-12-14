@@ -4,9 +4,17 @@ import {
   CommonState,
   chatActions,
   chatSelectors,
+  makeSolanaTransactionLink,
   useInboxUnavailableModal
 } from '@audius/common'
-import { Button, ButtonType, IconCart, IconMessage } from '@audius/harmony'
+import {
+  Button,
+  ButtonType,
+  Flex,
+  IconCart,
+  IconExternalLink,
+  IconMessage
+} from '@audius/harmony'
 import {
   ModalContent,
   ModalFooter,
@@ -17,6 +25,7 @@ import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
+import { ExternalLink } from 'components/link'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -36,7 +45,8 @@ const messages = {
   messageBuyer: 'Message Buyer',
   purchasedBy: 'Purchased By',
   saleDetails: 'Sale Details',
-  trackPurchased: 'Track Purchased'
+  trackPurchased: 'Track Purchased',
+  transaction: 'Explore Transaction'
 }
 
 export const SaleModalContent = ({
@@ -93,6 +103,19 @@ export const SaleModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
+        <DetailSection
+          label={
+            <ExternalLink
+              variant='inherit'
+              to={makeSolanaTransactionLink(purchaseDetails.signature)}
+            >
+              <Flex gap='xs'>
+                {messages.transaction}
+                <IconExternalLink size='s' color='subdued' />
+              </Flex>
+            </ExternalLink>
+          }
+        />
         <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
