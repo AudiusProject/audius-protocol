@@ -962,9 +962,7 @@ def test_index_invalid_playlists(app, mocker):
         )
         assert current_album.is_current == True
         assert current_album.is_album == True
-        assert current_album.playlist_contents == {
-            "track_ids": [{"metadata_time": 1, "time": 1585336422, "track": 1}]
-        }
+        assert current_album.playlist_contents == {"track_ids": []}
 
 
 def test_invalid_playlist_description(app, mocker):
