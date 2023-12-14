@@ -29,6 +29,13 @@ import {
     TracksResponseToJSON,
 } from '../models';
 
+export interface DownloadTrackRequest {
+    trackId: string;
+    userSignature?: string;
+    userData?: string;
+    original?: boolean;
+}
+
 export interface GetBulkTracksRequest {
     permalink?: Array<string>;
     id?: Array<string>;
@@ -58,8 +65,7 @@ export interface StreamTrackRequest {
     preview?: boolean;
     userSignature?: string;
     userData?: string;
-    premiumContentSignature?: string;
-    filename?: string;
+    streamSignature?: string;
     skipPlayCount?: boolean;
 }
 
@@ -67,6 +73,48 @@ export interface StreamTrackRequest {
  * 
  */
 export class TracksApi extends runtime.BaseAPI {
+
+    /**
+     * @hidden
+     * Download the original or MP3 file of a track
+     */
+    async downloadTrackRaw(params: DownloadTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling downloadTrack.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userSignature !== undefined) {
+            queryParameters['user_signature'] = params.userSignature;
+        }
+
+        if (params.userData !== undefined) {
+            queryParameters['user_data'] = params.userData;
+        }
+
+        if (params.original !== undefined) {
+            queryParameters['original'] = params.original;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/download`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Download the original or MP3 file of a track
+     */
+    async downloadTrack(params: DownloadTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadTrackRaw(params, initOverrides);
+    }
 
     /**
      * @hidden
@@ -267,12 +315,8 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_data'] = params.userData;
         }
 
-        if (params.premiumContentSignature !== undefined) {
-            queryParameters['premium_content_signature'] = params.premiumContentSignature;
-        }
-
-        if (params.filename !== undefined) {
-            queryParameters['filename'] = params.filename;
+        if (params.streamSignature !== undefined) {
+            queryParameters['stream_signature'] = params.streamSignature;
         }
 
         if (params.skipPlayCount !== undefined) {

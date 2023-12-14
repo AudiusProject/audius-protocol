@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { Access } from './Access';
+import {
+    AccessFromJSON,
+    AccessFromJSONTyped,
+    AccessToJSON,
+} from './Access';
 import type { CoverArt } from './CoverArt';
 import {
     CoverArtFromJSON,
@@ -44,12 +50,6 @@ import {
     FullRemixParentFromJSONTyped,
     FullRemixParentToJSON,
 } from './FullRemixParent';
-import type { PremiumContentSignature } from './PremiumContentSignature';
-import {
-    PremiumContentSignatureFromJSON,
-    PremiumContentSignatureFromJSONTyped,
-    PremiumContentSignatureToJSON,
-} from './PremiumContentSignature';
 import type { Repost } from './Repost';
 import {
     RepostFromJSON,
@@ -62,6 +62,12 @@ import {
     StemParentFromJSONTyped,
     StemParentToJSON,
 } from './StemParent';
+import type { StreamSignature } from './StreamSignature';
+import {
+    StreamSignatureFromJSON,
+    StreamSignatureFromJSONTyped,
+    StreamSignatureToJSON,
+} from './StreamSignature';
 import type { TrackArtwork } from './TrackArtwork';
 import {
     TrackArtworkFromJSON,
@@ -123,6 +129,18 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     previewCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    origFileCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    origFilename?: string;
     /**
      * 
      * @type {string}
@@ -350,19 +368,37 @@ export interface TrackFull {
      * @type {boolean}
      * @memberof TrackFull
      */
-    isPremium?: boolean;
+    isStreamGated?: boolean;
     /**
      * 
      * @type {object}
      * @memberof TrackFull
      */
-    premiumConditions?: object;
+    streamConditions?: object;
     /**
      * 
-     * @type {PremiumContentSignature}
+     * @type {StreamSignature}
      * @memberof TrackFull
      */
-    premiumContentSignature?: PremiumContentSignature;
+    streamSignature?: StreamSignature;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isDownloadGated?: boolean;
+    /**
+     * 
+     * @type {object}
+     * @memberof TrackFull
+     */
+    downloadConditions?: object;
+    /**
+     * 
+     * @type {Access}
+     * @memberof TrackFull
+     */
+    access?: Access;
     /**
      * 
      * @type {number}
@@ -423,6 +459,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'id': json['id'],
         'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
         'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
+        'origFileCid': !exists(json, 'orig_file_cid') ? undefined : json['orig_file_cid'],
+        'origFilename': !exists(json, 'orig_filename') ? undefined : json['orig_filename'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
@@ -460,9 +498,12 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isDelete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
-        'isPremium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
-        'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
-        'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
+        'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
+        'streamConditions': !exists(json, 'stream_conditions') ? undefined : json['stream_conditions'],
+        'streamSignature': !exists(json, 'stream_signature') ? undefined : StreamSignatureFromJSON(json['stream_signature']),
+        'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
+        'downloadConditions': !exists(json, 'download_conditions') ? undefined : json['download_conditions'],
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
         'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
         'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
@@ -484,6 +525,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'id': value.id,
         'track_cid': value.trackCid,
         'preview_cid': value.previewCid,
+        'orig_file_cid': value.origFileCid,
+        'orig_filename': value.origFilename,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': FullRemixParentToJSON(value.remixOf),
@@ -521,9 +564,12 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_delete': value.isDelete,
         'cover_art': value.coverArt,
         'is_available': value.isAvailable,
-        'is_premium': value.isPremium,
-        'premium_conditions': value.premiumConditions,
-        'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
+        'is_stream_gated': value.isStreamGated,
+        'stream_conditions': value.streamConditions,
+        'stream_signature': StreamSignatureToJSON(value.streamSignature),
+        'is_download_gated': value.isDownloadGated,
+        'download_conditions': value.downloadConditions,
+        'access': AccessToJSON(value.access),
         'ai_attribution_user_id': value.aiAttributionUserId,
         'audio_upload_id': value.audioUploadId,
         'preview_start_seconds': value.previewStartSeconds,
