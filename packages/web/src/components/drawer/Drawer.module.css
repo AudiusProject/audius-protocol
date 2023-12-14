@@ -19,8 +19,7 @@
 .fullDrawer {
   top: 0px;
   height: 100vh;
-  overflow-x: hidden;
-  overflow-y: scroll;
+  overflow: hidden;
   touch-action: auto;
 }
 
