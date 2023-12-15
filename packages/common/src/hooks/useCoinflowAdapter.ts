@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 
 import { getRootSolanaAccount } from 'services/audius-backend'
@@ -29,12 +30,33 @@ export const useCoinflowAdapter = () => {
           publicKey: wallet.publicKey,
           sendTransaction: async (transaction: Transaction) => {
             transaction.partialSign(wallet)
-            const res = await connection.sendRawTransaction(
-              transaction.serialize(),
-              // Skip preflight as this causes indeterminism between coinflow's
-              // RPC and our provided RPC.
-              { skipPreflight: true }
-            )
+            const transactionHandler = new TransactionHandler({
+              connection,
+              useRelay: false
+            })
+            const { res, error, errorCode } =
+              await transactionHandler.handleTransaction({
+                instructions: transaction.instructions,
+                recentBlockhash: transaction.recentBlockhash,
+                skipPreflight: true,
+                feePayerOverride: transaction.feePayer,
+                signatures: transaction.signatures.map((s) => ({
+                  signature: s.signature!, // already completely signed
+                  publicKey: s.publicKey.toBase58()
+                }))
+              })
+            if (!res) {
+              console.error('Sending Coinflow transaction failed.', {
+                error,
+                errorCode,
+                transaction
+              })
+              throw new Error(
+                `Sending Coinflow transaction failed: ${
+                  error ?? 'Unknown error'
+                }`
+              )
+            }
             return res
           }
         }
