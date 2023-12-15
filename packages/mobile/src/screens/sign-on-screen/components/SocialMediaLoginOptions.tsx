@@ -17,8 +17,34 @@ type SocialMediaLoginOptionsProps = {
 }
 
 export const SocialMediaLoginOptions = ({
-  onCompleteSocialMediaLogin
+  onCompleteSocialMediaLogin,
+  onStart,
+  onError
 }: SocialMediaLoginOptionsProps) => {
+  const handleFailure = () => {
+    onError()
+    // TODO: toast here
+    // toast(socialMediaMessages.verificationError)
+  }
+
+  const handleSuccess = ({
+    handle,
+    requiresReview,
+    platform
+  }: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
+  }) => {
+    // TODO: toast here
+    // toast(socialMediaMessages.socialMediaLoginSucess(platform))
+    onCompleteSocialMediaLogin({
+      handle,
+      requiresReview,
+      platform
+    })
+  }
+
   const isTwitterEnabled = true
   const isInstagramEnabled = true
   const isTikTokEnabled = true
@@ -59,15 +85,7 @@ export const SocialMediaLoginOptions = ({
           onStart={onStart}
           onFailure={handleFailure}
           onSuccess={handleSuccess}
-        >
-          <SocialButton
-            fullWidth
-            socialType='tiktok'
-            onPress={() => {}}
-            accessibilityLabel={socialMediaMessages.signUpTikTok}
-            style={css({ flex: 1 })}
-          />
-        </SignupFlowTikTokAuth>
+        />
       ) : null}
     </Flex>
   )

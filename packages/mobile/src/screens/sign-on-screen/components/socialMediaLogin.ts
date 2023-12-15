@@ -1,8 +1,3 @@
-import type {
-  InstagramProfile,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
 import {
   formatInstagramProfile,
   formatTikTokProfile,
@@ -10,6 +5,11 @@ import {
   Name,
   pickHandleSchema,
   useAudiusQueryContext
+} from '@audius/common'
+import type {
+  InstagramProfile,
+  TikTokProfile,
+  TwitterProfile
 } from '@audius/common'
 import { make } from 'common/store/analytics/actions'
 import {
