@@ -67,14 +67,14 @@ const { getUserId } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
-  | ReturnType<typeof buyUSDCFlowSucceeded>
-  | ReturnType<typeof buyCryptoSucceeded>
+    | ReturnType<typeof buyUSDCFlowSucceeded>
+    | ReturnType<typeof buyCryptoSucceeded>
   failed?:
-  | ReturnType<typeof buyUSDCFlowFailed>
-  | ReturnType<typeof buyCryptoFailed>
+    | ReturnType<typeof buyUSDCFlowFailed>
+    | ReturnType<typeof buyCryptoFailed>
   canceled?:
-  | ReturnType<typeof onrampCanceled>
-  | ReturnType<typeof buyCryptoCanceled>
+    | ReturnType<typeof onrampCanceled>
+    | ReturnType<typeof buyCryptoCanceled>
 }
 
 type GetPurchaseConfigArgs = {
@@ -310,7 +310,6 @@ function* doStartPurchaseContentFlow({
     contentType = ContentType.TRACK
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  console.log('zal1')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
@@ -401,11 +400,9 @@ function* doStartPurchaseContentFlow({
       }
 
       const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
-      console.log({ purchaseVendor })
       switch (purchaseVendor) {
         case PurchaseVendor.COINFLOW:
           // Purchase with coinflow, funding and completing the purchase in one step.
-          console.log('here yooo', purchaseWithCoinflow)
           yield* call(purchaseWithCoinflow, {
             blocknumber,
             extraAmount,
@@ -416,7 +413,6 @@ function* doStartPurchaseContentFlow({
           })
           break
         case PurchaseVendor.STRIPE:
-          console.log('here yooo222')
           // Buy USDC with Stripe. Once funded, continue with purchase.
           yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
           yield* call(purchaseContent, audiusBackendInstance, {
@@ -464,8 +460,8 @@ function* doStartPurchaseContentFlow({
     // have a properly contstructed error to put into the slice.
     const error =
       e instanceof PurchaseContentError ||
-        e instanceof BuyUSDCError ||
-        e instanceof BuyCryptoError
+      e instanceof BuyUSDCError ||
+      e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
 

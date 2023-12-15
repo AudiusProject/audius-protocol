@@ -19,12 +19,11 @@ import {
   FilterButtonSize,
   FilterButtonType
 } from '../types'
-import { useControlled } from 'hooks/useControlled'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {
     const {
-      selectedValue,
+      initialSelectionIndex,
       label,
       options,
       onSelect,
@@ -36,22 +35,18 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       popupPortalLocation,
       popupZIndex
     } = props
-    console.log('marcus filter', options)
     const { color, cornerRadius, spacing, typography } = useTheme()
-    const [selection, setSelection] = useControlled({
-      controlledProp: selectedValue,
-      defaultValue: null,
-      componentName: 'FilterButton'
-    })
-    const selectedOption = options.find((option) => option.value === selection)
-    const selectedLabel = selectedOption?.label ?? selectedOption?.value ?? ''
+    const [selection, setSelection] = useState<FilterButtonOption | null>(
+      initialSelectionIndex !== undefined
+        ? options[initialSelectionIndex]
+        : null
+    )
 
     useEffect(() => {
-      if (onSelect && selection) {
-        console.log('in effect select', selection)
-        onSelect(selection)
+      if (onSelect && selection?.label) {
+        onSelect(selection.label)
       }
-    }, [selection, onSelect])
+    }, [selection?.label, onSelect])
 
     const [isOpen, setIsOpen] = useState(false)
 
@@ -90,9 +85,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     const activeStyle =
       variant !== FilterButtonType.FILL_CONTAINER || selection === null
         ? {
-          border: `1px solid ${color.border.strong}`,
-          background: color.background.surface2
-        }
+            border: `1px solid ${color.border.strong}`,
+            background: color.background.surface2
+          }
         : {}
 
     // Button Styles
@@ -168,9 +163,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }, [selection, variant, setIsOpen, setSelection])
 
     const handleOptionSelect = useCallback((option: FilterButtonOption) => {
-      setSelection(option.value)
-      onSelect?.(option.value)
-    }, [setSelection, onSelect])
+      setSelection(option)
+    }, [])
 
     const anchorRef = useRef<HTMLButtonElement>(null)
 
@@ -190,7 +184,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >
-        {selectedLabel ?? label}
+        {selection?.label ?? label}
         <Popup
           anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
           isVisible={isOpen}
@@ -207,22 +201,22 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
                 alignItems='flex-start'
                 justifyContent='center'
                 role='listbox'
-                aria-label={selectedLabel ?? label ?? props['aria-label']}
-                aria-activedescendant={selectedLabel}
+                aria-label={selection?.label ?? label ?? props['aria-label']}
+                aria-activedescendant={selection?.label}
               >
                 {options.map((option) => (
                   <BaseButton
-                    key={option.value}
+                    key={option.label}
                     iconLeft={option.icon}
                     styles={{
                       button: optionCss,
                       icon: optionIconCss
                     }}
                     onClick={() => handleOptionSelect(option)}
-                    aria-label={option.label ?? option.value}
+                    aria-label={option.label}
                     role='option'
                   >
-                    {option.label ?? option.value}
+                    {option.label}
                   </BaseButton>
                 ))}
               </Flex>

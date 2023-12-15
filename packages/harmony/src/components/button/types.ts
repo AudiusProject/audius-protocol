@@ -155,8 +155,7 @@ export enum FilterButtonType {
 }
 
 export type FilterButtonOption = {
-  value: string
-  label?: string
+  label: string
   icon?: IconComponent
 }
 
@@ -180,9 +179,9 @@ export type FilterButtonProps = {
   'aria-label'?: string
 
   /**
-   * The currently selected value
+   * An initial section (from the provided options)
    */
-  selectedValue?: string | null
+  initialSelectionIndex?: number
 
   /**
    * The button size
