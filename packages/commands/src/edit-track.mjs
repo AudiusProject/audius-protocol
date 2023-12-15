@@ -14,8 +14,8 @@ program.command("edit-track")
   .option("-s, --preview-start-seconds <seconds>", "Track preview start time (seconds)", null)
   .option("-l, --license <license>", "License of track")
   .option("-f, --from <from>", "The account to edit the track from")
-  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium", "")
-  .action(async (trackId, { title, tags, description, mood, genre, previewStartSeconds, license, from, premiumConditions }) => {
+  .option("-r, --stream-conditions <stream conditions>", "The stream conditions object; sets track as stream gated", "")
+  .action(async (trackId, { title, tags, description, mood, genre, previewStartSeconds, license, from, streamConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
       const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
@@ -30,8 +30,8 @@ program.command("edit-track")
         mood: mood || track.mood,
         genre: genre || track.genre,
         license: license || track.license,
-        is_premium: premiumConditions ? true : track.is_premium,
-        premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : track.premium_conditions,
+        is_stream_gated: streamConditions ? true : track.is_stream_gated,
+        stream_conditions: streamConditions ? JSON.parse(streamConditions) : track.stream_conditions,
         preview_start_seconds: previewStartSeconds ? parseInt(previewStartSeconds) : track.preview_start_seconds
       }
 
