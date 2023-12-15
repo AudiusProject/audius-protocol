@@ -356,6 +356,19 @@ jobs:
                 $SLACK_DAILY_DEPLOY_WEBHOOK
             }
 
+            fetchEndpoints() {
+              url=$1
+              fallback=$2
+              fetchedEndpoints=$(curl -s "$url" | jq -r '.data[]' 2>/dev/null)
+
+              if [ -z "$fetchedEndpoints" ]; then
+                echo "FETCH_ERROR"
+                echo "$fallback"
+              else
+                echo $fetchedEndpoints
+              fi
+            }
+
             (
               set -e
 
@@ -368,13 +381,21 @@ jobs:
                 exit 1
               fi
 
-              contentEndpoints=("https://creatornode5.staging.audius.co" "https://creatornode6.staging.audius.co" "https://creatornode7.staging.audius.co" "https://creatornode8.staging.audius.co" "https://creatornode9.staging.audius.co" "https://creatornode10.staging.audius.co" "https://creatornode11.staging.audius.co" "https://creatornode12.staging.audius.co")
-              discoveryEndpoints=("https://discoveryprovider.staging.audius.co" "https://discoveryprovider2.staging.audius.co" "https://discoveryprovider3.staging.audius.co" "https://discoveryprovider4.staging.audius.co" "https://discoveryprovider5.staging.audius.co")
+              contentFallbackEndpoints=("https://creatornode5.staging.audius.co" "https://creatornode6.staging.audius.co" "https://creatornode7.staging.audius.co" "https://creatornode8.staging.audius.co" "https://creatornode9.staging.audius.co" "https://creatornode10.staging.audius.co" "https://creatornode11.staging.audius.co" "https://creatornode12.staging.audius.co")
+              discoveryFallbackEndpoints=("https://discoveryprovider.staging.audius.co" "https://discoveryprovider2.staging.audius.co" "https://discoveryprovider3.staging.audius.co" "https://discoveryprovider4.staging.audius.co" "https://discoveryprovider5.staging.audius.co")
+
+              contentEndpoints=($(fetchEndpoints "https://api.staging.audius.co/content" "${contentFallback[@]}"))
+              discoveryEndpoints=($(fetchEndpoints "https://api.staging.audius.co/discovery" "${discoveryFallback[@]}"))
+
+              slack_message=""
 
               slack_message=""
 
               compareVersions() {
                 for endpoint in "$@"; do
+                    if [ "$endpoint" == "FETCH_ERROR" ]; then
+                      continue
+                    fi
                   response=$(curl -s -o /dev/null -w "%{http_code}" "$endpoint/health_check")
                   if [ "$response" -eq 200 ]; then
                     endpointVersion=$(curl -s "$endpoint/health_check" | jq -r '.data.version')
@@ -393,6 +414,14 @@ jobs:
               # Send Slack message if any node is behind
               if [ ! -z "$slack_message" ]; then
                 json_content="{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Please set these nodes back on auto-upgrade if they're not in use:$slack_message\" } } ] }"
+                curl -f -X POST -H 'Content-type: application/json' \
+                    --data "$json_content" \
+                    $SLACK_DAILY_DEPLOY_WEBHOOK
+              fi
+
+              # Also send a message if the API Gateway is down
+              if [[ " ${contentEndpoints[@]} " =~ " FETCH_ERROR " ]] || [[ " ${discoveryEndpoints[@]} " =~ " FETCH_ERROR " ]]; then
+                json_content="{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Note: api.staging.audius.co is offline, so a hardcoded list was used to check for offline/out-of-date nodes. \" } } ] }"
                 curl -f -X POST -H 'Content-type: application/json' \
                     --data "$json_content" \
                     $SLACK_DAILY_DEPLOY_WEBHOOK
