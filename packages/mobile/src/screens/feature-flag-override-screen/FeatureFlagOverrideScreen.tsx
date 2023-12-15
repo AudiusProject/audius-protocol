@@ -22,7 +22,7 @@ import { SettingsRowContent } from '../settings-screen/SettingsRowContent'
 
 import { fuzzySearch } from './fuzzySearch'
 
-const flags = Object.keys(FeatureFlags)
+const flags = Object.keys(FeatureFlags) as FeatureFlags[]
 
 const Stack = createNativeStackNavigator()
 
