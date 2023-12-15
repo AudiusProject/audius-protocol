@@ -22,13 +22,18 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   presetContainer: {
     ...flexRowCentered(),
+    flexWrap: 'wrap',
     gap: spacing(2),
     width: '100%'
   },
   pill: {
     flexGrow: 1,
     flexShrink: 1,
-    flexBasis: 0
+    flexBasis: 0,
+    minWidth: spacing(10)
+  },
+  customPill: {
+    minWidth: spacing(20)
   },
   title: {
     letterSpacing: 0.5
@@ -99,7 +104,7 @@ export const PayExtraFormSection = ({
         />
         <HarmonySelectablePill
           size='large'
-          style={styles.pill}
+          style={[styles.pill, styles.customPill]}
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.other}
           disabled={disabled}
