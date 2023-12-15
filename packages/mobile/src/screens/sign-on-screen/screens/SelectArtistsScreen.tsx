@@ -13,6 +13,7 @@ import { Pressable, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
+import { useDrawer } from 'app/hooks/useDrawer'
 
 import { ArtistTile } from '../components/ArtistTile'
 
@@ -36,13 +37,16 @@ export const SelectArtistsScreen = () => {
   const genres = useSelector((state: any) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
+  const { onOpen: openDrawer } = useDrawer('Welcome')
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { artists } = values
       dispatch(addFollowArtists(artists))
+      // TODO: set hasAccount to true and navigate to trending
+      openDrawer()
     },
-    [dispatch]
+    [dispatch, openDrawer]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

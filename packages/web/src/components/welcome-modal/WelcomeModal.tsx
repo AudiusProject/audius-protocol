@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { fillString } from '@audius/common'
+import { fillString, welcomeModalMessages as messages } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -24,14 +24,6 @@ import { useMedia } from 'hooks/useMedia'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
-
-const messages = {
-  welcome: 'Welcome to Audius%0! 🎉',
-  startListening: 'Start Listening',
-  upload: 'Upload',
-  youreIn:
-    'You’re in! Discover music from our talented DJs, producers, and artists.'
-}
 
 export const WelcomeModal = () => {
   const { isMobile } = useMedia()

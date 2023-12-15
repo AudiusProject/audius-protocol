@@ -41,6 +41,7 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
+import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -144,7 +145,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
-  SupportersInfo: SupportersInfoDrawer
+  SupportersInfo: SupportersInfoDrawer,
+  Welcome: WelcomeDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
