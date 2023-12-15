@@ -14,7 +14,7 @@ import {
   tracksSocialActions as socialActions,
   waitForValue,
   QueryParams,
-  premiumContentSelectors,
+  gatedContentSelectors,
   encodeHashId,
   getQueryParams,
   confirmerActions,
@@ -34,7 +34,7 @@ import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -651,13 +651,12 @@ function* downloadTrack({
     const trackDownload = yield* getContext('trackDownload')
     let queryParams: QueryParams = {}
 
-    const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
-    const premiumContentSignature =
-      track.premium_content_signature ||
-      premiumTrackSignatureMap[track.track_id]
+    const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
+    const streamSignature = track.stream_signature
+    streamSignatureMap[track.track_id]
     queryParams = yield* call(getQueryParams, {
       audiusBackendInstance,
-      premiumContentSignature
+      streamSignature
     })
 
     queryParams.filename = filename

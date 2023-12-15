@@ -3,14 +3,14 @@ import { useCallback, useState, useEffect, MouseEvent } from 'react'
 import {
   ID,
   formatCount,
-  PremiumConditions,
+  StreamConditions,
   Nullable,
-  premiumContentSelectors,
-  premiumContentActions,
+  gatedContentSelectors,
+  gatedContentActions,
   formatLineupTileDuration,
   Genre,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
@@ -27,7 +27,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
+import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
 import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
@@ -42,8 +42,8 @@ import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
 import TrackTileArt from './TrackTileArt'
 
-const { setLockedContentId } = premiumContentActions
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { setLockedContentId } = gatedContentActions
+const { getGatedTrackStatusMap } = gatedContentSelectors
 
 type ExtraProps = {
   permalink: string
@@ -55,8 +55,8 @@ type ExtraProps = {
   isOwner: boolean
   darkMode: boolean
   isMatrix: boolean
-  isPremium: boolean
-  premiumConditions?: Nullable<PremiumConditions>
+  isStreamGated: boolean
+  streamConditions?: Nullable<StreamConditions>
   hasPreview?: boolean
   doesUserHaveAccess: boolean
 }
@@ -67,7 +67,7 @@ const renderLockedOrPlaysContent = ({
   doesUserHaveAccess,
   fieldVisibility,
   isOwner,
-  isPremium,
+  isStreamGated,
   listenCount,
   variant
 }: Pick<
@@ -75,11 +75,11 @@ const renderLockedOrPlaysContent = ({
   | 'doesUserHaveAccess'
   | 'fieldVisibility'
   | 'isOwner'
-  | 'isPremium'
+  | 'isStreamGated'
   | 'listenCount'
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
-  if (isPremium && !isOwner) {
+  if (isStreamGated && !isOwner) {
     return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
   }
 
@@ -165,9 +165,9 @@ const TrackTile = (props: CombinedProps) => {
     isOwner,
     isUnlisted,
     isLoading,
-    isPremium,
+    isStreamGated,
     listenCount,
-    premiumConditions,
+    streamConditions,
     doesUserHaveAccess,
     isTrending,
     showRankIcon,
@@ -190,17 +190,15 @@ const TrackTile = (props: CombinedProps) => {
   const [, setModalVisibility] = useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const trackId = isPremium ? id : null
-  const premiumTrackStatus = trackId
-    ? premiumTrackStatusMap[trackId]
-    : undefined
-  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const trackId = isStreamGated ? id : null
+  const gatedTrackStatus = trackId ? gatedTrackStatusMap[trackId] : undefined
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
   const DogEarIconType = isLoading
     ? undefined
     : getDogEarType({
-        premiumConditions,
+        streamConditions,
         isOwner,
         doesUserHaveAccess,
         isArtistPick,
@@ -225,7 +223,7 @@ const TrackTile = (props: CombinedProps) => {
     }
   }, [trackId, dispatch, setModalVisibility])
 
-  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId },
@@ -279,10 +277,10 @@ const TrackTile = (props: CombinedProps) => {
   let specialContentLabel = null
 
   if (!isLoading) {
-    if (isPremium) {
+    if (isStreamGated) {
       specialContentLabel = (
-        <PremiumContentLabel
-          premiumConditions={premiumConditions}
+        <GatedContentLabel
+          streamConditions={streamConditions}
           doesUserHaveAccess={!!doesUserHaveAccess}
           isOwner={isOwner}
         />
@@ -491,7 +489,7 @@ const TrackTile = (props: CombinedProps) => {
                   doesUserHaveAccess,
                   fieldVisibility,
                   isOwner,
-                  isPremium,
+                  isStreamGated,
                   listenCount,
                   variant: isPurchase ? 'premium' : 'gated'
                 })
@@ -505,14 +503,14 @@ const TrackTile = (props: CombinedProps) => {
           toggleSave={onToggleSave}
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
-          onClickPremiumPill={onClickPremiumPill}
+          onClickPill={onClickPill}
           isOwner={isOwner}
           readonly={isReadonly}
           isLoading={isLoading}
           isUnlisted={isUnlisted}
           doesUserHaveAccess={doesUserHaveAccess}
-          premiumConditions={premiumConditions}
-          premiumTrackStatus={premiumTrackStatus}
+          streamConditions={streamConditions}
+          gatedTrackStatus={gatedTrackStatus}
           isShareHidden={hideShare}
           isDarkMode={darkMode}
           isMatrixMode={isMatrix}

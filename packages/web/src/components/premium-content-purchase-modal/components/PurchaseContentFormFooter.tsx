@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentError,
   PurchaseContentStage,
   formatPrice,
@@ -54,14 +54,14 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
   'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
 > & {
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
   onViewTrackClicked: () => void
 }
 

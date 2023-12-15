@@ -19,7 +19,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   playerSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   FeatureFlags,
   Genre
 } from '@audius/common'
@@ -111,8 +111,8 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted,
-    is_premium: isPremium,
-    premium_conditions: premiumConditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     track_id,
     title,
     genre,
@@ -144,7 +144,7 @@ const ConnectedTrackTile = ({
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(trackWithFallback)
+    useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isUserAccessTBD
 
   const toggleSave = (trackId: ID) => {
@@ -198,7 +198,7 @@ const ConnectedTrackTile = ({
         : null
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = !isPremium
+    const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
@@ -270,8 +270,8 @@ const ConnectedTrackTile = ({
       isMatrix={isMatrix()}
       isTrending={isTrending}
       isUnlisted={is_unlisted}
-      isPremium={isPremium}
-      premiumConditions={premiumConditions}
+      isStreamGated={isStreamGated}
+      streamConditions={streamConditions}
       doesUserHaveAccess={doesUserHaveAccess}
       showRankIcon={showRankIcon}
       variant={variant}

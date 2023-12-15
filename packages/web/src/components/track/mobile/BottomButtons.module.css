@@ -57,12 +57,12 @@
   width: var(--unit-8);
 }
 
-.premiumContentContainer {
+.gatedContentContainer {
   height: var(--unit-8);
   padding-top: var(--unit-2);
 }
 
-.premiumContent {
+.gatedContent {
   align-items: center;
   background-color: var(--accent-blue);
   border-radius: var(--unit-1);
@@ -73,12 +73,12 @@
   padding: var(--unit-2) var(--unit-3);
 }
 
-.premiumContent svg {
+.gatedContent svg {
   width: var(--unit-4);
   height: var(--unit-4);
 }
 
-.premiumContent path {
+.gatedContent path {
   fill: var(--static-white);
 }
 
