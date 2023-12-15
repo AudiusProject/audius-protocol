@@ -44,7 +44,7 @@ export const PurchaseContentFormFields = ({
   const payExtraAmountPresetValues = usePayExtraPresets()
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
-  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -102,6 +102,7 @@ export const PurchaseContentFormFields = ({
         <PaymentMethod
           selectedMethod={purchaseMethod}
           setSelectedMethod={handleChangeMethod}
+          selectedVendor={purchaseVendor}
           setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}

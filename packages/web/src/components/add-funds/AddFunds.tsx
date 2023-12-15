@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
 import {
+  FeatureFlags,
   PurchaseMethod,
   PurchaseVendor,
   useCreateUserbankIfNeeded,
+  useFeatureFlag,
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
@@ -43,11 +45,15 @@ export const AddFunds = ({
     audiusBackendInstance,
     mint: 'usdc'
   })
+  const { isEnabled: isEnabled, isLoaded: isCoinflowEnabledLoaded } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
+  const isCoinflowEnabled = isEnabled && isCoinflowEnabledLoaded
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
   const [selectedPurchaseVendor, setSelectedPurchaseVendor] = useState<
-    PurchaseVendor | undefined
-  >(undefined)
+    PurchaseVendor
+  >(isCoinflowEnabled ? PurchaseVendor.COINFLOW : PurchaseVendor.STRIPE)
 
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -83,6 +89,7 @@ export const AddFunds = ({
           <PaymentMethod
             selectedMethod={selectedPurchaseMethod}
             setSelectedMethod={setSelectedPurchaseMethod}
+            selectedVendor={selectedPurchaseVendor}
             setSelectedVendor={setSelectedPurchaseVendor}
           />
           <Button

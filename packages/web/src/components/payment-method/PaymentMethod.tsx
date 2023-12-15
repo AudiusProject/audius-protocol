@@ -37,6 +37,7 @@ const messages = {
 type PaymentMethodProps = {
   selectedMethod: Nullable<PurchaseMethod>
   setSelectedMethod: (method: PurchaseMethod) => void
+  selectedVendor: PurchaseVendor
   setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
@@ -46,26 +47,30 @@ type PaymentMethodProps = {
 export const PaymentMethod = ({
   selectedMethod,
   setSelectedMethod,
+  selectedVendor,
   setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
   showExistingBalance
 }: PaymentMethodProps) => {
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+  const { isEnabled, isLoaded: isCoinflowEnabledLoaded } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
+  const isCoinflowEnabled = isEnabled && isCoinflowEnabledLoaded
   const mobile = isMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const vendorOptions = [
-    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
-    { label: PurchaseVendor.STRIPE }
+    ...(isCoinflowEnabled ? [{ value: PurchaseVendor.COINFLOW }] : []),
+    { value: PurchaseVendor.STRIPE }
   ]
+  console.log('ff', vendorOptions)
 
   const handleSelectVendor = useCallback(
     (label: string) => {
+      console.log('selecting vendor', label)
       setSelectedVendor(label as PurchaseVendor)
     },
     [setSelectedVendor]
@@ -74,24 +79,24 @@ export const PaymentMethod = ({
   const options = [
     showExistingBalance
       ? {
-          id: PurchaseMethod.BALANCE,
-          label: messages.withExistingBalance,
-          icon: IconDonate,
-          disabled: isExistingBalanceDisabled,
-          value: (
-            <Text
-              as='span' // Needed to avoid <p> inside <p> warning
-              variant='title'
-              color={
-                selectedMethod === PurchaseMethod.BALANCE
-                  ? 'secondary'
-                  : undefined
-              }
-            >
-              ${balanceFormatted}
-            </Text>
-          )
-        }
+        id: PurchaseMethod.BALANCE,
+        label: messages.withExistingBalance,
+        icon: IconDonate,
+        disabled: isExistingBalanceDisabled,
+        value: (
+          <Text
+            as='span' // Needed to avoid <p> inside <p> warning
+            variant='title'
+            color={
+              selectedMethod === PurchaseMethod.BALANCE
+                ? 'secondary'
+                : undefined
+            }
+          >
+            ${balanceFormatted}
+          </Text>
+        )
+      }
       : null,
     {
       id: PurchaseMethod.CARD,
@@ -100,16 +105,17 @@ export const PaymentMethod = ({
       value:
         vendorOptions.length > 1 ? (
           mobile ? (
-            <MobileFilterButton
-              onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
-              options={vendorOptions}
-              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
-            />
+            // <MobileFilterButton
+            //   onSelect={handleSelectVendor}
+            //   selectedValue={selectedVendor}
+            //   options={vendorOptions}
+            //   zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+            // />
+            null
           ) : (
             <FilterButton
               onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
+              selectedValue={selectedVendor}
               variant={FilterButtonType.REPLACE_LABEL}
               options={vendorOptions}
               popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
@@ -124,12 +130,9 @@ export const PaymentMethod = ({
     }
   ].filter(Boolean) as SummaryTableItem[]
 
-  const handleRadioChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedMethod(e.target.value as PurchaseMethod)
-    },
-    [setSelectedMethod]
-  )
+  const handleSelectMethod = useCallback((purchaseMethod: PurchaseMethod) => {
+    setSelectedMethod(purchaseMethod)
+  }, [setSelectedMethod])
 
   const renderBody = () => {
     const getFlexProps = (id: PurchaseMethod) => {
@@ -152,7 +155,7 @@ export const PaymentMethod = ({
       <RadioButtonGroup
         name={`summaryTable-label-${messages.paymentMethod}`}
         value={selectedMethod}
-        onChange={handleRadioChange}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => handleSelectMethod(e.target.value as PurchaseMethod)}
         style={{ width: '100%' }}
       >
         {options.map(({ id, label, icon: Icon, value, disabled }) => (
@@ -165,7 +168,7 @@ export const PaymentMethod = ({
             borderTop='default'
           >
             <Flex
-              onClick={() => setSelectedMethod(id as PurchaseMethod)}
+              onClick={() => handleSelectMethod(id as PurchaseMethod)}
               css={{ cursor: 'pointer' }}
               alignItems='center'
               justifyContent='space-between'
