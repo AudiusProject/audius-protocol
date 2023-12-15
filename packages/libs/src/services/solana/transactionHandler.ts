@@ -193,9 +193,10 @@ export class TransactionHandler {
       feePayerAccount?.publicKey ??
       (feePayerOverride ? new PublicKey(feePayerOverride) : null)
 
-    const alreadySigned = !signatures?.some(
+    const alreadySigned = signatures?.some(
       (s) =>
-        s.publicKey === feePayerOverride && !s.signature.every((b) => b === 0)
+        s.publicKey === feePayerOverride?.toString() &&
+        !s.signature.every((b) => b === 0)
     )
     if (!feePayerPubKey || (!feePayerAccount && !alreadySigned)) {
       logger.error(
