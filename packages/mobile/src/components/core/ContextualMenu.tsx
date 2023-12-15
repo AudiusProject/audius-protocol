@@ -26,7 +26,7 @@ export type ContextualMenuProps = {
   error?: boolean
   errorMessage?: string
   lastItem?: boolean
-  pillValue?: string
+  formattedValue?: string
   renderValue?: (value: any) => JSX.Element | null
 }
 
@@ -68,7 +68,7 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
     error,
     lastItem,
     renderValue: renderValueProp,
-    pillValue
+    formattedValue
   } = props
   const styles = useStyles()
 
@@ -122,7 +122,9 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
           />
         </View>
         {hasValue ? (
-          <View style={styles.value}>{renderValue(pillValue ?? value)}</View>
+          <View style={styles.value}>
+            {renderValue(formattedValue ?? value)}
+          </View>
         ) : null}
         {error && errorMessage ? (
           <InputErrorMessage message={errorMessage} />

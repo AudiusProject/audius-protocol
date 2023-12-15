@@ -416,7 +416,10 @@ export const DetailsTile = ({
                     <IconCalendarMonth color='accent' size='m' />
                     <HarmonyText color='accent' strength='strong' size='l'>
                       Release on{' '}
-                      {moment(track.release_date).format('M/D/YY @ h:mm A')}
+                      {moment
+                        .utc(track.release_date)
+                        .local()
+                        .format('M/D/YY @ h:mm A')}
                     </HarmonyText>
                   </View>
                 ) : null}

@@ -30,9 +30,13 @@ const screenWidth = Dimensions.get('screen').width
 
 const messages = {
   screenTitle: 'Release Date',
+  description:
+    'Specify a release date for your music or schedule it to be released in the future.',
   done: 'Done',
+  releaseNowRadio: 'Release immediately',
+  scheduleReleaseDateRadio: 'Schedule a release date',
   futureReleaseHint:
-    'Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (CST).',
+    'Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone.',
   pastReleaseHint:
     'Setting a release date in the past will impact the order tracks appear on your profile.'
 }
@@ -124,7 +128,7 @@ export const ScheduledReleaseRadioField = (props) => {
     <>
       <View>
         <Text size='l' strength='strong' variant='body'>
-          Schedule a release date
+          {messages.scheduleReleaseDateRadio}
         </Text>
         <View style={styles.releaseDateInputContainer}>
           {selected ? (
@@ -214,7 +218,7 @@ export const ReleaseNowRadioField = (props) => {
   return (
     <View style={styles.releaseNowContainer}>
       <Text size='l' strength='strong' variant='body'>
-        Release immediately
+        {messages.releaseNowRadio}
       </Text>
       {selected ? (
         <View style={styles.todayPill}>
@@ -263,10 +267,7 @@ export const ReleaseDateScreen = () => {
       icon={IconCalendarMonth}
       header={
         <View style={styles.description}>
-          <Text size='l'>
-            Specify a release date for your music or schedule it to be released
-            in the future.
-          </Text>
+          <Text size='l'>{messages.description}</Text>
         </View>
       }
       value={releaseDateType}

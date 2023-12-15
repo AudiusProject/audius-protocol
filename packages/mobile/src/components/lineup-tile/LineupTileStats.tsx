@@ -205,7 +205,8 @@ export const LineupTileStats = ({
               width={spacing(4)}
             />
             <Text fontSize='xs' colorValue={accentPurple}>
-              Releases {moment(releaseDate).format('M/D/YY @ h:mm A')}
+              Releases{' '}
+              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}
             </Text>
           </View>
         ) : null}
