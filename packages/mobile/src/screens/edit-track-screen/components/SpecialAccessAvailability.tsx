@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { PremiumConditions, Nullable } from '@audius/common'
+import type { StreamConditions, Nullable } from '@audius/common'
 import {
   accountSelectors,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated
+  isContentFollowGated,
+  isContentTipGated
 } from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
@@ -94,7 +94,7 @@ export const SpecialAccessAvailability = ({
   selected,
   disabled = false,
   disabledContent = false,
-  previousPremiumConditions
+  previousStreamConditions
 }: TrackAvailabilitySelectionProps) => {
   const styles = useStyles()
   const secondary = useColor('secondary')
@@ -116,16 +116,16 @@ export const SpecialAccessAvailability = ({
     : neutral
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
-  const [{ value: premiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: streamConditions }] =
+    useField<Nullable<StreamConditions>>('stream_conditions')
   const currentUserId = useSelector(getUserId)
   const defaultSpecialAccess = currentUserId
     ? { follow_user_id: currentUserId }
     : null
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
-    isPremiumContentFollowGated(previousPremiumConditions) ||
-      isPremiumContentTipGated(previousPremiumConditions)
-      ? previousPremiumConditions ?? defaultSpecialAccess
+    isContentFollowGated(previousStreamConditions) ||
+      isContentTipGated(previousStreamConditions)
+      ? previousStreamConditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
 
@@ -136,8 +136,8 @@ export const SpecialAccessAvailability = ({
     if (selected && selectedSpecialAccessGate) {
       setTrackAvailabilityFields(
         {
-          is_premium: true,
-          premium_conditions: selectedSpecialAccessGate,
+          is_stream_gated: true,
+          stream_conditions: selectedSpecialAccessGate,
           'field_visibility.remixes': false
         },
         true
@@ -180,13 +180,12 @@ export const SpecialAccessAvailability = ({
             <TouchableOpacity
               onPress={handlePressFollowers}
               disabled={
-                isContentDisabled ||
-                isPremiumContentFollowGated(premiumConditions)
+                isContentDisabled || isContentFollowGated(streamConditions)
               }
             >
               <View style={styles.followersOnly}>
                 <RadioButton
-                  checked={isPremiumContentFollowGated(premiumConditions)}
+                  checked={isContentFollowGated(streamConditions)}
                   disabled={isContentDisabled}
                   style={styles.radio}
                 />
@@ -198,12 +197,12 @@ export const SpecialAccessAvailability = ({
             <TouchableOpacity
               onPress={handlePressSupporters}
               disabled={
-                isContentDisabled || isPremiumContentTipGated(premiumConditions)
+                isContentDisabled || isContentTipGated(streamConditions)
               }
             >
               <View style={styles.supportersOnly}>
                 <RadioButton
-                  checked={isPremiumContentTipGated(premiumConditions)}
+                  checked={isContentTipGated(streamConditions)}
                   disabled={isContentDisabled}
                   style={styles.radio}
                 />

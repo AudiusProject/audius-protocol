@@ -22,7 +22,7 @@ import {
   shareModalUIActions,
   RepostType,
   playerSelectors,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -113,14 +113,14 @@ export const TrackTileComponent = ({
     title,
     track_id,
     genre,
-    is_premium: isPremium,
-    premium_conditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions,
     preview_cid
   } = track
 
   const hasPreview =
     isUSDCEnabled &&
-    isPremiumContentUSDCPurchaseGated(premium_conditions) &&
+    isContentUSDCPurchaseGated(stream_conditions) &&
     !!preview_cid
 
   const renderImage = useCallback(
@@ -154,7 +154,7 @@ export const TrackTileComponent = ({
 
     const overflowActions = [
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -180,7 +180,7 @@ export const TrackTileComponent = ({
     genre,
     isEditAlbumsEnabled,
     isOwner,
-    isPremium,
+    isStreamGated,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,

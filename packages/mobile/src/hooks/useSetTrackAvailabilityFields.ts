@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, StreamConditions } from '@audius/common'
 import { useField } from 'formik'
 
 const defaultTrackAvailabilityFields = {
-  is_premium: false,
-  premium_conditions: null as Nullable<PremiumConditions>,
+  is_stream_gated: false,
+  stream_conditions: null as Nullable<StreamConditions>,
   is_unlisted: false,
   preview_start_seconds: null as Nullable<Number>,
   'field_visibility.genre': true,
@@ -20,9 +20,10 @@ type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetTrackAvailabilityFields = () => {
-  const [, , { setValue: setIsPremium }] = useField<boolean>('is_premium')
-  const [, , { setValue: setPremiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [, , { setValue: setIsStreamGated }] =
+    useField<boolean>('is_stream_gated')
+  const [, , { setValue: setStreamConditions }] =
+    useField<Nullable<StreamConditions>>('stream_conditions')
   const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
   const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
     'preview_start_seconds'
@@ -44,8 +45,8 @@ export const useSetTrackAvailabilityFields = () => {
 
   const fieldSetters = useMemo(() => {
     return {
-      is_premium: setIsPremium,
-      premium_conditions: setPremiumConditions,
+      is_stream_gated: setIsStreamGated,
+      stream_conditions: setStreamConditions,
       is_unlisted: setIsUnlisted,
       preview_start_seconds: setPreviewStartSeconds,
       'field_visibility.genre': setGenre,

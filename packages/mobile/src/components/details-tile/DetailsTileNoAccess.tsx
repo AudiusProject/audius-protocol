@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { ID, PremiumConditions, User } from '@audius/common'
+import type { ID, StreamConditions, User } from '@audius/common'
 import {
   Chain,
   FollowSource,
   formatPrice,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
-  premiumContentSelectors,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated,
+  gatedContentSelectors,
   tippingActions,
-  usePremiumConditionsEntity,
+  useStreamConditionsEntity,
   usePremiumContentPurchaseModal,
   usersSocialActions,
   ModalSource
@@ -34,7 +34,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { getGatedTrackStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
 const { beginTip } = tippingActions
 
@@ -137,14 +137,14 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 type NoAccessProps = {
   renderDescription: () => ReactNode
-  premiumConditions: PremiumConditions
+  streamConditions: StreamConditions
   isUnlocking: boolean
   style?: ViewStyle
 }
 
 const DetailsTileNoAccessSection = ({
   renderDescription,
-  premiumConditions,
+  streamConditions,
   isUnlocking,
   style
 }: NoAccessProps) => {
@@ -162,7 +162,7 @@ const DetailsTileNoAccessSection = ({
           <LockedStatusBadge
             locked={true}
             variant={
-              isPremiumContentUSDCPurchaseGated(premiumConditions)
+              isContentUSDCPurchaseGated(streamConditions)
                 ? 'purchase'
                 : 'gated'
             }
@@ -175,14 +175,14 @@ const DetailsTileNoAccessSection = ({
 }
 
 type DetailsTileNoAccessProps = {
-  premiumConditions: PremiumConditions
+  streamConditions: StreamConditions
   trackId: ID
   style?: ViewStyle
 }
 
 export const DetailsTileNoAccess = ({
   trackId,
-  premiumConditions,
+  streamConditions,
   style
 }: DetailsTileNoAccessProps) => {
   const styles = useStyles()
@@ -195,10 +195,10 @@ export const DetailsTileNoAccess = ({
   const followSource = isModalOpen
     ? FollowSource.HOW_TO_UNLOCK_MODAL
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
-    usePremiumConditionsEntity(premiumConditions)
+    useStreamConditionsEntity(streamConditions)
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -253,7 +253,7 @@ export const DetailsTileNoAccess = ({
   )
 
   const renderLockedDescription = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       if (!nftCollection) return null
       return (
         <>
@@ -299,7 +299,7 @@ export const DetailsTileNoAccess = ({
         </>
       )
     }
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isContentFollowGated(streamConditions)) {
       if (!followee) return null
       return (
         <>
@@ -320,7 +320,7 @@ export const DetailsTileNoAccess = ({
         </>
       )
     }
-    if (isPremiumContentTipGated(premiumConditions)) {
+    if (isContentTipGated(streamConditions)) {
       if (!tippedUser) return null
       return (
         <>
@@ -342,7 +342,7 @@ export const DetailsTileNoAccess = ({
         </>
       )
     }
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <>
           <View style={styles.descriptionContainer}>
@@ -354,7 +354,7 @@ export const DetailsTileNoAccess = ({
             style={[styles.mainButton, styles.buyButton]}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             title={messages.buy(
-              formatPrice(premiumConditions.usdc_purchase.price)
+              formatPrice(streamConditions.usdc_purchase.price)
             )}
             size='large'
             onPress={handlePurchasePress}
@@ -365,11 +365,11 @@ export const DetailsTileNoAccess = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [
-    premiumConditions,
+    streamConditions,
     nftCollection,
     styles.descriptionContainer,
     styles.description,
@@ -453,7 +453,7 @@ export const DetailsTileNoAccess = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [
@@ -465,14 +465,14 @@ export const DetailsTileNoAccess = ({
     styles
   ])
 
-  const isUnlocking = premiumTrackStatus === 'UNLOCKING'
+  const isUnlocking = gatedTrackStatus === 'UNLOCKING'
 
   return (
     <DetailsTileNoAccessSection
       renderDescription={
         isUnlocking ? renderUnlockingDescription : renderLockedDescription
       }
-      premiumConditions={premiumConditions}
+      streamConditions={streamConditions}
       isUnlocking={isUnlocking}
       style={style}
     />

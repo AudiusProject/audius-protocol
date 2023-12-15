@@ -7,7 +7,7 @@ import type {
 } from '@audius/common'
 import {
   getQueryParams,
-  premiumContentSelectors,
+  gatedContentSelectors,
   removeNullable,
   SquareSizes,
   encodeHashId,
@@ -48,7 +48,7 @@ import { shouldCancelJob } from '../../utils/shouldCancelJob'
 import { downloadFile } from './downloadFile'
 
 const { getUserId } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 const MAX_RETRY_COUNT = 3
 const MAX_REQUEUE_COUNT = 3
@@ -158,7 +158,7 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata) {
-  const { track_id, user, premium_content_signature } = track
+  const { track_id, user, stream_signature } = track
 
   const { creator_node_endpoint } = user
   const creatorNodeEndpoints = creator_node_endpoint?.split(',')
@@ -170,12 +170,11 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   let queryParams: QueryParams = {}
-  const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
-  const premiumContentSignature =
-    premium_content_signature || premiumTrackSignatureMap[track_id]
+  const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
+  const streamSignature = stream_signature || streamSignatureMap[track_id]
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,
-    premiumContentSignature
+    streamSignature
   })
   queryParams.filename = `${track_id}.mp3`
 
