@@ -15,6 +15,9 @@ import {
   usePayExtraPresets,
   PurchaseContentPage,
   StringKeys
+  FeatureFlags,
+  PurchaseVendor,
+  useFeatureFlag
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -168,6 +171,10 @@ const RenderForm = ({
 }
 
 export const PremiumContentPurchaseModal = () => {
+  const { isEnabled: isEnabled, isLoaded: isCoinflowEnabledLoaded } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
+  const isCoinflowEnabled = isEnabled && isCoinflowEnabledLoaded
   const dispatch = useDispatch()
   const {
     isOpen,
@@ -195,7 +202,8 @@ export const PremiumContentPurchaseModal = () => {
     usePurchaseContentFormConfiguration({
       track,
       price,
-      presetValues
+      presetValues,
+      purchaseVendor: isCoinflowEnabled ? PurchaseVendor.COINFLOW : PurchaseVendor.STRIPE
     })
 
   // Attempt recovery once on re-mount of the form
@@ -233,7 +241,7 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
-      {isValidTrack ? (
+      {isValidTrack && isCoinflowEnabledLoaded ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

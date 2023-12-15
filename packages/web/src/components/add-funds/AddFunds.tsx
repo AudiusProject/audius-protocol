@@ -1,12 +1,14 @@
 import { useState } from 'react'
 
 import {
+  FeatureFlags,
   PurchaseMethod,
   PurchaseVendor,
   useCreateUserbankIfNeeded,
-  useUSDCBalance,
   PayExtraPreset,
-  CUSTOM_AMOUNT
+  CUSTOM_AMOUNT,
+  useFeatureFlag,
+  useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -54,13 +56,18 @@ export const AddFunds = ({
     audiusBackendInstance,
     mint: 'usdc'
   })
+  const { isEnabled: isEnabled, isLoaded: isCoinflowEnabledLoaded } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
+  const isCoinflowEnabled = isEnabled && isCoinflowEnabledLoaded
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
   const [selectedPurchaseVendor, setSelectedPurchaseVendor] = useState<
     PurchaseVendor | undefined
-  >(undefined)
+  >(isCoinflowEnabled ? PurchaseVendor.COINFLOW : PurchaseVendor.STRIPE)
   const [{ value: amountPreset }, ,] = useField(AMOUNT_PRESET)
   const [{ value: customAmount }, ,] = useField<number>(CUSTOM_AMOUNT)
+  PurchaseVendor
 
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -95,8 +102,8 @@ export const AddFunds = ({
           </Box>
           <PaymentMethod
             selectedMethod={selectedPurchaseMethod}
-            selectedVendor={selectedPurchaseVendor}
             setSelectedMethod={setSelectedPurchaseMethod}
+            selectedVendor={selectedPurchaseVendor}
             setSelectedVendor={setSelectedPurchaseVendor}
             showCoinflowAmounts={true}
           />
