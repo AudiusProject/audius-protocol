@@ -232,21 +232,16 @@ function* purchaseWithCoinflow({
 
   // Return early for failure or cancellation
   if (result.canceled) {
-    yield* put(purchaseCanceled())
-    return
-  }
-  if (result.failed) {
-    yield* put(
-      // TODO: better error
-      purchaseContentFlowFailed({
-        error: new PurchaseContentError(
-          PurchaseErrorCode.Unknown,
-          'Coinflow transaction failed'
-        )
-      })
+    throw new PurchaseContentError(
+      PurchaseErrorCode.Canceled,
+      'Coinflow transaction canceled'
     )
   }
+  if (result.failed) {
+    throw result.failed.payload.error
+  }
 }
+
 type PurchaseUSDCWithStripeArgs = {
   /** Amount of USDC to purchase, as dollars */
   amount: number

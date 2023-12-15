@@ -9,7 +9,7 @@ const slice = createSlice({
     transactionSucceeded: (_state, _action: PayloadAction<{}>) => {
       // Handled by saga
     },
-    transactionFailed: (_state, _action: PayloadAction<{}>) => {
+    transactionFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
       // Handled by saga
     },
     transactionCanceled: (_state, _action: PayloadAction<{}>) => {
