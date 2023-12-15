@@ -5,7 +5,7 @@ from sqlalchemy import desc, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import not_, or_
 
-from src.gated_content.gated_content_constants import (
+from src.gated_content.constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )

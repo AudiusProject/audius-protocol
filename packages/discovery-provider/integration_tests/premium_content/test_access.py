@@ -1,5 +1,5 @@
 from integration_tests.utils import populate_mock_db
-from src.gated_content.gated_content_access_checker import GatedContentAccessChecker
+from src.gated_content.content_access_checker import ContentAccessChecker
 from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
 
@@ -77,11 +77,11 @@ def test_access(app):
             db, {"follows": [{"follower_user_id": 2, "followee_user_id": 1}]}
         )
 
-        gated_content_access_checker = GatedContentAccessChecker()
+        content_access_checker = ContentAccessChecker()
 
         # test non-gated content
         with db.scoped_session() as session:
-            result = gated_content_access_checker.check_access(
+            result = content_access_checker.check_access(
                 session=session,
                 user_id=1,
                 premium_content_id=non_premium_track_entity["track_id"],
@@ -91,7 +91,7 @@ def test_access(app):
             assert not result["is_gated"] and result["does_user_have_access"]
 
             # test gated content with user who has no access
-            result = gated_content_access_checker.check_access(
+            result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_1["track_id"],
@@ -101,7 +101,7 @@ def test_access(app):
             assert result["is_gated"] and not result["does_user_have_access"]
 
             # test gated content with user who owns the track
-            result = gated_content_access_checker.check_access(
+            result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_2["track_id"],
@@ -111,7 +111,7 @@ def test_access(app):
             assert result["is_gated"] and result["does_user_have_access"]
 
             # test gated content with user who has access
-            result = gated_content_access_checker.check_access(
+            result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_3["track_id"],
@@ -190,10 +190,10 @@ def test_batch_access(app):
 
         populate_mock_db(db, entities)
 
-        gated_content_access_checker = GatedContentAccessChecker()
+        content_access_checker = ContentAccessChecker()
 
         with db.scoped_session() as session:
-            result = gated_content_access_checker.check_access_for_batch(
+            result = content_access_checker.check_access_for_batch(
                 session,
                 [
                     {

@@ -8,11 +8,11 @@ from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
-from src.gated_content.gated_content_access_checker import (
+from src.gated_content.constants import USDC_PURCHASE_KEY
+from src.gated_content.content_access_checker import (
     GatedContentAccessBatchArgs,
-    gated_content_access_checker,
+    content_access_checker,
 )
-from src.gated_content.gated_content_constants import USDC_PURCHASE_KEY
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -528,7 +528,7 @@ def validate_remixability(params: ManageEntityParameters):
             parent_track_ids,
         )
     )
-    premium_content_batch_access = gated_content_access_checker.check_access_for_batch(
+    premium_content_batch_access = content_access_checker.check_access_for_batch(
         session, args
     )
     if "track" not in premium_content_batch_access:

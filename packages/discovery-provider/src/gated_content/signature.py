@@ -5,7 +5,7 @@ from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
 from src.api_helpers import generate_signature
-from src.gated_content.gated_content_types import GatedContentType
+from src.gated_content.types import GatedContentType
 
 
 class PremiumContentSignatureArgs(TypedDict):

@@ -5,16 +5,13 @@ from typing import Dict, List, Optional, TypedDict, Union, cast
 from sqlalchemy.orm.session import Session
 from typing_extensions import Protocol
 
-from src.gated_content.gated_content_types import (
-    GatedContentConditions,
-    GatedContentType,
-)
 from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
     does_user_support_artist,
     has_user_purchased_content,
 )
+from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
 from src.utils import helpers
 
@@ -65,7 +62,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
 }
 
 
-class GatedContentAccessChecker:
+class ContentAccessChecker:
     # Given a user id, gated content id, and gated content type, and gated content entity,
     # this method checks for access to the gated contents by the users.
     #
@@ -296,4 +293,4 @@ class GatedContentAccessChecker:
         )
 
 
-gated_content_access_checker = GatedContentAccessChecker()
+content_access_checker = ContentAccessChecker()

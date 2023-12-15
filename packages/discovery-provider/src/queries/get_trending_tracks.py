@@ -2,9 +2,7 @@ from typing import Optional, TypedDict
 
 from sqlalchemy.orm.session import Session
 
-from src.gated_content.gated_content_constants import (
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
-)
+from src.gated_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     make_generate_unpopulated_trending,

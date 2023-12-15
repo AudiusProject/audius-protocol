@@ -2,7 +2,7 @@ import json
 import urllib.parse
 from typing import Optional, TypedDict
 
-from src.gated_content.gated_content_access_checker import gated_content_access_checker
+from src.gated_content.content_access_checker import content_access_checker
 from src.gated_content.signature import get_gated_content_signature
 from src.models.tracks.track import Track
 from src.queries.get_authed_user import get_authed_user
@@ -85,7 +85,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     # check if user has access to stream the track
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        access = gated_content_access_checker.check_access(
+        access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
             premium_content_id=track_entity.track_id,
@@ -158,7 +158,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     # check if user has access to stream the track
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        access = gated_content_access_checker.check_access(
+        access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
             premium_content_id=track_entity.track_id,

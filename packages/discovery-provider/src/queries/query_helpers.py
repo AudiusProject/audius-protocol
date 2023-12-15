@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import or_
 
 from src import exceptions
 from src.api.v1 import helpers as v1Helpers
-from src.gated_content.gated_content_access_checker import gated_content_access_checker
+from src.gated_content.content_access_checker import content_access_checker
 from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
@@ -591,7 +591,7 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
             }
         )
 
-    stream_gated_content_access = gated_content_access_checker.check_access_for_batch(
+    stream_gated_content_access = content_access_checker.check_access_for_batch(
         session, stream_gated_content_access_args
     )
 
@@ -606,7 +606,7 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
             }
         )
 
-    download_gated_content_access = gated_content_access_checker.check_access_for_batch(
+    download_gated_content_access = content_access_checker.check_access_for_batch(
         session, download_gated_content_access_args, is_download=True
     )
 

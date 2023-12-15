@@ -5,7 +5,7 @@ from typing import Any, Optional, TypedDict
 from sqlalchemy.orm.session import Session
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.gated_content.gated_content_constants import (
+from src.gated_content.constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
