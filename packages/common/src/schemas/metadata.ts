@@ -27,8 +27,10 @@ const trackMetadataSchema = {
   followee_saves: null,
   is_current: true,
   is_unlisted: false,
-  is_premium: false,
-  premium_conditions: null,
+  is_stream_gated: false,
+  stream_conditions: null,
+  is_download_gated: false,
+  download_conditions: null,
   preview_start_seconds: null,
   audio_upload_id: null,
   field_visibility: {
@@ -92,9 +94,9 @@ const collectionMetadataSchema = {
 export const newCollectionMetadata = (fields?: any, validate = false) => {
   const validFields = validate
     ? pick(
-        fields,
-        Object.keys(collectionMetadataSchema).concat(['playlist_id'])
-      )
+      fields,
+      Object.keys(collectionMetadataSchema).concat(['playlist_id'])
+    )
     : fields
   return {
     ...collectionMetadataSchema,

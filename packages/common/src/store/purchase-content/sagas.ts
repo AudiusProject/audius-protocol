@@ -6,7 +6,7 @@ import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
-import { Track, isPremiumContentUSDCPurchaseGated } from 'models/Track'
+import { Track, isContentUSDCPurchaseGated } from 'models/Track'
 import { User } from 'models/User'
 import { BNUSDC } from 'models/Wallet'
 import {
@@ -52,8 +52,8 @@ import {
 } from 'store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from 'utils/wallet'
 
-import { pollPremiumTrack } from '../premium-content/sagas'
-import { updatePremiumTrackStatus } from '../premium-content/slice'
+import { pollGatedTrack } from '../gated-content/sagas'
+import { updateGatedTrackStatus } from '../gated-content/slice'
 
 import {
   buyUSDC,
@@ -71,14 +71,14 @@ const { getUserId, getAccountUser } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
-    | ReturnType<typeof buyUSDCFlowSucceeded>
-    | ReturnType<typeof buyCryptoSucceeded>
+  | ReturnType<typeof buyUSDCFlowSucceeded>
+  | ReturnType<typeof buyCryptoSucceeded>
   failed?:
-    | ReturnType<typeof buyUSDCFlowFailed>
-    | ReturnType<typeof buyCryptoFailed>
+  | ReturnType<typeof buyUSDCFlowFailed>
+  | ReturnType<typeof buyCryptoFailed>
   canceled?:
-    | ReturnType<typeof onrampCanceled>
-    | ReturnType<typeof buyCryptoCanceled>
+  | ReturnType<typeof onrampCanceled>
+  | ReturnType<typeof buyCryptoCanceled>
 }
 
 type GetPurchaseConfigArgs = {
@@ -94,9 +94,9 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const trackInfo = yield* select(getTrack, { id: contentId })
   if (
     !trackInfo ||
-    !isPremiumContentUSDCPurchaseGated(trackInfo?.premium_conditions)
+    !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)
   ) {
-    throw new Error('Content is missing premium conditions')
+    throw new Error('Content is missing stream conditions')
   }
   const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
   if (!artistInfo) {
@@ -104,7 +104,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const {
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     },
     title
@@ -207,9 +207,9 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
   const trackInfo = yield* select(getTrack, { id: contentId })
   if (
     !trackInfo ||
-    !isPremiumContentUSDCPurchaseGated(trackInfo?.premium_conditions)
+    !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)
   ) {
-    throw new Error('Content is missing premium conditions')
+    throw new Error('Content is missing stream conditions')
   }
 
   const user = yield* select(getUser, { id: trackInfo.owner_id })
@@ -223,7 +223,7 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
 
   const {
     blocknumber,
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { splits }
     }
   } = trackInfo
@@ -252,10 +252,10 @@ function* pollForPurchaseConfirmation({
     )
   }
   yield* put(
-    updatePremiumTrackStatus({ trackId: contentId, status: 'UNLOCKING' })
+    updateGatedTrackStatus({ trackId: contentId, status: 'UNLOCKING' })
   )
 
-  yield* pollPremiumTrack({
+  yield* pollGatedTrack({
     trackId: contentId,
     currentUserId,
     isSourceTrack: true
@@ -555,8 +555,8 @@ function* doStartPurchaseContentFlow({
     // have a properly contstructed error to put into the slice.
     const error =
       e instanceof PurchaseContentError ||
-      e instanceof BuyUSDCError ||
-      e instanceof BuyCryptoError
+        e instanceof BuyUSDCError ||
+        e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
 

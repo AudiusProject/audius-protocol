@@ -5,26 +5,26 @@ import { useSelector } from 'react-redux'
 import { Chain } from 'models/Chain'
 import { ID } from 'models/Identifiers'
 import {
-  PremiumConditions,
+  StreamConditions,
   Track,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated
 } from 'models/Track'
 import { getAccountUser } from 'store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
-import { premiumContentSelectors } from 'store/premium-content'
+import { gatedContentSelectors } from 'store/gated-content'
 import { CommonState } from 'store/reducers'
 import { Nullable, removeNullable } from 'utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors
-const { getLockedContentId, getPremiumTrackSignatureMap } =
-  premiumContentSelectors
+const { getLockedContentId, getGatedTrackSignatureMap } =
+  gatedContentSelectors
 
 // Returns whether user has access to given track.
-export const usePremiumContentAccess = (track: Nullable<Partial<Track>>) => {
-  const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
+  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
   const user = useSelector(getAccountUser)
 
   const { isUserAccessTBD, doesUserHaveAccess } = useMemo(() => {
@@ -33,33 +33,33 @@ export const usePremiumContentAccess = (track: Nullable<Partial<Track>>) => {
     }
 
     const trackId = track.track_id
-    const isPremium = track.is_premium
-    const hasPremiumContentSignature =
-      !!track.premium_content_signature ||
-      !!(trackId && premiumTrackSignatureMap[trackId])
-    const isCollectibleGated = isPremiumContentCollectibleGated(
-      track.premium_conditions
+    const isStreamGated = track.is_stream_gated
+    const hasStreamSignature =
+      !!track.stream_signature ||
+      !!(trackId && gatedTrackSignatureMap[trackId])
+    const isCollectibleGated = isContentCollectibleGated(
+      track.stream_conditions
     )
     const isSignatureToBeFetched =
       isCollectibleGated &&
       !!trackId &&
-      premiumTrackSignatureMap[trackId] === undefined &&
+      gatedTrackSignatureMap[trackId] === undefined &&
       !!user // We're only fetching a sig if the user is logged in
 
     return {
-      isUserAccessTBD: !hasPremiumContentSignature && isSignatureToBeFetched,
-      doesUserHaveAccess: !isPremium || hasPremiumContentSignature
+      isUserAccessTBD: !hasStreamSignature && isSignatureToBeFetched,
+      doesUserHaveAccess: !isStreamGated || hasStreamSignature
     }
-  }, [track, premiumTrackSignatureMap, user])
+  }, [track, gatedTrackSignatureMap, user])
 
   return { isUserAccessTBD, doesUserHaveAccess }
 }
 
-// Similar to `usePremiumContentAccess` above, but for multiple tracks.
+// Similar to `useGatedContentAccess` above, but for multiple tracks.
 // Returns a map of track id -> track access i.e.
 // {[id: ID]: { isUserAccessTBD: boolean, doesUserHaveAccess: boolean }}
-export const usePremiumContentAccessMap = (tracks: Partial<Track>[]) => {
-  const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
+  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
   const user = useSelector(getAccountUser)
 
   const result = useMemo(() => {
@@ -73,41 +73,41 @@ export const usePremiumContentAccessMap = (tracks: Partial<Track>[]) => {
       }
 
       const trackId = track.track_id
-      const isPremium = track.is_premium
-      const hasPremiumContentSignature = !!(
-        track.premium_content_signature || premiumTrackSignatureMap[trackId]
+      const isStreamGated = track.is_stream_gated
+      const hasStreamSignature = !!(
+        track.stream_signature || gatedTrackSignatureMap[trackId]
       )
-      const isCollectibleGated = isPremiumContentCollectibleGated(
-        track.premium_conditions
+      const isCollectibleGated = isContentCollectibleGated(
+        track.stream_conditions
       )
       const isSignatureToBeFetched =
         isCollectibleGated &&
-        premiumTrackSignatureMap[trackId] === undefined &&
+        gatedTrackSignatureMap[trackId] === undefined &&
         !!user // We're only fetching a sig if the user is logged in
 
       map[trackId] = {
-        isUserAccessTBD: !hasPremiumContentSignature && isSignatureToBeFetched,
-        doesUserHaveAccess: !isPremium || hasPremiumContentSignature
+        isUserAccessTBD: !hasStreamSignature && isSignatureToBeFetched,
+        doesUserHaveAccess: !isStreamGated || hasStreamSignature
       }
     })
 
     return map
-  }, [tracks, premiumTrackSignatureMap, user])
+  }, [tracks, gatedTrackSignatureMap, user])
 
   return result
 }
 
-export const usePremiumConditionsEntity = (
-  premiumConditions: Nullable<PremiumConditions>
+export const useStreamConditionsEntity = (
+  streamConditions: Nullable<StreamConditions>
 ) => {
-  const followUserId = isPremiumContentFollowGated(premiumConditions)
-    ? premiumConditions?.follow_user_id
+  const followUserId = isContentFollowGated(streamConditions)
+    ? streamConditions?.follow_user_id
     : null
-  const tipUserId = isPremiumContentTipGated(premiumConditions)
-    ? premiumConditions?.tip_user_id
+  const tipUserId = isContentTipGated(streamConditions)
+    ? streamConditions?.tip_user_id
     : null
-  const nftCollection = isPremiumContentCollectibleGated(premiumConditions)
-    ? premiumConditions?.nft_collection
+  const nftCollection = isContentCollectibleGated(streamConditions)
+    ? streamConditions?.nft_collection
     : null
 
   const users = useSelector((state: CommonState) =>

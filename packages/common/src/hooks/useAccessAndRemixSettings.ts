@@ -1,11 +1,11 @@
 import { useSelector } from 'react-redux'
 
 import {
-  PremiumConditions,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  StreamConditions,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated
 } from 'models/Track'
 import { getSupportedUserCollections } from 'store/collectibles/selectors'
 import { CommonState } from 'store/index'
@@ -14,7 +14,7 @@ import { Nullable } from 'utils/typeUtils'
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
   isRemix: boolean
-  initialPremiumConditions: Nullable<PremiumConditions>
+  initialStreamConditions: Nullable<StreamConditions>
   isInitiallyUnlisted: boolean
 }
 
@@ -32,7 +32,7 @@ type UseAccessAndRemixSettingsProps = {
 export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
-  initialPremiumConditions,
+  initialStreamConditions,
   isInitiallyUnlisted
 }: UseAccessAndRemixSettingsProps) => {
   const hasNoCollectibles = useSelector((state: CommonState) => {
@@ -45,20 +45,20 @@ export const useAccessAndRemixSettings = ({
   })
 
   const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
+    !isUpload && !isInitiallyUnlisted && !initialStreamConditions
 
   const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+    !isUpload && isContentUSDCPurchaseGated(initialStreamConditions)
 
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
+      isContentFollowGated(initialStreamConditions) ||
+      isContentTipGated(initialStreamConditions)
     )
 
   const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
+    !isUpload && isContentCollectibleGated(initialStreamConditions)
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
