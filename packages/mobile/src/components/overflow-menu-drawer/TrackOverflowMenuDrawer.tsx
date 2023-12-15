@@ -100,7 +100,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         })
       ),
     [OverflowAction.ADD_TO_ALBUM]: () =>
-      dispatch(openAddToCollectionModal('playlist', id, title, is_unlisted)),
+      dispatch(openAddToCollectionModal('album', id, title, is_unlisted)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatch(openAddToCollectionModal('playlist', id, title, is_unlisted)),
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {

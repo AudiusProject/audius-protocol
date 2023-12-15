@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import type { Collection } from '@audius/common'
 import {
@@ -9,11 +9,14 @@ import {
   cacheCollectionsActions,
   addToCollectionUISelectors
 } from '@audius/common'
+import { fetchAllAccountCollections } from 'audius-client/src/common/store/saved-collections/sagas'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Card } from 'app/components/card'
+import { Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useToast } from 'app/hooks/useToast'
@@ -66,6 +69,10 @@ export const AddToCollectionDrawer = () => {
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
 
   const messages = getMessages(collectionType)
+
+  useEffectOnce(() => {
+    dispatch(fetchAllAccountCollections)
+  })
 
   const renderImage = useCallback(
     (item) => (props?: ImageProps) =>
@@ -185,6 +192,9 @@ export const AddToCollectionDrawer = () => {
       title={messages.title}
     >
       <View>
+        <Text>
+          {filteredCollections.map((collection) => collection.playlist_id)}
+        </Text>
         <CollectionList
           contentContainerStyle={styles.cardList}
           collection={filteredCollections}
