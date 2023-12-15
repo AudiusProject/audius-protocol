@@ -139,7 +139,7 @@ def get_slow_queries(**kwargs):
         version = session.execute(version_query).scalar()
         version = int(version)
 
-        if version >= 130000: # postgres 13 or later
+        if version >= 130000:  # postgres 13 or later
             query_text = """
             SELECT query, mean_plan_time, mean_exec_time, (mean_plan_time + mean_exec_time) AS total_mean_time
             FROM pg_stat_statements 
