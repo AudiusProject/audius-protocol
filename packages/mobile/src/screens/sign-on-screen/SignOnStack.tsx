@@ -5,7 +5,7 @@ import { useScreenOptions } from 'app/app/navigation'
 import { CreatePasswordScreen } from './screens/CreatePasswordScreen'
 import { FinishProfileScreen } from './screens/FinishProfileScreen'
 import { PickHandleScreen } from './screens/PickHandleScreen'
-import { SelectArtistsScreen } from './screens/SelectArtistsScreen'
+import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenreScreen } from './screens/SelectGenreScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
 
@@ -15,7 +15,10 @@ const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
 export const SignOnStack = () => {
   const screenOptions = useScreenOptions(screenOptionsOverrides)
   return (
-    <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
+    <Stack.Navigator
+      initialRouteName='SelectArtists'
+      screenOptions={screenOptions}
+    >
       <Stack.Screen
         name='SignOn'
         component={SignOnScreen}

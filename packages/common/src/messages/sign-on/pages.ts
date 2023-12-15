@@ -76,3 +76,12 @@ export const selectGenresPageMessages = {
   description: 'Start by picking some of your favorite genres.',
   continue: 'Continue'
 }
+
+export const selectArtstsPageMessages = {
+  header: 'Follow At Least 3 Artists',
+  description:
+    'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
+  genresLabel: 'Genre',
+  pickArtists: (genre: string) => `Pick ${genre} Artists`,
+  selected: 'Selected'
+}
