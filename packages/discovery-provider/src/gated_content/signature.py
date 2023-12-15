@@ -8,7 +8,7 @@ from src.api_helpers import generate_signature
 from src.gated_content.types import GatedContentType
 
 
-class PremiumContentSignatureArgs(TypedDict):
+class GatedContentSignatureArgs(TypedDict):
     user_id: Optional[int]
     track_id: int
     cid: str
@@ -16,7 +16,7 @@ class PremiumContentSignatureArgs(TypedDict):
     is_gated: bool
 
 
-class PremiumContentSignatureForUserWalletArgs(TypedDict):
+class GatedContentSignatureForUserWalletArgs(TypedDict):
     user_id: NotRequired[int]
     user_wallet: str
     track_id: int
@@ -25,7 +25,7 @@ class PremiumContentSignatureForUserWalletArgs(TypedDict):
     is_gated: bool
 
 
-class PremiumContentSignature(TypedDict):
+class GatedContentSignature(TypedDict):
     data: str
     signature: str
 
@@ -40,7 +40,7 @@ def _get_gated_track_signature(
     is_gated: bool,
     user_wallet: Optional[str],
     user_id: Optional[int],
-) -> PremiumContentSignature:
+) -> GatedContentSignature:
     data = {
         "trackId": track_id,
         "cid": cid,
@@ -57,8 +57,8 @@ def _get_gated_track_signature(
 
 
 def get_gated_content_signature(
-    args: PremiumContentSignatureArgs,
-) -> Optional[PremiumContentSignature]:
+    args: GatedContentSignatureArgs,
+) -> Optional[GatedContentSignature]:
     if args["type"] == "track":
         return _get_gated_track_signature(
             track_id=args["track_id"],
@@ -75,8 +75,8 @@ def get_gated_content_signature(
 # (e.g. from track request or nft request) when requesting to stream or download,
 # in which case we make sure the requesting user has the wallet as the user wallet in the signature.
 def get_gated_content_signature_for_user_wallet(
-    args: PremiumContentSignatureForUserWalletArgs,
-) -> Optional[PremiumContentSignature]:
+    args: GatedContentSignatureForUserWalletArgs,
+) -> Optional[GatedContentSignature]:
     if args["type"] == "track":
         return _get_gated_track_signature(
             track_id=args["track_id"],

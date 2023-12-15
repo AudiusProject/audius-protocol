@@ -49,14 +49,6 @@ delete_social_action_types = {
     Action.UNSUBSCRIBE,
 }
 
-premium_content_validation_actions = {
-    Action.SAVE,
-    Action.UNSAVE,
-    Action.REPOST,
-    Action.UNREPOST,
-}
-premium_content_validation_entities = {EntityType.TRACK}
-
 
 def create_social_record(params: ManageEntityParameters):
     validate_social_feature(params)

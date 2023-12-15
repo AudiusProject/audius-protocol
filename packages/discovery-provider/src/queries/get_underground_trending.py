@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.gated_content.constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
 )
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import RepostType
@@ -183,9 +183,9 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
 
-        # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
+        # If SHOULD_TRENDING_EXCLUDE_GATED_TRACKS is true, then filter out track ids
         # belonging to gated tracks before applying the limit.
-        if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
+        if SHOULD_TRENDING_EXCLUDE_GATED_TRACKS:
             track_scoring_data = list(
                 filter(lambda item: not item["is_stream_gated"], track_scoring_data)
             )
@@ -211,7 +211,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         tracks = get_unpopulated_tracks(
             session,
             track_ids,
-            exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+            exclude_gated=SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
         )
 
         return (tracks, track_ids)
