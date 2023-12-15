@@ -89,7 +89,7 @@ export interface Download {
 
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type PremiumConditionsEthNFTCollection = {
+export type StreamConditionsEthNFTCollection = {
   chain: 'eth'
   standard: TokenStandard
   address: string
@@ -99,7 +99,7 @@ export type PremiumConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type PremiumConditionsSolNFTCollection = {
+export type StreamConditionsSolNFTCollection = {
   chain: 'sol'
   address: string
   name: string
@@ -107,25 +107,20 @@ export type PremiumConditionsSolNFTCollection = {
   externalLink: Nullable<string>
 }
 
-type PremiumConditionsUSDCPurchase = {
+type USDCPurchaseConditions = {
   usdc_purchase?: {
     price: number
     splits: Record<ID, number>
   }
 }
 
-export type PremiumConditions = {
+export type StreamConditions = {
   nft_collection?:
-  | PremiumConditionsEthNFTCollection
-  | PremiumConditionsSolNFTCollection
+  | StreamConditionsEthNFTCollection
+  | StreamConditionsSolNFTCollection
   follow_user_id?: number
   tip_user_id?: number
-} & PremiumConditionsUSDCPurchase
-
-export type PremiumContentSignature = {
-  data: string
-  signature: string
-}
+} & USDCPurchaseConditions
 
 export type TrackMetadata = {
   blocknumber: number
@@ -133,8 +128,8 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   track_cid: string
-  preview_cid: Nullable<string>
-  orig_file_cid: string
+  preview_cid: Nullable<CID>
+  orig_file_cid: CID
   orig_filename: string
   created_at: string
   isrc: Nullable<string>
@@ -159,11 +154,10 @@ export type TrackMetadata = {
   cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   is_available: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<StreamConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<PremiumConditionsUSDCPurchase>
+  download_conditions: Nullable<USDCPurchaseConditions>
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>

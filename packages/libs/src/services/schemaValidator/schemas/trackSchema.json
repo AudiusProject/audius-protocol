@@ -199,11 +199,11 @@
           "$ref": "#/definitions/RemixOf",
           "default": null
         },
-        "is_premium": {
+        "is_stream_gated": {
           "type": "boolean",
           "default": false
         },
-        "premium_conditions": {
+        "stream_conditions": {
           "type": [
             "object",
             "null"
@@ -214,16 +214,16 @@
                 "type": "null"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsNFTCollection"
+                "$ref": "#/definitions/StreamConditionsNFTCollection"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsFollowUserId"
+                "$ref": "#/definitions/StreamConditionsFollowUserId"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsTipUserId"
+                "$ref": "#/definitions/StreamConditionsTipUserId"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsUSDCPurchase"
+                "$ref": "#/definitions/USDCPurchaseConditions"
               }
             ]
           },
@@ -244,7 +244,7 @@
                 "type": "null"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsUSDCPurchase"
+                "$ref": "#/definitions/USDCPurchaseConditions"
               }
             ]
           },
@@ -283,8 +283,8 @@
         "tags",
         "title",
         "track_segments",
-        "is_premium",
-        "premium_conditions",
+        "is_stream_gated",
+        "stream_conditions",
         "is_download_gated",
         "download_conditions",
         "is_playlist_upload"
@@ -426,7 +426,7 @@
       "pattern": "^Qm[a-zA-Z0-9]{44}$",
       "title": "CID"
     },
-    "PremiumConditionsNFTCollection": {
+    "StreamConditionsNFTCollection": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -435,10 +435,10 @@
           "items": {
             "oneOf": [
               {
-                "$ref": "#/definitions/PremiumConditionsEthNFTCollection"
+                "$ref": "#/definitions/StreamConditionsEthNFTCollection"
               },
               {
-                "$ref": "#/definitions/PremiumConditionsSolNFTCollection"
+                "$ref": "#/definitions/StreamConditionsSolNFTCollection"
               }
             ]
           }
@@ -447,9 +447,9 @@
       "required": [
         "nft_collection"
       ],
-      "title": "PremiumConditionsNFTCollection"
+      "title": "StreamConditionsNFTCollection"
     },
-    "PremiumConditionsEthNFTCollection": {
+    "StreamConditionsEthNFTCollection": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -494,9 +494,9 @@
         "name",
         "slug"
       ],
-      "title": "PremiumConditionsEthNFTCollection"
+      "title": "StreamConditionsEthNFTCollection"
     },
-    "PremiumConditionsSolNFTCollection": {
+    "StreamConditionsSolNFTCollection": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -530,9 +530,9 @@
         "address",
         "name"
       ],
-      "title": "PremiumConditionsSolNFTCollection"
+      "title": "StreamConditionsSolNFTCollection"
     },
-    "PremiumConditionsFollowUserId": {
+    "StreamConditionsFollowUserId": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -543,9 +543,9 @@
       "required": [
         "follow_user_id"
       ],
-      "title": "PremiumConditionsFollowUserId"
+      "title": "StreamConditionsFollowUserId"
     },
-    "PremiumConditionsTipUserId": {
+    "StreamConditionsTipUserId": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -556,9 +556,9 @@
       "required": [
         "tip_user_id"
       ],
-      "title": "PremiumConditionsTipUserId"
+      "title": "StreamConditionsTipUserId"
     },
-    "PremiumConditionsUSDCPurchase": {
+    "USDCPurchaseConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
