@@ -64,26 +64,26 @@ function* createPlaylistWorker(
     noticeType,
     isAlbum = false
   } = action
-  const playlist = newCollectionMetadata({ ...formFields, is_album: isAlbum })
-  const playlistId = yield* call(getUnclaimedPlaylistId)
-  if (!playlistId) return
+  const collection = newCollectionMetadata({ ...formFields, is_album: isAlbum })
+  const collectionId = yield* call(getUnclaimedPlaylistId)
+  if (!collectionId) return
 
   const initTrack = yield* select(getTrack, { id: initTrackId })
 
   if (initTrack) {
-    playlist._cover_art_sizes = initTrack._cover_art_sizes
-    playlist.cover_art_sizes = initTrack.cover_art_sizes
+    collection._cover_art_sizes = initTrack._cover_art_sizes
+    collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticallySavePlaylist, playlistId, playlist, initTrack)
+  yield* call(optimisticallySavePlaylist, collectionId, collection, initTrack)
   yield* put(
-    cacheCollectionsActions.createPlaylistRequested(playlistId, noticeType)
+    cacheCollectionsActions.createPlaylistRequested(collectionId, noticeType)
   )
   yield* call(
     createAndConfirmPlaylist,
-    playlistId,
+    collectionId,
     userId,
-    playlist,
+    collection,
     initTrack,
     source,
     isAlbum

@@ -194,13 +194,15 @@ const ConnectedTrackTile = ({
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToCollectionAction = !isPremium
+    const addToAlbumAction = isOwner ? OverflowAction.ADD_TO_ALBUM : null
+    const addToPlaylistAction = !isPremium
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
       repostAction,
       favoriteAction,
-      addToCollectionAction,
+      addToAlbumAction,
+      addToPlaylistAction,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

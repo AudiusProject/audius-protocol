@@ -44,6 +44,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : props.isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
+      props.user?.user_id === props.currentUserId
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !props.isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE

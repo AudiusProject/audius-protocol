@@ -14,7 +14,8 @@ type MobileOverflowModalProps = {
   onFavorite?: () => void
   onUnfavorite?: () => void
   onShare?: () => void
-  onAddToCollection?: () => void
+  onAddToAlbum?: () => void
+  onAddToPlaylist?: () => void
   onEditPlaylist?: () => void
   onDeletePlaylist?: () => void
   onPublishPlaylist?: () => void
@@ -32,6 +33,7 @@ const rowMessageMap = {
   [OverflowAction.FAVORITE]: 'Favorite',
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
+  [OverflowAction.ADD_TO_ALBUM]: 'Add To Album',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.REMOVE_FROM_PLAYLIST]: 'Remove From This Playlist',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
@@ -65,7 +67,8 @@ const MobileOverflowModal = ({
   onFavorite,
   onUnfavorite,
   onShare,
-  onAddToCollection,
+  onAddToAlbum,
+  onAddToPlaylist,
   onEditPlaylist,
   onDeletePlaylist,
   onPublishPlaylist,
@@ -83,7 +86,8 @@ const MobileOverflowModal = ({
     [OverflowAction.FAVORITE]: onFavorite,
     [OverflowAction.UNFAVORITE]: onUnfavorite,
     [OverflowAction.SHARE]: onShare,
-    [OverflowAction.ADD_TO_PLAYLIST]: onAddToCollection,
+    [OverflowAction.ADD_TO_ALBUM]: onAddToAlbum,
+    [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,
     [OverflowAction.PUBLISH_PLAYLIST]: onPublishPlaylist,
