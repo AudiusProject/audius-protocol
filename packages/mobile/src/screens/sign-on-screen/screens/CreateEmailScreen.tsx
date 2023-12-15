@@ -7,8 +7,11 @@ import {
   createEmailPageMessages as messages
 } from '@audius/common'
 import { css } from '@emotion/native'
-import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import { resetSignOn, setValueField } from 'common/store/pages/signon/actions'
+import {
+  getEmailField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -23,6 +26,7 @@ import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
 import { Hint } from '../components/temp-harmony/Hint'
 import IconExclamation from '../components/temp-harmony/IconExclamation.svg'
+import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 
 import type { SignOnScreenProps } from './types'
@@ -36,6 +40,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
   const existingEmailValue = useSelector(getEmailField) || email
+  const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -51,6 +56,31 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       navigation.navigate('CreatePassword', { email })
     },
     [dispatch, navigation]
+  )
+
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin
+  } = useSocialMediaLoader({
+    // TODO: what does this do?
+    resetAction: resetSignOn,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+
+  const handleCompleteSocialMediaLogin = useCallback(
+    (result: { requiresReview: boolean; handle: string }) => {
+      const { handle, requiresReview } = result
+      // dispatch(setLinkedSocialOnFirstPage(true))
+      dispatch(setValueField('handle', handle))
+      console.log(requiresReview)
+      // navigate(
+      //   requiresReview
+      //     ? SIGN_UP_REVIEW_HANDLE_PAGE
+      //     : SIGN_UP_CREATE_LOGIN_DETAILS
+      // )
+    },
+    [dispatch]
   )
 
   return (
@@ -102,7 +132,11 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <SocialMediaLoginOptions />
+            <SocialMediaLoginOptions
+              onError={handleErrorSocialMediaLogin}
+              onStart={handleStartSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+            />
           </Flex>
           <Flex direction='column' gap='l'>
             <Button

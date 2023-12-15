@@ -3,14 +3,17 @@ import { css } from '@emotion/native'
 
 import { Flex } from '@audius/harmony-native'
 
+import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SocialButton } from './temp-harmony/SocialButton'
 
 type SocialMediaLoginOptionsProps = {
-  onCompleteSocialMediaLogin?: (info: {
+  onCompleteSocialMediaLogin: (info: {
     requiresReview: boolean
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
+  onError: () => void
+  onStart: () => void
 }
 
 export const SocialMediaLoginOptions = ({
@@ -52,13 +55,19 @@ export const SocialMediaLoginOptions = ({
       ) : null}
       {isTikTokEnabled ? (
         // TODO: replace with harmony component
-        <SocialButton
-          fullWidth
-          socialType='tiktok'
-          onPress={() => {}}
-          accessibilityLabel={socialMediaMessages.signUpTikTok}
-          style={css({ flex: 1 })}
-        />
+        <SignupFlowTikTokAuth
+          onStart={onStart}
+          onFailure={handleFailure}
+          onSuccess={handleSuccess}
+        >
+          <SocialButton
+            fullWidth
+            socialType='tiktok'
+            onPress={() => {}}
+            accessibilityLabel={socialMediaMessages.signUpTikTok}
+            style={css({ flex: 1 })}
+          />
+        </SignupFlowTikTokAuth>
       ) : null}
     </Flex>
   )
