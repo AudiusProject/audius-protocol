@@ -144,7 +144,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleRepost = useCallback(() => {
     if (track) {
@@ -156,7 +156,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         dispatch(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleShare = useCallback(() => {
     if (track) {
@@ -204,6 +204,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
+    isOwner,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
     dispatch
