@@ -14,7 +14,7 @@ import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowOnrampModal.module.css'
 
-const { transactionSucceeded } = coinflowModalUIActions
+const { transactionSucceeded, transactionCanceled } = coinflowModalUIActions
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
@@ -46,6 +46,11 @@ export const CoinflowOnrampModal = () => {
     }
   }, [serializedTransaction])
 
+  const handleClose = useCallback(() => {
+    dispatch(transactionCanceled({}))
+    onClose()
+  }, [dispatch, onClose])
+
   const handleSuccess = useCallback(() => {
     dispatch(transactionSucceeded({}))
     onClose()
@@ -60,7 +65,7 @@ export const CoinflowOnrampModal = () => {
       zIndex={zIndex.COINFLOW_ONRAMP_MODAL}
       isFullscreen
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onClosed={onClosed}
     >
       {showContent ? (
