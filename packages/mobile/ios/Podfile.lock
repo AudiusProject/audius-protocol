@@ -507,7 +507,8 @@ PODS:
     - React-Core
   - react-native-notifications (4.3.3):
     - React-Core
-  - react-native-pager-view (5.4.6):
+  - react-native-pager-view (6.2.3):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-performance (4.0.0):
     - React-Core
@@ -1165,7 +1166,7 @@ SPEC CHECKSUMS:
   react-native-keep-awake: acbee258db16483744910f0da3ace39eb9ab47fd
   react-native-netinfo: 129bd99f607a2dc5bb096168f3e5c150fd1f1c95
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
-  react-native-pager-view: b90963d848e777def6714ab7fd40d02fa797e930
+  react-native-pager-view: e26d35e382d86950c936f8917e3beb9188115ccc
   react-native-performance: 224bd53e6a835fda4353302cf891d088a0af7406
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
