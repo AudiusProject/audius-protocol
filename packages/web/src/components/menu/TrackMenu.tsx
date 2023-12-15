@@ -12,7 +12,7 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   tracksSocialActions,
-  addToPlaylistUIActions,
+  addToCollectionUIActions,
   Genre,
   FeatureFlags,
   CommonState,
@@ -29,7 +29,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
-const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
@@ -39,7 +39,7 @@ const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
-  addToNewPlaylist: 'Add to New Playlist',
+  addToAlbum: 'Add to Album',
   addToPlaylist: 'Add to Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
   embed: 'Embed',
@@ -65,6 +65,7 @@ export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element
   extraMenuItems?: PopupMenuItem[]
   handle: string
+  includeAddToAlbum?: boolean
   includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
   includeEdit?: boolean
@@ -100,6 +101,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -110,6 +112,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       extraMenuItems,
       goToRoute,
       handle,
+      includeAddToAlbum,
       includeAddToPlaylist,
       includeArtistPick,
       includeEdit,
@@ -125,7 +128,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       isOwnerDeactivated,
       isReposted,
       isUnlisted,
-      openAddToPlaylistModal,
+      openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
       saveTrack,
@@ -175,7 +178,24 @@ const TrackMenu = (props: TrackMenuProps) => {
     const addToPlaylistMenuItem = {
       text: messages.addToPlaylist,
       onClick: () => {
-        openAddToPlaylistModal(trackId, trackTitle, isUnlisted ?? false)
+        openAddToCollectionModal(
+          'playlist',
+          trackId,
+          trackTitle,
+          isUnlisted ?? false
+        )
+      }
+    }
+
+    const addToAlbumMenuItem = {
+      text: messages.addToAlbum,
+      onClick: () => {
+        openAddToCollectionModal(
+          'album',
+          trackId,
+          trackTitle,
+          isUnlisted ?? false
+        )
       }
     }
 
@@ -248,6 +268,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeFavorite && !isOwner && (!isDeleted || isFavorited)) {
       menu.items.push(favoriteMenuItem)
     }
+    if (isEditAlbumsEnabled && includeAddToAlbum && !isDeleted && isOwner) {
+      menu.items.push(addToAlbumMenuItem)
+    }
     if (includeAddToPlaylist && !isDeleted) {
       menu.items.push(addToPlaylistMenuItem)
     }
@@ -315,8 +338,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setArtistPick: (trackId: ID) =>
       dispatch(showSetAsArtistPickConfirmation(trackId)),
     unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
-    openAddToPlaylistModal: (trackId: ID, title: string, isUnlisted: boolean) =>
-      dispatch(openAddToPlaylist(trackId, title, isUnlisted)),
+    openAddToCollectionModal: (
+      collectionType: 'album' | 'playlist',
+      trackId: ID,
+      title: string,
+      isUnlisted: boolean
+    ) =>
+      dispatch(openAddToCollection(collectionType, trackId, title, isUnlisted)),
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
@@ -331,6 +359,7 @@ TrackMenu.defaultProps = {
   includeEmbed: true,
   includeFavorite: true,
   includeTrackPage: true,
+  includeAddToAlbum: true,
   includeAddToPlaylist: true,
   includeArtistPick: true,
   extraMenuItems: []

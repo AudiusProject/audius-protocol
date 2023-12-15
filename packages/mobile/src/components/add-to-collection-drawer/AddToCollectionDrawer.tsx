@@ -7,7 +7,7 @@ import {
   CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
-  addToPlaylistUISelectors
+  addToCollectionUISelectors
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,7 +24,7 @@ import type { ImageProps } from '../image/FastImage'
 
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
-  addToPlaylistUISelectors
+  addToCollectionUISelectors
 const { getAccountWithOwnPlaylists } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
@@ -50,11 +50,11 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-export const AddToPlaylistDrawer = () => {
+export const AddToCollectionDrawer = () => {
   const styles = useStyles()
   const { toast } = useToast()
   const dispatch = useDispatch()
-  const { onClose } = useDrawerState('AddToPlaylist')
+  const { onClose } = useDrawerState('AddToCollection')
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
@@ -159,7 +159,7 @@ export const AddToPlaylistDrawer = () => {
 
   return (
     <AppDrawer
-      modalName='AddToPlaylist'
+      modalName='AddToCollection'
       isFullscreen
       isGestureSupported={false}
       title={messages.title}

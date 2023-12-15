@@ -50,33 +50,43 @@ export function* createPlaylistSaga() {
 }
 
 function* createPlaylistWorker(
-  action: ReturnType<typeof cacheCollectionsActions.createPlaylist>
+  action: ReturnType<
+    | typeof cacheCollectionsActions.createAlbum
+    | typeof cacheCollectionsActions.createPlaylist
+  >
 ) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const { initTrackId, formFields, source, noticeType } = action
-  const playlist = newCollectionMetadata(formFields)
-  const playlistId = yield* call(getUnclaimedPlaylistId)
-  if (!playlistId) return
+  const {
+    initTrackId,
+    formFields,
+    source,
+    noticeType,
+    isAlbum = false
+  } = action
+  const collection = newCollectionMetadata({ ...formFields, is_album: isAlbum })
+  const collectionId = yield* call(getUnclaimedPlaylistId)
+  if (!collectionId) return
 
   const initTrack = yield* select(getTrack, { id: initTrackId })
 
   if (initTrack) {
-    playlist._cover_art_sizes = initTrack._cover_art_sizes
-    playlist.cover_art_sizes = initTrack.cover_art_sizes
+    collection._cover_art_sizes = initTrack._cover_art_sizes
+    collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticallySavePlaylist, playlistId, playlist, initTrack)
+  yield* call(optimisticallySavePlaylist, collectionId, collection, initTrack)
   yield* put(
-    cacheCollectionsActions.createPlaylistRequested(playlistId, noticeType)
+    cacheCollectionsActions.createPlaylistRequested(collectionId, noticeType)
   )
   yield* call(
     createAndConfirmPlaylist,
-    playlistId,
+    collectionId,
     userId,
-    playlist,
+    collection,
     initTrack,
-    source
+    source,
+    isAlbum
   )
 }
 
@@ -97,7 +107,6 @@ function* optimisticallySavePlaylist(
 
   playlist.playlist_owner_id = user_id
   playlist.is_private = true
-  playlist.is_album = false
   playlist.playlist_contents = {
     track_ids: initTrack
       ? [{ time: initTrack?.duration, track: initTrack.track_id }]
@@ -115,7 +124,9 @@ function* optimisticallySavePlaylist(
   playlist.permalink = collectionPage(
     handle,
     playlist.playlist_name,
-    playlistId
+    playlistId,
+    undefined,
+    playlist.is_album
   )
   if (playlist.artwork) {
     playlist._cover_art_sizes = {
@@ -146,7 +157,7 @@ function* optimisticallySavePlaylist(
     accountActions.addAccountPlaylist({
       id: playlistId,
       name: playlist.playlist_name as string,
-      is_album: false,
+      is_album: !!playlist.is_album,
       user: { id: user_id, handle },
       permalink: playlist?.permalink
     })
@@ -155,7 +166,7 @@ function* optimisticallySavePlaylist(
   yield* put(
     addLocalCollection({
       collectionId: playlistId,
-      isAlbum: false,
+      isAlbum: !!playlist.is_album,
       category: LibraryCategory.Favorite
     })
   )
@@ -168,7 +179,8 @@ function* createAndConfirmPlaylist(
   userId: ID,
   formFields: EditPlaylistValues,
   initTrack: Nullable<Track>,
-  source: string
+  source: string,
+  isAlbum: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { createPlaylist, getPlaylists } = audiusBackendInstance
@@ -186,7 +198,7 @@ function* createAndConfirmPlaylist(
       createPlaylist,
       playlistId,
       formFields,
-      false,
+      isAlbum,
       initTrack ? [initTrack.track_id] : undefined
     )
 

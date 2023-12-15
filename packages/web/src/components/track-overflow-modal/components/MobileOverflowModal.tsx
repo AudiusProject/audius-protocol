@@ -14,6 +14,7 @@ type MobileOverflowModalProps = {
   onFavorite?: () => void
   onUnfavorite?: () => void
   onShare?: () => void
+  onAddToAlbum?: () => void
   onAddToPlaylist?: () => void
   onEditPlaylist?: () => void
   onDeletePlaylist?: () => void
@@ -32,6 +33,7 @@ const rowMessageMap = {
   [OverflowAction.FAVORITE]: 'Favorite',
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
+  [OverflowAction.ADD_TO_ALBUM]: 'Add To Album',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.REMOVE_FROM_PLAYLIST]: 'Remove From This Playlist',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
@@ -65,6 +67,7 @@ const MobileOverflowModal = ({
   onFavorite,
   onUnfavorite,
   onShare,
+  onAddToAlbum,
   onAddToPlaylist,
   onEditPlaylist,
   onDeletePlaylist,
@@ -83,6 +86,7 @@ const MobileOverflowModal = ({
     [OverflowAction.FAVORITE]: onFavorite,
     [OverflowAction.UNFAVORITE]: onUnfavorite,
     [OverflowAction.SHARE]: onShare,
+    [OverflowAction.ADD_TO_ALBUM]: onAddToAlbum,
     [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,
@@ -112,7 +116,7 @@ const MobileOverflowModal = ({
     if (callbacks && callbacks[action]) {
       callbacks[action]!()
     }
-    // Eventually: will need some special casing for onAddToPlaylist, which returns
+    // Eventually: will need some special casing for onAddToCollection, which returns
     // a function accepting playlistId
     callback()
     onClose()

@@ -3,7 +3,7 @@ import type { ComponentType } from 'react'
 import type { Modals } from '@audius/common'
 
 import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
-import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
+import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
@@ -106,7 +106,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TrendingGenreSelection: TrendingFilterDrawer,
   Overflow: OverflowMenuDrawer,
   SignOutConfirmation: SignOutConfirmationDrawer,
-  AddToPlaylist: AddToPlaylistDrawer,
+  AddToCollection: AddToCollectionDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
   DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
