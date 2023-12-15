@@ -76,3 +76,11 @@ export const selectGenresPageMessages = {
   description: 'Start by picking some of your favorite genres.',
   continue: 'Continue'
 }
+
+export const welcomeModalMessages = {
+  welcome: 'Welcome to Audius! 🎉',
+  startListening: 'Start Listening',
+  upload: 'Upload',
+  youreIn:
+    'You’re in! Discover music from our talented DJs, producers, and artists.'
+}

@@ -13,9 +13,11 @@ import {
   favoritesUserListActions,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { IconCalendarMonth } from '@audius/harmony-native'
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
@@ -108,6 +110,7 @@ type Props = {
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
+  releaseDate?: string
 }
 
 export const LineupTileStats = ({
@@ -128,11 +131,12 @@ export const LineupTileStats = ({
   premiumConditions,
   isOwner,
   isArtistPick,
-  showArtistPick
+  showArtistPick,
+  releaseDate
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
-  const { neutralLight4 } = useThemeColors()
+  const { neutralLight4, accentPurple } = useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -155,7 +159,7 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -181,7 +185,7 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
-        {isUnlisted ? (
+        {isUnlisted && !isScheduledRelease ? (
           <View style={styles.tagContainer}>
             <IconHidden
               fill={neutralLight4}
@@ -190,6 +194,19 @@ export const LineupTileStats = ({
             />
             <Text fontSize='xs' colorValue={neutralLight4}>
               {messages.hiddenTrack}
+            </Text>
+          </View>
+        ) : null}
+        {isUnlisted && isScheduledRelease ? (
+          <View style={styles.tagContainer}>
+            <IconCalendarMonth
+              fill={accentPurple}
+              height={spacing(4)}
+              width={spacing(4)}
+            />
+            <Text fontSize='xs' colorValue={accentPurple}>
+              Releases{' '}
+              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}
             </Text>
           </View>
         ) : null}
