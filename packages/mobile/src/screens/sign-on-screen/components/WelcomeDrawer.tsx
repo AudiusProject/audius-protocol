@@ -1,7 +1,7 @@
 import { fillString, welcomeModalMessages as messages } from '@audius/common'
 import { css } from '@emotion/native'
 import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import {
   Flex,
@@ -11,8 +11,8 @@ import {
 } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { setVisibility } from 'app/store/drawers/slice'
 
 import {
   ReadOnlyCoverPhotoBanner,
@@ -24,15 +24,8 @@ export const WelcomeDrawer = () => {
 
   const navigation = useNavigation()
 
-  const dispatch = useDispatch()
-  const closeModal = () => {
-    dispatch(
-      setVisibility({
-        drawer: 'Welcome',
-        visible: false
-      })
-    )
-  }
+  const { onClose: closeDrawer } = useDrawer('Welcome')
+
   return (
     <NativeDrawer drawerName='Welcome'>
       <Flex w='100%' h={96} style={css({ zIndex: 1 })}>
@@ -40,13 +33,11 @@ export const WelcomeDrawer = () => {
         <Flex
           w='100%'
           alignItems='center'
-          style={[
-            css({
-              position: 'absolute',
-              top: 40,
-              zIndex: 2
-            })
-          ]}
+          style={css({
+            position: 'absolute',
+            top: 40,
+            zIndex: 2
+          })}
         >
           <ReadOnlyProfilePicture />
         </Flex>
@@ -74,20 +65,20 @@ export const WelcomeDrawer = () => {
           {/* TODO: replace with harmony button */}
           <Button
             icon={IconArrowRight}
-            onPress={closeModal}
+            onPress={closeDrawer}
             title={messages.startListening}
-            style={{ width: '100%' }}
+            fullWidth
           />
           {/* TODO: replace with harmony button */}
           <Button
             icon={IconCloudUpload}
             variant='secondaryAlt'
             onPress={() => {
-              closeModal()
+              closeDrawer()
               navigation.navigate('HomeStack', { screen: 'Upload' })
             }}
             title={messages.upload}
-            style={{ width: '100%' }}
+            fullWidth
           />
         </Flex>
       </Flex>
