@@ -20,16 +20,16 @@ logger = logging.getLogger(__name__)
 
 class GatedContentAccessBatchArgs(TypedDict):
     user_id: int
-    premium_content_id: int
-    premium_content_type: GatedContentType
+    gated_content_id: int
+    gated_content_type: GatedContentType
 
 
-class GatedContentAccess(TypedDict):
+class GatedContentAccessResponse(TypedDict):
     is_gated: bool
     does_user_have_access: bool
 
 
-GatedTrackAccessResult = Dict[int, Dict[int, GatedContentAccess]]
+GatedTrackAccessResult = Dict[int, Dict[int, GatedContentAccessResponse]]
 
 
 class GatedContentAccessBatchResponse(TypedDict):
@@ -75,34 +75,34 @@ class ContentAccessChecker:
         self,
         session: Session,
         user_id: int,
-        premium_content_id: int,
-        premium_content_type: GatedContentType,
-        premium_content_entity: Track,
+        gated_content_id: int,
+        gated_content_type: GatedContentType,
+        gated_content_entity: Track,
         is_download: Optional[bool] = False,
-    ) -> GatedContentAccess:
-        if premium_content_type != "track":
+    ) -> GatedContentAccessResponse:
+        if gated_content_type != "track":
             logger.warn(
-                f"gated_content_access_checker | check_access | gated content type {premium_content_type} is not supported."
+                f"gated_content_access_checker | check_access | gated content type {gated_content_type} is not supported."
             )
             return {"is_gated": False, "does_user_have_access": True}
 
         is_gated = False
         conditions = None
-        content_owner_id = premium_content_entity.owner_id
+        content_owner_id = gated_content_entity.owner_id
 
         if is_download:
-            is_gated = premium_content_entity.is_download_gated
-            conditions = premium_content_entity.download_conditions
+            is_gated = gated_content_entity.is_download_gated
+            conditions = gated_content_entity.download_conditions
         else:
-            is_gated = premium_content_entity.is_stream_gated
-            conditions = premium_content_entity.stream_conditions
+            is_gated = gated_content_entity.is_stream_gated
+            conditions = gated_content_entity.stream_conditions
 
         if not is_gated:
             # conditions should always be null here as it makes
             # no sense to have a non-gated track with gating conditions
             if conditions:
                 logger.warn(
-                    f"gated_content_access_checker.py | check_access | non-gated content with id {premium_content_id} and type {premium_content_type} has gated conditions."
+                    f"gated_content_access_checker.py | check_access | non-gated content with id {gated_content_id} and type {gated_content_type} has gated conditions."
                 )
             return {"is_gated": False, "does_user_have_access": True}
 
@@ -111,7 +111,7 @@ class ContentAccessChecker:
         # to have a gated track with no conditions
         if conditions is None:
             logger.warn(
-                f"gated_content_access_checker.py | check_access | gated content with id {premium_content_id} and type {premium_content_type} has no gated conditions."
+                f"gated_content_access_checker.py | check_access | gated content with id {gated_content_id} and type {gated_content_type} has no gated conditions."
             )
             return {
                 "is_gated": True,
@@ -130,7 +130,7 @@ class ContentAccessChecker:
             "does_user_have_access": self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
-                content_id=premium_content_entity.track_id,
+                content_id=gated_content_entity.track_id,
                 content_type="track",
                 conditions=cast(dict, conditions),
             ),
@@ -158,14 +158,14 @@ class ContentAccessChecker:
     ) -> GatedContentAccessBatchResponse:
         # for now, we only allow tracks to be gated; gated playlists will come later
         valid_args = list(
-            filter(lambda arg: arg["premium_content_type"] == "track", args)
+            filter(lambda arg: arg["gated_content_type"] == "track", args)
         )
 
         if not valid_args:
             return {"track": {}}
 
         track_access_users = {
-            arg["premium_content_id"]: arg["user_id"] for arg in valid_args
+            arg["gated_content_id"]: arg["user_id"] for arg in valid_args
         }
 
         gated_track_data = self._get_gated_track_data_for_batch(

@@ -522,22 +522,22 @@ def validate_remixability(params: ManageEntityParameters):
         map(
             lambda track_id: {
                 "user_id": user_id,
-                "premium_content_id": track_id,
-                "premium_content_type": "track",
+                "gated_content_id": track_id,
+                "gated_content_type": "track",
             },
             parent_track_ids,
         )
     )
-    premium_content_batch_access = content_access_checker.check_access_for_batch(
+    gated_content_batch_access = content_access_checker.check_access_for_batch(
         session, args
     )
-    if "track" not in premium_content_batch_access:
+    if "track" not in gated_content_batch_access:
         return
-    if user_id not in premium_content_batch_access["track"]:
+    if user_id not in gated_content_batch_access["track"]:
         return
 
-    for track_id in premium_content_batch_access["track"][user_id]:
-        access = premium_content_batch_access["track"][user_id][track_id]
+    for track_id in gated_content_batch_access["track"][user_id]:
+        access = gated_content_batch_access["track"][user_id][track_id]
         if not access["does_user_have_access"]:
             raise IndexingValidationError(
                 f"User {user_id} does not have access to gated track {track_id}"

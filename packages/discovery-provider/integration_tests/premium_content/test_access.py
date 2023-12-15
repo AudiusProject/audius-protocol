@@ -7,13 +7,13 @@ from src.utils.db_session import get_db_read_replica
 def test_access(app):
     with app.app_context():
         db = get_db_read_replica()
-        non_premium_track_entity = {
+        non_stream_gated_track_entity = {
             "track_id": 1,
             "owner_id": 3,
             "is_stream_gated": False,
             "stream_conditions": None,
         }
-        premium_track_entity_1 = {
+        stream_gated_track_entity_1 = {
             "track_id": 2,
             "owner_id": 3,
             "is_stream_gated": True,
@@ -29,7 +29,7 @@ def test_access(app):
                 }
             },
         }
-        premium_track_entity_2 = {
+        stream_gated_track_entity_2 = {
             "track_id": 3,
             "owner_id": 2,
             "is_stream_gated": True,
@@ -45,17 +45,17 @@ def test_access(app):
                 }
             },
         }
-        premium_track_entity_3 = {
+        stream_gated_track_entity_3 = {
             "track_id": 4,
             "owner_id": 1,
             "is_stream_gated": True,
             "stream_conditions": {"follow_user_id": 1},
         }
         track_entities = [
-            non_premium_track_entity,
-            premium_track_entity_1,
-            premium_track_entity_2,
-            premium_track_entity_3,
+            non_stream_gated_track_entity,
+            stream_gated_track_entity_1,
+            stream_gated_track_entity_2,
+            stream_gated_track_entity_3,
         ]
         tracks = []
         for entity in track_entities:
@@ -84,9 +84,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=1,
-                premium_content_id=non_premium_track_entity["track_id"],
-                premium_content_type="track",
-                premium_content_entity=tracks[0],
+                gated_content_id=non_stream_gated_track_entity["track_id"],
+                gated_content_type="track",
+                gated_content_entity=tracks[0],
             )
             assert not result["is_gated"] and result["does_user_have_access"]
 
@@ -94,9 +94,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                premium_content_id=premium_track_entity_1["track_id"],
-                premium_content_type="track",
-                premium_content_entity=tracks[1],
+                gated_content_id=stream_gated_track_entity_1["track_id"],
+                gated_content_type="track",
+                gated_content_entity=tracks[1],
             )
             assert result["is_gated"] and not result["does_user_have_access"]
 
@@ -104,9 +104,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                premium_content_id=premium_track_entity_2["track_id"],
-                premium_content_type="track",
-                premium_content_entity=tracks[2],
+                gated_content_id=stream_gated_track_entity_2["track_id"],
+                gated_content_type="track",
+                gated_content_entity=tracks[2],
             )
             assert result["is_gated"] and result["does_user_have_access"]
 
@@ -114,9 +114,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                premium_content_id=premium_track_entity_3["track_id"],
-                premium_content_type="track",
-                premium_content_entity=tracks[3],
+                gated_content_id=stream_gated_track_entity_3["track_id"],
+                gated_content_type="track",
+                gated_content_entity=tracks[3],
             )
             assert result["is_gated"] and result["does_user_have_access"]
 
@@ -132,12 +132,12 @@ def test_batch_access(app):
 
         non_exisent_track_id = 1
 
-        non_premium_track_entity = {
+        non_stream_gated_track_entity = {
             "track_id": 2,
             "is_stream_gated": False,
             "stream_conditions": None,
         }
-        premium_track_entity_1 = {
+        stream_gated_track_entity_1 = {
             "track_id": 3,
             "is_stream_gated": True,
             "stream_conditions": {
@@ -152,7 +152,7 @@ def test_batch_access(app):
                 }
             },
         }
-        premium_track_entity_2 = {
+        stream_gated_track_entity_2 = {
             "track_id": 4,
             "owner_id": user_entity_3["user_id"],
             "is_stream_gated": True,
@@ -168,17 +168,17 @@ def test_batch_access(app):
                 }
             },
         }
-        premium_track_entity_3 = {
+        stream_gated_track_entity_3 = {
             "track_id": 5,
             "owner_id": 1,
             "is_stream_gated": True,
             "stream_conditions": {"follow_user_id": 1},
         }
         track_entities = [
-            non_premium_track_entity,
-            premium_track_entity_1,
-            premium_track_entity_2,
-            premium_track_entity_3,
+            non_stream_gated_track_entity,
+            stream_gated_track_entity_1,
+            stream_gated_track_entity_2,
+            stream_gated_track_entity_3,
         ]
         follow_entities = [{"follower_user_id": 2, "followee_user_id": 1}]
 
@@ -198,28 +198,28 @@ def test_batch_access(app):
                 [
                     {
                         "user_id": user_entity_1["user_id"],
-                        "premium_content_id": non_exisent_track_id,
-                        "premium_content_type": "track",
+                        "gated_content_id": non_exisent_track_id,
+                        "gated_content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "premium_content_id": non_premium_track_entity["track_id"],
-                        "premium_content_type": "track",
+                        "gated_content_id": non_stream_gated_track_entity["track_id"],
+                        "gated_content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "premium_content_id": premium_track_entity_1["track_id"],
-                        "premium_content_type": "track",
+                        "gated_content_id": stream_gated_track_entity_1["track_id"],
+                        "gated_content_type": "track",
                     },
                     {
                         "user_id": user_entity_3["user_id"],
-                        "premium_content_id": premium_track_entity_2["track_id"],
-                        "premium_content_type": "track",
+                        "gated_content_id": stream_gated_track_entity_2["track_id"],
+                        "gated_content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "premium_content_id": premium_track_entity_3["track_id"],
-                        "premium_content_type": "track",
+                        "gated_content_id": stream_gated_track_entity_3["track_id"],
+                        "gated_content_type": "track",
                     },
                 ],
             )
@@ -230,37 +230,37 @@ def test_batch_access(app):
             assert user_entity_1["user_id"] not in track_access_result
 
             # test non-gated track
-            user_2_non_premium_track_access_result = track_access_result[
+            user_2_non_stream_gated_track_access_result = track_access_result[
                 user_entity_2["user_id"]
-            ][non_premium_track_entity["track_id"]]
+            ][non_stream_gated_track_entity["track_id"]]
             assert (
-                not user_2_non_premium_track_access_result["is_gated"]
-                and user_2_non_premium_track_access_result["does_user_have_access"]
+                not user_2_non_stream_gated_track_access_result["is_gated"]
+                and user_2_non_stream_gated_track_access_result["does_user_have_access"]
             )
 
             # test gated track with user who has no access
-            user_2_premium_track_access_result = track_access_result[
+            user_2_stream_gated_track_access_result = track_access_result[
                 user_entity_2["user_id"]
-            ][premium_track_entity_1["track_id"]]
+            ][stream_gated_track_entity_1["track_id"]]
             assert (
-                user_2_premium_track_access_result["is_gated"]
-                and not user_2_premium_track_access_result["does_user_have_access"]
+                user_2_stream_gated_track_access_result["is_gated"]
+                and not user_2_stream_gated_track_access_result["does_user_have_access"]
             )
 
             # test gated track with user who owns the track
-            user_3_premium_track_access_result = track_access_result[
+            user_3_stream_gated_track_access_result = track_access_result[
                 user_entity_3["user_id"]
-            ][premium_track_entity_2["track_id"]]
+            ][stream_gated_track_entity_2["track_id"]]
             assert (
-                user_3_premium_track_access_result["is_gated"]
-                and user_3_premium_track_access_result["does_user_have_access"]
+                user_3_stream_gated_track_access_result["is_gated"]
+                and user_3_stream_gated_track_access_result["does_user_have_access"]
             )
 
             # test gated track with user who has access
-            user_2_premium_track_access_result_2 = track_access_result[
+            user_2_stream_gated_track_access_result_2 = track_access_result[
                 user_entity_2["user_id"]
-            ][premium_track_entity_3["track_id"]]
+            ][stream_gated_track_entity_3["track_id"]]
             assert (
-                user_2_premium_track_access_result_2["is_gated"]
-                and user_2_premium_track_access_result_2["does_user_have_access"]
+                user_2_stream_gated_track_access_result_2["is_gated"]
+                and user_2_stream_gated_track_access_result_2["does_user_have_access"]
             )

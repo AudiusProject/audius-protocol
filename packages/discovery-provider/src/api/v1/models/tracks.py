@@ -154,8 +154,12 @@ track_full = ns.clone(
         "is_available": fields.Boolean,
         # the following "premium" fields are deprecated and will be removed in the future
         "is_premium": fields.Boolean(attribute="is_stream_gated"),
-        "premium_conditions": fields.Raw(attribute="stream_conditions", allow_null=True),
-        "premium_content_signature": fields.Nested(stream_signature, attribute="stream_signature", allow_null=True),
+        "premium_conditions": fields.Raw(
+            attribute="stream_conditions", allow_null=True
+        ),
+        "premium_content_signature": fields.Nested(
+            stream_signature, attribute="stream_signature", allow_null=True
+        ),
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
         "stream_signature": fields.Nested(stream_signature, allow_null=True),
