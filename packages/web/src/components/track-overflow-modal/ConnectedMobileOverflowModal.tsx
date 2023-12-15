@@ -109,7 +109,8 @@ const ConnectedMobileOverflowModal = ({
     onFavorite,
     onUnfavorite,
     onShare,
-    onAddToCollection,
+    onAddToAlbum,
+    onAddToPlaylist,
     onEditPlaylist,
     onPublishPlaylist,
     onDeletePlaylist,
@@ -125,7 +126,8 @@ const ConnectedMobileOverflowModal = ({
     onFavorite?: () => void
     onUnfavorite?: () => void
     onShare?: () => void
-    onAddToCollection?: () => void
+    onAddToAlbum?: () => void
+    onAddToPlaylist?: () => void
     onEditPlaylist?: () => void
     onPublishPlaylist?: () => void
     onDeletePlaylist?: () => void
@@ -145,7 +147,8 @@ const ConnectedMobileOverflowModal = ({
           onUnrepost: () => unrepostTrack(id as ID),
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
-          onAddToCollection: () => addToCollection(id as ID, title),
+          onAddToAlbum: () => addToCollection('album', id as ID, title),
+          onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
             visitCollectiblePage(handle, id as string)
           },
@@ -209,7 +212,8 @@ const ConnectedMobileOverflowModal = ({
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
-      onAddToCollection={onAddToCollection}
+      onAddToAlbum={onAddToAlbum}
+      onAddToPlaylist={onAddToPlaylist}
       onVisitTrackPage={onVisitTrackPage}
       onEditPlaylist={onEditPlaylist}
       onPublishPlaylist={onPublishPlaylist}
@@ -355,8 +359,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       )
     },
     // Routes
-    addToCollection: (trackId: ID, title: string) =>
-      dispatch(openAddToCollection('playlist', trackId, title)),
+    addToCollection: (
+      collectionType: 'album' | 'playlist',
+      trackId: ID,
+      title: string
+    ) => dispatch(openAddToCollection(collectionType, trackId, title)),
     visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
     visitArtistPage: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),

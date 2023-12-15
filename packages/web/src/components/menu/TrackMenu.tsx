@@ -40,7 +40,7 @@ const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
   addToAlbum: 'Add to Album',
-  addToCollection: 'Add to Playlist',
+  addToPlaylist: 'Add to Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
   embed: 'Embed',
   favorite: 'Favorite',
@@ -176,7 +176,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
 
     const addToPlaylistMenuItem = {
-      text: messages.addToCollection,
+      text: messages.addToPlaylist,
       onClick: () => {
         openAddToCollectionModal(
           'playlist',
