@@ -4,7 +4,7 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 import { UserTrackMetadata } from 'models/Track'
 import {
   ContentType,
@@ -38,11 +38,13 @@ const {
 export const usePurchaseContentFormConfiguration = ({
   track,
   price,
-  presetValues
+  presetValues,
+  purchaseVendor
 }: {
   track?: Nullable<UserTrackMetadata>
   price: number
   presetValues: PayExtraAmountPresetValues
+  purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
@@ -59,7 +61,7 @@ export const usePurchaseContentFormConfiguration = ({
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
-    [PURCHASE_VENDOR]: undefined
+    [PURCHASE_VENDOR]: purchaseVendor
   }
 
   const onSubmit = useCallback(
@@ -69,6 +71,7 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethod,
       purchaseVendor
     }: PurchaseContentValues) => {
+      console.log('onSubmit', purchaseMethod)
       if (isUnlocking || !track?.track_id) return
 
       if (
