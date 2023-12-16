@@ -9,14 +9,13 @@ import {
   cacheCollectionsActions,
   addToCollectionUISelectors
 } from '@audius/common'
-import { fetchAllAccountCollections } from 'audius-client/src/common/store/saved-collections/sagas'
+import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { Card } from 'app/components/card'
-import { Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useToast } from 'app/hooks/useToast'
@@ -71,7 +70,7 @@ export const AddToCollectionDrawer = () => {
   const messages = getMessages(collectionType)
 
   useEffectOnce(() => {
-    dispatch(fetchAllAccountCollections)
+    dispatch(fetchAccountCollections())
   })
 
   const renderImage = useCallback(
@@ -192,9 +191,6 @@ export const AddToCollectionDrawer = () => {
       title={messages.title}
     >
       <View>
-        <Text>
-          {filteredCollections.map((collection) => collection.playlist_id)}
-        </Text>
         <CollectionList
           contentContainerStyle={styles.cardList}
           collection={filteredCollections}
