@@ -114,6 +114,8 @@ export const CoinflowOnrampDrawer = () => {
           onSuccess={handleSuccess}
           merchantId={env.COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
+          disableGooglePay={false}
+          disableApplePay={false}
           blockchain='solana'
           amount={amount}
         />
