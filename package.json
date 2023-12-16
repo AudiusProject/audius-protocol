@@ -28,9 +28,9 @@
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
     "DESKTOP====================================": "",
-    "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://127.0.0.1:3000 && npm run electron:localhost -w audius-client -- 3000'",
-    "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://127.0.0.1:3002 && npm run electron:localhost -w audius-client -- 3002'",
-    "desktop:stage": "concurrently -k 'BROWSER=none npm run start:stage -w audius-client' 'wait-on http://127.0.0.1:3001 && npm run electron:localhost -w audius-client -- 3001'",
+    "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
+    "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",
+    "desktop:stage": "concurrently -k 'BROWSER=none npm run start:stage -w audius-client' 'wait-on http://0.0.0.0:3001 && npm run electron:localhost -w audius-client -- 3001'",
     "MOBILE=====================================": "",
     "android:dev": "npm run android:dev -w audius-mobile-client",
     "android:prod": "npm run android:prod -w audius-mobile-client",
@@ -91,7 +91,7 @@
     "standard": "17.0.0",
     "turbo": "1.10.14",
     "typescript": "4.9.4",
-    "wait-on": "6.0.1"
+    "wait-on": "7.2.0"
   },
   "dependencies": {
     "@escape.tech/mookme": "2.4.1",
