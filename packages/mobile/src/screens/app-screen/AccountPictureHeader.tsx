@@ -9,7 +9,10 @@ import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { Adaptable } from 'react-native-reanimated'
-import Animated from 'react-native-reanimated'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/user'
@@ -49,7 +52,7 @@ type AccountPictureHeaderProps = {
 
 export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const { onPress } = props
-  const drawerProgress = useDrawerProgress()
+  const drawerProgress = useDrawerProgress() as Animated.SharedValue<number>
   const styles = useStyles()
   const accountId = useSelector(getUserId)!
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
@@ -59,16 +62,12 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const showNotificationBubble =
     hasClaimableRewards || (hasUnreadMessages && isChatEnabled)
 
-  const opacity = Animated.interpolateNode(
-    drawerProgress as Adaptable<number>,
-    {
-      inputRange: [0, 1],
-      outputRange: [1, 0]
-    }
-  )
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(drawerProgress.value, [0, 1], [1, 0])
+  }))
 
   return (
-    <Animated.View style={{ opacity }}>
+    <Animated.View style={animatedStyle}>
       <TouchableOpacity onPress={onPress}>
         <ProfilePicture
           userId={accountId}
