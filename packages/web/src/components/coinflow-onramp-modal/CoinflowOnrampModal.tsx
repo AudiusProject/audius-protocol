@@ -10,6 +10,7 @@ import { Transaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { isElectron } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowOnrampModal.module.css'
@@ -76,6 +77,8 @@ export const CoinflowOnrampModal = () => {
           onSuccess={handleSuccess}
           merchantId={MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
+          disableGooglePay={isElectron()}
+          disableApplePay={isElectron()}
           blockchain='solana'
           amount={amount}
         />
