@@ -141,6 +141,8 @@ const ConnectedTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   const { isUserAccessTBD, doesUserHaveAccess } =
     usePremiumContentAccess(trackWithFallback)
   const loading = isLoading || isUserAccessTBD
@@ -194,7 +196,8 @@ const ConnectedTrackTile = ({
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToAlbumAction = isOwner ? OverflowAction.ADD_TO_ALBUM : null
+    const addToAlbumAction =
+      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = !isPremium
       ? OverflowAction.ADD_TO_PLAYLIST
       : null

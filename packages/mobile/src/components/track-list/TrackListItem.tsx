@@ -231,6 +231,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     owner_id,
     is_premium: isPremium
   } = track
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
+
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
@@ -305,7 +309,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
