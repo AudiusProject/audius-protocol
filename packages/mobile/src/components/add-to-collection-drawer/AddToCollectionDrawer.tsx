@@ -57,7 +57,6 @@ const useStyles = makeStyles(() => ({
 }))
 
 export const AddToCollectionDrawer = () => {
-export const AddToCollectionDrawer = () => {
   const styles = useStyles()
   const { toast } = useToast()
   const dispatch = useDispatch()
