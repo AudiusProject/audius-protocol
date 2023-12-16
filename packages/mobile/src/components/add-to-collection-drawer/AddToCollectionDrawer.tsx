@@ -127,6 +127,7 @@ export const AddToCollectionDrawer = () => {
           source={CreatePlaylistSource.FROM_TRACK}
           sourceTrackId={trackId}
           onCreate={addToNewCollection}
+          collectionType={collectionType}
         />
       ) : (
         <Card
