@@ -4,7 +4,7 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 import { UserTrackMetadata } from 'models/Track'
 import {
   ContentType,
@@ -59,7 +59,7 @@ export const usePurchaseContentFormConfiguration = ({
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
-    [PURCHASE_VENDOR]: undefined
+    [PURCHASE_VENDOR]: PurchaseVendor.STRIPE
   }
 
   const onSubmit = useCallback(
