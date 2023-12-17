@@ -130,11 +130,12 @@ export const UserList = (props: UserListProps) => {
   }, [hasMore, isFocused, dispatch, tag])
 
   const shouldUseCachedData = isEmpty || isRefreshing || loading || !isFocused
+  const showSkeletons = hasMore || loading
 
   const data = useMemo(() => {
     const userData = shouldUseCachedData ? cachedUsers.current : users
-    return [...userData, ...skeletonData]
-  }, [shouldUseCachedData, users])
+    return [...userData, ...(showSkeletons ? skeletonData : [])]
+  }, [shouldUseCachedData, users, showSkeletons])
 
   const renderItem = useCallback(
     ({ item }) =>
