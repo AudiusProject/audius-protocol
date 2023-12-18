@@ -14,7 +14,6 @@ import {
   tracksSocialActions as socialActions,
   waitForValue,
   QueryParams,
-  gatedContentSelectors,
   encodeHashId,
   getQueryParams,
   confirmerActions,
@@ -34,7 +33,6 @@ import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
-const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {

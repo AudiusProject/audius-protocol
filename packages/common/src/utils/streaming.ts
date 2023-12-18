@@ -23,7 +23,7 @@ export async function getQueryParams({
   streamSignature
 }: {
   audiusBackendInstance: AudiusBackend
-  streamSignature: Nullable<StreamingSignature>
+  streamSignature?: Nullable<StreamingSignature>
 }) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
