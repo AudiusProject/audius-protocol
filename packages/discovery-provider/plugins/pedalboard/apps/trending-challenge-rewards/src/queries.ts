@@ -54,8 +54,8 @@ export const getChallengesDisbursementsUserbanks = async (
 export const getChallengesDisbursementsUserbanksFriendly = async (
   discoveryDb: Knex,
   specifier: string
-): Promise<ChallengeDisbursementUserbankFriendly[]> =>
-  await discoveryDb<ChallengeDisbursementUserbankFriendly>(
+): Promise<ChallengeDisbursementUserbankFriendly[]> => {
+  const query =  discoveryDb<ChallengeDisbursementUserbankFriendly>(
     'user_challenges as u'
   )
     .select(
@@ -79,22 +79,13 @@ export const getChallengesDisbursementsUserbanksFriendly = async (
     .orderBy('u.challenge_id')
     .orderBy('u.specifier')
 
+    return await query
+  }
+
 export const getChallengesDisbursementsUserbanksFriendlyEnsureSlots = async (
   discoveryDb: Knex,
   specifier: string
 ): Promise<ChallengeDisbursementUserbankFriendly[]> => {
-  let retries = 20
-  while (retries !== 0) {
-    console.log(`attempt of ${retries} to get all challenge disbursments for ${specifier}`)
-    const challenges = await getChallengesDisbursementsUserbanksFriendly(discoveryDb, specifier)
-    const totalChallenges = challenges.length
-    const challengesWithSlots = challenges.filter((challenge) => challenge.slot !== null)
-    const totalSlots = challengesWithSlots.length
-    if (totalChallenges === totalSlots) return challenges
-    await new Promise(r => setTimeout(r, 5000))
-    retries -= 1
-  }
-  console.log("exhausted retries, some disbursements didn't go through")
   return await getChallengesDisbursementsUserbanksFriendly(discoveryDb, specifier)
 }
 
