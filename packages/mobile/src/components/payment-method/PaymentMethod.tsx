@@ -5,8 +5,6 @@ import {
   PurchaseMethod,
   formatUSDCWeiToFloorCentsNumber,
   formatCurrencyBalance,
-  FeatureFlags,
-  useFeatureFlag,
   PurchaseVendor,
   removeNullable
 } from '@audius/common'
@@ -68,6 +66,7 @@ type PaymentMethodProps = {
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
+  isCoinflowEnabled?: boolean
 }
 
 export const PaymentMethod = ({
@@ -75,7 +74,8 @@ export const PaymentMethod = ({
   setSelectedMethod,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance
+  showExistingBalance,
+  isCoinflowEnabled
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -86,19 +86,17 @@ export const PaymentMethod = ({
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const purchaseVendor = useSelector(getPurchaseVendor)
-  const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
-    useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
   const vendorOptions = [
     isCoinflowEnabled ? PurchaseVendor.COINFLOW : null,
     PurchaseVendor.STRIPE
   ].filter(removeNullable)
 
-  // Initial state is coinflow by default, but set to stripe if coinflow is disabled.
+  // Set initial state if coinflow is enabled
   useEffect(() => {
-    if (isCoinflowEnabledLoaded && !isCoinflowEnabled) {
-      dispatch(setPurchaseVendor(PurchaseVendor.STRIPE))
+    if (isCoinflowEnabled) {
+      dispatch(setPurchaseVendor(PurchaseVendor.COINFLOW))
     }
-  }, [dispatch, isCoinflowEnabledLoaded, isCoinflowEnabled])
+  }, [dispatch, isCoinflowEnabled])
 
   const items: SummaryTableItem[] = [
     {

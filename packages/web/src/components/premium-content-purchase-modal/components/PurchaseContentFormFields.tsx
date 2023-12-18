@@ -8,7 +8,11 @@ import {
   PurchaseVendor,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  PurchaseMethod
+  PurchaseMethod,
+  useFeatureFlag,
+  FeatureFlags,
+  useRemoteVar,
+  IntKeys
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -42,6 +46,10 @@ export const PurchaseContentFormFields = ({
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets()
+  const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
@@ -106,6 +114,9 @@ export const PurchaseContentFormFields = ({
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!balanceBN?.isZero()}
+          isCoinflowEnabled={
+            isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+          }
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}
