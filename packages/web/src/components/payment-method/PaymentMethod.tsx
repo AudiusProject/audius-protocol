@@ -2,13 +2,11 @@ import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
 import {
   BNUSDC,
-  FeatureFlags,
   Nullable,
   PurchaseMethod,
   PurchaseVendor,
   formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  useFeatureFlag
+  formatUSDCWeiToFloorCentsNumber
 } from '@audius/common'
 import {
   FilterButton,
@@ -40,6 +38,7 @@ type PaymentMethodProps = {
   setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
+  isCoinflowEnabled?: boolean
   showExistingBalance?: boolean
 }
 
@@ -49,11 +48,9 @@ export const PaymentMethod = ({
   setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance
+  showExistingBalance,
+  isCoinflowEnabled
 }: PaymentMethodProps) => {
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
-    FeatureFlags.BUY_WITH_COINFLOW
-  )
   const mobile = isMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
