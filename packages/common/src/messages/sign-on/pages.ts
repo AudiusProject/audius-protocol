@@ -76,3 +76,19 @@ export const selectGenresPageMessages = {
   description: 'Start by picking some of your favorite genres.',
   continue: 'Continue'
 }
+
+export const reviewHandlePageMessages = {
+  heading: 'Review Your Handle',
+  handle: 'Handle',
+  description:
+    "We've connected your social account but need your help with an issue we encountered. "
+}
+
+export const createLoginDetailsPageMessages = {
+  title: 'Create Login Details',
+  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  emailLabel: 'Email',
+  handleLabel: 'Handle',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password'
+}
