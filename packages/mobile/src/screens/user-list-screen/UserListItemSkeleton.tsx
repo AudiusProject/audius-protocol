@@ -27,7 +27,7 @@ export const UserListItemSkeleton = (props: Props) => {
           </Flex>
           <StaticSkeleton width={200} height={18} />
           {isSupporterTile ? (
-            <Flex justifyContent='space-between'>
+            <Flex direction='row' justifyContent='space-between'>
               <StaticSkeleton width={100} height={18} />
               <StaticSkeleton width={100} height={18} />
             </Flex>

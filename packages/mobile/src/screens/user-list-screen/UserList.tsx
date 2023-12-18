@@ -148,20 +148,6 @@ export const UserList = (props: UserListProps) => {
     [tag]
   )
 
-  const getItemLayout = useCallback(
-    (_data: User[], index: number) => {
-      const itemHeight = ['SUPPORTING', 'TOP SUPPORTERS'].includes(tag)
-        ? 167
-        : 147
-      return {
-        length: itemHeight,
-        offset: itemHeight * index,
-        index
-      }
-    },
-    [tag]
-  )
-
   const loadingSpinner = (
     <LoadingSpinner
       style={[styles.spinner, data.length === 0 && styles.emptySpinner]}
@@ -176,7 +162,6 @@ export const UserList = (props: UserListProps) => {
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      getItemLayout={getItemLayout}
       ItemSeparatorComponent={Divider}
       onEndReached={handleEndReached}
       onEndReachedThreshold={3}
