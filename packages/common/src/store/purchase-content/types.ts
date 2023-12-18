@@ -7,6 +7,7 @@ export enum ContentType {
 }
 
 export enum PurchaseContentStage {
+  IDLE = 'IDLE',
   START = 'START',
   BUY_USDC = 'BUY_USDC',
   PURCHASING = 'PURCHASING',

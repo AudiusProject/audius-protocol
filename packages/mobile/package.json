@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.55",
+  "version": "1.5.56",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -55,6 +55,7 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
+    "@coinflowlabs/react-native": "2.1.5",
     "@emotion/native": "11.11.0",
     "@emotion/react": "11.11.1",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
@@ -92,7 +93,6 @@
     "@stripe/stripe-js": "1.54.1",
     "@tanstack/react-query": "4.35.7",
     "@walletconnect/react-native-dapp": "1.8.0",
-    "@coinflowlabs/react-native": "2.1.2",
     "array.prototype.flat": "1.2.5",
     "big-integer": "1.6.51",
     "bn.js": "5.2.0",
