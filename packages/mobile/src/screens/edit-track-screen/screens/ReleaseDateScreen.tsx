@@ -121,7 +121,7 @@ export const ScheduledReleaseRadioField = (props) => {
       setReleaseDateValue(newReleaseDate.toString())
       setIsTimeOpen(false)
     },
-    [setReleaseDateValue, setIsTimeOpen]
+    [releaseDateValue, setReleaseDateValue]
   )
 
   return (

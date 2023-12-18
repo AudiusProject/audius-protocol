@@ -72,9 +72,10 @@ export function createPlaylist(
 
 export function createPlaylistRequested(
   playlistId: ID,
-  noticeType: 'route' | 'toast'
+  noticeType: 'route' | 'toast',
+  isAlbum: boolean
 ) {
-  return { type: CREATE_PLAYLIST_REQUESTED, playlistId, noticeType }
+  return { type: CREATE_PLAYLIST_REQUESTED, playlistId, noticeType, isAlbum }
 }
 
 export function createPlaylistSucceeded() {

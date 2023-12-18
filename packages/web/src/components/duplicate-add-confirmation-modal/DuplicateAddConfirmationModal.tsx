@@ -40,7 +40,7 @@ const messages = {
   cancel: "Don't Add",
   add: 'Add Anyway',
   addedToast: (collectionType: 'album' | 'playlist') =>
-    `'Added To ${capitalize(collectionType)}!`,
+    `Added To ${capitalize(collectionType)}!`,
   view: 'View'
 }
 

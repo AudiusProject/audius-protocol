@@ -128,7 +128,7 @@ const AddToCollectionModal = () => {
     if (!trackTitle) return
     const metadata = { playlist_name: trackTitle }
     dispatch(
-      (collectionType === 'album' ? createAlbum : createPlaylist)(
+      (isAlbumType ? createAlbum : createPlaylist)(
         metadata,
         CreatePlaylistSource.FROM_TRACK,
         trackId,

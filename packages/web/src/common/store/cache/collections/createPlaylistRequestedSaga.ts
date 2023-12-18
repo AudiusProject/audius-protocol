@@ -10,7 +10,8 @@ const { toast } = toastActions
 const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
-  createdToast: 'Playlist Created!',
+  createdToast: (isAlbum: boolean) =>
+    `${isAlbum ? 'Album' : 'Playlist'} Created`,
   view: 'View'
 }
 // Either route user to created playlist page, or post a toast
@@ -20,7 +21,7 @@ export function* createPlaylistRequestedSaga() {
     function* (
       action: ReturnType<typeof cacheCollectionsActions.createPlaylistRequested>
     ) {
-      const { playlistId, noticeType } = action
+      const { playlistId, noticeType, isAlbum } = action
       const playlist = yield* select(getCollection, { id: playlistId })
       if (!playlist?.permalink) return
 
@@ -30,7 +31,7 @@ export function* createPlaylistRequestedSaga() {
         case 'toast': {
           yield* put(
             toast({
-              content: messages.createdToast,
+              content: messages.createdToast(isAlbum),
               linkText: messages.view,
               link: permalink
             })
