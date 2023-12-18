@@ -8,11 +8,11 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@rmp135/sql-ts": "1.18.0",
+    "dotenv": "^16.3.1",
     "knex": "2.5.1",
     "pg": "8.11.3"
   },
-  "main": "src/index.ts",
-  "devDependencies": {}
+  "main": "src/index.ts"
 }
