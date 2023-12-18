@@ -6,7 +6,8 @@ import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
-import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
+import { Track, isPremiumContentUSDCPurchaseGated } from 'models/Track'
+import { User } from 'models/User'
 import { BNUSDC } from 'models/Wallet'
 import {
   getRecentBlockhash,
@@ -45,7 +46,10 @@ import {
   transactionFailed,
   transactionSucceeded
 } from 'store/ui/coinflow-modal/slice'
-import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
+import {
+  CoinflowPurchaseMetadata,
+  coinflowOnrampModalActions
+} from 'store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -63,7 +67,7 @@ import {
 import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId } = accountSelectors
+const { getUserId, getAccountUser } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
@@ -106,7 +110,93 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
     title
   } = trackInfo
 
-  return { price, title, artistInfo }
+  return { price, title, artistInfo, trackInfo }
+}
+
+const getUserPurchaseMetadata = ({
+  handle,
+  name,
+  wallet,
+  spl_wallet,
+  created_at,
+  updated_at,
+  user_id,
+  is_deactivated,
+  is_verified,
+  location
+}: User) => ({
+  handle,
+  name,
+  wallet,
+  spl_wallet,
+  created_at,
+  updated_at,
+  user_id,
+  is_deactivated,
+  is_verified,
+  location
+})
+
+const getTrackPurchaseMetadata = ({
+  created_at,
+  description,
+  duration,
+  genre,
+  is_delete,
+  isrc,
+  iswc,
+  license,
+  owner_id,
+  permalink,
+  release_date,
+  tags,
+  title,
+  track_id,
+  updated_at
+}: Track) => ({
+  created_at,
+  description,
+  duration,
+  genre,
+  is_delete,
+  isrc,
+  iswc,
+  license,
+  owner_id,
+  permalink,
+  release_date,
+  tags,
+  title,
+  track_id,
+  updated_at
+})
+
+function* getCoinflowPurchaseMetadata({
+  contentId,
+  contentType,
+  extraAmount,
+  splits
+}: PurchaseWithCoinflowArgs) {
+  const { trackInfo, artistInfo, title, price } = yield* call(getContentInfo, {
+    contentId,
+    contentType
+  })
+  const currentUser = yield* select(getAccountUser)
+
+  const data: CoinflowPurchaseMetadata = {
+    productName: `${artistInfo.name}:${title}`,
+    productType: 'digitalArt',
+    quantity: 1,
+    rawProductData: {
+      priceUSD: price / 100,
+      extraAmountUSD: extraAmount ? extraAmount / 100 : 0,
+      usdcRecipientSplits: splits,
+      artistInfo: getUserPurchaseMetadata(artistInfo),
+      purchaserInfo: currentUser ? getUserPurchaseMetadata(currentUser) : null,
+      contentInfo: getTrackPurchaseMetadata(trackInfo)
+    }
+  }
+  return data
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
@@ -177,24 +267,27 @@ type PurchaseWithCoinflowArgs = {
   extraAmount?: number
   splits: Record<number, number>
   contentId: ID
+  contentType: ContentType
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
 }
 
-function* purchaseWithCoinflow({
-  blocknumber,
-  extraAmount,
-  splits,
-  contentId,
-  purchaserUserId,
-  price
-}: PurchaseWithCoinflowArgs) {
+function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
+  const {
+    blocknumber,
+    extraAmount,
+    splits,
+    contentId,
+    purchaserUserId,
+    price
+  } = args
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayerAddress = yield* select(getFeePayer)
   if (!feePayerAddress) {
     throw new Error('Missing feePayer unexpectedly')
   }
+  const purchaseMetadata = yield* call(getCoinflowPurchaseMetadata, args)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
@@ -220,6 +313,7 @@ function* purchaseWithCoinflow({
     coinflowOnrampModalActions.open({
       amount: price,
       serializedTransaction,
+      purchaseMetadata,
       contentId
     })
   )
@@ -408,6 +502,7 @@ function* doStartPurchaseContentFlow({
             extraAmount,
             splits,
             contentId,
+            contentType,
             purchaserUserId,
             price: purchaseAmount
           })
