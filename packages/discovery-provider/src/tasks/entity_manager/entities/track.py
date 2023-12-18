@@ -307,6 +307,10 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     # skip fields that cannot be modified after creation
                     continue
                 setattr(track_record, key, track_metadata[key])
+    
+    # Default release_date to created_at if not set
+    if track_record.release_date is None:
+        track_record.release_date = track_record.created_at
 
     return track_record
 
