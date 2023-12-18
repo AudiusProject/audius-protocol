@@ -32,10 +32,10 @@ const ShuffleButtonProvider = ({
       if (isMatrix) {
         if (!matrixAnimations.current) {
           const { default: pbIconShuffleOff } = (await import(
-            'assets/animations/pbIconShuffleOffMatrix.json'
+            '../../../assets/animations/pbIconShuffleOffMatrix.json'
           )) as any
           const { default: pbIconShuffleOn } = (await import(
-            'assets/animations/pbIconShuffleOnMatrix.json'
+            '../../../assets/animations/pbIconShuffleOnMatrix.json'
           )) as any
           matrixAnimations.current = {
             pbIconShuffleOff,
@@ -45,8 +45,8 @@ const ShuffleButtonProvider = ({
         setAnimations({ ...matrixAnimations.current })
       } else if (darkMode) {
         if (!darkAnimations.current) {
-          const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffDark.json')
-          const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnDark.json')
+          const pbIconShuffleOff = require('../../../assets/animations/pbIconShuffleOffDark.json')
+          const pbIconShuffleOn = require('../../../assets/animations/pbIconShuffleOnDark.json')
           darkAnimations.current = {
             pbIconShuffleOff,
             pbIconShuffleOn
@@ -56,10 +56,10 @@ const ShuffleButtonProvider = ({
       } else {
         if (!defaultAnimations.current) {
           const { default: pbIconShuffleOff } = (await import(
-            'assets/animations/pbIconShuffleOff.json'
+            '../../../assets/animations/pbIconShuffleOff.json'
           )) as any
           const { default: pbIconShuffleOn } = (await import(
-            'assets/animations/pbIconShuffleOn.json'
+            '../../../assets/animations/pbIconShuffleOn.json'
           )) as any
           defaultAnimations.current = {
             pbIconShuffleOff,
