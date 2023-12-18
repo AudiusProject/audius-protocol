@@ -3,6 +3,7 @@
 import { Suspense, lazy } from 'react'
 
 import { FeatureFlags, useFeatureFlag } from '@audius/common'
+import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
@@ -20,6 +21,9 @@ const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 
+const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
+
 export const AppInner = () => {
   const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
@@ -29,6 +33,10 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Suspense fallback={null}>
+        <CoinflowPurchaseProtection
+          merchantId={MERCHANT_ID || ''}
+          coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
+        />
         <Switch>
           {SIGN_ON_ALIASES.map((a) => (
             <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
