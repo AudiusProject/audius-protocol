@@ -180,7 +180,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "e130e523aaa72b22f28ea5116ebb319f417228ecaf8996fd69043acc4e2412ba28b61cc55e9f0cc0e0d5da486c5c1809bfd86981a5440f14aecec938b898e4501c", "message": "Connecting Audius user 4 at 1686252026"}}}}""",
+                        "_metadata": f"""{{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b", "wallet_signature": {{"signature": "480b443ed0b758e3c16dcc43d0691ccdf523d84edbe8f3f337dc3f5a02b5b4212a3cad4162456dddc87dd5de1ccf12764037b15ea08b8e4480c38b81308e0da81c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
                         "_signer": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B",
                     }
                 )
@@ -195,7 +195,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B","wallet_signature": {{"signature": "42658f714e23596975894e67241635fd83f2c1c3bd72ba6044eb2a4f72f77b6475f87a6118350cca291c211ae16157614ffc0bfca9ed7d2ad8532150389bc02a1c", "message": "Connecting Audius user 2 at 1686252026"}}}}""",
+                        "_metadata": f"""{{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b","wallet_signature": {{"signature": "0adebff40970622a3f93e715279a63860c133d82f9a418062d1c4d47f52ea4902518df5ac34ed5e41b1e1865fd572fd69d9a7588d019bb3dae69e73c958b57ee1b", "message": "Connecting Audius user id 2 at 1686252026"}}}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -210,7 +210,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "76a6c2a6789b95b98d1cc5cb94f96392c6e3fbb30d1a5e7d91634b995adeadc31b023bd97ebaa7edfd56d216a2b0fada6be1927459ad101be20c586a2e9c3f0e1b", "message": "Connecting Audius user 4 at 1686252026"}}}}""",
+                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "480b443ed0b758e3c16dcc43d0691ccdf523d84edbe8f3f337dc3f5a02b5b4212a3cad4162456dddc87dd5de1ccf12764037b15ea08b8e4480c38b81308e0da81c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -270,7 +270,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "f8872b78c28e64e0ac70d381e71728d5c2677448f4c21e5805eacba63990ee592cfa2dc9a95ce1cb5bf219d074450b7ad9f5591ea174caddd97ec812372f34021b", "message": "Connecting Audius user 4 at 1686200400"}}}}""",
+                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "cd7b47a36c6c1c5615dfe264cd73839a484884c55e6f3ebad47ce79a5f24016e7569bba29016e5618375b5abbd93e10e80e51d8e0d47e6dba34930fa59e6470d1b", "message": "Connecting Audius user id 4 at 1686200400"}}}}""",
                         "_signer": "user4wallet",
                     }
                 )
