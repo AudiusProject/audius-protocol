@@ -390,10 +390,7 @@ export enum StringKeys {
   PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
 
   /** Denylist of user ids for explore premium tracks page */
-  EXPLORE_PREMIUM_DENIED_USERS = 'EXPLORE_PREMIUM_DENIED_USERS',
-
-  /** Add funds preset amounts for Coinflow */
-  COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS = 'COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS'
+  EXPLORE_PREMIUM_DENIED_USERS = 'EXPLORE_PREMIUM_DENIED_USERS'
 }
 
 export type AllRemoteConfigKeys =

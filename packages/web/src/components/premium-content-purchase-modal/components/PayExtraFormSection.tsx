@@ -1,4 +1,5 @@
 import {
+  AMOUNT_PRESET,
   CUSTOM_AMOUNT,
   PayExtraAmountPresetValues,
   PayExtraPreset
@@ -11,6 +12,7 @@ import { PriceField } from 'components/form-fields/PriceField'
 import styles from './PayExtraFormSection.module.css'
 
 const messages = {
+  payExtra: 'Pay Extra',
   customAmount: 'Custom Amount',
   other: 'Other',
   placeholder: 'Enter a value'
@@ -19,33 +21,29 @@ const messages = {
 const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
-  title: string
-  fieldName: string
   amountPresets: PayExtraAmountPresetValues
   disabled?: boolean
 }
 
 export const PayExtraFormSection = ({
-  title,
-  fieldName,
   amountPresets,
   disabled
 }: PayExtraFormSectionProps) => {
-  const [{ value: preset }, , { setValue: setPreset }] = useField(fieldName)
+  const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {
     setPreset(newPreset === preset ? PayExtraPreset.NONE : newPreset)
   }
 
   return (
-    <Flex gap='s' direction='column' w='100%'>
+    <Flex gap='s' direction='column'>
       <Text
         variant='label'
         strength='strong'
         color='subdued'
         className={styles.title}
       >
-        {title}
+        {messages.payExtra}
       </Text>
       <Flex gap='s' w='100%'>
         <SelectablePill
