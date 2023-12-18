@@ -15,6 +15,7 @@ import useAppState from 'app/hooks/useAppState'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
+import { SignOnScreen } from 'app/screens/signon'
 import { SplashScreen } from 'app/screens/splash-screen'
 import {
   UpdateRequiredScreen,
@@ -25,7 +26,6 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 import { AppDrawerScreen } from '../app-drawer-screen'
 import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
-import SignOn from '../signon/SignOn'
 
 import { StatusBar } from './StatusBar'
 
@@ -120,9 +120,9 @@ export const RootScreen = () => {
           ) : showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : isSignUpRedesignEnabled ? (
-            <Stack.Screen name='SignOn' component={SignOnStack} />
+            <Stack.Screen name='SignOnStackNew' component={SignOnStack} />
           ) : (
-            <Stack.Screen name='SignOnStack' component={SignOn} />
+            <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
           <Stack.Screen
             name='ResetPassword'
