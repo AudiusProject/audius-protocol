@@ -2,8 +2,6 @@ import json
 import time
 from typing import Optional, TypedDict, Union, cast
 
-from eth_account.messages import defunct_hash_message
-
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.utils import (
@@ -11,8 +9,8 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    get_address_from_signature
 )
-from src.utils import web3_provider
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.structured_logger import StructuredLogger
@@ -34,16 +32,6 @@ class CreateDeveloperAppMetadata(TypedDict):
 
 class DeleteDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
-
-
-def get_app_address_from_signature(app_signature):
-    web3 = web3_provider.get_eth_web3()
-    message_hash = defunct_hash_message(text=app_signature["message"])
-    app_address = web3.eth.account._recover_hash(
-        message_hash, signature=app_signature["signature"]
-    )
-    return app_address.lower()
-
 
 def is_within_6_hours(timestamp_str):
     current_timestamp = int(time.time())
@@ -166,7 +154,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
                 "Invalid Create Developer App Transaction, app signature provided does not have correct message"
             )
         try:
-            address = get_app_address_from_signature(metadata["app_signature"])
+            address = get_address_from_signature(metadata["app_signature"])
         except:
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, app signature provided is invalid"

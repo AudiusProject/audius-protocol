@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
 
+from eth_account.messages import defunct_hash_message
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
 from web3 import Web3
@@ -10,6 +11,7 @@ from web3.datastructures import AttributeDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
@@ -32,7 +34,7 @@ from src.tasks.metadata import (
     track_metadata_format,
     user_metadata_format,
 )
-from src.utils import helpers
+from src.utils import helpers, web3_provider
 from src.utils.eth_manager import EthManager
 from src.utils.structured_logger import StructuredLogger
 
@@ -72,6 +74,7 @@ class EntityType(str, Enum):
     PLAYLIST = "Playlist"
     TRACK = "Track"
     USER = "User"
+    DASHBOARD_WALLET_USER = "DashboardWalletUser"
     USER_REPLICA_SET = "UserReplicaSet"
     FOLLOW = "Follow"
     SAVE = "Save"
@@ -104,6 +107,7 @@ EntityTypeLiteral = Literal[
     "PlaylistSeen",
     "DeveloperApp",
     "Grant",
+    "DashboardWalletUser"
 ]
 
 
@@ -119,6 +123,7 @@ class RecordDict(TypedDict):
     Notification: Dict[Tuple, List[Notification]]
     PlaylistSeen: Dict[Tuple, List[PlaylistSeen]]
     DeveloperApp: Dict[str, List[DeveloperApp]]
+    DashboardWalletUser: Dict[str, List[DashboardWalletUser]]
     Grant: Dict[Tuple, List[Grant]]
 
 
@@ -132,6 +137,7 @@ class ExistingRecordDict(TypedDict):
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
     DeveloperApp: Dict[str, DeveloperApp]
+    DashboardWalletUser: Dict[str, DashboardWalletUser]
     Grant: Dict[Tuple, Grant]
     TrackRoute: Dict[int, TrackRoute]
     PlaylistRoute: Dict[int, PlaylistRoute]
@@ -148,6 +154,7 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
     DeveloperApp: Set[str]
+    DashboardWalletUser: Set[str]
     TrackRoute: Set[int]
     PlaylistRoute: Set[int]
     UserEvent: Set[int]
@@ -440,3 +447,12 @@ def generate_metadata_cid_v1(metadata: object):
     bytes = bytearray(encoded_metadata)
     hash = multihash.digest(bytes, "sha2-256")
     return CID("base32", 1, "json", hash)
+
+# Signature should be of the form: { signature: string, message: string }
+def get_address_from_signature(signature):
+    web3 = web3_provider.get_eth_web3()
+    message_hash = defunct_hash_message(text=signature["message"])
+    app_address = web3.eth.account._recover_hash(
+        message_hash, signature=signature["signature"]
+    )
+    return app_address.lower()
