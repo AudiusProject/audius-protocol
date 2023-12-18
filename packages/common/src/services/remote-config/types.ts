@@ -195,7 +195,10 @@ export enum IntKeys {
   /**
    * Timeout for handle verification from socials.
    */
-  HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS'
+  HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS',
+
+  /** Coinflow maximum */
+  COINFLOW_MAXIMUM_CENTS = 'COINFLOW_MAXIMUM_CENTS'
 }
 
 export enum BooleanKeys {
