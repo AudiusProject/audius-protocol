@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   PurchaseContentStage,
@@ -52,7 +52,8 @@ export const PurchaseContentFormFields = ({
   )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
-  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
+    useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -80,6 +81,15 @@ export const PurchaseContentFormFields = ({
     },
     [setPurchaseVendor]
   )
+
+  const showCoinflow =
+    isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+
+  useEffect(() => {
+    if (purchaseVendor === PurchaseVendor.COINFLOW && !showCoinflow) {
+      handleChangeVendor(PurchaseVendor.STRIPE)
+    }
+  }, [handleChangeVendor, showCoinflow, purchaseVendor])
 
   if (isPurchased) {
     return (
@@ -114,9 +124,7 @@ export const PurchaseContentFormFields = ({
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!balanceBN?.isZero()}
-          isCoinflowEnabled={
-            isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
-          }
+          isCoinflowEnabled={showCoinflow}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

@@ -25,7 +25,8 @@ import {
   useUSDCBalance,
   PURCHASE_VENDOR,
   useRemoteVar,
-  IntKeys
+  IntKeys,
+  PurchaseVendor
 } from '@audius/common'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
@@ -304,6 +305,15 @@ const RenderForm = ({
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
 
+  const showCoinflow =
+    isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+
+  useEffect(() => {
+    if (purchaseVendor === PurchaseVendor.COINFLOW && !showCoinflow) {
+      setPurchaseVendor(PurchaseVendor.STRIPE)
+    }
+  }, [setPurchaseVendor, showCoinflow, purchaseVendor])
+
   return (
     <View style={styles.root}>
       {page === PurchaseContentPage.PURCHASE ? (
@@ -332,10 +342,7 @@ const RenderForm = ({
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance={!balance?.isZero()}
-                    isCoinflowEnabled={
-                      isCoinflowEnabled &&
-                      totalPriceInCents <= coinflowMaximumCents
-                    }
+                    isCoinflowEnabled={showCoinflow}
                   />
                 )}
               </View>
