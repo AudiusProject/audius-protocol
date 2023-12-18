@@ -8,10 +8,7 @@ import {
   PurchaseVendor,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
-  useFeatureFlag,
-  usePayExtraPresets,
-  StringKeys,
-  AMOUNT_PRESET
+  useFeatureFlag
 } from '@audius/common'
 import {
   FilterButton,
@@ -25,7 +22,6 @@ import { RadioButton, RadioButtonGroup } from '@audius/stems'
 import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
-import { PayExtraFormSection } from 'components/premium-content-purchase-modal/components/PayExtraFormSection'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
 import { isMobile } from 'utils/clientUtil'
@@ -35,30 +31,25 @@ const messages = {
   paymentMethod: 'Payment Method',
   withExistingBalance: 'Existing balance',
   withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer',
-  amountPickerTitle: 'Select desired amount'
+  withCrypto: 'Add via crypto transfer'
 }
 
 type PaymentMethodProps = {
   selectedMethod: Nullable<PurchaseMethod>
   setSelectedMethod: (method: PurchaseMethod) => void
-  selectedVendor?: Nullable<PurchaseVendor>
   setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
-  showCoinflowAmounts?: boolean
 }
 
 export const PaymentMethod = ({
   selectedMethod,
   setSelectedMethod,
-  selectedVendor,
   setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance,
-  showCoinflowAmounts
+  showExistingBalance
 }: PaymentMethodProps) => {
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
@@ -72,12 +63,6 @@ export const PaymentMethod = ({
     ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
     { label: PurchaseVendor.STRIPE }
   ]
-  const amountPresets = usePayExtraPresets(
-    StringKeys.COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS
-  )
-
-  const shouldShowCoinflowAmountPicker =
-    showCoinflowAmounts && selectedVendor === PurchaseVendor.COINFLOW
 
   const handleSelectVendor = useCallback(
     (label: string) => {
@@ -130,16 +115,7 @@ export const PaymentMethod = ({
               popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
             />
           )
-        ) : null,
-      extraContent: shouldShowCoinflowAmountPicker ? (
-        <Flex w='100%'>
-          <PayExtraFormSection
-            title={messages.amountPickerTitle}
-            amountPresets={amountPresets}
-            fieldName={AMOUNT_PRESET}
-          />
-        </Flex>
-      ) : null
+        ) : null
     },
     {
       id: PurchaseMethod.CRYPTO,
@@ -179,47 +155,39 @@ export const PaymentMethod = ({
         onChange={handleRadioChange}
         style={{ width: '100%' }}
       >
-        {options.map(
-          ({ id, label, icon: Icon, value, disabled, extraContent }) => (
+        {options.map(({ id, label, icon: Icon, value, disabled }) => (
+          <Flex
+            key={id}
+            {...getFlexProps(id as PurchaseMethod)}
+            pv='m'
+            ph='xl'
+            css={{ opacity: disabled ? 0.5 : 1 }}
+            borderTop='default'
+          >
             <Flex
-              key={id}
-              pv='m'
-              ph='xl'
-              css={{ opacity: disabled ? 0.5 : 1 }}
-              borderTop='default'
-              {...getFlexProps(id as PurchaseMethod)}
-              direction='column'
-              gap='l'
+              onClick={() => setSelectedMethod(id as PurchaseMethod)}
+              css={{ cursor: 'pointer' }}
+              alignItems='center'
+              justifyContent='space-between'
+              gap='s'
             >
-              <Flex {...getFlexProps(id as PurchaseMethod)} w='100%'>
-                <Flex
-                  onClick={() => setSelectedMethod(id as PurchaseMethod)}
-                  css={{ cursor: 'pointer' }}
-                  alignItems='center'
-                  justifyContent='space-between'
-                  gap='s'
-                >
-                  <RadioButton value={id} disabled={disabled} />
-                  {Icon ? (
-                    <Flex alignItems='center' ml='s'>
-                      <Icon color='default' />
-                    </Flex>
-                  ) : null}
-                  <Text>{label}</Text>
+              <RadioButton value={id} disabled={disabled} />
+              {Icon ? (
+                <Flex alignItems='center' ml='s'>
+                  <Icon color='default' />
                 </Flex>
-                <Text
-                  css={{
-                    width:
-                      mobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
-                  }}
-                >
-                  {value}
-                </Text>
-              </Flex>
-              {extraContent}
+              ) : null}
+              <Text>{label}</Text>
             </Flex>
-          )
-        )}
+            <Text
+              css={{
+                width: mobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
+              }}
+            >
+              {value}
+            </Text>
+          </Flex>
+        ))}
       </RadioButtonGroup>
     )
   }

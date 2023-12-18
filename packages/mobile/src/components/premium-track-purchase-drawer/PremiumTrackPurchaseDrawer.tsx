@@ -23,8 +23,7 @@ import {
   usePurchaseContentFormConfiguration,
   usePurchaseMethod,
   useUSDCBalance,
-  PURCHASE_VENDOR,
-  StringKeys
+  PURCHASE_VENDOR
 } from '@audius/common'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
@@ -235,9 +234,7 @@ const RenderForm = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const { specialLightGreen, primary } = useThemeColors()
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
+  const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -401,10 +398,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
-
+  const presetValues = usePayExtraPresets()
   const {
     data: { contentId: trackId },
     isOpen,
