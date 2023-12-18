@@ -12,6 +12,7 @@ const kpg = Knex({
 async function updateDbTypes() {
   const config = {
     singularTableNames: true,
+    globalOptionality: 'required' as 'required',
     tableNameCasing: 'pascal',
     interfaceNameFormat: '${table}Row'
   }
