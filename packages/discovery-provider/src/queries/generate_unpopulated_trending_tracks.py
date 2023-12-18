@@ -95,9 +95,13 @@ def generate_unpopulated_trending(
             )
             .all()
         )
-        non_stream_gated_track_id_set = set(map(lambda t: t[0], non_stream_gated_track_ids))
+        non_stream_gated_track_id_set = set(
+            map(lambda t: t[0], non_stream_gated_track_ids)
+        )
         track_scores = list(
-            filter(lambda t: t["track_id"] in non_stream_gated_track_id_set, track_scores)
+            filter(
+                lambda t: t["track_id"] in non_stream_gated_track_id_set, track_scores
+            )
         )
     elif exclude_collectible_gated:
         ids = [track["track_id"] for track in track_scores]

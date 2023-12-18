@@ -652,8 +652,8 @@ function* downloadTrack({
     let queryParams: QueryParams = {}
 
     const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
-    const streamSignature = track.stream_signature
-    streamSignatureMap[track.track_id]
+    const streamSignature =
+      track.stream_signature || streamSignatureMap[track.track_id]
     queryParams = yield* call(getQueryParams, {
       audiusBackendInstance,
       streamSignature

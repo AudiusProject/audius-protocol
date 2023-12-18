@@ -308,8 +308,8 @@ export const DetailsTile = ({
 
   const PlayIcon =
     isNewPodcastControlsEnabled &&
-      playbackPositionInfo?.status === 'COMPLETED' &&
-      !isCurrentTrack
+    playbackPositionInfo?.status === 'COMPLETED' &&
+    !isCurrentTrack
       ? IconRepeat
       : IconPlay
 
@@ -379,9 +379,9 @@ export const DetailsTile = ({
               ) : null}
               <View style={styles.buttonSection}>
                 {!doesUserHaveAccess &&
-                  !isOwner &&
-                  streamConditions &&
-                  trackId ? (
+                !isOwner &&
+                streamConditions &&
+                trackId ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
                     streamConditions={streamConditions}
@@ -472,9 +472,9 @@ export const DetailsTile = ({
                 style={[
                   styles.infoSection,
                   hideFavoriteCount &&
-                  hideListenCount &&
-                  hideRepostCount &&
-                  styles.noStats
+                    hideListenCount &&
+                    hideRepostCount &&
+                    styles.noStats
                 ]}
               >
                 {renderDetailLabels()}

@@ -145,8 +145,9 @@ const NowPlaying = g(
     useEffect(() => {
       if (artworkRef.current) {
         // 4px accounts for the borders on the image
-        artworkRef.current.style.width = `${artworkRef.current.offsetHeight - 4
-          }px`
+        artworkRef.current.style.width = `${
+          artworkRef.current.offsetHeight - 4
+        }px`
       }
     }, [artworkRef, playCounter])
 
@@ -375,12 +376,12 @@ const NowPlaying = g(
     const dominantColor = dominantColors ? dominantColors[0] : null
     const artworkAverageColor = dominantColor
       ? {
-        boxShadow: `0 1px 15px -5px rgba(
+          boxShadow: `0 1px 15px -5px rgba(
           ${dominantColor.r},
           ${dominantColor.g},
           ${dominantColor.b}
           , 1)`
-      }
+        }
       : {}
 
     const matrix = isMatrix()
