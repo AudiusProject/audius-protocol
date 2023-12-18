@@ -130,11 +130,12 @@ export const UserList = (props: UserListProps) => {
   }, [hasMore, isFocused, dispatch, tag])
 
   const shouldUseCachedData = isEmpty || isRefreshing || loading || !isFocused
+  const showSkeletons = hasMore || loading
 
   const data = useMemo(() => {
     const userData = shouldUseCachedData ? cachedUsers.current : users
-    return [...userData, ...skeletonData]
-  }, [shouldUseCachedData, users])
+    return [...userData, ...(showSkeletons ? skeletonData : [])]
+  }, [shouldUseCachedData, users, showSkeletons])
 
   const renderItem = useCallback(
     ({ item }) =>
@@ -144,20 +145,6 @@ export const UserList = (props: UserListProps) => {
         <MemoizedUserListItem user={item} tag={tag} />
       ),
 
-    [tag]
-  )
-
-  const getItemLayout = useCallback(
-    (_data: User[], index: number) => {
-      const itemHeight = ['SUPPORTING', 'TOP SUPPORTERS'].includes(tag)
-        ? 167
-        : 147
-      return {
-        length: itemHeight,
-        offset: itemHeight * index,
-        index
-      }
-    },
     [tag]
   )
 
@@ -175,7 +162,6 @@ export const UserList = (props: UserListProps) => {
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      getItemLayout={getItemLayout}
       ItemSeparatorComponent={Divider}
       onEndReached={handleEndReached}
       onEndReachedThreshold={3}
