@@ -13,8 +13,7 @@ import {
   purchaseContentSelectors,
   isContentPurchaseInProgress,
   usePayExtraPresets,
-  PurchaseContentPage,
-  StringKeys
+  PurchaseContentPage
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -178,9 +177,7 @@ export const PremiumContentPurchaseModal = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
+  const presetValues = usePayExtraPresets()
 
   const { data: track } = useGetTrackById(
     { id: trackId! },

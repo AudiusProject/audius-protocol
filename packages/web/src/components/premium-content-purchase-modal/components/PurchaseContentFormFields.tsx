@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   PurchaseContentStage,
@@ -9,8 +9,10 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   PurchaseMethod,
-  StringKeys,
-  AMOUNT_PRESET
+  useFeatureFlag,
+  FeatureFlags,
+  useRemoteVar,
+  IntKeys
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -29,7 +31,6 @@ import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
-  payExtraTitle: 'Pay Extra',
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
@@ -44,12 +45,15 @@ export const PurchaseContentFormFields = ({
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
-  const payExtraAmountPresetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
+  const payExtraAmountPresetValues = usePayExtraPresets()
+  const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
   )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
-  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
+    useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -78,6 +82,15 @@ export const PurchaseContentFormFields = ({
     [setPurchaseVendor]
   )
 
+  const showCoinflow =
+    isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+
+  useEffect(() => {
+    if (purchaseVendor === PurchaseVendor.COINFLOW && !showCoinflow) {
+      handleChangeVendor(PurchaseVendor.STRIPE)
+    }
+  }, [handleChangeVendor, showCoinflow, purchaseVendor])
+
   if (isPurchased) {
     return (
       <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
@@ -95,10 +108,8 @@ export const PurchaseContentFormFields = ({
     <>
       {isUnlocking || isPurchased ? null : (
         <PayExtraFormSection
-          title={messages.payExtraTitle}
           amountPresets={payExtraAmountPresetValues}
           disabled={isUnlocking}
-          fieldName={AMOUNT_PRESET}
         />
       )}
       <PurchaseSummaryTable
@@ -113,6 +124,7 @@ export const PurchaseContentFormFields = ({
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!balanceBN?.isZero()}
+          isCoinflowEnabled={showCoinflow}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

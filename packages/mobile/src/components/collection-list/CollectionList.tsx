@@ -60,6 +60,8 @@ const FullCollectionList = (props: FullCollectionListProps) => {
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
+          // TODO: support album type (we don't have use case currently)
+          collectionType='playlist'
         />
       ) : (
         <CollectionCard
@@ -112,6 +114,8 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
+          // TODO: support album type (we don't have use case currently)
+          collectionType='playlist'
         />
       ) : (
         <CollectionCard collectionId={item.id} />
