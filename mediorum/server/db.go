@@ -27,6 +27,9 @@ type Upload struct {
 	TranscodedMirrors []string       `json:"transcoded_mirrors" gorm:"serializer:json"`
 	Status            string         `json:"status" gorm:"index"`
 
+	// if populated... the mp3 should only live on these hosts
+	PlacementHosts []string `json:"placement_hosts" gorm:"serializer:json"`
+
 	CreatedBy string    `json:"created_by" `
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoCreateTime:false"`

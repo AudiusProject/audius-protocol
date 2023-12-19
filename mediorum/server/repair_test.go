@@ -154,4 +154,45 @@ func TestRepair(t *testing.T) {
 		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 	}
 
+	// -----------------------
+	// CID PLACEMENT
+	// create a dummy upload for it?
+
+	{
+		// first, write a blob only to my storage
+		data := []byte("placed content")
+		cid, err := cidutil.ComputeFileCID(bytes.NewReader(data))
+		assert.NoError(t, err)
+
+		placementHosts := []string{
+			ss.Config.Self.Host,
+			testNetwork[3].Config.Self.Host,
+			testNetwork[5].Config.Self.Host,
+		}
+
+		err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
+		assert.NoError(t, err)
+
+		ss.crud.Create(Upload{
+			ID:             "placed",
+			OrigFileCID:    cid,
+			PlacementHosts: placementHosts,
+			CreatedAt:      time.Now(),
+		})
+
+		// force sweep
+		for _, s := range testNetwork {
+			s.crud.ForceSweep()
+		}
+
+		runTestNetworkRepair(false)
+
+		// assert it only exists on 3 host
+		{
+			hosts := findHostsWithBlob(cid)
+			assert.Len(t, hosts, 3)
+			assert.Equal(t, placementHosts, hosts)
+		}
+
+	}
 }

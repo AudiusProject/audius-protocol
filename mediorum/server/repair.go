@@ -149,14 +149,23 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, u := range uploads {
 			tracker.CursorUploadID = u.ID
-			ss.repairCid(u.OrigFileCID, tracker)
+
+			// if is placed
+			if len(u.PlacementHosts) > 0 {
+				if slices.Contains(u.PlacementHosts, ss.Config.Self.Host) {
+					ss.repairCid(u.OrigFileCID, u.PlacementHosts, tracker)
+				}
+				continue
+			}
+
+			ss.repairCid(u.OrigFileCID, nil, tracker)
 			// images are resized dynamically
 			// so only consider audio TranscodeResults for repair
 			if u.Template != JobTemplateAudio {
 				continue
 			}
 			for _, cid := range u.TranscodeResults {
-				ss.repairCid(cid, tracker)
+				ss.repairCid(cid, nil, tracker)
 			}
 		}
 
@@ -191,7 +200,7 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, cid := range cidBatch {
 			tracker.CursorQmCID = cid
-			ss.repairCid(cid, tracker)
+			ss.repairCid(cid, nil, tracker)
 		}
 
 		tracker.Duration += time.Since(startIter)
@@ -201,12 +210,23 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 	return nil
 }
 
-func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
+func (ss *MediorumServer) repairCid(cid string, forceHosts []string, tracker *RepairTracker) error {
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
 	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
+
+	if len(forceHosts) > 0 {
+		// make sure our host is in the forceHosts list
+		if !slices.Contains(forceHosts, ss.Config.Self.Host) {
+			return nil
+		}
+		preferredHosts = forceHosts
+		isMine = true
+		preferredHealthyHosts = forceHosts
+		isMineHealthy = true
+	}
 
 	// fast path: do zero bucket ops if we know we don't care about this cid
 	if !tracker.CleanupMode && !isMineHealthy {
