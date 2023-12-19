@@ -1,134 +1,273 @@
-export { default as IconAlbum } from '../assets/icons/Album.svg'
-export { default as IconFilter } from '../assets/icons/Filter.svg'
-export { default as IconSearch } from '../assets/icons/Search.svg'
-export { default as IconAllTime } from '../assets/icons/AllTime.svg'
-export { default as IconFolder } from '../assets/icons/Folder.svg'
-export { default as IconSend } from '../assets/icons/Send.svg'
-export { default as IconAppearance } from '../assets/icons/Appearance.svg'
-export { default as IconGift } from '../assets/icons/Gift.svg'
-export { default as IconSettings } from '../assets/icons/Settings.svg'
-export { default as IconArrowLeft } from '../assets/icons/ArrowLeft.svg'
-export { default as IconHeart } from '../assets/icons/Heart.svg'
-export { default as IconShare } from '../assets/icons/Share.svg'
-export { default as IconArrowRight } from '../assets/icons/ArrowRight.svg'
-export { default as IconImage } from '../assets/icons/Image.svg'
-export { default as IconShieldCheck } from '../assets/icons/ShieldCheck.svg'
-export { default as IconBoxHeart } from '../assets/icons/BoxHeart.svg'
-export { default as IconIndent } from '../assets/icons/Indent.svg'
-export { default as IconShuffle } from '../assets/icons/Shuffle.svg'
-export { default as IconCalendarDay } from '../assets/icons/CalendarDay.svg'
-export { default as IconInfo } from '../assets/icons/Info.svg'
-export { default as IconSignOut } from '../assets/icons/SignOut.svg'
-export { default as IconCalendarMonth } from '../assets/icons/CalendarMonth.svg'
-export { default as IconKebabHorizontal } from '../assets/icons/KebabHorizontal.svg'
-export { default as IconSkipNext } from '../assets/icons/SkipNext.svg'
-export { default as IconCalendarWeek } from '../assets/icons/CalendarWeek.svg'
-export { default as IconKey } from '../assets/icons/Key.svg'
-export { default as IconSkipPrevious } from '../assets/icons/SkipPrevious.svg'
-export { default as IconCamera } from '../assets/icons/Camera.svg'
-export { default as IconLibrary } from '../assets/icons/Library.svg'
-export { default as IconSkull } from '../assets/icons/Skull.svg'
-export { default as IconCampfire } from '../assets/icons/Campfire.svg'
-export { default as IconLink } from '../assets/icons/Link.svg'
-export { default as IconSort } from '../assets/icons/Sort.svg'
-export { default as IconCaretDown } from '../assets/icons/CaretDown.svg'
-export { default as IconListeningHistory } from '../assets/icons/ListeningHistory.svg'
-export { default as IconSortDown } from '../assets/icons/SortDown.svg'
-export { default as IconCaretLeft } from '../assets/icons/CaretLeft.svg'
-export { default as IconListens } from '../assets/icons/Listens.svg'
-export { default as IconSortUp } from '../assets/icons/SortUp.svg'
-export { default as IconCaretRight } from '../assets/icons/CaretRight.svg'
-export { default as IconLock } from '../assets/icons/Lock.svg'
-export { default as IconSpeaker } from '../assets/icons/Speaker.svg'
-export { default as IconCaretUp } from '../assets/icons/CaretUp.svg'
-export { default as IconLockUnlocked } from '../assets/icons/LockUnlocked.svg'
-export { default as IconSpecialAccess } from '../assets/icons/SpecialAccess.svg'
-export { default as IconCart } from '../assets/icons/Cart.svg'
-export { default as IconMessage } from '../assets/icons/Message.svg'
-export { default as IconStar } from '../assets/icons/Star.svg'
-export { default as IconCastAirplay } from '../assets/icons/CastAirplay.svg'
-export { default as IconMessageBlock } from '../assets/icons/MessageBlock.svg'
-export { default as IconStars } from '../assets/icons/Stars.svg'
-export { default as IconCastChromecast } from '../assets/icons/CastChromecast.svg'
-export { default as IconMessageLocked } from '../assets/icons/MessageLocked.svg'
-export { default as IconTastemaker } from '../assets/icons/Tastemaker.svg'
-export { default as IconCheck } from '../assets/icons/Check.svg'
-export { default as IconMessageUnblock } from '../assets/icons/MessageUnblock.svg'
-export { default as IconThumbsDown } from '../assets/icons/ThumbsDown.svg'
-export { default as IconClose } from '../assets/icons/Close.svg'
-export { default as IconMinus } from '../assets/icons/Minus.svg'
-export { default as IconThumbsUp } from '../assets/icons/ThumbsUp.svg'
-export { default as IconCloseAlt } from '../assets/icons/CloseAlt.svg'
-export { default as IconMood } from '../assets/icons/Mood.svg'
-export { default as IconTipping } from '../assets/icons/Tipping.svg'
-export { default as IconCloudDownload } from '../assets/icons/CloudDownload.svg'
-export { default as IconNoWifi } from '../assets/icons/NoWifi.svg'
-export { default as IconTransaction } from '../assets/icons/Transaction.svg'
-export { default as IconCloudDownloadError } from '../assets/icons/CloudDownloadError.svg'
-export { default as IconNote } from '../assets/icons/Note.svg'
-export { default as IconTrash } from '../assets/icons/Trash.svg'
-export { default as IconCloudDownloadInactive } from '../assets/icons/CloudDownloadInactive.svg'
-export { default as IconNotificationOff } from '../assets/icons/NotificationOff.svg'
-export { default as IconTrending } from '../assets/icons/Trending.svg'
-export { default as IconCloudDownloadPaused } from '../assets/icons/CloudDownloadPaused.svg'
-export { default as IconNotificationOn } from '../assets/icons/NotificationOn.svg'
-export { default as IconTrophy } from '../assets/icons/Trophy.svg'
-export { default as IconCloudDownloadQueued } from '../assets/icons/CloudDownloadQueued.svg'
-export { default as IconPause } from '../assets/icons/Pause.svg'
-export { default as IconTurntable } from '../assets/icons/Turntable.svg'
-export { default as IconCloudUpload } from '../assets/icons/CloudUpload.svg'
-export { default as IconPencil } from '../assets/icons/Pencil.svg'
-export { default as IconUser } from '../assets/icons/User.svg'
-export { default as IconCollectible } from '../assets/icons/Collectible.svg'
-export { default as IconPlay } from '../assets/icons/Play.svg'
-export { default as IconUserFollow } from '../assets/icons/UserFollow.svg'
-export { default as IconCompose } from '../assets/icons/Compose.svg'
-export { default as IconPlaylists } from '../assets/icons/Playlists.svg'
-export { default as IconUserFollowers } from '../assets/icons/UserFollowers.svg'
-export { default as IconCopy } from '../assets/icons/Copy.svg'
-export { default as IconPlus } from '../assets/icons/Plus.svg'
-export { default as IconUserFollowing } from '../assets/icons/UserFollowing.svg'
-export { default as IconCreatePlaylist } from '../assets/icons/CreatePlaylist.svg'
-export { default as IconPodcastBack } from '../assets/icons/PodcastBack.svg'
-export { default as IconUserGroup } from '../assets/icons/UserGroup.svg'
-export { default as IconCrown } from '../assets/icons/Crown.svg'
-export { default as IconPodcastForward } from '../assets/icons/PodcastForward.svg'
-export { default as IconUserList } from '../assets/icons/UserList.svg'
-export { default as IconDashboard } from '../assets/icons/Dashboard.svg'
-export { default as IconQuestionCircle } from '../assets/icons/QuestionCircle.svg'
-export { default as IconUserUnfollow } from '../assets/icons/UserUnfollow.svg'
-export { default as IconDesktop } from '../assets/icons/Desktop.svg'
-export { default as IconRadar } from '../assets/icons/Radar.svg'
-export { default as IconVisibilityHidden } from '../assets/icons/VisibilityHidden.svg'
-export { default as IconDonate } from '../assets/icons/Donate.svg'
-export { default as IconReceive } from '../assets/icons/Receive.svg'
-export { default as IconVisibilityPublic } from '../assets/icons/VisibilityPublic.svg'
-export { default as IconDrag } from '../assets/icons/Drag.svg'
-export { default as IconRefresh } from '../assets/icons/Refresh.svg'
-export { default as IconVolumeLevel0 } from '../assets/icons/VolumeLevel0.svg'
-export { default as IconEarnings } from '../assets/icons/Earnings.svg'
-export { default as IconRemix } from '../assets/icons/Remix.svg'
-export { default as IconVolumeLevel1 } from '../assets/icons/VolumeLevel1.svg'
-export { default as IconEmailAddress } from '../assets/icons/EmailAddress.svg'
-export { default as IconRemove } from '../assets/icons/Remove.svg'
-export { default as IconVolumeLevel2 } from '../assets/icons/VolumeLevel2.svg'
-export { default as IconEmbed } from '../assets/icons/Embed.svg'
-export { default as IconRepeatOff } from '../assets/icons/RepeatOff.svg'
-export { default as IconVolumeLevel3 } from '../assets/icons/VolumeLevel3.svg'
-export { default as IconError } from '../assets/icons/Error.svg'
-export { default as IconRepost } from '../assets/icons/Repost.svg'
-export { default as IconWallet } from '../assets/icons/Wallet.svg'
-export { default as IconExplore } from '../assets/icons/Explore.svg'
-export { default as IconRobot } from '../assets/icons/Robot.svg'
-export { default as IconWand } from '../assets/icons/Wand.svg'
-export { default as IconExternalLink } from '../assets/icons/ExternalLink.svg'
-export { default as IconRocket } from '../assets/icons/Rocket.svg'
-export { default as IconWithdraw } from '../assets/icons/Withdraw.svg'
-export { default as IconFeed } from '../assets/icons/Feed.svg'
-export { default as IconSave } from '../assets/icons/Save.svg'
-export { default as IconRecoveryEmail } from '../assets/icons/RecoveryEmail.svg'
-export { default as IconHeadphones } from '../assets/icons/Headphones.svg'
-export { default as IconValidationCheck } from '../assets/icons/ValidationCheck.svg'
-export { default as IconValidationX } from '../assets/icons/ValidationX.svg'
-export { default as IconSoundwave } from '../assets/icons/Soundwave.svg'
-export { default as IconCreditCard } from '../assets/icons/CreditCard.svg'
+import IconAlbumSVG from '../assets/icons/Album.svg'
+import IconAllTimeSVG from '../assets/icons/AllTime.svg'
+import IconAppearanceSVG from '../assets/icons/Appearance.svg'
+import IconArrowLeftSVG from '../assets/icons/ArrowLeft.svg'
+import IconArrowRightSVG from '../assets/icons/ArrowRight.svg'
+import IconBoxHeartSVG from '../assets/icons/BoxHeart.svg'
+import IconCalendarDaySVG from '../assets/icons/CalendarDay.svg'
+import IconCalendarMonthSVG from '../assets/icons/CalendarMonth.svg'
+import IconCalendarWeekSVG from '../assets/icons/CalendarWeek.svg'
+import IconCameraSVG from '../assets/icons/Camera.svg'
+import IconCampfireSVG from '../assets/icons/Campfire.svg'
+import IconCaretDownSVG from '../assets/icons/CaretDown.svg'
+import IconCaretLeftSVG from '../assets/icons/CaretLeft.svg'
+import IconCaretRightSVG from '../assets/icons/CaretRight.svg'
+import IconCaretUpSVG from '../assets/icons/CaretUp.svg'
+import IconCartSVG from '../assets/icons/Cart.svg'
+import IconCastAirplaySVG from '../assets/icons/CastAirplay.svg'
+import IconCastChromecastSVG from '../assets/icons/CastChromecast.svg'
+import IconCheckSVG from '../assets/icons/Check.svg'
+import IconCloseSVG from '../assets/icons/Close.svg'
+import IconCloseAltSVG from '../assets/icons/CloseAlt.svg'
+import IconCloudDownloadSVG from '../assets/icons/CloudDownload.svg'
+import IconCloudDownloadErrorSVG from '../assets/icons/CloudDownloadError.svg'
+import IconCloudDownloadInactiveSVG from '../assets/icons/CloudDownloadInactive.svg'
+import IconCloudDownloadPausedSVG from '../assets/icons/CloudDownloadPaused.svg'
+import IconCloudDownloadQueuedSVG from '../assets/icons/CloudDownloadQueued.svg'
+import IconCloudUploadSVG from '../assets/icons/CloudUpload.svg'
+import IconCollectibleSVG from '../assets/icons/Collectible.svg'
+import IconComposeSVG from '../assets/icons/Compose.svg'
+import IconCopySVG from '../assets/icons/Copy.svg'
+import IconCreatePlaylistSVG from '../assets/icons/CreatePlaylist.svg'
+import IconCreditCardSVG from '../assets/icons/CreditCard.svg'
+import IconCrownSVG from '../assets/icons/Crown.svg'
+import IconDashboardSVG from '../assets/icons/Dashboard.svg'
+import IconDesktopSVG from '../assets/icons/Desktop.svg'
+import IconDonateSVG from '../assets/icons/Donate.svg'
+import IconDragSVG from '../assets/icons/Drag.svg'
+import IconEarningsSVG from '../assets/icons/Earnings.svg'
+import IconEmailAddressSVG from '../assets/icons/EmailAddress.svg'
+import IconEmbedSVG from '../assets/icons/Embed.svg'
+import IconErrorSVG from '../assets/icons/Error.svg'
+import IconExploreSVG from '../assets/icons/Explore.svg'
+import IconExternalLinkSVG from '../assets/icons/ExternalLink.svg'
+import IconFeedSVG from '../assets/icons/Feed.svg'
+import IconFilterSVG from '../assets/icons/Filter.svg'
+import IconFolderSVG from '../assets/icons/Folder.svg'
+import IconGiftSVG from '../assets/icons/Gift.svg'
+import IconHeadphonesSVG from '../assets/icons/Headphones.svg'
+import IconHeartSVG from '../assets/icons/Heart.svg'
+import IconImageSVG from '../assets/icons/Image.svg'
+import IconIndentSVG from '../assets/icons/Indent.svg'
+import IconInfoSVG from '../assets/icons/Info.svg'
+import IconKebabHorizontalSVG from '../assets/icons/KebabHorizontal.svg'
+import IconKeySVG from '../assets/icons/Key.svg'
+import IconLibrarySVG from '../assets/icons/Library.svg'
+import IconLinkSVG from '../assets/icons/Link.svg'
+import IconListeningHistorySVG from '../assets/icons/ListeningHistory.svg'
+import IconListensSVG from '../assets/icons/Listens.svg'
+import IconLockSVG from '../assets/icons/Lock.svg'
+import IconLockUnlockedSVG from '../assets/icons/LockUnlocked.svg'
+import IconMessageSVG from '../assets/icons/Message.svg'
+import IconMessageBlockSVG from '../assets/icons/MessageBlock.svg'
+import IconMessageLockedSVG from '../assets/icons/MessageLocked.svg'
+import IconMessageUnblockSVG from '../assets/icons/MessageUnblock.svg'
+import IconMinusSVG from '../assets/icons/Minus.svg'
+import IconMoodSVG from '../assets/icons/Mood.svg'
+import IconNoWifiSVG from '../assets/icons/NoWifi.svg'
+import IconNoteSVG from '../assets/icons/Note.svg'
+import IconNotificationOffSVG from '../assets/icons/NotificationOff.svg'
+import IconNotificationOnSVG from '../assets/icons/NotificationOn.svg'
+import IconPauseSVG from '../assets/icons/Pause.svg'
+import IconPencilSVG from '../assets/icons/Pencil.svg'
+import IconPlaySVG from '../assets/icons/Play.svg'
+import IconPlaylistsSVG from '../assets/icons/Playlists.svg'
+import IconPlusSVG from '../assets/icons/Plus.svg'
+import IconPodcastBackSVG from '../assets/icons/PodcastBack.svg'
+import IconPodcastForwardSVG from '../assets/icons/PodcastForward.svg'
+import IconQuestionCircleSVG from '../assets/icons/QuestionCircle.svg'
+import IconRadarSVG from '../assets/icons/Radar.svg'
+import IconReceiveSVG from '../assets/icons/Receive.svg'
+import IconRecoveryEmailSVG from '../assets/icons/RecoveryEmail.svg'
+import IconRefreshSVG from '../assets/icons/Refresh.svg'
+import IconRemixSVG from '../assets/icons/Remix.svg'
+import IconRemoveSVG from '../assets/icons/Remove.svg'
+import IconRepeatOffSVG from '../assets/icons/RepeatOff.svg'
+import IconRepostSVG from '../assets/icons/Repost.svg'
+import IconRobotSVG from '../assets/icons/Robot.svg'
+import IconRocketSVG from '../assets/icons/Rocket.svg'
+import IconSaveSVG from '../assets/icons/Save.svg'
+import IconSearchSVG from '../assets/icons/Search.svg'
+import IconSendSVG from '../assets/icons/Send.svg'
+import IconSettingsSVG from '../assets/icons/Settings.svg'
+import IconShareSVG from '../assets/icons/Share.svg'
+import IconShieldCheckSVG from '../assets/icons/ShieldCheck.svg'
+import IconShuffleSVG from '../assets/icons/Shuffle.svg'
+import IconSignOutSVG from '../assets/icons/SignOut.svg'
+import IconSkipNextSVG from '../assets/icons/SkipNext.svg'
+import IconSkipPreviousSVG from '../assets/icons/SkipPrevious.svg'
+import IconSkullSVG from '../assets/icons/Skull.svg'
+import IconSortSVG from '../assets/icons/Sort.svg'
+import IconSortDownSVG from '../assets/icons/SortDown.svg'
+import IconSortUpSVG from '../assets/icons/SortUp.svg'
+import IconSoundwaveSVG from '../assets/icons/Soundwave.svg'
+import IconSpeakerSVG from '../assets/icons/Speaker.svg'
+import IconSpecialAccessSVG from '../assets/icons/SpecialAccess.svg'
+import IconStarSVG from '../assets/icons/Star.svg'
+import IconStarsSVG from '../assets/icons/Stars.svg'
+import IconTastemakerSVG from '../assets/icons/Tastemaker.svg'
+import IconThumbsDownSVG from '../assets/icons/ThumbsDown.svg'
+import IconThumbsUpSVG from '../assets/icons/ThumbsUp.svg'
+import IconTippingSVG from '../assets/icons/Tipping.svg'
+import IconTransactionSVG from '../assets/icons/Transaction.svg'
+import IconTrashSVG from '../assets/icons/Trash.svg'
+import IconTrendingSVG from '../assets/icons/Trending.svg'
+import IconTrophySVG from '../assets/icons/Trophy.svg'
+import IconTurntableSVG from '../assets/icons/Turntable.svg'
+import IconUserSVG from '../assets/icons/User.svg'
+import IconUserFollowSVG from '../assets/icons/UserFollow.svg'
+import IconUserFollowersSVG from '../assets/icons/UserFollowers.svg'
+import IconUserFollowingSVG from '../assets/icons/UserFollowing.svg'
+import IconUserGroupSVG from '../assets/icons/UserGroup.svg'
+import IconUserListSVG from '../assets/icons/UserList.svg'
+import IconUserUnfollowSVG from '../assets/icons/UserUnfollow.svg'
+import IconValidationCheckSVG from '../assets/icons/ValidationCheck.svg'
+import IconValidationXSVG from '../assets/icons/ValidationX.svg'
+import IconVisibilityHiddenSVG from '../assets/icons/VisibilityHidden.svg'
+import IconVisibilityPublicSVG from '../assets/icons/VisibilityPublic.svg'
+import IconVolumeLevel0SVG from '../assets/icons/VolumeLevel0.svg'
+import IconVolumeLevel1SVG from '../assets/icons/VolumeLevel1.svg'
+import IconVolumeLevel2SVG from '../assets/icons/VolumeLevel2.svg'
+import IconVolumeLevel3SVG from '../assets/icons/VolumeLevel3.svg'
+import IconWalletSVG from '../assets/icons/Wallet.svg'
+import IconWandSVG from '../assets/icons/Wand.svg'
+import IconWithdrawSVG from '../assets/icons/Withdraw.svg'
+import type { IconComponent } from '../components/icon'
+
+export const IconFilter = IconFilterSVG as IconComponent
+export const IconSearch = IconSearchSVG as IconComponent
+export const IconAlbum = IconAlbumSVG as IconComponent
+export const IconAllTime = IconAllTimeSVG as IconComponent
+export const IconFolder = IconFolderSVG as IconComponent
+export const IconSend = IconSendSVG as IconComponent
+export const IconAppearance = IconAppearanceSVG as IconComponent
+export const IconGift = IconGiftSVG as IconComponent
+export const IconSettings = IconSettingsSVG as IconComponent
+export const IconArrowLeft = IconArrowLeftSVG as IconComponent
+export const IconHeart = IconHeartSVG as IconComponent
+export const IconShare = IconShareSVG as IconComponent
+export const IconArrowRight = IconArrowRightSVG as IconComponent
+export const IconImage = IconImageSVG as IconComponent
+export const IconShieldCheck = IconShieldCheckSVG as IconComponent
+export const IconBoxHeart = IconBoxHeartSVG as IconComponent
+export const IconIndent = IconIndentSVG as IconComponent
+export const IconShuffle = IconShuffleSVG as IconComponent
+export const IconCalendarDay = IconCalendarDaySVG as IconComponent
+export const IconInfo = IconInfoSVG as IconComponent
+export const IconSignOut = IconSignOutSVG as IconComponent
+export const IconCalendarMonth = IconCalendarMonthSVG as IconComponent
+export const IconKebabHorizontal = IconKebabHorizontalSVG as IconComponent
+export const IconSkipNext = IconSkipNextSVG as IconComponent
+export const IconCalendarWeek = IconCalendarWeekSVG as IconComponent
+export const IconKey = IconKeySVG as IconComponent
+export const IconSkipPrevious = IconSkipPreviousSVG as IconComponent
+export const IconCamera = IconCameraSVG as IconComponent
+export const IconLibrary = IconLibrarySVG as IconComponent
+export const IconSkull = IconSkullSVG as IconComponent
+export const IconCampfire = IconCampfireSVG as IconComponent
+export const IconLink = IconLinkSVG as IconComponent
+export const IconSort = IconSortSVG as IconComponent
+export const IconCaretDown = IconCaretDownSVG as IconComponent
+export const IconListeningHistory = IconListeningHistorySVG as IconComponent
+export const IconSortDown = IconSortDownSVG as IconComponent
+export const IconCaretLeft = IconCaretLeftSVG as IconComponent
+export const IconListens = IconListensSVG as IconComponent
+export const IconSortUp = IconSortUpSVG as IconComponent
+export const IconCaretRight = IconCaretRightSVG as IconComponent
+export const IconLock = IconLockSVG as IconComponent
+export const IconSpeaker = IconSpeakerSVG as IconComponent
+export const IconCaretUp = IconCaretUpSVG as IconComponent
+export const IconLockUnlocked = IconLockUnlockedSVG as IconComponent
+export const IconSpecialAccess = IconSpecialAccessSVG as IconComponent
+export const IconCart = IconCartSVG as IconComponent
+export const IconMessage = IconMessageSVG as IconComponent
+export const IconStar = IconStarSVG as IconComponent
+export const IconCastAirplay = IconCastAirplaySVG as IconComponent
+export const IconMessageBlock = IconMessageBlockSVG as IconComponent
+export const IconStars = IconStarsSVG as IconComponent
+export const IconCastChromecast = IconCastChromecastSVG as IconComponent
+export const IconMessageLocked = IconMessageLockedSVG as IconComponent
+export const IconTastemaker = IconTastemakerSVG as IconComponent
+export const IconCheck = IconCheckSVG as IconComponent
+export const IconMessageUnblock = IconMessageUnblockSVG as IconComponent
+export const IconThumbsDown = IconThumbsDownSVG as IconComponent
+export const IconClose = IconCloseSVG as IconComponent
+export const IconMinus = IconMinusSVG as IconComponent
+export const IconThumbsUp = IconThumbsUpSVG as IconComponent
+export const IconCloseAlt = IconCloseAltSVG as IconComponent
+export const IconMood = IconMoodSVG as IconComponent
+export const IconTipping = IconTippingSVG as IconComponent
+export const IconCloudDownload = IconCloudDownloadSVG as IconComponent
+export const IconNoWifi = IconNoWifiSVG as IconComponent
+export const IconTransaction = IconTransactionSVG as IconComponent
+export const IconCloudDownloadError = IconCloudDownloadErrorSVG as IconComponent
+export const IconNote = IconNoteSVG as IconComponent
+export const IconTrash = IconTrashSVG as IconComponent
+export const IconCloudDownloadInactive =
+  IconCloudDownloadInactiveSVG as IconComponent
+export const IconNotificationOff = IconNotificationOffSVG as IconComponent
+export const IconTrending = IconTrendingSVG as IconComponent
+export const IconCloudDownloadPaused =
+  IconCloudDownloadPausedSVG as IconComponent
+export const IconNotificationOn = IconNotificationOnSVG as IconComponent
+export const IconTrophy = IconTrophySVG as IconComponent
+export const IconCloudDownloadQueued =
+  IconCloudDownloadQueuedSVG as IconComponent
+export const IconPause = IconPauseSVG as IconComponent
+export const IconTurntable = IconTurntableSVG as IconComponent
+export const IconCloudUpload = IconCloudUploadSVG as IconComponent
+export const IconPencil = IconPencilSVG as IconComponent
+export const IconUser = IconUserSVG as IconComponent
+export const IconCollectible = IconCollectibleSVG as IconComponent
+export const IconPlay = IconPlaySVG as IconComponent
+export const IconUserFollow = IconUserFollowSVG as IconComponent
+export const IconCompose = IconComposeSVG as IconComponent
+export const IconPlaylists = IconPlaylistsSVG as IconComponent
+export const IconUserFollowers = IconUserFollowersSVG as IconComponent
+export const IconCopy = IconCopySVG as IconComponent
+export const IconPlus = IconPlusSVG as IconComponent
+export const IconUserFollowing = IconUserFollowingSVG as IconComponent
+export const IconCreatePlaylist = IconCreatePlaylistSVG as IconComponent
+export const IconPodcastBack = IconPodcastBackSVG as IconComponent
+export const IconUserGroup = IconUserGroupSVG as IconComponent
+export const IconCrown = IconCrownSVG as IconComponent
+export const IconPodcastForward = IconPodcastForwardSVG as IconComponent
+export const IconUserList = IconUserListSVG as IconComponent
+export const IconDashboard = IconDashboardSVG as IconComponent
+export const IconQuestionCircle = IconQuestionCircleSVG as IconComponent
+export const IconUserUnfollow = IconUserUnfollowSVG as IconComponent
+export const IconDesktop = IconDesktopSVG as IconComponent
+export const IconRadar = IconRadarSVG as IconComponent
+export const IconVisibilityHidden = IconVisibilityHiddenSVG as IconComponent
+export const IconDonate = IconDonateSVG as IconComponent
+export const IconReceive = IconReceiveSVG as IconComponent
+export const IconVisibilityPublic = IconVisibilityPublicSVG as IconComponent
+export const IconDrag = IconDragSVG as IconComponent
+export const IconRefresh = IconRefreshSVG as IconComponent
+export const IconVolumeLevel0 = IconVolumeLevel0SVG as IconComponent
+export const IconEarnings = IconEarningsSVG as IconComponent
+export const IconRemix = IconRemixSVG as IconComponent
+export const IconVolumeLevel1 = IconVolumeLevel1SVG as IconComponent
+export const IconEmailAddress = IconEmailAddressSVG as IconComponent
+export const IconRemove = IconRemoveSVG as IconComponent
+export const IconVolumeLevel2 = IconVolumeLevel2SVG as IconComponent
+export const IconEmbed = IconEmbedSVG as IconComponent
+export const IconRepeatOff = IconRepeatOffSVG as IconComponent
+export const IconVolumeLevel3 = IconVolumeLevel3SVG as IconComponent
+export const IconError = IconErrorSVG as IconComponent
+export const IconRepost = IconRepostSVG as IconComponent
+export const IconWallet = IconWalletSVG as IconComponent
+export const IconExplore = IconExploreSVG as IconComponent
+export const IconRobot = IconRobotSVG as IconComponent
+export const IconWand = IconWandSVG as IconComponent
+export const IconExternalLink = IconExternalLinkSVG as IconComponent
+export const IconRocket = IconRocketSVG as IconComponent
+export const IconWithdraw = IconWithdrawSVG as IconComponent
+export const IconFeed = IconFeedSVG as IconComponent
+export const IconSave = IconSaveSVG as IconComponent
+export const IconRecoveryEmail = IconRecoveryEmailSVG as IconComponent
+export const IconHeadphones = IconHeadphonesSVG as IconComponent
+export const IconValidationCheck = IconValidationCheckSVG as IconComponent
+export const IconValidationX = IconValidationXSVG as IconComponent
+export const IconSoundwave = IconSoundwaveSVG as IconComponent
+export const IconCreditCard = IconCreditCardSVG as IconComponent

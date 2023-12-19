@@ -60,3 +60,5 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     />
   )
 })
+
+export { variantStylesMap }

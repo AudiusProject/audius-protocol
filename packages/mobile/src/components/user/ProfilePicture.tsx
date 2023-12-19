@@ -30,6 +30,10 @@ export type ProfilePictureProps = Partial<FastImageProps> &
       }
   )
 
+/**
+ * @deprecated
+ * Use image/ProfilePicture instead
+ */
 export const ProfilePicture = (props: ProfilePictureProps) => {
   const { style: styleProp, ...other } = props
   const userId = 'userId' in other ? other.userId : other.profile.user_id
