@@ -40,16 +40,14 @@ export const SelectArtistsScreen = () => {
     () => (
       <Flex pointerEvents='none' backgroundColor='white'>
         <ReadOnlyAccountHeader />
-        <Flex>
-          <Heading
-            heading={messages.header}
-            description={messages.description}
-            gap='s'
-            ph='l'
-            pv='unit10'
-            pb='s'
-          />
-        </Flex>
+        <Heading
+          heading={messages.header}
+          description={messages.description}
+          gap='s'
+          ph='l'
+          pv='unit10'
+          pb='s'
+        />
       </Flex>
     ),
     []
@@ -71,7 +69,7 @@ export const SelectArtistsScreen = () => {
       onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(selectArtistsSchema)}
     >
-      {({ dirty, isValid, values, errors }) => {
+      {({ dirty, isValid, values }) => {
         const { selectedArtists } = values
         return (
           <Flex flex={1}>
