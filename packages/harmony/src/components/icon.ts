@@ -1,6 +1,6 @@
 import type { ComponentType, SVGProps } from 'react'
 
-import type { IconColors } from 'foundations'
+import type { IconColors, ShadowOptions } from 'foundations'
 
 export const iconSizes = {
   xs: 14,
@@ -20,6 +20,7 @@ export type IconProps = {
   size?: IconSize
   sizeW?: IconSize
   sizeH?: IconSize
+  shadow?: ShadowOptions
 }
 
 type SVGIconProps = SVGBaseProps & IconProps
