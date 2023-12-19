@@ -1,5 +1,6 @@
 {
   "name": "probers",
+  "private": true,
   "version": "1.5.56",
   "description": "Automated client tests",
   "scripts": {

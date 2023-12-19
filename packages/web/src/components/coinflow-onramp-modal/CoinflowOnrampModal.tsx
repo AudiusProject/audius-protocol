@@ -22,7 +22,7 @@ const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction },
+    data: { amount, serializedTransaction, purchaseMetadata },
     isOpen,
     onClose,
     onClosed
@@ -73,6 +73,7 @@ export const CoinflowOnrampModal = () => {
         <CoinflowPurchase
           transaction={transaction}
           wallet={adapter.wallet}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           onSuccess={handleSuccess}
           merchantId={MERCHANT_ID || ''}

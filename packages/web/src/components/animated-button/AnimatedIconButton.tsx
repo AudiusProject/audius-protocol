@@ -68,8 +68,8 @@ const AnimatedIconButton = ({
       isMatrix={isMatrix}
       onClick={onClick || ((e: MouseEvent) => {})}
       href={href}
-      iconLightJSON={() => import(`assets/animations/${light}.json`)}
-      iconDarkJSON={() => import(`assets/animations/${dark}.json`)}
+      iconLightJSON={() => import(`../../assets/animations/${light}.json`)}
+      iconDarkJSON={() => import(`../../assets/animations/${dark}.json`)}
       activeClassName={activeClassName}
       disabledClassName={disabledClassName}
       className={className}

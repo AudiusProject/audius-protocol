@@ -1,5 +1,7 @@
 import styled from '@emotion/styled'
 
+import type { SpacingOptions } from 'foundations/spacing'
+
 import type { BoxProps } from './types'
 
 /** Base layout component used as a building block for creating pages and other components. */
@@ -51,8 +53,8 @@ export const Box = styled.div<BoxProps>(
     return {
       position: 'relative',
       boxSizing: 'border-box',
-      height: h,
-      width: w,
+      height: spacing[h as SpacingOptions] ?? h,
+      width: spacing[w as SpacingOptions] ?? w,
       boxShadow: shadow && shadows[shadow],
       paddingTop: padT && spacing[padT],
       paddingLeft: padL && spacing[padL],

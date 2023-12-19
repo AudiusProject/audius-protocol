@@ -10,6 +10,7 @@ import {
   addToCollectionUISelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
+import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -25,16 +26,18 @@ import { AppState } from 'store/types'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './AddToCollection.module.css'
-const { getTrackId, getTrackTitle } = addToCollectionUISelectors
+const { getTrackId, getTrackTitle, getCollectionType } =
+  addToCollectionUISelectors
 const { close } = addToCollectionUIActions
-const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
+const { addTrackToPlaylist, createPlaylist, createAlbum } =
+  cacheCollectionsActions
 const { getAccountWithOwnPlaylists } = accountSelectors
 
-const messages = {
-  title: 'Add To Playlist',
-  addedToast: 'Added To Playlist!',
-  createdToast: 'Playlist Created!'
-}
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  title: `Add To ${capitalize(collectionType)}`,
+  addedToast: `Added To ${capitalize(collectionType)}!`,
+  createdToast: `${capitalize(collectionType)} created!`
+})
 
 export type AddToCollectionProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -55,13 +58,16 @@ const AddToCollection = g(
     account,
     trackId,
     trackTitle,
+    collectionType,
     goToRoute,
     close,
     addTrackToPlaylist,
+    createAlbum,
     createPlaylist
   }) => {
     // Close the page if the route was changed
     useHasChangedRoute(close)
+    const messages = getMessages(collectionType)
     const setters = useCallback(
       () => ({
         left: (
@@ -70,7 +76,7 @@ const AddToCollection = g(
         center: messages.title,
         right: null
       }),
-      [close]
+      [close, messages.title]
     )
     useTemporaryNavContext(setters)
 
@@ -96,10 +102,22 @@ const AddToCollection = g(
 
     const addToNewPlaylist = useCallback(() => {
       const metadata = { playlist_name: trackTitle }
-      createPlaylist(metadata, trackId!)
+      if (!trackId) return
+      collectionType === 'album'
+        ? createAlbum(metadata, trackId)
+        : createPlaylist(metadata, trackId!)
       toast(messages.createdToast)
       close()
-    }, [trackId, trackTitle, createPlaylist, close, toast])
+    }, [
+      trackTitle,
+      trackId,
+      collectionType,
+      createAlbum,
+      createPlaylist,
+      toast,
+      messages.createdToast,
+      close
+    ])
 
     return (
       <MobilePageContainer>
@@ -118,7 +136,8 @@ function mapStateToProps(state: AppState) {
   return {
     account: getAccountWithOwnPlaylists(state),
     trackId: getTrackId(state),
-    trackTitle: getTrackTitle(state)
+    trackTitle: getTrackTitle(state),
+    collectionType: getCollectionType(state)
   }
 }
 
@@ -131,6 +150,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         createPlaylist(metadata, CreatePlaylistSource.FROM_TRACK, trackId)
       ),
+    createAlbum: (metadata: Partial<Collection>, trackId: ID) =>
+      dispatch(createAlbum(metadata, CreatePlaylistSource.FROM_TRACK, trackId)),
     close: () => dispatch(close())
   }
 }

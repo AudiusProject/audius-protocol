@@ -11,7 +11,8 @@ export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
 const sizeMap = {
   auto: '100%',
   small: 24,
-  large: 40,
+  medium: 40,
+  large: 72,
   xl: 80
 }
 
@@ -28,7 +29,7 @@ export const Avatar = (props: AvatarProps) => {
   const {
     children,
     source,
-    size = 'auto',
+    size = 'medium',
     strokeWidth = 'default',
     variant = 'default',
     style,
