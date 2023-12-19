@@ -1,14 +1,21 @@
+import { useCallback, useContext } from 'react'
+
 import type { UserMetadata } from '@audius/common'
 import { css } from '@emotion/native'
 import { useField } from 'formik'
+import LottieView from 'lottie-react-native'
+import { Pressable } from 'react-native'
 
 import {
   Box,
   Flex,
   FollowButton,
   IconNote,
+  IconPause,
+  IconPlay,
   IconUser,
   Paper,
+  SoundwaveCircle,
   Text,
   useTheme
 } from '@audius/harmony-native'
@@ -20,33 +27,85 @@ import {
 } from 'app/components/core'
 import { StaticSkeleton } from 'app/components/skeleton'
 
+import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
+
 type FollowArtistFieldProps = {
   artist: UserMetadata
+  showPreviewHint?: boolean
 }
 
 export const FollowArtistField = (props: FollowArtistFieldProps) => {
-  const { artist } = props
+  const { artist, showPreviewHint } = props
   const { user_id, track_count, follower_count } = artist
   const { spacing } = useTheme()
   const [{ onChange }] = useField({ name: 'selectedArtists', type: 'checkbox' })
+  const {
+    hasPlayed,
+    isPlaying,
+    nowPlayingArtistId,
+    togglePreview,
+    playPreview
+  } = useContext(SelectArtistsPreviewContext)
+
+  const isPreviewing = nowPlayingArtistId === user_id
+
+  const handlePress = useCallback(() => {
+    if (isPreviewing) {
+      togglePreview()
+    } else {
+      playPreview(user_id)
+    }
+  }, [isPreviewing, playPreview, togglePreview, user_id])
 
   return (
     <Paper>
-      <UserCoverPhoto
-        userId={user_id}
-        style={css({ height: 68 })}
-        topCornerRadius='m'
-      />
+      <Pressable onPress={handlePress}>
+        <UserCoverPhoto
+          userId={user_id}
+          style={css({ height: 68 })}
+          topCornerRadius='m'
+        >
+          {isPreviewing && isPlaying ? (
+            <Box
+              h='xl'
+              w='xl'
+              style={css({
+                opacity: 0.6,
+                position: 'absolute',
+                right: spacing.s,
+                top: spacing.s
+              })}
+            >
+              <LottieView source={SoundwaveCircle} autoPlay />
+            </Box>
+          ) : null}
+        </UserCoverPhoto>
+      </Pressable>
       <Flex
         alignItems='center'
+        pointerEvents='box-none'
         style={css({
           position: 'absolute',
           top: spacing['2xl'],
           left: 0,
-          right: 0
+          right: 0,
+          zIndex: 1
         })}
       >
-        <ProfilePicture size='large' userId={user_id} variant='strong' />
+        <Pressable onPress={handlePress}>
+          <ProfilePicture size='large' userId={user_id} variant='strong'>
+            {showPreviewHint && !hasPlayed ? (
+              <IconPlay size='l' color='staticWhite' />
+            ) : null}
+            {isPreviewing ? (
+              isPlaying ? (
+                <IconPause size='l' color='staticWhite' />
+              ) : (
+                <IconPlay size='l' color='staticWhite' />
+              )
+            ) : null}
+          </ProfilePicture>
+        </Pressable>
       </Flex>
       <Flex pt='unit12' ph='s' pb='l' alignItems='center' gap='l'>
         <Flex gap='s'>
