@@ -10,7 +10,8 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  getLocalTimezone
 } from '@audius/common'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
@@ -414,12 +415,13 @@ export const DetailsTile = ({
                 {isScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
-                    <HarmonyText color='accent' strength='strong' size='l'>
+                    <HarmonyText color='accent' strength='strong' size='m'>
                       Release on{' '}
                       {moment
                         .utc(track.release_date)
                         .local()
-                        .format('M/D/YY @ h:mm A')}
+                        .format('M/D/YY @ h:mm A z')}
+                      {getLocalTimezone(track.release_date)}
                     </HarmonyText>
                   </View>
                 ) : null}

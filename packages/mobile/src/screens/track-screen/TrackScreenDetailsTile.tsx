@@ -33,6 +33,7 @@ import {
   queueSelectors
 } from '@audius/common'
 import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
+import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
@@ -259,6 +260,7 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
+  const isScheduledRelease = moment(release_date).isAfter(moment.now())
 
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
@@ -506,7 +508,7 @@ export const TrackScreenDetailsTile = ({
       )
     }
 
-    return is_unlisted ? (
+    return is_unlisted && !isScheduledRelease ? (
       <View style={styles.hiddenDetailsTileWrapper}>
         <IconHidden fill={neutralLight4} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>

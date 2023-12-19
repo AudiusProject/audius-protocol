@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback } from 'react'
+import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -118,6 +118,7 @@ export type TextInputProps = RNTextInputProps & {
   }>
   iconProp?: Pick<SvgProps, 'fill' | 'width' | 'height'>
   hideInputAccessory?: boolean
+  hideKeyboard?: boolean
 }
 
 export type TextInputRef = RNTextInput
@@ -150,7 +151,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       autoCorrect = false,
       ...other
     } = props
-    const { autoFocus, returnKeyType } = other
+    const { autoFocus, returnKeyType, hideKeyboard } = other
     const styles = useStyles()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
@@ -327,6 +328,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             value={value}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            showSoftInputOnFocus={!hideKeyboard}
             placeholder={
               label && !isFocused && !startAdornment ? undefined : placeholder
             }

@@ -17,6 +17,7 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
+import { messages as completeTrackMessage } from '../../screens/upload-screen'
 import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer, FormScreen } from './components'
@@ -145,7 +146,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <DescriptionField />
               <SubmenuList removeBottomDivider>
                 <AccessAndSaleField />
-                {isScheduledReleasesEnabled ? <ReleaseDateField /> : <></>}
+                {completeTrackMessage.title === props.title ? (
+                  <ReleaseDateField />
+                ) : (
+                  <></>
+                )}
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>
