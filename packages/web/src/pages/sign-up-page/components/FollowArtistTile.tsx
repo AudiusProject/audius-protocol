@@ -41,7 +41,7 @@ export const FollowArtistTile = (props: FollowArtistTileProps) => {
     WidthSizes.SIZE_640
   )
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
 
   const {
     togglePreview,
