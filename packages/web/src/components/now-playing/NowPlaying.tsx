@@ -27,7 +27,8 @@ import {
   DogEarType,
   premiumContentSelectors,
   usePremiumContentPurchaseModal,
-  ModalSource
+  ModalSource,
+  FeatureFlags
 } from '@audius/common'
 import { ButtonSize } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
@@ -49,6 +50,7 @@ import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
 import { PremiumConditionsPill } from 'components/track/PremiumConditionsPill'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -133,6 +135,8 @@ const NowPlaying = g(
     goToRoute,
     dominantColors
   }) => {
+    const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
     const { uid, track, user, collectible } = currentQueueItem
 
     // Keep a ref for the artwork and dynamically resize the width of the
@@ -306,6 +310,7 @@ const NowPlaying = g(
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
+        isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
         !collectible && !track?.is_premium
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,

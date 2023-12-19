@@ -16,7 +16,6 @@ export type SummaryTableItem = {
   icon?: IconComponent
   value?: ReactNode
   disabled?: boolean
-  extraContent?: ReactNode
 }
 
 const Expandable = ({

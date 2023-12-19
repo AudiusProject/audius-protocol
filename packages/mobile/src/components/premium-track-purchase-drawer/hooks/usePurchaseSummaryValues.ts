@@ -6,8 +6,7 @@ import {
   getPurchaseSummaryValues,
   PayExtraPreset,
   usePayExtraPresets,
-  useUSDCPurchaseConfig,
-  StringKeys
+  useUSDCPurchaseConfig
 } from '@audius/common'
 import { useField } from 'formik'
 
@@ -20,9 +19,7 @@ export const usePurchaseSummaryValues = ({
 }) => {
   const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
   const [{ value: amountPreset }] = useField(AMOUNT_PRESET)
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
+  const presetValues = usePayExtraPresets()
   const { minUSDCPurchaseAmountCents } = useUSDCPurchaseConfig()
 
   const extraAmount = getExtraAmount({

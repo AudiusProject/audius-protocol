@@ -3,7 +3,7 @@ import type { ComponentType } from 'react'
 import type { Modals } from '@audius/common'
 
 import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
-import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
+import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
@@ -41,6 +41,7 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
+import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -106,7 +107,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TrendingGenreSelection: TrendingFilterDrawer,
   Overflow: OverflowMenuDrawer,
   SignOutConfirmation: SignOutConfirmationDrawer,
-  AddToPlaylist: AddToPlaylistDrawer,
+  AddToCollection: AddToCollectionDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
   DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
@@ -144,7 +145,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
-  SupportersInfo: SupportersInfoDrawer
+  SupportersInfo: SupportersInfoDrawer,
+  Welcome: WelcomeDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

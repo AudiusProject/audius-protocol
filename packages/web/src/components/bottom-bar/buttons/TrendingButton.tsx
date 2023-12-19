@@ -18,8 +18,12 @@ const TrendingButton = ({
       isMatrix={isMatrixMode}
       onClick={onClick}
       href={href}
-      iconLightJSON={() => import('assets/animations/iconTrendingLight.json')}
-      iconDarkJSON={() => import('assets/animations/iconTrendingDark.json')}
+      iconLightJSON={() =>
+        import('../../../assets/animations/iconTrendingLight.json')
+      }
+      iconDarkJSON={() =>
+        import('../../../assets/animations/iconTrendingDark.json')
+      }
     />
   )
 }

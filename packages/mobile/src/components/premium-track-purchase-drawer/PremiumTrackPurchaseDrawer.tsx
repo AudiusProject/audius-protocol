@@ -24,7 +24,9 @@ import {
   usePurchaseMethod,
   useUSDCBalance,
   PURCHASE_VENDOR,
-  StringKeys
+  useRemoteVar,
+  IntKeys,
+  PurchaseVendor
 } from '@audius/common'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
@@ -235,9 +237,7 @@ const RenderForm = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const { specialLightGreen, primary } = useThemeColors()
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
+  const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -268,6 +268,10 @@ const RenderForm = ({
     price,
     currentBalance: balance
   })
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
+  const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
 
   const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
     price,
@@ -301,6 +305,15 @@ const RenderForm = ({
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
 
+  const showCoinflow =
+    isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+
+  useEffect(() => {
+    if (purchaseVendor === PurchaseVendor.COINFLOW && !showCoinflow) {
+      setPurchaseVendor(PurchaseVendor.STRIPE)
+    }
+  }, [setPurchaseVendor, showCoinflow, purchaseVendor])
+
   return (
     <View style={styles.root}>
       {page === PurchaseContentPage.PURCHASE ? (
@@ -329,6 +342,7 @@ const RenderForm = ({
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance={!balance?.isZero()}
+                    isCoinflowEnabled={showCoinflow}
                   />
                 )}
               </View>
@@ -401,10 +415,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
-  const presetValues = usePayExtraPresets(
-    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
-  )
-
+  const presetValues = usePayExtraPresets()
   const {
     data: { contentId: trackId },
     isOpen,

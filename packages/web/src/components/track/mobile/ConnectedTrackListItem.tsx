@@ -9,12 +9,14 @@ import {
   tracksSocialActions,
   OverflowAction,
   OverflowSource,
-  mobileOverflowMenuUIActions
+  mobileOverflowMenuUIActions,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
@@ -32,6 +34,8 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>
 type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   const onClickOverflow = () => {
     const overflowActions = [
       props.isLocked
@@ -44,6 +48,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : props.isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
+      isEditAlbumsEnabled && props.user?.user_id === props.currentUserId
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !props.isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE

@@ -20,6 +20,7 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.FAVORITE]: { text: 'Favorite' },
   [OverflowAction.UNFAVORITE]: { text: 'Unfavorite' },
   [OverflowAction.SHARE]: { text: 'Share' },
+  [OverflowAction.ADD_TO_ALBUM]: { text: 'Add To Album' },
   [OverflowAction.ADD_TO_PLAYLIST]: { text: 'Add To Playlist' },
   [OverflowAction.REMOVE_FROM_PLAYLIST]: {
     text: 'Remove From This Playlist',

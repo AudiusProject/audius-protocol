@@ -23,7 +23,7 @@ import {
   stripeModalUISagas,
   modalsSagas
 } from '@audius/common'
-import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
+import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -177,7 +177,7 @@ export default function* rootSaga() {
     ...remixesSagas(),
 
     // Application
-    ...addToPlaylistSagas(),
+    ...addToCollectionSagas(),
     ...relatedArtistsSagas(),
     ...changePasswordSagas(),
     ...smartCollectionPageSagas(),

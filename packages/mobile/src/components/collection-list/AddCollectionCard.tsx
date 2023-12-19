@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID } from '@audius/common'
 import { cacheCollectionsActions, CreatePlaylistSource } from '@audius/common'
+import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -10,16 +11,18 @@ import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const { createPlaylist } = cacheCollectionsActions
+const { createPlaylist, createAlbum } = cacheCollectionsActions
 
 const messages = {
-  createPlaylist: 'Create Playlist'
+  createPlaylist: (collectionType: 'album' | 'playlist') =>
+    `Create ${capitalize(collectionType)}`
 }
 
 type AddCollectionCardProps = {
   onCreate?: () => void
   source: CreatePlaylistSource
   sourceTrackId?: ID | null
+  collectionType: 'album' | 'playlist'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -42,7 +45,8 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const AddCollectionCard = ({
   onCreate,
   source = CreatePlaylistSource.LIBRARY_PAGE,
-  sourceTrackId = null
+  sourceTrackId = null,
+  collectionType
 }: AddCollectionCardProps) => {
   const styles = useStyles()
   const { neutralLight2 } = useThemeColors()
@@ -52,14 +56,14 @@ export const AddCollectionCard = ({
     if (onCreate) return onCreate()
 
     dispatch(
-      createPlaylist(
+      (collectionType === 'album' ? createAlbum : createPlaylist)(
         { playlist_name: 'New Playlist' },
         source,
         sourceTrackId,
         source === CreatePlaylistSource.FROM_TRACK ? 'toast' : 'route'
       )
     )
-  }, [onCreate, dispatch, source, sourceTrackId])
+  }, [onCreate, dispatch, collectionType, source, sourceTrackId])
 
   return (
     <Tile onPress={handlePress} styles={{ content: styles.cardContent }}>
@@ -77,7 +81,7 @@ export const AddCollectionCard = ({
           fontSize='medium'
           weight='bold'
         >
-          {messages.createPlaylist}
+          {messages.createPlaylist(collectionType)}
         </Text>
       </View>
     </Tile>

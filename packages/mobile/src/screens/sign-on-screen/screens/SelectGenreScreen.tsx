@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 import {
   GENRES,
@@ -24,39 +24,53 @@ const genres = GENRES.map((genre) => ({
   label: convertGenreLabelToValue(genre)
 }))
 
+type Genre = typeof GENRES[number]
 type SelectGenreValues = { genres: typeof GENRES }
 
-const initialValues = { genres: [] }
+const initialValues: SelectGenreValues = { genres: [] }
+
+/* Memoized SelectablePill to fix a performance issue.
+ * The code below is arranged so that the pills don't need to re-render,
+ * And the memoization here is just forcing it to never re-render. */
+const MemoSelectablePill = memo(SelectablePill, () => true)
 
 const SelectGenreFieldArray = () => {
-  const [, meta, helpers] = useField({ name: 'genres', type: 'checkbox' })
-  const { value: values } = meta
-  const { setValue } = helpers
+  // Storing values as state alongside Formik purely because setState provides access to the previous values
+  const [formValues, setFormValues] = useState<SelectGenreValues['genres']>(
+    initialValues.genres
+  )
+  const [, , { setValue }] = useField('genres')
 
-  const handleChange = (value) => {
-    const newValues = [...values]
-    const valueIndex = values.indexOf(value)
+  // Update formik state to match our React state
+  useEffect(() => {
+    setValue(formValues)
+  }, [formValues, setValue])
 
-    if (valueIndex > -1) {
-      // Already checked
-      newValues.splice(valueIndex, 1)
-    } else {
-      // Unchecked
-      newValues.push(value)
-    }
-    setValue(newValues)
-  }
+  // memoized handle press just handles the React state change
+  const handlePress = useCallback((genreValue: Genre) => {
+    setFormValues((prevValues) => {
+      const newValues = [...prevValues]
+      const valueIndex = newValues.indexOf(genreValue)
+      if (valueIndex > -1) {
+        newValues.splice(valueIndex, 1)
+      } else {
+        newValues.push(genreValue)
+      }
+      return newValues
+    })
+  }, [])
 
   return (
     <ScrollView testID='genreScrollView'>
       <Flex gap='s' direction='row' wrap='wrap'>
         {genres.map((genre) => (
-          <SelectablePill
+          <MemoSelectablePill
             label={genre.label}
-            key={genre.value}
-            onPress={() => handleChange(genre.value)}
-            isSelected={values.includes(genre.value)}
+            onPress={() => {
+              handlePress(genre.value)
+            }}
             size='large'
+            key={genre.value}
           />
         ))}
       </Flex>
@@ -81,9 +95,9 @@ export const SelectGenreScreen = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(selectGenresSchema)}
       validateOnBlur
       validateOnChange
+      validationSchema={toFormikValidationSchema(selectGenresSchema)}
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <View>

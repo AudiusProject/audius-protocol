@@ -8,6 +8,21 @@ import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
+const fixAcceptHeader404 = () => ({
+  // Fix issue with vite dev server and `wait-on`
+  // https://github.com/vitejs/vite/issues/9520
+  // Can be removed when upgrading to vite5.
+  name: 'fix-accept-header-404',
+  configureServer(server) {
+    server.middlewares.use((req, _res, next) => {
+      if (req.headers.accept === 'application/json, text/plain, */*') {
+        req.headers.accept = '*/*'
+      }
+      next()
+    })
+  }
+})
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
@@ -79,7 +94,8 @@ export default defineConfig(({ mode }) => {
               filename: 'analyse.html'
             })
           ]
-        : []) as any)
+        : []) as any),
+      fixAcceptHeader404()
     ],
     resolve: {
       alias: {

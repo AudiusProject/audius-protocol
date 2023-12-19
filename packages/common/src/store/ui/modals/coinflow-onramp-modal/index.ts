@@ -4,9 +4,17 @@ import { ID } from 'models/Identifiers'
 
 import { createModal } from '../createModal'
 
+export type CoinflowPurchaseMetadata = {
+  productName: string
+  productType: 'digitalArt'
+  quantity: number
+  rawProductData: Record<string, any>
+}
+
 export type CoinflowOnrampModalState = {
   amount: number
   contentId?: ID
+  purchaseMetadata?: CoinflowPurchaseMetadata
   serializedTransaction: string
   onrampSucceeded?: Action
   onrampCanceled?: Action

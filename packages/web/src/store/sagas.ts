@@ -26,7 +26,7 @@ import {
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
-import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
+import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/webSagas'
@@ -173,7 +173,7 @@ export default function* rootSaga() {
     castSagas(),
 
     // Application
-    addToPlaylistSagas(),
+    addToCollectionSagas(),
     relatedArtistsSagas(),
     buyAudioSagas(),
     changePasswordSagas(),

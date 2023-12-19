@@ -85,3 +85,11 @@ export const selectArtstsPageMessages = {
   pickArtists: (genre: string) => `Pick ${genre} Artists`,
   selected: 'Selected'
 }
+
+export const welcomeModalMessages = {
+  welcome: 'Welcome to Audius! 🎉',
+  startListening: 'Start Listening',
+  upload: 'Upload',
+  youreIn:
+    'You’re in! Discover music from our talented DJs, producers, and artists.'
+}

@@ -121,6 +121,17 @@ const CoverPhoto = (props: CoverPhotoProps) => {
   )
 }
 
+export const ReadOnlyCoverPhotoBanner = () => {
+  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  return (
+    <CoverPhoto
+      coverPhoto={coverPhoto as ImageURISource}
+      profilePicture={profileImage as ImageURISource}
+    />
+  )
+}
+
 type ProfilePictureProps = {
   profilePicture?: ImageURISource
   onSelectProfilePicture?: () => void
@@ -145,6 +156,11 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       ) : null}
     </Avatar>
   )
+}
+
+export const ReadOnlyProfilePicture = () => {
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  return <ProfilePicture profilePicture={profileImage as ImageURISource} />
 }
 
 type AccountDetailsProps = {

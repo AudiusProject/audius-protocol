@@ -17,6 +17,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -34,10 +35,12 @@ const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Already Added',
-  description: 'This is already in your%0 playlist',
+  description: (collectionType: 'album' | 'playlist') =>
+    `This is already in your%0 ${collectionType}`,
   cancel: "Don't Add",
   add: 'Add Anyway',
-  addedToast: 'Added To Playlist!',
+  addedToast: (collectionType: 'album' | 'playlist') =>
+    `Added To ${capitalize(collectionType)}!`,
   view: 'View'
 }
 
@@ -51,6 +54,7 @@ export const DuplicateAddConfirmationModal = () => {
   )
   const account = useSelector(getAccountUser)
   const [isOpen, setIsOpen] = useModalState('DuplicateAddConfirmation')
+  const collectionType = playlist?.is_album ? 'album' : 'playlist'
 
   const onClose = useCallback(() => {
     setIsOpen(false)
@@ -62,7 +66,7 @@ export const DuplicateAddConfirmationModal = () => {
       if (account) {
         toast(
           <ToastLinkContent
-            text={messages.addedToast}
+            text={messages.addedToast(collectionType)}
             linkText={messages.view}
             link={collectionPage(
               account.handle,
@@ -74,7 +78,7 @@ export const DuplicateAddConfirmationModal = () => {
           />
         )
       } else {
-        toast(messages.addedToast)
+        toast(messages.addedToast(collectionType))
       }
     }
     onClose()
@@ -85,6 +89,7 @@ export const DuplicateAddConfirmationModal = () => {
     dispatch,
     account,
     toast,
+    collectionType,
     playlist?.playlist_name,
     playlist?.permalink,
     playlist?.is_album
@@ -98,7 +103,7 @@ export const DuplicateAddConfirmationModal = () => {
       <ModalContent>
         <ModalContentText>
           {fillString(
-            messages.description,
+            messages.description(collectionType),
             playlist ? ` "${playlist.playlist_name}"` : ''
           )}
         </ModalContentText>

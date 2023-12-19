@@ -215,6 +215,9 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
   const styles = useStyles()
   const navigation = useNavigation()
   const { white, aiPrimary, aiSecondary, neutralLight4 } = useThemeColors()
@@ -272,9 +275,7 @@ export const TrackScreenDetailsTile = ({
     {
       isHidden: is_unlisted,
       label: 'Released',
-      value: release_date
-        ? formatDate(release_date, 'ddd MMM DD YYYY HH:mm:ss')
-        : formatDate(created_at, 'YYYY-MM-DD HH:mm:ss')
+      value: release_date ? formatDate(release_date) : formatDate(created_at)
     },
     {
       icon:
@@ -389,10 +390,13 @@ export const TrackScreenDetailsTile = ({
   const handlePressOverflow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+    const addToAlbumAction =
+      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = !isPremium
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
+      addToAlbumAction,
       addToPlaylistAction,
       isOwner
         ? null
