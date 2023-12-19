@@ -60,13 +60,13 @@ const RepeatButtonProvider = ({
       } else {
         if (!defaultAnimations.current) {
           const { default: pbIconRepeatAll } = (await import(
-            'assets/animations/pbIconRepeatAll.json'
+            '../../../assets/animations/pbIconRepeatAll.json'
           )) as any
           const { default: pbIconRepeatSingle } = (await import(
-            'assets/animations/pbIconRepeatSingle.json'
+            '../../../assets/animations/pbIconRepeatSingle.json'
           )) as any
           const { default: pbIconRepeatOff } = (await import(
-            'assets/animations/pbIconRepeatOff.json'
+            '../../../assets/animations/pbIconRepeatOff.json'
           )) as any
           defaultAnimations.current = {
             pbIconRepeatAll,

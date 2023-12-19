@@ -33,7 +33,7 @@ const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
   return (
     <Flex alignItems='center' justifyContent='center' gap='m' direction='row'>
-      <Icon color='staticWhite' size='l' />
+      <Icon color='staticWhite' size='l' shadow='emphasis' />
       <Text
         variant='title'
         size='l'
