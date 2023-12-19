@@ -332,6 +332,7 @@ const NowPlaying = g(
       collectible,
       has_current_user_reposted,
       has_current_user_saved,
+      isEditAlbumsEnabled,
       track,
       onClose,
       clickOverflow,

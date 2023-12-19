@@ -333,17 +333,18 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       })
     )
   }, [
-    contextPlaylistId,
-    isContextPlaylistOwner,
     isTrackOwner,
-    has_current_user_reposted,
     has_current_user_saved,
+    has_current_user_reposted,
+    isEditAlbumsEnabled,
     isPremium,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     playbackPositionInfo?.status,
+    isContextPlaylistOwner,
     dispatch,
-    track_id
+    track_id,
+    contextPlaylistId
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
