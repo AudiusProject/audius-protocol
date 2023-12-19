@@ -5,6 +5,7 @@ import {
   FeatureFlags,
   useFeatureFlag
 } from '@audius/common'
+import { IconAlbum } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/desktop/Header'
@@ -102,6 +103,7 @@ const FeedPageContent = ({
       size='large'
       header={header}
     >
+      <IconAlbum />
       <Lineup
         emptyElement={
           <EmptyFeed
