@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
+import { useState, useRef, forwardRef, useCallback } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
