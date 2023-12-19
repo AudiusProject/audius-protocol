@@ -18,21 +18,21 @@ from src.utils import helpers
 logger = logging.getLogger(__name__)
 
 
-class GatedContentAccessBatchArgs(TypedDict):
+class ContentAccessBatchArgs(TypedDict):
     user_id: int
     content_id: int
     content_type: GatedContentType
 
 
-class GatedContentAccessResponse(TypedDict):
+class ContentAccessResponse(TypedDict):
     is_gated: bool
     does_user_have_access: bool
 
 
-GatedTrackAccessResult = Dict[int, Dict[int, GatedContentAccessResponse]]
+GatedTrackAccessResult = Dict[int, Dict[int, ContentAccessResponse]]
 
 
-class GatedContentAccessBatchResponse(TypedDict):
+class ContentAccessBatchResponse(TypedDict):
     # track : user id -> track id -> access
     track: GatedTrackAccessResult
 
@@ -47,9 +47,6 @@ class GatedContentAccessHandler(Protocol):
         condition_options: Union[Dict, int],
     ) -> bool:
         pass
-
-
-handler: GatedContentAccessHandler = has_user_purchased_content
 
 
 GATED_CONDITION_TO_HANDLER_MAP: Dict[
@@ -79,7 +76,7 @@ class ContentAccessChecker:
         content_type: GatedContentType,
         content_entity: Track,
         is_download: Optional[bool] = False,
-    ) -> GatedContentAccessResponse:
+    ) -> ContentAccessResponse:
         if content_type != "track":
             logger.warn(
                 f"gated_content_access_checker | check_access | gated content type {content_type} is not supported."
@@ -155,9 +152,9 @@ class ContentAccessChecker:
     def check_access_for_batch(
         self,
         session: Session,
-        args: List[GatedContentAccessBatchArgs],
+        args: List[ContentAccessBatchArgs],
         is_download: Optional[bool] = False,
-    ) -> GatedContentAccessBatchResponse:
+    ) -> ContentAccessBatchResponse:
         # for now, we only allow tracks to be gated; gated playlists will come later
         valid_args = list(filter(lambda arg: arg["content_type"] == "track", args))
 

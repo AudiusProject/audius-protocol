@@ -10,7 +10,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.gated_content.constants import USDC_PURCHASE_KEY
 from src.gated_content.content_access_checker import (
-    GatedContentAccessBatchArgs,
+    ContentAccessBatchArgs,
     content_access_checker,
 )
 from src.models.tracks.remix import Remix
@@ -519,7 +519,7 @@ def validate_remixability(params: ManageEntityParameters):
     if not parent_track_ids:
         return
 
-    args: List[GatedContentAccessBatchArgs] = list(
+    args: List[ContentAccessBatchArgs] = list(
         map(
             lambda track_id: {
                 "user_id": user_id,
