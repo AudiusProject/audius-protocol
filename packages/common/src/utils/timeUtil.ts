@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timezone from 'dayjs/plugin/timezone'
-import type { MomentInput } from 'moment-timezone'
-import moment from 'moment-timezone'
+import type { MomentInput } from 'moment'
+import moment from 'moment'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
