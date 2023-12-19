@@ -9,11 +9,9 @@ import {
   IconNote,
   IconPause,
   IconPlay,
-  IconSoundwave,
   IconUser,
   IconVerified,
   Paper,
-  Soundwave,
   SoundwaveCircle,
   Text,
   useTheme
