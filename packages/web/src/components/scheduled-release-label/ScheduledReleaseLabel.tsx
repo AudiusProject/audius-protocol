@@ -2,7 +2,6 @@ import { getLocalTimezone } from '@audius/common'
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
-import { getLocal } from 'web3modal'
 
 import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
 
