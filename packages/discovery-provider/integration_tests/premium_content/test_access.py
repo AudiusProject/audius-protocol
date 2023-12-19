@@ -84,9 +84,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=1,
-                gated_content_id=non_stream_gated_track_entity["track_id"],
-                gated_content_type="track",
-                gated_content_entity=tracks[0],
+                content_id=non_stream_gated_track_entity["track_id"],
+                content_type="track",
+                content_entity=tracks[0],
             )
             assert not result["is_gated"] and result["does_user_have_access"]
 
@@ -94,9 +94,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                gated_content_id=stream_gated_track_entity_1["track_id"],
-                gated_content_type="track",
-                gated_content_entity=tracks[1],
+                content_id=stream_gated_track_entity_1["track_id"],
+                content_type="track",
+                content_entity=tracks[1],
             )
             assert result["is_gated"] and not result["does_user_have_access"]
 
@@ -104,9 +104,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                gated_content_id=stream_gated_track_entity_2["track_id"],
-                gated_content_type="track",
-                gated_content_entity=tracks[2],
+                content_id=stream_gated_track_entity_2["track_id"],
+                content_type="track",
+                content_entity=tracks[2],
             )
             assert result["is_gated"] and result["does_user_have_access"]
 
@@ -114,9 +114,9 @@ def test_access(app):
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
-                gated_content_id=stream_gated_track_entity_3["track_id"],
-                gated_content_type="track",
-                gated_content_entity=tracks[3],
+                content_id=stream_gated_track_entity_3["track_id"],
+                content_type="track",
+                content_entity=tracks[3],
             )
             assert result["is_gated"] and result["does_user_have_access"]
 
@@ -198,8 +198,8 @@ def test_batch_access(app):
                 [
                     {
                         "user_id": user_entity_1["user_id"],
-                        "gated_content_id": non_exisent_track_id,
-                        "gated_content_type": "track",
+                        "content_id": non_exisent_track_id,
+                        "content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],

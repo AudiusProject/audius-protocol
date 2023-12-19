@@ -523,8 +523,8 @@ def validate_remixability(params: ManageEntityParameters):
         map(
             lambda track_id: {
                 "user_id": user_id,
-                "gated_content_id": track_id,
-                "gated_content_type": "track",
+                "content_id": track_id,
+                "content_type": "track",
             },
             parent_track_ids,
         )

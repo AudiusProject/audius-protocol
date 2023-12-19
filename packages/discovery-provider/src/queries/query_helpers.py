@@ -586,8 +586,8 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
         stream_gated_content_access_args.append(
             {
                 "user_id": current_user_id,
-                "gated_content_id": track["track_id"],
-                "gated_content_type": "track",
+                "content_id": track["track_id"],
+                "content_type": "track",
             }
         )
 
@@ -601,8 +601,8 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
         download_gated_content_access_args.append(
             {
                 "user_id": current_user_id,
-                "gated_content_id": track["track_id"],
-                "gated_content_type": "track",
+                "content_id": track["track_id"],
+                "content_type": "track",
             }
         )
 
