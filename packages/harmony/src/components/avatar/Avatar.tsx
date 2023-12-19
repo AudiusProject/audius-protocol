@@ -20,7 +20,8 @@ export const Avatar = (props: AvatarProps) => {
   const sizeMap = {
     auto: '100%',
     small: '24px',
-    large: '40px',
+    medium: '40px',
+    large: '72px',
     xl: '80px'
   }
 

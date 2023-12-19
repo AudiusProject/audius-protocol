@@ -8,9 +8,9 @@ import type { SpacingOptions } from 'foundations/spacing'
 // Custom box props without HTML <div> properties
 export type BaseBoxProps = {
   /** Height */
-  h?: CSSProperties['height']
+  h?: SpacingOptions | CSSProperties['height']
   /** Width */
-  w?: CSSProperties['width']
+  w?: SpacingOptions | CSSProperties['width']
 
   /** Padding */
   p?: SpacingOptions

@@ -12,7 +12,7 @@ const messages = {
   text: 'We’ve updated our Terms of Use and Privacy Policy. By continuing to use the Audius Service, you agree to our updated Terms of Use and Privacy'
 }
 
-const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissTOSBanner'
+const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissTOSBanner12.15.23'
 
 /**
  * Displays a CTA Banner announcing ToS Updates

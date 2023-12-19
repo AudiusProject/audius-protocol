@@ -52,7 +52,7 @@ opentelemetry-semantic-conventions==0.33b0
 opentelemetry-util-http==0.33b0
 lxml==4.9.1
 crc32c==2.3.post0
-multiformats==0.2.1
+multiformats==0.3.1
 
 # Solana support
 base58==2.1.0

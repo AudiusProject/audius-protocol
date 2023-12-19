@@ -9,14 +9,15 @@ import {
   IconNote,
   IconPause,
   IconPlay,
-  IconSoundwave,
   IconUser,
   IconVerified,
   Paper,
+  SoundwaveCircle,
   Text,
   useTheme
 } from '@audius/harmony'
 import { useField } from 'formik'
+import Lottie from 'react-lottie'
 import { useHover } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
@@ -40,7 +41,7 @@ export const FollowArtistTile = (props: FollowArtistTileProps) => {
     WidthSizes.SIZE_640
   )
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
 
   const {
     togglePreview,
@@ -92,18 +93,19 @@ export const FollowArtistTile = (props: FollowArtistTileProps) => {
     <Paper h={220} w={isMobile ? 'calc(50% - 4px)' : 235}>
       <Flex w='100%' direction='column' alignItems='center'>
         {isPlaying ? (
-          <IconSoundwave
+          <Box
+            h='xl'
+            w='xl'
             css={{
               opacity: '60%',
               position: 'absolute',
               right: spacing.s,
               top: spacing.s,
-              zIndex: 1,
-              'g path': {
-                fill: color.icon.staticWhite
-              }
+              zIndex: 1
             }}
-          />
+          >
+            <Lottie options={{ animationData: SoundwaveCircle }} />
+          </Box>
         ) : null}
         {avatar}
         <Box
