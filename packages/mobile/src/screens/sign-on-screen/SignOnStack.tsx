@@ -5,7 +5,7 @@ import { useScreenOptions } from 'app/app/navigation'
 import { CreatePasswordScreen } from './screens/CreatePasswordScreen'
 import { FinishProfileScreen } from './screens/FinishProfileScreen'
 import { PickHandleScreen } from './screens/PickHandleScreen'
-import { SelectArtistsScreen } from './screens/SelectArtistsScreen'
+import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenreScreen } from './screens/SelectGenreScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
 
