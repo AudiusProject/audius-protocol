@@ -650,19 +650,12 @@ function* downloadTrack({
     const trackDownload = yield* getContext('trackDownload')
     let queryParams: QueryParams = {}
 
-    const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
-    const streamSignature =
-      track.stream_signature || streamSignatureMap[track.track_id]
-    queryParams = yield* call(getQueryParams, {
-      audiusBackendInstance,
-      streamSignature
-    })
-
+    queryParams = yield* call(getQueryParams, { audiusBackendInstance })
     queryParams.filename = filename
 
     const encodedTrackId = encodeHashId(track.track_id)
     const url = apiClient.makeUrl(
-      `/tracks/${encodedTrackId}/stream`,
+      `/tracks/${encodedTrackId}/download`,
       queryParams
     )
     yield* call(trackDownload.downloadTrack, { url, filename })
