@@ -258,9 +258,6 @@ class ContentAccessChecker:
             for track in tracks
         }
 
-    # There will eventually be another step prior to this one where
-    # we aggregate multiple conditions and evaluate them altogether.
-    # For now, we do not support aggregate conditions.
     def _evaluate_conditions(
         self,
         session: Session,
@@ -275,22 +272,28 @@ class ContentAccessChecker:
             )
             return False
 
-        # Indexing of the gated content should have already validated
-        # the gated conditions, but we perform additional checks here just in case.
-        condition, condition_options = list(conditions.items())[0]
-        if condition not in set(GATED_CONDITION_TO_HANDLER_MAP.keys()):
-            logging.info(
-                f"gated_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(conditions)}"
-            )
-            return False
+        # A track may be gated on multiple conditions.
+        # E.g. a track may be download gated on tip, follow, and usdc purchase.
+        valid_conditions = set(GATED_CONDITION_TO_HANDLER_MAP.keys())
+        for condition, condition_options in conditions.items():
+            if condition not in valid_conditions:
+                logging.info(
+                    f"gated_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(conditions)}"
+                )
+                return False
 
-        return GATED_CONDITION_TO_HANDLER_MAP[condition](
-            session=session,
-            user_id=user_id,
-            content_id=content_id,
-            content_type=content_type,
-            condition_options=condition_options,
-        )
+            handler = GATED_CONDITION_TO_HANDLER_MAP[condition]
+            has_access = handler(
+                session=session,
+                user_id=user_id,
+                content_id=content_id,
+                content_type=content_type,
+                condition_options=condition_options,
+            )
+            if not has_access:
+                return False
+
+        return True
 
 
 content_access_checker = ContentAccessChecker()
