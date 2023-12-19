@@ -307,10 +307,15 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     # skip fields that cannot be modified after creation
                     continue
                 setattr(track_record, key, track_metadata[key])
-    
-    # Default release_date to created_at if not set
+
+    # Default release_date to created_at or current time if not set
     if track_record.release_date is None:
-        track_record.release_date = track_record.created_at
+        created_at = track_record_attributes.get("created_at")
+        if created_at:
+            track_record.release_date = str(created_at)
+        else:
+            logger.debug("track.py | created_at is None. Using current time for release date")
+            track_record.release_date = str(datetime.now(timezone.utc))
 
     return track_record
 
