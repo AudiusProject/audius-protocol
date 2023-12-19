@@ -11,7 +11,8 @@ import {
   formatCount,
   repostsUserListActions,
   favoritesUserListActions,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  getLocalTimezone
 } from '@audius/common'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -159,7 +160,8 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
+  const isScheduledRelease =
+    isUnlisted && moment.utc(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -197,7 +199,7 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
-        {isUnlisted && isScheduledRelease ? (
+        {isUnlisted && isScheduledRelease && releaseDate ? (
           <View style={styles.tagContainer}>
             <IconCalendarMonth
               fill={accentPurple}
@@ -206,7 +208,8 @@ export const LineupTileStats = ({
             />
             <Text fontSize='xs' colorValue={accentPurple}>
               Releases{' '}
-              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}
+              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}{' '}
+              {getLocalTimezone()}
             </Text>
           </View>
         ) : null}
