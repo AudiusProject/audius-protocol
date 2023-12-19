@@ -22,7 +22,7 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: DownloadButtonType
   label: string
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   onClick?: () => void
 }
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles(() => ({
 const DownloadButton = ({
   label,
   state,
-  doesUserHaveAccess,
+  hasStreamAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const { toast } = useToast()
@@ -51,14 +51,14 @@ const DownloadButton = ({
   const requiresFollow = state === ButtonState.REQUIRES_FOLLOW
   const isProcessing = state === ButtonState.PROCESSING
   const isDisabled =
-    !doesUserHaveAccess || state === ButtonState.PROCESSING || requiresFollow
+    !hasStreamAccess || state === ButtonState.PROCESSING || requiresFollow
 
   const handlePress = useCallback(() => {
     if (requiresFollow) {
       toast({ content: messages.followToDownload })
     }
 
-    if (!doesUserHaveAccess) {
+    if (!hasStreamAccess) {
       toast({ content: messages.mustHaveAccess })
     }
 
@@ -67,7 +67,7 @@ const DownloadButton = ({
     }
 
     onClick()
-  }, [isDisabled, onClick, requiresFollow, doesUserHaveAccess, toast])
+  }, [isDisabled, onClick, requiresFollow, hasStreamAccess, toast])
 
   // Manually handling disabled state in order to show a toast
   // when a follow is required
@@ -89,7 +89,7 @@ const DownloadButton = ({
 
 type TrackScreenDownloadButtonsProps = {
   following: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   isHidden?: boolean
   isOwner: boolean
   trackId: ID
@@ -97,7 +97,7 @@ type TrackScreenDownloadButtonsProps = {
 
 export const TrackScreenDownloadButtons = ({
   following,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isOwner,
   trackId
 }: TrackScreenDownloadButtonsProps) => {
@@ -136,7 +136,7 @@ export const TrackScreenDownloadButtons = ({
       {buttons.map((props) => (
         <DownloadButton
           {...props}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           key={props.label}
         />
       ))}

@@ -29,7 +29,7 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: ButtonType
   label: string
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   onClick?: () => void
 }
 
@@ -47,18 +47,18 @@ const DownloadButton = ({
   label,
   state,
   type,
-  doesUserHaveAccess,
+  hasStreamAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const isDisabled =
-    !doesUserHaveAccess ||
+    !hasStreamAccess ||
     state === ButtonState.PROCESSING ||
     state === ButtonState.REQUIRES_FOLLOW
 
   const getTooltipText = useCallback(() => {
-    if (!doesUserHaveAccess) {
+    if (!hasStreamAccess) {
       return messages.mustHaveAccess
     }
 
@@ -78,7 +78,7 @@ const DownloadButton = ({
             return messages.downloadableTrack
         }
     }
-  }, [doesUserHaveAccess, state, type])
+  }, [hasStreamAccess, state, type])
 
   const renderIcon = () => {
     if (state === ButtonState.PROCESSING) {
@@ -139,7 +139,7 @@ type DownloadButtonsProps = {
   onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
   isOwner: boolean
   following: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   isHidden?: boolean
   className?: string
 }
@@ -148,7 +148,7 @@ const DownloadButtons = ({
   trackId,
   isOwner,
   following,
-  doesUserHaveAccess,
+  hasStreamAccess,
   onDownload,
   className
 }: DownloadButtonsProps) => {
@@ -185,7 +185,7 @@ const DownloadButtons = ({
       {buttons.map((props) => (
         <DownloadButton
           {...props}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           key={props.label}
         />
       ))}

@@ -28,7 +28,7 @@ const messages = {
 }
 
 type BottomRowProps = {
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isDisabled?: boolean
   isLoading?: boolean
   isFavorited?: boolean
@@ -51,7 +51,7 @@ type BottomRowProps = {
 }
 
 export const BottomRow = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   isDisabled,
   isLoading,
   isFavorited,
@@ -111,7 +111,7 @@ export const BottomRow = ({
     )
   }
 
-  if (isTrack && streamConditions && !isLoading && !doesUserHaveAccess) {
+  if (isTrack && streamConditions && !isLoading && !hasStreamAccess) {
     return (
       <div
         className={cn(

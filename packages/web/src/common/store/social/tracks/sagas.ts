@@ -17,7 +17,8 @@ import {
   encodeHashId,
   getQueryParams,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  isContentFollowGated
 } from '@audius/common'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -695,19 +696,29 @@ function* watchDownloadTrack() {
       const user = yield* select(getUser, { id: userId })
       if (!user) return
 
-      let filename
+      let filename, requiresFollow
+
       // Determine if this track requires a follow to download.
+      const isOtherUser = userId !== accountUserId
+      const { download, download_conditions: downloadConditions } = track
+      const isFollowGated =
+        download?.requires_follow || isContentFollowGated(downloadConditions)
+      requiresFollow = isFollowGated && isOtherUser
+
       // In the case of a stem, check the parent track
-      let requiresFollow =
-        track.download?.requires_follow && userId !== accountUserId
       if (track.stem_of?.parent_track_id) {
         const parentTrack = yield* select(getTrack, {
           id: track.stem_of?.parent_track_id
         })
-        requiresFollow =
-          requiresFollow ||
-          (parentTrack?.download?.requires_follow && userId !== accountUserId)
-
+        const {
+          download: parentDownload,
+          download_conditions: parentDownloadConditions
+        } = parentTrack ?? {}
+        const isParentFollowGated =
+          parentDownload?.requires_follow ||
+          isContentFollowGated(parentDownloadConditions)
+        const parentRequiresFollow = isParentFollowGated && isOtherUser
+        requiresFollow = requiresFollow || parentRequiresFollow
         filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
       } else {
         filename = `${track.title} - ${user.name} (Audius).mp3`

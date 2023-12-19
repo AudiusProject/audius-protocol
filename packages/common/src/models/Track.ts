@@ -80,9 +80,9 @@ export type StreamConditionsSolNFTCollection = {
 // after user has set the collection.
 export type StreamConditionsCollectibleGated = {
   nft_collection:
-  | StreamConditionsEthNFTCollection
-  | StreamConditionsSolNFTCollection
-  | undefined
+    | StreamConditionsEthNFTCollection
+    | StreamConditionsSolNFTCollection
+    | undefined
 }
 
 export type StreamConditionsFollowGated = { follow_user_id: number }
@@ -203,7 +203,7 @@ export type TrackMetadata = {
   stream_signature: Nullable<StreamingSignature>
   is_download_gated: boolean
   download_conditions: Nullable<StreamConditions>
-  access: AccessPermissions,
+  access: AccessPermissions
   field_visibility?: FieldVisibility
   listenCount?: number
   permalink: string

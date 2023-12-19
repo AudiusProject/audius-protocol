@@ -57,12 +57,12 @@ export const Artwork = ({ track }: ArtworkProps) => {
     shadowColor = `rgb(${r.toFixed()},${g.toFixed()},${b.toFixed()})`
   }
 
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowDogEar =
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    (!hasStreamAccess || isPreviewing)
 
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>

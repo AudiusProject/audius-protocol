@@ -240,8 +240,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isDeleted = is_delete || !!is_deactivated
   const isUnlisted = is_unlisted
 
-  const { isUserAccessTBD, doesUserHaveAccess } = useGatedContentAccess(track)
-  const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
+  const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
   const isActive = useSelector((state) => {
     const playingUid = getUid(state)

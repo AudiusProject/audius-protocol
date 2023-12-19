@@ -156,7 +156,7 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata) {
-  const { track_id, user } = track
+  const { track_id, title, user } = track
 
   const { creator_node_endpoint } = user
   const creatorNodeEndpoints = creator_node_endpoint?.split(',')
@@ -170,7 +170,7 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   let queryParams: QueryParams = {}
   queryParams = yield* call(getQueryParams, { audiusBackendInstance })
   // todo: pass in correct filename and whether to download original or mp3
-  queryParams.filename = `${track_id}.mp3`
+  queryParams.filename = `${title}.mp3`
 
   const trackAudioUri = apiClient.makeUrl(
     `/tracks/${encodedTrackId}/download`,

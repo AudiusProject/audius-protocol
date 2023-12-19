@@ -142,7 +142,7 @@ export type DesktopTrackTileProps = {
   streamConditions?: Nullable<StreamConditions>
 
   /** If logged in user has access to track */
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
 
   /** If track metadata is loading in */
   isLoading?: boolean

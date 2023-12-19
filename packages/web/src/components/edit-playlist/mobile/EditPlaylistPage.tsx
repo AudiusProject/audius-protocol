@@ -341,10 +341,10 @@ const EditPlaylistPage = g(
           showRemoveTrackDrawer &&
           t.track_id === confirmRemoveTrack?.trackId &&
           playlistTrack?.time === confirmRemoveTrack?.timestamp
-        const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
           t.track_id
-        ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-        const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+        ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+        const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
         return {
           isLoading: false,

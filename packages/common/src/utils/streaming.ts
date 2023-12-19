@@ -30,14 +30,12 @@ export async function getQueryParams({
   queryParams.user_data = data
   queryParams.user_signature = signature
   if (streamSignature) {
-    queryParams.stream_signature = JSON.stringify(
-      streamSignature
-    )
+    queryParams.stream_signature = JSON.stringify(streamSignature)
   }
   return queryParams
 }
 
-export function* doesUserHaveTrackAccess(track: Nullable<Track>) {
+export function* hasStreamAccess(track: Nullable<Track>) {
   const gatedTrackSignatureMap = yield* select(getGatedTrackSignatureMap)
 
   const {
@@ -47,8 +45,7 @@ export function* doesUserHaveTrackAccess(track: Nullable<Track>) {
   } = track ?? {}
 
   const hasStreamSignature =
-    !!streamSignature ||
-    !!(trackId && gatedTrackSignatureMap[trackId])
+    !!streamSignature || !!(trackId && gatedTrackSignatureMap[trackId])
 
   return !isStreamGated || hasStreamSignature
 }

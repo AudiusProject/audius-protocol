@@ -382,7 +382,7 @@ export const AudioPlayer = () => {
           const { track, isPreview } = queueTracks[playerIndex] ?? {}
 
           // Skip track if user does not have access i.e. for an unlocked gated track
-          const doesUserHaveAccess = (() => {
+          const hasStreamAccess = (() => {
             if (!track) return false
 
             const {
@@ -398,7 +398,7 @@ export const AudioPlayer = () => {
             return !isStreamGated || hasStreamSignature
           })()
 
-          if (!track || !doesUserHaveAccess) {
+          if (!track || !hasStreamAccess) {
             next()
           } else {
             // Track Player natively went to the next track

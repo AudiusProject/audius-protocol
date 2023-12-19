@@ -54,7 +54,7 @@ export const LockedContentDrawer = () => {
   const neutralLight2 = useColor('neutralLight2')
   const dispatch = useDispatch()
   const { id, track, owner } = useLockedContent()
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const handleClose = useCallback(() => {
     dispatch(resetLockedContentId())
@@ -83,7 +83,7 @@ export const LockedContentDrawer = () => {
           trackId={track.track_id}
           streamConditions={track.stream_conditions}
           isOwner={false}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
         />
       </View>
     </NativeDrawer>

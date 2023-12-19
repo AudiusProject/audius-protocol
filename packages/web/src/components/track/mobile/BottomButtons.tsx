@@ -33,7 +33,7 @@ type BottomButtonsProps = {
   isUnlisted?: boolean
   isShareHidden?: boolean
   isTrack?: boolean
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   readonly?: boolean
   streamConditions?: Nullable<StreamConditions>
   gatedTrackStatus?: GatedTrackStatus
@@ -46,7 +46,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
     isUSDCEnabled && isContentUSDCPurchaseGated(props.streamConditions)
 
   // Readonly variant only renders content for locked USDC tracks
-  if (!!props.readonly && (!isUSDCPurchase || props.doesUserHaveAccess)) {
+  if (!!props.readonly && (!isUSDCPurchase || props.hasStreamAccess)) {
     return null
   }
 
@@ -65,7 +65,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
     props.isTrack &&
     !props.isLoading &&
     props.streamConditions &&
-    !props.doesUserHaveAccess
+    !props.hasStreamAccess
   ) {
     return (
       <div

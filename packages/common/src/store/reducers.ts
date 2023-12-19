@@ -21,6 +21,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -66,7 +67,6 @@ import {
   PlaylistLibraryState
 } from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
-import gatedContent from './gated-content/slice'
 import { purchaseContentReducer } from './purchase-content'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'

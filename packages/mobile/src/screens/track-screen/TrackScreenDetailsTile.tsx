@@ -208,7 +208,7 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const { doesUserHaveAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -258,8 +258,8 @@ export const TrackScreenDetailsTile = ({
   } = track
 
   const isOwner = owner_id === currentUserId
-  const hideFavorite = is_unlisted || !doesUserHaveAccess
-  const hideRepost = is_unlisted || !isReachable || !doesUserHaveAccess
+  const hideFavorite = is_unlisted || !hasStreamAccess
+  const hideRepost = is_unlisted || !isReachable || !hasStreamAccess
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -556,7 +556,7 @@ export const TrackScreenDetailsTile = ({
     return (
       <TrackScreenDownloadButtons
         following={user.does_current_user_follow}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasStreamAccess={hasStreamAccess}
         isOwner={isOwner}
         trackId={track_id}
       />

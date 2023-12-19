@@ -13,7 +13,7 @@ type DetailsTileGatedAccessProps = {
   trackId: ID
   streamConditions: StreamConditions
   isOwner: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   style?: ViewStyle
 }
 
@@ -21,7 +21,7 @@ export const DetailsTileGatedAccess = ({
   trackId,
   streamConditions,
   isOwner,
-  doesUserHaveAccess,
+  hasStreamAccess,
   style
 }: DetailsTileGatedAccessProps) => {
   const shouldDisplay =
@@ -31,7 +31,7 @@ export const DetailsTileGatedAccess = ({
 
   if (!shouldDisplay) return null
 
-  if (doesUserHaveAccess) {
+  if (hasStreamAccess) {
     return (
       <DetailsTileHasAccess
         streamConditions={streamConditions}

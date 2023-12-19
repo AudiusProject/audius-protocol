@@ -91,7 +91,7 @@ export type GiantTrackTileProps = {
   credits: string
   currentUserId: Nullable<ID>
   description: string
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
   following: boolean
@@ -138,7 +138,7 @@ export const GiantTrackTile = ({
   coverArtSizes,
   credits,
   description,
-  doesUserHaveAccess,
+  hasStreamAccess,
   duration,
   fieldVisibility,
   following,
@@ -191,14 +191,15 @@ export const GiantTrackTile = ({
   const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
-  const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
+  const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
-  const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
+  const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const { data: playlists } = trpc.playlists.containTrackId.useQuery(
     { trackId, collectionType: 'album' },
     { enabled: !!trackId }
   )
   const album = playlists?.[0] as unknown as APlaylist | undefined
+
   let isScheduledRelease = false
   if (!isPublishing && moment.utc(released).isAfter(moment())) {
     isScheduledRelease = true
@@ -463,14 +464,14 @@ export const GiantTrackTile = ({
         trackId={trackId}
         isOwner={isOwner}
         following={following}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasStreamAccess={hasStreamAccess}
         onDownload={onDownload}
       />
     )
   }
 
   const isLoading = loading || artworkLoading
-  // Omitting isOwner and doesUserHaveAccess so that we always show gated DogEars
+  // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
@@ -566,7 +567,7 @@ export const GiantTrackTile = ({
           <div className={cn(styles.playSection, fadeIn)}>
             {showPlay ? (
               <PlayPauseButton
-                disabled={!doesUserHaveAccess}
+                disabled={!hasStreamAccess}
                 playing={playing && !previewing}
                 onPlay={onPlay}
                 trackId={trackId}
@@ -602,8 +603,8 @@ export const GiantTrackTile = ({
           >
             {renderShareButton()}
             {renderMakePublicButton()}
-            {doesUserHaveAccess && renderRepostButton()}
-            {doesUserHaveAccess && renderFavoriteButton()}
+            {hasStreamAccess && renderRepostButton()}
+            {hasStreamAccess && renderFavoriteButton()}
             <span>
               {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
@@ -643,7 +644,7 @@ export const GiantTrackTile = ({
           isLoading={isLoading}
           trackId={trackId}
           streamConditions={streamConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}
           ownerId={userId}
         />

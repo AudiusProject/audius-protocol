@@ -202,10 +202,10 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
-  const { doesUserHaveAccess } = useGatedContentAccess(parentTrack)
+  const { hasStreamAccess } = useGatedContentAccess(parentTrack)
   const hasErrors = Boolean(
     isTrackRemix &&
-      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
+      (isInvalidParentTrack || isRemixUrlMissing || !hasStreamAccess)
   )
 
   return (
@@ -272,7 +272,7 @@ export const RemixSettingsScreen = () => {
               {hasErrors ? (
                 <InputErrorMessage
                   message={
-                    !doesUserHaveAccess
+                    !hasStreamAccess
                       ? messages.remixAccessError
                       : isInvalidParentTrack
                       ? messages.invalidRemixUrl

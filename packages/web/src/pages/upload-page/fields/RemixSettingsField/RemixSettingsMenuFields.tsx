@@ -58,7 +58,7 @@ export const RemixSettingsMenuFields = () => {
   )
 
   const trackId = track?.track_id
-  const { doesUserHaveAccess: canRemixParent } = useGatedContentAccess(
+  const { hasStreamAccess: canRemixParent } = useGatedContentAccess(
     track ?? null
   )
 

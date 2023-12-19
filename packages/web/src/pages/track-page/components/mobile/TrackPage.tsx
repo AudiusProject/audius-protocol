@@ -124,9 +124,9 @@ const TrackPage = ({
   const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
   const isFollowing = user ? user.does_current_user_follow : false
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
+  const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
-  const loading = !heroTrack || isUserAccessTBD
+  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -198,7 +198,7 @@ const TrackPage = ({
           isUnlisted={defaults.isUnlisted}
           isStreamGated={defaults.isStreamGated}
           streamConditions={defaults.streamConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isRemix={!!defaults.remixParentTrackId}
           fieldVisibility={defaults.fieldVisibility}
           aiAttributedUserId={defaults.aiAttributionUserId}

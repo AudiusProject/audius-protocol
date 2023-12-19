@@ -32,19 +32,19 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type LineupTileGatedContentTypeTagProps = {
   streamConditions: StreamConditions
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isOwner: boolean
 }
 
 /**
  * Returns a tag that indicates the type of stream content
  * @param streamConditions the track's stream conditions
- * @param doesUserHaveAccess whether the user has access to stream the track
+ * @param hasStreamAccess whether the user has access to stream the track
  * @isOwner whether the user is the owner of the track
  */
 export const LineupTileGatedContentTypeTag = ({
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isOwner
 }: LineupTileGatedContentTypeTagProps) => {
   const styles = useStyles()
@@ -62,28 +62,21 @@ export const LineupTileGatedContentTypeTag = ({
     return {
       [GatedContentType.COLLECTIBLE_GATED]: {
         icon: IconCollectible,
-        color: doesUserHaveAccess && !isOwner ? neutralLight4 : accentBlue,
+        color: hasStreamAccess && !isOwner ? neutralLight4 : accentBlue,
         text: messages.collectibleGated
       },
       [GatedContentType.SPECIAL_ACCESS]: {
         icon: IconSpecialAccess,
-        color: doesUserHaveAccess && !isOwner ? neutralLight4 : accentBlue,
+        color: hasStreamAccess && !isOwner ? neutralLight4 : accentBlue,
         text: messages.specialAccess
       },
       [GatedContentType.USDC_PURCHASE]: {
         icon: IconCart,
-        color:
-          doesUserHaveAccess && !isOwner ? neutralLight4 : specialLightGreen,
+        color: hasStreamAccess && !isOwner ? neutralLight4 : specialLightGreen,
         text: messages.premium
       }
     }
-  }, [
-    accentBlue,
-    doesUserHaveAccess,
-    isOwner,
-    neutralLight4,
-    specialLightGreen
-  ])
+  }, [accentBlue, hasStreamAccess, isOwner, neutralLight4, specialLightGreen])
 
   const { icon: Icon, color, text } = gatedContentTypeMap[type]
 

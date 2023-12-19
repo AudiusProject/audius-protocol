@@ -71,7 +71,7 @@ export const LineupTile = ({
   const trackId = isTrack ? item.track_id : undefined
   const streamConditions = isTrack ? item.stream_conditions : null
   const isArtistPick = artist_pick_track_id === id
-  const { doesUserHaveAccess } = useGatedContentAccess(isTrack ? item : null)
+  const { hasStreamAccess } = useGatedContentAccess(isTrack ? item : null)
   const isScheduledRelease = item.release_date
     ? moment(item.release_date).isAfter(moment())
     : false
@@ -79,19 +79,19 @@ export const LineupTile = ({
   const dogEarType = getDogEarType({
     streamConditions,
     isOwner,
-    doesUserHaveAccess,
+    hasStreamAccess,
     isArtistPick: showArtistPick && isArtistPick,
     isUnlisted: isUnlisted && !isScheduledRelease
   })
 
   const handlePress = useCallback(() => {
-    if (trackId && !doesUserHaveAccess && !hasPreview) {
+    if (trackId && !hasStreamAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [trackId, doesUserHaveAccess, hasPreview, dispatch, onPress])
+  }, [trackId, hasStreamAccess, hasPreview, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
@@ -138,7 +138,7 @@ export const LineupTile = ({
           repostCount={repost_count}
           saveCount={save_count}
           showRankIcon={showRankIcon}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}
           isOwner={isOwner}
           isArtistPick={isArtistPick}
@@ -157,7 +157,7 @@ export const LineupTile = ({
         readonly={isReadonly}
         trackId={trackId}
         streamConditions={streamConditions}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasStreamAccess={hasStreamAccess}
         onPressOverflow={onPressOverflow}
         onPressRepost={onPressRepost}
         onPressSave={onPressSave}

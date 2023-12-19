@@ -615,7 +615,7 @@ type GatedTrackSectionProps = {
   isLoading: boolean
   trackId: ID
   streamConditions: StreamConditions
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   isOwner: boolean
   wrapperClassName?: string
   className?: string
@@ -627,7 +627,7 @@ export const GatedTrackSection = ({
   isLoading,
   trackId,
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isOwner,
   wrapperClassName,
   className,
@@ -712,7 +712,7 @@ export const GatedTrackSection = ({
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
-  if (doesUserHaveAccess) {
+  if (hasStreamAccess) {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedTrackSection

@@ -197,10 +197,10 @@ const TracksLineup = ({
   const trackList = trackEntries
     .filter((t) => t.track_id)
     .map((entry) => {
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         entry.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       return {
         isLoading: false,
         isStreamGated: entry.is_stream_gated,

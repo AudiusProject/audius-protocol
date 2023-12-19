@@ -131,8 +131,10 @@ function* getTokenIdMap({
       }
 
       // skip this track entry if it is not gated on an nft collection
-      const { is_stream_gated: isStreamGated, stream_conditions: streamConditions } =
-        tracks[trackId]
+      const {
+        is_stream_gated: isStreamGated,
+        stream_conditions: streamConditions
+      } = tracks[trackId]
       if (
         !isStreamGated ||
         !streamConditions ||
@@ -188,10 +190,7 @@ function* updateNewStreamingSignatures({
   const streamSignatureMap: { [id: ID]: StreamingSignature } = {}
 
   tracks.forEach((track: Track) => {
-    const {
-      stream_signature: streamSignature,
-      track_id: trackId
-    } = track
+    const { stream_signature: streamSignature, track_id: trackId } = track
 
     // skip this track entry if we already have a signature for it
     if (gatedTrackSignatureIdSet.has(trackId)) return
@@ -467,8 +466,8 @@ export function* pollGatedTrack({
       const eventName = isContentFollowGated(track.stream_conditions)
         ? Name.FOLLOW_GATED_TRACK_UNLOCKED
         : isContentTipGated(track.stream_conditions)
-          ? Name.TIP_GATED_TRACK_UNLOCKED
-          : null
+        ? Name.TIP_GATED_TRACK_UNLOCKED
+        : null
       if (eventName) {
         analytics.track({
           eventName,
@@ -632,10 +631,7 @@ function* watchTipGatedTracks() {
 }
 
 function* watchRemoveStreamSignatures() {
-  yield* takeEvery(
-    removeStreamingSignatures.type,
-    handleRemoveStreamSignatures
-  )
+  yield* takeEvery(removeStreamingSignatures.type, handleRemoveStreamSignatures)
 }
 
 export const sagas = () => {

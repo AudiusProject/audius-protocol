@@ -106,7 +106,7 @@ type Props = {
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   streamConditions: Nullable<StreamConditions>
   isOwner: boolean
   isArtistPick?: boolean
@@ -128,7 +128,7 @@ export const LineupTileStats = ({
   repostCount,
   saveCount,
   showRankIcon,
-  doesUserHaveAccess,
+  hasStreamAccess,
   streamConditions,
   isOwner,
   isArtistPick,
@@ -171,7 +171,7 @@ export const LineupTileStats = ({
         {streamConditions ? (
           <LineupTileGatedContentTypeTag
             streamConditions={streamConditions}
-            doesUserHaveAccess={doesUserHaveAccess}
+            hasStreamAccess={hasStreamAccess}
             isOwner={isOwner}
           />
         ) : null}
@@ -263,7 +263,7 @@ export const LineupTileStats = ({
       </View>
       {streamConditions && !isOwner ? (
         <LockedStatusBadge
-          locked={!doesUserHaveAccess}
+          locked={!hasStreamAccess}
           variant={
             isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }

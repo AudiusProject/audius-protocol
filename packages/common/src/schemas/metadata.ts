@@ -94,9 +94,9 @@ const collectionMetadataSchema = {
 export const newCollectionMetadata = (fields?: any, validate = false) => {
   const validFields = validate
     ? pick(
-      fields,
-      Object.keys(collectionMetadataSchema).concat(['playlist_id'])
-    )
+        fields,
+        Object.keys(collectionMetadataSchema).concat(['playlist_id'])
+      )
     : fields
   return {
     ...collectionMetadataSchema,

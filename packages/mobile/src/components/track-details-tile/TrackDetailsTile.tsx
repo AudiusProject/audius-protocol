@@ -89,10 +89,10 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
     useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const dogEarType = getDogEarType({
-    doesUserHaveAccess,
+    hasStreamAccess,
     streamConditions: track?.stream_conditions
   })
 

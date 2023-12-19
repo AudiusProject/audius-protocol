@@ -30,7 +30,7 @@ type Props = {
   isUnlisted?: boolean
   trackId?: ID
   streamConditions?: Nullable<StreamConditions>
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
@@ -67,7 +67,7 @@ export const LineupTileActionButtons = ({
   isShareHidden,
   isUnlisted,
   trackId,
-  doesUserHaveAccess = false,
+  hasStreamAccess = false,
   readonly = false,
   streamConditions,
   onPressOverflow,
@@ -121,7 +121,7 @@ export const LineupTileActionButtons = ({
     />
   )
 
-  const showGatedAccessStatus = trackId && !doesUserHaveAccess
+  const showGatedAccessStatus = trackId && !hasStreamAccess
   const showLeftButtons = !showGatedAccessStatus && !isUnlisted
 
   let content: ReactElement | null = null

@@ -18,7 +18,7 @@ import {
   gatedContentSelectors,
   QueryParams,
   Genre,
-  doesUserHaveTrackAccess,
+  hasStreamAccess,
   getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common'
@@ -203,8 +203,8 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
-    if (doesUserHaveAccess || isPreview) {
+    const doesUserHaveStreamAccess = yield* call(hasStreamAccess, track)
+    if (doesUserHaveStreamAccess || isPreview) {
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))
     } else {
