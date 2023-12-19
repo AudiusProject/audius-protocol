@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Array,
     Boolean,
     Column,
     DateTime,
@@ -78,6 +79,7 @@ class Track(Base, RepresentableMixin):
     premium_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
+    parent_album_ids = Column(Array(Integer))
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="Track.blockhash == Block.blockhash"

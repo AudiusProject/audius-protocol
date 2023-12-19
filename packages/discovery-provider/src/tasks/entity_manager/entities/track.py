@@ -373,6 +373,8 @@ def validate_track_tx(params: ManageEntityParameters):
                 raise IndexingValidationError(
                     f"Cannot AI attribute user {ai_attribution_user}"
                 )
+    
+    # TODO: validate parent_album_ids all ids exist
 
 
 def get_handle(params: ManageEntityParameters):

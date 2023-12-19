@@ -624,6 +624,7 @@ export interface TrackRow {
   'metadata_multihash'?: string | null;
   'mood'?: string | null;
   'owner_id': number;
+  'parent_album_ids'?: any | null;
   'premium_conditions'?: any | null;
   'preview_cid'?: string | null;
   'preview_start_seconds'?: number | null;

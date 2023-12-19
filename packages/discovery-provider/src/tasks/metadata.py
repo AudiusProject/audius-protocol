@@ -68,6 +68,7 @@ class TrackMetadata(TypedDict):
     premium_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
     ai_attribution_user_id: Optional[int]
+    parent_album_ids: Optional[List[int]]
 
 
 track_metadata_format: TrackMetadata = {
@@ -106,6 +107,7 @@ track_metadata_format: TrackMetadata = {
     "premium_conditions": None,
     "is_playlist_upload": False,
     "ai_attribution_user_id": None,
+    "parent_album_ids": None,
 }
 
 # Required format for user metadata retrieved from the content system

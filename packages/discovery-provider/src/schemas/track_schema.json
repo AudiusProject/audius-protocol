@@ -158,6 +158,12 @@
         "ai_attribution_user_id": {
           "type": ["integer", "null"],
           "default": null
+        },
+        "parent_album_ids": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "integer"
+          }
         }
       },
       "required": [

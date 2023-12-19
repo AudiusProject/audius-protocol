@@ -639,6 +639,7 @@ export interface TrackRow {
   track_segments: any
   txhash?: string
   updated_at: Date
+  parent_album_ids: number[] | null
 }
 export interface TrendingParamRow {
   genre?: string | null

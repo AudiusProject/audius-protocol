@@ -86,6 +86,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
 
         'remix_of.tracks.parent_track_id': { type: 'keyword' },
         ai_attribution_user_id: { type: 'integer' },
+        parent_album_ids: { type: 'integer' },
       },
     },
   }

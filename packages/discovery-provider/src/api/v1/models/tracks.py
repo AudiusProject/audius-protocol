@@ -147,6 +147,7 @@ track_full = ns.clone(
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
+        "parent_album_ids": fields.List(fields.Integer),
     },
 )
 
