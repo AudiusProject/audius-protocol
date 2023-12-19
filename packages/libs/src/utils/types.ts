@@ -89,7 +89,7 @@ export interface Download {
 
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type StreamConditionsEthNFTCollection = {
+export type EthCollectibleGatedConditions = {
   chain: 'eth'
   standard: TokenStandard
   address: string
@@ -99,7 +99,7 @@ export type StreamConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type StreamConditionsSolNFTCollection = {
+export type SolCollectibleGatedConditions = {
   chain: 'sol'
   address: string
   name: string
@@ -114,10 +114,10 @@ type USDCPurchaseConditions = {
   }
 }
 
-export type StreamConditions = {
+export type GatedConditions = {
   nft_collection?:
-  | StreamConditionsEthNFTCollection
-  | StreamConditionsSolNFTCollection
+  | EthCollectibleGatedConditions
+  | SolCollectibleGatedConditions
   follow_user_id?: number
   tip_user_id?: number
 } & USDCPurchaseConditions
@@ -155,9 +155,9 @@ export type TrackMetadata = {
   is_unlisted: boolean
   is_available: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
+  stream_conditions: Nullable<GatedConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<USDCPurchaseConditions>
+  download_conditions: Nullable<GatedConditions>
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>

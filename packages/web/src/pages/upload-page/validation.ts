@@ -3,9 +3,9 @@ import {
   Genre,
   HashId,
   Mood,
-  StreamConditionsFollowUserId,
-  StreamConditionsNFTCollection,
-  StreamConditionsTipUserId,
+  FollowGatedConditions,
+  CollectibleGatedConditions,
+  TipGatedConditions,
   USDCPurchaseConditions
 } from '@audius/sdk'
 import { z } from 'zod'
@@ -70,14 +70,21 @@ const createSdkSchema = () =>
     is_stream_gated: z.optional(z.boolean()),
     stream_conditions: z.optional(
       z.union([
-        StreamConditionsNFTCollection,
-        StreamConditionsFollowUserId,
-        StreamConditionsTipUserId,
+        CollectibleGatedConditions,
+        FollowGatedConditions,
+        TipGatedConditions,
         USDCPurchaseConditions
       ])
     ),
     is_download_gated: z.optional(z.boolean()),
-    download_conditions: z.optional(USDCPurchaseConditions),
+    download_conditions: z.optional(
+      z.union([
+        CollectibleGatedConditions,
+        FollowGatedConditions,
+        TipGatedConditions,
+        USDCPurchaseConditions
+      ])
+    ),
     release_date: z.optional(z.string()).nullable(),
     remixOf: z.optional(
       z

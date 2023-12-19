@@ -18,8 +18,8 @@ import {
   StreamConditions,
   StreamingSignature,
   ID,
-  USDCPurchaseConditions,
-  AccessPermissions
+  AccessPermissions,
+  DownloadConditions
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -146,7 +146,7 @@ export type APITrack = {
   stream_conditions: Nullable<StreamConditions>
   stream_signature: Nullable<StreamingSignature>
   is_download_gated: boolean
-  download_conditions: Nullable<USDCPurchaseConditions>
+  download_conditions: Nullable<DownloadConditions>
   access: AccessPermissions
   preview_cid: Nullable<CID>
   track_cid: Nullable<CID>

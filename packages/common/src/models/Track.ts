@@ -78,16 +78,16 @@ export type StreamConditionsSolNFTCollection = {
 // nft_collection can be undefined during upload flow when user has set track to
 // collectible-gated but hasn't specified collection yet, but should always be defined
 // after user has set the collection.
-export type StreamConditionsCollectibleGated = {
+export type CollectibleGatedConditions = {
   nft_collection:
-    | StreamConditionsEthNFTCollection
-    | StreamConditionsSolNFTCollection
-    | undefined
+  | StreamConditionsEthNFTCollection
+  | StreamConditionsSolNFTCollection
+  | undefined
 }
 
-export type StreamConditionsFollowGated = { follow_user_id: number }
+export type FollowGatedConditions = { follow_user_id: number }
 
-export type StreamConditionsTipGated = { tip_user_id: number }
+export type TipGatedConditions = { tip_user_id: number }
 
 export type USDCPurchaseConditions = {
   usdc_purchase: {
@@ -97,10 +97,17 @@ export type USDCPurchaseConditions = {
 }
 
 export type StreamConditions =
-  | StreamConditionsCollectibleGated
-  | StreamConditionsFollowGated
-  | StreamConditionsTipGated
+  | CollectibleGatedConditions
+  | FollowGatedConditions
+  | TipGatedConditions
   | USDCPurchaseConditions
+
+export type DownloadConditions = Partial<
+  CollectibleGatedConditions
+  & FollowGatedConditions
+  & TipGatedConditions
+  & USDCPurchaseConditions
+>
 
 export type AccessPermissions = {
   stream: boolean
@@ -122,24 +129,24 @@ export enum TrackAccessType {
 }
 
 export const isContentCollectibleGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsCollectibleGated =>
-  'nft_collection' in (streamConditions ?? {})
+  gatedConditions?: Nullable<StreamConditions>
+): gatedConditions is CollectibleGatedConditions =>
+  'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsFollowGated =>
-  'follow_user_id' in (streamConditions ?? {})
+  gatedConditions?: Nullable<StreamConditions>
+): gatedConditions is FollowGatedConditions =>
+  'follow_user_id' in (gatedConditions ?? {})
 
 export const isContentTipGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsTipGated =>
-  'tip_user_id' in (streamConditions ?? {})
+  gatedConditions?: Nullable<StreamConditions>
+): gatedConditions is TipGatedConditions =>
+  'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is USDCPurchaseConditions =>
-  'usdc_purchase' in (streamConditions ?? {})
+  gatedConditions?: Nullable<StreamConditions>
+): gatedConditions is USDCPurchaseConditions =>
+  'usdc_purchase' in (gatedConditions ?? {})
 
 export type StreamingSignature = {
   data: string
@@ -202,7 +209,7 @@ export type TrackMetadata = {
   stream_conditions: Nullable<StreamConditions>
   stream_signature: Nullable<StreamingSignature>
   is_download_gated: boolean
-  download_conditions: Nullable<StreamConditions>
+  download_conditions: Nullable<DownloadConditions>
   access: AccessPermissions
   field_visibility?: FieldVisibility
   listenCount?: number

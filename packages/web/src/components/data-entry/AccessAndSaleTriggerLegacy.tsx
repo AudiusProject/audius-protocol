@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
 import {
-  StreamConditionsCollectibleGated,
-  StreamConditionsFollowGated,
-  StreamConditionsTipGated,
+  CollectibleGatedConditions,
+  FollowGatedConditions,
+  TipGatedConditions,
   USDCPurchaseConditions,
   Track,
   TrackAvailabilityType,
@@ -222,10 +222,10 @@ export const AccessAndSaleTriggerLegacy = (
       case TrackAvailabilityType.SPECIAL_ACCESS: {
         if (specialAccessType === SpecialAccessType.FOLLOW) {
           const { follow_user_id } =
-            streamConditions as StreamConditionsFollowGated
+            streamConditions as FollowGatedConditions
           newState.stream_conditions = { follow_user_id }
         } else {
-          const { tip_user_id } = streamConditions as StreamConditionsTipGated
+          const { tip_user_id } = streamConditions as TipGatedConditions
           newState.stream_conditions = { tip_user_id }
         }
         newState.is_stream_gated = true
@@ -233,7 +233,7 @@ export const AccessAndSaleTriggerLegacy = (
       }
       case TrackAvailabilityType.COLLECTIBLE_GATED: {
         const { nft_collection } =
-          streamConditions as StreamConditionsCollectibleGated
+          streamConditions as CollectibleGatedConditions
         newState.stream_conditions = { nft_collection }
         newState.is_stream_gated = true
         break

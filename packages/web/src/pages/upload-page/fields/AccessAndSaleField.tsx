@@ -14,10 +14,10 @@ import {
   USDCPurchaseConfig,
   useUSDCPurchaseConfig,
   useAccessAndRemixSettings,
-  StreamConditionsCollectibleGated,
+  CollectibleGatedConditions,
   USDCPurchaseConditions,
-  StreamConditionsFollowGated,
-  StreamConditionsTipGated,
+  FollowGatedConditions,
+  TipGatedConditions,
   ID,
   useFeatureFlag,
   StreamConditions
@@ -375,10 +375,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         case TrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
             const { follow_user_id } =
-              streamConditions as StreamConditionsFollowGated
+              streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
           } else {
-            const { tip_user_id } = streamConditions as StreamConditionsTipGated
+            const { tip_user_id } = streamConditions as TipGatedConditions
             setStreamConditionsValue({ tip_user_id })
           }
           setIsStreamGated(true)
@@ -386,7 +386,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         }
         case TrackAvailabilityType.COLLECTIBLE_GATED: {
           const { nft_collection } =
-            streamConditions as StreamConditionsCollectibleGated
+            streamConditions as CollectibleGatedConditions
           setStreamConditionsValue({ nft_collection })
           setIsStreamGated(true)
           break
