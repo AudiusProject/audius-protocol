@@ -139,10 +139,10 @@ const canSuccessfullyAttest = async (
   )
   try {
       const res = await fetch(url)
-      return res && res.ok
+      return res && res.ok;
   } catch (e) {
-    console.warn("cant attest", e, url)
-    return false
+      console.warn("Can't attest", e, url)
+      return false
   }
 }
 
@@ -253,9 +253,9 @@ const getAllChallenges = async (
     // did we succeed?
     if (possibleNodeSet.length !== 3) {
       console.log(
-        `Could not find a valid node set for challenge: ${JSON.stringify(
+        `Could not find a valid node set for challenge: ${
           challenge.specifier
-        )}, skipping.`, possibleNodeSet
+        }, skipping.`, possibleNodeSet
       )
       impossibleChallenges.push(challenge)
       // reset it for next time

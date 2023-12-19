@@ -86,7 +86,7 @@ export const getChallengesDisbursementsUserbanksFriendlyEnsureSlots = async (
   discoveryDb: Knex,
   specifier: string
 ): Promise<ChallengeDisbursementUserbankFriendly[]> => {
-    let retries = 20
+  let retries = 20
   while (retries !== 0) {
     console.log(`attempt of ${retries} to get all challenge disbursments for ${specifier}`)
     const challenges = await getChallengesDisbursementsUserbanksFriendly(discoveryDb, specifier)
