@@ -312,10 +312,10 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
     if track_record.release_date is None:
         created_at = track_record_attributes.get("created_at")
         if created_at:
-            track_record.release_date = str(created_at)
+            track_record.release_date = str(created_at)  # type: ignore
         else:
             logger.debug("track.py | created_at is None. Using current time for release date")
-            track_record.release_date = str(datetime.now(timezone.utc))
+            track_record.release_date = str(datetime.now(timezone.utc))  # type: ignore
 
     return track_record
 
