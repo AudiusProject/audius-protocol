@@ -1,6 +1,8 @@
+import { getLocalTimezone } from '@audius/common'
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
+import { getLocal } from 'web3modal'
 
 import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
 
@@ -25,9 +27,12 @@ export const ScheduledReleaseLabel = ({
         styles.scheduledReleaseLabel
       )}
     >
-      <IconCalendarMonth className={premiumContentLabelStyles.icon} />
+      <IconCalendarMonth />
       <Text>
-        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
+        Releases{' '}
+        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+          ' ' +
+          getLocalTimezone()}
       </Text>
     </div>
   )
@@ -50,7 +55,10 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendarMonth />
       <Text color='accent' variant='title'>
-        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
+        Releases on{' '}
+        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+          ' ' +
+          getLocalTimezone()}
       </Text>
     </div>
   )

@@ -160,7 +160,8 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
+  const isScheduledRelease =
+    isUnlisted && moment.utc(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -208,7 +209,7 @@ export const LineupTileStats = ({
             <Text fontSize='xs' colorValue={accentPurple}>
               Releases{' '}
               {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}{' '}
-              {getLocalTimezone(releaseDate)}
+              {getLocalTimezone()}
             </Text>
           </View>
         ) : null}

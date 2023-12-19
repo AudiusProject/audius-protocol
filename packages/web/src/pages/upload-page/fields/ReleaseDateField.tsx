@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { getLocalTimezone } from '@audius/common'
 import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
@@ -32,8 +33,8 @@ const messages = {
     'Specify a release date for your music or schedule it to be released in the future. Release date affects sorting on your profile and is visible in track details.',
   pastReleaseHint:
     'Setting a release date in the past will impact the order tracks appear on your profile.',
-  futureReleaseHint:
-    "Your scheduled track will become live on Audius on the date and time you've chosen above in your time zone."
+  futureReleaseHint: (timezone: string) =>
+    `Your scheduled track will become live on Audius on the date and time you've chosen above in your time zone (${timezone}).`
 }
 
 const RELEASE_DATE = 'release_date'
@@ -257,7 +258,7 @@ const RadioItems = (props: any) => {
           content={
             timePeriod === TimePeriodType.PAST
               ? messages.pastReleaseHint
-              : messages.futureReleaseHint
+              : messages.futureReleaseHint(getLocalTimezone())
           }
         />
       </ModalContent>

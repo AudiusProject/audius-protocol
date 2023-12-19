@@ -94,7 +94,6 @@ export const ScheduledReleaseRadioField = (props) => {
 
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
-  const [, , { setValue: setReleaseDateDay }] = useField('release_date_day')
 
   let initIsDateOpen = false
   if (!releaseDateValue && selected) {
@@ -197,9 +196,7 @@ export const ScheduledReleaseRadioField = (props) => {
               style={styles.releaseDateInput}
               content={
                 moment(releaseDateValue).isAfter(moment())
-                  ? messages.futureReleaseHint(
-                      getLocalTimezone(releaseDateValue)
-                    )
+                  ? messages.futureReleaseHint(getLocalTimezone())
                   : messages.pastReleaseHint
               }
             />

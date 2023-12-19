@@ -171,6 +171,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         onFocus?.(e)
         setIsFocused(true)
+        if (hideKeyboard) {
+          Keyboard.dismiss()
+        }
 
         let animations: Animated.CompositeAnimation[] = []
 
