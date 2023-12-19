@@ -53,3 +53,30 @@ func TestEmptyCID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "baeaaaiqsedr3brcctd6byfe27p2mrglpxescplsb4rsjxe2muskzsg3ykk4fk", cid)
 }
+
+func TestPlacedCID(t *testing.T) {
+	cid, err := ComputeFileCID(bytes.NewReader([]byte("some placed content")))
+	assert.NoError(t, err)
+	hostList := []string{
+		"http://example1.com",
+		"http://example2.com",
+		"http://example3.com",
+	}
+	pcid := EncodePlacedCID(hostList, cid)
+	assert.Equal(t, "5CEvyaAfMXaGnHfYcEGnM2Bsk27kaxnRiPfdNW52eEmKjhuFw5X87vy5T8ikJNtCk1h9UdKt1ZVqNBbSU!baeaaaiqseb7vx734srjb6b64sueqv6ruamkyccuk5xpyisbiy726njey2hzwy", pcid)
+
+	{
+
+		isPlaced, placement, cid := ParsePlacedCID(pcid)
+		assert.True(t, isPlaced)
+		assert.Equal(t, "5CEvyaAfMXaGnHfYcEGnM2Bsk27kaxnRiPfdNW52eEmKjhuFw5X87vy5T8ikJNtCk1h9UdKt1ZVqNBbSU", placement)
+		assert.Equal(t, "baeaaaiqseb7vx734srjb6b64sueqv6ruamkyccuk5xpyisbiy726njey2hzwy", cid)
+
+		hosts, err := DecodePlacementHosts(placement)
+		assert.NoError(t, err)
+		assert.Equal(t, hostList, hosts)
+
+		shard := ShardCID(pcid)
+		assert.Equal(t, "2hzwy/5CEvyaAfMXaGnHfYcEGnM2Bsk27kaxnRiPfdNW52eEmKjhuFw5X87vy5T8ikJNtCk1h9UdKt1ZVqNBbSU!baeaaaiqseb7vx734srjb6b64sueqv6ruamkyccuk5xpyisbiy726njey2hzwy", shard)
+	}
+}

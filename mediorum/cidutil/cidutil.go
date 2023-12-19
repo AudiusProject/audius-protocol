@@ -10,6 +10,7 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
+	"github.com/mr-tron/base58/base58"
 	"github.com/multiformats/go-multihash"
 )
 
@@ -52,6 +53,9 @@ func ComputeFileCID(f io.ReadSeeker) (string, error) {
 
 // note: any Qm CID will be invalid because its hash won't match the contents
 func ValidateCID(expectedCID string, f io.ReadSeeker) error {
+	if isPlaced, _, cid := ParsePlacedCID(expectedCID); isPlaced {
+		expectedCID = cid
+	}
 	computed, err := ComputeFileCID(f)
 	if err != nil {
 		return err
@@ -72,6 +76,37 @@ func IsLegacyCIDStrict(cid string) bool {
 	return IsLegacyCID(cid) && len(cid) == 46
 }
 
+func ParsePlacedCID(placedCid string) (isPlaced bool, placement string, vanillaCid string) {
+	idx := strings.Index(placedCid, "!")
+	if idx == -1 {
+		return false, "", placedCid
+	}
+	return true, placedCid[:idx], placedCid[idx+1:]
+}
+
+func EncodePlacedCID(hosts []string, cid string) string {
+	// if for some reason it's already placed, rewrite placement
+	if isPlaced, _, cid := ParsePlacedCID(cid); isPlaced {
+		return EncodePlacedCID(hosts, cid)
+	}
+
+	placement := EncodePlacementHosts(hosts)
+	return fmt.Sprintf("%s!%s", placement, cid)
+}
+
+func EncodePlacementHosts(hosts []string) string {
+	j := strings.Join(hosts, ",")
+	return base58.Encode([]byte(j))
+}
+
+func DecodePlacementHosts(p string) ([]string, error) {
+	b, err := base58.Decode(p)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(string(b), ","), nil
+}
+
 // Returns a sharded filepath/key for CID based on CID version.
 // V0: last 3 chars, offset by 1
 // V1: last 5 chars
@@ -80,7 +115,8 @@ func ShardCID(cidStr string) string {
 	if IsLegacyCIDStrict(cidStr) {
 		return shardLegacyCID(cidStr)
 	}
-	if strings.HasPrefix(cidStr, "ba") {
+	isPlaced, _, _ := ParsePlacedCID(cidStr)
+	if strings.HasPrefix(cidStr, "ba") || isPlaced {
 		return shardCIDV1(cidStr)
 	}
 	return cidStr

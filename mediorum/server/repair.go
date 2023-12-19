@@ -208,6 +208,16 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
 	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
 
+	// if CID has a placement prefix... parse out placement data
+	if isPlaced, _, _ := cidutil.ParsePlacedCID(cid); isPlaced {
+		var err error
+		preferredHosts, isMine, err = ss.rendezvousPlacement(cid)
+		if err != nil {
+			return err
+		}
+		preferredHealthyHosts, isMineHealthy = preferredHosts, isMine
+	}
+
 	// fast path: do zero bucket ops if we know we don't care about this cid
 	if !tracker.CleanupMode && !isMineHealthy {
 		return nil
