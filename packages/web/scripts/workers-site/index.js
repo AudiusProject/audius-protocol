@@ -4,7 +4,7 @@ import { handleSsr } from './ssr'
 
 /* globals GA, GA_ACCESS_TOKEN, EMBED, DISCOVERY_NODES, HTMLRewriter */
 
-const DEBUG = true
+const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 const discoveryNodes = DISCOVERY_NODES.split(',')
