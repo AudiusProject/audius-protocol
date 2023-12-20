@@ -5,7 +5,6 @@ import { sdk } from '@audius/sdk'
 
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
-import { solanaService } from './solana'
 import { getStorageNodeSelector } from './storageNodeSelector'
 
 let inProgress = false
@@ -21,8 +20,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
       auth,
-      storageNodeSelector: await getStorageNodeSelector(),
-      solana: solanaService
+      storageNodeSelector: await getStorageNodeSelector()
     }
   })
   sdkInstance = audiusSdk

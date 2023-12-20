@@ -18,7 +18,7 @@ import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
 import {
   decodeAssociatedTokenAccountInstruction,
-  ClaimableTokensProgram,
+  decodeClaimableTokenInstruction,
   decodeRewardManagerInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction,
   isCreateAssociatedTokenAccountInstruction
@@ -197,8 +197,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   instruction: TransactionInstruction,
   user?: { blockchainUserId?: number; handle?: string | null }
 ) => {
-  const decodedInstruction =
-    ClaimableTokensProgram.decodeInstruction(instruction)
+  const decodedInstruction = decodeClaimableTokenInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
   if (
     !authority.equals(claimableTokenAuthorities['usdc']) &&

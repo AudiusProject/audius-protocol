@@ -19,12 +19,15 @@ import assert from 'assert'
 import { assertRelayAllowedInstructions } from '../../src/typed-routes/solana/solanaRelayChecks'
 import config from '../../src/config'
 import audiusLibsWrapper from '../../src/audiusLibsInstance'
+import {
+  createClaimableTokenAccountInstruction,
+  createTransferClaimableTokenInstruction,
+  createEvaluateAttestationsInstruction,
+  createSenderPublicInstruction,
+  createSubmitAttestationInstruction,
+  RewardManagerInstruction
+} from '@audius/spl'
 import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
-import { createSenderPublicInstruction } from '@audius/spl/src/reward-manager/createSenderPublic'
-import { RewardManagerInstruction } from '@audius/spl/src/reward-manager/constants'
-import { createEvaluateAttestationsInstruction } from '@audius/spl/src/reward-manager/evaluateAttestations'
-import { createSubmitAttestationInstruction } from '@audius/spl/src/reward-manager/submitAttestation'
-import { ClaimableTokensProgram } from '@audius/spl'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(
   config.get('solanaClaimableTokenProgramAddress')
@@ -477,40 +480,50 @@ describe('Solana Relay', function () {
       const wallet = '0xe42b199d864489387bf64262874fc6472bcbc151'
       const payer = getRandomPublicKey()
       const mint = getRandomPublicKey()
-      const userBank = getRandomPublicKey()
+      const userbank = getRandomPublicKey()
       const destination = getRandomPublicKey()
       const nonceAccount = getRandomPublicKey()
       const instructions = [
-        ClaimableTokensProgram.createAccountInstruction({
-          ethAddress: wallet,
+        createClaimableTokenAccountInstruction(
+          wallet,
           payer,
           mint,
-          authority: usdcClaimableTokenAuthority,
-          userBank
-        }),
-        ClaimableTokensProgram.createTransferInstruction({
+          usdcClaimableTokenAuthority,
+          userbank,
+          TOKEN_PROGRAM_ID,
+          CLAIMABLE_TOKEN_PROGRAM_ID
+        ),
+        createTransferClaimableTokenInstruction(
           payer,
-          sourceEthAddress: wallet,
-          sourceUserBank: userBank,
+          userbank,
           destination,
           nonceAccount,
-          authority: usdcClaimableTokenAuthority
-        }),
-        ClaimableTokensProgram.createAccountInstruction({
-          ethAddress: wallet,
+          0n,
+          usdcClaimableTokenAuthority,
+          1n,
+          TOKEN_PROGRAM_ID,
+          CLAIMABLE_TOKEN_PROGRAM_ID
+        ),
+        createClaimableTokenAccountInstruction(
+          wallet,
           payer,
           mint,
-          authority: audioClaimableTokenAuthority,
-          userBank
-        }),
-        ClaimableTokensProgram.createTransferInstruction({
+          audioClaimableTokenAuthority,
+          userbank,
+          TOKEN_PROGRAM_ID,
+          CLAIMABLE_TOKEN_PROGRAM_ID
+        ),
+        createTransferClaimableTokenInstruction(
           payer,
-          sourceEthAddress: wallet,
-          sourceUserBank: userBank,
+          userbank,
           destination,
           nonceAccount,
-          authority: audioClaimableTokenAuthority
-        })
+          0n,
+          audioClaimableTokenAuthority,
+          1n,
+          TOKEN_PROGRAM_ID,
+          CLAIMABLE_TOKEN_PROGRAM_ID
+        )
       ]
       await assertRelayAllowedInstructions(instructions)
     })
@@ -521,33 +534,38 @@ describe('Solana Relay', function () {
       const payer = getRandomPublicKey()
       const mint = getRandomPublicKey()
       const authority = getRandomPublicKey()
-      const userBank = getRandomPublicKey()
+      const userbank = getRandomPublicKey()
       const destination = getRandomPublicKey()
       const nonceAccount = getRandomPublicKey()
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            ClaimableTokensProgram.createAccountInstruction({
-              ethAddress: wallet,
+            createClaimableTokenAccountInstruction(
+              wallet,
               payer,
               mint,
               authority,
-              userBank
-            })
+              userbank,
+              TOKEN_PROGRAM_ID,
+              CLAIMABLE_TOKEN_PROGRAM_ID
+            )
           ]),
         'Invalid authority for create user bank'
       )
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            ClaimableTokensProgram.createTransferInstruction({
+            createTransferClaimableTokenInstruction(
               payer,
-              sourceEthAddress: wallet,
-              sourceUserBank: userBank,
+              userbank,
               destination,
               nonceAccount,
-              authority
-            })
+              0n,
+              authority,
+              1n,
+              TOKEN_PROGRAM_ID,
+              CLAIMABLE_TOKEN_PROGRAM_ID
+            )
           ]),
         InvalidRelayInstructionError,
         'Invalid authority for transfer user bank'

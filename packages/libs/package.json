@@ -62,7 +62,6 @@
     "prepare": "patch-package"
   },
   "dependencies": {
-    "@audius/fixed-decimal": "*",
     "@audius/hedgehog": "2.1.0",
     "@audius/spl": "*",
     "@babel/runtime": "7.18.3",

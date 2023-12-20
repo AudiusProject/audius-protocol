@@ -6,7 +6,6 @@ import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
-import type { SolanaService } from './services/Solana'
 
 export type ServicesContainer = {
   /**
@@ -38,11 +37,6 @@ export type ServicesContainer = {
    * Service used to log and set a desired log level
    */
   logger: LoggerService
-
-  /**
-   * Service used to interact with Solana programs
-   */
-  solana: SolanaService
 }
 
 const DevAppSchema = z.object({

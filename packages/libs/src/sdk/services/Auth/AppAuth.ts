@@ -23,7 +23,7 @@ export class AppAuth implements AuthService {
       throw new Error('AppAuth does not support getSharedSecret')
     }
 
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = () => {
+  sign: (data: string) => Promise<[Uint8Array, number]> = () => {
     throw new Error('AppAuth does not support sign')
   }
 
