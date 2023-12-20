@@ -22,7 +22,7 @@ import {
   queueActions,
   queueSelectors,
   reachabilitySelectors,
-  premiumContentSelectors,
+  gatedContentSelectors,
   RepeatMode,
   FeatureFlags,
   encodeHashId,
@@ -94,7 +94,7 @@ const {
 } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 // TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
@@ -185,7 +185,7 @@ export const AudioPlayer = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
   // Queue Things
@@ -309,16 +309,16 @@ export const AudioPlayer = () => {
         if (!track) {
           continue
         }
-        const { track_id: trackId, premium_content_signature } = track
+        const { track_id: trackId, stream_signature } = track
 
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else {
-          const premiumContentSignature =
-            premium_content_signature || premiumTrackSignatureMap[trackId]
+          const streamSignature =
+            stream_signature || gatedTrackSignatureMap[trackId]
           queryParamsMap[trackId] = await getQueryParams({
             audiusBackendInstance,
-            premiumContentSignature
+            streamSignature
           })
         }
       }
@@ -326,7 +326,7 @@ export const AudioPlayer = () => {
       setGatedQueryParamsMap(queryParamsMap)
       return queryParamsMap
     },
-    [premiumTrackSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
+    [gatedTrackSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
@@ -381,21 +381,21 @@ export const AudioPlayer = () => {
         } else {
           const { track, isPreview } = queueTracks[playerIndex] ?? {}
 
-          // Skip track if user does not have access i.e. for an unlocked premium track
+          // Skip track if user does not have access i.e. for an unlocked gated track
           const doesUserHaveAccess = (() => {
             if (!track) return false
 
             const {
               track_id: trackId,
-              is_premium: isPremium,
-              premium_content_signature: premiumContentSignature
+              is_stream_gated: isStreamGated,
+              stream_signature: streamSignature
             } = track
 
-            const hasPremiumContentSignature =
-              !!premiumContentSignature ||
-              !!(trackId && premiumTrackSignatureMap[trackId])
+            const hasStreamSignature =
+              !!streamSignature ||
+              !!(trackId && gatedTrackSignatureMap[trackId])
 
-            return !isPremium || hasPremiumContentSignature
+            return !isStreamGated || hasStreamSignature
           })()
 
           if (!track || !doesUserHaveAccess) {

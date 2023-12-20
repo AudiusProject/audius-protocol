@@ -12,7 +12,9 @@ followee_reposts = "followee_reposts"
 # array - followees of current user that have saved given track/playlist
 followee_saves = "followee_saves"
 # string - signature required to access gated content
-premium_content_signature = "premium_content_signature"
+stream_signature = "stream_signature"
+# json - determines stream and download access for current user
+access = "access"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids

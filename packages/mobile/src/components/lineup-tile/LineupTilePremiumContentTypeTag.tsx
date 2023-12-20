@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
 import {
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated,
-  type PremiumConditions,
-  PremiumContentType
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  type StreamConditions,
+  GatedContentType
 } from '@audius/common'
 import { View } from 'react-native'
 
@@ -30,47 +30,47 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-type LineupTilePremiumContentTypeTagProps = {
-  premiumConditions: PremiumConditions
+type LineupTileGatedContentTypeTagProps = {
+  streamConditions: StreamConditions
   doesUserHaveAccess?: boolean
   isOwner: boolean
 }
 
 /**
- * Returns a tag that indicates the type of premium content
- * @param premiumConditions the track's premium conditions
+ * Returns a tag that indicates the type of stream content
+ * @param streamConditions the track's stream conditions
  * @param doesUserHaveAccess whether the user has access to stream the track
  * @isOwner whether the user is the owner of the track
  */
-export const LineupTilePremiumContentTypeTag = ({
-  premiumConditions,
+export const LineupTileGatedContentTypeTag = ({
+  streamConditions,
   doesUserHaveAccess,
   isOwner
-}: LineupTilePremiumContentTypeTagProps) => {
+}: LineupTileGatedContentTypeTagProps) => {
   const styles = useStyles()
   const { accentBlue, neutralLight4, specialLightGreen } = useThemeColors()
   const isUSDCEnabled = useIsUSDCEnabled()
 
   const type =
-    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
-      ? PremiumContentType.USDC_PURCHASE
-      : isPremiumContentCollectibleGated(premiumConditions)
-      ? PremiumContentType.COLLECTIBLE_GATED
-      : PremiumContentType.SPECIAL_ACCESS
+    isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
+      ? GatedContentType.USDC_PURCHASE
+      : isContentCollectibleGated(streamConditions)
+      ? GatedContentType.COLLECTIBLE_GATED
+      : GatedContentType.SPECIAL_ACCESS
 
-  const premiumContentTypeMap = useMemo(() => {
+  const gatedContentTypeMap = useMemo(() => {
     return {
-      [PremiumContentType.COLLECTIBLE_GATED]: {
+      [GatedContentType.COLLECTIBLE_GATED]: {
         icon: IconCollectible,
         color: doesUserHaveAccess && !isOwner ? neutralLight4 : accentBlue,
         text: messages.collectibleGated
       },
-      [PremiumContentType.SPECIAL_ACCESS]: {
+      [GatedContentType.SPECIAL_ACCESS]: {
         icon: IconSpecialAccess,
         color: doesUserHaveAccess && !isOwner ? neutralLight4 : accentBlue,
         text: messages.specialAccess
       },
-      [PremiumContentType.USDC_PURCHASE]: {
+      [GatedContentType.USDC_PURCHASE]: {
         icon: IconCart,
         color:
           doesUserHaveAccess && !isOwner ? neutralLight4 : specialLightGreen,
@@ -85,7 +85,7 @@ export const LineupTilePremiumContentTypeTag = ({
     specialLightGreen
   ])
 
-  const { icon: Icon, color, text } = premiumContentTypeMap[type]
+  const { icon: Icon, color, text } = gatedContentTypeMap[type]
 
   return (
     <View style={styles.root}>

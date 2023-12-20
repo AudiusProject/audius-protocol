@@ -12,7 +12,7 @@ from src.utils.config import shared_config
 def test_signature():
     track_id = 1
     track_cid = "some-track-cid"
-    premium_content_type = "track"
+    gated_content_type = "track"
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
     # for a non-gated track
@@ -20,8 +20,8 @@ def test_signature():
         {
             "track_id": track_id,
             "cid": track_cid,
-            "type": premium_content_type,
-            "is_premium": False,
+            "type": gated_content_type,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -47,8 +47,8 @@ def test_signature():
         {
             "track_id": track_id,
             "cid": track_cid,
-            "type": premium_content_type,
-            "is_premium": True,
+            "type": gated_content_type,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]
@@ -60,7 +60,7 @@ def test_signature():
 def test_signature_for_user_wallet():
     track_id = 1
     track_cid = "some-track-cid"
-    premium_content_type = "track"
+    gated_content_type = "track"
     user_wallet = (
         "0x954221ddae7ddf40871d57b98ce97c82782886d3"  # some staging user wallet
     )
@@ -71,9 +71,9 @@ def test_signature_for_user_wallet():
         {
             "track_id": track_id,
             "track_cid": track_cid,
-            "type": premium_content_type,
+            "type": gated_content_type,
             "user_wallet": user_wallet,
-            "is_premium": False,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -100,9 +100,9 @@ def test_signature_for_user_wallet():
         {
             "track_id": track_id,
             "track_cid": track_cid,
-            "type": premium_content_type,
+            "type": gated_content_type,
             "user_wallet": user_wallet,
-            "is_premium": True,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]
@@ -114,7 +114,7 @@ def test_signature_for_user_wallet():
 def test_signature_for_user_wallet_with_user_id():
     track_id = 1
     track_cid = "some-track-cid"
-    premium_content_type = "track"
+    gated_content_type = "track"
     user_wallet = (
         "0x954221ddae7ddf40871d57b98ce97c82782886d3"  # some staging user wallet
     )
@@ -126,10 +126,10 @@ def test_signature_for_user_wallet_with_user_id():
         {
             "track_id": track_id,
             "track_cid": track_cid,
-            "type": premium_content_type,
+            "type": gated_content_type,
             "user_wallet": user_wallet,
             "user_id": user_id,
-            "is_premium": False,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -157,10 +157,10 @@ def test_signature_for_user_wallet_with_user_id():
         {
             "track_id": track_id,
             "track_cid": track_cid,
-            "type": premium_content_type,
+            "type": gated_content_type,
             "user_wallet": user_wallet,
             "user_id": user_id,
-            "is_premium": True,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]

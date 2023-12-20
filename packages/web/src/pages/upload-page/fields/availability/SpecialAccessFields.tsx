@@ -11,7 +11,7 @@ import { Text } from 'components/typography'
 
 import {
   AccessAndSaleFormValues,
-  PREMIUM_CONDITIONS
+  STREAM_CONDITIONS
 } from '../AccessAndSaleField'
 
 import styles from './SpecialAccessFields.module.css'
@@ -42,9 +42,9 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
     name: SPECIAL_ACCESS_TYPE
   })
 
-  const [, , { setValue: setPremiumConditionsValue }] =
-    useField<AccessAndSaleFormValues[typeof PREMIUM_CONDITIONS]>(
-      PREMIUM_CONDITIONS
+  const [, , { setValue: setStreamConditionsValue }] =
+    useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
+      STREAM_CONDITIONS
     )
 
   const handleChange = useCallback(
@@ -52,18 +52,18 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
       const type = e.target.value as SpecialAccessType
       if (accountUserId) {
         if (type === SpecialAccessType.FOLLOW) {
-          setPremiumConditionsValue({
+          setStreamConditionsValue({
             follow_user_id: accountUserId
           })
         } else if (type === SpecialAccessType.TIP) {
-          setPremiumConditionsValue({
+          setStreamConditionsValue({
             tip_user_id: accountUserId
           })
         }
       }
       specialAccessTypeField.onChange(e)
     },
-    [accountUserId, setPremiumConditionsValue, specialAccessTypeField]
+    [accountUserId, setStreamConditionsValue, specialAccessTypeField]
   )
 
   return (

@@ -1,56 +1,56 @@
 import { select } from 'typed-redux-saga'
 
-import { PremiumContentSignature, Track } from 'models'
+import { StreamingSignature, Track } from 'models'
 import { AudiusBackend, QueryParams } from 'services/index'
-import { premiumContentSelectors } from 'store/premium-content'
+import { gatedContentSelectors } from 'store/gated-content'
 
 import { Nullable } from './typeUtils'
 
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 const PREVIEW_LENGTH_SECONDS = 30
 
 export async function generateUserSignature(
   audiusBackendInstance: AudiusBackend
 ) {
-  const data = `Premium content user signature at ${Date.now()}`
+  const data = `Gated content user signature at ${Date.now()}`
   const signature = await audiusBackendInstance.getSignature(data)
   return { data, signature }
 }
 
 export async function getQueryParams({
   audiusBackendInstance,
-  premiumContentSignature
+  streamSignature
 }: {
   audiusBackendInstance: AudiusBackend
-  premiumContentSignature: Nullable<PremiumContentSignature>
+  streamSignature: Nullable<StreamingSignature>
 }) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
   queryParams.user_data = data
   queryParams.user_signature = signature
-  if (premiumContentSignature) {
-    queryParams.premium_content_signature = JSON.stringify(
-      premiumContentSignature
+  if (streamSignature) {
+    queryParams.stream_signature = JSON.stringify(
+      streamSignature
     )
   }
   return queryParams
 }
 
 export function* doesUserHaveTrackAccess(track: Nullable<Track>) {
-  const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
+  const gatedTrackSignatureMap = yield* select(getGatedTrackSignatureMap)
 
   const {
     track_id: trackId,
-    is_premium: isPremium,
-    premium_content_signature: premiumContentSignature
+    is_stream_gated: isStreamGated,
+    stream_signature: streamSignature
   } = track ?? {}
 
-  const hasPremiumContentSignature =
-    !!premiumContentSignature ||
-    !!(trackId && premiumTrackSignatureMap[trackId])
+  const hasStreamSignature =
+    !!streamSignature ||
+    !!(trackId && gatedTrackSignatureMap[trackId])
 
-  return !isPremium || hasPremiumContentSignature
+  return !isStreamGated || hasStreamSignature
 }
 
 export function getTrackPreviewDuration(track: Track) {

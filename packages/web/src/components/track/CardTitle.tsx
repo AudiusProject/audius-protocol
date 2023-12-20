@@ -1,9 +1,9 @@
 import {
   FeatureFlags,
   Nullable,
-  PremiumConditions,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated
+  StreamConditions,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
@@ -22,25 +22,25 @@ const messages = {
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
-  premiumContent: 'PREMIUM TRACK'
+  premiumTrack: 'PREMIUM TRACK'
 }
 
 type CardTitleProps = {
   className: string
   isUnlisted: boolean
   isRemix: boolean
-  isPremium: boolean
+  isStreamGated: boolean
   isPodcast: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  streamConditions: Nullable<StreamConditions>
 }
 
 export const CardTitle = ({
   className,
   isUnlisted,
   isRemix,
-  isPremium,
+  isStreamGated,
   isPodcast,
-  premiumConditions
+  streamConditions
 }: CardTitleProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -49,22 +49,22 @@ export const CardTitle = ({
   let content
   const extraStyles = []
 
-  if (isPremium) {
-    extraStyles.push(styles.premiumContent)
+  if (isStreamGated) {
+    extraStyles.push(styles.gatedContent)
     let icon
     let message
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       icon = <IconCollectible />
       message = messages.collectibleGated
-    } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    } else if (isContentUSDCPurchaseGated(streamConditions)) {
       icon = <IconCart />
-      message = messages.premiumContent
+      message = messages.premiumTrack
     } else {
       icon = <IconSpecialAccess />
       message = messages.specialAccess
     }
     content = (
-      <div className={cn(styles.typeLabel, styles.premiumContentLabel)}>
+      <div className={cn(styles.typeLabel, styles.gatedContentLabel)}>
         {icon}
         {message}
       </div>

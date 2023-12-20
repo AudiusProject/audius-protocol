@@ -66,8 +66,10 @@ class TrackMetadata(TypedDict):
     is_unlisted: bool
     field_visibility: Optional[TrackFieldVisibility]
     stem_of: Optional[TrackStem]
-    is_premium: Optional[bool]
-    premium_conditions: Optional[Any]
+    is_stream_gated: Optional[bool]
+    stream_conditions: Optional[Any]
+    is_download_gated: Optional[bool]
+    download_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
     ai_attribution_user_id: Optional[int]
 
@@ -106,8 +108,8 @@ track_metadata_format: TrackMetadata = {
     "is_unlisted": False,
     "field_visibility": None,
     "stem_of": None,
-    "is_premium": False,
-    "premium_conditions": None,
+    "is_stream_gated": False,
+    "stream_conditions": None,
     "is_download_gated": False,
     "download_conditions": None,
     "is_playlist_upload": False,

@@ -11,7 +11,7 @@ import {
   CollectionsPageType,
   CollectionTrack,
   OverflowAction,
-  usePremiumContentAccessMap
+  useGatedContentAccessMap
 } from '@audius/common'
 
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
@@ -193,7 +193,7 @@ const CollectionPage = ({
   }
   const playingUid = getPlayingUid()
 
-  const trackAccessMap = usePremiumContentAccessMap(tracks.entries)
+  const trackAccessMap = useGatedContentAccessMap(tracks.entries)
   const trackList = tracks.entries.map((entry) => {
     const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
       entry.track_id
@@ -211,7 +211,7 @@ const CollectionPage = ({
       permalink: entry.permalink,
       trackId: entry.track_id,
       uid: entry.uid,
-      isPremium: entry.is_premium,
+      isStreamGated: entry.is_stream_gated,
       isDeleted: entry.is_delete || !!entry?.user?.is_deactivated,
       isLocked
     }

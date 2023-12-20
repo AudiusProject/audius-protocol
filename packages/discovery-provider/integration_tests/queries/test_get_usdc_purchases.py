@@ -17,8 +17,8 @@ test_entities = {
             "track_id": 1,
             "title": "a",
             "owner_id": 10,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
                     "splits": {"some_user_bank": 1000000},
@@ -29,8 +29,8 @@ test_entities = {
             "track_id": 2,
             "title": "f",
             "owner_id": 10,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 299,
                     "splits": {"some_user_bank": 2990000},
@@ -41,8 +41,8 @@ test_entities = {
             "track_id": 3,
             "title": "c",
             "owner_id": 10,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 199,
                     "splits": {"some_user_bank": 1990000},
@@ -53,8 +53,8 @@ test_entities = {
             "track_id": 4,
             "title": "b",
             "owner_id": 10,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 350,
                     "splits": {"some_user_bank": 3500000},
@@ -65,8 +65,8 @@ test_entities = {
             "track_id": 5,
             "title": "d",
             "owner_id": 20,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
                     "splits": {"some_user_bank": 1000000},
@@ -77,8 +77,8 @@ test_entities = {
             "track_id": 6,
             "title": "zzz",
             "owner_id": 20,
-            "is_premium": True,
-            "premium_conditions": {
+            "is_stream_gated": True,
+            "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
                     "splits": {"some_user_bank": 1000000},

@@ -192,8 +192,8 @@ const BasicForm = (props) => {
         initialTrackId={
           props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
         }
-        isPremium={props.defaultFields.is_premium ?? false}
-        premiumConditions={props.defaultFields.premium_conditions ?? null}
+        isStreamGated={props.defaultFields.is_stream_gated ?? false}
+        streamConditions={props.defaultFields.stream_conditions ?? null}
         isRemix={isRemix}
         setIsRemix={setIsRemix}
         isOpen={remixSettingsModalVisible}
@@ -350,8 +350,8 @@ const AdvancedForm = (props) => {
   } = props
 
   let availabilityState = {
-    is_premium: props.defaultFields.is_premium,
-    premium_conditions: props.defaultFields.premium_conditions,
+    is_stream_gated: props.defaultFields.is_stream_gated,
+    stream_conditions: props.defaultFields.stream_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
@@ -383,16 +383,16 @@ const AdvancedForm = (props) => {
       play_count: newState.plays,
       remixes: !hideRemixes
     })
-    props.onChangeField('is_premium', newState.is_premium)
+    props.onChangeField('is_stream_gated', newState.is_stream_gated)
 
-    // Check whether the field is invalid if premium track is collectible-gated
+    // Check whether the field is invalid if track is collectible-gated
     // so that the user cannot proceed until they pick an nft collection.
     const isInvalidNFTCollection =
-      'nft_collection' in (newState.premium_conditions ?? {}) &&
-      !newState.premium_conditions?.nft_collection
+      'nft_collection' in (newState.stream_conditions ?? {}) &&
+      !newState.stream_conditions?.nft_collection
     props.onChangeField(
-      'premium_conditions',
-      newState.premium_conditions,
+      'stream_conditions',
+      newState.stream_conditions,
       isInvalidNFTCollection
     )
     props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
@@ -431,8 +431,8 @@ const AdvancedForm = (props) => {
         initialTrackId={
           props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
         }
-        isPremium={props.defaultFields.is_premium ?? false}
-        premiumConditions={props.defaultFields.premium_conditions ?? null}
+        isStreamGated={props.defaultFields.is_stream_gated ?? false}
+        streamConditions={props.defaultFields.stream_conditions ?? null}
         isRemix={isRemix}
         setIsRemix={setIsRemix}
         isOpen={remixSettingsModalVisible}

@@ -1,8 +1,8 @@
 import {
   getDogEarType,
   ID,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
   SquareSizes,
   Track,
   UserMetadata
@@ -40,7 +40,7 @@ export const LockedTrackDetailsTile = ({
   const {
     track_id: trackId,
     title,
-    premium_conditions: premiumConditions
+    stream_conditions: streamConditions
   } = track
   const image = useTrackCoverArt(
     trackId,
@@ -50,12 +50,11 @@ export const LockedTrackDetailsTile = ({
   )
 
   const dogEarType = getDogEarType({
-    premiumConditions
+    streamConditions
   })
   const label = `${title} by ${owner.name}`
-  const isCollectibleGated = isPremiumContentCollectibleGated(premiumConditions)
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isCollectibleGated = isContentCollectibleGated(streamConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   let IconComponent = IconSpecialAccess
   let message = messages.specialAccess
@@ -83,7 +82,7 @@ export const LockedTrackDetailsTile = ({
       ) : null}
       <div className={styles.trackTextWrapper}>
         <div
-          className={cn(styles.premiumContentLabel, {
+          className={cn(styles.gatedContentLabel, {
             [styles.usdcContentLabel]: isUSDCPurchaseGated
           })}
         >

@@ -4,7 +4,7 @@ import {
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   chatSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   purchaseContentSagas,
   remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
@@ -221,8 +221,8 @@ export default function* rootSaga() {
     tippingSagas(),
     solanaSagas(),
 
-    // Premium content
-    premiumContentSagas(),
+    // Gated content
+    gatedContentSagas(),
     buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),

@@ -3,12 +3,12 @@ import { useCallback, useState, useEffect, useRef } from 'react'
 import {
   ID,
   Nullable,
-  PremiumConditions,
+  StreamConditions,
   SquareSizes,
   Track,
   User,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import {
   Modal,
@@ -94,8 +94,8 @@ type RemixSettingsModalProps = {
   isOpen: boolean
   onClose: (trackId: ID | null) => void
   onEditUrl: (url: string) => void
-  isPremium: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  isStreamGated: boolean
+  streamConditions: Nullable<StreamConditions>
   isRemix: boolean
   setIsRemix: (isRemix: boolean) => void
   onChangeField: (field: string, value: any) => void
@@ -111,8 +111,8 @@ const RemixSettingsModal = ({
   isOpen,
   onClose,
   onEditUrl,
-  isPremium,
-  premiumConditions,
+  isStreamGated,
+  streamConditions,
   isRemix,
   setIsRemix,
   onChangeField,
@@ -127,9 +127,8 @@ const RemixSettingsModal = ({
 
   const [url, setUrl] = useState<string | null>(null)
 
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
-  const isHideRemixesDisabled = isPremium && !isUSDCPurchaseGated
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const isHideRemixesDisabled = isStreamGated && !isUSDCPurchaseGated
 
   useEffect(() => {
     if (url === null && track && isOpen) {
@@ -190,20 +189,20 @@ const RemixSettingsModal = ({
         />
       </ModalHeader>
       <ModalContent>
-        {isPremium ? (
+        {isStreamGated ? (
           <HelpCallout
             className={styles.disableInfo}
             content={`${messages.changeAvailabilityPrefix} ${
               isUSDCPurchaseGated
                 ? messages.premium
-                : isPremiumContentCollectibleGated(premiumConditions)
+                : isContentCollectibleGated(streamConditions)
                 ? messages.collectibleGated
                 : messages.specialAccess
             }${messages.changeAvailabilitySuffix}`}
           />
         ) : null}
         <div className={styles.toggleRow}>
-          <span className={cn({ [styles.remixDisabled]: isPremium })}>
+          <span className={cn({ [styles.remixDisabled]: isStreamGated })}>
             {messages.markAsRemix}
           </span>
           <Switch
@@ -216,13 +215,13 @@ const RemixSettingsModal = ({
                 setUrl(null)
               }
             }}
-            isDisabled={isPremium}
+            isDisabled={isStreamGated}
           />
         </div>
 
         <div
           className={cn(styles.subtext, {
-            [styles.remixDisabled]: isPremium
+            [styles.remixDisabled]: isStreamGated
           })}
         >
           {messages.pasteLink}
@@ -233,7 +232,7 @@ const RemixSettingsModal = ({
           placeholder={messages.enterLink}
           size='large'
           onChange={onChange}
-          disabled={isPremium}
+          disabled={isStreamGated}
         />
         {url && (
           <div className={styles.bottom}>

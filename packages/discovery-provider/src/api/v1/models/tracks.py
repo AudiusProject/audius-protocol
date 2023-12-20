@@ -71,9 +71,14 @@ field_visibility = ns.model(
     },
 )
 
-premium_content_signature = ns.model(
-    "premium_content_signature",
+stream_signature = ns.model(
+    "stream_signature",
     {"data": fields.String, "signature": fields.String},
+)
+
+access = ns.model(
+    "access",
+    {"stream": fields.Boolean, "download": fields.Boolean},
 )
 
 track = ns.model(
@@ -83,8 +88,16 @@ track = ns.model(
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
-        "track_cid": fields.String(allow_null=True),
+        "track_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
         "preview_cid": fields.String(allow_null=True),
+        "orig_file_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
+        "orig_filename": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -139,11 +152,20 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "is_premium": fields.Boolean,
-        "premium_conditions": fields.Raw(allow_null=True),
-        "premium_content_signature": fields.Nested(
-            premium_content_signature, allow_null=True
+        # the following "premium" fields are deprecated and will be removed in the future
+        "is_premium": fields.Boolean(attribute="is_stream_gated"),
+        "premium_conditions": fields.Raw(
+            attribute="stream_conditions", allow_null=True
         ),
+        "premium_content_signature": fields.Nested(
+            stream_signature, attribute="stream_signature", allow_null=True
+        ),
+        "is_stream_gated": fields.Boolean,
+        "stream_conditions": fields.Raw(allow_null=True),
+        "stream_signature": fields.Nested(stream_signature, allow_null=True),
+        "is_download_gated": fields.Boolean,
+        "download_conditions": fields.Raw(allow_null=True),
+        "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,

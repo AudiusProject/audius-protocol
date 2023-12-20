@@ -293,7 +293,7 @@ Create an object with the following fields and pass it as the first argument, as
 | :-------- | :------- | :------------------ | :----------- |
 | `trackId` | `string` | The ID of the track | **Required** |
 
-TODO: should we document premium content signature?
+TODO: should we document stream signature?
 
 #### Returns
 

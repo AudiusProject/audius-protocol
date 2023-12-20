@@ -27,7 +27,7 @@ function* recordListen(action: { trackId: number }) {
   yield* call(audiusBackendInstance.recordTrackListen, trackId)
 
   yield* put(make(Name.LISTEN, { trackId }))
-  if (track.is_premium) {
+  if (track.is_stream_gated) {
     yield* put(make(Name.LISTEN_GATED, { trackId }))
   }
 

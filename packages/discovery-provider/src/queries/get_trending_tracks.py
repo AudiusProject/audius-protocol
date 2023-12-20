@@ -2,9 +2,7 @@ from typing import Optional, TypedDict
 
 from sqlalchemy.orm.session import Session
 
-from src.gated_content.gated_content_constants import (
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
-)
+from src.gated_content.constants import SHOULD_TRENDING_EXCLUDE_GATED_TRACKS
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     make_generate_unpopulated_trending,
@@ -20,7 +18,7 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     current_user_id: Optional[int]
     genre: Optional[str]
     time: str
-    exclude_premium: bool
+    exclude_gated: bool
     limit: int
     offset: int
 
@@ -35,11 +33,11 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time, exclude_premium, limit, offset = (
+    current_user_id, genre, time, exclude_gated, limit, offset = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
-        args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
+        args.get("exclude_gated", SHOULD_TRENDING_EXCLUDE_GATED_TRACKS),
         args.get("limit", TRENDING_TRACKS_LIMIT),
         args.get("offset", 0),
     )
@@ -56,7 +54,7 @@ def _get_trending_tracks_with_session(
             genre=genre,
             time_range=time_range,
             strategy=strategy,
-            exclude_premium=exclude_premium,
+            exclude_gated=exclude_gated,
         ),
     )
     tracks = tracks[offset : limit + offset]
