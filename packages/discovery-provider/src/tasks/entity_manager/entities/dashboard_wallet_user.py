@@ -35,7 +35,7 @@ def is_within_5_minutes(timestamp_str):
     return time_difference < 5 * 60
 
 def matches_user_id(hash_or_int_id, int_id):
-    return hash_or_int_id == int_id or decode_string_id(hash_or_int_id) == int_id
+    return hash_or_int_id == str(int_id) or decode_string_id(hash_or_int_id) == int_id
 
 def get_create_dashboard_wallet_user_metadata_from_raw(
     raw_metadata: Optional[str],
@@ -116,6 +116,11 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 f"Invalid Delete Dashboard Wallet User Transaction, signature does not match user or dashboard wallet"
             )
+        # If the user is the one who signed the tx, make sure it matches the user id assigned to the wallet
+        if user_matches_signer and not user_id == params.existing_records["DashboardWalletUser"][dashboard_wallet].user_id:
+            raise IndexingValidationError(
+                f"Invalid Delete Dashboard Wallet User Transaction, user is not assigned to this wallet"
+            )            
     elif params.action == Action.CREATE:
         if not user_matches_signer:
             raise IndexingValidationError(
@@ -192,7 +197,7 @@ def delete_dashboard_wallet_user(params: ManageEntityParameters):
         raise IndexingValidationError(
             "Invalid Dashboard Wallet User Transaction, unable to parse metadata"
         )
-    validate_dashboard_wallet_user_tx(params, {})
+    validate_dashboard_wallet_user_tx(params, metadata)
     dashboard_wallet = metadata["wallet"]
     existing_dashboard_wallet_user = params.existing_records["DashboardWalletUser"][dashboard_wallet]
     if dashboard_wallet in params.new_records["DashboardWalletUser"]:
@@ -206,7 +211,7 @@ def delete_dashboard_wallet_user(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    delete_dashboard_wallet_user.is_delete = True
+    deleted_dashboard_wallet_user.is_delete = True
 
     validate_dashboard_wallet_user_record(deleted_dashboard_wallet_user)
     params.add_record(dashboard_wallet, deleted_dashboard_wallet_user)

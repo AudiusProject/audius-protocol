@@ -121,7 +121,7 @@ def populate_mock_db(db, entities, block_offset=None):
         users = entities.get("users", [])
         developer_apps = entities.get("developer_apps", [])
         grants = entities.get("grants", [])
-        dashboard_wallet_users = entities.get("dashboard_wallet_users")
+        dashboard_wallet_users = entities.get("dashboard_wallet_users", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -345,7 +345,7 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, dashboard_wallet_user_meta in enumerate(dashboard_wallet_users):
             dashboard_wallet_user = DashboardWalletUser(
                 user_id=dashboard_wallet_user_meta.get("user_id", i),
-                wallet=dashboard_wallet_user_meta.get("grantee_address", str(i)),
+                wallet=dashboard_wallet_user_meta.get("wallet", str(i)),
                 is_delete=dashboard_wallet_user_meta.get("is_delete", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),

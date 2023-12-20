@@ -106,6 +106,7 @@ entity_type_table_mapping = {
     "PlaylistRoute": PlaylistRoute.__tablename__,
     "NotificationSeen": NotificationSeen.__tablename__,
     "PlaylistSeen": PlaylistSeen.__tablename__,
+    "DashboardWalletUser": DashboardWalletUser.__tablename__,
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
 }

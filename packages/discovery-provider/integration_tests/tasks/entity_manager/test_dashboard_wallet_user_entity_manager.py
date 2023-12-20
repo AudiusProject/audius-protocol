@@ -210,7 +210,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "480b443ed0b758e3c16dcc43d0691ccdf523d84edbe8f3f337dc3f5a02b5b4212a3cad4162456dddc87dd5de1ccf12764037b15ea08b8e4480c38b81308e0da81c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
+                        "_metadata": f"""{{"wallet": "0xff0b22214dbe20966f183648fbd92d5e569f02c5", "wallet_signature": {{"signature": "736bec576740ffdc489ddeea8090524704f15c8b845ac4e097fb0efba283b24e677781b8db513b6caaabed9cfeb7304717f80a66d4991beb3794f81b7ce2df131c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -284,7 +284,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 2,
-                        "_metadata": f"""{{"wallet": "{new_dashboard_wallet_users_data[0]["wallet"]}", wallet_signature": {{"signature": "{new_dashboard_wallet_users_data[0]["wallet_signature"]["signature"]}", "message": "{new_dashboard_wallet_users_data[0]["wallet_signature"]["message"]}"}}}}""",
+                        "_metadata": f"""{{"wallet": "{new_dashboard_wallet_users_data[0]["wallet"]}", "wallet_signature": {{"signature": "{new_dashboard_wallet_users_data[0]["wallet_signature"]["signature"]}", "message": "{new_dashboard_wallet_users_data[0]["wallet_signature"]["message"]}"}}}}""",
                         "_action": Action.CREATE,
                         "_signer": "user2wallet",
                     }
@@ -314,7 +314,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # make sure no new rows were added
         assert len(all_dwus) == 4
 
-    # Test invalid delete txs
+    # # Test invalid delete txs
     tx_receipts = {
         "DeleteDashboardWalletUserInvalidTx1": [
             {
@@ -384,6 +384,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # make sure no new rows were added or deleted
         assert len(all_dwus) == 4
 
+    expected_deleted_items = [new_dashboard_wallet_users_data[0], new_dashboard_wallet_users_data[2]]
     # Test valid delete txs
     tx_receipts = {
         "DeleteDashboardWalletUserTx1": [
@@ -438,14 +439,14 @@ def test_index_dashboard_wallet_user(app, mocker):
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
         assert len(all_dwus) == 4
 
-        for expected_item in new_dashboard_wallet_users_data:
+        for expected_item in expected_deleted_items:
             found_matches = [
                 item
                 for item in all_dwus
                 if item.wallet == expected_item["wallet"].lower()
             ]
             assert len(found_matches) == 1
-            updated = [item for item in found_matches if item.is_current == True]
+            updated = [item for item in found_matches]
             assert len(updated) == 1
             updated = updated[0]
             assert updated.user_id == expected_item["user_id"]
@@ -461,8 +462,8 @@ def test_index_dashboard_wallet_user(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
-                        "_userId": second_set_new_dashboard_wallet_users_data[0]["userId"],
-                        "_metadata": f"""{{"wallet": "{second_set_new_dashboard_wallet_users_data[0]["wallet"]}, "wallet_signature": {{"signature": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["signature"]}", "message": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["message"]}"}}}}""",
+                        "_userId": second_set_new_dashboard_wallet_users_data[0]["user_id"],
+                        "_metadata": f"""{{"wallet": "{second_set_new_dashboard_wallet_users_data[0]["wallet"]}", "wallet_signature": {{"signature": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["signature"]}", "message": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["message"]}"}}}}""",
                         "_action": Action.CREATE,
                         "_signer": "user3wallet",
                     }
@@ -489,14 +490,15 @@ def test_index_dashboard_wallet_user(app, mocker):
 
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 4
         for expected_item in second_set_new_dashboard_wallet_users_data:
             found_matches = [
                 item
                 for item in all_dwus
-                if item.address == expected_item["wallet"].lower()
+                if item.wallet == expected_item["wallet"].lower()
             ]
             assert len(found_matches) == 1
             res = found_matches[0]
             assert res.user_id == expected_item["user_id"]
+            assert res.is_delete == False
             assert res.blocknumber == 4
