@@ -12,7 +12,8 @@
     "build": "tsc && vite build",
     "serve": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint --fix . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint:fix": "eslint --fix . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "verify": "concurrently \"tsc\" \"npm:lint\""
   },
   "dependencies": {
     "@audius/sdk": "3.0.22",
