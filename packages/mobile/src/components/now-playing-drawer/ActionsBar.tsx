@@ -208,6 +208,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
+    isEditAlbumsEnabled,
     isOwner,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
