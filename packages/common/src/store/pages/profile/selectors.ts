@@ -1,9 +1,7 @@
-import moment from 'moment'
-
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
 import type { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector } from 'utils'
+import { removeNullable, createDeepEqualSelector, dayjs } from 'utils'
 
 import { Status } from '../../../models'
 import type { ID, User, UserCollection } from '../../../models'
@@ -170,15 +168,11 @@ export const makeGetProfile = () => {
         playlists = playlists.sort((a, b) => b.save_count - a.save_count)
         albums = albums.sort((a, b) => b.save_count - a.save_count)
       } else {
-        // This is safe bc moment allows you to subtract timestamps, presumably by
-        // overloading `valueOf
-        playlists = playlists.sort(
-          // @ts-ignore
-          (a, b) => moment(b.created_at) - moment(a.created_at)
+        playlists = playlists.sort((a, b) =>
+          dayjs(b.created_at).diff(dayjs(a.created_at))
         )
-        albums = albums.sort(
-          // @ts-ignore
-          (a, b) => moment(b.created_at) - moment(a.created_at)
+        albums = albums.sort((a, b) =>
+          dayjs(b.created_at).diff(dayjs(a.created_at))
         )
       }
       const followersPopulated =
