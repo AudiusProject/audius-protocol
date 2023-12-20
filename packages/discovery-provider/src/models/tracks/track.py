@@ -49,7 +49,7 @@ class Track(Base, RepresentableMixin):
     mood = Column(String)
     credits_splits = Column(String)
     create_date = Column(String)
-    release_date = Column(DateTime)
+    release_date = Column(DateTime, nullable=False)
     file_type = Column(String)
     metadata_multihash = Column(String)
     track_segments = Column(JSONB(), nullable=False)

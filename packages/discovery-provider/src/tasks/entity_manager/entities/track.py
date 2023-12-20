@@ -308,15 +308,6 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     continue
                 setattr(track_record, key, track_metadata[key])
 
-    # Default release_date to created_at or current time if not set
-    if track_record.release_date is None:
-        created_at = track_record_attributes.get("created_at")
-        if created_at:
-            track_record.release_date = str(created_at)  # type: ignore
-        else:
-            logger.debug("track.py | created_at is None. Using current time for release date")
-            track_record.release_date = str(datetime.now(timezone.utc))  # type: ignore
-
     return track_record
 
 
@@ -425,6 +416,7 @@ def create_track(params: ManageEntityParameters):
         blocknumber=params.block_number,
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
+        release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
     )
 
