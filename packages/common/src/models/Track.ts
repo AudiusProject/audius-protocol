@@ -80,9 +80,9 @@ export type StreamConditionsSolNFTCollection = {
 // after user has set the collection.
 export type CollectibleGatedConditions = {
   nft_collection:
-  | StreamConditionsEthNFTCollection
-  | StreamConditionsSolNFTCollection
-  | undefined
+    | StreamConditionsEthNFTCollection
+    | StreamConditionsSolNFTCollection
+    | undefined
 }
 
 export type FollowGatedConditions = { follow_user_id: number }
@@ -103,10 +103,10 @@ export type StreamConditions =
   | USDCPurchaseConditions
 
 export type DownloadConditions = Partial<
-  CollectibleGatedConditions
-  & FollowGatedConditions
-  & TipGatedConditions
-  & USDCPurchaseConditions
+  CollectibleGatedConditions &
+    FollowGatedConditions &
+    TipGatedConditions &
+    USDCPurchaseConditions
 >
 
 export type AccessPermissions = {

@@ -221,8 +221,7 @@ export const AccessAndSaleTriggerLegacy = (
       }
       case TrackAvailabilityType.SPECIAL_ACCESS: {
         if (specialAccessType === SpecialAccessType.FOLLOW) {
-          const { follow_user_id } =
-            streamConditions as FollowGatedConditions
+          const { follow_user_id } = streamConditions as FollowGatedConditions
           newState.stream_conditions = { follow_user_id }
         } else {
           const { tip_user_id } = streamConditions as TipGatedConditions

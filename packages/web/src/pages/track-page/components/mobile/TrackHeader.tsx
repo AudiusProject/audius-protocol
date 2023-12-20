@@ -124,6 +124,7 @@ type TrackHeaderProps = {
   isStreamGated: boolean
   streamConditions: Nullable<StreamConditions>
   hasStreamAccess: boolean
+  hasDownloadAccess: boolean
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
@@ -161,6 +162,7 @@ const TrackHeader = ({
   isStreamGated,
   streamConditions,
   hasStreamAccess,
+  hasDownloadAccess,
   isRemix,
   fieldVisibility,
   coSign,
@@ -277,7 +279,7 @@ const TrackHeader = ({
         trackId={trackId}
         isOwner={isOwner}
         following={isFollowing}
-        hasStreamAccess={hasStreamAccess}
+        hasDownloadAccess={hasDownloadAccess}
         onDownload={onDownload}
       />
     )

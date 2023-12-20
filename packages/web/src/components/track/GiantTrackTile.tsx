@@ -92,6 +92,7 @@ export type GiantTrackTileProps = {
   currentUserId: Nullable<ID>
   description: string
   hasStreamAccess: boolean
+  hasDownloadAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
   following: boolean
@@ -139,6 +140,7 @@ export const GiantTrackTile = ({
   credits,
   description,
   hasStreamAccess,
+  hasDownloadAccess,
   duration,
   fieldVisibility,
   following,
@@ -464,7 +466,7 @@ export const GiantTrackTile = ({
         trackId={trackId}
         isOwner={isOwner}
         following={following}
-        hasStreamAccess={hasStreamAccess}
+        hasDownloadAccess={hasDownloadAccess}
         onDownload={onDownload}
       />
     )

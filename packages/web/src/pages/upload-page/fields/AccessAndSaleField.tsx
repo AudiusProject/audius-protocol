@@ -374,8 +374,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         }
         case TrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
-            const { follow_user_id } =
-              streamConditions as FollowGatedConditions
+            const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
           } else {
             const { tip_user_id } = streamConditions as TipGatedConditions

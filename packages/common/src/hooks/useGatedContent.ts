@@ -53,8 +53,8 @@ export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
 
       return {
         isFetchingNFTAccess: !hasStreamSignature && isSignatureToBeFetched,
-        hasStreamAccess: stream || hasStreamSignature,
-        hasDownloadAccess: download
+        hasStreamAccess: !!stream || hasStreamSignature,
+        hasDownloadAccess: !!download
       }
     }, [track, streamSignatureMap, user])
 
