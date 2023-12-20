@@ -129,7 +129,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 	ss.crud.DB.Where("status in ?", []string{newStatus, busyStatus, errorStatus}).Find(&uploads)
 
 	for _, upload := range uploads {
-		if upload.ErrorCount > 10 {
+		if upload.ErrorCount > 5 {
 			continue
 		}
 
