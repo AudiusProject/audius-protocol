@@ -6,13 +6,13 @@ import {
   FollowSource,
   formatPrice,
   ID,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated,
   Nullable,
-  PremiumConditions,
-  premiumContentSelectors,
+  StreamConditions,
+  gatedContentSelectors,
   removeNullable,
   tippingActions,
   User,
@@ -51,7 +51,7 @@ import { LockedStatusBadge } from './LockedStatusBadge'
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { getGatedTrackStatusMap } = gatedContentSelectors
 
 const messages = {
   howToUnlock: 'HOW TO UNLOCK',
@@ -92,10 +92,10 @@ const messages = {
     `Users can unlock access to this track for a one time purchase of $${price}`
 }
 
-type PremiumTrackAccessSectionProps = {
+type GatedTrackAccessSectionProps = {
   trackId: ID
   trackOwner: Nullable<User>
-  premiumConditions: PremiumConditions
+  streamConditions: StreamConditions
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
@@ -105,16 +105,16 @@ type PremiumTrackAccessSectionProps = {
   buttonClassName?: string
 }
 
-const LockedPremiumTrackSection = ({
+const LockedGatedTrackSection = ({
   trackId,
-  premiumConditions,
+  streamConditions,
   followee,
   tippedUser,
   goToCollection,
   renderArtist,
   className,
   buttonClassName
-}: PremiumTrackAccessSectionProps) => {
+}: GatedTrackAccessSectionProps) => {
   const dispatch = useDispatch()
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
@@ -126,8 +126,7 @@ const LockedPremiumTrackSection = ({
   const followSource = lockedContentModalVisibility
     ? FollowSource.HOW_TO_UNLOCK_MODAL
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -160,10 +159,10 @@ const LockedPremiumTrackSection = ({
   ])
 
   const handleFollow = useAuthenticatedCallback(() => {
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isContentFollowGated(streamConditions)) {
       dispatch(
         socialActions.followUser(
-          premiumConditions.follow_user_id,
+          streamConditions.follow_user_id,
           followSource,
           trackId
         )
@@ -175,7 +174,7 @@ const LockedPremiumTrackSection = ({
     }
   }, [
     dispatch,
-    premiumConditions,
+    streamConditions,
     followSource,
     trackId,
     lockedContentModalVisibility,
@@ -183,48 +182,48 @@ const LockedPremiumTrackSection = ({
   ])
 
   const renderLockedDescription = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return (
         <div
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           <div className={styles.collectibleGatedDescription}>
             {messages.unlockCollectibleGatedTrack}
           </div>
           <div
-            className={styles.premiumContentSectionCollection}
+            className={styles.gatedContentSectionCollection}
             onClick={goToCollection}
           >
-            {premiumConditions.nft_collection?.imageUrl && (
+            {streamConditions.nft_collection?.imageUrl && (
               <div className={styles.collectionIconsContainer}>
                 <img
-                  src={premiumConditions.nft_collection.imageUrl}
-                  alt={`${premiumConditions.nft_collection.name} nft collection`}
+                  src={streamConditions.nft_collection.imageUrl}
+                  alt={`${streamConditions.nft_collection.name} nft collection`}
                 />
-                {premiumConditions.nft_collection.chain === Chain.Eth ? (
+                {streamConditions.nft_collection.chain === Chain.Eth ? (
                   <LogoEth className={styles.collectionChainIcon} />
                 ) : (
                   <LogoSol className={styles.collectionChainIcon} />
                 )}
               </div>
             )}
-            <span>{premiumConditions.nft_collection?.name}</span>
+            <span>{streamConditions.nft_collection?.name}</span>
           </div>
         </div>
       )
     }
 
-    if (isPremiumContentFollowGated(premiumConditions) && followee) {
+    if (isContentFollowGated(streamConditions) && followee) {
       return (
         <div
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           <div>
@@ -236,13 +235,13 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentTipGated(premiumConditions) && tippedUser) {
+    if (isContentTipGated(streamConditions) && tippedUser) {
       return (
         <div
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           <div>
@@ -256,13 +255,13 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <div
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           {messages.unlockWithPurchase}
@@ -271,13 +270,13 @@ const LockedPremiumTrackSection = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, followee, tippedUser, goToCollection, renderArtist])
+  }, [streamConditions, followee, tippedUser, goToCollection, renderArtist])
 
   const renderButton = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return (
         <Button
           color='accentBlue'
@@ -291,7 +290,7 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isContentFollowGated(streamConditions)) {
       return (
         <FollowButton
           color='accentBlue'
@@ -307,7 +306,7 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentTipGated(premiumConditions)) {
+    if (isContentTipGated(streamConditions)) {
       return (
         <Button
           color='accentBlue'
@@ -321,13 +320,11 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Button
           color='specialLightGreen'
-          text={messages.buy(
-            formatPrice(premiumConditions.usdc_purchase.price)
-          )}
+          text={messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           onClick={handlePurchase}
           type={ButtonType.PRIMARY}
           textClassName={styles.buttonText}
@@ -336,11 +333,11 @@ const LockedPremiumTrackSection = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [
-    premiumConditions,
+    streamConditions,
     goToCollection,
     handleFollow,
     handleSendTip,
@@ -349,12 +346,12 @@ const LockedPremiumTrackSection = ({
 
   return (
     <div className={className}>
-      <div className={styles.premiumContentDescriptionContainer}>
+      <div className={styles.gatedContentDescriptionContainer}>
         <div
           className={cn(
             typeStyles.labelLarge,
             typeStyles.labelStrong,
-            styles.premiumContentSectionTitle
+            styles.gatedContentSectionTitle
           )}
         >
           <LockedStatusBadge
@@ -365,35 +362,35 @@ const LockedPremiumTrackSection = ({
         </div>
         {renderLockedDescription()}
       </div>
-      <div className={cn(styles.premiumContentSectionButton, buttonClassName)}>
+      <div className={cn(styles.gatedContentSectionButton, buttonClassName)}>
         {renderButton()}
       </div>
     </div>
   )
 }
 
-const UnlockingPremiumTrackSection = ({
-  premiumConditions,
+const UnlockingGatedTrackSection = ({
+  streamConditions,
   followee,
   tippedUser,
   goToCollection,
   renderArtist,
   className
-}: PremiumTrackAccessSectionProps) => {
+}: GatedTrackAccessSectionProps) => {
   const renderUnlockingDescription = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return (
         <div>
           <span>{messages.aCollectibleFrom}</span>
           <span className={styles.collectibleName} onClick={goToCollection}>
-            &nbsp;{premiumConditions.nft_collection?.name}&nbsp;
+            &nbsp;{streamConditions.nft_collection?.name}&nbsp;
           </span>
           <span>{messages.unlockingCollectibleGatedTrackSuffix}</span>
         </div>
       )
     }
 
-    if (isPremiumContentFollowGated(premiumConditions) && followee) {
+    if (isContentFollowGated(streamConditions) && followee) {
       return (
         <div>
           <span>{messages.thankYouForFollowing}&nbsp;</span>
@@ -403,7 +400,7 @@ const UnlockingPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentTipGated(premiumConditions) && tippedUser) {
+    if (isContentTipGated(streamConditions) && tippedUser) {
       return (
         <div>
           <span>{messages.thankYouForSupporting}&nbsp;</span>
@@ -415,13 +412,13 @@ const UnlockingPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <div
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           {messages.unlockWithPurchase}
@@ -430,23 +427,23 @@ const UnlockingPremiumTrackSection = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for gated conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, followee, tippedUser, goToCollection, renderArtist])
+  }, [streamConditions, followee, tippedUser, goToCollection, renderArtist])
 
   return (
     <div className={className}>
-      <div className={styles.premiumContentDescriptionContainer}>
+      <div className={styles.gatedContentDescriptionContainer}>
         <div
           className={cn(
             typeStyles.labelLarge,
             typeStyles.labelStrong,
-            styles.premiumContentSectionTitle
+            styles.gatedContentSectionTitle
           )}
         >
           <LoadingSpinner className={styles.spinner} />
-          {isPremiumContentUSDCPurchaseGated(premiumConditions)
+          {isContentUSDCPurchaseGated(streamConditions)
             ? messages.purchasing
             : messages.unlocking}
         </div>
@@ -454,7 +451,7 @@ const UnlockingPremiumTrackSection = ({
           className={cn(
             typeStyles.bodyMedium,
             typeStyles.bodyStrong,
-            styles.premiumContentSectionDescription
+            styles.gatedContentSectionDescription
           )}
         >
           {renderUnlockingDescription()}
@@ -464,8 +461,8 @@ const UnlockingPremiumTrackSection = ({
   )
 }
 
-const UnlockedPremiumTrackSection = ({
-  premiumConditions,
+const UnlockedGatedTrackSection = ({
+  streamConditions,
   followee,
   tippedUser,
   goToCollection,
@@ -473,15 +470,15 @@ const UnlockedPremiumTrackSection = ({
   isOwner,
   trackOwner,
   className
-}: PremiumTrackAccessSectionProps) => {
+}: GatedTrackAccessSectionProps) => {
   const renderUnlockedDescription = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return isOwner ? (
         <div>
           <span>
             {messages.ownCollectibleGatedPrefix}
             <span className={styles.collectibleName} onClick={goToCollection}>
-              {premiumConditions.nft_collection?.name}
+              {streamConditions.nft_collection?.name}
             </span>
           </span>
         </div>
@@ -490,7 +487,7 @@ const UnlockedPremiumTrackSection = ({
           <span>
             {messages.aCollectibleFrom}
             <span className={styles.collectibleName} onClick={goToCollection}>
-              {premiumConditions.nft_collection?.name}
+              {streamConditions.nft_collection?.name}
             </span>
             &nbsp;
           </span>
@@ -499,7 +496,7 @@ const UnlockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentFollowGated(premiumConditions) && followee) {
+    if (isContentFollowGated(streamConditions) && followee) {
       return isOwner ? (
         <div>
           <span>{messages.ownFollowGated}</span>
@@ -513,7 +510,7 @@ const UnlockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentTipGated(premiumConditions) && tippedUser) {
+    if (isContentTipGated(streamConditions) && tippedUser) {
       return isOwner ? (
         <div>
           <span>{messages.ownTipGated}</span>
@@ -529,12 +526,12 @@ const UnlockedPremiumTrackSection = ({
       )
     }
 
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return isOwner ? (
         <div>
           <span>
             {messages.usersCanPurchase(
-              formatPrice(premiumConditions.usdc_purchase.price)
+              formatPrice(streamConditions.usdc_purchase.price)
             )}
           </span>
         </div>
@@ -555,11 +552,11 @@ const UnlockedPremiumTrackSection = ({
     }
 
     console.warn(
-      'No entity for premium conditions... should not have reached here.'
+      'No entity for gated conditions... should not have reached here.'
     )
     return null
   }, [
-    premiumConditions,
+    streamConditions,
     isOwner,
     trackOwner,
     followee,
@@ -571,10 +568,10 @@ const UnlockedPremiumTrackSection = ({
   let IconComponent = IconSpecialAccess
   let gatedConditionTitle = messages.specialAccess
 
-  if (isPremiumContentCollectibleGated(premiumConditions)) {
+  if (isContentCollectibleGated(streamConditions)) {
     IconComponent = IconCollectible
     gatedConditionTitle = messages.collectibleGated
-  } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+  } else if (isContentUSDCPurchaseGated(streamConditions)) {
     IconComponent = IconCart
     gatedConditionTitle = messages.payToUnlock
   }
@@ -585,7 +582,7 @@ const UnlockedPremiumTrackSection = ({
         className={cn(
           typeStyles.labelLarge,
           typeStyles.labelStrong,
-          styles.premiumContentSectionTitle,
+          styles.gatedContentSectionTitle,
           { [styles.isOwner]: isOwner }
         )}
       >
@@ -595,9 +592,7 @@ const UnlockedPremiumTrackSection = ({
           <LockedStatusBadge
             locked={false}
             variant={
-              isPremiumContentUSDCPurchaseGated(premiumConditions)
-                ? 'premium'
-                : 'gated'
+              isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
             }
           />
         )}
@@ -607,7 +602,7 @@ const UnlockedPremiumTrackSection = ({
         className={cn(
           typeStyles.bodyMedium,
           typeStyles.bodyStrong,
-          styles.premiumContentSectionDescription
+          styles.gatedContentSectionDescription
         )}
       >
         {renderUnlockedDescription()}
@@ -616,10 +611,10 @@ const UnlockedPremiumTrackSection = ({
   )
 }
 
-type PremiumTrackSectionProps = {
+type GatedTrackSectionProps = {
   isLoading: boolean
   trackId: ID
-  premiumConditions: PremiumConditions
+  streamConditions: StreamConditions
   doesUserHaveAccess: boolean
   isOwner: boolean
   wrapperClassName?: string
@@ -628,44 +623,41 @@ type PremiumTrackSectionProps = {
   ownerId: ID
 }
 
-export const PremiumTrackSection = ({
+export const GatedTrackSection = ({
   isLoading,
   trackId,
-  premiumConditions,
+  streamConditions,
   doesUserHaveAccess,
   isOwner,
   wrapperClassName,
   className,
   buttonClassName,
   ownerId
-}: PremiumTrackSectionProps) => {
+}: GatedTrackSectionProps) => {
   const dispatch = useDispatch()
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
 
-  const isFollowGated = isPremiumContentFollowGated(premiumConditions)
-  const isTipGated = isPremiumContentTipGated(premiumConditions)
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isFollowGated = isContentFollowGated(streamConditions)
+  const isTipGated = isContentTipGated(streamConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const shouldDisplay =
     isFollowGated ||
     isTipGated ||
-    isPremiumContentCollectibleGated(premiumConditions) ||
+    isContentCollectibleGated(streamConditions) ||
     isUSDCPurchaseGated
   const users = useSelector<AppState, { [id: ID]: User }>((state) =>
     getUsers(state, {
       ids: [
-        isFollowGated ? premiumConditions.follow_user_id : null,
-        isTipGated ? premiumConditions.tip_user_id : null,
+        isFollowGated ? streamConditions.follow_user_id : null,
+        isTipGated ? streamConditions.tip_user_id : null,
         isUSDCPurchaseGated ? ownerId : null
       ].filter(removeNullable)
     })
   )
-  const followee = isFollowGated
-    ? users[premiumConditions.follow_user_id]
-    : null
+  const followee = isFollowGated ? users[streamConditions.follow_user_id] : null
   const trackOwner = isUSDCPurchaseGated ? users[ownerId] : null
-  const tippedUser = isTipGated ? users[premiumConditions.tip_user_id] : null
+  const tippedUser = isTipGated ? users[streamConditions.tip_user_id] : null
 
   const fadeIn = {
     [styles.show]: !isLoading,
@@ -673,11 +665,11 @@ export const PremiumTrackSection = ({
   }
 
   const handleGoToCollection = useCallback(() => {
-    if (!isPremiumContentCollectibleGated(premiumConditions)) return
+    if (!isContentCollectibleGated(streamConditions)) return
     const { chain, address, externalLink } =
-      premiumConditions.nft_collection ?? {}
-    if (chain === Chain.Eth && 'slug' in premiumConditions.nft_collection!) {
-      const url = `https://opensea.io/collection/${premiumConditions.nft_collection.slug}`
+      streamConditions.nft_collection ?? {}
+    if (chain === Chain.Eth && 'slug' in streamConditions.nft_collection!) {
+      const url = `https://opensea.io/collection/${streamConditions.nft_collection.slug}`
       window.open(url, '_blank')
     } else if (chain === Chain.Sol) {
       if (externalLink) {
@@ -688,7 +680,7 @@ export const PremiumTrackSection = ({
         window.open(explorerUrl, '_blank')
       }
     }
-  }, [premiumConditions])
+  }, [streamConditions])
 
   const renderArtist = useCallback(
     (entity: User) => (
@@ -698,7 +690,7 @@ export const PremiumTrackSection = ({
         component='span'
       >
         <h2
-          className={styles.premiumTrackOwner}
+          className={styles.gatedTrackOwner}
           onClick={() =>
             dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
           }
@@ -717,18 +709,16 @@ export const PremiumTrackSection = ({
     [dispatch]
   )
 
-  if (!premiumConditions) return null
+  if (!streamConditions) return null
   if (!shouldDisplay) return null
 
   if (doesUserHaveAccess) {
     return (
-      <div
-        className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
-      >
-        <UnlockedPremiumTrackSection
+      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+        <UnlockedGatedTrackSection
           trackId={trackId}
           trackOwner={trackOwner}
-          premiumConditions={premiumConditions}
+          streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
@@ -740,15 +730,13 @@ export const PremiumTrackSection = ({
     )
   }
 
-  if (premiumTrackStatus === 'UNLOCKING') {
+  if (gatedTrackStatus === 'UNLOCKING') {
     return (
-      <div
-        className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
-      >
-        <UnlockingPremiumTrackSection
+      <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+        <UnlockingGatedTrackSection
           trackId={trackId}
           trackOwner={trackOwner}
-          premiumConditions={premiumConditions}
+          streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
@@ -761,17 +749,17 @@ export const PremiumTrackSection = ({
   }
 
   return (
-    <div className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}>
-      <LockedPremiumTrackSection
+    <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
+      <LockedGatedTrackSection
         trackId={trackId}
         trackOwner={trackOwner}
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
         renderArtist={renderArtist}
         isOwner={isOwner}
-        className={cn(styles.premiumContentSectionLocked, className)}
+        className={cn(styles.gatedContentSectionLocked, className)}
         buttonClassName={buttonClassName}
       />
     </div>

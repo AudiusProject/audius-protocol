@@ -22,7 +22,7 @@ import {
   savedPageSelectors,
   statusIsNotFinalized,
   useDebouncedCallback,
-  usePremiumContentAccessMap
+  useGatedContentAccessMap
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -193,7 +193,7 @@ const TracksLineup = ({
   onTogglePlay: (uid: UID, trackId: ID) => void
 }) => {
   const [trackEntries] = getFilteredData(tracks.entries)
-  const trackAccessMap = usePremiumContentAccessMap(trackEntries)
+  const trackAccessMap = useGatedContentAccessMap(trackEntries)
   const trackList = trackEntries
     .filter((t) => t.track_id)
     .map((entry) => {
@@ -203,7 +203,7 @@ const TracksLineup = ({
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       return {
         isLoading: false,
-        isPremium: entry.is_premium,
+        isStreamGated: entry.is_stream_gated,
         isSaved: entry.has_current_user_saved,
         isReposted: entry.has_current_user_reposted,
         isActive: playingUid === entry.uid,

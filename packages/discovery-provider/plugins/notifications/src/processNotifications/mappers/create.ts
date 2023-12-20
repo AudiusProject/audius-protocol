@@ -27,7 +27,7 @@ type Track = {
   track_id: number
   title: string
   owner_id: number
-  premium_conditions: object
+  stream_conditions: object
 }
 
 type Playlist = {
@@ -80,7 +80,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
     if (this.trackId) {
       const trackRes: Track[] = await this.dnDB
-        .select('track_id', 'title', 'owner_id', 'premium_conditions')
+        .select('track_id', 'title', 'owner_id', 'stream_conditions')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.trackId])
@@ -118,18 +118,17 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     if (this.trackId) {
       description = `${userName} released a new track`
     } else {
-      description = `${userName} released a new ${
-        this.isAlbum ? 'album' : 'playlist'
-      } ${playlist.playlist_name}`
+      description = `${userName} released a new ${this.isAlbum ? 'album' : 'playlist'
+        } ${playlist.playlist_name}`
     }
 
     const entityType = this.trackId
       ? 'Track'
       : this.playlistId && this.isAlbum
-      ? 'Album'
-      : this.playlistId && !this.isAlbum
-      ? 'Playlist'
-      : null
+        ? 'Album'
+        : this.playlistId && !this.isAlbum
+          ? 'Playlist'
+          : null
 
     const entityId = this.trackId ?? this.playlistId
 
@@ -144,7 +143,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       )
       if (
         !areUSDCSellerNotificationsEnabled &&
-        'usdc_purchase' in (track.premium_conditions || {})
+        'usdc_purchase' in (track.stream_conditions || {})
       ) {
         throw new RequiresRetry('USDC purchase not enabled')
       }
@@ -192,9 +191,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 body: description,
                 data: {
                   type: 'UserSubscription',
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                    this.notification.group_id
-                  }`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                    }`,
                   entityType: capitalize(entityType),
                   entityIds: [entityId],
                   userId: ownerId

@@ -5,12 +5,12 @@ import type { ID } from '@audius/common'
 import {
   SquareSizes,
   getDogEarType,
-  isPremiumContentCollectibleGated,
-  usePremiumContentAccess,
+  isContentCollectibleGated,
+  useGatedContentAccess,
   cacheUsersSelectors,
   cacheTracksSelectors,
-  isPremiumContentUSDCPurchaseGated,
-  PremiumContentType
+  isContentUSDCPurchaseGated,
+  GatedContentType
 } from '@audius/common'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
@@ -60,11 +60,11 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     gap: spacing(1),
     flexShrink: 1
   },
-  premiumContentLabelContainer: {
+  streamContentLabelContainer: {
     ...flexRowCentered(),
     gap: spacing(2)
   },
-  premiumContentLabel: {
+  streamContentLabel: {
     letterSpacing: spacing(0.5)
   },
   trackOwnerContainer: {
@@ -86,44 +86,41 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
   const { accentBlue, specialLightGreen } = useThemeColors()
   const track = useSelector((state) => getTrack(state, { id: trackId }))
   const owner = useSelector((state) => getUser(state, { id: track?.owner_id }))
-  const isCollectibleGated = isPremiumContentCollectibleGated(
-    track?.premium_conditions
-  )
+  const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
-    useIsUSDCEnabled() &&
-    isPremiumContentUSDCPurchaseGated(track?.premium_conditions)
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+    useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)
+  const { doesUserHaveAccess } = useGatedContentAccess(track)
 
   const dogEarType = getDogEarType({
     doesUserHaveAccess,
-    premiumConditions: track?.premium_conditions
+    streamConditions: track?.stream_conditions
   })
 
   const type = isUSDCPurchaseGated
-    ? PremiumContentType.USDC_PURCHASE
+    ? GatedContentType.USDC_PURCHASE
     : isCollectibleGated
-    ? PremiumContentType.COLLECTIBLE_GATED
-    : PremiumContentType.SPECIAL_ACCESS
+    ? GatedContentType.COLLECTIBLE_GATED
+    : GatedContentType.SPECIAL_ACCESS
 
   const headerAttributes: {
-    [k in PremiumContentType]: {
+    [k in GatedContentType]: {
       message: string
       icon: ComponentType<SvgProps>
       color: ColorValue
     }
   } = useMemo(() => {
     return {
-      [PremiumContentType.COLLECTIBLE_GATED]: {
+      [GatedContentType.COLLECTIBLE_GATED]: {
         message: messages.collectibleGated,
         icon: IconCollectible,
         color: accentBlue
       },
-      [PremiumContentType.SPECIAL_ACCESS]: {
+      [GatedContentType.SPECIAL_ACCESS]: {
         message: messages.specialAccess,
         icon: IconSpecialAccess,
         color: accentBlue
       },
-      [PremiumContentType.USDC_PURCHASE]: {
+      [GatedContentType.USDC_PURCHASE]: {
         message: messages.premiumTrack,
         icon: IconCart,
         color: specialLightGreen
@@ -147,7 +144,7 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
           size={SquareSizes.SIZE_150_BY_150}
         />
         <View style={styles.metadataContainer}>
-          <View style={styles.premiumContentLabelContainer}>
+          <View style={styles.streamContentLabelContainer}>
             <IconComponent
               fill={color}
               width={spacing(5)}
@@ -158,7 +155,7 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
               colorValue={color}
               weight='demiBold'
               textTransform='uppercase'
-              style={styles.premiumContentLabel}
+              style={styles.streamContentLabel}
             >
               {title}
             </Text>

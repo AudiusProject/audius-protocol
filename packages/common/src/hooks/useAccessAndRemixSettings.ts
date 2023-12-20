@@ -1,11 +1,11 @@
 import { useSelector } from 'react-redux'
 
 import {
-  PremiumConditions,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  StreamConditions,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated
 } from 'models/Track'
 import { getSupportedUserCollections } from 'store/collectibles/selectors'
 import { CommonState } from 'store/index'
@@ -14,7 +14,7 @@ import { Nullable } from 'utils/typeUtils'
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
   isRemix: boolean
-  initialPremiumConditions: Nullable<PremiumConditions>
+  initialStreamConditions: Nullable<StreamConditions>
   isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
 }
@@ -33,7 +33,7 @@ type UseAccessAndRemixSettingsProps = {
 export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
-  initialPremiumConditions,
+  initialStreamConditions,
   isInitiallyUnlisted,
   isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
@@ -47,24 +47,26 @@ export const useAccessAndRemixSettings = ({
   })
 
   const isInitiallyPublic =
-    !isInitiallyUnlisted && !isUpload && !initialPremiumConditions
+    !isInitiallyUnlisted && !isUpload && !initialStreamConditions
+
   const isInitiallyUsdcGated =
     !isInitiallyUnlisted && // track must be published
     !isUpload &&
-    isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+    isContentUSDCPurchaseGated(initialStreamConditions)
 
   const isInitiallySpecialAccess =
     !isInitiallyUnlisted &&
     !isUpload &&
     !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
+      isContentFollowGated(initialStreamConditions) ||
+      isContentTipGated(initialStreamConditions)
     )
 
   const isInitiallyCollectibleGated =
     !isInitiallyUnlisted &&
     !isUpload &&
-    isPremiumContentCollectibleGated(initialPremiumConditions)
+    isContentCollectibleGated(initialStreamConditions)
+
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
   const noUsdcGate =

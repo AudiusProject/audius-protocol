@@ -4,13 +4,13 @@ import type { CommonState, Track } from '@audius/common'
 import {
   FeatureFlags,
   Genre,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   squashNewLines,
   accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   dayjs
 } from '@audius/common'
 import moment from 'moment'
@@ -198,7 +198,7 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const { doesUserHaveAccess } = usePremiumContentAccess(
+  const { doesUserHaveAccess } = useGatedContentAccess(
     track ? (track as unknown as Track) : null
   )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -208,8 +208,7 @@ export const DetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
-  const { track_id: trackId, premium_conditions: premiumConditions } =
-    track ?? {}
+  const { track_id: trackId, stream_conditions: streamConditions } = track ?? {}
 
   const styles = useStyles()
   const navigation = useNavigation()
@@ -223,8 +222,7 @@ export const DetailsTile = ({
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -256,7 +254,7 @@ export const DetailsTile = ({
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      premiumConditions,
+      streamConditions,
       isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
@@ -310,8 +308,8 @@ export const DetailsTile = ({
 
   const PlayIcon =
     isNewPodcastControlsEnabled &&
-    playbackPositionInfo?.status === 'COMPLETED' &&
-    !isCurrentTrack
+      playbackPositionInfo?.status === 'COMPLETED' &&
+      !isCurrentTrack
       ? IconRepeat
       : IconPlay
 
@@ -381,12 +379,12 @@ export const DetailsTile = ({
               ) : null}
               <View style={styles.buttonSection}>
                 {!doesUserHaveAccess &&
-                !isOwner &&
-                premiumConditions &&
-                trackId ? (
+                  !isOwner &&
+                  streamConditions &&
+                  trackId ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                   />
                 ) : null}
                 {doesUserHaveAccess || isOwner ? (
@@ -404,9 +402,9 @@ export const DetailsTile = ({
                     fullWidth
                   />
                 ) : null}
-                {(doesUserHaveAccess || isOwner) && premiumConditions ? (
+                {(doesUserHaveAccess || isOwner) && streamConditions ? (
                   <DetailsTileHasAccess
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                     isOwner={isOwner}
                     trackArtist={user}
                   />
@@ -476,9 +474,9 @@ export const DetailsTile = ({
                 style={[
                   styles.infoSection,
                   hideFavoriteCount &&
-                    hideListenCount &&
-                    hideRepostCount &&
-                    styles.noStats
+                  hideListenCount &&
+                  hideRepostCount &&
+                  styles.noStats
                 ]}
               >
                 {renderDetailLabels()}

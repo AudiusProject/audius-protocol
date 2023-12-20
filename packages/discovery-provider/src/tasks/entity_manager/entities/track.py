@@ -8,11 +8,11 @@ from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
-from src.gated_content.gated_content_access_checker import (
+from src.gated_content.constants import USDC_PURCHASE_KEY
+from src.gated_content.content_access_checker import (
     GatedContentAccessBatchArgs,
-    gated_content_access_checker,
+    content_access_checker,
 )
-from src.gated_content.gated_content_constants import USDC_PURCHASE_KEY
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -86,10 +86,10 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    if track_metadata.get("premium_conditions", None) is not None:
-        premium_conditions = track_metadata["premium_conditions"]
-        if USDC_PURCHASE_KEY in premium_conditions:
-            usdc_purchase = premium_conditions[USDC_PURCHASE_KEY]
+    if track_metadata.get("stream_conditions", None) is not None:
+        stream_conditions = track_metadata["stream_conditions"]
+        if USDC_PURCHASE_KEY in stream_conditions:
+            usdc_purchase = stream_conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp
@@ -245,12 +245,12 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
-        if key == "premium_conditions":
-            if "premium_conditions" in track_metadata and (
-                is_valid_json_field(track_metadata, "premium_conditions")
-                or track_metadata.get("premium_conditions") is None
+        if key == "stream_conditions":
+            if "stream_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "stream_conditions")
+                or track_metadata.get("stream_conditions") is None
             ):
-                track_record.premium_conditions = track_metadata["premium_conditions"]
+                track_record.stream_conditions = track_metadata["stream_conditions"]
 
         elif key == "download_conditions":
             if "download_conditions" in track_metadata and (
@@ -531,22 +531,22 @@ def validate_remixability(params: ManageEntityParameters):
         map(
             lambda track_id: {
                 "user_id": user_id,
-                "premium_content_id": track_id,
-                "premium_content_type": "track",
+                "gated_content_id": track_id,
+                "gated_content_type": "track",
             },
             parent_track_ids,
         )
     )
-    premium_content_batch_access = (
-        gated_content_access_checker.check_access_for_batch(session, args)
+    gated_content_batch_access = content_access_checker.check_access_for_batch(
+        session, args
     )
-    if "track" not in premium_content_batch_access:
+    if "track" not in gated_content_batch_access:
         return
-    if user_id not in premium_content_batch_access["track"]:
+    if user_id not in gated_content_batch_access["track"]:
         return
 
-    for track_id in premium_content_batch_access["track"][user_id]:
-        access = premium_content_batch_access["track"][user_id][track_id]
+    for track_id in gated_content_batch_access["track"][user_id]:
+        access = gated_content_batch_access["track"][user_id][track_id]
         if not access["does_user_have_access"]:
             raise IndexingValidationError(
                 f"User {user_id} does not have access to gated track {track_id}"
@@ -575,13 +575,17 @@ def get_remix_parent_track_ids(track_metadata):
 
     return parent_track_ids
 
+
 def validate_downloadability(params: ManageEntityParameters):
     track_metadata = params.metadata
-    is_downloadable = track_metadata.get("download", {}).get("is_downloadable")
+    download = track_metadata.get("download")
+    is_downloadable = download.get("is_downloadable") if download else False
     is_download_gated = track_metadata.get("is_download_gated")
-    download_conditions = track_metadata.get("download_conditions", {})
-    stream_conditions = track_metadata.get("stream_conditions", {})
-    is_stream_usdc_purchase_gated = USDC_PURCHASE_KEY in stream_conditions
+    download_conditions = track_metadata.get("download_conditions")
+    stream_conditions = track_metadata.get("stream_conditions")
+    is_stream_usdc_purchase_gated = stream_conditions and (
+        USDC_PURCHASE_KEY in stream_conditions
+    )
 
     # if stream gated on usdc purchase, must also be download gated
     if is_stream_usdc_purchase_gated and not is_download_gated:
@@ -604,8 +608,12 @@ def validate_downloadability(params: ManageEntityParameters):
     # if both usdc purchase stream gated and download gated,
     # usdc purchase price must be the same for stream and download conditions
     if is_stream_usdc_purchase_gated and is_download_gated:
-        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
-        download_usdc_purchase_price = download_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
+        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get(
+            "price"
+        )
+        download_usdc_purchase_price = download_conditions.get(
+            USDC_PURCHASE_KEY, {}
+        ).get("price")
         if stream_usdc_purchase_price != download_usdc_purchase_price:
             raise IndexingValidationError(
                 f"Track {params.entity_id} is usdc purchase stream and download gated but has different prices"

@@ -12,7 +12,7 @@ const messages = {
   invalidReleaseDateError: 'Release date should not be in the future'
 }
 
-export const PremiumConditionsEthNFTCollection = z
+export const StreamConditionsEthNFTCollection = z
   .object({
     chain: z.literal('eth'),
     address: z.string(),
@@ -24,7 +24,7 @@ export const PremiumConditionsEthNFTCollection = z
   })
   .strict()
 
-export const PremiumConditionsSolNFTCollection = z
+export const StreamConditionsSolNFTCollection = z
   .object({
     chain: z.literal('sol'),
     address: z.string(),
@@ -34,27 +34,27 @@ export const PremiumConditionsSolNFTCollection = z
   })
   .strict()
 
-export const PremiumConditionsNFTCollection = z.union([
-  PremiumConditionsEthNFTCollection,
-  PremiumConditionsSolNFTCollection
+export const StreamConditionsNFTCollection = z.union([
+  StreamConditionsEthNFTCollection,
+  StreamConditionsSolNFTCollection
 ])
 
-export const PremiumConditionsFollowUserId = z
+export const StreamConditionsFollowUserId = z
   .object({
     followUserId: HashId
   })
   .strict()
 
-export const PremiumConditionsTipUserId = z
+export const StreamConditionsTipUserId = z
   .object({
     tipUserId: HashId
   })
   .strict()
 
-export const PremiumConditionsUSDCPurchase = z
+export const USDCPurchaseConditions = z
   .object({
     usdcPurchase: z.object({
-      price: z.number(),
+      price: z.number().positive(),
       splits: z.any()
     })
   })
@@ -90,7 +90,6 @@ export const createUploadTrackMetadataSchema = () =>
       .refine((val) => val !== null, {
         message: messages.genreRequiredError
       }),
-    isPremium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
     isUnlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
@@ -98,14 +97,17 @@ export const createUploadTrackMetadataSchema = () =>
     mood: z
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
       .nullable(),
-    premiumConditions: z.optional(
+    isStreamGated: z.optional(z.boolean()),
+    streamConditions: z.optional(
       z.union([
-        PremiumConditionsNFTCollection,
-        PremiumConditionsFollowUserId,
-        PremiumConditionsTipUserId,
-        PremiumConditionsUSDCPurchase
+        StreamConditionsNFTCollection,
+        StreamConditionsFollowUserId,
+        StreamConditionsTipUserId,
+        USDCPurchaseConditions
       ])
     ),
+    isDownloadGated: z.optional(z.boolean()),
+    downloadConditions: z.optional(USDCPurchaseConditions),
     releaseDate: z.optional(
       z.date().max(new Date(), { message: messages.invalidReleaseDateError })
     ),

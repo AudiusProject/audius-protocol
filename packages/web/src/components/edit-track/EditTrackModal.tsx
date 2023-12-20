@@ -209,7 +209,7 @@ const EditTrackModal = ({
         onDelete={onSelectDelete}
         onCancel={onCancel}
         showUnlistedToggle={
-          metadata ? metadata.is_unlisted || metadata.is_premium : false
+          metadata ? metadata.is_unlisted || metadata.is_stream_gated : false
         }
         stems={combinedStems}
         onDeleteStem={onDeleteStem}

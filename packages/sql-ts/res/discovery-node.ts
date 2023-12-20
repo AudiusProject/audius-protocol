@@ -616,7 +616,6 @@ export interface TrackRow {
   'is_current': boolean;
   'is_delete': boolean;
   'is_playlist_upload'?: boolean;
-  'is_premium'?: boolean;
   'is_unlisted'?: boolean;
   'isrc'?: string | null;
   'iswc'?: string | null;
@@ -624,9 +623,10 @@ export interface TrackRow {
   'metadata_multihash'?: string | null;
   'mood'?: string | null;
   'owner_id': number;
-  'premium_conditions'?: any | null;
-  'preview_cid'?: string | null;
-  'preview_start_seconds'?: number | null;
+  'is_stream_gated'?: boolean;
+  'stream_conditions'?: any | null;
+  'is_download_gated'?: boolean;
+  'download_conditions'?: any | null;
   'release_date'?: string | null;
   'remix_of'?: any | null;
   'route_id'?: string | null;
@@ -635,6 +635,10 @@ export interface TrackRow {
   'tags'?: string | null;
   'title'?: string | null;
   'track_cid'?: string | null;
+  'orig_file_cid'?: string | null;
+  'orig_filename'?: string | null;
+  'preview_cid'?: string | null;
+  'preview_start_seconds'?: number | null;
   'track_id': number;
   'track_segments': any;
   'txhash'?: string;

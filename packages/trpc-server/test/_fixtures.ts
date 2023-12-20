@@ -63,7 +63,7 @@ const fixtures = {
       isUnlisted: false,
       txhash: '0x123',
       isAvailable: true,
-      isPremium: false,
+      isStreamGated: false,
       isPlaylistUpload: false,
       trackSegments: '[]',
     },

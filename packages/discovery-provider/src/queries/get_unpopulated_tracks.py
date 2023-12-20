@@ -18,7 +18,7 @@ def get_unpopulated_tracks(
     track_ids,
     filter_deleted=False,
     filter_unlisted=True,
-    exclude_premium=False,
+    exclude_gated=False,
 ):
     """
     Fetches tracks by checking the redis cache first then
@@ -29,7 +29,7 @@ def get_unpopulated_tracks(
         track_ids: array A list of track ids
         filter_deleted: boolean indicating whether to filter out deleted tracks
         filter_unlisted: boolean indicating whether to filter out unlisted tracks
-        exclude_premium: boolean indicating whether to filter out gated tracks
+        exclude_gated: boolean indicating whether to filter out gated tracks
 
     Returns:
         Array of tracks
@@ -47,8 +47,8 @@ def get_unpopulated_tracks(
     if filter_deleted:
         tracks_query = tracks_query.filter(Track.is_delete == False)
 
-    if exclude_premium:
-        tracks_query = tracks_query.filter(Track.is_premium == False)
+    if exclude_gated:
+        tracks_query = tracks_query.filter(Track.is_stream_gated == False)
 
     tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)

@@ -4,14 +4,14 @@ import type {
   ID,
   FavoriteType,
   RepostType,
-  PremiumConditions,
+  StreamConditions,
   Nullable
 } from '@audius/common'
 import {
   formatCount,
   repostsUserListActions,
   favoritesUserListActions,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   dayjs
 } from '@audius/common'
 import moment from 'moment'
@@ -31,7 +31,7 @@ import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeTag'
+import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
@@ -107,7 +107,7 @@ type Props = {
   saveCount: number
   showRankIcon?: boolean
   doesUserHaveAccess?: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  streamConditions: Nullable<StreamConditions>
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
@@ -129,7 +129,7 @@ export const LineupTileStats = ({
   saveCount,
   showRankIcon,
   doesUserHaveAccess,
-  premiumConditions,
+  streamConditions,
   isOwner,
   isArtistPick,
   showArtistPick,
@@ -167,14 +167,14 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {premiumConditions ? (
-          <LineupTilePremiumContentTypeTag
-            premiumConditions={premiumConditions}
+        {streamConditions ? (
+          <LineupTileGatedContentTypeTag
+            streamConditions={streamConditions}
             doesUserHaveAccess={doesUserHaveAccess}
             isOwner={isOwner}
           />
         ) : null}
-        {!premiumConditions && showArtistPick && isArtistPick ? (
+        {!streamConditions && showArtistPick && isArtistPick ? (
           <View style={styles.tagContainer}>
             <IconStar
               fill={neutralLight4}
@@ -262,13 +262,11 @@ export const LineupTileStats = ({
           ) : null}
         </View>
       </View>
-      {premiumConditions && !isOwner ? (
+      {streamConditions && !isOwner ? (
         <LockedStatusBadge
           locked={!doesUserHaveAccess}
           variant={
-            isPremiumContentUSDCPurchaseGated(premiumConditions)
-              ? 'purchase'
-              : 'gated'
+            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }
         />
       ) : !hidePlays ? (

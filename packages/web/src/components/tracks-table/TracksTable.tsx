@@ -4,7 +4,7 @@ import {
   formatCount,
   formatSeconds,
   UID,
-  usePremiumContentAccessMap,
+  useGatedContentAccessMap,
   UserTrack
 } from '@audius/common'
 import { IconHidden, IconLock } from '@audius/stems'
@@ -146,7 +146,7 @@ export const TracksTable = ({
   userId,
   wrapperClassName
 }: TracksTableProps) => {
-  const trackAccessMap = usePremiumContentAccessMap(data)
+  const trackAccessMap = useGatedContentAccessMap(data)
 
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(

@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
-  isTrackPurchasable,
+  isTrackPurchaseable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
@@ -71,12 +71,12 @@ const RenderForm = ({
   track
 }: {
   onClose: () => void
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
 }) => {
   const dispatch = useDispatch()
   const {
     permalink,
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     }
   } = track
@@ -184,9 +184,9 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidTrack = track && isTrackPurchasable(track)
+  const isValidTrack = track && isTrackPurchaseable(track)
   const price = isValidTrack
-    ? track?.premium_conditions?.usdc_purchase?.price
+    ? track?.stream_conditions?.usdc_purchase?.price
     : 0
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({

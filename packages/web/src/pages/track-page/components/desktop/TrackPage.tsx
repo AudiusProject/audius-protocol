@@ -5,7 +5,7 @@ import {
   User,
   trackPageLineupActions,
   QueueItem,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -113,7 +113,7 @@ const TrackPage = ({
   const isReposted = heroTrack?.has_current_user_reposted ?? false
 
   const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(heroTrack)
+    useGatedContentAccess(heroTrack)
   const loading = !heroTrack || isUserAccessTBD
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
@@ -121,7 +121,7 @@ const TrackPage = ({
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
 
   const onSave = isOwner
-    ? () => {}
+    ? () => { }
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
@@ -162,8 +162,8 @@ const TrackPage = ({
       badge={badge}
       isUnlisted={defaults.isUnlisted}
       isScheduledRelease={defaults.isScheduledRelease}
-      isPremium={defaults.isPremium}
-      premiumConditions={defaults.premiumConditions}
+      isStreamGated={defaults.isStreamGated}
+      streamConditions={defaults.streamConditions}
       doesUserHaveAccess={doesUserHaveAccess}
       isRemix={!!defaults.remixParentTrackId}
       isPublishing={defaults.isPublishing}
@@ -193,7 +193,7 @@ const TrackPage = ({
 
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
-    (!defaults.remixParentTrackId && entries.length > 1) ? (
+      (!defaults.remixParentTrackId && entries.length > 1) ? (
       <div
         className={styles.lineupHeader}
       >{`${messages.moreBy} ${user?.name}`}</div>

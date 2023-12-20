@@ -11,7 +11,7 @@ import {
   makeUid,
   useGetTrackByPermalink,
   useToggleTrack,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -36,9 +36,9 @@ export const ChatMessageTrack = ({
     },
     { disabled: !permalink }
   )
-  const { doesUserHaveAccess } = usePremiumContentAccess(track ?? null)
+  const { doesUserHaveAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
-    !!track?.is_premium && !!track?.preview_cid && !doesUserHaveAccess
+    !!track?.is_stream_gated && !!track?.preview_cid && !doesUserHaveAccess
 
   const user = useMemo(() => (track ? { ...track.user } : null), [track])
 

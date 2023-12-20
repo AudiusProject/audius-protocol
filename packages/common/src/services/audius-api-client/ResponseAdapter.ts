@@ -189,8 +189,8 @@ export const makeUserlessTrack = (
     remix_of:
       remixes.length > 0
         ? {
-            tracks: remixes
-          }
+          tracks: remixes
+        }
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
@@ -266,12 +266,12 @@ export const makeTrack = (
     remix_of:
       remixes.length > 0
         ? {
-            tracks: remixes
-          }
+          tracks: remixes
+        }
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
-    premium_content_signature: track.premium_content_signature ?? null,
+    stream_signature: track.stream_signature ?? null,
     release_date: dayjs
       .utc(track.release_date)
       .local()
@@ -318,7 +318,7 @@ export const makePlaylist = (
   const saves =
     'followee_favorites' in playlist
       ? playlist.followee_favorites?.map(makeFavorite).filter(removeNullable) ??
-        []
+      []
       : []
 
   const reposts =
@@ -358,8 +358,8 @@ export const makePlaylist = (
   const tracks =
     'tracks' in playlist
       ? playlist.tracks
-          ?.map((track) => makeTrack(track))
-          .filter(removeNullable) ?? []
+        ?.map((track) => makeTrack(track))
+        .filter(removeNullable) ?? []
       : []
 
   const marshalled = {
@@ -471,9 +471,15 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     updated_at: '',
     permalink: '',
     is_available: true,
-    is_premium: false,
-    premium_conditions: null,
-    premium_content_signature: null,
+    is_stream_gated: false,
+    stream_conditions: null,
+    stream_signature: null,
+    is_download_gated: false,
+    download_conditions: null,
+    access: { stream: true, download: true },
+    track_cid: '',
+    orig_file_cid: '',
+    orig_filename: '',
     is_playlist_upload: false
   }
 }

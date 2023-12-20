@@ -19,8 +19,8 @@ import {
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  usePremiumContentAccess,
-  premiumContentActions,
+  useGatedContentAccess,
+  gatedContentActions,
   Genre
 } from '@audius/common'
 import cn from 'classnames'
@@ -63,7 +63,7 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getUserHandle } = accountSelectors
-const { setLockedContentId } = premiumContentActions
+const { setLockedContentId } = gatedContentActions
 
 type OwnProps = {
   uid: UID
@@ -118,8 +118,8 @@ const ConnectedTrackTile = ({
     is_delete,
     is_unlisted: isUnlisted,
     is_scheduled_release: isScheduledRelease,
-    is_premium: isPremium,
-    premium_conditions: premiumConditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     track_id: trackId,
     title,
     genre,
@@ -153,7 +153,7 @@ const ConnectedTrackTile = ({
   const hasPreview = !!track?.preview_cid
 
   const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(trackWithFallback)
+    useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isUserAccessTBD
 
   const dispatch = useDispatch()
@@ -199,10 +199,10 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: !isPremium,
+      includeAddToPlaylist: !isStreamGated,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
-      includeEmbed: !isPremium,
+      includeEmbed: !isStreamGated,
       includeFavorite: false,
       includeRepost: false,
       includeShare: false,
@@ -364,8 +364,8 @@ const ConnectedTrackTile = ({
       isOwner={isOwner}
       isUnlisted={isUnlisted}
       isScheduledRelease={isScheduledRelease}
-      isPremium={isPremium}
-      premiumConditions={premiumConditions}
+      isStreamGated={isStreamGated}
+      streamConditions={streamConditions}
       doesUserHaveAccess={doesUserHaveAccess}
       isLoading={loading}
       isDarkMode={isDarkMode()}
@@ -401,7 +401,7 @@ const ConnectedTrackTile = ({
     />
   )
 
-  if (isPremium) {
+  if (isStreamGated) {
     return tileContent
   }
 

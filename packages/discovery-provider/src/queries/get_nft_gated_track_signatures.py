@@ -98,9 +98,9 @@ def _get_tracks(track_ids: List[int], session: Session):
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     return list(
         filter(
-            lambda track: track.is_premium
-            and track.premium_conditions != None
-            and "nft_collection" in track.premium_conditions,
+            lambda track: track.is_stream_gated
+            and track.stream_conditions != None
+            and "nft_collection" in track.stream_conditions,
             _get_tracks(track_ids, session),
         )
     )
@@ -122,7 +122,7 @@ def _get_eth_nft_gated_track_signatures(
 
     erc721_gated_tracks = list(
         filter(
-            lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
+            lambda track: track.stream_conditions["nft_collection"]["standard"]  # type: ignore
             == "ERC721",
             tracks,
         )
@@ -134,14 +134,14 @@ def _get_eth_nft_gated_track_signatures(
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
         contract_address = Web3.to_checksum_address(
-            track.premium_conditions["nft_collection"]["address"]  # type: ignore
+            track.stream_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc721_collection_track_map[contract_address].append(track.track_cid)
         track_cid_to_id_map[track.track_cid] = track.track_id
 
     erc1155_gated_tracks = list(
         filter(
-            lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
+            lambda track: track.stream_conditions["nft_collection"]["standard"]  # type: ignore
             == "ERC1155",
             tracks,
         )
@@ -157,7 +157,7 @@ def _get_eth_nft_gated_track_signatures(
     contract_address_token_id_map: Dict[str, Set[int]] = defaultdict(set)
     for track in erc1155_gated_tracks:
         contract_address = Web3.to_checksum_address(
-            track.premium_conditions["nft_collection"]["address"]  # type: ignore
+            track.stream_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc1155_collection_track_map[contract_address].append(track.track_cid)
         track_token_id_set = set(map(int, track_token_id_map[track.track_id]))
@@ -194,7 +194,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_premium": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:
@@ -232,7 +232,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_premium": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:
@@ -396,7 +396,7 @@ def _get_sol_nft_gated_track_signatures(
     # that share the same nft collection gate.
     collection_track_map = defaultdict(list)
     for track in tracks:
-        collection_mint_address = track.premium_conditions["nft_collection"]["address"]  # type: ignore
+        collection_mint_address = track.stream_conditions["nft_collection"]["address"]  # type: ignore
         collection_track_map[collection_mint_address].append(track.track_cid)
         track_cid_to_id_map[track.track_cid] = track.track_id
 
@@ -430,7 +430,7 @@ def _get_sol_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_premium": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:
@@ -443,7 +443,7 @@ def _get_sol_nft_gated_track_signatures(
 
 # Generates a gated content signature for each of the nft-gated tracks.
 # Return a map of gated track id -> gated content signature.
-def get_nft_gated_premium_track_signatures(
+def get_nft_gated_track_signatures(
     user_id: int, track_token_id_map: Dict[int, List[str]]
 ):
     db = db_session.get_db_read_replica()
@@ -452,7 +452,7 @@ def get_nft_gated_premium_track_signatures(
         associated_wallets = get_associated_user_wallet({"user_id": user_id})
         if not user_wallet:
             logger.warn(
-                f"get_premium_track_signatures.py | get_nft_gated_premium_track_signatures | no wallet for user_id {user_id}"
+                f"get_nft_gated_track_signatures.py | get_nft_gated_track_signatures | no wallet for user_id {user_id}"
             )
             return {}
 
@@ -461,14 +461,14 @@ def get_nft_gated_premium_track_signatures(
         )
         eth_nft_gated_tracks = list(
             filter(
-                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                lambda track: track.stream_conditions["nft_collection"]["chain"]
                 == "eth",
                 nft_gated_tracks,
             )
         )
         sol_nft_gated_tracks = list(
             filter(
-                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                lambda track: track.stream_conditions["nft_collection"]["chain"]
                 == "sol",
                 nft_gated_tracks,
             )

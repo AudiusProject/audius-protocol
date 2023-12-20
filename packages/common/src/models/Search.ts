@@ -3,8 +3,8 @@ import { Nullable } from 'utils/typeUtils'
 import { CollectionImage } from './Collection'
 import { Repost } from './Repost'
 import {
-  PremiumConditions,
-  PremiumContentSignature,
+  StreamConditions,
+  StreamingSignature,
   TrackImage,
   TrackSegment
 } from './Track'
@@ -80,9 +80,9 @@ export type SearchTrack = TrackImage & {
   has_current_user_reposted: undefined
   is_unlisted: boolean
   is_scheduled_release: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<StreamConditions>
+  stream_signature: Nullable<StreamingSignature>
   has_current_user_saved: undefined
   stem_of: null
   updated_at: string

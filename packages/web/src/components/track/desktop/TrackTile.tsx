@@ -9,7 +9,7 @@ import {
   Genre,
   CommonState,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
@@ -28,8 +28,8 @@ import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import { GatedContentLabel } from '../GatedContentLabel'
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
-import { PremiumContentLabel } from '../PremiumContentLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -73,7 +73,7 @@ const renderLockedOrPlaysContent = ({
   doesUserHaveAccess,
   fieldVisibility,
   isOwner,
-  isPremium,
+  isStreamGated,
   listenCount,
   variant
 }: Pick<
@@ -81,11 +81,11 @@ const renderLockedOrPlaysContent = ({
   | 'doesUserHaveAccess'
   | 'fieldVisibility'
   | 'isOwner'
-  | 'isPremium'
+  | 'isStreamGated'
   | 'listenCount'
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
-  if (isPremium && !isOwner) {
+  if (isStreamGated && !isOwner) {
     return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
   }
 
@@ -117,8 +117,8 @@ const TrackTile = ({
   isOwner,
   isUnlisted,
   isScheduledRelease,
-  isPremium,
-  premiumConditions,
+  isStreamGated,
+  streamConditions,
   doesUserHaveAccess,
   listenCount,
   isActive,
@@ -171,9 +171,9 @@ const TrackTile = ({
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId },
@@ -203,9 +203,8 @@ const TrackTile = ({
         return (
           <div className={styles.progressTextContainer}>
             <p className={styles.progressText}>
-              {`${formatLineupTileDuration(remainingTime, true)} ${
-                messages.timeLeft
-              }`}
+              {`${formatLineupTileDuration(remainingTime, true)} ${messages.timeLeft
+                }`}
             </p>
             <ProgressBar
               value={(trackPositionInfo.playbackPosition / duration) * 100}
@@ -229,22 +228,22 @@ const TrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        doesUserHaveAccess,
-        isArtistPick,
-        isOwner,
-        isUnlisted:
-          isUnlisted &&
-          (!releaseDate || moment(releaseDate).isBefore(moment())),
-        premiumConditions
-      })
+      doesUserHaveAccess,
+      isArtistPick,
+      isOwner,
+      isUnlisted:
+        isUnlisted &&
+        (!releaseDate || moment(releaseDate).isBefore(moment())),
+      streamConditions
+    })
 
   let specialContentLabel = null
   let scheduledReleaseLabel = null
   if (!isLoading) {
-    if (isPremium) {
+    if (isStreamGated) {
       specialContentLabel = (
-        <PremiumContentLabel
-          premiumConditions={premiumConditions}
+        <GatedContentLabel
+          streamConditions={streamConditions}
           doesUserHaveAccess={!!doesUserHaveAccess}
           isOwner={isOwner}
         />
@@ -392,13 +391,13 @@ const TrackTile = ({
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                  doesUserHaveAccess,
-                  fieldVisibility,
-                  isOwner,
-                  isPremium,
-                  listenCount,
-                  variant: isPurchase ? 'premium' : 'gated'
-                })
+                doesUserHaveAccess,
+                fieldVisibility,
+                isOwner,
+                isStreamGated,
+                listenCount,
+                variant: isPurchase ? 'premium' : 'gated'
+              })
               : null}
           </div>
         </div>
@@ -420,8 +419,8 @@ const TrackTile = ({
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
-          onClickPremiumPill={onClickPremiumPill}
-          premiumConditions={premiumConditions}
+          onClickPill={onClickPill}
+          streamConditions={streamConditions}
           isTrack={isTrack}
           trackId={trackId}
         />

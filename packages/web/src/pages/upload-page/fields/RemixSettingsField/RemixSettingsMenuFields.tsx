@@ -4,9 +4,9 @@ import {
   getPathFromTrackUrl,
   useGetTrackByPermalink,
   accountSelectors,
-  usePremiumContentAccess,
-  isPremiumContentUSDCPurchaseGated,
-  isPremiumContentCollectibleGated
+  useGatedContentAccess,
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
 } from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -16,7 +16,7 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../AccessAndSaleField'
 import { SwitchRowField } from '../SwitchRowField'
 
 import styles from './RemixSettingsField.module.css'
@@ -45,8 +45,8 @@ const messages = {
 }
 
 export const RemixSettingsMenuFields = () => {
-  const [{ value: isPremium }] = useField(IS_PREMIUM)
-  const [{ value: premiumConditions }] = useField(PREMIUM_CONDITIONS)
+  const [{ value: isStreamGated }] = useField(IS_STREAM_GATED)
+  const [{ value: streamConditions }] = useField(STREAM_CONDITIONS)
   const [{ value: trackUrl }] = useField(REMIX_LINK)
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
@@ -58,14 +58,13 @@ export const RemixSettingsMenuFields = () => {
   )
 
   const trackId = track?.track_id
-  const { doesUserHaveAccess: canRemixParent } = usePremiumContentAccess(
+  const { doesUserHaveAccess: canRemixParent } = useGatedContentAccess(
     track ?? null
   )
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
 
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   useEffect(() => {
     setParentTrackId(trackId)
@@ -73,11 +72,11 @@ export const RemixSettingsMenuFields = () => {
   }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
   const renderGatedContentCallout = () => {
-    if (isPremium && !isUSDCPurchaseGated) {
+    if (isStreamGated && !isUSDCPurchaseGated) {
       return (
         <HelpCallout
           content={`${messages.changeAvailabilityPrefix} ${
-            isPremiumContentCollectibleGated(premiumConditions)
+            isContentCollectibleGated(streamConditions)
               ? messages.collectibleGated
               : messages.specialAccess
           }${messages.changeAvailabilitySuffix}`}
@@ -99,7 +98,7 @@ export const RemixSettingsMenuFields = () => {
   }
 
   const renderHideRemixesField = () => {
-    if (isPremium && !isUSDCPurchaseGated) {
+    if (isStreamGated && !isUSDCPurchaseGated) {
       return (
         <SwitchRowField
           name={SHOW_REMIXES}
@@ -131,7 +130,7 @@ export const RemixSettingsMenuFields = () => {
         name={IS_REMIX}
         header={messages.remixOf.header}
         description={messages.remixOf.description}
-        disabled={isPremium}
+        disabled={isStreamGated}
       >
         <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
         {track ? <TrackInfo trackId={track.track_id} /> : null}

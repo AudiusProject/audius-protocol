@@ -3,7 +3,7 @@ import {
   DogEarType,
   SquareSizes,
   averageColorSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   playerSelectors
 } from '@audius/common'
 import { Dimensions } from 'react-native'
@@ -57,11 +57,11 @@ export const Artwork = ({ track }: ArtworkProps) => {
     shadowColor = `rgb(${r.toFixed()},${g.toFixed()},${b.toFixed()})`
   }
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { doesUserHaveAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowDogEar =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
     (!doesUserHaveAccess || isPreviewing)
 
   return (

@@ -50,7 +50,7 @@ const TrackPlayerContainer = ({
 
   const trackInfoForPlayback = useMemo(() => {
     const isPurchaseable =
-      track.premiumConditions && 'usdc_purchase' in track.premiumConditions
+      track.streamConditions && 'usdc_purchase' in track.streamConditions
     return {
       gateways: formatGateways(track.user.creatorNodeEndpoint),
       title: track.title,
@@ -61,7 +61,7 @@ const TrackPlayerContainer = ({
   }, [
     track.id,
     track.title,
-    track.premiumConditions,
+    track.streamConditions,
     track.user.creatorNodeEndpoint,
     track.user.name
   ])
@@ -146,7 +146,7 @@ const TrackPlayerContainer = ({
     trackURL: stripLeadingSlash(track.permalink),
     backgroundColor,
     isTwitter,
-    premiumConditions: track.premiumConditions,
+    streamConditions: track.streamConditions,
     did404
   }
 

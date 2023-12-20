@@ -7,7 +7,7 @@ import {
   accountSelectors,
   tracksSocialActions,
   playerSelectors,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { TouchableOpacity, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -146,11 +146,11 @@ export const PlayBar = (props: PlayBarProps) => {
   const currentUser = useSelector(getAccountUser)
   const staticWhite = useColor('staticWhite')
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { doesUserHaveAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
     (!doesUserHaveAccess || isPreviewing)
 
   const onPressFavoriteButton = useCallback(() => {

@@ -3,9 +3,10 @@ import {
   Genre,
   HashId,
   Mood,
-  PremiumConditionsFollowUserId,
-  PremiumConditionsNFTCollection,
-  PremiumConditionsTipUserId
+  StreamConditionsFollowUserId,
+  StreamConditionsNFTCollection,
+  StreamConditionsTipUserId,
+  USDCPurchaseConditions
 } from '@audius/sdk'
 import { z } from 'zod'
 
@@ -61,20 +62,23 @@ const createSdkSchema = () =>
       })
     ),
     genre: GenreSchema,
-    is_premium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
     is_scheduled_release: z.optional(z.boolean()),
     is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
-    premiumConditions: z.optional(
+    is_stream_gated: z.optional(z.boolean()),
+    stream_conditions: z.optional(
       z.union([
-        PremiumConditionsNFTCollection,
-        PremiumConditionsFollowUserId,
-        PremiumConditionsTipUserId
+        StreamConditionsNFTCollection,
+        StreamConditionsFollowUserId,
+        StreamConditionsTipUserId,
+        USDCPurchaseConditions
       ])
     ),
+    is_download_gated: z.optional(z.boolean()),
+    download_conditions: z.optional(USDCPurchaseConditions),
     release_date: z.optional(z.string()).nullable(),
     remixOf: z.optional(
       z
@@ -95,7 +99,9 @@ const createSdkSchema = () =>
     }),
     previewStartSeconds: z.optional(z.number()),
     audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string())
+    previewCid: z.optional(z.string()),
+    origFileCid: z.optional(z.string()),
+    origFilename: z.optional(z.string())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(

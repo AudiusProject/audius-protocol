@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, StreamConditions } from '@audius/common'
 import {
   TrackAvailabilityType,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentCollectibleGated,
   FeatureFlags,
   removeNullable,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   useAccessAndRemixSettings,
   useFeatureFlag
 } from '@audius/common'
@@ -85,8 +85,8 @@ export const AccessAndSaleScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: premiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: streamConditions }] =
+    useField<Nullable<StreamConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: isScheduledRelease }] = useField<boolean>(
     'is_scheduled_release'
@@ -102,17 +102,17 @@ export const AccessAndSaleScreen = () => {
   )
 
   const isUpload = !initialValues?.track_id
-  const initialPremiumConditions = initialValues?.premium_conditions ?? null
+  const initialStreamConditions = initialValues?.stream_conditions ?? null
   const initialAvailability = useMemo(() => {
-    if (isUsdcEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isUsdcEnabled && isContentUSDCPurchaseGated(streamConditions)) {
       return TrackAvailabilityType.USDC_PURCHASE
     }
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return TrackAvailabilityType.COLLECTIBLE_GATED
     }
     if (
-      isPremiumContentFollowGated(premiumConditions) ||
-      isPremiumContentTipGated(premiumConditions)
+      isContentFollowGated(streamConditions) ||
+      isContentTipGated(streamConditions)
     ) {
       return TrackAvailabilityType.SPECIAL_ACCESS
     }
@@ -134,7 +134,7 @@ export const AccessAndSaleScreen = () => {
   } = useAccessAndRemixSettings({
     isUpload,
     isRemix,
-    initialPremiumConditions,
+    initialStreamConditions,
     isInitiallyUnlisted: initialValues.is_unlisted,
     isScheduledRelease
   })
@@ -144,8 +144,8 @@ export const AccessAndSaleScreen = () => {
   const [availability, setAvailability] =
     useState<TrackAvailabilityType>(initialAvailability)
 
-  const previousPremiumConditions = useMemo(
-    () => premiumConditions ?? initialPremiumConditions,
+  const previousStreamConditions = useMemo(
+    () => streamConditions ?? initialStreamConditions,
     // we only care about what the initial value was here
     // eslint-disable-next-line
     []
@@ -155,10 +155,10 @@ export const AccessAndSaleScreen = () => {
     { label: publicAvailability, value: publicAvailability },
     isUsdcEnabled
       ? {
-          label: premiumAvailability,
-          value: premiumAvailability,
-          disabled: noUsdcGate
-        }
+        label: premiumAvailability,
+        value: premiumAvailability,
+        disabled: noUsdcGate
+      }
       : null,
     {
       label: specialAccessAvailability,
@@ -191,7 +191,7 @@ export const AccessAndSaleScreen = () => {
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
         disabled={noUsdcGate}
         disabledContent={noUsdcGate}
-        previousPremiumConditions={previousPremiumConditions}
+        previousStreamConditions={previousStreamConditions}
       />
     )
   }
@@ -201,7 +201,7 @@ export const AccessAndSaleScreen = () => {
       selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
       disabled={noSpecialAccessGate}
       disabledContent={noSpecialAccessGateFields}
-      previousPremiumConditions={previousPremiumConditions}
+      previousStreamConditions={previousStreamConditions}
     />
   )
 
@@ -210,7 +210,7 @@ export const AccessAndSaleScreen = () => {
       selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={noCollectibleGate}
       disabledContent={noCollectibleGateFields}
-      previousPremiumConditions={previousPremiumConditions}
+      previousStreamConditions={previousStreamConditions}
     />
   )
 
@@ -234,16 +234,16 @@ export const AccessAndSaleScreen = () => {
     const priceNotSet = price === null
     const previewNotSet = preview === null
     return (
-      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
+      isContentUSDCPurchaseGated(streamConditions) &&
       (!!priceError || priceNotSet || !!previewError || previewNotSet)
     )
-  }, [premiumConditions, price, priceError, preview, previewError])
+  }, [streamConditions, price, priceError, preview, previewError])
 
   const collectibleGateHasNoSelectedCollection = useMemo(
     () =>
-      isPremiumContentCollectibleGated(premiumConditions) &&
-      !premiumConditions.nft_collection,
-    [premiumConditions]
+      isContentCollectibleGated(streamConditions) &&
+      !streamConditions.nft_collection,
+    [streamConditions]
   )
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
