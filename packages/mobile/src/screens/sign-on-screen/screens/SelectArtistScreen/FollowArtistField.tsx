@@ -5,7 +5,9 @@ import { css } from '@emotion/native'
 import { useField } from 'formik'
 import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
+import RadialGradient from 'react-native-radial-gradient'
 
+import type { Icon } from '@audius/harmony-native'
 import {
   Box,
   Flex,
@@ -57,6 +59,39 @@ export const FollowArtistField = (props: FollowArtistFieldProps) => {
     }
   }, [isPreviewing, playPreview, togglePreview, user_id])
 
+  // The play/pause icon over the user avatar
+  const renderPreviewElement = () => {
+    let PreviewIcon: Icon | null = null
+
+    if (showPreviewHint && !hasPlayed) {
+      PreviewIcon = IconPlay
+    } else if (isPreviewing && isPlaying) {
+      PreviewIcon = IconPause
+    } else if (isPreviewing && !isPlaying) {
+      PreviewIcon = IconPlay
+    }
+
+    if (!PreviewIcon) return null
+
+    return (
+      <RadialGradient
+        style={css({
+          width: '100%',
+          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.73
+        })}
+        colors={['rgba(0, 0, 0, 0.50)', 'rgba(0, 0, 0, 0.10)']}
+        stops={[0, 1]}
+        center={[0.5, 0.5]}
+        radius={0.5}
+      >
+        <PreviewIcon size='l' color='staticWhite' shadow='drop' />
+      </RadialGradient>
+    )
+  }
+
   return (
     <Paper>
       <Pressable onPress={handlePress}>
@@ -94,16 +129,7 @@ export const FollowArtistField = (props: FollowArtistFieldProps) => {
       >
         <Pressable onPress={handlePress}>
           <ProfilePicture size='large' userId={user_id} variant='strong'>
-            {showPreviewHint && !hasPlayed ? (
-              <IconPlay size='l' color='staticWhite' />
-            ) : null}
-            {isPreviewing ? (
-              isPlaying ? (
-                <IconPause size='l' color='staticWhite' />
-              ) : (
-                <IconPlay size='l' color='staticWhite' />
-              )
-            ) : null}
+            {renderPreviewElement()}
           </ProfilePicture>
         </Pressable>
       </Flex>

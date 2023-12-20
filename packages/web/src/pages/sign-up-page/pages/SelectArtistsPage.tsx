@@ -31,7 +31,7 @@ import {
   FollowArtistTile,
   FollowArtistTileSkeleton
 } from '../components/FollowArtistTile'
-import { PreviewArtistToast } from '../components/PreviewArtistToast'
+import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
   HiddenLegend,
@@ -188,7 +188,7 @@ export const SelectArtistsPage = () => {
                     {messages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
-                  {isLoading || !isMobile ? null : <PreviewArtistToast />}
+                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
