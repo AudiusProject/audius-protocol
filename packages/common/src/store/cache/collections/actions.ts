@@ -35,20 +35,47 @@ export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
 /**
  * @param initTrackId optional track id to pull artwork from.
  */
+export function createAlbum(
+  formFields: Partial<Collection>,
+  source: string,
+  initTrackId?: number | null,
+  noticeType: 'route' | 'toast' = 'route'
+) {
+  return {
+    type: CREATE_PLAYLIST,
+    formFields,
+    source,
+    initTrackId,
+    noticeType,
+    isAlbum: true
+  }
+}
+
+/**
+ * @param initTrackId optional track id to pull artwork from.
+ */
 export function createPlaylist(
   formFields: Partial<Collection>,
   source: string,
   initTrackId?: number | null,
   noticeType: 'route' | 'toast' = 'route'
 ) {
-  return { type: CREATE_PLAYLIST, formFields, source, initTrackId, noticeType }
+  return {
+    type: CREATE_PLAYLIST,
+    formFields,
+    source,
+    initTrackId,
+    noticeType,
+    isAlbum: false
+  }
 }
 
 export function createPlaylistRequested(
   playlistId: ID,
-  noticeType: 'route' | 'toast'
+  noticeType: 'route' | 'toast',
+  isAlbum: boolean
 ) {
-  return { type: CREATE_PLAYLIST_REQUESTED, playlistId, noticeType }
+  return { type: CREATE_PLAYLIST_REQUESTED, playlistId, noticeType, isAlbum }
 }
 
 export function createPlaylistSucceeded() {

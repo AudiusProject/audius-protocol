@@ -12,7 +12,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
-  addToPlaylistUIActions,
+  addToCollectionUIActions,
   deletePlaylistConfirmationModalUIActions,
   OverflowSource,
   mobileOverflowMenuUISelectors,
@@ -42,7 +42,7 @@ const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
-const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
@@ -90,7 +90,7 @@ const ConnectedMobileOverflowModal = ({
   unrepostCollection,
   saveCollection,
   unsaveCollection,
-  addToPlaylist,
+  addToCollection,
   deletePlaylist,
   publishPlaylist,
   visitTrackPage,
@@ -109,6 +109,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite,
     onUnfavorite,
     onShare,
+    onAddToAlbum,
     onAddToPlaylist,
     onEditPlaylist,
     onPublishPlaylist,
@@ -125,6 +126,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite?: () => void
     onUnfavorite?: () => void
     onShare?: () => void
+    onAddToAlbum?: () => void
     onAddToPlaylist?: () => void
     onEditPlaylist?: () => void
     onPublishPlaylist?: () => void
@@ -145,7 +147,8 @@ const ConnectedMobileOverflowModal = ({
           onUnrepost: () => unrepostTrack(id as ID),
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
-          onAddToPlaylist: () => addToPlaylist(id as ID, title),
+          onAddToAlbum: () => addToCollection('album', id as ID, title),
+          onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
             visitCollectiblePage(handle, id as string)
           },
@@ -209,6 +212,7 @@ const ConnectedMobileOverflowModal = ({
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
+      onAddToAlbum={onAddToAlbum}
       onAddToPlaylist={onAddToPlaylist}
       onVisitTrackPage={onVisitTrackPage}
       onEditPlaylist={onEditPlaylist}
@@ -355,8 +359,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       )
     },
     // Routes
-    addToPlaylist: (trackId: ID, title: string) =>
-      dispatch(openAddToPlaylist(trackId, title)),
+    addToCollection: (
+      collectionType: 'album' | 'playlist',
+      trackId: ID,
+      title: string
+    ) => dispatch(openAddToCollection(collectionType, trackId, title)),
     visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
     visitArtistPage: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),

@@ -10,11 +10,14 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  getLocalTimezone
 } from '@audius/common'
+import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
 import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
@@ -139,6 +142,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   link: {
     color: palette.primary
+  },
+  releaseContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: spacing(1)
   }
 }))
 
@@ -241,12 +250,14 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
-
+  const isScheduledRelease = track?.release_date
+    ? moment.utc(track.release_date).isAfter(moment())
+    : false
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
       premiumConditions,
-      isUnlisted
+      isUnlisted: isUnlisted && !isScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -401,6 +412,20 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
+                {isScheduledRelease && track?.release_date ? (
+                  <View style={styles.releaseContainer}>
+                    <IconCalendarMonth color='accent' size='m' />
+                    <HarmonyText color='accent' strength='strong' size='m'>
+                      Releases on
+                      {' ' +
+                        moment
+                          .utc(track.release_date)
+                          .local()
+                          .format('M/D/YY @ h:mm A ') +
+                        getLocalTimezone()}
+                    </HarmonyText>
+                  </View>
+                ) : null}
                 <DetailsTileActionButtons
                   hasReposted={!!hasReposted}
                   hasSaved={!!hasSaved}

@@ -9,9 +9,9 @@ import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 
+import { IconAudioBadge } from '../core/IconAudioBadge'
 import { AppDrawer } from '../drawer/AppDrawer'
 
-import { IconAudioBadge } from './IconAudioBadge'
 import { TierText } from './TierText'
 const { getProfileUserId } = profilePageSelectors
 

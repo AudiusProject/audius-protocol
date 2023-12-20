@@ -92,3 +92,20 @@ export const createLoginDetailsPageMessages = {
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password'
 }
+
+export const selectArtstsPageMessages = {
+  header: 'Follow At Least 3 Artists',
+  description:
+    'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
+  genresLabel: 'Genre',
+  pickArtists: (genre: string) => `Pick ${genre} Artists`,
+  selected: 'Selected'
+}
+
+export const welcomeModalMessages = {
+  welcome: 'Welcome to Audius! 🎉',
+  startListening: 'Start Listening',
+  upload: 'Upload',
+  youreIn:
+    'You’re in! Discover music from our talented DJs, producers, and artists.'
+}

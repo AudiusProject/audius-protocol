@@ -1,5 +1,4 @@
 import { css } from '@emotion/native'
-import { BlurView } from '@react-native-community/blur'
 import {
   getCoverPhotoField,
   getHandleField,
@@ -8,13 +7,12 @@ import {
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import type { ImageURISource } from 'react-native'
-import { ImageBackground, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import { useSelector } from 'react-redux'
 
 import {
   Avatar,
   Flex,
+  CoverPhoto as HarmonyCoverPhoto,
   IconCamera,
   IconImage,
   IconVerified,
@@ -82,7 +80,7 @@ export const ReadOnlyAccountHeader = () => {
   const { value: handle } = useSelector(getHandleField)
   const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: displayName } = useSelector(getNameField)
-  const { value: profileImage } = useSelector(getProfileImageField)
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
   const isVerified = useSelector(getIsVerified)
 
   return (
@@ -104,42 +102,14 @@ type CoverPhotoProps = {
 
 const CoverPhoto = (props: CoverPhotoProps) => {
   const { onSelectCoverPhoto, profilePicture, coverPhoto } = props
-  const { color, cornerRadius, spacing } = useTheme()
-  const isEdit = onSelectCoverPhoto
-
-  const borderRadiusStyle = css({
-    borderTopLeftRadius: cornerRadius.m,
-    borderTopRightRadius: cornerRadius.m,
-    overflow: 'hidden'
-  })
-
-  const rootCss = css({
-    backgroundColor: color.neutral.n300,
-    height: 96
-  })
+  const { spacing } = useTheme()
 
   return (
-    <ImageBackground
-      source={coverPhoto ?? profilePicture ?? { uri: undefined }}
-      style={[rootCss, isEdit && borderRadiusStyle]}
+    <HarmonyCoverPhoto
+      profilePicture={profilePicture}
+      coverPhoto={coverPhoto}
+      topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
-      {!profilePicture && !coverPhoto ? (
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0.20)', 'rgba(0, 0, 0, 0.00)']}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 0, y: 0 }}
-          style={{ height: '100%' }}
-        />
-      ) : null}
-      {profilePicture && !coverPhoto ? (
-        <View style={borderRadiusStyle}>
-          <BlurView
-            blurType='light'
-            blurAmount={20}
-            style={[{ height: '100%' }]}
-          />
-        </View>
-      ) : null}
       {onSelectCoverPhoto ? (
         <IconImage
           style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
@@ -147,7 +117,18 @@ const CoverPhoto = (props: CoverPhotoProps) => {
           onPress={onSelectCoverPhoto}
         />
       ) : null}
-    </ImageBackground>
+    </HarmonyCoverPhoto>
+  )
+}
+
+export const ReadOnlyCoverPhotoBanner = () => {
+  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  return (
+    <CoverPhoto
+      coverPhoto={coverPhoto as ImageURISource}
+      profilePicture={profileImage as ImageURISource}
+    />
   )
 }
 
@@ -175,6 +156,11 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       ) : null}
     </Avatar>
   )
+}
+
+export const ReadOnlyProfilePicture = () => {
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  return <ProfilePicture profilePicture={profileImage as ImageURISource} />
 }
 
 type AccountDetailsProps = {

@@ -373,7 +373,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_payment_router": {
                 "task": "index_payment_router",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=1),
             },
             "index_challenges": {
                 "task": "index_challenges",

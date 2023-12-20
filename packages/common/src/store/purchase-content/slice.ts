@@ -37,7 +37,7 @@ const initialState: PurchaseContentState = {
   extraAmount: undefined,
   extraAmountPreset: undefined,
   error: undefined,
-  stage: PurchaseContentStage.START,
+  stage: PurchaseContentStage.IDLE,
   purchaseMethod: PurchaseMethod.BALANCE,
   purchaseVendor: undefined
 }

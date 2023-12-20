@@ -9,3 +9,11 @@
   text-decoration: underline !important;
   text-decoration-color: var(--primary-light-2);
 }
+
+.root path {
+  transition: fill var(--expressive);
+}
+
+.root:hover path {
+  fill: var(--primary);
+}

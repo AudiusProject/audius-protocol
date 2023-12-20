@@ -10,18 +10,19 @@ import { Transaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { isElectron } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowOnrampModal.module.css'
 
-const { transactionSucceeded } = coinflowModalUIActions
+const { transactionSucceeded, transactionCanceled } = coinflowModalUIActions
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount, serializedTransaction },
+    data: { amount, serializedTransaction, purchaseMetadata },
     isOpen,
     onClose,
     onClosed
@@ -46,6 +47,11 @@ export const CoinflowOnrampModal = () => {
     }
   }, [serializedTransaction])
 
+  const handleClose = useCallback(() => {
+    dispatch(transactionCanceled({}))
+    onClose()
+  }, [dispatch, onClose])
+
   const handleSuccess = useCallback(() => {
     dispatch(transactionSucceeded({}))
     onClose()
@@ -60,17 +66,20 @@ export const CoinflowOnrampModal = () => {
       zIndex={zIndex.COINFLOW_ONRAMP_MODAL}
       isFullscreen
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onClosed={onClosed}
     >
       {showContent ? (
         <CoinflowPurchase
           transaction={transaction}
           wallet={adapter.wallet}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           onSuccess={handleSuccess}
           merchantId={MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
+          disableGooglePay={isElectron()}
+          disableApplePay={isElectron()}
           blockchain='solana'
           amount={amount}
         />

@@ -32,7 +32,7 @@ export const initialState: BasicModalsState = {
   EditTrack: { isOpen: false },
   SignOutConfirmation: { isOpen: false },
   Overflow: { isOpen: false },
-  AddToPlaylist: { isOpen: false },
+  AddToCollection: { isOpen: false },
   DeletePlaylistConfirmation: { isOpen: false },
   DuplicateAddConfirmation: { isOpen: false },
   FeatureFlagOverride: { isOpen: false },

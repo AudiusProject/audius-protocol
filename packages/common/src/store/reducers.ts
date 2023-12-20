@@ -86,9 +86,9 @@ import {
   TransactionDetailsState,
   withdrawUSDCReducer
 } from './ui'
-import addToPlaylistReducer, {
-  AddToPlaylistState
-} from './ui/add-to-playlist/reducer'
+import addToCollectionReducer, {
+  AddToCollectionState
+} from './ui/add-to-collection/reducer'
 import buyAudioReducer from './ui/buy-audio/slice'
 import coinflowModalReducer from './ui/coinflow-modal/slice'
 import collectibleDetailsReducer, {
@@ -182,7 +182,7 @@ export const reducers = (storage: Storage) => ({
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
-    addToPlaylist: addToPlaylistReducer,
+    addToCollection: addToCollectionReducer,
     buyAudio: buyAudioReducer,
 
     relatedArtists: relatedArtistsReducer,
@@ -312,7 +312,7 @@ export type CommonState = {
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
-    addToPlaylist: AddToPlaylistState
+    addToCollection: AddToCollectionState
     changePassword: ChangePasswordState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState

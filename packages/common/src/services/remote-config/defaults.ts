@@ -47,7 +47,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP]: 0,
   [IntKeys.CACHE_ENTRY_TTL]: DEFAULT_ENTRY_TTL,
   [IntKeys.HANDLE_VERIFICATION_TIMEOUT_MILLIS]:
-    DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS
+    DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS,
+  [IntKeys.COINFLOW_MAXIMUM_CENTS]: 1000
 }
 
 export const remoteConfigStringDefaults: {
@@ -90,7 +91,6 @@ export const remoteConfigStringDefaults: {
   [StringKeys.STRIPE_ALLOWED_COUNTRIES_2_LETTER]: '',
   [StringKeys.AUDIO_FEATURES_DEGRADED_TEXT]: null,
   [StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS]: '200,500,1000',
-  [StringKeys.COINFLOW_ADD_FUNDS_PRESET_CENT_AMOUNTS]: '200,500,1000',
   [StringKeys.EXPLORE_PREMIUM_DENIED_USERS]: ''
 }
 

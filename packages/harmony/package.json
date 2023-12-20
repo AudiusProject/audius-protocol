@@ -1,6 +1,7 @@
 {
   "name": "@audius/harmony",
-  "version": "0.0.12",
+  "version": "0.0.13",
+  "private": true,
   "description": "The Audius Design System",
   "license": "ISC",
   "author": "Audius",

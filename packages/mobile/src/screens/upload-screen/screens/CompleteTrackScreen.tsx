@@ -8,7 +8,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { EditTrackScreen } from '../../edit-track-screen'
 import type { UploadParamList, UploadRouteProp } from '../types'
 
-const messages = {
+export const messages = {
   title: 'Complete Track',
   done: 'Upload Track'
 }

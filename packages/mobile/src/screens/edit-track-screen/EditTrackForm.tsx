@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { UploadTrack } from '@audius/common'
+import { type UploadTrack } from '@audius/common'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -16,6 +16,7 @@ import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
+import { messages as completeTrackMessage } from '../../screens/upload-screen'
 import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer, FormScreen } from './components'
@@ -26,6 +27,7 @@ import {
   TagField,
   SubmenuList,
   RemixSettingsField,
+  ReleaseDateField,
   AdvancedOptionsField,
   AccessAndSaleField
 } from './fields'
@@ -139,6 +141,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <DescriptionField />
               <SubmenuList removeBottomDivider>
                 <AccessAndSaleField />
+                {completeTrackMessage.title === props.title ? (
+                  <ReleaseDateField />
+                ) : (
+                  <></>
+                )}
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>

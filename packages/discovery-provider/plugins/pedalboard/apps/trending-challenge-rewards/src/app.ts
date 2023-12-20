@@ -137,8 +137,13 @@ const canSuccessfullyAttest = async (
     challengeId,
     oracleEthAddress
   )
-  const res = await fetch(url)
-  return res && res.ok
+  try {
+      const res = await fetch(url)
+      return res && res.ok;
+  } catch (e) {
+      console.warn("Can't attest", e, url)
+      return false
+  }
 }
 
 const makeAttestationEndpoint = (
@@ -218,7 +223,7 @@ const getAllChallenges = async (
     // select again if needed
     if (!isValidNodeSet) {
       possibleNodeSet = []
-      console.log('Node set not valid. Selecting nodes...')
+      console.log('Node set not valid. Selecting nodes...', possibleNodeSet)
       for (const nodeGroup of groups.values()) {
         if (possibleNodeSet.length === 3) {
           console.log(`Got 3 nodes!: ${JSON.stringify(possibleNodeSet)}`)
@@ -248,9 +253,9 @@ const getAllChallenges = async (
     // did we succeed?
     if (possibleNodeSet.length !== 3) {
       console.log(
-        `Could not find a valid node set for challenge: ${JSON.stringify(
-          challenge
-        )}, skipping.`
+        `Could not find a valid node set for challenge: ${
+          challenge.specifier
+        }, skipping.`, possibleNodeSet
       )
       impossibleChallenges.push(challenge)
       // reset it for next time

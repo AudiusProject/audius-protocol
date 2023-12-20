@@ -1,6 +1,6 @@
-export * as addToPlaylistUISelectors from './add-to-playlist/selectors'
-export * as addToPlaylistUIActions from './add-to-playlist/actions'
-export { default as addToPlaylistUIReducer } from './add-to-playlist/reducer'
+export * as addToCollectionUISelectors from './add-to-collection/selectors'
+export * as addToCollectionUIActions from './add-to-collection/actions'
+export { default as addToCollectionUIReducer } from './add-to-collection/reducer'
 
 export * as relatedArtistsUISelectors from './related-artists/selectors'
 export {

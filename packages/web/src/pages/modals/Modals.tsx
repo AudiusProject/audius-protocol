@@ -4,7 +4,7 @@ import { Client } from '@audius/common'
 import type { Modals as ModalTypes } from '@audius/common'
 
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
-import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
+import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
@@ -78,7 +78,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   EditFolder: EditFolderModal,
   EditPlaylist: EditPlaylistModal,
   EditTrack: EditTrackModal,
-  AddToPlaylist: AddToPlaylistModal,
+  AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
