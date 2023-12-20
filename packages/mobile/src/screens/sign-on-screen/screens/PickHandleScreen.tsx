@@ -21,7 +21,7 @@ import {
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
 import type { SignUpScreenParamList } from '../types'
@@ -59,7 +59,9 @@ const SocialMediaSection = ({
           {messages.claimHandleDescription}
         </Text>
       </Flex>
-      <SocialMediaLoginOptions
+      <SocialMediaSignUpButtons
+        onStart={() => {}}
+        onError={() => {}}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size='m'>

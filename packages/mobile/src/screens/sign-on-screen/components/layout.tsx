@@ -118,7 +118,7 @@ export const Heading = (props: HeadingProps) => {
 
 type ReadOnlyFieldProps = {
   label: string
-  value: string
+  value: string | ReactNode
 }
 
 export const ReadOnlyField = (props: ReadOnlyFieldProps) => {

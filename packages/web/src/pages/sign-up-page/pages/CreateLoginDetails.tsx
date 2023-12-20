@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { createLoginDetailsPageMessages as messages } from '@audius/common'
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -20,15 +21,6 @@ import { CompletionChecklist } from '../components/CompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { loginDetailsSchema } from '../utils/loginDetailsSchema'
-
-const messages = {
-  title: 'Create Login Details',
-  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
-  emailLabel: 'Email',
-  handleLabel: 'Handle',
-  passwordLabel: 'Password',
-  confirmPasswordLabel: 'Confirm Password'
-}
 
 export type CreateLoginDetailsValues = {
   email: string

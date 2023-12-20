@@ -7,4 +7,6 @@ export type SignUpScreenParamList = {
   FinishProfile: undefined
   SelectGenre: undefined
   SelectArtists: undefined
+  ReviewHandle: undefined
+  CreateLoginDetails: undefined
 }

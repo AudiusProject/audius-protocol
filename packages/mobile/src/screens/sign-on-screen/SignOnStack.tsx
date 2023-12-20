@@ -2,9 +2,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useScreenOptions } from 'app/app/navigation'
 
+import { CreateLoginDetailsScreen } from './screens/CreateLoginDetailsScreen'
 import { CreatePasswordScreen } from './screens/CreatePasswordScreen'
 import { FinishProfileScreen } from './screens/FinishProfileScreen'
 import { PickHandleScreen } from './screens/PickHandleScreen'
+import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistsScreen'
 import { SelectGenreScreen } from './screens/SelectGenreScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
@@ -26,6 +28,11 @@ export const SignOnStack = () => {
       <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
       <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
       <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
+      <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
+      <Stack.Screen
+        name='CreateLoginDetails'
+        component={CreateLoginDetailsScreen}
+      />
     </Stack.Navigator>
   )
 }

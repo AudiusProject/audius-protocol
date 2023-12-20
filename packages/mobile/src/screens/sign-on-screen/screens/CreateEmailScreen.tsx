@@ -7,7 +7,11 @@ import {
   createEmailPageMessages as messages
 } from '@audius/common'
 import { css } from '@emotion/native'
-import { resetSignOn, setValueField } from 'common/store/pages/signon/actions'
+import {
+  resetSignOn,
+  setLinkedSocialOnFirstPage,
+  setValueField
+} from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getLinkedSocialOnFirstPage
@@ -21,7 +25,8 @@ import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
+import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
 import { Hint } from '../components/temp-harmony/Hint'
@@ -61,9 +66,9 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
-    handleErrorSocialMediaLogin
+    handleErrorSocialMediaLogin,
+    setIsWaitingForSocialLogin
   } = useSocialMediaLoader({
-    // TODO: what does this do?
     resetAction: resetSignOn,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
@@ -71,16 +76,15 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const handleCompleteSocialMediaLogin = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
-      // dispatch(setLinkedSocialOnFirstPage(true))
+      setIsWaitingForSocialLogin(false)
+      dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
-      console.log(requiresReview)
-      // navigate(
-      //   requiresReview
-      //     ? SIGN_UP_REVIEW_HANDLE_PAGE
-      //     : SIGN_UP_CREATE_LOGIN_DETAILS
-      // )
+
+      navigation.navigate(
+        requiresReview ? 'ReviewHandle' : 'CreateLoginDetails'
+      )
     },
-    [dispatch]
+    [dispatch, navigation, setIsWaitingForSocialLogin]
   )
 
   return (
@@ -91,6 +95,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     >
       {({ handleSubmit, errors }) => (
         <>
+          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
           <Heading
             heading={messages.title}
             description={
@@ -132,7 +137,8 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <SocialMediaLoginOptions
+
+            <SocialMediaSignUpButtons
               onError={handleErrorSocialMediaLogin}
               onStart={handleStartSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}

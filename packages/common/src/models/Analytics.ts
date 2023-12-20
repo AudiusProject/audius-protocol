@@ -465,7 +465,7 @@ type CreateAccountCompleteTwitter = {
 }
 type CreateAccountStartInstagram = {
   eventName: Name.CREATE_ACCOUNT_START_INSTAGRAM
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM

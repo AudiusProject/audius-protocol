@@ -33,6 +33,7 @@ export const useSocialMediaLoader = ({
   return {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
-    handleErrorSocialMediaLogin
+    handleErrorSocialMediaLogin,
+    setIsWaitingForSocialLogin
   }
 }
