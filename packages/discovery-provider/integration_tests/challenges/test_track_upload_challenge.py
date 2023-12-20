@@ -48,6 +48,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today - timedelta(days=100),
         updated_at=today - timedelta(days=100),
+        release_date=today - timedelta(days=100),
     )
     track2 = Track(
         blockhash="0x2",
@@ -62,6 +63,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today - timedelta(days=1),
         updated_at=today - timedelta(days=1),
+        release_date=today - timedelta(days=1),
     )
     track3 = Track(
         blockhash="0x3",
@@ -76,6 +78,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today,
         updated_at=today,
+        release_date=today,
     )
     track4 = Track(
         blockhash="0x3",
@@ -90,6 +93,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today,
         updated_at=today,
+        release_date=today,
     )
 
     unlisted_track = Track(
@@ -105,6 +109,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today,
         updated_at=today,
+        release_date=today,
     )
 
     stem = Track(
@@ -120,6 +125,7 @@ def test_track_upload_challenge(app):
         is_delete=False,
         created_at=today,
         updated_at=today,
+        release_date=today,
         stem_of={"parent_track_id": 4, "category": "bass"},
     )
 
