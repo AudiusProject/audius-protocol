@@ -6,12 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"os"
 
 	_ "embed"
-
-	"gocloud.dev/blob"
-	"golang.org/x/exp/slog"
 )
 
 //go:embed delist_statuses.sql
@@ -30,7 +26,7 @@ var mediorumMigrationTable = `
 	);
 `
 
-func Migrate(db *sql.DB, bucket *blob.Bucket, myHost string) {
+func Migrate(db *sql.DB, myHost string) {
 	mustExec(db, mediorumMigrationTable)
 
 	runMigration(db, delistStatusesDDL)
@@ -68,28 +64,4 @@ func mustExec(db *sql.DB, ddl string, va ...interface{}) {
 func md5string(s string) string {
 	hash := md5.Sum([]byte(s))
 	return hex.EncodeToString(hash[:])
-}
-
-func logAndWriteToFile(message string, fileName string) {
-	dir := "/tmp/mediorum"
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755)
-	}
-	filePath := fmt.Sprintf("/tmp/mediorum/%s", fileName)
-
-	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		slog.Error(fmt.Sprintf("Error opening %s", fileName), "err", err)
-		return
-	}
-	defer f.Close()
-
-	slog.Info(message)
-
-	if _, err := f.WriteString(message + "\n"); err != nil {
-		slog.Error(fmt.Sprintf("Error writing to %s", fileName), "err", err)
-		return
-	}
-
-	f.Sync()
 }

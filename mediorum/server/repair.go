@@ -213,6 +213,9 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 		return nil
 	}
 
+	// wait 100ms to avoid too many IOPS if using disk or bandwidth if using cloud storage
+	time.Sleep(time.Millisecond * 100)
+
 	tracker.Counters["total_checked"]++
 
 	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
