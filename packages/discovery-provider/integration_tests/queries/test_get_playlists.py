@@ -96,7 +96,6 @@ def test_entities():
                 "title": "track 2",
                 "owner_id": 1287289,
                 "is_current": True,
-                "release_date": datetime(2018, 5, 18),
                 "created_at": datetime(2018, 5, 18),
             },
             {
@@ -113,7 +112,7 @@ def test_entities():
                 "title": "track 4",
                 "owner_id": 1287289,
                 "is_current": True,
-                "release_date": datetime(2018, 5, 19),
+                "release_date": "",
                 "created_at": datetime(2018, 5, 19),
                 "is_unlisted": True,
             },

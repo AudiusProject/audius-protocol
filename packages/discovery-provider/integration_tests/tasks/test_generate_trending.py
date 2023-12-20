@@ -68,7 +68,6 @@ def setup_trending(db, date):
                 genre=track_meta.get("genre", ""),
                 updated_at=track_meta.get("updated_at", date),
                 created_at=track_meta.get("created_at", date),
-                release_date=track_meta.get("release_date", date),
                 is_unlisted=track_meta.get("is_unlisted", False),
             )
 

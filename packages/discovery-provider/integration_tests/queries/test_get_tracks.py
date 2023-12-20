@@ -21,7 +21,6 @@ def populate_tracks(db):
                 "track_id": 2,
                 "title": "track 2",
                 "owner_id": 1287289,
-                "release_date": datetime(2018, 5, 18),
                 "created_at": datetime(2018, 5, 18),
             },
             {
@@ -36,14 +35,14 @@ def populate_tracks(db):
                 "track_id": 4,
                 "title": "track 4",
                 "owner_id": 1287289,
-                "release_date": datetime(2018, 5, 19),
+                "release_date": None,
                 "created_at": datetime(2018, 5, 19),
             },
             {
                 "track_id": 5,
                 "title": "track 5",
                 "owner_id": 1287289,
-                "release_date": datetime(2018, 5, 20),
+                "release_date": None,
                 "created_at": datetime(2018, 5, 20),
             },
             {
@@ -57,14 +56,14 @@ def populate_tracks(db):
                 "track_id": 7,
                 "title": "track 7",
                 "owner_id": 4,
-                "release_date": datetime(2018, 5, 19),
+                "release_date": None,
                 "created_at": datetime(2018, 5, 19),
             },
             {
                 "track_id": 8,
                 "title": "track 8",
                 "owner_id": 4,
-                "release_date": datetime(2018, 5, 20),
+                "release_date": None,
                 "created_at": datetime(2018, 5, 20),
             },
             {
@@ -117,7 +116,7 @@ def populate_tracks(db):
                 "track_id": 15,
                 "title": "track 15",
                 "owner_id": 1287289,
-                "release_date": datetime(2017, 5, 19),
+                "release_date": None,
                 "created_at": datetime(2017, 5, 19),
             },
             {
