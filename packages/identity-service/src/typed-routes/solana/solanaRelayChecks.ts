@@ -24,7 +24,8 @@ import {
   isCreateAssociatedTokenAccountIdempotentInstruction
 } from './programs/associatedToken'
 import {
-  ClaimableTokensProgram,
+  decodeClaimableTokenInstruction,
+  isTransferClaimableTokenInstruction,
   decodeRewardManagerInstruction
 } from '@audius/spl'
 import config from '../../config'
@@ -208,8 +209,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   user?: { blockchainUserId?: number; handle?: string },
   socialProofEnabled = false
 ) => {
-  const decodedInstruction =
-    ClaimableTokensProgram.decodeInstruction(instruction)
+  const decodedInstruction = decodeClaimableTokenInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
   if (
     !authority.equals(claimableTokenAuthorities[usdcMintAddress]) &&
@@ -227,7 +227,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   // https://linear.app/audius/issue/PAY-1941/clean-up-or-re-add-social-proof
   if (
     socialProofEnabled &&
-    ClaimableTokensProgram.isTransferInstruction(decodedInstruction)
+    isTransferClaimableTokenInstruction(decodedInstruction)
   ) {
     if (!user) {
       throw new InvalidRelayInstructionError(

@@ -67,13 +67,3 @@ export const UnsubscribeFromUserSchema = z
 export type UnsubscribeFromUserRequest = z.input<
   typeof UnsubscribeFromUserSchema
 >
-
-export const SendTipSchema = z
-  .object({
-    amount: z.number().positive().int(),
-    senderUserId: HashId,
-    receiverUserId: HashId
-  })
-  .strict()
-
-export type SendTipRequest = z.input<typeof SendTipSchema>

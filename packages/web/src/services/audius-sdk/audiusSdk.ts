@@ -6,7 +6,6 @@ import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 import { makeEntityManagerInstance } from 'services/entity-manager'
 
 import { auth } from './auth'
-import { solanaService } from './solana'
 
 declare global {
   interface Window {
@@ -34,8 +33,7 @@ const initSdk = async () => {
       discoveryNodeSelector,
       entityManager: makeEntityManagerInstance(discoveryNodeSelector),
       auth,
-      storageNodeSelector: await getStorageNodeSelector(),
-      solana: solanaService
+      storageNodeSelector: await getStorageNodeSelector()
     }
   })
   console.debug('[audiusSdk] SDK initted.')
