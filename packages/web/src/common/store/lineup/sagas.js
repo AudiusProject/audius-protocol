@@ -526,16 +526,16 @@ function* updateLineupOrder(lineupPrefix, sourceSelector, action) {
 
 function* refreshInView(lineupActions, lineupSelector, action) {
   const lineup = yield select(lineupSelector)
-  if (lineup.inView) {
-    yield put(
-      lineupActions.fetchLineupMetadatas(
-        0,
-        action.limit || lineup.total,
-        false,
-        action.payload
-      )
+  const { type: _ignoredType, limit, overwrite, payload, ...other } = action
+  yield put(
+    lineupActions.fetchLineupMetadatas(
+      0,
+      limit || lineup.total,
+      overwrite,
+      payload,
+      other
     )
-  }
+  )
 }
 
 const keepUidAndKind = (entry) => ({
@@ -702,7 +702,7 @@ export class LineupSagas {
   watchRefreshInView = () => {
     const instance = this
     return function* () {
-      yield takeLatest(
+      yield takeEvery(
         baseLineupActions.addPrefix(
           instance.prefix,
           baseLineupActions.REFRESH_IN_VIEW
