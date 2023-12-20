@@ -407,8 +407,8 @@ export const TrackScreenDetailsTile = ({
       isOwner
         ? null
         : user.does_current_user_follow
-          ? OverflowAction.UNFOLLOW_ARTIST
-          : OverflowAction.FOLLOW_ARTIST,
+        ? OverflowAction.UNFOLLOW_ARTIST
+        : OverflowAction.FOLLOW_ARTIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -476,8 +476,8 @@ export const TrackScreenDetailsTile = ({
         {isRemix
           ? messages.remix
           : isNewPodcastControlsEnabled && isPodcast
-            ? messages.podcast
-            : messages.track}
+          ? messages.podcast
+          : messages.track}
       </Text>
     )
   }
