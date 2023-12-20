@@ -203,23 +203,23 @@ def test_batch_access(app):
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "gated_content_id": non_stream_gated_track_entity["track_id"],
-                        "gated_content_type": "track",
+                        "content_id": non_stream_gated_track_entity["track_id"],
+                        "content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "gated_content_id": stream_gated_track_entity_1["track_id"],
-                        "gated_content_type": "track",
+                        "content_id": stream_gated_track_entity_1["track_id"],
+                        "content_type": "track",
                     },
                     {
                         "user_id": user_entity_3["user_id"],
-                        "gated_content_id": stream_gated_track_entity_2["track_id"],
-                        "gated_content_type": "track",
+                        "content_id": stream_gated_track_entity_2["track_id"],
+                        "content_type": "track",
                     },
                     {
                         "user_id": user_entity_2["user_id"],
-                        "gated_content_id": stream_gated_track_entity_3["track_id"],
-                        "gated_content_type": "track",
+                        "content_id": stream_gated_track_entity_3["track_id"],
+                        "content_type": "track",
                     },
                 ],
             )
