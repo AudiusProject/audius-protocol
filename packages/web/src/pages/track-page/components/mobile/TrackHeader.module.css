@@ -80,7 +80,7 @@
   width: 100%;
 }
 
-.trackHeader>span {
+.trackHeader > span {
   width: 100%;
 }
 
@@ -257,9 +257,11 @@
 }
 
 .badgeAi {
-  background: linear-gradient(180deg,
+  background: linear-gradient(
+      180deg,
       var(--ai-primary) 0%,
-      var(--ai-secondary) 100%),
+      var(--ai-secondary) 100%
+    ),
     var(--ai-primary);
   width: 100%;
   display: flex;
