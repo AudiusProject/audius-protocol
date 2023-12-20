@@ -1508,7 +1508,6 @@ CREATE TABLE public.tracks (
     is_playlist_upload boolean DEFAULT false NOT NULL,
     duration integer DEFAULT 0,
     ai_attribution_user_id integer
-    parent_album_ids number[]
 );
 
 

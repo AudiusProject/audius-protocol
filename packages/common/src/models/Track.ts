@@ -199,6 +199,7 @@ export type TrackMetadata = {
   field_visibility?: FieldVisibility
   listenCount?: number
   permalink: string
+  parent_album_ids: number[]
 
   // Optional Fields
   is_playlist_upload?: boolean

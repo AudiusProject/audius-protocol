@@ -224,6 +224,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
                 ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
+                parent_album_ids=track_meta.get("parent_album_ids", None),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):

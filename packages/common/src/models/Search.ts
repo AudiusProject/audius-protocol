@@ -94,6 +94,7 @@ export type SearchTrack = TrackImage & {
   followee_favorites: null
   user_id: number
   permalink: string
+  parent_album_ids: number[]
   _remixes: undefined
   _remixes_count: undefined
 }
