@@ -20,7 +20,7 @@ import type { AUTH_RESPONSE_MESSAGE_TYPE } from './types'
 
 export type TwitterInfo = {
   uuid: any
-  profile: TwitterProfile
+  profile: any
   profileImage: any
   profileBanner: any
   requiresUserReview: any
@@ -29,7 +29,7 @@ export type TwitterInfo = {
 
 export type InstagramInfo = {
   uuid: any
-  profile: InstagramProfile
+  profile: any
   profileImage: any
   requiresUserReview: any
   instagramId?: any
