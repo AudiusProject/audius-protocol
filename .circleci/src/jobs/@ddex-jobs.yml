@@ -1,0 +1,39 @@
+ddex-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/ruby:2.6-node
+
+  steps:
+    - checkout
+
+    - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > packages/ddex/.npmrc
+
+    # Download and cache dependencies
+    - restore_cache:
+        keys:
+          - dependency-cache-{{ checksum "packages/ddex/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dependency-cache-
+
+    - run:
+        name: npm ci
+        command: |
+          cd packages/ddex 
+          npm ci
+    - save_cache:
+        key: dependency-cache-{{ checksum "packages/ddex/package.json" }}
+        paths:
+          - packages/ddex/node_modules
+
+    # Lint
+    - run:
+        name: lint
+        command: |
+          cd packages/ddex 
+          npm run lint
+
+    # Persist node modules
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - packages/ddex/node_modules
