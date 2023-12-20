@@ -37,7 +37,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       componentName: 'FilterButton'
     })
     const selectedOption = options.find((option) => option.value === selection)
-    const selectedLabel = selectedOption?.label ?? selectedOption?.value ?? ''
+    const selectedLabel = selectedOption?.label ?? selectedOption?.value
 
     const [isOpen, setIsOpen] = useState(false)
 
