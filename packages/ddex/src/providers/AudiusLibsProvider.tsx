@@ -1,4 +1,3 @@
-// @ts-expect-error (TS2691)
 import type { AudiusLibs as AudiusLibsType } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
 import {
   ReactNode,
@@ -26,6 +25,7 @@ export const AudiusLibsProvider = ({ children }: { children: ReactNode }) => {
   const [isReadOnly, setIsReadOnly] = useState(true);
   const envVars = useEnvVars();
 
+  // @ts-expect-error (TS2741). This is only here for debugging and should eventually be removed
   window.audiusLibs = audiusLibs;
 
   const initLibraries = async () => {
@@ -93,6 +93,7 @@ const initLibsWithoutAccount = async (
     mintAddress: envVars.wAudioMintAddress,
     usdcMintAddress: envVars.usdcMintAddress,
     solanaTokenAddress: envVars.solanaTokenProgramAddress,
+    // @ts-expect-error (TS2322) Type 'string' is not assignable to type 'PublicKey'. This happens because libs has a bug where it sets the wrong type.
     feePayerAddress: envVars.solanaFeePayerAddress,
     claimableTokenProgramAddress: envVars.claimableTokenProgramAddress,
     rewardsManagerProgramId: envVars.rewardsManagerProgramId,
@@ -115,6 +116,7 @@ const initLibsWithoutAccount = async (
     isDebug: envVars.env === "staging" || envVars.env === "development",
   };
 
+  // @ts-expect-error (TS2345). It's complaining about not passing all the config args, but they're optional so we can ignore
   const audiusLibs = new AudiusLibs(audiusLibsConfig);
   await audiusLibs.init();
   return audiusLibs;

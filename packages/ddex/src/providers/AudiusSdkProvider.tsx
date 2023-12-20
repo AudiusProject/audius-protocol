@@ -1,7 +1,6 @@
 import type {
   AudiusSdk as AudiusSdkType,
   ServicesConfig,
-// @ts-expect-error (TS2691)
 } from "@audius/sdk/dist/sdk/index.d.ts";
 import { useAudiusLibs } from "../providers/AudiusLibsProvider";
 import {
