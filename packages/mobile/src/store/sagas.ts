@@ -3,7 +3,7 @@ import {
   chatSagas,
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
@@ -128,7 +128,7 @@ export default function* rootSaga() {
     ...solanaSagas(),
 
     // Premium content
-    ...premiumContentSagas(),
+    ...gatedContentSagas(),
     ...purchaseContentSagas(),
     ...buyCryptoSagas(),
     ...buyUSDCSagas(),

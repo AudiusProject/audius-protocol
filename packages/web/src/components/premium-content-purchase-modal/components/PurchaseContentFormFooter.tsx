@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentError,
   PurchaseContentStage,
   formatPrice,
@@ -61,7 +61,7 @@ type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
   'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
 > & {
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
   onViewTrackClicked: () => void
 }
 

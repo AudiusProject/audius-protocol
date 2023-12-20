@@ -7,7 +7,7 @@ from sqlalchemy.sql.elements import not_, or_
 
 from src.gated_content.constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
 )
 from src.models.tracks.track import Track
 from src.models.tracks.track_trending_score import TrackTrendingScore
@@ -43,7 +43,7 @@ def generate_unpopulated_trending(
     genre,
     time_range,
     strategy,
-    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    exclude_gated=SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     usdc_purchase_only=False,
     limit=TRENDING_TRACKS_LIMIT,
@@ -80,11 +80,11 @@ def generate_unpopulated_trending(
         track_scores = list(
             filter(lambda t: t["track_id"] in usdc_purchase_track_id_set, track_scores)
         )
-    # If exclude_premium is true, then filter out track ids
+    # If exclude_gated is true, then filter out track ids
     # belonging to gated tracks before applying the limit.
-    elif exclude_premium:
+    elif exclude_gated:
         ids = [track["track_id"] for track in track_scores]
-        non_premium_track_ids = (
+        non_stream_gated_track_ids = (
             session.query(Track.track_id)
             .filter(
                 Track.track_id.in_(ids),
@@ -95,9 +95,13 @@ def generate_unpopulated_trending(
             )
             .all()
         )
-        non_premium_track_id_set = set(map(lambda t: t[0], non_premium_track_ids))
+        non_stream_gated_track_id_set = set(
+            map(lambda t: t[0], non_stream_gated_track_ids)
+        )
         track_scores = list(
-            filter(lambda t: t["track_id"] in non_premium_track_id_set, track_scores)
+            filter(
+                lambda t: t["track_id"] in non_stream_gated_track_id_set, track_scores
+            )
         )
     elif exclude_collectible_gated:
         ids = [track["track_id"] for track in track_scores]
@@ -134,7 +138,7 @@ def generate_unpopulated_trending(
 
     # Get unpopulated metadata
     track_ids = [track["track_id"] for track in sorted_track_scores]
-    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_gated=exclude_gated)
 
     return (tracks, track_ids)
 
@@ -144,7 +148,7 @@ def generate_unpopulated_trending_from_mat_views(
     genre,
     time_range,
     strategy,
-    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    exclude_gated=SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     usdc_purchase_only=False,
     limit=TRENDING_TRACKS_LIMIT,
@@ -196,9 +200,9 @@ def generate_unpopulated_trending_from_mat_views(
             .limit(limit)
             .all()
         )
-    # If exclude_premium is true, then filter out track ids belonging to
+    # If exclude_gated is true, then filter out track ids belonging to
     # gated tracks before applying the limit.
-    elif exclude_premium:
+    elif exclude_gated:
         trending_track_ids_subquery = trending_track_ids_query.subquery()
         trending_track_ids = (
             session.query(
@@ -264,7 +268,7 @@ def generate_unpopulated_trending_from_mat_views(
 
     # Get unpopulated metadata
     track_ids = [track_id[0] for track_id in trending_track_ids]
-    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_gated=exclude_gated)
 
     return (tracks, track_ids)
 
@@ -274,7 +278,7 @@ def make_generate_unpopulated_trending(
     genre: Optional[str],
     time_range: str,
     strategy: BaseTrendingStrategy,
-    exclude_premium: bool,
+    exclude_gated: bool,
     usdc_purchase_only=False,
 ):
     """Wraps a call for use in `use_redis_cache`, which
@@ -287,7 +291,7 @@ def make_generate_unpopulated_trending(
                 genre=genre,
                 time_range=time_range,
                 strategy=strategy,
-                exclude_premium=exclude_premium,
+                exclude_gated=exclude_gated,
                 usdc_purchase_only=usdc_purchase_only,
             )
         return generate_unpopulated_trending(
@@ -295,7 +299,7 @@ def make_generate_unpopulated_trending(
             genre=genre,
             time_range=time_range,
             strategy=strategy,
-            exclude_premium=exclude_premium,
+            exclude_gated=exclude_gated,
             usdc_purchase_only=usdc_purchase_only,
         )
 

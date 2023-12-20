@@ -15,7 +15,7 @@ import {
   reachabilitySelectors,
   Nullable,
   FeatureFlags,
-  premiumContentSelectors,
+  gatedContentSelectors,
   QueryParams,
   Genre,
   doesUserHaveTrackAccess,
@@ -61,7 +61,7 @@ const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getGatedTrackSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
@@ -86,9 +86,9 @@ export function* watchPlay() {
       const track = yield* select(getTrack, { id: trackId })
       const isReachable = yield* select(getIsReachable)
       if (!track) return
-      if (track.is_premium && !track.premium_content_signature) {
+      if (track.is_stream_gated && !track.stream_signature) {
         console.warn(
-          'Should have signature for premium track to reduce potential DN latency'
+          'Should have signature for gated track to reduce potential DN latency'
         )
       }
 
@@ -106,13 +106,11 @@ export function* watchPlay() {
       const encodedTrackId = encodeHashId(trackId)
 
       let queryParams: QueryParams = {}
-      const premiumTrackSignatureMap = yield* select(
-        getPremiumTrackSignatureMap
-      )
-      const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
+      const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
+      const streamSignature = streamSignatureMap[track.track_id]
       queryParams = yield* call(getQueryParams, {
         audiusBackendInstance,
-        premiumContentSignature
+        streamSignature
       })
 
       let trackDuration = track.duration

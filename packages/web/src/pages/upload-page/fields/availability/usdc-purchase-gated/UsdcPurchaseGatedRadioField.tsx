@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   FeatureFlags,
   Name,
-  PremiumConditions,
+  StreamConditions,
   TrackAvailabilityType,
   useAccessAndRemixSettings,
   useFeatureFlag
@@ -32,14 +32,14 @@ const messages = {
 type UsdcPurchaseGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
-  initialPremiumConditions?: PremiumConditions
+  initialStreamConditions?: StreamConditions
   isInitiallyUnlisted?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
+  const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
     props
 
   const handleClickWaitListLink = useCallback(() => {
@@ -53,7 +53,7 @@ export const UsdcPurchaseGatedRadioField = (
   const { noUsdcGate } = useAccessAndRemixSettings({
     isUpload: !!isUpload,
     isRemix,
-    initialPremiumConditions: initialPremiumConditions ?? null,
+    initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted
   })
   const disabled = noUsdcGate || !isUsdcUploadEnabled

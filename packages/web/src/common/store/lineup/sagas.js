@@ -14,7 +14,7 @@ import {
   queueSelectors,
   getContext,
   FeatureFlags,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   doesUserHaveTrackAccess,
   StringKeys,
   premiumTracksPageLineupActions,
@@ -77,8 +77,8 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
       // Remove this when removing the feature flags
       if (
         !isUSDCGatedContentEnabled &&
-        metadata.is_premium &&
-        isPremiumContentUSDCPurchaseGated(metadata.premium_conditions)
+        metadata.is_stream_gated &&
+        isContentUSDCPurchaseGated(metadata.stream_conditions)
       ) {
         return null
       }
@@ -87,8 +87,8 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
       // https://linear.app/audius/issue/PAY-2085/update-whitelist-of-artists-to-feature-on-explore-premium-tracks-page
       if (
         lineupPrefix === premiumTracksPageLineupActions.prefix &&
-        metadata.is_premium &&
-        isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
+        metadata.is_stream_gated &&
+        isContentUSDCPurchaseGated(metadata.stream_conditions) &&
         deniedHandles.includes(users[metadata.owner_id].handle)
       ) {
         return null
@@ -382,7 +382,7 @@ function* play(lineupActions, lineupSelector, prefix, action) {
 
   // If preview isn't forced, check for track acccess and switch to preview
   // if the user doesn't have access but the track is previewable
-  if (!isPreview && requestedPlayTrack?.is_premium) {
+  if (!isPreview && requestedPlayTrack?.is_stream_gated) {
     const hasAccess = yield call(doesUserHaveTrackAccess, requestedPlayTrack)
     isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
   }

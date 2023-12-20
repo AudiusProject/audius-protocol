@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, StreamConditions } from '@audius/common'
 import {
   collectiblesSelectors,
-  isPremiumContentCollectibleGated
+  isContentCollectibleGated
 } from '@audius/common'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
@@ -142,7 +142,7 @@ export const CollectibleGatedAvailability = ({
   selected,
   disabled = false,
   disabledContent = false,
-  previousPremiumConditions
+  previousStreamConditions
 }: TrackAvailabilitySelectionProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -173,11 +173,11 @@ export const CollectibleGatedAvailability = ({
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
-  const [{ value: premiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: streamConditions }] =
+    useField<Nullable<StreamConditions>>('stream_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
-    isPremiumContentCollectibleGated(previousPremiumConditions)
-      ? previousPremiumConditions.nft_collection
+    isContentCollectibleGated(previousStreamConditions)
+      ? previousStreamConditions.nft_collection
       : undefined
   )
 
@@ -186,8 +186,8 @@ export const CollectibleGatedAvailability = ({
     if (selected) {
       setTrackAvailabilityFields(
         {
-          is_premium: true,
-          premium_conditions: { nft_collection: selectedNFTCollection },
+          is_stream_gated: true,
+          stream_conditions: { nft_collection: selectedNFTCollection },
           'field_visibility.remixes': false
         },
         true
@@ -197,10 +197,10 @@ export const CollectibleGatedAvailability = ({
 
   // Update nft collection gate when nft collection selection changes
   useEffect(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
-      setSelectedNFTCollection(premiumConditions.nft_collection)
+    if (isContentCollectibleGated(streamConditions)) {
+      setSelectedNFTCollection(streamConditions.nft_collection)
     }
-  }, [premiumConditions])
+  }, [streamConditions])
 
   const handlePickACollection = useCallback(() => {
     navigation.navigate('NFTCollections')
@@ -261,18 +261,18 @@ export const CollectibleGatedAvailability = ({
             </Text>
             <IconCaretRight fill={neutralLight4} width={16} height={16} />
           </View>
-          {isPremiumContentCollectibleGated(premiumConditions) && (
+          {isContentCollectibleGated(streamConditions) && (
             <View>
               <Text style={styles.ownersOf}>{messages.ownersOf}</Text>
               <View style={styles.collection}>
-                {premiumConditions.nft_collection?.imageUrl && (
+                {streamConditions.nft_collection?.imageUrl && (
                   <Image
-                    source={{ uri: premiumConditions.nft_collection.imageUrl }}
+                    source={{ uri: streamConditions.nft_collection.imageUrl }}
                     style={styles.logo}
                   />
                 )}
                 <Text style={styles.collectionName}>
-                  {premiumConditions.nft_collection?.name}
+                  {streamConditions.nft_collection?.name}
                 </Text>
               </View>
             </View>

@@ -10,10 +10,10 @@ import {
   Remix,
   CoverArtSizes,
   ID,
-  PremiumConditions,
+  StreamConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { Mood } from '@audius/sdk'
 import {
@@ -49,12 +49,12 @@ import { moodMap } from 'utils/Moods'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
+import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import { PremiumTrackSection } from './PremiumTrackSection'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -94,7 +94,7 @@ export type GiantTrackTileProps = {
   genre: string
   isArtistPick: boolean
   isOwner: boolean
-  isPremium: boolean
+  isStreamGated: boolean
   isPublishing: boolean
   isRemix: boolean
   isReposted: boolean
@@ -116,7 +116,7 @@ export type GiantTrackTileProps = {
   onUnfollow: () => void
   playing: boolean
   previewing: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  streamConditions: Nullable<StreamConditions>
   released: string
   repostCount: number
   saveCount: number
@@ -141,7 +141,7 @@ export const GiantTrackTile = ({
   genre,
   isArtistPick,
   isOwner,
-  isPremium,
+  isStreamGated,
   isRemix,
   isReposted,
   isPublishing,
@@ -166,7 +166,7 @@ export const GiantTrackTile = ({
   saveCount,
   playing,
   previewing,
-  premiumConditions,
+  streamConditions,
   tags,
   trackId,
   trackTitle,
@@ -183,8 +183,7 @@ export const GiantTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
@@ -202,9 +201,9 @@ export const GiantTrackTile = ({
         className={className}
         isUnlisted={isUnlisted}
         isRemix={isRemix}
-        isPremium={isPremium}
+        isStreamGated={isStreamGated}
         isPodcast={genre === Genre.PODCASTS}
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
       />
     )
   }
@@ -359,7 +358,7 @@ export const GiantTrackTile = ({
 
   const renderListenCount = () => {
     const shouldShow =
-      isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
+      isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
 
     if (!shouldShow) {
       return null
@@ -462,11 +461,11 @@ export const GiantTrackTile = ({
   }
 
   const isLoading = loading || artworkLoading
-  // Omitting isOwner and doesUserHaveAccess so that we always show premium DogEars
+  // Omitting isOwner and doesUserHaveAccess so that we always show gated DogEars
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        premiumConditions,
+        streamConditions,
         isUnlisted:
           isUnlisted && (!released || moment(released).isBefore(moment()))
       })
@@ -493,9 +492,9 @@ export const GiantTrackTile = ({
       includeFavorite: false,
       includeTrackPage: false,
       isArtistPick,
-      includeEmbed: !(isUnlisted || isPremium),
+      includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: !(isUnlisted || isPremium),
+      includeAddToPlaylist: !(isUnlisted || isStreamGated),
       extraMenuItems: overflowMenuExtraItems
     }
   }
@@ -620,11 +619,11 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isPremium && premiumConditions ? (
-        <PremiumTrackSection
+      {isStreamGated && streamConditions ? (
+        <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
-          premiumConditions={premiumConditions}
+          streamConditions={streamConditions}
           doesUserHaveAccess={doesUserHaveAccess}
           isOwner={isOwner}
           ownerId={userId}

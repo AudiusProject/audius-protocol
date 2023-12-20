@@ -308,7 +308,7 @@ export function* watchNext() {
       track ?? null
     )
 
-    // Skip deleted, owner deactivated, or locked premium track
+    // Skip deleted, owner deactivated, or locked gated track
     if (
       track &&
       (track.is_delete ||

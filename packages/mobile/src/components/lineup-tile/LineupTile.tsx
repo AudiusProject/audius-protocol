@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import {
   accountSelectors,
   Genre,
-  premiumContentActions,
-  usePremiumContentAccess,
+  gatedContentActions,
+  useGatedContentAccess,
   getDogEarType
 } from '@audius/common'
 import moment from 'moment'
@@ -23,7 +23,7 @@ import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
 
 const { getUserId } = accountSelectors
-const { setLockedContentId } = premiumContentActions
+const { setLockedContentId } = gatedContentActions
 
 export const LineupTile = ({
   children,
@@ -69,14 +69,15 @@ export const LineupTile = ({
   const isCollection = 'playlist_id' in item
   const isTrack = 'track_id' in item
   const trackId = isTrack ? item.track_id : undefined
-  const premiumConditions = isTrack ? item.premium_conditions : null
+  const streamConditions = isTrack ? item.stream_conditions : null
   const isArtistPick = artist_pick_track_id === id
-  const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
+  const { doesUserHaveAccess } = useGatedContentAccess(isTrack ? item : null)
   const isScheduledRelease = item.release_date
     ? moment(item.release_date).isAfter(moment())
     : false
+
   const dogEarType = getDogEarType({
-    premiumConditions,
+    streamConditions,
     isOwner,
     doesUserHaveAccess,
     isArtistPick: showArtistPick && isArtistPick,
@@ -138,7 +139,7 @@ export const LineupTile = ({
           saveCount={save_count}
           showRankIcon={showRankIcon}
           doesUserHaveAccess={doesUserHaveAccess}
-          premiumConditions={premiumConditions}
+          streamConditions={streamConditions}
           isOwner={isOwner}
           isArtistPick={isArtistPick}
           showArtistPick={showArtistPick}
@@ -155,7 +156,7 @@ export const LineupTile = ({
         isUnlisted={isUnlisted}
         readonly={isReadonly}
         trackId={trackId}
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
         doesUserHaveAccess={doesUserHaveAccess}
         onPressOverflow={onPressOverflow}
         onPressRepost={onPressRepost}

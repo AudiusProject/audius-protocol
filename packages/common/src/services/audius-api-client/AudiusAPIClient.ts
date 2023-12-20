@@ -29,7 +29,7 @@ import {
   APIStem,
   APITrack,
   APIUser,
-  GetPremiumContentSignaturesResponse,
+  GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID,
   SupporterResponse,
@@ -110,7 +110,7 @@ const FULL_ENDPOINT_MAP = {
   getSupporting: (userId: OpaqueID) => `/users/${userId}/supporting`,
   getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
   getTips: '/tips',
-  getPremiumContentSignatures: (userId: OpaqueID) =>
+  getNFTGatedTrackSignatures: (userId: OpaqueID) =>
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
 }
@@ -475,7 +475,7 @@ export type GetTipsArgs = {
   txSignatures?: string[]
 }
 
-export type GetPremiumContentSignaturesArgs = {
+export type GetNFTGatedTrackSignaturesArgs = {
   userId: ID
   trackMap: {
     [id: ID]: string[]
@@ -485,17 +485,17 @@ export type GetPremiumContentSignaturesArgs = {
 type InitializationState =
   | { state: 'uninitialized' }
   | {
-      state: 'initialized'
-      endpoint: string
-      // Requests are dispatched via APIClient rather than libs
-      type: 'manual'
-    }
+    state: 'initialized'
+    endpoint: string
+    // Requests are dispatched via APIClient rather than libs
+    type: 'manual'
+  }
   | {
-      state: 'initialized'
-      endpoint: string
-      // Requests are dispatched and handled via libs
-      type: 'libs'
-    }
+    state: 'initialized'
+    endpoint: string
+    // Requests are dispatched and handled via libs
+    type: 'libs'
+  }
 
 const emptySearchResponse: APIResponse<APISearch> = {
   data: {
@@ -1571,9 +1571,9 @@ export class AudiusAPIClient {
     blocknumber: number
   ): Promise<
     | {
-        block_found: boolean
-        block_passed: boolean
-      }
+      block_found: boolean
+      block_passed: boolean
+    }
     | {}
   > {
     const response = await this._getResponse<APIResponse<APIBlockConfirmation>>(
@@ -1598,8 +1598,8 @@ export class AudiusAPIClient {
     this._assertInitialized()
     const headers = current_user_id
       ? {
-          'X-User-ID': current_user_id.toString()
-        }
+        'X-User-ID': current_user_id.toString()
+      }
       : undefined
     const response = await this._getResponse<
       APIResponse<GetSocialFeedResponse>
@@ -1786,10 +1786,10 @@ export class AudiusAPIClient {
     return null
   }
 
-  async getPremiumContentSignatures({
+  async getNFTGatedTrackSignatures({
     userId,
     trackMap
-  }: GetPremiumContentSignaturesArgs) {
+  }: GetNFTGatedTrackSignaturesArgs) {
     if (!Object.keys(trackMap).length) return null
 
     const encodedUserId = this._encodeOrThrow(userId)
@@ -1816,8 +1816,8 @@ export class AudiusAPIClient {
     }
 
     const response = await this._getResponse<
-      APIResponse<GetPremiumContentSignaturesResponse>
-    >(FULL_ENDPOINT_MAP.getPremiumContentSignatures(encodedUserId), params)
+      APIResponse<GetNFTGatedTrackSignaturesResponse>
+    >(FULL_ENDPOINT_MAP.getNFTGatedTrackSignatures(encodedUserId), params)
     return response ? response.data : null
   }
 

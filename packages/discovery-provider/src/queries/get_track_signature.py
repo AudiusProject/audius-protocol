@@ -10,7 +10,7 @@ from src.utils import db_session
 
 
 class GetTrackStreamSignature(TypedDict):
-    track: Track
+    track: dict
     is_preview: Optional[bool]
     user_data: Optional[str]
     user_signature: Optional[str]
@@ -18,7 +18,7 @@ class GetTrackStreamSignature(TypedDict):
 
 
 class GetTrackDownloadSignature(TypedDict):
-    track: Track
+    track: dict
     is_original: bool
     filename: Optional[str]
     user_data: Optional[str]

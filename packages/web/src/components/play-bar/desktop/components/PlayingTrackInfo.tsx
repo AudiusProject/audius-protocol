@@ -7,7 +7,7 @@ import {
   SquareSizes,
   CommonState,
   cacheTracksSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
@@ -38,7 +38,7 @@ interface PlayingTrackInfoProps {
   profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
-  isPremium: boolean
+  isStreamGated: boolean
   artistUserId: ID
   artistName: string
   artistHandle: string
@@ -65,18 +65,18 @@ const PlayingTrackInfo = ({
   onClickTrackTitle,
   onClickArtistName,
   isTrackUnlisted,
-  isPremium,
+  isStreamGated,
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { doesUserHaveAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
     (!doesUserHaveAccess || isPreviewing)
 
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
@@ -142,7 +142,7 @@ const PlayingTrackInfo = ({
         />
       </div>
       <div className={styles.text}>
-        {isPremium ? (
+        {isStreamGated ? (
           renderTrackTitle()
         ) : (
           <Draggable

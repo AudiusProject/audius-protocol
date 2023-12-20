@@ -14,13 +14,13 @@ import {
   ID,
   Kind,
   Name,
-  PremiumContentSignature,
-  PremiumTrackStatus,
+  StreamingSignature,
+  GatedTrackStatus,
   Track,
   TrackMetadata,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated
 } from 'models'
 import { User } from 'models/User'
 import { IntKeys } from 'services/remote-config'
@@ -33,21 +33,21 @@ import { usersSocialActions } from 'store/social'
 import { tippingActions } from 'store/tipping'
 import { Nullable } from 'utils/typeUtils'
 
-import * as premiumContentSelectors from './selectors'
-import { actions as premiumContentActions } from './slice'
+import * as gatedContentSelectors from './selectors'
+import { actions as gatedContentActions } from './slice'
 
 const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
 
 const {
-  updatePremiumContentSignatures,
-  removePremiumContentSignatures,
-  updatePremiumTrackStatus,
-  updatePremiumTrackStatuses,
+  updateStreamingSignatures,
+  removeStreamingSignatures,
+  updateGatedTrackStatus,
+  updateGatedTrackStatuses,
   addFolloweeId,
   removeFolloweeId,
   addTippedUserId,
   removeTippedUserId
-} = premiumContentActions
+} = gatedContentActions
 
 const { refreshTipGatedTracks } = tippingActions
 const { show: showConfetti } = musicConfettiActions
@@ -55,8 +55,8 @@ const { show: showConfetti } = musicConfettiActions
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
   collectiblesActions
 
-const { getPremiumTrackSignatureMap, getFolloweeIds, getTippedUserIds } =
-  premiumContentSelectors
+const { getGatedTrackSignatureMap, getFolloweeIds, getTippedUserIds } =
+  gatedContentSelectors
 
 const { getAccountUser, getUserId } = accountSelectors
 const { getTracks } = cacheTracksSelectors
@@ -77,12 +77,12 @@ function* getTokenIdMap({
   tracks,
   ethCollectibles,
   solCollectibles,
-  premiumTrackSignatureIdSet
+  gatedTrackSignatureIdSet
 }: {
   tracks: { [id: ID]: Track }
   ethCollectibles: Collectible[]
   solCollectibles: Collectible[]
-  premiumTrackSignatureIdSet: Set<ID>
+  gatedTrackSignatureIdSet: Set<ID>
 }) {
   const trackMap: { [id: ID]: string[] } = {}
   const skipped: Set<ID> = new Set()
@@ -124,19 +124,19 @@ function* getTokenIdMap({
     .map(Number)
     .filter(Boolean)
     .forEach((trackId) => {
-      if (premiumTrackSignatureIdSet.has(trackId)) {
+      if (gatedTrackSignatureIdSet.has(trackId)) {
         // skip this track entry if we already have a signature for it
         skipped.add(trackId)
         return
       }
 
-      // skip this track entry if it is not premium or if it is not gated on an nft collection
-      const { is_premium: isPremium, premium_conditions: premiumConditions } =
+      // skip this track entry if it is not gated on an nft collection
+      const { is_stream_gated: isStreamGated, stream_conditions: streamConditions } =
         tracks[trackId]
       if (
-        !isPremium ||
-        !premiumConditions ||
-        !isPremiumContentCollectibleGated(premiumConditions)
+        !isStreamGated ||
+        !streamConditions ||
+        !isContentCollectibleGated(streamConditions)
       )
         return
 
@@ -146,10 +146,10 @@ function* getTokenIdMap({
 
       // todo: fix the string nft_collection to be an object
       // temporarily parse it into object here for now
-      let { nft_collection: nftCollection } = premiumConditions
+      let { nft_collection: nftCollection } = streamConditions
       if (typeof nftCollection === 'string') {
         nftCollection = JSON.parse(
-          (premiumConditions.nft_collection as unknown as string).replaceAll(
+          (streamConditions.nft_collection as unknown as string).replaceAll(
             "'",
             '"'
           )
@@ -178,36 +178,36 @@ function* getTokenIdMap({
   return { trackMap, skipped }
 }
 
-function* updateNewPremiumContentSignatures({
+function* updateNewStreamingSignatures({
   tracks,
-  premiumTrackSignatureIdSet
+  gatedTrackSignatureIdSet
 }: {
   tracks: Track[]
-  premiumTrackSignatureIdSet: Set<number>
+  gatedTrackSignatureIdSet: Set<number>
 }) {
-  const premiumContentSignatureMap: { [id: ID]: PremiumContentSignature } = {}
+  const streamSignatureMap: { [id: ID]: StreamingSignature } = {}
 
   tracks.forEach((track: Track) => {
     const {
-      premium_content_signature: premiumContentSignature,
+      stream_signature: streamSignature,
       track_id: trackId
     } = track
 
     // skip this track entry if we already have a signature for it
-    if (premiumTrackSignatureIdSet.has(trackId)) return
+    if (gatedTrackSignatureIdSet.has(trackId)) return
 
     // skip this track entry if its metadata does not include a signature
-    if (!premiumContentSignature) return
+    if (!streamSignature) return
 
-    premiumContentSignatureMap[trackId] = premiumContentSignature
+    streamSignatureMap[trackId] = streamSignature
   })
 
-  if (Object.keys(premiumContentSignatureMap).length > 0) {
-    yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+  if (Object.keys(streamSignatureMap).length > 0) {
+    yield* put(updateStreamingSignatures(streamSignatureMap))
   }
 }
 
-// Poll premium content signatures for tracks that should have them but do not yet.
+// Poll stream signatures for tracks that should have them but do not yet.
 function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
@@ -215,26 +215,26 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   const followeeIds = yield* select(getFolloweeIds)
   const tippedUserIds = yield* select(getTippedUserIds)
 
-  const statusMap: { [id: ID]: PremiumTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedTrackStatus } = {}
 
   const tracksThatNeedSignature = Object.values(tracks).filter((track) => {
     const {
       track_id: trackId,
       owner_id: ownerId,
-      premium_conditions: premiumConditions,
-      premium_content_signature: premiumContentSignature,
+      stream_conditions: streamConditions,
+      stream_signature: streamSignature,
       permalink
     } = track
 
-    // Ignore premium content signature only updates, i.e.
+    // Ignore stream signature only updates, i.e.
     // make sure the above properties exist before proceeding.
-    if (!trackId || !ownerId || !premiumConditions || !permalink) {
+    if (!trackId || !ownerId || !streamConditions || !permalink) {
       return false
     }
 
-    const hasNoSignature = !premiumContentSignature
-    const isFollowGated = isPremiumContentFollowGated(premiumConditions)
-    const isTipGated = isPremiumContentTipGated(premiumConditions)
+    const hasNoSignature = !streamSignature
+    const isFollowGated = isContentFollowGated(streamConditions)
+    const isTipGated = isContentTipGated(streamConditions)
     const shouldHaveSignature =
       (isFollowGated && followeeIds.includes(ownerId)) ||
       (isTipGated && tippedUserIds.includes(ownerId))
@@ -246,12 +246,12 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     return false
   })
 
-  yield* put(updatePremiumTrackStatuses(statusMap))
+  yield* put(updateGatedTrackStatuses(statusMap))
 
   yield* all(
     tracksThatNeedSignature.map((track) => {
       const trackId = track.track_id
-      return call(pollPremiumTrack, {
+      return call(pollGatedTrack, {
         trackId,
         currentUserId,
         isSourceTrack: false
@@ -260,7 +260,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   )
 }
 
-// Request premium content signatures for the relevant nft-gated tracks
+// Request gated content signatures for the relevant nft-gated tracks
 // which the client believes the user should have access to.
 function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
   const account = yield* select(getAccountUser)
@@ -268,28 +268,28 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
 
   const apiClient = yield* getContext('apiClient')
 
-  const premiumContentSignatureResponse = yield* call(
-    [apiClient, apiClient.getPremiumContentSignatures],
+  const nftGatedTrackSignatureResponse = yield* call(
+    [apiClient, apiClient.getNFTGatedTrackSignatures],
     {
       userId: account.user_id,
       trackMap
     }
   )
 
-  if (premiumContentSignatureResponse) {
+  if (nftGatedTrackSignatureResponse) {
     // Keep record of number of tracks that have a signature
     // so that we can later track their metrics.
     let numTrackIdsWithSignature = 0
 
-    const premiumContentSignatureMap: {
-      [id: ID]: Nullable<PremiumContentSignature>
-    } = { ...premiumContentSignatureResponse }
+    const nftGatedTrackSignatureMap: {
+      [id: ID]: Nullable<StreamingSignature>
+    } = { ...nftGatedTrackSignatureResponse }
     // Set null for tracks for which signatures did not get returned
     // to signal that an attempt was made but the user does not have access.
     Object.keys(trackMap).forEach((trackId) => {
       const id = parseInt(trackId)
-      if (!premiumContentSignatureResponse[id]) {
-        premiumContentSignatureMap[id] = null
+      if (!nftGatedTrackSignatureResponse[id]) {
+        nftGatedTrackSignatureMap[id] = null
       } else {
         numTrackIdsWithSignature++
       }
@@ -304,9 +304,9 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
       }
     })
 
-    // update premium content signatures
-    if (Object.keys(premiumContentSignatureMap).length > 0) {
-      yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+    // update nft gated track signatures
+    if (Object.keys(nftGatedTrackSignatureMap).length > 0) {
+      yield* put(updateStreamingSignatures(nftGatedTrackSignatureMap))
     }
   }
 }
@@ -314,12 +314,12 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
 /**
  * This function runs when new tracks have been added to the cache or when eth or sol nfts are fetched.
  * It does a bunch of things (getting gradually larger and should now be broken up):
- * - Updates the store with new premium content signatures.
+ * - Updates the store with new stream signatures.
  * - Skips tracks whose signatures have already been previously obtained.
  * - Handles newly loading special access tracks that should have a signature but do not yet.
  * - Builds a map of nft-gated track ids (and potentially their respective nft token ids) to
  *   make a request to DN which confirms that user owns the corresponding nft collections by
- *   returning corresponding premium content signatures.
+ *   returning corresponding stream signatures.
  */
 function* updateGatedTrackAccess(
   action:
@@ -342,20 +342,20 @@ function* updateGatedTrackAccess(
 
   // get tracks for which we already previously got the signatures
   // filter out those tracks from the ones that need to be passed in to the DN request
-  const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
-  const premiumTrackSignatureIdSet = new Set(
-    Object.keys(premiumTrackSignatureMap).map(Number)
+  const gatedTrackSignatureMap = yield* select(getGatedTrackSignatureMap)
+  const gatedTrackSignatureIdSet = new Set(
+    Object.keys(gatedTrackSignatureMap).map(Number)
   )
 
-  // update premium content signatures from tracks' metadata with the signature
+  // update stream signatures from tracks' metadata with the signature
   const areTracksUpdated =
     'kind' in action && action.kind === Kind.TRACKS && !!action.entries.length
   if (areTracksUpdated) {
-    yield* call(updateNewPremiumContentSignatures, {
+    yield* call(updateNewStreamingSignatures, {
       tracks: action.entries.map(
         ({ metadata }: { metadata: Partial<TrackMetadata> }) => metadata
       ),
-      premiumTrackSignatureIdSet
+      gatedTrackSignatureIdSet
     })
   }
 
@@ -391,27 +391,27 @@ function* updateGatedTrackAccess(
     tracks: allTracks,
     ethCollectibles: account.collectibleList || [],
     solCollectibles: account.solanaCollectibleList || [],
-    premiumTrackSignatureIdSet
+    gatedTrackSignatureIdSet
   })
 
-  const premiumContentSignatureMap: {
-    [id: ID]: Nullable<PremiumContentSignature>
+  const streamSignatureMap: {
+    [id: ID]: Nullable<StreamingSignature>
   } = {}
   Object.keys(allTracks).forEach((trackId) => {
     const id = parseInt(trackId)
     if (skipped.has(id)) return
 
-    const { premium_conditions: premiumConditions } = allTracks[trackId]
-    if (premiumConditions?.nft_collection && !trackMap[id]) {
+    const { stream_conditions: streamConditions } = allTracks[trackId]
+    if (streamConditions?.nft_collection && !trackMap[id]) {
       // Set null for collectible gated track signatures as
       // the user does not have nfts for those collections
       // and therefore does not have access.
-      premiumContentSignatureMap[id] = null
+      streamSignatureMap[id] = null
     }
   })
 
-  if (Object.keys(premiumContentSignatureMap).length > 0) {
-    yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+  if (Object.keys(streamSignatureMap).length > 0) {
+    yield* put(updateStreamingSignatures(streamSignatureMap))
   }
 
   if (!Object.keys(trackMap).length) return
@@ -419,7 +419,7 @@ function* updateGatedTrackAccess(
   yield* call(updateCollectibleGatedTracks, trackMap)
 }
 
-export function* pollPremiumTrack({
+export function* pollGatedTrack({
   trackId,
   currentUserId,
   isSourceTrack
@@ -441,18 +441,18 @@ export function* pollPremiumTrack({
       id: trackId,
       currentUserId
     })
-    if (track?.premium_content_signature) {
+    if (track?.stream_signature) {
       yield* put(
         cacheActions.update(Kind.TRACKS, [
           {
             id: trackId,
             metadata: {
-              premium_content_signature: track.premium_content_signature
+              stream_signature: track.stream_signature
             }
           }
         ])
       )
-      yield* put(updatePremiumTrackStatus({ trackId, status: 'UNLOCKED' }))
+      yield* put(updateGatedTrackStatus({ trackId, status: 'UNLOCKED' }))
       yield* put(removeFolloweeId({ id: track.owner_id }))
       yield* put(removeTippedUserId({ id: track.owner_id }))
 
@@ -461,14 +461,14 @@ export function* pollPremiumTrack({
         yield* put(showConfetti())
       }
 
-      if (!track.premium_conditions) {
+      if (!track.stream_conditions) {
         return
       }
-      const eventName = isPremiumContentFollowGated(track.premium_conditions)
+      const eventName = isContentFollowGated(track.stream_conditions)
         ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-        : isPremiumContentTipGated(track.premium_conditions)
-        ? Name.TIP_GATED_TRACK_UNLOCKED
-        : null
+        : isContentTipGated(track.stream_conditions)
+          ? Name.TIP_GATED_TRACK_UNLOCKED
+          : null
       if (eventName) {
         analytics.track({
           eventName,
@@ -487,7 +487,7 @@ export function* pollPremiumTrack({
 /**
  * 1. Get follow or tip gated tracks of user
  * 2. Set those track statuses to 'UNLOCKING'
- * 3. Poll for premium content signatures for those tracks
+ * 3. Poll for stream signatures for those tracks
  * 4. When the signatures are returned, set those track statuses as 'UNLOCKED'
  */
 function* updateSpecialAccessTracks(
@@ -506,29 +506,29 @@ function* updateSpecialAccessTracks(
     yield* put(addTippedUserId({ id: trackOwnerId }))
   }
 
-  const statusMap: { [id: ID]: PremiumTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedTrackStatus } = {}
   const tracksToPoll: Set<ID> = new Set()
   const cachedTracks = yield* select(getTracks, {})
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
-    const { owner_id: ownerId, premium_conditions: premiumConditions } =
+    const { owner_id: ownerId, stream_conditions: streamConditions } =
       cachedTracks[id]
     const isGated =
       gate === 'follow'
-        ? isPremiumContentFollowGated(premiumConditions)
-        : isPremiumContentTipGated(premiumConditions)
+        ? isContentFollowGated(streamConditions)
+        : isContentTipGated(streamConditions)
     if (isGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
       tracksToPoll.add(id)
     }
   })
 
-  yield* put(updatePremiumTrackStatuses(statusMap))
+  yield* put(updateGatedTrackStatuses(statusMap))
 
   yield* all(
     Array.from(tracksToPoll).map((trackId) => {
-      return call(pollPremiumTrack, {
+      return call(pollGatedTrack, {
         trackId,
         currentUserId,
         isSourceTrack: sourceTrackId === trackId
@@ -540,7 +540,7 @@ function* updateSpecialAccessTracks(
 /**
  * 1. Get follow-gated tracks of unfollowed user
  * 2. Set those track statuses to 'LOCKED'
- * 3. Remove the premium content signatures for those tracks
+ * 3. Remove the stream signatures for those tracks
  */
 function* handleUnfollowUser(
   action: ReturnType<typeof usersSocialActions.unfollowUser>
@@ -549,23 +549,23 @@ function* handleUnfollowUser(
   // polling their newly loaded follow gated track signatures.
   yield* put(removeFolloweeId({ id: action.userId }))
 
-  const statusMap: { [id: ID]: PremiumTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedTrackStatus } = {}
   const cachedTracks = yield* select(getTracks, {})
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
-    const { owner_id: ownerId, premium_conditions: premiumConditions } =
+    const { owner_id: ownerId, stream_conditions: streamConditions } =
       cachedTracks[id]
-    const isFollowGated = isPremiumContentFollowGated(premiumConditions)
+    const isFollowGated = isContentFollowGated(streamConditions)
     if (isFollowGated && ownerId === action.userId) {
       statusMap[id] = 'LOCKED'
     }
   })
 
-  yield* put(updatePremiumTrackStatuses(statusMap))
+  yield* put(updateGatedTrackStatuses(statusMap))
 
   const trackIds = Object.keys(statusMap).map((trackId) => parseInt(trackId))
-  yield* put(removePremiumContentSignatures({ trackIds }))
+  yield* put(removeStreamingSignatures({ trackIds }))
 }
 
 function* handleFollowUser(
@@ -591,18 +591,18 @@ function* handleTipGatedTracks(
 }
 
 /**
- * Remove premium content signatures from track metadata when they're
+ * Remove stream signatures from track metadata when they're
  * no longer accessible by the user.
  */
-function* handleRemovePremiumContentSignatures(
-  action: ReturnType<typeof removePremiumContentSignatures>
+function* handleRemoveStreamSignatures(
+  action: ReturnType<typeof removeStreamingSignatures>
 ) {
   const cachedTracks = yield* select(getTracks, {
     ids: action.payload.trackIds
   })
   const metadatas = Object.keys(cachedTracks).map((trackId) => {
     const id = parseInt(trackId)
-    return { id, metadata: { premium_content_signature: null } }
+    return { id, metadata: { stream_signature: null } }
   })
   yield* put(cacheActions.update(Kind.TRACKS, metadatas))
 }
@@ -631,10 +631,10 @@ function* watchTipGatedTracks() {
   yield* takeEvery(refreshTipGatedTracks.type, handleTipGatedTracks)
 }
 
-function* watchRemovePremiumContentSignatures() {
+function* watchRemoveStreamSignatures() {
   yield* takeEvery(
-    removePremiumContentSignatures.type,
-    handleRemovePremiumContentSignatures
+    removeStreamingSignatures.type,
+    handleRemoveStreamSignatures
   )
 }
 
@@ -644,6 +644,6 @@ export const sagas = () => {
     watchFollowGatedTracks,
     watchUnfollowGatedTracks,
     watchTipGatedTracks,
-    watchRemovePremiumContentSignatures
+    watchRemoveStreamSignatures
   ]
 }

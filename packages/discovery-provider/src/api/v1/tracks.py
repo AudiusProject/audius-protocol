@@ -110,12 +110,12 @@ full_tracks_response = make_full_response(
 # Get single track
 
 
-def get_single_track(track_id, current_user_id, endpoint_ns, exclude_premium=True):
+def get_single_track(track_id, current_user_id, endpoint_ns, exclude_gated=True):
     args = {
         "id": [track_id],
         "with_users": True,
         "filter_deleted": False,
-        "exclude_premium": exclude_premium,
+        "exclude_gated": exclude_gated,
         "current_user_id": current_user_id,
     }
     tracks = get_tracks(args)
@@ -208,7 +208,7 @@ class FullTrack(Resource):
             track_id=decoded_id,
             current_user_id=current_user_id,
             endpoint_ns=full_ns,
-            exclude_premium=False,
+            exclude_gated=False,
         )
 
 
@@ -281,7 +281,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "id": decode_ids_array(ids),
-                    "exclude_premium": True,
+                    "exclude_gated": True,
                 }
             )
         else:
@@ -289,7 +289,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "routes": routes_parsed,
-                    "exclude_premium": True,
+                    "exclude_gated": True,
                 }
             )
         if not tracks:
@@ -738,7 +738,7 @@ class Trending(Resource):
             abort_bad_path_param("version", ns)
 
         args = trending_parser.parse_args()
-        args["exclude_premium"] = True
+        args["exclude_gated"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -909,7 +909,7 @@ class RecommendedTrack(Resource):
         args = recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
         args["limit"] = max(TRENDING_TRACKS_LIMIT, limit)
-        args["exclude_premium"] = True
+        args["exclude_gated"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -1490,7 +1490,7 @@ class FullUSDCPurchaseTracks(Resource):
 
 
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
-class NFTGatedPremiumTrackSignatures(Resource):
+class NFTGatedTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Gated Track Signatures""",

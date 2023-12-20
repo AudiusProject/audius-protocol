@@ -452,7 +452,7 @@ def get_nft_gated_track_signatures(
         associated_wallets = get_associated_user_wallet({"user_id": user_id})
         if not user_wallet:
             logger.warn(
-                f"get_premium_track_signatures.py | get_nft_gated_premium_track_signatures | no wallet for user_id {user_id}"
+                f"get_nft_gated_track_signatures.py | get_nft_gated_track_signatures | no wallet for user_id {user_id}"
             )
             return {}
 

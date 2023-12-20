@@ -3,10 +3,10 @@ import {
   Track,
   TrackAccessType,
   accountSelectors,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
@@ -15,17 +15,17 @@ import { make } from 'common/store/analytics/actions'
 const { getUserHandle } = accountSelectors
 
 function getTrackAccess({
-  is_premium,
-  premium_conditions
+  is_stream_gated,
+  stream_conditions
 }: Track): TrackAccessType {
-  if (is_premium && premium_conditions) {
-    if (isPremiumContentFollowGated(premium_conditions)) {
+  if (is_stream_gated && stream_conditions) {
+    if (isContentFollowGated(stream_conditions)) {
       return TrackAccessType.FOLLOW_GATED
-    } else if (isPremiumContentTipGated(premium_conditions)) {
+    } else if (isContentTipGated(stream_conditions)) {
       return TrackAccessType.TIP_GATED
-    } else if (isPremiumContentCollectibleGated(premium_conditions)) {
+    } else if (isContentCollectibleGated(stream_conditions)) {
       return TrackAccessType.COLLECTIBLE_GATED
-    } else if (isPremiumContentUSDCPurchaseGated(premium_conditions)) {
+    } else if (isContentUSDCPurchaseGated(stream_conditions)) {
       return TrackAccessType.USDC_GATED
     }
   }

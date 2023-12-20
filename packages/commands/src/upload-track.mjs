@@ -34,8 +34,8 @@ function generateWhiteNoise(duration, outFile) {
   })
 }
 
-const getPremiumConditions = async ({
-  premiumConditions,
+const getStreamConditions = async ({
+  streamConditions,
   price: priceString,
   audiusLibs
 }) => {
@@ -54,8 +54,8 @@ const getPremiumConditions = async ({
         splits: { [userbank.toString()]: price * 10 ** 4 }
       }
     }
-  } else if (premiumConditions) {
-    return JSON.parse(premiumConditions)
+  } else if (streamConditions) {
+    return JSON.parse(streamConditions)
   }
   return null
 }
@@ -149,11 +149,11 @@ program
   .option('-f, --from <from>', 'The account to upload track from')
   .option(
     '-u, --price <price>',
-    'Generate a premium conditions object with the given price in cents. Cannot be used with -p'
+    'Generate a stream conditions object with the given price in cents. Cannot be used with -p'
   )
   .option(
-    '-p, --premium-conditions <premium conditions>',
-    'Manually set a premium conditions object. Cannot be used with -u',
+    '-r, --stream-conditions <stream conditions>',
+    'Manually set a stream conditions object. Cannot be used with -u',
     ''
   )
   .option('-o, --is-downloadable <is downloadable>', 'Whether track is downloadable')
@@ -179,7 +179,7 @@ program
         license,
         from,
         price,
-        premiumConditions,
+        streamConditions,
         isDownloadable,
         downloadPrice,
         downloadConditions
@@ -211,8 +211,8 @@ program
           throw new Error(`Failed to parse track "${track}"`)
         }
 
-        const parsedPremiumConditions = await getPremiumConditions({
-          premiumConditions,
+        const parsedStreamConditions = await getStreamConditions({
+          streamConditions,
           price,
           audiusLibs
         })
@@ -239,7 +239,7 @@ program
             genre:
               genre ||
               Genre[
-                Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
+              Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
               ],
             mood: mood || `mood ${rand}`,
             credits_splits: '',
@@ -251,8 +251,8 @@ program
             isrc: null,
             iswc: null,
             track_segments: [],
-            is_premium: parsedPremiumConditions != null,
-            premium_conditions: parsedPremiumConditions,
+            is_stream_gated: parsedStreamConditions != null,
+            stream_conditions: parsedStreamConditions,
             ...downloadMetadata,
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
