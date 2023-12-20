@@ -215,7 +215,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 remix_of=track_meta.get("remix_of", None),
                 updated_at=track_meta.get("updated_at", track_created_at),
                 created_at=track_meta.get("created_at", track_created_at),
-                release_date=str(track_meta.get("release_date", track_created_at)),
+                release_date=str(track_meta.get("release_date"))
+                if track_meta.get("release_date")
+                else None,
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_premium=track_meta.get("is_premium", False),
                 premium_conditions=track_meta.get("premium_conditions", None),
