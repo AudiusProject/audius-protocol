@@ -72,7 +72,7 @@ const processXml = async (document: any, audiusSdk: AudiusSdk) => {
       userId: userId,
       coverArtFile: clipperImg,
       metadata: tt,
-      onProgress: (progress) => console.log("Progress:", progress),
+      onProgress: (progress: any) => console.log("Progress:", progress),
       trackFile: snareAudio,
     };
     console.log(uploadTrackRequest);
