@@ -143,6 +143,7 @@ export type APITrack = {
   is_premium: boolean
   premium_conditions: Nullable<PremiumConditions>
   premium_content_signature: Nullable<PremiumContentSignature>
+  parent_album_ids: number[]
 }
 
 export type APISearchTrack = Omit<

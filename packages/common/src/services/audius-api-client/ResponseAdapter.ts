@@ -192,6 +192,10 @@ export const makeUserlessTrack = (
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
+    parent_album_ids:
+      track.parent_album_ids
+        ?.map((id) => decodeHashId(id.toString()))
+        .filter(removeNullable) ?? null,
 
     // Fields to prune
     id: undefined,
@@ -468,7 +472,9 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     is_premium: false,
     premium_conditions: null,
     premium_content_signature: null,
-    is_playlist_upload: false
+    is_playlist_upload: false,
+    // TODO: inherit from parent track
+    parent_album_ids: []
   }
 }
 
