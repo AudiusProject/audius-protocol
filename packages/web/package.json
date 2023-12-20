@@ -18,6 +18,7 @@
     "build:stage": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.stage turbo run build && rm -rf build-staging && mv build build-staging",
     "build:prod": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.prod turbo run build && rm -rf build-production && mv build build-production",
     "build:prod-source-maps": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.prod env-cmd ./.env/.env.source-maps turbo run build && rm -rf build-production && mv build build-production",
+    "vercel-build": "vite build",
     "test": "vitest",
     "test:coverage": "vitest --resetMocks=false --coverage --watchAll=false",
     "eject": "react-scripts eject",

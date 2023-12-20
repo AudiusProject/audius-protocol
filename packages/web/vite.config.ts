@@ -18,7 +18,6 @@ export default defineConfig(({ mode }) => {
   return {
     base: env.VITE_PUBLIC_URL || '/',
     build: {
-      outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/],

@@ -58,8 +58,7 @@
     "gen:stage:full": "node ./src/sdk/api/generator/gen.js --env stage --api-flavor full",
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./src/sdk/api/generator/gen.js",
-    "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full",
-    "prepare": "patch-package"
+    "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full"
   },
   "dependencies": {
     "@audius/hedgehog": "2.1.0",
