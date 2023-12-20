@@ -1,5 +1,6 @@
 {
   "name": "eslint-config-audius",
+  "private": true,
   "version": "1.5.56",
   "description": "Custom eslint config for Audius.",
   "author": "Audius",
