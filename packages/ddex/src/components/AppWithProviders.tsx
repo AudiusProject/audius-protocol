@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AudiusLibsProvider } from "../providers/AudiusLibsProvider.tsx";
+import { AudiusLibsProvider } from "../providers/AudiusLibsProvider";
 import { AudiusSdkProvider } from "../providers/AudiusSdkProvider";
 import App from "./App.tsx";
 import Web3 from "web3";

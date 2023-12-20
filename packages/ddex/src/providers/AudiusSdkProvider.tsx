@@ -1,6 +1,7 @@
 import type {
   AudiusSdk as AudiusSdkType,
   ServicesConfig,
+// @ts-expect-error (TS2691)
 } from "@audius/sdk/dist/sdk/index.d.ts";
 import { useAudiusLibs } from "../providers/AudiusLibsProvider";
 import {
@@ -12,23 +13,14 @@ import {
 } from "react";
 import { useEnvVars } from "../providers/EnvVarsProvider";
 import {
-  // @ts-expect-error (TS2339)
   AppAuth,
-  // @ts-expect-error (TS2339)
   DiscoveryNodeSelector,
-  // @ts-expect-error (TS2339)
   EntityManager,
-  // @ts-expect-error (TS2339)
   Logger,
-  // @ts-expect-error (TS2339)
   StorageNodeSelector,
-  // @ts-expect-error (TS2339)
   developmentConfig,
-  // @ts-expect-error (TS2339)
   stagingConfig,
-  // @ts-expect-error (TS2339)
   productionConfig,
-  // @ts-expect-error (TS2339)
   sdk,
 } from "@audius/sdk";
 

@@ -1,11 +1,13 @@
 import { useState, ChangeEvent, DragEvent } from "react";
 import { useAudiusSdk } from "../providers/AudiusSdkProvider";
 import { useAudiusLibs } from "../providers/AudiusLibsProvider";
+// @ts-expect-error (TS2691)
 import type { AudiusLibs } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
 import type {
   AudiusSdk,
   Genre,
   UploadTrackRequest,
+// @ts-expect-error (TS2691)
 } from "@audius/sdk/dist/sdk/index.d.ts";
 import { DOMParser } from "linkedom";
 

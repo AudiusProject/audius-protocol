@@ -1,3 +1,4 @@
+// @ts-expect-error (TS2691)
 import type { AudiusLibs as AudiusLibsType } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
 import {
   ReactNode,

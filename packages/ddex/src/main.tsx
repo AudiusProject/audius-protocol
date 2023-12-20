@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { EnvVarsProvider } from "./providers/EnvVarsProvider.tsx";
-import AppWithProviders from "./components/AppWithProviders.tsx";
+import { EnvVarsProvider } from "./providers/EnvVarsProvider";
+import AppWithProviders from "./components/AppWithProviders";
 
 import "./index.css";
 
