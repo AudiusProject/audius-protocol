@@ -6,10 +6,7 @@ import {
   useAudiusQueryContext
 } from '@audius/common'
 import { css } from '@emotion/native'
-import {
-  getIsSocialConnected,
-  getLinkedSocialOnFirstPage
-} from 'audius-client/src/common/store/pages/signon/selectors'
+import { getIsSocialConnected } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
   setValueField,
   unsetSocialProfile
