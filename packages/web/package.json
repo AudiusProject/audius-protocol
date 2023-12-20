@@ -13,7 +13,7 @@
     "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.prod env-cmd ./.env/.env.source-maps turbo run start",
     "preview:prod": "npm run build:prod && vite preview --outDir build-production",
     "prebuild": "npm run publish-scripts",
-    "build": "vite build && cp package.json build/package.json",
+    "build": "vite build",
     "build:dev": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.dev turbo run build && rm -rf build-development && mv build build-development",
     "build:stage": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.stage turbo run build && rm -rf build-staging && mv build build-staging",
     "build:prod": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.prod turbo run build && rm -rf build-production && mv build build-production",
