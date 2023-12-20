@@ -15,6 +15,7 @@ class GetTrackStreamSignature(TypedDict):
     user_data: Optional[str]
     user_signature: Optional[str]
     stream_signature: Optional[str]
+    filename: Optional[str]
 
 
 class GetTrackDownloadSignature(TypedDict):
@@ -107,7 +108,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     return {"signature": signature, "cid": cid}
 
 
-# Returns a dictionary {signature, cid, filename} if user has stream access
+# Returns a dictionary {signature, cid, filename} if user has download access
 # Returns None otherwise
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]

@@ -416,6 +416,18 @@ stream_parser.add_argument(
     required=False,
     default=False,
 )
+# todo: remove after clients are updated to use /download
+stream_parser.add_argument(
+    "filename",
+    description="""Optional - name of file to download. Redirects to /download if provided.""",
+    type=str,
+)
+# todo: remove after clients are updated to use 'stream_signature'
+stream_parser.add_argument(
+    "premium_content_signature",
+    description="""Optional - same as 'stream_signature'. Temporarily leaving it here for backwards compatibility.""",
+    type=str,
+)
 
 
 def tranform_stream_cache(stream_url):
@@ -461,9 +473,17 @@ class TrackStream(Resource):
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
+        user_data = request_args.get("user_data")
+        user_signature = request_args.get("user_signature")
         decoded_id = decode_with_abort(track_id, ns)
-        info = get_track_access_info(decoded_id)
 
+        # redirect to /download if filename is provided
+        # this will be removed once clients are updated to use /download
+        filename = request_args.get("filename")
+        if filename:
+            return f"/v1/tracks/{track_id}/download?user_data={user_data}&user_signature={user_signature}&filename={filename}"
+
+        info = get_track_access_info(decoded_id)
         track = info.get("track")
 
         if not track:
@@ -479,9 +499,10 @@ class TrackStream(Resource):
             {
                 "track": track,
                 "is_preview": is_preview,
-                "user_data": request_args.get("user_data"),
-                "user_signature": request_args.get("user_signature"),
-                "stream_signature": request_args.get("stream_signature"),
+                "user_data": user_data,
+                "user_signature": user_signature,
+                "stream_signature": request_args.get("stream_signature")
+                or request_args.get("premium_content_signature"),
             }
         )
         if not stream_signature:
@@ -531,7 +552,7 @@ class TrackStream(Resource):
         abort_not_found(track_id, ns)
 
 
-# download
+# Download
 
 download_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 download_parser.add_argument(
