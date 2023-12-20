@@ -3,7 +3,6 @@ import snakecaseKeys from 'snakecase-keys'
 import type {
   AuthService,
   DiscoveryNodeSelectorService,
-  SolanaService,
   StorageService
 } from '../../services'
 import {
@@ -39,6 +38,7 @@ import {
   SendTipRequest,
   SendTipSchema
 } from './types'
+import type { ClaimableTokens } from '../../services/Solana/programs/ClaimableTokens/ClaimableTokens'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(
@@ -48,7 +48,7 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
     private readonly logger: LoggerService,
-    private readonly solana: SolanaService
+    private readonly claimableTokens: ClaimableTokens
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -442,25 +442,23 @@ export class UsersApi extends GeneratedUsersApi {
       throw new Error('Invalid recipient: No user bank found.')
     }
 
-    const secp =
-      await this.solana.ClaimableTokens.createTransferSecpInstruction({
-        ethWallet,
-        destination,
-        amount,
-        mint: 'wAUDIO',
-        auth: this.auth
-      })
-    const transfer =
-      await this.solana.ClaimableTokens.createTransferInstruction({
-        ethWallet,
-        destination,
-        mint: 'wAUDIO'
-      })
+    const secp = await this.claimableTokens.createTransferSecpInstruction({
+      ethWallet,
+      destination,
+      amount,
+      mint: 'wAUDIO',
+      auth: this.auth
+    })
+    const transfer = await this.claimableTokens.createTransferInstruction({
+      ethWallet,
+      destination,
+      mint: 'wAUDIO'
+    })
 
-    const transaction = await this.solana.buildTransaction({
+    const transaction = await this.claimableTokens.buildTransaction({
       instructions: [secp, transfer]
     })
-    return await this.solana.relay({ transaction })
+    return await this.claimableTokens.sendTransaction(transaction)
   }
 
   /**
@@ -473,7 +471,7 @@ export class UsersApi extends GeneratedUsersApi {
     if (!ethWallet) {
       return { ethWallet: null, userBank: null }
     }
-    const { userBank } = await this.solana.ClaimableTokens.getOrCreateUserBank({
+    const { userBank } = await this.claimableTokens.getOrCreateUserBank({
       ethWallet,
       mint: 'wAUDIO'
     })

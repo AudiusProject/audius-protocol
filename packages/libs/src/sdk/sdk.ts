@@ -34,7 +34,10 @@ import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
-import { Solana } from './services/Solana/Solana'
+import { SolanaRelay } from './services/Solana/SolanaRelay'
+import { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
+import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
+import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokens/constants'
 
 /**
  * The Audius SDK
@@ -102,12 +105,19 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultStorage = new Storage({ storageNodeSelector, logger })
 
-  const defaultSolana = new Solana({
+  const defaultSolanaRelay = new SolanaRelay({
     middleware: [
       config.services?.discoveryNodeSelector?.createMiddleware() ??
         defaultDiscoveryNodeSelector.createMiddleware()
     ]
   })
+  const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter(
+    config.services?.solanaRelay ?? defaultSolanaRelay
+  )
+  const claimableTokensProgram = new ClaimableTokens(
+    defaultClaimableTokensConfig,
+    config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+  )
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector,
@@ -115,7 +125,9 @@ const initializeServices = (config: SdkConfig) => {
     entityManager: defaultEntityManager,
     storage: defaultStorage,
     auth: defaultAuthService,
-    solana: defaultSolana,
+    claimableTokensProgram,
+    solanaWalletAdapter: defaultSolanaWalletAdapter,
+    solanaRelay: defaultSolanaRelay,
     logger
   }
   return { ...defaultServices, ...config.services }
@@ -152,7 +164,7 @@ const initializeApis = ({
     services.entityManager,
     services.auth,
     services.logger,
-    services.solana
+    services.claimableTokensProgram
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,

@@ -1,2 +1,2 @@
-export * from './Solana'
+export * from './SolanaRelay'
 export * from './types'

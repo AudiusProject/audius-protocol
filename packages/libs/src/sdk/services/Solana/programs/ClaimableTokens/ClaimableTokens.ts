@@ -4,11 +4,10 @@ import {
   TransactionMessage,
   VersionedTransaction,
   Secp256k1Program,
-  PublicKey,
-  Connection
+  PublicKey
 } from '@solana/web3.js'
-import { parseParams } from '../../../utils/parseParams'
-import type { Mint, SolanaService } from '../types'
+import { parseParams } from '../../../../utils/parseParams'
+import type { Mint, SolanaWalletAdapter } from '../../types'
 
 import {
   type GetOrCreateUserBankRequest,
@@ -18,36 +17,40 @@ import {
   CreateTransferSchema,
   type CreateSecpRequest,
   CreateSecpSchema,
-  ClaimableTokensConfigInternal
+  ClaimableTokensConfig
 } from './types'
 
-import * as runtime from '../../../api/generated/default/runtime'
+import { SolanaProgram } from '../SolanaProgram'
+import { defaultClaimableTokensConfig } from './constants'
+import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 
-export class ClaimableTokens {
+export class ClaimableTokens extends SolanaProgram {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
-  /** Connection to interact with the Solana RPC. */
-  private readonly connection: Connection
   /** Map from token mint name to public key address. */
   private readonly mints: Record<Mint, PublicKey>
   /** Map from token mint name to derived user bank authority. */
   private readonly authorities: Record<Mint, PublicKey>
 
   constructor(
-    config: ClaimableTokensConfigInternal,
-    private solana: SolanaService
+    config: ClaimableTokensConfig,
+    solanaWalletAdapter: SolanaWalletAdapter
   ) {
-    this.programId = config.programId
-    this.connection = config.connection
-    this.mints = config.mints
+    const configWithDefaults = mergeConfigWithDefaults(
+      config,
+      defaultClaimableTokensConfig
+    )
+    super(configWithDefaults, solanaWalletAdapter)
+    this.programId = configWithDefaults.programId
+    this.mints = configWithDefaults.mints
     this.authorities = {
       wAUDIO: ClaimableTokensProgram.deriveAuthority({
-        programId: config.programId,
-        mint: config.mints.wAUDIO
+        programId: configWithDefaults.programId,
+        mint: configWithDefaults.mints.wAUDIO
       }),
       USDC: ClaimableTokensProgram.deriveAuthority({
-        programId: config.programId,
-        mint: config.mints.wAUDIO
+        programId: configWithDefaults.programId,
+        mint: configWithDefaults.mints.wAUDIO
       })
     }
   }
@@ -61,13 +64,7 @@ export class ClaimableTokens {
       GetOrCreateUserBankSchema
     )(params)
     const { ethWallet, mint, feePayer: feePayerOverride } = args
-    const feePayer = feePayerOverride ?? (await this.solana.getFeePayer())
-    if (!feePayer) {
-      throw new runtime.RequiredError(
-        'feePayer',
-        'Required parameter params.feePayer was null or undefined when calling getOrCreateUserBank.'
-      )
-    }
+    const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const userBank = await this.deriveUserBank(args)
     const userBankAccount = await this.connection.getAccountInfo(userBank)
     if (!userBankAccount) {
@@ -80,23 +77,14 @@ export class ClaimableTokens {
           userBank,
           programId: this.programId
         })
-      const { blockhash, lastValidBlockHeight } =
-        await this.connection.getLatestBlockhash()
+      const { blockhash } = await this.connection.getLatestBlockhash()
       const message = new TransactionMessage({
         payerKey: feePayer,
         recentBlockhash: blockhash,
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      await this.solana.relay({
-        transaction,
-        confirmationOptions: {
-          strategy: {
-            blockhash,
-            lastValidBlockHeight
-          }
-        }
-      })
+      await this.wallet.sendTransaction(transaction, this.connection)
       return { userBank, didExist: false }
     }
     return { userBank, didExist: true }
@@ -119,7 +107,7 @@ export class ClaimableTokens {
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
-    const feePayer = feePayerOverride ?? (await this.solana.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,

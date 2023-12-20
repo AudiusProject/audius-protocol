@@ -6,7 +6,8 @@ import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
-import type { SolanaService } from './services/Solana'
+import type { SolanaRelayService, SolanaWalletAdapter } from './services/Solana'
+import type { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
 
 export type ServicesContainer = {
   /**
@@ -40,9 +41,19 @@ export type ServicesContainer = {
   logger: LoggerService
 
   /**
-   * Service used to interact with Solana programs
+   * Service used to interact with the Solana relay
    */
-  solana: SolanaService
+  solanaRelay: SolanaRelayService
+
+  /**
+   * Service used to interact with the Solana blockchain
+   */
+  solanaWalletAdapter: SolanaWalletAdapter
+
+  /**
+   * Claimable Tokens Program client for Solana
+   */
+  claimableTokensProgram: ClaimableTokens
 }
 
 const DevAppSchema = z.object({
