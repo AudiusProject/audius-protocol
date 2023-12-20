@@ -427,7 +427,7 @@ const UnlockingGatedTrackSection = ({
     }
 
     console.warn(
-      'No entity for gated conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [streamConditions, followee, tippedUser, goToCollection, renderArtist])
@@ -552,7 +552,7 @@ const UnlockedGatedTrackSection = ({
     }
 
     console.warn(
-      'No entity for gated conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [
