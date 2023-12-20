@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
+import { getCoinflowDeviceId } from 'app/services/coinflow'
 import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -65,7 +66,7 @@ const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
 
 export const CoinflowOnrampDrawer = () => {
   const {
-    data: { amount, serializedTransaction },
+    data: { amount, serializedTransaction, purchaseMetadata },
     isOpen,
     onClose
   } = useCoinflowOnrampModal()
@@ -73,6 +74,8 @@ export const CoinflowOnrampDrawer = () => {
   const [transaction, setTransaction] = useState<Transaction | undefined>(
     undefined
   )
+
+  const deviceId = getCoinflowDeviceId()
 
   const adapter = useCoinflowAdapter()
 
@@ -96,6 +99,8 @@ export const CoinflowOnrampDrawer = () => {
 
   const showContent = isOpen && adapter
 
+  console.log(`CoinflowOnrampDrawer: \n ${deviceId} \n ${purchaseMetadata}`)
+
   return (
     <AppDrawer
       blockClose={false}
@@ -108,9 +113,11 @@ export const CoinflowOnrampDrawer = () => {
     >
       {showContent ? (
         <CoinflowPurchase
+          deviceId={deviceId}
           transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           onSuccess={handleSuccess}
           merchantId={env.COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
