@@ -141,11 +141,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <DescriptionField />
               <SubmenuList removeBottomDivider>
                 <AccessAndSaleField />
-                {completeTrackMessage.title === props.title ? (
-                  <ReleaseDateField />
-                ) : (
-                  <></>
-                )}
+                <ReleaseDateField />
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>
