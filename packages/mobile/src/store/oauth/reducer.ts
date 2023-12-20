@@ -1,8 +1,4 @@
-import type {
-  InstagramProfile,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
+import type { TikTokProfile } from '@audius/common'
 
 import type { OAuthActions } from './actions'
 import {

@@ -60,12 +60,11 @@ export const SignUpFlowTikTokAuth = ({
         platform: 'tiktok'
       })
     } catch (e) {
-      console.error(e)
       onFailure(e)
     }
   }
 
-  const handlePress = () => () => {
+  const handlePress = () => {
     onStart()
     track(
       make({

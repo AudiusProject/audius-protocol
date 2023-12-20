@@ -8,7 +8,6 @@ import {
 } from '@audius/common'
 import { css } from '@emotion/native'
 import {
-  resetSignOn,
   setLinkedSocialOnFirstPage,
   setValueField
 } from 'common/store/pages/signon/actions'
@@ -24,6 +23,7 @@ import { Flex, Text, IconExclamationCircle } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { resetOAuthState } from 'app/store/oauth/actions'
 
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
@@ -68,7 +68,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     handleErrorSocialMediaLogin,
     setIsWaitingForSocialLogin
   } = useSocialMediaLoader({
-    resetAction: resetSignOn,
+    resetAction: resetOAuthState,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
 
