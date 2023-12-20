@@ -1,15 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import type { TwitterProfile } from '@audius/common'
 import {
   Name,
-  formatTwitterProfile,
   pickHandleSchema,
   socialMediaMessages,
   useAudiusQueryContext
 } from '@audius/common'
-import { setTwitterProfile } from 'audius-client/src/common/store/pages/signon/actions'
-import { getHandleField } from 'audius-client/src/common/store/pages/signon/selectors'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -75,13 +71,13 @@ const useSetProfileFromTwitter = () => {
     })
 
     const requiresReview = !validationResult.success
-    // dispatch(
-    //   make({
-    //     eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER,
-    //     isVerified: !!profile.verified,
-    //     handle: profile.screen_name || 'unknown'
-    //   })
-    // )
+    track(
+      make({
+        eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER,
+        isVerified: !!profile.verified,
+        handle: profile.screen_name || 'unknown'
+      })
+    )
     return { requiresReview, handle: profile.screen_name, platform: 'twitter' }
   }
 }
@@ -136,6 +132,6 @@ export const SignUpFlowTwitterAuth = ({
       onPress={handlePress}
       title={socialMediaMessages.signUpTwitter}
       noText
-    ></SocialButton>
+    />
   )
 }

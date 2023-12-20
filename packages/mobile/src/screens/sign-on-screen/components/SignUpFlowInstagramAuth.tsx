@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import {
+  Name,
   pickHandleSchema,
   socialMediaMessages,
   useAudiusQueryContext
@@ -59,13 +60,13 @@ const useSetProfileFromInstagram = () => {
     })
 
     const requiresReview = !validationResult.success
-    // dispatch(
-    //   make({
-    //     eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
-    //     isVerified: !!profile.verified,
-    //     handle: profile.screen_name || 'unknown'
-    //   })
-    // )
+    track(
+      make({
+        eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
+        isVerified: !!profile.is_verified,
+        handle: profile.username || 'unknown'
+      })
+    )
     return {
       requiresReview,
       handle: profile.username,

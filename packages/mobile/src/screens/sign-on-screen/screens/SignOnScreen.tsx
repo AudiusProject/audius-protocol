@@ -121,6 +121,7 @@ const ExpandablePanel = (props: ExpandablePanelProps) => {
       entering={SlideInUp.duration(880).delay(PANEL_EXPAND_DELAY)}
       layout={CurvedTransition}
       borderRadius='3xl'
+      style={css({ overflow: 'hidden' })}
     >
       <SafeAreaView>
         <Flex gap='2xl' ph='l' pv='2xl'>

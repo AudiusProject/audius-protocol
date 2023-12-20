@@ -1,5 +1,4 @@
 import { css } from '@emotion/native'
-import { Dimensions } from 'react-native'
 
 import { Box, Flex, Text, useTheme } from '@audius/harmony-native'
 import { LoadingMoreSpinner } from 'app/screens/favorites-screen/LoadingMoreSpinner'
@@ -15,8 +14,6 @@ export const SocialMediaLoading = () => {
     <Flex
       direction='column'
       alignItems='center'
-      h='100%'
-      w={Dimensions.get('window').width}
       justifyContent='center'
       gap='2xl'
       p='l'
@@ -24,10 +21,11 @@ export const SocialMediaLoading = () => {
         textAlign: 'center',
         position: 'absolute',
         top: 0,
+        right: 0,
+        bottom: 0,
         left: 0,
         zIndex: 6,
         borderRadius: 0,
-        flex: 1,
         backgroundColor: color.background.white
       })}
     >

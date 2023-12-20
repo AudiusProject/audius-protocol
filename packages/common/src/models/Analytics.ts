@@ -470,7 +470,7 @@ type CreateAccountStartInstagram = {
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartTikTok = {

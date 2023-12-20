@@ -6,9 +6,16 @@ import {
   useAudiusQueryContext
 } from '@audius/common'
 import { css } from '@emotion/native'
-import { setValueField } from 'common/store/pages/signon/actions'
+import {
+  getIsSocialConnected,
+  getLinkedSocialOnFirstPage
+} from 'audius-client/src/common/store/pages/signon/selectors'
+import {
+  setValueField,
+  unsetSocialProfile
+} from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -21,9 +28,11 @@ import {
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
+import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
 
@@ -41,10 +50,14 @@ type SocialMediaSectionProps = {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
+  onStart: () => void
+  onError: () => void
 }
 
 const SocialMediaSection = ({
-  onCompleteSocialMediaLogin
+  onCompleteSocialMediaLogin,
+  onStart,
+  onError
 }: SocialMediaSectionProps) => {
   const { spacing } = useTheme()
   return (
@@ -60,8 +73,8 @@ const SocialMediaSection = ({
         </Text>
       </Flex>
       <SocialMediaSignUpButtons
-        onStart={() => {}}
-        onError={() => {}}
+        onStart={onStart}
+        onError={onError}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size='m'>
@@ -74,6 +87,18 @@ const SocialMediaSection = ({
 export const PickHandleScreen = () => {
   const navigation = useNavigation<SignUpScreenParamList>()
   const dispatch = useDispatch()
+  const alreadyLinkedSocial = useSelector(getIsSocialConnected)
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin,
+    setIsWaitingForSocialLogin
+  } = useSocialMediaLoader({
+    resetAction: unsetSocialProfile,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+  // TODO: figure this piece out?
+  // const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(
@@ -96,23 +121,21 @@ export const PickHandleScreen = () => {
   const handleCompleteSocialMediaLogin = useCallback(
     ({
       requiresReview,
-      handle,
-      platform
+      handle
     }: {
       requiresReview: boolean
       handle: string
       platform: 'twitter' | 'instagram' | 'tiktok'
     }) => {
+      setIsWaitingForSocialLogin(false)
       dispatch(setValueField('handle', handle))
-      // TODO: social media handle impl
-      if (!requiresReview) {
-        // navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+      if (requiresReview) {
+        navigation.navigate('ReviewHandle')
       } else {
-        // navigate(SIGN_UP_REVIEW_HANDLE_PAGE)
+        navigation.navigate('FinishProfile')
       }
-      // toast(socialMediaMessages.socialMediaLoginSucess(platform))
     },
-    [dispatch]
+    [dispatch, navigation, setIsWaitingForSocialLogin]
   )
 
   return (
@@ -123,6 +146,7 @@ export const PickHandleScreen = () => {
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <Page>
+          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
           <Heading
             heading={messages.title}
             description={messages.description}
@@ -141,6 +165,8 @@ export const PickHandleScreen = () => {
               </Text>
             </Divider>
             <SocialMediaSection
+              onStart={handleStartSocialMediaLogin}
+              onError={handleErrorSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
           </Flex>

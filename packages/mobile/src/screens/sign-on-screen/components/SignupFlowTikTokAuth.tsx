@@ -1,7 +1,8 @@
 import {
   useAudiusQueryContext,
   type TikTokProfileData,
-  pickHandleSchema
+  pickHandleSchema,
+  Name
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -46,14 +47,13 @@ export const SignUpFlowTikTokAuth = ({
       })
       const requiresReview = !handleTooLong && !validationResult.success
 
-      // TODO: connect this analytics thingy
-      //   dispatch(
-      //     make({
-      //       eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK,
-      //       isVerified: !!profile.is_verified,
-      //       handle: profile.username || 'unknown'
-      //     })
-      //   )
+      track(
+        make({
+          eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK,
+          isVerified: !!profile.is_verified,
+          handle: profile.username || 'unknown'
+        })
+      )
       onSuccess({
         requiresReview,
         handle: profile.username,
