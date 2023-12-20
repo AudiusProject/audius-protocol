@@ -182,6 +182,7 @@
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
     "webpack-bundle-analyzer": "4.9.0",
+    "whatwg-fetch": "^3.6.20",
     "zod-formik-adapter": "1.2.0",
     "zustand": "4.4.3"
   },

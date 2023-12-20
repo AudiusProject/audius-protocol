@@ -108,10 +108,12 @@
     <script>
       const measurementId = '%VITE_GA_MEASUREMENT_ID%'
       if (!measurementId.includes('%')) {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', measurementId);
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          dataLayer.push(arguments)
+        }
+        gtag('js', new Date())
+        gtag('config', measurementId)
       }
     </script>
     <!-- end Google Analytics -->
@@ -121,10 +123,7 @@
       const adroll_adv_id = '%VITE_ADROLL_AVD_ID%'
       const adroll_pix_id = '%VITE_ADROLL_PIX_ID%'
       const adroll_version = '2.0'
-      if (
-        !adroll_adv_id.includes('%') &&
-        !adroll_pix_id.includes('%')
-      ) {
+      if (!adroll_adv_id.includes('%') && !adroll_pix_id.includes('%')) {
         ;(function (w, d, e, o, a) {
           w.__adroll_loaded = true
           w.adroll = w.adroll || []
@@ -205,6 +204,5 @@
         src="https://www.facebook.com/tr?id=725806216135811&ev=PageView&noscript=1"
     /></noscript>
     <!-- End Meta Pixel -->
-    <div></div>
   </body>
 </html>
