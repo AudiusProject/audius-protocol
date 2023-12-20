@@ -131,7 +131,7 @@ class ContentAccessChecker:
                 content_type="track",
                 content_entity=helpers.model_to_dictionary(content_entity),
                 conditions=cast(dict, conditions),
-                is_download=is_download,
+                is_download=bool(is_download),
             ),
         }
 
@@ -226,7 +226,7 @@ class ContentAccessChecker:
                         content_type="track",
                         content_entity=track_entity,
                         conditions=conditions,
-                        is_download=is_download,
+                        is_download=bool(is_download),
                     ),
                 }
 
