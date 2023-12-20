@@ -14,9 +14,9 @@ const meta: Meta<typeof FilterButton> = {
   component: FilterButton,
   args: {
     options: [
-      { label: 'Red Rover' },
-      { label: 'Green Goblin' },
-      { label: 'Blue Man Group' }
+      { value: 'Red Rover' },
+      { value: 'Green Goblin' },
+      { value: 'Blue Man Group' }
     ],
     label: 'Choice',
     popupAnchorOrigin: { horizontal: 'center', vertical: 'bottom' },
@@ -29,8 +29,8 @@ const meta: Meta<typeof FilterButton> = {
     label: {
       control: { type: 'text' }
     },
-    initialSelectionIndex: {
-      control: { type: 'number' }
+    selection: {
+      control: { type: 'text' }
     }
   }
 }
@@ -47,9 +47,9 @@ export const Primary: Story = {
         <FilterButton
           label='Choice'
           options={[
-            { label: 'Red Rover' },
-            { label: 'Green Goblin' },
-            { label: 'Blue Man Group' }
+            { value: 'Red Rover' },
+            { value: 'Green Goblin' },
+            { value: 'Blue Man Group' }
           ]}
         />
       </Flex>
@@ -64,9 +64,9 @@ export const FillContainer: Story = {
         <FilterButton
           label='Choice'
           options={[
-            { label: 'Red Rover' },
-            { label: 'Green Goblin' },
-            { label: 'Blue Man Group' }
+            { value: 'Red Rover' },
+            { value: 'Green Goblin' },
+            { value: 'Blue Man Group' }
           ]}
         />
       </Flex>
@@ -82,9 +82,9 @@ export const ReplaceLabel: Story = {
           variant={FilterButtonType.REPLACE_LABEL}
           label='Choice'
           options={[
-            { label: 'Red Leader' },
-            { label: 'Green Juice' },
-            { label: 'Blue Moon' }
+            { value: 'Red Leader' },
+            { value: 'Green Juice' },
+            { value: 'Blue Moon' }
           ]}
         />
       </Flex>
@@ -99,9 +99,9 @@ export const CustomIcon: Story = {
         <FilterButton
           iconRight={IconFilter}
           options={[
-            { label: 'Radar Option', icon: IconRadar },
-            { label: 'Or A CD?', icon: IconAlbum },
-            { label: "Ooh! We're Cookin Now!", icon: IconCampfire }
+            { value: 'Radar Option', icon: IconRadar },
+            { value: 'Or A CD?', icon: IconAlbum },
+            { value: "Ooh! We're Cookin Now!", icon: IconCampfire }
           ]}
         />
       </Flex>

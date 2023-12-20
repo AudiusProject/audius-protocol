@@ -13,7 +13,10 @@ import {
   purchaseContentSelectors,
   isContentPurchaseInProgress,
   usePayExtraPresets,
-  PurchaseContentPage
+  PurchaseContentPage,
+  useFeatureFlag,
+  FeatureFlags,
+  PurchaseVendor
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -174,6 +177,8 @@ export const PremiumContentPurchaseModal = () => {
     onClosed,
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
+  const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
+    useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -192,7 +197,10 @@ export const PremiumContentPurchaseModal = () => {
     usePurchaseContentFormConfiguration({
       track,
       price,
-      presetValues
+      presetValues,
+      purchaseVendor: isCoinflowEnabled
+        ? PurchaseVendor.COINFLOW
+        : PurchaseVendor.STRIPE
     })
 
   // Attempt recovery once on re-mount of the form
@@ -230,7 +238,7 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
-      {isValidTrack ? (
+      {isValidTrack && isCoinflowEnabledLoaded ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}
