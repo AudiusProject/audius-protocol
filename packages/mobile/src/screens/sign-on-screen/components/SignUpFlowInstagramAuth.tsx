@@ -127,6 +127,6 @@ export const SignUpFlowInstagramAuth = ({
       onPress={handlePress}
       title={socialMediaMessages.signUpInstagram}
       noText
-    ></SocialButton>
+    />
   )
 }

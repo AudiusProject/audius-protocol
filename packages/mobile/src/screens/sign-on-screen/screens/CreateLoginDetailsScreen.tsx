@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import {
   createLoginDetailsSchema,
   useAudiusQueryContext,
-  createLoginDetailsPageMessages as messages
+  createLoginDetailsPageMessages as messages,
+  emailSchemaMessages
 } from '@audius/common'
 import { css } from '@emotion/native'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
@@ -13,17 +14,23 @@ import {
   getIsVerified
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import { Formik } from 'formik'
-import { Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, IconVerified, useTheme } from '@audius/harmony-native'
+import {
+  Text,
+  Flex,
+  IconVerified,
+  useTheme,
+  IconExclamationCircle
+} from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
+import { Hint } from '../components/temp-harmony/Hint'
 import type { SignUpScreenParamList } from '../types'
 
 export type CreateLoginDetailsValues = {
@@ -58,19 +65,20 @@ export const CreateLoginDetailsScreen = () => {
 
   const audiusQueryContext = useAudiusQueryContext()
 
-  // TODO: handle email exists validation
-  // TODO: consolidate into common
-
   const loginDetailsFormikSchema = toFormikValidationSchema(
     createLoginDetailsSchema(audiusQueryContext)
   )
+
+  const navigateToLogin = () => {
+    navigation.navigate('SignOn', { screen: 'sign-in' })
+  }
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={loginDetailsFormikSchema}
     >
-      {({ isValid, dirty }) => (
+      {({ isValid, dirty, errors }) => (
         <Page>
           <Heading
             heading={messages.title}
@@ -82,8 +90,9 @@ export const CreateLoginDetailsScreen = () => {
                 label={messages.handleLabel}
                 value={
                   <Flex alignItems='center' gap='xs'>
-                    <Text>
+                    <Text variant='body' size='m' color='default'>
                       @{handleField.value}
+                      awdawd
                       {isVerified ? (
                         <IconVerified
                           style={css({
@@ -97,6 +106,20 @@ export const CreateLoginDetailsScreen = () => {
                 }
               />
               <TextField label={messages.emailLabel} name='email' noGutter />
+              {errors.email === emailSchemaMessages.emailInUse ? (
+                <Hint icon={IconExclamationCircle}>
+                  <Text
+                    variant='body'
+                    size='m'
+                    style={css({ textAlign: 'center' })}
+                  >
+                    {emailSchemaMessages.emailInUse}{' '}
+                    <Text onPress={navigateToLogin} color='accent'>
+                      {messages.signIn}
+                    </Text>
+                  </Text>
+                </Hint>
+              ) : null}
               <TextField
                 name='password'
                 label={messages.passwordLabel}

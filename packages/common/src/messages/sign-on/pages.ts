@@ -90,7 +90,8 @@ export const createLoginDetailsPageMessages = {
   emailLabel: 'Email',
   handleLabel: 'Handle',
   passwordLabel: 'Password',
-  confirmPasswordLabel: 'Confirm Password'
+  confirmPasswordLabel: 'Confirm Password',
+  signIn: 'Sign In'
 }
 
 export const selectArtstsPageMessages = {

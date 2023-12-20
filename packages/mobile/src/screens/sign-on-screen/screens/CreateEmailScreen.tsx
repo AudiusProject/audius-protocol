@@ -20,7 +20,7 @@ import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, Text, IconExclamationCircle } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -30,7 +30,6 @@ import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons
 import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
 import { Hint } from '../components/temp-harmony/Hint'
-import IconExclamation from '../components/temp-harmony/IconExclamation.svg'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 
@@ -116,7 +115,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               onChangeText={onChangeEmail}
             />
             {errors.email === emailSchemaMessages.emailInUse ? (
-              <Hint icon={IconExclamation}>
+              <Hint icon={IconExclamationCircle}>
                 <Text
                   variant='body'
                   size='m'

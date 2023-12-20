@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { css } from '@emotion/native'
 import { Dimensions, ImageBackground, SafeAreaView } from 'react-native'
@@ -132,14 +132,23 @@ const ExpandablePanel = (props: ExpandablePanelProps) => {
   )
 }
 
+export type SignOnScreenParams = {
+  screen: SignOnScreenType
+}
+
 /*
  * Manages the container for sign-up and sign-in flow
  * Not using navigation for this due to transition between sign-in and sign-up
  */
-export const SignOnScreen = () => {
+export const SignOnScreen = ({ route }) => {
+  const { params } = route
   const [email, setEmail] = useState('')
-  const [screen, setScreen] = useState<SignOnScreenType>('sign-up')
+  const [screen, setScreen] = useState<SignOnScreenType>(params.screen)
   const previousScreen = usePrevious(screen)
+
+  useEffect(() => {
+    setScreen(params.screen)
+  }, [params])
 
   const screenProps = {
     email,

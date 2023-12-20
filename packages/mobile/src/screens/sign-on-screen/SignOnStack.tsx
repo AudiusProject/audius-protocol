@@ -22,6 +22,7 @@ export const SignOnStack = () => {
         name='SignOn'
         component={SignOnScreen}
         options={{ headerShown: false }}
+        initialParams={{ screen: 'CreateEmail' }}
       />
       <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
       <Stack.Screen name='PickHandle' component={PickHandleScreen} />

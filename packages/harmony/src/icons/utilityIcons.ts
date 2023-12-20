@@ -39,6 +39,7 @@ import IconEarningsSVG from '../assets/icons/Earnings.svg'
 import IconEmailAddressSVG from '../assets/icons/EmailAddress.svg'
 import IconEmbedSVG from '../assets/icons/Embed.svg'
 import IconErrorSVG from '../assets/icons/Error.svg'
+import IconExclamationCircleSVG from '../assets/icons/ExclamationCircle.svg'
 import IconExploreSVG from '../assets/icons/Explore.svg'
 import IconExternalLinkSVG from '../assets/icons/ExternalLink.svg'
 import IconFeedSVG from '../assets/icons/Feed.svg'
@@ -271,3 +272,4 @@ export const IconValidationCheck = IconValidationCheckSVG as IconComponent
 export const IconValidationX = IconValidationXSVG as IconComponent
 export const IconSoundwave = IconSoundwaveSVG as IconComponent
 export const IconCreditCard = IconCreditCardSVG as IconComponent
+export const IconExclamationCircle = IconExclamationCircleSVG as IconComponent
