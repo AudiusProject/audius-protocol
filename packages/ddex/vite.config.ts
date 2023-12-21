@@ -28,8 +28,7 @@ export default defineConfig({
       assets: "/src/assets",
     },
   },
-  // Set to /ddex/ in Dockerfile. Leave unset ('/') if deploying standalone in the future (e.g., to Cloudflare Pages).
-  base: process.env.DDEX_BASE_URL || '/',
+  base: '/ddex/',
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,

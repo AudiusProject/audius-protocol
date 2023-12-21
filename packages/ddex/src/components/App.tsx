@@ -5,7 +5,7 @@ import { Ddex } from "../pages/DDEX";
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename="/ddex">
       <Layout>
         <Routes>
           <Route path="/" element={<Ddex />} />

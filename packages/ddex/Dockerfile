@@ -11,5 +11,4 @@ ADD public ./public
 ADD scripts ./scripts
 RUN chmod +x ./scripts/docker-entrypoint.sh
 
-ENV DDEX_BASE_URL="/ddex/"
 RUN npm install
