@@ -1,8 +1,10 @@
+from copy import copy
 from datetime import datetime
 from unittest.mock import call, create_autospec
 from src.models.users.user_bank import USDCUserBankAccount
 
 from user_bank_mock_transactions import (
+    EXTERNAL_ACCOUNT_ADDRESS,
     RECIPIENT_ACCOUNT_ADDRESS,
     SENDER_ACCOUNT_ADDRESS,
     mock_failed_track_purchase_tx,
@@ -68,14 +70,14 @@ test_entries = {
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
-            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "splits": {RECIPIENT_ACCOUNT_ADDRESS: 1000000},
             "total_price_cents": 100,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
             "splits": {
-                "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000,
-                "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
+                RECIPIENT_ACCOUNT_ADDRESS: 1000000,
+                EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
         },
@@ -471,7 +473,7 @@ def test_process_user_bank_txs_details_create_usdc_user_bank(app):
 
     challenge_event_bus = create_autospec(ChallengeEventBus)
 
-    test_entires_without_userbanks = test_entries.copy()
+    test_entires_without_userbanks = copy.deep_copy(test_entries)
     test_entires_without_userbanks.pop("usdc_user_bank_accounts")
 
     populate_mock_db(db, test_entires_without_userbanks)
@@ -629,3 +631,27 @@ def test_process_user_bank_txs_details_skip_unknown_instructions(app):
             .first()
         )
         assert transaction_record is None
+
+
+# Creation WAUDIO user bank
+def test_process_user_bank_txs_details_create_audio_token_acct_tx(app):
+    # TODO
+    return
+
+
+# Transfer of WAUDIO between two user banks (tipping)
+def test_process_user_bank_txs_details_transfer_audio_tip_tx(app):
+    # TODO
+    return
+
+
+# Transfer of WAUDIO to a non-userbank (external transfer)
+def test_process_user_bank_txs_details_transfer_audio_external_tx(app):
+    # TODO
+    return
+
+
+# Creation of challenge event for tipping
+def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
+    # TODO
+    return
