@@ -142,12 +142,13 @@ export class Storage implements StorageService {
     let lastErr
     for (
       let selectedNode = await this.storageNodeSelector.getSelectedNode();
-      this.storageNodeSelector.triedSelectingAllNodes();
+      !this.storageNodeSelector.triedSelectingAllNodes();
       selectedNode = await this.storageNodeSelector.getSelectedNode(true)
     ) {
       request.url = `${selectedNode!}/uploads`
       try {
         response = await axios(request)
+        break
       } catch (e: any) {
         lastErr = e // keep trying other nodes
       }
@@ -217,7 +218,7 @@ export class Storage implements StorageService {
     let lastErr
     for (
       let selectedNode = await this.storageNodeSelector.getSelectedNode();
-      this.storageNodeSelector.triedSelectingAllNodes();
+      !this.storageNodeSelector.triedSelectingAllNodes();
       selectedNode = await this.storageNodeSelector.getSelectedNode(true)
     ) {
       try {
