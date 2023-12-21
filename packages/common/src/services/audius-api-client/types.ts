@@ -16,7 +16,7 @@ import {
   Supporting,
   UserTip,
   StreamConditions,
-  StreamingSignature,
+  AccessSignature,
   ID,
   AccessPermissions,
   DownloadConditions
@@ -144,7 +144,6 @@ export type APITrack = {
   is_available: boolean
   is_stream_gated: boolean
   stream_conditions: Nullable<StreamConditions>
-  stream_signature: Nullable<StreamingSignature>
   is_download_gated: boolean
   download_conditions: Nullable<DownloadConditions>
   access: AccessPermissions
@@ -287,5 +286,5 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
 }
 
 export type GetNFTGatedTrackSignaturesResponse = {
-  [id: ID]: StreamingSignature
+  [id: ID]: AccessSignature
 }

@@ -10,6 +10,7 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
+  gatedContentSelectors,
   getContext,
   tracksSocialActions as socialActions,
   waitForValue,
@@ -33,6 +34,7 @@ import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -649,10 +651,16 @@ function* downloadTrack({
     const trackDownload = yield* getContext('trackDownload')
     let queryParams: QueryParams = {}
 
-    queryParams = yield* call(getQueryParams, { audiusBackendInstance })
+    const trackId = track.track_id
+    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+    const nftAccessSignature = nftAccessSignatureMap[trackId]
+    queryParams = (yield* call(getQueryParams, {
+      audiusBackendInstance,
+      nftAccessSignature
+    })) as unknown as QueryParams
     queryParams.filename = filename
 
-    const encodedTrackId = encodeHashId(track.track_id)
+    const encodedTrackId = encodeHashId(trackId)
     const url = apiClient.makeUrl(
       `/tracks/${encodedTrackId}/download`,
       queryParams
@@ -660,7 +668,7 @@ function* downloadTrack({
     yield* call(trackDownload.downloadTrack, { url, filename })
   } catch (e) {
     console.error(
-      `Could not download track ${track.track_id}: ${
+      `Could not download track ${trackId}: ${
         (e as Error).message
       }. Error: ${e}`
     )

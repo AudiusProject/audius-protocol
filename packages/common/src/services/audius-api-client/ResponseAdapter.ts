@@ -269,7 +269,6 @@ export const makeTrack = (
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
-    stream_signature: track.stream_signature ?? null,
 
     // Fields to prune
     id: undefined,
@@ -467,7 +466,6 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     is_available: true,
     is_stream_gated: false,
     stream_conditions: null,
-    stream_signature: null,
     is_download_gated: false,
     download_conditions: null,
     access: { stream: true, download: true },

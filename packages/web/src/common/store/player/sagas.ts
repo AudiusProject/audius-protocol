@@ -18,7 +18,6 @@ import {
   gatedContentSelectors,
   QueryParams,
   Genre,
-  hasStreamAccess,
   getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common'
@@ -61,7 +60,7 @@ const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
-const { getGatedTrackSignatureMap } = gatedContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
@@ -86,11 +85,6 @@ export function* watchPlay() {
       const track = yield* select(getTrack, { id: trackId })
       const isReachable = yield* select(getIsReachable)
       if (!track) return
-      if (track.is_stream_gated && !track.stream_signature) {
-        console.warn(
-          'Should have signature for gated track to reduce potential DN latency'
-        )
-      }
 
       if (!isReachable && isNativeMobile) {
         // Play offline.
@@ -106,12 +100,12 @@ export function* watchPlay() {
       const encodedTrackId = encodeHashId(trackId)
 
       let queryParams: QueryParams = {}
-      const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
-      const streamSignature = streamSignatureMap[track.track_id]
-      queryParams = yield* call(getQueryParams, {
+      const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+      const nftAccessSignature = nftAccessSignatureMap[track.track_id]
+      queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
-        streamSignature
-      })
+        nftAccessSignature
+      })) as unknown as QueryParams
 
       let trackDuration = track.duration
 
@@ -203,7 +197,7 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveStreamAccess = yield* call(hasStreamAccess, track)
+    const doesUserHaveStreamAccess = !!track?.access?.stream
     if (doesUserHaveStreamAccess || isPreview) {
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))

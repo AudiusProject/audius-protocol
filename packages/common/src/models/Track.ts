@@ -148,7 +148,7 @@ export const isContentUSDCPurchaseGated = (
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 
-export type StreamingSignature = {
+export type AccessSignature = {
   data: string
   signature: string
 }
@@ -207,7 +207,6 @@ export type TrackMetadata = {
   is_available: boolean
   is_stream_gated: boolean
   stream_conditions: Nullable<StreamConditions>
-  stream_signature: Nullable<StreamingSignature>
   is_download_gated: boolean
   download_conditions: Nullable<DownloadConditions>
   access: AccessPermissions

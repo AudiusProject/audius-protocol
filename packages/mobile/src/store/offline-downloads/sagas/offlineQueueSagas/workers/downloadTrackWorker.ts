@@ -11,7 +11,8 @@ import {
   SquareSizes,
   encodeHashId,
   accountSelectors,
-  getContext
+  getContext,
+  gatedContentSelectors
 } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
@@ -47,6 +48,7 @@ import { shouldCancelJob } from '../../utils/shouldCancelJob'
 import { downloadFile } from './downloadFile'
 
 const { getUserId } = accountSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 const MAX_RETRY_COUNT = 3
 const MAX_REQUEUE_COUNT = 3
@@ -167,8 +169,13 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
+  const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+  const nftAccessSignature = nftAccessSignatureMap[track_id]
   let queryParams: QueryParams = {}
-  queryParams = yield* call(getQueryParams, { audiusBackendInstance })
+  queryParams = yield* call(getQueryParams, {
+    audiusBackendInstance,
+    nftAccessSignature
+  })
   // todo: pass in correct filename and whether to download original or mp3
   queryParams.filename = `${title}.mp3`
 

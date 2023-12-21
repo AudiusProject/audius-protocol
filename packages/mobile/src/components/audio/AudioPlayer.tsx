@@ -94,7 +94,7 @@ const {
 } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
-const { getGatedTrackSignatureMap } = gatedContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 // TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
@@ -185,7 +185,7 @@ export const AudioPlayer = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
+  const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
   // Queue Things
@@ -309,16 +309,15 @@ export const AudioPlayer = () => {
         if (!track) {
           continue
         }
-        const { track_id: trackId, stream_signature } = track
+        const trackId = track.track_id
 
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else {
-          const streamSignature =
-            stream_signature || gatedTrackSignatureMap[trackId]
+          const nftAccessSignature = nftAccessSignatureMap[trackId]
           queryParamsMap[trackId] = await getQueryParams({
             audiusBackendInstance,
-            streamSignature
+            nftAccessSignature
           })
         }
       }
@@ -326,7 +325,7 @@ export const AudioPlayer = () => {
       setGatedQueryParamsMap(queryParamsMap)
       return queryParamsMap
     },
-    [gatedTrackSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
+    [nftAccessSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
@@ -382,23 +381,7 @@ export const AudioPlayer = () => {
           const { track, isPreview } = queueTracks[playerIndex] ?? {}
 
           // Skip track if user does not have access i.e. for an unlocked gated track
-          const hasStreamAccess = (() => {
-            if (!track) return false
-
-            const {
-              track_id: trackId,
-              is_stream_gated: isStreamGated,
-              stream_signature: streamSignature
-            } = track
-
-            const hasStreamSignature =
-              !!streamSignature ||
-              !!(trackId && gatedTrackSignatureMap[trackId])
-
-            return !isStreamGated || hasStreamSignature
-          })()
-
-          if (!track || !hasStreamAccess) {
+          if (!track?.access?.stream) {
             next()
           } else {
             // Track Player natively went to the next track

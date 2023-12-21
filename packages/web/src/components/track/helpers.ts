@@ -29,7 +29,6 @@ export const getTrackWithFallback = (track: Track | null) => {
       is_unlisted: false,
       is_stream_gated: false,
       stream_conditions: null,
-      stream_signature: null,
       is_download_gated: false,
       download_conditions: null,
       preview_cid: null,

@@ -389,7 +389,7 @@ def get_track_play_count_dict(session, track_ids):
 #   repost_count, save_count
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
-#   if current_user_id available and track is gated and user has access, populates stream_signature
+#   populate stream and download access
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
@@ -644,7 +644,7 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
         }
         if has_stream_access:
             track[
-                response_name_constants.stream_signature
+                response_name_constants.premium_content_signature
             ] = get_gated_content_signature_for_user_wallet(
                 {
                     "track_id": track_id,

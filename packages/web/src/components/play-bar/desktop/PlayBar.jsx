@@ -17,7 +17,6 @@ import {
   queueSelectors,
   FeatureFlags,
   playbackRateValueMap,
-  gatedContentSelectors,
   cacheTracksSelectors,
   Kind
 } from '@audius/common'
@@ -61,7 +60,6 @@ const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getAccountUser, getUserId } = accountSelectors
-const { getGatedTrackSignatureMap } = gatedContentSelectors
 const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
@@ -462,7 +460,6 @@ const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state) => {
-    const streamSignatureMap = getGatedTrackSignatureMap(state)
     const lineupEntries =
       getLineupEntries(getLineupSelectorForRoute(state), state) ?? []
 
@@ -479,13 +476,9 @@ const makeMapStateToProps = () => {
       if (entry.kind !== Kind.TRACKS) return false
 
       const { id } = entry
-      const {
-        is_stream_gated: isStreamGated,
-        stream_signature: streamSignature
-      } = getTrack(state, { id }) ?? {}
+      const { access } = getTrack(state, { id }) ?? {}
 
-      const hasStreamSignature = !!streamSignature || !!streamSignatureMap[id]
-      return !isStreamGated || hasStreamSignature
+      return !!access?.stream
     })
 
     return {
