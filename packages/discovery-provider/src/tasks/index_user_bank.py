@@ -347,11 +347,16 @@ def validate_purchase(
         is_valid = False
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
+        if account not in balance_changes:
+            logger.error(
+                f"index_payment_router.py | No split given to account={account}, expected={split}"
+            )
+            return False
         if balance_changes[account]["change"] < split:
             logger.error(
-                f"index_user_bank.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
+                f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
-            is_valid = False
+            return False
     return is_valid
 
 
@@ -536,6 +541,7 @@ def index_user_tip(
 
 
 def process_transfer_instruction(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     instruction: CompiledInstruction,
@@ -547,8 +553,6 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
-    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
-
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
     sender_account = account_keys[sender_idx]
@@ -725,6 +729,7 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
 
 
 def process_user_bank_tx_details(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     tx_info: GetTransactionResp,
@@ -779,6 +784,7 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         process_transfer_instruction(
+            solana_client_manager=solana_client_manager,
             session=session,
             redis=redis,
             instruction=instruction,
@@ -963,7 +969,13 @@ def process_user_bank_txs() -> None:
                 )
 
                 process_user_bank_tx_details(
-                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                    solana_client_manager=solana_client_manager,
+                    session=session,
+                    redis=redis,
+                    tx_info=tx_info,
+                    tx_sig=tx_sig,
+                    timestamp=parsed_timestamp,
+                    challenge_event_bus=challenge_bus,
                 )
                 session.add(
                     UserBankTx(
