@@ -67,6 +67,9 @@ services:
       context: ${PROJECT_ROOT}/packages/es-indexer
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
+      audius_db_url: 'postgresql://postgres:postgres@db:5432/discovery_provider_1'
     depends_on:
       db:
         condition: service_healthy
@@ -113,6 +116,7 @@ services:
       audius_contracts_entity_manager_address: '${ENTITY_MANAGER_ADDRESS}'
       audius_eth_contracts_registry: '${ETH_REGISTRY_ADDRESS}'
       audius_eth_contracts_token: '${ETH_TOKEN_ADDRESS}'
+      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
 
       audius_solana_endpoint: 'http://solana-test-validator:8899'
       audius_solana_track_listen_count_address: '${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}'

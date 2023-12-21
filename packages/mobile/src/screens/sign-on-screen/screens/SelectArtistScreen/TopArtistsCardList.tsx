@@ -12,6 +12,7 @@ import {
   FollowArtistField,
   FollowArtistTileSkeleton
 } from './FollowArtistField'
+import { PreviewArtistHint } from './PreviewArtistHint'
 
 export const useGetTopArtists = (genre: string, options?: QueryHookOptions) => {
   const useGetArtistsHook =
@@ -37,9 +38,15 @@ export const TopArtistsCardList = (props: Props) => {
 
   return (
     <CardList
+      ListHeaderComponent={genre === 'Featured' ? <PreviewArtistHint /> : null}
       data={artists}
       style={css({ paddingTop: spacing.xl })}
-      renderItem={({ item }) => <MemoizedFollowArtistField artist={item} />}
+      renderItem={({ item, index }) => (
+        <MemoizedFollowArtistField
+          artist={item}
+          showPreviewHint={genre === 'Featured' && index === 0}
+        />
+      )}
       sceneName={genre}
       numColumns={2}
       ListFooterComponent={<Box h={140} />}

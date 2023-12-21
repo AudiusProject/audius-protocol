@@ -1,6 +1,6 @@
 import { full } from '@audius/sdk'
-import { Moment } from 'moment'
 
+import type { Dayjs } from 'utils/dayjs'
 import { ValueOf } from 'utils/typeUtils'
 
 import {
@@ -80,7 +80,7 @@ export type TrackRecord = SavedPageTrack & {
   name: string
   artist: string
   handle: string
-  date: Moment
+  date: Dayjs
   time: number
   plays: number | undefined
 }

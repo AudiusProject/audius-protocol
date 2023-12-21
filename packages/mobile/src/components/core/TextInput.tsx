@@ -209,7 +209,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         Animated.parallel(animations).start()
       },
-      [onFocus, isLabelActive]
+      [onFocus, isLabelActive, hideKeyboard]
     )
 
     const handleBlur = useCallback(
