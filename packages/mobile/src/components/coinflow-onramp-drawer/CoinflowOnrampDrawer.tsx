@@ -99,8 +99,6 @@ export const CoinflowOnrampDrawer = () => {
 
   const showContent = isOpen && adapter
 
-  console.log(`CoinflowOnrampDrawer: \n ${deviceId} \n ${purchaseMetadata}`)
-
   return (
     <AppDrawer
       blockClose={false}

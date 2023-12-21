@@ -9,8 +9,6 @@ import com.nsure.nsure.NSure;
 import javax.annotation.Nonnull;
 
 public class NSureSDK extends ReactContextBaseJavaModule {
-    public static final String PARTNER_ID = "AUDIUS";
-
     public NSureSDK(ReactApplicationContext reactContext) {
         super(reactContext);
     }
@@ -22,8 +20,8 @@ public class NSureSDK extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getDeviceId(String appId, Callback callback){
-        NSure nSure = NSure.getInstance(this.getReactApplicationContext(), appId, PARTNER_ID);
+    public void getDeviceId(String appId, String partnerId, Callback callback){
+        NSure nSure = NSure.getInstance(this.getReactApplicationContext(), appId, partnerId);
         callback.invoke(nSure.getDeviceId());
     }
 }

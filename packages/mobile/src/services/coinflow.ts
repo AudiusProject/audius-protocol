@@ -1,7 +1,8 @@
 import { NativeModules, Platform } from 'react-native'
+
+import { env } from 'app/services/env'
 const nsureSDK = NativeModules.NSureSDK
 
-const APP_ID = process.env.VITE_COINFLOW_APP_ID
 let deviceId: string
 
 export const getCoinflowDeviceId = (): string => {
@@ -9,19 +10,22 @@ export const getCoinflowDeviceId = (): string => {
     return deviceId
   }
 
-  console.log(APP_ID)
-
   if (Platform.OS === 'ios') {
     nsureSDK.sharedInstanceWithAppID(
-      APP_ID,
+      env.COINFLOW_APP_ID,
+      env.COINFLOW_PARTNER_ID,
       (_: unknown, _deviceId: string) => {
         deviceId = _deviceId ?? ''
       }
     )
   } else if (Platform.OS === 'android') {
-    nsureSDK.getDeviceId(APP_ID, (_deviceId: string) => {
-      deviceId = _deviceId ?? ''
-    })
+    nsureSDK.getDeviceId(
+      env.COINFLOW_APP_ID,
+      env.COINFLOW_PARTNER_ID,
+      (_deviceId: string) => {
+        deviceId = _deviceId ?? ''
+      }
+    )
   } else {
     deviceId = ''
   }

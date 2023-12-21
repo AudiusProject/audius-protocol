@@ -25,9 +25,9 @@ RCT_EXPORT_MODULE();
  
  @param appId        your app ID
  */
-RCT_EXPORT_METHOD(sharedInstanceWithAppID:(NSString *)appId callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(sharedInstanceWithAppID:(NSString *)appId partnerId:(NSString *)partnerId callback:(RCTResponseSenderBlock)callback)
 {
-  NSure *nsure = [NSure sharedInstanceWithAppID:appId partherID:@"AUDIUS"];
+  NSure *nsure = [NSure sharedInstanceWithAppID:appId partherID:partnerId];
   callback(@[nsure, nsure.deviceId]);
 }
 
