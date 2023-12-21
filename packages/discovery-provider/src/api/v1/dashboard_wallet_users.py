@@ -11,9 +11,14 @@ from src.queries.get_dashboard_wallet_users import get_bulk_dashboard_wallet_use
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
-ns = Namespace("dashboard_wallet_users", description="Protocol dashboard wallet users related operations")
+ns = Namespace(
+    "dashboard_wallet_users",
+    description="Protocol dashboard wallet users related operations",
+)
 
-get_dashboard_wallet_users_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+get_dashboard_wallet_users_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
 get_dashboard_wallet_users_parser.add_argument(
     "wallets",
     required=True,
@@ -22,7 +27,10 @@ get_dashboard_wallet_users_parser.add_argument(
 )
 
 get_dashboard_wallet_users_response = make_response(
-    "dashboard_wallet_users_response", ns, fields.List(fields.Nested(dashboard_wallet_user)))
+    "dashboard_wallet_users_response",
+    ns,
+    fields.List(fields.Nested(dashboard_wallet_user)),
+)
 
 
 @ns.route("")
@@ -45,5 +53,7 @@ class BulkDashboardWalletUsers(Resource):
         args = get_dashboard_wallet_users_parser.parse_args()
         wallets_arg = args.get("wallets")
         dashboard_wallet_users = get_bulk_dashboard_wallet_users(wallets_arg)
-        dashboard_wallet_users = list(map(format_dashboard_wallet_user, dashboard_wallet_users))
+        dashboard_wallet_users = list(
+            map(format_dashboard_wallet_user, dashboard_wallet_users)
+        )
         return success_response(dashboard_wallet_users)
