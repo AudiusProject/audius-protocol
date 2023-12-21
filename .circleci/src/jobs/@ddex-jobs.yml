@@ -15,23 +15,6 @@ ddex-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - ddex-cache-{{ checksum "packages/ddex/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - ddex-cache-
-
-    - run:
-        name: npm ci
-        command: |
-          cd packages/ddex 
-          npm ci
-
-    - save_cache:
-        key: ddex-cache-{{ checksum "packages/ddex/package.json" }}
-        paths:
-          - packages/ddex/node_modules
-
     - run:
         name: lint & typecheck
         command: |
