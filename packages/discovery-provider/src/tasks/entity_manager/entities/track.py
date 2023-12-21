@@ -510,6 +510,7 @@ def delete_track(params: ManageEntityParameters):
     params.add_record(track_id, deleted_track)
 
 
+# Make sure that the user has access to remix parent tracks
 def validate_remixability(params: ManageEntityParameters):
     track_metadata = params.metadata
     user_id = params.user_id
@@ -541,7 +542,7 @@ def validate_remixability(params: ManageEntityParameters):
         access = gated_content_batch_access["track"][user_id][track_id]
         if not access["does_user_have_access"]:
             raise IndexingValidationError(
-                f"User {user_id} does not have access to gated track {track_id}"
+                f"User {user_id} does not have access to remix parent gated track {track_id}"
             )
 
 
@@ -570,12 +571,14 @@ def get_remix_parent_track_ids(track_metadata):
 
 def validate_access_conditions(params: ManageEntityParameters):
     track_metadata = params.metadata
+
     is_stream_gated = track_metadata.get("is_stream_gated")
-    stream_conditions = track_metadata.get("stream_conditions")
+    stream_conditions = track_metadata.get("stream_conditions", {}) or {}
+
     download = track_metadata.get("download")
     is_downloadable = download.get("is_downloadable") if download else False
     is_download_gated = track_metadata.get("is_download_gated")
-    download_conditions = track_metadata.get("download_conditions")
+    download_conditions = track_metadata.get("download_conditions", {}) or {}
 
     if is_stream_gated:
         # if stream gated, must have stream conditions
@@ -583,23 +586,16 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} is stream gated but has no stream conditions"
             )
-        # if stream gated, must be download gated
-        if not is_download_gated:
-            raise IndexingValidationError(
-                f"Track {params.entity_id} is stream gated but not download gated"
-            )
-        # stream conditions must be present in download conditions and must match
-        for condition, value in stream_conditions.items():
-            if condition not in download_conditions:
+        if is_downloadable:
+            # if stream gated and downloadable, must be download gated
+            if not is_download_gated:
                 raise IndexingValidationError(
-                    f"Track {params.entity_id} stream condition {condition} is not present in download conditions"
+                    f"Track {params.entity_id} is stream gated but not download gated"
                 )
-            # download conditions may include conditions not present in stream conditions
-            # e.g. a track may be tip gated for streams, and both usdc and follow gated for downloads.
-            # in this case, the download conditions will include tip, usdc, and follow conditions
-            if value != download_conditions[condition]:
+            # if stream gated and downloadable, stream conditions must be same as download conditions
+            if stream_conditions != download_conditions:
                 raise IndexingValidationError(
-                    f"Track {params.entity_id} stream condition {condition} does not match download condition"
+                    f"Track {params.entity_id} stream conditions do not match download conditions"
                 )
 
     if is_download_gated:
@@ -609,7 +605,13 @@ def validate_access_conditions(params: ManageEntityParameters):
                 f"Track {params.entity_id} is download gated but not downloadable"
             )
         # if download gated, must have download conditions
-        if is_download_gated and not download_conditions:
+        if not download_conditions:
             raise IndexingValidationError(
                 f"Track {params.entity_id} is download gated but has no download conditions"
+            )
+    else:
+        # if not download gated, must not be stream gated
+        if is_stream_gated:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is not download gated but is stream gated"
             )
