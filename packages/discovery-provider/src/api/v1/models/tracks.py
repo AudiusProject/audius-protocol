@@ -98,6 +98,7 @@ track = ns.model(
         "orig_filename": fields.String(
             allow_null=True
         ),  # remove nullability after backfill
+        "is_original_available": fields.Boolean,
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),

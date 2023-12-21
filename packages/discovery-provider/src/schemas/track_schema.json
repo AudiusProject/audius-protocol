@@ -39,6 +39,10 @@
           ],
           "default": null
         },
+        "is_original_available": {
+          "type": "boolean",
+          "default": false
+        },
         "audio_upload_id": {
           "type": [
             "string",

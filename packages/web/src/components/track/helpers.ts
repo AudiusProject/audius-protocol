@@ -34,6 +34,7 @@ export const getTrackWithFallback = (track: Track | null) => {
       preview_cid: null,
       orig_file_cid: '',
       orig_filename: '',
+      is_original_available: false,
       activity_timestamp: '',
       _co_sign: undefined,
       _cover_art_sizes: {

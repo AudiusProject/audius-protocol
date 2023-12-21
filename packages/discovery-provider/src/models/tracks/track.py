@@ -44,6 +44,9 @@ class Track(Base, RepresentableMixin):
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
     orig_filename = Column(Text)
+    is_original_available = Column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     title = Column(Text)
     duration = Column(Integer)
     preview_start_seconds = Column(Float)
