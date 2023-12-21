@@ -633,6 +633,9 @@ def test_process_user_bank_txs_details_skip_unknown_instructions(app):
         assert transaction_record is None
 
 
+# TODO: https://linear.app/audius/issue/PAY-2314/add-user-bank-indexer-tests-for-audio-operations
+
+
 # Creation WAUDIO user bank
 def test_process_user_bank_txs_details_create_audio_token_acct_tx(app):
     # TODO
