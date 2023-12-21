@@ -29,7 +29,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         endAdornment={
           hideVisibilityToggle ? null : (
             <IconButton
-              Icon={VisibilityIcon}
+              icon={VisibilityIcon}
               onClick={toggleIsPasswordVisible}
               aria-label={
                 isPasswordVisible

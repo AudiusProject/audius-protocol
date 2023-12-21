@@ -9,11 +9,11 @@ const meta: Meta<typeof IconButton> = {
   title: 'Buttons/IconButton [beta]',
   component: IconButton,
   args: {
-    Icon: IconNote,
+    icon: IconNote,
     'aria-label': 'Play music'
   },
   argTypes: {
-    Icon: {
+    icon: {
       control: false
     }
   }
@@ -28,33 +28,35 @@ export const Primary: Story = {
 }
 
 export const Default: Story = {
-  render: () => <IconButton Icon={IconNote} aria-label='Play music' />
+  render: (props) => <IconButton {...props} />
 }
 
 export const Size: Story = {
-  render: () => (
+  render: (props) => (
     <Flex gap='3xl'>
-      <IconButton Icon={IconNote} aria-label='Play music' size='xs' />
-      <IconButton Icon={IconNote} aria-label='Play music' size='s' />
-      <IconButton Icon={IconNote} aria-label='Play music' size='m' />
-      <IconButton Icon={IconNote} aria-label='Play music' size='l' />
-      <IconButton Icon={IconNote} aria-label='Play music' size='2xl' />
+      <IconButton {...props} size='xs' />
+      <IconButton {...props} size='s' />
+      <IconButton {...props} size='m' />
+      <IconButton {...props} size='l' />
+      <IconButton {...props} size='2xl' />
     </Flex>
   )
 }
 
 export const Color: Story = {
-  render: () => (
+  render: (props) => (
     <Flex gap='3xl'>
-      <IconButton Icon={IconNote} aria-label='Play music' color='default' />
-      <IconButton Icon={IconNote} aria-label='Play music' color='subdued' />
-      <IconButton Icon={IconNote} aria-label='Play music' disabled />
+      <IconButton {...props} color='default' />
+      <IconButton {...props} color='subdued' />
+      <IconButton {...props} disabled />
     </Flex>
   )
 }
 
 export const Ripple: Story = {
-  render: () => (
-    <IconButton ripple Icon={IconVisibilityHidden} aria-label='Play music' />
-  )
+  args: {
+    ripple: true,
+    icon: IconVisibilityHidden,
+    'aria-label': 'Show password'
+  }
 }

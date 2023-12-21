@@ -6,7 +6,7 @@ import { BaseButton } from '../BaseButton/BaseButton'
 import type { BaseButtonProps } from '../types'
 
 export type IconButtonProps = {
-  Icon: IconComponent
+  icon: IconComponent
   ripple?: boolean
   'aria-label': string
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
@@ -17,7 +17,14 @@ export type IconButtonProps = {
  * apply color and sizing properties.
  */
 export const IconButton = (props: IconButtonProps) => {
-  const { Icon, color: iconColor, size = 'l', shadow, ripple, ...other } = props
+  const {
+    icon: Icon,
+    color: iconColor,
+    size = 'l',
+    shadow,
+    ripple,
+    ...other
+  } = props
   const { disabled } = other
   const { color, cornerRadius, spacing } = useTheme()
 
