@@ -31,7 +31,7 @@ UNKNOWN_PDA = "2HYsaffLbtDuMNNiUkvnQ1i9bHdMwtzEfB4win2bHkaj"
 # Used as sender / purchaser in tracks below
 SENDER_ACCOUNT_ADDRESS = "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX"
 # Used as recipient / track owner in transactions below
-RECIPIENT_ACCOUNT_ADDRESS = "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy"
+RECIPIENT_ACCOUNT_ADDRESS = "7G1angvMtUZLFMyrMDGj7bxsduB4bjLD7VXRR7N4FXqe"
 EXTERNAL_ACCOUNT_ADDRESS = "7hxqJmiPkSAP1zbtu8w2gWXUzEvNp8u9Ms5pKcKwXiNn"
 EXTERNAL_ACCOUNT_ADDRESS_OWNER = "8HLdEuB5K4TGa8txZQpjZcsgYf4PNdnft1ZeZobhP4Ug"
 NONCE_ACCOUNT_ADDRESS = "ETHqyvd51HyoKtsgVdZTVH7c7Qw6dS6zpthqfGPtUsWk"
@@ -1478,15 +1478,18 @@ mock_invalid_track_purchase_unknown_pda_tx = GetTransactionResp.from_json(
     )
 )
 
-
+# Create token account for userbank address 7G1angvMtUZLFMyrMDGj7bxsduB4bjLD7VXRR7N4FXqe
+# and eth address 0xe66402f9a6714a874a539fb1689b870dd271dfb2
 mock_valid_create_token_account_tx = GetTransactionResp.from_json(
     json.dumps(
         {
             "jsonrpc": "2.0",
             "result": {
-                "slot": 217572038,
+                "slot": 1039,
                 "transaction": {
-                    "signatures": [MOCK_SIGNATURE],
+                    "signatures": [
+                        "61h4M3EjVAZ9caw37ygLKpiAdGpsbjTESmrT2zSDBAd19hM3i49DWbQRza5PG3coX2raaaqPKckd5LrRS7h5BiZp"
+                    ],
                     "message": {
                         "header": {
                             "numRequiredSignatures": 1,
@@ -1498,17 +1501,17 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                             RECIPIENT_ACCOUNT_ADDRESS,
                             "11111111111111111111111111111111",
                             USDC_MINT,
-                            CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
                             "SysvarRent111111111111111111111111111111111",
+                            CLAIMABLE_TOKENS_PDA,
                             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         ],
-                        "recentBlockhash": "B9eEDff6CSNXoBexDA2eTxndDeXtUoWCxmfKnUF3emiS",
+                        "recentBlockhash": "G49zpD1xEJvjeWNDFwRbCrwYp8rH3dKgfvkcZnpubYMW",
                         "instructions": [
                             {
-                                "programIdIndex": 4,
-                                "accounts": [0, 3, 5, 1, 6, 7, 2],
-                                "data": "134W7uScBSfmwtdj3tk3ZH7Nm3Ay1",
+                                "programIdIndex": 6,
+                                "accounts": [0, 3, 4, 1, 5, 7, 2],
+                                "data": "14DAXhVVokSE25ZP5P4DToK4ts3zZ",
                                 "stackHeight": None,
                             }
                         ],
@@ -1518,25 +1521,16 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                     "err": None,
                     "status": {"Ok": None},
                     "fee": 5000,
-                    "preBalances": [
-                        3239626121,
-                        0,
-                        1,
-                        182991459454,
-                        1141440,
-                        0,
-                        1009200,
-                        934087680,
-                    ],
+                    "preBalances": [19998586040, 0, 1, 1461600, 0, 1009200, 1141440, 1],
                     "postBalances": [
-                        3237581841,
+                        19996541760,
                         2039280,
                         1,
-                        182991459454,
-                        1141440,
+                        1461600,
                         0,
                         1009200,
-                        934087680,
+                        1141440,
+                        1,
                     ],
                     "innerInstructions": [
                         {
@@ -1544,25 +1538,13 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                             "instructions": [
                                 {
                                     "programIdIndex": 2,
-                                    "accounts": [0, 1],
-                                    "data": "3Bxs4h24hBtQy9rw",
-                                    "stackHeight": None,
-                                },
-                                {
-                                    "programIdIndex": 2,
-                                    "accounts": [1, 5],
-                                    "data": "2h1LQHBzPPUdytA5unYoiBM9hyMMstpxjeEugC473kPsrMnebSwevdmSiZWq4RfeNmSSNMz54cv6cT34cHzbajXUMUs4QcdFWuEJXwStMvHN4kubtpRakNnXwVFyHf2zPWay8Webfz7toEhWzhL2XaaMN",
-                                    "stackHeight": None,
-                                },
-                                {
-                                    "programIdIndex": 2,
-                                    "accounts": [1, 5],
-                                    "data": "3YW74tADuZCgn2JRiKLJoBypjYj1BEc7gSJBX8tWTgQiGQpT4dAcuRMPeA5KuE3xcPvwbdxDMR2roNkHuV6LJCfFWtzPc3mF8cNK9Ew8eATPSK6EkD4js3kov1bj7yPammice5xV1E3zqe",
+                                    "accounts": [0, 1, 4],
+                                    "data": "R7r7mzYUyce18QDjGswhPZMQ5y7Q58eHcPYaiaAZsGS68TQJgcprBhcjbzoKQiTs4cCNsbjYTrxanQ32T8WPN2am1EN3hNK4VamjnXvqQUezUzTxYFDCkA3tuXbHyBKmooGc7sdQpNfhgWmQhcCL1wvCuBoqiQQo6tg",
                                     "stackHeight": None,
                                 },
                                 {
                                     "programIdIndex": 7,
-                                    "accounts": [1, 3, 5, 6],
+                                    "accounts": [1, 3, 4, 5],
                                     "data": "2",
                                     "stackHeight": None,
                                 },
@@ -1574,15 +1556,11 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                         "Program log: Instruction: CreateTokenAccount",
                         "Program 11111111111111111111111111111111 invoke [2]",
                         "Program 11111111111111111111111111111111 success",
-                        "Program 11111111111111111111111111111111 invoke [2]",
-                        "Program 11111111111111111111111111111111 success",
-                        "Program 11111111111111111111111111111111 invoke [2]",
-                        "Program 11111111111111111111111111111111 success",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
                         "Program log: Instruction: InitializeAccount",
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4528 of 179838 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 3602 of 1382448 compute units",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
-                        f"Program {CLAIMABLE_TOKENS_PDA} consumed 25125 of 200000 compute units",
+                        f"Program {CLAIMABLE_TOKENS_PDA} consumed 21499 of 1400000 compute units",
                         f"Program {CLAIMABLE_TOKENS_PDA} success",
                     ],
                     "preTokenBalances": [],
@@ -1597,14 +1575,12 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                                 "uiAmountString": "0",
                             },
                             "owner": USDC_PDA,
-                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         }
                     ],
                     "rewards": [],
                     "loadedAddresses": {"writable": [], "readonly": []},
-                    "computeUnitsConsumed": 25125,
                 },
-                "blockTime": 1694722170,
+                "blockTime": 1689354934,
             },
             "id": 0,
         }

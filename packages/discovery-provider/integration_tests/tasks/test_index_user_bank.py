@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
+from src.models.users.user_bank import USDCUserBankAccount
 
 from user_bank_mock_transactions import (
     RECIPIENT_ACCOUNT_ADDRESS,
@@ -9,7 +10,7 @@ from user_bank_mock_transactions import (
     mock_invalid_track_purchase_missing_splits_tx,
     mock_invalid_track_purchase_unknown_pda_tx,
     mock_unknown_instruction_tx,
-    mock_valid_track_purchase_non_userbank_source_tx,
+    mock_valid_create_token_account_tx,
     mock_valid_track_purchase_pay_extra_tx,
     mock_valid_track_purchase_tx,
     mock_valid_transfer_without_purchase_tx,
@@ -31,6 +32,7 @@ from src.utils.redis_connection import get_redis
 
 trackOwnerId = 1
 trackOwnerUserBank = RECIPIENT_ACCOUNT_ADDRESS
+trackOwnerEthAddress = "0xe66402f9a6714a874a539fb1689b870dd271dfb2"
 trackBuyerId = 2
 trackBuyerUserBank = SENDER_ACCOUNT_ADDRESS
 
@@ -39,7 +41,7 @@ test_entries = {
         {
             "user_id": trackOwnerId,
             "handle": "trackOwner",
-            "wallet": "0xbe21befeada45e089031429d8ddd52765e996133",
+            "wallet": trackOwnerEthAddress,
         },
         {
             "user_id": trackBuyerId,
@@ -50,7 +52,7 @@ test_entries = {
     "usdc_user_bank_accounts": [
         {  # trackOwner
             "signature": "unused1",
-            "ethereum_address": "0xbe21befeada45e089031429d8ddd52765e996133",
+            "ethereum_address": trackOwnerEthAddress,
             "bank_account": trackOwnerUserBank,
         },
         {  # trackBuyer
@@ -455,9 +457,45 @@ def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app)
     )
 
 
-# TODO
-def test_process_user_bank_txs_details_create_user_bank(app):
-    return
+def test_process_user_bank_txs_details_create_usdc_user_bank(app):
+    tx_response = mock_valid_create_token_account_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entires_without_userbanks = test_entries.copy()
+    test_entires_without_userbanks.pop("usdc_user_bank_accounts")
+
+    populate_mock_db(db, test_entires_without_userbanks)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        user_bank = (
+            session.query(USDCUserBankAccount)
+            .filter(USDCUserBankAccount.signature == tx_sig_str)
+            .first()
+        )
+
+        assert user_bank is not None
+        assert user_bank.bank_account == RECIPIENT_ACCOUNT_ADDRESS
+        assert user_bank.ethereum_address == trackOwnerEthAddress
 
 
 def test_process_user_bank_tx_details_skip_errors(app):
