@@ -7,12 +7,23 @@ ddex-init:
     - attach_workspace:
         at: ./
 
-    - create_concatenated_patch_file:
-        filename: combined-patch-file.txt
-
+    # Download and cache dependencies
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - dependency-cache-{{ checksum "packages/ddex/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dependency-cache-
+
+    - run:
+        name: npm ci
+        command: |
+          cd packages/ddex 
+          npm ci
+
+    - save_cache:
+        key: dependency-cache-{{ checksum "packages/ddex/package.json" }}
+        paths:
+          - packages/ddex/node_modules
 
     - run:
         name: lint & typecheck
@@ -22,5 +33,4 @@ ddex-init:
     - persist_to_workspace:
         root: ./
         paths:
-          - node_modules
           - packages/ddex/node_modules

@@ -11,9 +11,10 @@
     "prod:preview": "env-cmd -f .env.prod.local vite build && vite preview",
     "build": "tsc && vite build",
     "serve": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint --fix . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "verify": "concurrently \"tsc\" \"npm:lint\""
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "typecheck": "tsc",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
   },
   "dependencies": {
     "@audius/sdk": "3.0.22",
