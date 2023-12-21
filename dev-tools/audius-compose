@@ -236,6 +236,7 @@ def build(
             "--profile=solana",
             "--profile=block-explorer",
             "--profile=uptime",
+            "--profile=ddex",
             "build",
             *args,
             *services,

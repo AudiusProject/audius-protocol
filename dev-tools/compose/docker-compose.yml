@@ -175,6 +175,14 @@ services:
       service: sla-auditor
     <<: *common
 
+  # DDEX
+
+  ddex:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex
+    <<: *common
+
   # Storage (content node)
 
   mediorum:

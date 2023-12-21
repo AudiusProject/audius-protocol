@@ -69,7 +69,7 @@ jobs:
       name: push-ddex
       context: [GCP, dockerhub, slack-secrets]
       service: ddex
-      # notify_slack_on_failure: true
+      notify_slack_on_failure: true
 
   - push-arm-image:
       name: push-discovery-provider-arm
@@ -189,7 +189,7 @@ jobs:
         - push-healthz
         - push-protocol-dashboard
         - push-uptime
-        # - push-ddex
+        - push-ddex
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
