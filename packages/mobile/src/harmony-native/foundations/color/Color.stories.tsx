@@ -6,7 +6,7 @@ import { Divider, SegmentedControl, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 
-import { primitiveTheme } from '../theme'
+import { primitiveTheme } from './color'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
