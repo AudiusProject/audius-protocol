@@ -483,7 +483,7 @@ class TrackStream(Resource):
         # this will be removed once clients are updated to use /download
         filename = request_args.get("filename")
         if filename:
-            redirect_path = f"/v1/tracks/{track_id}/download?user_data={user_data}&user_signature={user_signature}&filename={filename}"
+            redirect_path = f"/v1/tracks/{track_id}/download?user_data={user_data}&user_signature={user_signature}&filename={filename}&nft_access_signature={nft_access_signature}"
             return redirect_path
 
         info = get_track_access_info(decoded_id)
