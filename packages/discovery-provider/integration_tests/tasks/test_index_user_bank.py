@@ -542,9 +542,9 @@ def test_process_user_bank_tx_details_skip_errors(app):
         assert transaction_record is None
 
 
-# Source accounts for Route intructions must belong to Payment Router PDA
+# Transfers must reference accounts belonging to the Claimable Tokens PDA
 def test_process_user_bank_txs_details_skip_unknown_PDA_ATAs(app):
-    # This transaction does everything a payment router transaction would for
+    # This transaction does everything a valid transaction would for
     # a purchase, but uses an ATA that we don't recognize as the source.
     tx_response = mock_invalid_track_purchase_unknown_pda_tx
     with app.app_context():
