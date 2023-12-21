@@ -702,7 +702,7 @@ export class LineupSagas {
   watchRefreshInView = () => {
     const instance = this
     return function* () {
-      yield takeEvery(
+      yield takeLatest(
         baseLineupActions.addPrefix(
           instance.prefix,
           baseLineupActions.REFRESH_IN_VIEW
