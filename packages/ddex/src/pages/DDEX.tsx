@@ -21,8 +21,8 @@ const fetchResource = async (url: string, filename: string) => {
 const processXml = async (document: any, audiusSdk: AudiusSdk) => {
   // todo remove this and upload images and tracks from xml without hardcoding
   const [clipperImg, snareAudio] = await Promise.all([
-    fetchResource("/ddex-examples/clipper.jpg", "todo_img_name"),
-    fetchResource("/ddex-examples/snare.wav", "todo_audio_name"),
+    fetchResource("/ddex/ddex-examples/clipper.jpg", "todo_img_name"),
+    fetchResource("/ddex/ddex-examples/snare.wav", "todo_audio_name"),
   ]);
 
   // extract SoundRecording
