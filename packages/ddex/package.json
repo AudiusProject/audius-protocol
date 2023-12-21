@@ -17,7 +17,7 @@
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
   },
   "dependencies": {
-    "@audius/sdk": "3.0.22",
+    "@audius/sdk": "*",
     "@headlessui/react": "1.7.17",
     "@heroicons/react": "2.0.18",
     "@tanstack/query-core": "5.8.7",
