@@ -459,20 +459,22 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 }
 
 func filterErrorLines(input string, errorTypes []string, maxCount int) string {
-	lines := strings.Split(input, "\n")
+	lines := strings.Split(input, "\\n")
 	var builder strings.Builder
 	errorCounts := make(map[string]int)
 
+outerLoop:
 	for _, line := range lines {
 		for _, errorType := range errorTypes {
 			if strings.Contains(line, errorType) {
 				if errorCounts[errorType] < maxCount {
 					errorCounts[errorType]++
-					builder.WriteString(line + "\n")
+					builder.WriteString(line + "\\n")
 				}
-				break
+				continue outerLoop
 			}
 		}
+		builder.WriteString(line + "\\n")
 	}
 
 	return builder.String()
@@ -504,8 +506,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			"Error while decoding",
 			"Invalid data",
 			"Application provided invalid",
-			"nout_time_ms=",
-			"nout_time_us",
+			"out_time_ms=",
+			"out_time_us",
 			"bitrate=",
 			"progress=",
 		}
