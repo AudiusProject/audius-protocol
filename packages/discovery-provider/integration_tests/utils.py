@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
@@ -120,6 +121,7 @@ def populate_mock_db(db, entities, block_offset=None):
         users = entities.get("users", [])
         developer_apps = entities.get("developer_apps", [])
         grants = entities.get("grants", [])
+        dashboard_wallet_users = entities.get("dashboard_wallet_users", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -162,6 +164,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(users),
             len(developer_apps),
             len(grants),
+            len(dashboard_wallet_users),
             len(follows),
             len(saves),
             len(reposts),
@@ -338,6 +341,19 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=grant_meta.get("created_at", datetime.now()),
             )
             session.add(grant)
+
+        for i, dashboard_wallet_user_meta in enumerate(dashboard_wallet_users):
+            dashboard_wallet_user = DashboardWalletUser(
+                user_id=dashboard_wallet_user_meta.get("user_id", i),
+                wallet=dashboard_wallet_user_meta.get("wallet", str(i)),
+                is_delete=dashboard_wallet_user_meta.get("is_delete", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                txhash=dashboard_wallet_user_meta.get("txhash", str(i + block_offset)),
+                updated_at=dashboard_wallet_user_meta.get("updated_at", datetime.now()),
+                created_at=dashboard_wallet_user_meta.get("created_at", datetime.now()),
+            )
+            session.add(dashboard_wallet_user)
 
         for i, follow_meta in enumerate(follows):
             follow = Follow(
