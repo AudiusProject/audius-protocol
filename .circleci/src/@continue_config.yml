@@ -70,6 +70,9 @@ parameters:
   run-healthz-workflow:
     type: boolean
     default: false
+  run-ddex-workflow:
+    type: boolean
+    default: false
 # Can enable recurring probers against stage at some point
 # workflows:
 #   version: 2.1

@@ -6,7 +6,7 @@ const messages = {
   previewNotice: "Click the artist's photo to preview their music."
 }
 
-export const PreviewArtistToast = () => {
+export const PreviewArtistHint = () => {
   const [isOpen, setIsOpen] = useState(true)
 
   // TODO: add transition

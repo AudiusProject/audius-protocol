@@ -1,4 +1,4 @@
-import moment from 'moment'
+import dayjs from 'utils/dayjs'
 
 type CreateUseTikTokAuthHookArguments = {
   authenticate: () => Promise<Credentials>
@@ -50,7 +50,7 @@ export const createUseTikTokAuthHook =
         const expiration = await getLocalStorageItem(
           'tikTokAccessTokenExpiration'
         )
-        const isExpired = expiration && moment().isAfter(expiration)
+        const isExpired = expiration && dayjs().isAfter(dayjs(expiration))
 
         if (accessToken && openId && !isExpired) {
           callback(accessToken, openId)
@@ -76,7 +76,9 @@ export const createUseTikTokAuthHook =
       await setLocalStorageItem('tikTokAccessToken', accessToken)
       await setLocalStorageItem('tikTokOpenId', openId)
 
-      const expirationDate = moment().add(expiresIn, 's').format()
+      const expirationDate = dayjs()
+        .add(Number.parseInt(expiresIn), 's')
+        .format()
       await setLocalStorageItem('tikTokAccessTokenExpiration', expirationDate)
     }
 

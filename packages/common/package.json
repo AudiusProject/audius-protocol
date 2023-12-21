@@ -47,7 +47,6 @@
     "hashids": "2.2.1",
     "immer": "9.0.1",
     "lodash": "4.17.21",
-    "moment": "2.24.0",
     "normalizr": "^3.6.2",
     "numeral": "2.0.6",
     "proxy-memoize": "1.2.0",

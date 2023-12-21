@@ -172,7 +172,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     () => [
       {
         label: 'Modified',
-        value: formatDate(updated_at || Date.now())
+        value: formatDate(updated_at || Date.now().toString())
       }
     ],
     [updated_at]

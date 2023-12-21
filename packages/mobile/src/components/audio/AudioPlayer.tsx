@@ -163,7 +163,7 @@ type QueueableTrack = {
   track: Nullable<Track>
 } & Pick<Queueable, 'isPreview'>
 
-export const Audio = () => {
+export const AudioPlayer = () => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -282,7 +282,6 @@ export const Audio = () => {
   // Perform initial setup for the track player
   useAsync(async () => {
     try {
-      await TrackPlayer.setupPlayer()
       await updatePlayerOptions()
     } catch (e) {
       // The player has already been set up
