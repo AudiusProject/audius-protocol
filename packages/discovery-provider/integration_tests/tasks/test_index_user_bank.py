@@ -1,15 +1,18 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
-from src.tasks.index_user_bank import process_user_bank_tx_details
+
 from user_bank_mock_transactions import (
     RECIPIENT_ACCOUNT_ADDRESS,
     SENDER_ACCOUNT_ADDRESS,
+    mock_failed_track_purchase_tx,
+    mock_invalid_track_purchase_bad_splits_tx,
+    mock_invalid_track_purchase_missing_splits_tx,
+    mock_invalid_track_purchase_unknown_pda_tx,
+    mock_unknown_instruction_tx,
+    mock_valid_track_purchase_non_userbank_source_tx,
+    mock_valid_track_purchase_pay_extra_tx,
     mock_valid_track_purchase_tx,
     mock_valid_transfer_without_purchase_tx,
-    mock_valid_track_purchase_pay_extra_tx,
-    mock_invalid_track_purchase_missing_splits_tx,
-    mock_invalid_track_purchase_bad_splits_tx,
-    mock_valid_track_purchase_non_userbank_source_tx,
 )
 
 from integration_tests.utils import populate_mock_db
@@ -21,9 +24,8 @@ from src.models.users.usdc_transactions_history import (
     USDCTransactionsHistory,
     USDCTransactionType,
 )
-
 from src.solana.solana_client_manager import SolanaClientManager
-
+from src.tasks.index_user_bank import process_user_bank_tx_details
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
@@ -148,62 +150,6 @@ def test_process_user_bank_tx_details_valid_purchase(app):
         assert buyer_transaction_record.method == USDCTransactionMethod.send
         assert buyer_transaction_record.change == -1000000
         assert buyer_transaction_record.tx_metadata == str(trackOwnerId)
-
-
-def test_process_user_bank_tx_details_valid_purchase_from_non_user_bank(app):
-    tx_response = mock_valid_track_purchase_non_userbank_source_tx
-    with app.app_context():
-        db = get_db()
-        redis = get_redis()
-
-    solana_client_manager_mock = create_autospec(SolanaClientManager)
-
-    transaction = tx_response.value.transaction.transaction
-
-    tx_sig_str = str(transaction.signatures[0])
-
-    challenge_event_bus = create_autospec(ChallengeEventBus)
-
-    populate_mock_db(db, test_entries)
-
-    with db.scoped_session() as session:
-        process_user_bank_tx_details(
-            solana_client_manager=solana_client_manager_mock,
-            session=session,
-            redis=redis,
-            tx_info=tx_response,
-            tx_sig=tx_sig_str,
-            timestamp=datetime.now(),
-            challenge_event_bus=challenge_event_bus,
-        )
-
-        purchase = (
-            session.query(USDCPurchase)
-            .filter(USDCPurchase.signature == tx_sig_str)
-            .first()
-        )
-        assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
-        assert purchase.amount == 1000000
-        assert purchase.extra_amount == 0
-        assert purchase.content_type == PurchaseType.track
-        assert purchase.content_id == 1
-
-        owner_transaction_record = (
-            session.query(USDCTransactionsHistory)
-            .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
-            .first()
-        )
-        assert owner_transaction_record is not None
-        assert (
-            owner_transaction_record.transaction_type
-            == USDCTransactionType.purchase_content
-        )
-        assert owner_transaction_record.method == USDCTransactionMethod.receive
-        assert owner_transaction_record.change == 1000000
-        assert owner_transaction_record.tx_metadata == str(trackBuyerId)
 
 
 def test_process_user_bank_tx_details_transfer_without_purchase(
@@ -514,121 +460,134 @@ def test_process_user_bank_txs_details_create_user_bank(app):
     return
 
 
-# def test_process_user_bank_tx_details_skip_errors(app):
-#     tx_response = mock_failed_track_purchase_single_recipient_tx
-#     with app.app_context():
-#         db = get_db()
+def test_process_user_bank_tx_details_skip_errors(app):
+    tx_response = mock_failed_track_purchase_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
 
-#     transaction = tx_response.value.transaction.transaction
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    transaction = tx_response.value.transaction.transaction
 
-#     tx_sig_str = str(transaction.signatures[0])
+    tx_sig_str = str(transaction.signatures[0])
 
-#     challenge_event_bus = create_autospec(ChallengeEventBus)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
 
-#     populate_mock_db(db, test_entries)
+    populate_mock_db(db, test_entries)
 
-#     with db.scoped_session() as session:
-#         process_user_bank_tx_details(
-#             session=session,
-#             tx_info=tx_response,
-#             tx_sig=tx_sig_str,
-#             timestamp=datetime.now(),
-#             challenge_event_bus=challenge_event_bus,
-#         )
-#         # Expect no purchase record
-#         purchase = (
-#             session.query(USDCPurchase)
-#             .filter(USDCPurchase.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert purchase is None
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
 
-#         # Expect no transfer record
-#         transaction_record = (
-#             session.query(USDCTransactionsHistory)
-#             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert transaction_record is None
-
-
-# # Source accounts for Route intructions must belong to Payment Router PDA
-# def test_process_user_bank_txs_details_skip_unknown_PDA_ATAs(app):
-#     # This transaction does everything a payment router transaction would for
-#     # a purchase, but uses an ATA that we don't recognize as the source.
-#     tx_response = mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx
-#     with app.app_context():
-#         db = get_db()
-
-#     transaction = tx_response.value.transaction.transaction
-
-#     tx_sig_str = str(transaction.signatures[0])
-
-#     challenge_event_bus = create_autospec(ChallengeEventBus)
-
-#     populate_mock_db(db, test_entries)
-
-#     with db.scoped_session() as session:
-#         process_user_bank_tx_details(
-#             session=session,
-#             tx_info=tx_response,
-#             tx_sig=tx_sig_str,
-#             timestamp=datetime.now(),
-#             challenge_event_bus=challenge_event_bus,
-#         )
-#         # Expect no purchase record
-#         purchase = (
-#             session.query(USDCPurchase)
-#             .filter(USDCPurchase.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert purchase is None
-
-#         # Expect no transfer record
-#         transaction_record = (
-#             session.query(USDCTransactionsHistory)
-#             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert transaction_record is None
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
 
 
-# # Don't process any transactions that aren't CreateAccount or Transfer instructions
-# def test_process_user_bank_txs_details_skip_unknown_instructions(app):
-#     # This transaction does everything a payment router transaction would for
-#     # a purchase, but uses a different program to do the routing. We ignore it.
-#     tx_response = mock_non_route_transfer_purchase_single_recipient_tx
-#     with app.app_context():
-#         db = get_db()
+# Source accounts for Route intructions must belong to Payment Router PDA
+def test_process_user_bank_txs_details_skip_unknown_PDA_ATAs(app):
+    # This transaction does everything a payment router transaction would for
+    # a purchase, but uses an ATA that we don't recognize as the source.
+    tx_response = mock_invalid_track_purchase_unknown_pda_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
 
-#     transaction = tx_response.value.transaction.transaction
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
 
-#     tx_sig_str = str(transaction.signatures[0])
+    transaction = tx_response.value.transaction.transaction
 
-#     challenge_event_bus = create_autospec(ChallengeEventBus)
+    tx_sig_str = str(transaction.signatures[0])
 
-#     populate_mock_db(db, test_entries)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
 
-#     with db.scoped_session() as session:
-#         process_user_bank_tx_details(
-#             session=session,
-#             tx_info=tx_response,
-#             tx_sig=tx_sig_str,
-#             timestamp=datetime.now(),
-#             challenge_event_bus=challenge_event_bus,
-#         )
-#         # Expect no purchase record
-#         purchase = (
-#             session.query(USDCPurchase)
-#             .filter(USDCPurchase.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert purchase is None
+    populate_mock_db(db, test_entries)
 
-#         # Expect no transfer record
-#         transaction_record = (
-#             session.query(USDCTransactionsHistory)
-#             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-#             .first()
-#         )
-#         assert transaction_record is None
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
+
+
+# Don't process any transactions that aren't CreateAccount or Transfer instructions
+def test_process_user_bank_txs_details_skip_unknown_instructions(app):
+    # This transaction results in a balance change but doesn't reference an
+    # instruction we recognize. So we'll ignore it
+    tx_response = mock_unknown_instruction_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            redis=redis,
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
