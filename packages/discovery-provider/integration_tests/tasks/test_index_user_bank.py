@@ -1,4 +1,3 @@
-from copy import copy
 from datetime import datetime
 from unittest.mock import call, create_autospec
 from src.models.users.user_bank import USDCUserBankAccount
@@ -473,7 +472,7 @@ def test_process_user_bank_txs_details_create_usdc_user_bank(app):
 
     challenge_event_bus = create_autospec(ChallengeEventBus)
 
-    test_entires_without_userbanks = copy.deep_copy(test_entries)
+    test_entires_without_userbanks = test_entries.copy()
     test_entires_without_userbanks.pop("usdc_user_bank_accounts")
 
     populate_mock_db(db, test_entires_without_userbanks)

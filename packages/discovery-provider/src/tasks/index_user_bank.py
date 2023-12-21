@@ -333,18 +333,9 @@ def get_purchase_metadata_from_memo(
 
 
 def validate_purchase(
-    purchase_metadata: PurchaseMetadataDict,
-    balance_changes: dict[str, BalanceChange],
-    sender_account: str,
+    purchase_metadata: PurchaseMetadataDict, balance_changes: dict[str, BalanceChange]
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    is_valid = True
-    # Check the sender paid full price
-    if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
-        logger.error(
-            f"index_user_bank.py | Purchase price exceeds sent amount. sent={balance_changes[sender_account]['change']} price={purchase_metadata['price']}"
-        )
-        is_valid = False
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
         if account not in balance_changes:
@@ -357,7 +348,7 @@ def validate_purchase(
                 f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
             return False
-    return is_valid
+    return True
 
 
 def index_purchase(
@@ -438,9 +429,7 @@ def validate_and_index_purchase(
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
     if purchase_metadata is not None and validate_purchase(
-        purchase_metadata=purchase_metadata,
-        balance_changes=balance_changes,
-        sender_account=sender_account,
+        purchase_metadata=purchase_metadata, balance_changes=balance_changes
     ):
         index_purchase(
             session=session,

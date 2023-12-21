@@ -444,7 +444,7 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
 
 
 # Transaction is for the correct amount, but one of the splits is missing
-# Should index as a trnasfer with no purchase
+# Should index as a transfer with no purchase
 def test_process_payment_router_tx_details_invalid_purchase_missing_splits(app):
     tx_response = mock_invalid_track_purchase_missing_split_tx
     with app.app_context():
