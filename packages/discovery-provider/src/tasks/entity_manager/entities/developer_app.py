@@ -9,7 +9,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
-    get_address_from_signature
+    get_address_from_signature,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -32,6 +32,7 @@ class CreateDeveloperAppMetadata(TypedDict):
 
 class DeleteDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
+
 
 def is_within_6_hours(timestamp_str):
     current_timestamp = int(time.time())

@@ -2,16 +2,16 @@ from datetime import datetime
 from unittest.mock import call, create_autospec
 
 from payment_router_mock_transactions import (
-    mock_valid_track_purchase_single_recipient_tx,
-    mock_valid_track_purchase_single_recipient_pay_extra_tx,
-    mock_valid_track_purchase_multi_recipient_tx,
-    mock_valid_track_purchase_multi_recipient_pay_extra_tx,
-    mock_invalid_track_purchase_insufficient_split_tx,
-    mock_valid_transfer_without_purchase_single_recipient_tx,
-    mock_valid_transfer_without_purchase_multi_recipient_tx,
     mock_failed_track_purchase_single_recipient_tx,
-    mock_non_route_transfer_purchase_single_recipient_tx,
     mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx,
+    mock_invalid_track_purchase_insufficient_split_tx,
+    mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_valid_track_purchase_multi_recipient_pay_extra_tx,
+    mock_valid_track_purchase_multi_recipient_tx,
+    mock_valid_track_purchase_single_recipient_pay_extra_tx,
+    mock_valid_track_purchase_single_recipient_tx,
+    mock_valid_transfer_without_purchase_multi_recipient_tx,
+    mock_valid_transfer_without_purchase_single_recipient_tx,
 )
 
 from integration_tests.utils import populate_mock_db
@@ -20,10 +20,9 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
-    USDCTransactionType,
     USDCTransactionsHistory,
+    USDCTransactionType,
 )
-
 from src.tasks.index_payment_router import process_payment_router_tx_details
 from src.utils.db_session import get_db
 

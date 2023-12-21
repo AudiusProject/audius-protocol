@@ -398,9 +398,11 @@ def save_new_records(
             if (
                 record_type in original_records
                 and entity_id in original_records[record_type]
-                and ("is_current"
-                not in get_record_columns(original_records[record_type][entity_id])
-                or original_records[record_type][entity_id].is_current)
+                and (
+                    "is_current"
+                    not in get_record_columns(original_records[record_type][entity_id])
+                    or original_records[record_type][entity_id].is_current
+                )
             ):
                 if record_type == "PlaylistRoute" or record_type == "TrackRoute":
                     # these are an exception since we want to keep is_current false to preserve old slugs
@@ -541,7 +543,9 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
                 raw_wallet = json_metadata.get("wallet", None)
                 if raw_wallet:
-                  entities_to_fetch[EntityType.DASHBOARD_WALLET_USER].add(raw_wallet.lower())
+                    entities_to_fetch[EntityType.DASHBOARD_WALLET_USER].add(
+                        raw_wallet.lower()
+                    )
                 else:
                     logger.error(
                         "tasks | entity_manager.py | Missing wallet in metadata required for create dashboard wallet user tx"
@@ -944,7 +948,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 literal_column(f"row_to_json({DashboardWalletUser.__tablename__})"),
             )
             .filter(
-                func.lower(DashboardWalletUser.wallet).in_(entities_to_fetch["DashboardWalletUser"])
+                func.lower(DashboardWalletUser.wallet).in_(
+                    entities_to_fetch["DashboardWalletUser"]
+                )
             )
             .all()
         )
@@ -953,7 +959,8 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for dashboard_wallet, _ in dashboard_wallets
         }
         existing_entities_in_json[EntityType.DASHBOARD_WALLET_USER] = {
-            dashboard_wallet_json["wallet"].lower(): dashboard_wallet_json for _, dashboard_wallet_json in dashboard_wallets
+            dashboard_wallet_json["wallet"].lower(): dashboard_wallet_json
+            for _, dashboard_wallet_json in dashboard_wallets
         }
 
     return existing_entities, existing_entities_in_json

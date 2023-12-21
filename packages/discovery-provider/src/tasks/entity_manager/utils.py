@@ -107,7 +107,7 @@ EntityTypeLiteral = Literal[
     "PlaylistSeen",
     "DeveloperApp",
     "Grant",
-    "DashboardWalletUser"
+    "DashboardWalletUser",
 ]
 
 
@@ -448,6 +448,7 @@ def generate_metadata_cid_v1(metadata: object):
     bytes = bytearray(encoded_metadata)
     hash = multihash.digest(bytes, "sha2-256")
     return CID("base32", 1, "json", hash)
+
 
 # Signature should be of the form: { signature: string, message: string }
 def get_address_from_signature(signature):

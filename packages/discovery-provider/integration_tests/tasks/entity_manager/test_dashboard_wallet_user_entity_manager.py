@@ -36,7 +36,7 @@ new_dashboard_wallet_users_data = [
             "signature": "cc3f6447d5a02215e2c5046c6fd43fb21b421c7cdecd886af30ca23a75a9735a68f7feef1c58c9d72507e9c24472cfda9a448a6ea051bf7a58faa95ca43025a11b",
             "message": "Connecting Audius user id 2 at 1686252024",
         },
-    }
+    },
 ]
 
 second_set_new_dashboard_wallet_users_data = [
@@ -113,7 +113,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                     }
                 )
             },
-        ]
+        ],
     }
 
     entity_manager_txs = [
@@ -172,7 +172,7 @@ def test_index_dashboard_wallet_user(app, mocker):
     # Test invalid create dashboard wallet user txs
     tx_receipts = {
         "CreateDashboardWalletUserInvalidTx1": [
-            { 
+            {
                 # Incorrect signer - user
                 "args": AttributeDict(
                     {
@@ -180,7 +180,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b", "wallet_signature": {{"signature": "480b443ed0b758e3c16dcc43d0691ccdf523d84edbe8f3f337dc3f5a02b5b4212a3cad4162456dddc87dd5de1ccf12764037b15ea08b8e4480c38b81308e0da81c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
+                        "_metadata": """{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b", "wallet_signature": {"signature": "480b443ed0b758e3c16dcc43d0691ccdf523d84edbe8f3f337dc3f5a02b5b4212a3cad4162456dddc87dd5de1ccf12764037b15ea08b8e4480c38b81308e0da81c", "message": "Connecting Audius user id 4 at 1686252026"}}""",
                         "_signer": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B",
                     }
                 )
@@ -195,7 +195,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b","wallet_signature": {{"signature": "0adebff40970622a3f93e715279a63860c133d82f9a418062d1c4d47f52ea4902518df5ac34ed5e41b1e1865fd572fd69d9a7588d019bb3dae69e73c958b57ee1b", "message": "Connecting Audius user id 2 at 1686252026"}}}}""",
+                        "_metadata": """{"wallet": "0xd5d54a844e59c71e1fed525d5ee620c492296d8b","wallet_signature": {"signature": "0adebff40970622a3f93e715279a63860c133d82f9a418062d1c4d47f52ea4902518df5ac34ed5e41b1e1865fd572fd69d9a7588d019bb3dae69e73c958b57ee1b", "message": "Connecting Audius user id 2 at 1686252026"}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -210,7 +210,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xff0b22214dbe20966f183648fbd92d5e569f02c5", "wallet_signature": {{"signature": "736bec576740ffdc489ddeea8090524704f15c8b845ac4e097fb0efba283b24e677781b8db513b6caaabed9cfeb7304717f80a66d4991beb3794f81b7ce2df131c", "message": "Connecting Audius user id 4 at 1686252026"}}}}""",
+                        "_metadata": """{"wallet": "0xff0b22214dbe20966f183648fbd92d5e569f02c5", "wallet_signature": {"signature": "736bec576740ffdc489ddeea8090524704f15c8b845ac4e097fb0efba283b24e677781b8db513b6caaabed9cfeb7304717f80a66d4991beb3794f81b7ce2df131c", "message": "Connecting Audius user id 4 at 1686252026"}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -225,7 +225,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B"}}""",
+                        "_metadata": """{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B"}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -240,7 +240,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "e999d97423eacf1acf3669c566a2b1c651297c2a00fcafe4ae0260444572818859ef7ea2d8f4543a769db96011875857e89c38e5b53c9a90e2e3e4faf7e2478f1c", "message": "Hey there"}}}}""",
+                        "_metadata": """{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {"signature": "e999d97423eacf1acf3669c566a2b1c651297c2a00fcafe4ae0260444572818859ef7ea2d8f4543a769db96011875857e89c38e5b53c9a90e2e3e4faf7e2478f1c", "message": "Hey there"}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -270,7 +270,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {{"signature": "cd7b47a36c6c1c5615dfe264cd73839a484884c55e6f3ebad47ce79a5f24016e7569bba29016e5618375b5abbd93e10e80e51d8e0d47e6dba34930fa59e6470d1b", "message": "Connecting Audius user id 4 at 1686200400"}}}}""",
+                        "_metadata": """{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "wallet_signature": {"signature": "cd7b47a36c6c1c5615dfe264cd73839a484884c55e6f3ebad47ce79a5f24016e7569bba29016e5618375b5abbd93e10e80e51d8e0d47e6dba34930fa59e6470d1b", "message": "Connecting Audius user id 4 at 1686200400"}}""",
                         "_signer": "user4wallet",
                     }
                 )
@@ -290,7 +290,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                     }
                 )
             },
-        ]
+        ],
     }
 
     entity_manager_txs = [
@@ -384,7 +384,10 @@ def test_index_dashboard_wallet_user(app, mocker):
         # make sure no new rows were added or deleted
         assert len(all_dwus) == 4
 
-    expected_deleted_items = [new_dashboard_wallet_users_data[0], new_dashboard_wallet_users_data[2]]
+    expected_deleted_items = [
+        new_dashboard_wallet_users_data[0],
+        new_dashboard_wallet_users_data[2],
+    ]
     # Test valid delete txs
     tx_receipts = {
         "DeleteDashboardWalletUserTx1": [
@@ -416,7 +419,7 @@ def test_index_dashboard_wallet_user(app, mocker):
                     }
                 )
             },
-        ]
+        ],
     }
 
     entity_manager_txs = [
@@ -462,7 +465,9 @@ def test_index_dashboard_wallet_user(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DASHBOARD_WALLET_USER,
-                        "_userId": second_set_new_dashboard_wallet_users_data[0]["user_id"],
+                        "_userId": second_set_new_dashboard_wallet_users_data[0][
+                            "user_id"
+                        ],
                         "_metadata": f"""{{"wallet": "{second_set_new_dashboard_wallet_users_data[0]["wallet"]}", "wallet_signature": {{"signature": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["signature"]}", "message": "{second_set_new_dashboard_wallet_users_data[0]["wallet_signature"]["message"]}"}}}}""",
                         "_action": Action.CREATE,
                         "_signer": "user3wallet",

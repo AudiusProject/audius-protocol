@@ -18,15 +18,19 @@ from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
 
+
 class Signature(TypedDict):
     message: str
     signature: str
 
+
 class CreateDashboardWalletUserMetadata(TypedDict):
     wallet_signature: Union[Signature, None]
 
+
 class DeleteDashboardWalletUserMetadata(TypedDict):
     wallet: Union[str, None]
+
 
 def is_within_5_minutes(timestamp_str):
     current_timestamp = int(time.time())
@@ -34,15 +38,17 @@ def is_within_5_minutes(timestamp_str):
     time_difference = abs(current_timestamp - input_timestamp)
     return time_difference < 5 * 60
 
+
 def matches_user_id(hash_or_int_id, int_id):
     return hash_or_int_id == str(int_id) or decode_string_id(hash_or_int_id) == int_id
+
 
 def get_create_dashboard_wallet_user_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[CreateDashboardWalletUserMetadata]:
     metadata: CreateDashboardWalletUserMetadata = {
         "wallet": None,
-        "wallet_signature": None
+        "wallet_signature": None,
     }
     if raw_metadata:
         try:
@@ -61,12 +67,11 @@ def get_create_dashboard_wallet_user_metadata_from_raw(
             return None
     return metadata
 
+
 def get_delete_dashboard_wallet_user_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[DeleteDashboardWalletUserMetadata]:
-    metadata: DeleteDashboardWalletUserMetadata = {
-        "wallet": None
-    }
+    metadata: DeleteDashboardWalletUserMetadata = {"wallet": None}
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
@@ -82,6 +87,7 @@ def get_delete_dashboard_wallet_user_metadata_from_raw(
             )
             return None
     return metadata
+
 
 def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
     user_id = params.user_id
@@ -114,23 +120,33 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
         # Either the user or the dashboard wallet can sign the Delete tx
         if not user_matches_signer and not params.signer.lower() == dashboard_wallet:
             raise IndexingValidationError(
-                f"Invalid Delete Dashboard Wallet User Transaction, signature does not match user or dashboard wallet"
+                "Invalid Delete Dashboard Wallet User Transaction, signature does not match user or dashboard wallet"
             )
         # If the user is the one who signed the tx, make sure it matches the user id assigned to the wallet
-        if user_matches_signer and not user_id == params.existing_records["DashboardWalletUser"][dashboard_wallet].user_id:
+        if (
+            user_matches_signer
+            and not user_id
+            == params.existing_records["DashboardWalletUser"][dashboard_wallet].user_id
+        ):
             raise IndexingValidationError(
-                f"Invalid Delete Dashboard Wallet User Transaction, user is not assigned to this wallet"
-            )            
+                "Invalid Delete Dashboard Wallet User Transaction, user is not assigned to this wallet"
+            )
     elif params.action == Action.CREATE:
         if not user_matches_signer:
             raise IndexingValidationError(
-                f"Invalid Create Dashboard Wallet User Transaction, signature does not match user"
-            )            
+                "Invalid Create Dashboard Wallet User Transaction, signature does not match user"
+            )
         if not metadata["wallet_signature"]:
             raise IndexingValidationError(
                 "Invalid Create Dashboard Wallet User Transaction, wallet signature is required and was not provided"
             )
-        if dashboard_wallet in params.existing_records["DashboardWalletUser"] and params.existing_records["DashboardWalletUser"][dashboard_wallet].is_delete == False:
+        if (
+            dashboard_wallet in params.existing_records["DashboardWalletUser"]
+            and params.existing_records["DashboardWalletUser"][
+                dashboard_wallet
+            ].is_delete
+            == False
+        ):
             raise IndexingValidationError(
                 f"Invalid Create Dashboard Wallet User Transaction, dashboard wallet {dashboard_wallet} already has an assigned user"
             )
@@ -140,7 +156,9 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
             or not metadata["wallet_signature"]
             .get("message", "")
             .startswith("Connecting Audius user id")
-            or not matches_user_id((metadata["wallet_signature"].get("message", "").split()[-3]), user_id)
+            or not matches_user_id(
+                (metadata["wallet_signature"].get("message", "").split()[-3]), user_id
+            )
             or not is_within_5_minutes(
                 (metadata["wallet_signature"].get("message", "").split())[-1]
             )
@@ -162,6 +180,17 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             f"Invalid Dashboard Wallet User Transaction, action {params.action} is not valid"
         )
+
+
+def validate_dashboard_wallet_user_record(dashboard_wallet_user):
+    if not all_required_fields_present(DashboardWalletUser, dashboard_wallet_user):
+        raise EntityMissingRequiredFieldError(
+            "dashboard_wallet_user",
+            dashboard_wallet_user,
+            f"Error parsing {dashboard_wallet_user} with entity missing required field(s)",
+        )
+
+    return dashboard_wallet_user
 
 
 def create_dashboard_wallet_user(params: ManageEntityParameters):
@@ -199,9 +228,13 @@ def delete_dashboard_wallet_user(params: ManageEntityParameters):
         )
     validate_dashboard_wallet_user_tx(params, metadata)
     dashboard_wallet = metadata["wallet"]
-    existing_dashboard_wallet_user = params.existing_records["DashboardWalletUser"][dashboard_wallet]
+    existing_dashboard_wallet_user = params.existing_records["DashboardWalletUser"][
+        dashboard_wallet
+    ]
     if dashboard_wallet in params.new_records["DashboardWalletUser"]:
-        existing_dashboard_wallet_user = params.new_records["DashboardWalletUser"][dashboard_wallet][-1]
+        existing_dashboard_wallet_user = params.new_records["DashboardWalletUser"][
+            dashboard_wallet
+        ][-1]
 
     deleted_dashboard_wallet_user = copy_record(
         existing_dashboard_wallet_user,
@@ -216,14 +249,3 @@ def delete_dashboard_wallet_user(params: ManageEntityParameters):
     validate_dashboard_wallet_user_record(deleted_dashboard_wallet_user)
     params.add_record(dashboard_wallet, deleted_dashboard_wallet_user)
     return deleted_dashboard_wallet_user
-
-
-def validate_dashboard_wallet_user_record(dashboard_wallet_user):
-    if not all_required_fields_present(DashboardWalletUser, dashboard_wallet_user):
-        raise EntityMissingRequiredFieldError(
-            "dashboard_wallet_user",
-            dashboard_wallet_user,
-            f"Error parsing {dashboard_wallet_user} with entity missing required field(s)",
-        )
-
-    return dashboard_wallet_user
