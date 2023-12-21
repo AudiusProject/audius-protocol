@@ -26,6 +26,7 @@ class Signature(TypedDict):
 
 class CreateDashboardWalletUserMetadata(TypedDict):
     wallet_signature: Union[Signature, None]
+    wallet: Union[str, None]
 
 
 class DeleteDashboardWalletUserMetadata(TypedDict):
@@ -227,7 +228,7 @@ def delete_dashboard_wallet_user(params: ManageEntityParameters):
             "Invalid Dashboard Wallet User Transaction, unable to parse metadata"
         )
     validate_dashboard_wallet_user_tx(params, metadata)
-    dashboard_wallet = metadata["wallet"]
+    dashboard_wallet = cast(str, metadata["wallet"])
     existing_dashboard_wallet_user = params.existing_records["DashboardWalletUser"][
         dashboard_wallet
     ]
