@@ -11,7 +11,7 @@ import { FollowRow, PlaylistRow, SaveRow, TrackRow } from '../src/db-tables'
 
 type TableFixture<RowType> = {
   common: RowType
-  rows: RowType[]
+  rows: Partial<RowType>[]
 }
 
 const fixtures = {
@@ -119,6 +119,13 @@ const fixtures = {
         playlistId: 302,
         playlistName: "Steve's private Playlist",
         isPrivate: true,
+        playlistContents: { track_ids: [{ track: 101 }, { track: 103 }] },
+      },
+      {
+        playlistOwnerId: 101,
+        playlistId: 303,
+        playlistName: "Steve's Album",
+        isAlbum: true,
         playlistContents: { track_ids: [{ track: 101 }, { track: 103 }] },
       },
     ],

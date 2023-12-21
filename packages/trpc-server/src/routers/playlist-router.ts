@@ -13,16 +13,22 @@ export const playlistRouter = router({
   }),
 
   containTrackId: publicProcedure
-    .input(z.string())
+    .input(
+      z.object({
+        trackId: z.string(),
+        isAlbum: z.boolean().default(false),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const found = await esc.search({
         index: 'playlists',
         query: {
           bool: {
             must: [
-              { term: { 'playlist_contents.track_ids.track': input } },
+              { term: { 'playlist_contents.track_ids.track': input.trackId } },
               { term: { is_delete: false } },
               { term: { is_private: false } },
+              { term: { is_album: input.isAlbum } },
             ],
             must_not: [],
             should: [],
