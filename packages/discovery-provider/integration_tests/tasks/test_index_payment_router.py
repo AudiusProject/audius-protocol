@@ -5,6 +5,7 @@ from payment_router_mock_transactions import (
     mock_failed_track_purchase_single_recipient_tx,
     mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx,
     mock_invalid_track_purchase_insufficient_split_tx,
+    mock_invalid_track_purchase_missing_split_tx,
     mock_non_route_transfer_purchase_single_recipient_tx,
     mock_valid_track_purchase_multi_recipient_pay_extra_tx,
     mock_valid_track_purchase_multi_recipient_tx,
@@ -439,6 +440,55 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
         assert third_party_transaction_record.change == 500000
         # For transfers, the metadata is the source address
         assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+
+
+# Transaction is for the correct amount, but one of the splits is missing
+# Should index as a transfer with no purchase
+def test_process_payment_router_tx_details_invalid_purchase_missing_splits(app):
+    tx_response = mock_invalid_track_purchase_missing_split_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # We do still expect the transfers to get indexed, but as regular transfers
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert owner_transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 2000000
+        # For transfers, the metadata is the source address
+        assert owner_transaction_record.tx_metadata == transactionSenderAddress
 
 
 def test_process_payment_router_tx_details_transfer_multiple_users_without_purchase(

@@ -333,26 +333,22 @@ def get_purchase_metadata_from_memo(
 
 
 def validate_purchase(
-    purchase_metadata: PurchaseMetadataDict,
-    balance_changes: dict[str, BalanceChange],
-    sender_account: str,
+    purchase_metadata: PurchaseMetadataDict, balance_changes: dict[str, BalanceChange]
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    is_valid = True
-    # Check the sender paid full price
-    if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
-        logger.error(
-            f"index_user_bank.py | Purchase price exceeds sent amount. sent={balance_changes[sender_account]['change']} price={purchase_metadata['price']}"
-        )
-        is_valid = False
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
+        if account not in balance_changes:
+            logger.error(
+                f"index_payment_router.py | No split given to account={account}, expected={split}"
+            )
+            return False
         if balance_changes[account]["change"] < split:
             logger.error(
-                f"index_user_bank.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
+                f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
-            is_valid = False
-    return is_valid
+            return False
+    return True
 
 
 def index_purchase(
@@ -433,9 +429,7 @@ def validate_and_index_purchase(
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
     if purchase_metadata is not None and validate_purchase(
-        purchase_metadata=purchase_metadata,
-        balance_changes=balance_changes,
-        sender_account=sender_account,
+        purchase_metadata=purchase_metadata, balance_changes=balance_changes
     ):
         index_purchase(
             session=session,
@@ -536,6 +530,7 @@ def index_user_tip(
 
 
 def process_transfer_instruction(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     instruction: CompiledInstruction,
@@ -547,8 +542,6 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
-    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
-
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
     sender_account = account_keys[sender_idx]
@@ -725,6 +718,7 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
 
 
 def process_user_bank_tx_details(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     tx_info: GetTransactionResp,
@@ -779,6 +773,7 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         process_transfer_instruction(
+            solana_client_manager=solana_client_manager,
             session=session,
             redis=redis,
             instruction=instruction,
@@ -963,7 +958,13 @@ def process_user_bank_txs() -> None:
                 )
 
                 process_user_bank_tx_details(
-                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                    solana_client_manager=solana_client_manager,
+                    session=session,
+                    redis=redis,
+                    tx_info=tx_info,
+                    tx_sig=tx_sig,
+                    timestamp=parsed_timestamp,
+                    challenge_event_bus=challenge_bus,
                 )
                 session.add(
                     UserBankTx(
