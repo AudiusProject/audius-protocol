@@ -53,6 +53,9 @@ const messages = {
     `${friendlyName} ${categoryCount || ''}`
 }
 
+const sortByDateAsc = (a: Track, b: Track) =>
+  dayjs(a.created_at).diff(dayjs(b.created_at))
+
 const doesRequireFollow = (
   isOwner: boolean,
   following: boolean,
@@ -79,7 +82,7 @@ const useCurrentStems = ({
   // Sort the stems, filter deletes
   const stemTracks = Object.values(stemTracksMap)
     .filter((t) => !t._marked_deleted && !t.is_delete)
-    .sort((a, b) => dayjs(a.created_at).diff(dayjs(b.created_at)))
+    .sort(sortByDateAsc)
     .map((t) => ({
       downloadURL: t.download?.cid,
       category: t.stem_of.category,

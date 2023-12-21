@@ -76,7 +76,9 @@ export const createUseTikTokAuthHook =
       await setLocalStorageItem('tikTokAccessToken', accessToken)
       await setLocalStorageItem('tikTokOpenId', openId)
 
-      const expirationDate = dayjs().add(parseInt(expiresIn), 's').format()
+      const expirationDate = dayjs()
+        .add(Number.parseInt(expiresIn), 's')
+        .format()
       await setLocalStorageItem('tikTokAccessTokenExpiration', expirationDate)
     }
 
