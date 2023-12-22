@@ -586,6 +586,11 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} is stream gated but has no stream conditions"
             )
+        # must be gated on a single condition
+        if len(stream_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of stream conditions"
+            )
         if is_downloadable:
             # if stream gated and downloadable, must be download gated
             if not is_download_gated:
@@ -608,6 +613,11 @@ def validate_access_conditions(params: ManageEntityParameters):
         if not download_conditions:
             raise IndexingValidationError(
                 f"Track {params.entity_id} is download gated but has no download conditions"
+            )
+        # must be gated on a single condition
+        if len(download_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of download conditions"
             )
     else:
         # if not download gated, must not be stream gated

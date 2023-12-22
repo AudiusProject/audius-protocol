@@ -265,15 +265,6 @@ class ContentAccessChecker:
         conditions: Dict,
         is_download: bool,
     ):
-        # stream gated tracks must be gated on a single condition
-        if not is_download and len(conditions) != 1:
-            logging.info(
-                f"gated_content_access_checker.py | _evaluate_conditions | invalid number of stream conditions: {json.dumps(conditions)}"
-            )
-            return False
-
-        # download gated tracks may be gated on multiple conditions
-        # e.g. they may be gated on tip, follow, and usdc purchase
         valid_conditions = set(GATED_CONDITION_TO_HANDLER_MAP.keys())
         for condition, condition_options in conditions.items():
             if condition not in valid_conditions:
