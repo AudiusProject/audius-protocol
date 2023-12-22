@@ -5,7 +5,7 @@
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "packages/es-indexer"
+    "protocol-dashboard"
   ],
   "cacheBust": 1,
   "private": true,
