@@ -213,7 +213,7 @@ def build(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    # build 2 images for protocol dashboard (staging and prod) when not running a local stack
+    # build 2 extra images for protocol dashboard (stage and prod)
     if "dashboard" in services and prod:
         for target in ["stage", "prod"]:
             env = os.environ.copy()
@@ -234,39 +234,39 @@ def build(
 
             if proc.returncode != 0:
                 raise click.ClickException(f"Failed to build dashboard-{target} image")
-    else:
-        proc = subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-                f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
-                f"--project-name={protocol_dir.name}",
-                "--profile=circle_ci_push",
-                "--profile=tests",
-                "--profile=identity",
-                "--profile=discovery",
-                "--profile=comms",
-                "--profile=storage",
-                "--profile=notifications",
-                "--profile=elasticsearch",
-                "--profile=mediorum",
-                "--profile=chain",
-                "--profile=poa",
-                "--profile=eth",
-                "--profile=libs",
-                "--profile=solana",
-                "--profile=block-explorer",
-                "--profile=uptime",
-                "--profile=ddex",
-                "build",
-                *args,
-                *services,
-            ],
-        )
 
-        if proc.returncode != 0:
-            raise click.ClickException("Failed to build images")
+    proc = subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
+            f"--project-name={protocol_dir.name}",
+            "--profile=circle_ci_push",
+            "--profile=tests",
+            "--profile=identity",
+            "--profile=discovery",
+            "--profile=comms",
+            "--profile=storage",
+            "--profile=notifications",
+            "--profile=elasticsearch",
+            "--profile=mediorum",
+            "--profile=chain",
+            "--profile=poa",
+            "--profile=eth",
+            "--profile=libs",
+            "--profile=solana",
+            "--profile=block-explorer",
+            "--profile=uptime",
+            "--profile=ddex",
+            "build",
+            *args,
+            *services,
+        ],
+    )
+
+    if proc.returncode != 0:
+        raise click.ClickException("Failed to build images")
 
 
 @cli.command()
