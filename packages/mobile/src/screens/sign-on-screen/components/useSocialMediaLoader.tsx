@@ -3,8 +3,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import type { AnyAction } from 'redux'
 
-import { setCredentials } from 'app/store/oauth/actions'
-
 export const useSocialMediaLoader = ({
   linkedSocialOnThisPagePreviously,
   resetAction

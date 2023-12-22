@@ -25,7 +25,7 @@ type SignupFlowTikTokAuthProps = {
   onClose: () => void
 }
 
-// Wrapper around TikTokAuthButton that 
+// Wrapper around TikTokAuthButton that
 export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
