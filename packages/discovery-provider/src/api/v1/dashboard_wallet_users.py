@@ -42,7 +42,7 @@ class BulkDashboardWalletUsers(Resource):
         responses={
             200: "Success",
             400: "Bad request",
-            404: "No such reaction",
+            404: "No such dashboard wallet",
             500: "Server error",
         },
     )

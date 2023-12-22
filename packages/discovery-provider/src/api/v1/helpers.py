@@ -974,13 +974,13 @@ def format_authorized_app(authorized_app):
         "grant_updated_at": authorized_app["grant_updated_at"],
     }
 
+
 def format_dashboard_wallet_user(dashboard_wallet_user):
-    wallet = dashboard_wallet_user.pop("wallet", None)
-    del dashboard_wallet_user["wallet"]
     return {
-        "wallet": wallet,
-        "user": extend_user(dashboard_wallet_user)
+        "wallet": dashboard_wallet_user["wallet"],
+        "user": extend_user(dashboard_wallet_user["user"]),
     }
+
 
 def get_prefixed_eth_address(address: str):
     if not address.startswith("0x"):
