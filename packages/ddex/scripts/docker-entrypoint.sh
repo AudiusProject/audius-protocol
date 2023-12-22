@@ -21,6 +21,7 @@ if [ "$current_checksum" != "$last_checksum" ]; then
     echo "Changes detected. Updating files in volume..."
     cp -r $TEMP_BUILD_DIR/* $VOLUME_DIR/
     echo "$current_checksum" > "$CHECKSUM_FILE"
+    echo "Volume updated."
 else
     echo "No changes detected. No update needed."
 fi
