@@ -66,6 +66,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
+    handleCloseSocialMediaLogin,
     setIsWaitingForSocialLogin
   } = useSocialMediaLoader({
     resetAction: resetOAuthState,
@@ -141,6 +142,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               onError={handleErrorSocialMediaLogin}
               onStart={handleStartSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onClose={handleCloseSocialMediaLogin}
             />
           </Flex>
           <Flex direction='column' gap='l'>

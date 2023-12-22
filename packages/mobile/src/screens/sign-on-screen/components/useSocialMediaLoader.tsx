@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import type { AnyAction } from 'redux'
 
+import { setCredentials } from 'app/store/oauth/actions'
+
 export const useSocialMediaLoader = ({
   linkedSocialOnThisPagePreviously,
   resetAction
@@ -22,6 +24,10 @@ export const useSocialMediaLoader = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
+  const handleCloseSocialMediaLogin = useCallback(() => {
+    setIsWaitingForSocialLogin(false)
+  }, [])
+
   const handleStartSocialMediaLogin = useCallback(() => {
     setIsWaitingForSocialLogin(true)
   }, [])
@@ -34,6 +40,7 @@ export const useSocialMediaLoader = ({
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
+    handleCloseSocialMediaLogin,
     setIsWaitingForSocialLogin
   }
 }

@@ -89,10 +89,9 @@ export const CreateLoginDetailsScreen = () => {
               <ReadOnlyField
                 label={messages.handleLabel}
                 value={
-                  <Flex alignItems='center' gap='xs'>
+                  <Flex gap='xs'>
                     <Text variant='body' size='m' color='default'>
                       @{handleField.value}
-                      awdawd
                       {isVerified ? (
                         <IconVerified
                           style={css({

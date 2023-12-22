@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import {
   Name,
@@ -7,40 +7,56 @@ import {
   useAudiusQueryContext
 } from '@audius/common'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { useDispatch, useSelector } from 'react-redux'
+import Config from 'react-native-config'
+import { useDispatch } from 'react-redux'
 
+import { SocialButton } from 'app/screens/sign-on-screen/components/temp-harmony/SocialButton'
+import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { make, track } from 'app/services/analytics'
-import * as oauthActions from 'app/store/oauth/actions'
-import type { InstagramInfo } from 'app/store/oauth/reducer'
-import { getInstagramError, getInstagramInfo } from 'app/store/oauth/selectors'
+import { env } from 'app/services/env'
+import { Provider } from 'app/store/oauth/reducer'
+import { getInstagramProfile } from 'app/store/oauth/sagas'
+import type { InstagramCredentials } from 'app/store/oauth/types'
 import { EventNames } from 'app/types/analytics'
 
-import { restrictedHandles } from '../utils/restrictedHandles'
+import OAuthWebview from '../../../components/oauth/OAuth'
+import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
 
-import { SocialButton } from './temp-harmony/SocialButton'
-
-type SignUpFlowInstagramAuthProps = {
-  onStart: () => void
-  onFailure: (e: unknown) => void
+type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
     platform: 'instagram'
   }) => void
+  onError: (e: unknown) => void
+  onStart?: () => void
+  onClose?: () => void
 }
+
+const instagramAppId = Config.INSTAGRAM_APP_ID
+const instagramRedirectUrl = Config.INSTAGRAM_REDIRECT_URL
+
+const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(
+  instagramRedirectUrl
+)}&scope=user_profile,user_media&response_type=code`
 
 const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
   const audiusQueryContext = useAudiusQueryContext()
 
-  return async ({ instagramInfo }: { instagramInfo: InstagramInfo }) => {
+  return async ({ code }: { code: string }) => {
+    const { igUserProfile: profile } = await getInstagramProfile(
+      code,
+      env.IDENTITY_SERVICE
+    )
+    // Update info in redux
     dispatch(
       signOnActions.setInstagramProfile(
-        instagramInfo.uuid,
-        instagramInfo.profile,
-        instagramInfo.profile.profile_pic_url_hd
+        profile.id,
+        profile,
+        profile.profile_pic_url_hd
           ? {
-              uri: instagramInfo.profile.profile_pic_url_hd,
+              uri: profile.profile_pic_url_hd,
               name: 'ProfileImage',
               type: 'image/jpeg'
             }
@@ -48,85 +64,98 @@ const useSetProfileFromInstagram = () => {
       )
     )
 
-    const { profile } = instagramInfo
+    // Check if handle is valid using same schema as handle page
     const handleSchema = pickHandleSchema({
       audiusQueryContext: audiusQueryContext!,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })
-
     const validationResult = await handleSchema.safeParseAsync({
       handle: profile.username
     })
-
     const requiresReview = !validationResult.success
-    track(
-      make({
-        eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
-        isVerified: !!profile.is_verified,
-        handle: profile.username || 'unknown'
-      })
-    )
+
     return {
       requiresReview,
       handle: profile.username,
-      platform: 'instagram'
+      isVerified: profile.is_verified
     }
   }
 }
 
 export const SignUpFlowInstagramAuth = ({
-  onFailure,
   onSuccess,
-  onStart
+  onError,
+  onStart,
+  onClose
 }: SignUpFlowInstagramAuthProps) => {
-  const dispatch = useDispatch()
-  const instagramInfo = useSelector(getInstagramInfo)
-  const instagramError = useSelector(getInstagramError)
-  const [hasNavigatedAway, setHasNavigatedAway] = useState(false)
-
-  useEffect(() => {
-    if (instagramError) {
-      onFailure(instagramError)
-    }
-  }, [onFailure, instagramError])
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const setProfileFromInstagram = useSetProfileFromInstagram()
 
-  useEffect(() => {
-    if (hasNavigatedAway && instagramInfo) {
-      setProfileFromInstagram({ instagramInfo })
-        .then(onSuccess)
-        .catch(onFailure)
-      setHasNavigatedAway(false)
-    }
-  }, [
-    instagramInfo,
-    setProfileFromInstagram,
-    onSuccess,
-    onFailure,
-    hasNavigatedAway
-  ])
-
-  const handlePress = () => {
+  const handlePress = async () => {
     onStart?.()
-    setHasNavigatedAway(true)
-    dispatch(oauthActions.setInstagramError(null))
-    dispatch(oauthActions.instagramAuth())
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_INSTAGRAM
       })
     )
+    setIsModalOpen(true)
+  }
+
+  const handleClose = () => {
+    onClose?.()
+    setIsModalOpen(false)
+  }
+
+  const handleResponse = async (
+    payload: InstagramCredentials | { error: string }
+  ) => {
+    setIsModalOpen(false)
+    if (!('error' in payload)) {
+      const { code } = payload
+      if (code) {
+        try {
+          const { requiresReview, isVerified, handle } =
+            await setProfileFromInstagram({
+              code
+            })
+          // keep analytics up to date
+          track(
+            make({
+              eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
+              isVerified,
+              handle: handle || 'unknown'
+            })
+          )
+          onSuccess({ handle, requiresReview, platform: 'instagram' })
+        } catch (e) {
+          onError(e)
+        }
+      } else {
+        onError(new Error('Unable to retrieve information'))
+      }
+    } else {
+      onError(new Error(payload.error).message)
+    }
   }
 
   return (
-    <SocialButton
-      socialType='instagram'
-      style={{ flex: 1, height: '100%' }}
-      onPress={handlePress}
-      title={socialMediaMessages.signUpInstagram}
-      noText
-    />
+    <>
+      <OAuthWebview
+        isOpen={isModalOpen}
+        url={signUpFlowInstagramAuthorizeUrl}
+        provider={Provider.INSTAGRAM}
+        onClose={handleClose}
+        onResponse={handleResponse}
+      />
+      <SocialButton
+        socialType='instagram'
+        style={{ flex: 1, height: '100%' }}
+        onPress={handlePress}
+        title={socialMediaMessages.signUpInstagram}
+        noText
+      />
+    </>
   )
 }

@@ -49,12 +49,14 @@ type SocialMediaSectionProps = {
   }) => void
   onStart: () => void
   onError: () => void
+  onClose: () => void
 }
 
 const SocialMediaSection = ({
   onCompleteSocialMediaLogin,
   onStart,
-  onError
+  onError,
+  onClose
 }: SocialMediaSectionProps) => {
   const { spacing } = useTheme()
   return (
@@ -72,6 +74,7 @@ const SocialMediaSection = ({
       <SocialMediaSignUpButtons
         onStart={onStart}
         onError={onError}
+        onClose={onClose}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size='m'>
@@ -89,13 +92,12 @@ export const PickHandleScreen = () => {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
+    handleCloseSocialMediaLogin,
     setIsWaitingForSocialLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
-  // TODO: figure this piece out?
-  // const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(
@@ -149,7 +151,6 @@ export const PickHandleScreen = () => {
             description={messages.description}
           />
           <Flex direction='column' gap='l'>
-            {/* TODO: add verification flow error message to the handle field component */}
             <TextField name='handle' label={messages.handle} noGutter />
             <Divider>
               <Text
@@ -164,6 +165,7 @@ export const PickHandleScreen = () => {
             <SocialMediaSection
               onStart={handleStartSocialMediaLogin}
               onError={handleErrorSocialMediaLogin}
+              onClose={handleCloseSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
           </Flex>

@@ -19,6 +19,7 @@ type TikTokAuthButtonProps = Partial<SocialButtonProps> & {
     requiresReview: boolean
   }) => void
   onError?: (e: unknown) => void
+  onClose?: () => void
 }
 
 export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {

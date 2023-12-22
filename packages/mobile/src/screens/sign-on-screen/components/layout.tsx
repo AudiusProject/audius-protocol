@@ -4,7 +4,7 @@ import { css } from '@emotion/native'
 import { Dimensions } from 'react-native'
 
 import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
-import { Box, Flex, Paper, Text } from '@audius/harmony-native'
+import { Flex, Paper, Text } from '@audius/harmony-native'
 import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
@@ -125,13 +125,13 @@ export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
   const { label, value } = props
 
   return (
-    <Box>
+    <Flex gap='xs'>
       <Text variant='label' size='xs'>
         {label}
       </Text>
       <Text variant='body' size='m'>
         {value}
       </Text>
-    </Box>
+    </Flex>
   )
 }

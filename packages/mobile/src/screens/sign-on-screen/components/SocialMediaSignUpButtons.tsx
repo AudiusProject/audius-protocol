@@ -2,10 +2,10 @@ import { BooleanKeys, useRemoteVar, socialMediaMessages } from '@audius/common'
 
 import { Flex } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
+import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
+import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
 
-import { SignUpFlowInstagramAuth } from './SignUpFlowInstagramAuth'
 import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
-import { SignUpFlowTwitterAuth } from './SignUpFlowTwitterAuth'
 
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
@@ -15,12 +15,14 @@ type SocialMediaLoginOptionsProps = {
   }) => void
   onError: (e: unknown) => void
   onStart: () => void
+  onClose: () => void
 }
 
 export const SocialMediaSignUpButtons = ({
   onCompleteSocialMediaLogin,
   onStart,
-  onError
+  onError,
+  onClose
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useToast()
   const handleFailure = (e: unknown) => {
@@ -60,16 +62,18 @@ export const SocialMediaSignUpButtons = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignUpFlowTwitterAuth
-          onFailure={handleFailure}
+          onError={handleFailure}
           onSuccess={handleSuccess}
           onStart={onStart}
+          onClose={onClose}
         />
       ) : null}
       {isInstagramEnabled ? (
         <SignUpFlowInstagramAuth
-          onFailure={handleFailure}
+          onError={handleFailure}
           onSuccess={handleSuccess}
           onStart={onStart}
+          onClose={onClose}
         />
       ) : null}
       {isTikTokEnabled ? (
@@ -77,6 +81,7 @@ export const SocialMediaSignUpButtons = ({
           onFailure={handleFailure}
           onSuccess={handleSuccess}
           onStart={onStart}
+          onClose={onClose}
         />
       ) : null}
     </Flex>

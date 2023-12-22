@@ -1,16 +1,18 @@
+import { useEffect } from 'react'
+
 import {
   useAudiusQueryContext,
   type TikTokProfileData,
   pickHandleSchema,
   Name
 } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { restrictedHandles } from 'utils/restrictedHandles'
 
 import { TikTokAuthButton } from 'app/components/tiktok-auth'
 import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
-import { EventNames } from 'app/types/analytics'
+import { getAbandoned } from 'app/store/oauth/selectors'
 
 type SignupFlowTikTokAuthProps = {
   onStart: () => void
@@ -20,15 +22,25 @@ type SignupFlowTikTokAuthProps = {
     handle: string
     platform: 'tiktok'
   }) => void
+  onClose: () => void
 }
 
+// Wrapper around TikTokAuthButton that 
 export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
-  onFailure
+  onFailure,
+  onClose
 }: SignupFlowTikTokAuthProps) => {
   const dispatch = useDispatch()
+  const abandoned = useSelector(getAbandoned)
   const audiusQueryContext = useAudiusQueryContext()
+
+  useEffect(() => {
+    if (abandoned) {
+      onClose()
+    }
+  }, [abandoned, onClose])
 
   const handleSuccess = async ({
     profileData
@@ -66,11 +78,6 @@ export const SignUpFlowTikTokAuth = ({
 
   const handlePress = () => {
     onStart()
-    track(
-      make({
-        eventName: EventNames.CREATE_ACCOUNT_START_TIKTOK
-      })
-    )
     dispatch(oauthActions.setTikTokError(null))
   }
 
@@ -79,6 +86,7 @@ export const SignUpFlowTikTokAuth = ({
       onPress={handlePress}
       onError={onFailure}
       onSuccess={handleSuccess}
+      onClose={onClose}
       style={{ flex: 1 }}
       noText
     />
