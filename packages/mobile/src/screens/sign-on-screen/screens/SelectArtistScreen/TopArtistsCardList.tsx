@@ -1,5 +1,3 @@
-import { memo } from 'react'
-
 import type { QueryHookOptions } from '@audius/common'
 import { useGetFeaturedArtists, useGetTopArtistsInGenre } from '@audius/common'
 import { css } from '@emotion/native'
@@ -21,8 +19,6 @@ export const useGetTopArtists = (genre: string, options?: QueryHookOptions) => {
   return useGetArtistsHook({ genre }, options)
 }
 
-const MemoizedFollowArtistField = memo(FollowArtistField)
-
 type Props = {
   route: RouteProp<any>
 }
@@ -42,7 +38,7 @@ export const TopArtistsCardList = (props: Props) => {
       data={artists}
       style={css({ paddingTop: spacing.xl })}
       renderItem={({ item, index }) => (
-        <MemoizedFollowArtistField
+        <FollowArtistField
           artist={item}
           showPreviewHint={genre === 'Featured' && index === 0}
         />
