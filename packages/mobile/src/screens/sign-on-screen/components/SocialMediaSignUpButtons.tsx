@@ -18,6 +18,7 @@ type SocialMediaLoginOptionsProps = {
   onClose: () => void
 }
 
+// Renders all the social buttons + pops up toasts accordingly
 export const SocialMediaSignUpButtons = ({
   onCompleteSocialMediaLogin,
   onStart,
