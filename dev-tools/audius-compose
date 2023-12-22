@@ -216,8 +216,9 @@ def build(
     # build 2 images for protocol dashboard (staging and prod) when not running a local stack
     if "dashboard" in services and prod:
         env = os.environ.copy()
-        for target in ["-stage", "-prod"]:
-            env["DASHBOARD_ENV_TYPE"] = target
+        for target in ["stage", "prod"]:
+            env["DOCKERCOMPOSE_ENV_TYPE"] = target
+            env["DASHBOARD_ENV_TYPE"] = f"-{target}"
             proc = subprocess.run(
                 [
                     "docker",
