@@ -47,7 +47,7 @@ class BulkDashboardWalletUsers(Resource):
         },
     )
     @ns.expect(get_dashboard_wallet_users_parser)
-    @marshal_with(get_dashboard_wallet_users_response)
+    @ns.marshal_with(get_dashboard_wallet_users_response)
     @cache(ttl_sec=5)
     def get(self):
         args = get_dashboard_wallet_users_parser.parse_args()
