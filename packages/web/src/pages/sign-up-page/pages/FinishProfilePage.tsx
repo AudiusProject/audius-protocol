@@ -4,8 +4,14 @@ import {
   MAX_DISPLAY_NAME_LENGTH,
   finishProfilePageMessages as messages
 } from '@audius/common'
-import { Paper, PlainButton, PlainButtonType } from '@audius/harmony'
-import { Formik, Form } from 'formik'
+import {
+  Paper,
+  PlainButton,
+  PlainButtonType,
+  Text,
+  useTheme
+} from '@audius/harmony'
+import { Formik, Form, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { z } from 'zod'
@@ -108,7 +114,7 @@ export const FinishProfilePage = () => {
             }
             heading={messages.header}
             description={messages.description}
-            alignItems={!isMobile ? 'center' : undefined}
+            centered={!isMobile}
           />
           <Paper direction='column'>
             <AccountHeader
@@ -129,9 +135,11 @@ export const FinishProfilePage = () => {
               })}
             />
           </Paper>
+          {isMobile ? null : <UploadProfilePhotoHelperText />}
           <PageFooter
             centered
             buttonProps={{ disabled: !isValid }}
+            prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
                 <PlainButton
@@ -146,5 +154,25 @@ export const FinishProfilePage = () => {
         </Page>
       )}
     </Formik>
+  )
+}
+
+const UploadProfilePhotoHelperText = () => {
+  const [{ value: displayName }, { touched }] = useField('displayName')
+  const [{ value: profileImage }] = useField('profileImage')
+  const isVisible = displayName && touched && !profileImage
+  const { motion } = useTheme()
+
+  return (
+    <Text
+      variant='body'
+      textAlign='center'
+      css={{
+        opacity: isVisible ? 1 : 0,
+        transition: `opacity ${motion.calm}`
+      }}
+    >
+      {messages.uploadProfilePhoto}
+    </Text>
   )
 }

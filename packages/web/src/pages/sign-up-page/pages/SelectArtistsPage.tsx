@@ -181,7 +181,10 @@ export const SelectArtistsPage = () => {
                   backgroundColor='default'
                   pv='xl'
                   ph={isMobile ? 'l' : 'xl'}
-                  css={{ minHeight: 500 }}
+                  css={{
+                    minHeight: 500,
+                    minWidth: !isMobile ? 530 : undefined
+                  }}
                   direction='column'
                 >
                   <HiddenLegend>

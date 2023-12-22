@@ -1,10 +1,14 @@
-import { Box, useTheme, IconImage } from '@audius/harmony'
+import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
 
 import {
   getCoverPhotoField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useSelector } from 'utils/reducer'
+
+const messages = {
+  selectCoverPhoto: 'Select cover photo'
+}
 
 type CoverPhotoBannerProps = {
   coverPhotoUrl?: string
@@ -64,13 +68,16 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
       }}
     >
       {isEditing ? (
-        <IconImage
+        <IconButton
+          aria-label={messages.selectCoverPhoto}
           css={{
             position: 'absolute',
             right: spacing.l,
             top: spacing.l
           }}
           color='staticWhite'
+          shadow='drop'
+          icon={IconImage}
         />
       ) : null}
     </Box>

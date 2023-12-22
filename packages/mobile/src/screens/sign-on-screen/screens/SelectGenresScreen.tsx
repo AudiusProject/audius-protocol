@@ -1,10 +1,10 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
+import type { GENRES } from '@audius/common'
 import {
-  GENRES,
-  convertGenreLabelToValue,
   selectGenresPageMessages as messages,
-  selectGenresSchema
+  selectGenresSchema,
+  selectableGenres
 } from '@audius/common'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
@@ -19,24 +19,19 @@ import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
-const genres = GENRES.map((genre) => ({
-  value: genre,
-  label: convertGenreLabelToValue(genre)
-}))
-
 type Genre = typeof GENRES[number]
-type SelectGenreValues = { genres: typeof GENRES }
+type SelectGenresValue = { genres: typeof GENRES }
 
-const initialValues: SelectGenreValues = { genres: [] }
+const initialValues: SelectGenresValue = { genres: [] }
 
 /* Memoized SelectablePill to fix a performance issue.
  * The code below is arranged so that the pills don't need to re-render,
  * And the memoization here is just forcing it to never re-render. */
 const MemoSelectablePill = memo(SelectablePill, () => true)
 
-const SelectGenreFieldArray = () => {
+const SelectGenresFieldArray = () => {
   // Storing values as state alongside Formik purely because setState provides access to the previous values
-  const [formValues, setFormValues] = useState<SelectGenreValues['genres']>(
+  const [formValues, setFormValues] = useState<SelectGenresValue['genres']>(
     initialValues.genres
   )
   const [, , { setValue }] = useField('genres')
@@ -63,7 +58,7 @@ const SelectGenreFieldArray = () => {
   return (
     <ScrollView testID='genreScrollView'>
       <Flex gap='s' direction='row' wrap='wrap'>
-        {genres.map((genre) => (
+        {selectableGenres.map((genre) => (
           <MemoSelectablePill
             label={genre.label}
             onPress={() => {
@@ -78,12 +73,12 @@ const SelectGenreFieldArray = () => {
   )
 }
 
-export const SelectGenreScreen = () => {
+export const SelectGenresScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
   const handleSubmit = useCallback(
-    (values: SelectGenreValues) => {
+    (values: SelectGenresValue) => {
       const genres = values.genres
       dispatch(setField('genres', genres))
       navigation.navigate('SelectArtists')
@@ -108,7 +103,7 @@ export const SelectGenreScreen = () => {
                 heading={messages.header}
                 description={messages.description}
               />
-              <SelectGenreFieldArray />
+              <SelectGenresFieldArray />
             </Flex>
             <PageFooter
               buttonProps={{ disabled: !(dirty && isValid) }}

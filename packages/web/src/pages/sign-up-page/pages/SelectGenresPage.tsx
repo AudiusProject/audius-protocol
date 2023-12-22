@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
 import {
-  GENRES,
   Genre,
-  convertGenreLabelToValue,
   selectGenresPageMessages as messages,
-  selectGenresSchema
+  selectGenresSchema,
+  selectableGenres
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -21,23 +20,18 @@ import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
 
-const genres = GENRES.map((genre) => ({
-  value: genre,
-  label: convertGenreLabelToValue(genre)
-}))
+type SelectGenresValue = { genres: Genre[] }
 
-type SelectGenreValues = { genres: Genre[] }
-
-const initialValues: SelectGenreValues = {
+const initialValues: SelectGenresValue = {
   genres: []
 }
 
-export const SelectGenrePage = () => {
+export const SelectGenresPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
-    (values: SelectGenreValues) => {
+    (values: SelectGenresValue) => {
       const { genres } = values
       dispatch(setField('genres', genres))
       navigate(SIGN_UP_ARTISTS_PAGE)
@@ -73,7 +67,7 @@ export const SelectGenrePage = () => {
               gap='s'
               wrap='wrap'
             >
-              {genres.map((genre) => {
+              {selectableGenres.map((genre) => {
                 const { label, value } = genre
                 return (
                   <SelectablePillField

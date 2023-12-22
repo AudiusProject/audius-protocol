@@ -34,7 +34,7 @@ export const FeedFilterDrawer = () => {
       // Tell the store that the feed is still in view so it can be refetched
       dispatch(feedActions.setInView(true))
       // Force a refresh for at least 10 tiles
-      dispatch(feedActions.refreshInView(true, null, 10))
+      // dispatch(feedActions.refreshInView(true, null, 10))
       track(make({ eventName: Name.FEED_CHANGE_VIEW, view: filter }))
     },
     [dispatch]
