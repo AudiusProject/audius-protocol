@@ -4,9 +4,9 @@ jobs:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
       service: discovery-provider
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [Vercel, dockerhub]
@@ -60,9 +60,9 @@ jobs:
       name: push-protocol-dashboard
       context: [Vercel, dockerhub]
       service: dashboard
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-healthz
       context: [Vercel, dockerhub]
@@ -175,9 +175,9 @@ jobs:
       name: push-protocol-dashboard-arm
       context: [Vercel, dockerhub]
       service: dashboard
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
       requires:
         - push-protocol-dashboard
 
