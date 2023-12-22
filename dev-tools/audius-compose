@@ -213,8 +213,6 @@ def build(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    env = os.environ.copy()
-    env["DASHBOARD_ENV_TYPE"] = "prod" if prod else "dev"
     proc = subprocess.run(
         [
             "docker",
@@ -243,32 +241,10 @@ def build(
             *args,
             *services,
         ],
-        env=env,
     )
 
     if proc.returncode != 0:
         raise click.ClickException("Failed to build images")
-
-    # build an extra image for protocol dashboard on staging
-    if "dashboard" in services and prod:
-        env = os.environ.copy()
-        env["DASHBOARD_ENV_TYPE"] = "stage"
-        proc = subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-                f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
-                f"--project-name={protocol_dir.name}",
-                "build",
-                *args,
-                "dashboard",
-            ],
-            env=env,
-        )
-
-        if proc.returncode != 0:
-            raise click.ClickException("Failed to build images")
 
 
 @cli.command()
@@ -293,20 +269,16 @@ def push(ctx, services, prod):
 
     try:
         for service in services:
-            git_commit = get_git_commit(protocol_dir)
-            base_tag = f"{protocol_dir.name}-{service}"
-
-            if service == "dashboard" and prod:
-                # tag and push -stage image
-                subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}-stage"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
-
-                # tag and push -prod image
-                subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}-prod"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
-            else:
-                subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}"], check=True)
+            # TODO: Find if there is a better way to find source image names
+            subprocess.run(
+                [
+                    "docker",
+                    "tag",
+                    f"{protocol_dir.name}-{service}",
+                    f"audius/{service}:{git_commit}",
+                ],
+                check=True,
+            )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to tag images")
 
