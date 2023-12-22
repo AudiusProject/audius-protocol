@@ -45,6 +45,7 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
@@ -190,7 +191,14 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
-
+  const { data: playlistIds, error } = trpc.playlists.containTrackId.useQuery(
+    {
+      trackId
+    },
+    {
+      enabled: !!trackId
+    }
+  )
   let isScheduledRelease = false
   if (!isPublishing && moment.utc(released).isAfter(moment())) {
     isScheduledRelease = true
@@ -542,6 +550,9 @@ export const GiantTrackTile = ({
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
+              <span> from </span>
+              {JSON.stringify(playlistIds)}
+              {JSON.stringify(error)}
             </div>
           </div>
 

@@ -370,6 +370,7 @@ export interface PlaylistRow {
   'isPrivate': boolean;
   'lastAddedTo'?: Date | null;
   'metadataMultihash'?: string | null;
+  'permalink'?: string | null;
   'playlistContents': any;
   'playlistId': number;
   'playlistImageMultihash'?: string | null;

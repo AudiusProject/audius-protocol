@@ -5,7 +5,7 @@ import {
   AggregateUserRow,
   PlaylistRow,
   TrackRow,
-  UserRow
+  UserRow,
 } from './db-tables'
 
 const connectionString = process.env.audius_db_url || ''
@@ -25,9 +25,9 @@ export const sql = postgres(connectionString, {
       to: 20,
       from: [20],
       serialize: (x: any) => x.toString(),
-      parse: (x: any) => +x
-    }
-  }
+      parse: (x: any) => +x,
+    },
+  },
 })
 
 export type AUser = UserRow & AggregateUserRow
@@ -102,7 +102,13 @@ export type SelectPlaylistProps = {
 export async function selectPlaylistsCamel(p: SelectPlaylistProps) {
   return sql<APlaylist[]>`
     select ${p.cols ? sql(p.cols) : sql`*`}
-    from playlists
+    from (select *, (
+      select slug
+      from playlist_routes pr
+      where
+        pr.playlist_id = playlists.playlist_id and is_current = 'true'
+      ) as permalink
+    from playlists) as playlists_with_permalinks
     left join aggregate_playlist using (playlist_id, is_album)
     where is_current = true
     ${p.isAlbum != undefined ? sql`and is_album = ${p.isAlbum}` : sql``}
