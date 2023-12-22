@@ -222,12 +222,12 @@ class ContentAccessChecker:
         tracks = list(map(helpers.model_to_dictionary, tracks))
 
         return {
-            track["track_id"]: {
-                "is_stream_gated": track["is_stream_gated"],
-                "stream_conditions": track["stream_conditions"],
-                "is_download_gated": track["is_download_gated"],
-                "download_conditions": track["download_conditions"],
-                "content_owner_id": track["owner_id"],
+            track["track_id"]: {  # type: ignore
+                "is_stream_gated": track["is_stream_gated"],  # type: ignore
+                "stream_conditions": track["stream_conditions"],  # type: ignore
+                "is_download_gated": track["is_download_gated"],  # type: ignore
+                "download_conditions": track["download_conditions"],  # type: ignore
+                "content_owner_id": track["owner_id"],  # type: ignore
             }
             for track in tracks
         }
