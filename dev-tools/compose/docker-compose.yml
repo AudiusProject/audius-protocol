@@ -91,7 +91,7 @@ services:
 
   dashboard:
     extends:
-      file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
+      file: docker-compose.protocol-dashboard.yml
       service: dashboard
     <<: *common
 
