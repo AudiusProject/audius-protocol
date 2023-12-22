@@ -574,16 +574,18 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
         )
         return
 
-    track_access = {track["track_id"]: defaultdict() for track in tracks}
-    stream_gated_tracks = list(filter(lambda track: track["is_stream_gated"], tracks))
-    download_gated_tracks = list(
-        filter(lambda track: track["is_download_gated"], tracks)
+    # gated track access
+    gated_track_access = {track["track_id"]: defaultdict() for track in tracks}
+    gated_tracks = list(
+        filter(
+            lambda track: track["stream_conditions"] or track["download_conditions"],
+            tracks,
+        )
     )
-
-    # stream gated track access
-    stream_gated_content_access_args = []
-    for track in stream_gated_tracks:
-        stream_gated_content_access_args.append(
+    gated_track_ids = set([track["track_id"] for track in gated_tracks])
+    gated_content_access_args = []
+    for track in gated_tracks:
+        gated_content_access_args.append(
             {
                 "user_id": current_user_id,
                 "content_id": track["track_id"],
@@ -591,58 +593,36 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
             }
         )
 
-    stream_gated_content_access = content_access_checker.check_access_for_batch(
-        session, stream_gated_content_access_args
+    gated_content_access = content_access_checker.check_access_for_batch(
+        session, gated_content_access_args
     )
 
-    # download gated track access
-    download_gated_content_access_args = []
-    for track in download_gated_tracks:
-        download_gated_content_access_args.append(
-            {
-                "user_id": current_user_id,
-                "content_id": track["track_id"],
-                "content_type": "track",
-            }
-        )
-
-    download_gated_content_access = content_access_checker.check_access_for_batch(
-        session, download_gated_content_access_args, is_download=True
-    )
-
-    # combine stream and download access results for each track
-    # and populate track metadata with access info
-    for track in stream_gated_tracks:
+    for track in gated_tracks:
         track_id = track["track_id"]
         has_stream_access = (
-            current_user_id in stream_gated_content_access["track"]
-            and track_id in stream_gated_content_access["track"][current_user_id]
-            and stream_gated_content_access["track"][current_user_id][track_id][
+            current_user_id in gated_content_access["track"]
+            and track_id in gated_content_access["track"][current_user_id]
+            and gated_content_access["track"][current_user_id][track_id][
                 "has_stream_access"
             ]
         )
-        track_access[track_id]["has_stream_access"] = has_stream_access
-
-    for track in download_gated_tracks:
-        track_id = track["track_id"]
         has_download_access = (
-            current_user_id in download_gated_content_access["track"]
-            and track_id in download_gated_content_access["track"][current_user_id]
-            and download_gated_content_access["track"][current_user_id][track_id][
+            current_user_id in gated_content_access["track"]
+            and track_id in gated_content_access["track"][current_user_id]
+            and gated_content_access["track"][current_user_id][track_id][
                 "has_download_access"
             ]
         )
-        track_access[track_id]["has_download_access"] = has_download_access
+        gated_track_access[track_id]["has_stream_access"] = has_stream_access
+        gated_track_access[track_id]["has_download_access"] = has_download_access
 
     for track in tracks:
         track_id = track["track_id"]
-        has_stream_access = track_access[track_id].get("has_stream_access", True)
-        has_download_access = track_access[track_id].get("has_download_access", True)
-        track[response_name_constants.access] = {
-            "stream": has_stream_access,
-            "download": has_download_access,
-        }
-        if has_stream_access:
+        if track_id not in gated_track_ids:
+            track[response_name_constants.access] = {
+                "stream": True,
+                "download": True,
+            }
             track[
                 response_name_constants.premium_content_signature
             ] = get_gated_content_signature_for_user_wallet(
@@ -652,9 +632,33 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
                     "type": "track",
                     "user_wallet": current_user_wallet[0],
                     "user_id": current_user_id,
-                    "is_gated": True,
+                    "is_gated": False,
                 }
             )
+        else:
+            has_stream_access = gated_track_access[track_id].get(
+                "has_stream_access", True
+            )
+            has_download_access = gated_track_access[track_id].get(
+                "has_download_access", True
+            )
+            track[response_name_constants.access] = {
+                "stream": has_stream_access,
+                "download": has_download_access,
+            }
+            if has_stream_access:
+                track[
+                    response_name_constants.premium_content_signature
+                ] = get_gated_content_signature_for_user_wallet(
+                    {
+                        "track_id": track_id,
+                        "track_cid": track["track_cid"],
+                        "type": "track",
+                        "user_wallet": current_user_wallet[0],
+                        "user_id": current_user_id,
+                        "is_gated": True,
+                    }
+                )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):
