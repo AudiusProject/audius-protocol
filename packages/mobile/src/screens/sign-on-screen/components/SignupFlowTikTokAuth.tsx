@@ -25,7 +25,7 @@ type SignupFlowTikTokAuthProps = {
   onClose: () => void
 }
 
-// Wrapper around TikTokAuthButton that
+// Wrapper around TikTokAuthButton that adds in new sign up schema
 export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
