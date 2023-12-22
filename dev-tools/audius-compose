@@ -213,46 +213,28 @@ def build(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    env = os.environ.copy()
-    env["DASHBOARD_ENV_TYPE"] = "prod" if prod else "dev"
-    proc = subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
-            f"--project-name={protocol_dir.name}",
-            "--profile=circle_ci_push",
-            "--profile=tests",
-            "--profile=identity",
-            "--profile=discovery",
-            "--profile=comms",
-            "--profile=storage",
-            "--profile=notifications",
-            "--profile=elasticsearch",
-            "--profile=mediorum",
-            "--profile=chain",
-            "--profile=poa",
-            "--profile=eth",
-            "--profile=libs",
-            "--profile=solana",
-            "--profile=block-explorer",
-            "--profile=uptime",
-            "--profile=ddex",
-            "build",
-            *args,
-            *services,
-        ],
-        env=env,
-    )
-
-    if proc.returncode != 0:
-        raise click.ClickException("Failed to build images")
-
-    # build an extra image for protocol dashboard on staging
+    # build 2 images for protocol dashboard (staging and prod) when not running a local stack
     if "dashboard" in services and prod:
         env = os.environ.copy()
-        env["DASHBOARD_ENV_TYPE"] = "stage"
+        for target in ["-stage", "-prod"]:
+            env["DASHBOARD_ENV_TYPE"] = target
+            proc = subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+                    f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
+                    f"--project-name={protocol_dir.name}",
+                    "build",
+                    *args,
+                    "dashboard",
+                ],
+                env=env,
+            )
+
+            if proc.returncode != 0:
+                raise click.ClickException(f"Failed to build dashboard-{target} image")
+    else:
         proc = subprocess.run(
             [
                 "docker",
@@ -260,11 +242,27 @@ def build(
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
                 f"--project-name={protocol_dir.name}",
+                "--profile=circle_ci_push",
+                "--profile=tests",
+                "--profile=identity",
+                "--profile=discovery",
+                "--profile=comms",
+                "--profile=storage",
+                "--profile=notifications",
+                "--profile=elasticsearch",
+                "--profile=mediorum",
+                "--profile=chain",
+                "--profile=poa",
+                "--profile=eth",
+                "--profile=libs",
+                "--profile=solana",
+                "--profile=block-explorer",
+                "--profile=uptime",
+                "--profile=ddex",
                 "build",
                 *args,
-                "dashboard",
+                *services,
             ],
-            env=env,
         )
 
         if proc.returncode != 0:
@@ -293,16 +291,15 @@ def push(ctx, services, prod):
 
     try:
         for service in services:
-            git_commit = get_git_commit(protocol_dir)
             base_tag = f"{protocol_dir.name}-{service}"
 
             if service == "dashboard" and prod:
-                # tag and push -stage image
-                subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}-stage"], check=True)
+                # tag -stage image
+                subprocess.run(["docker", "tag", f"{base_tag}-stage", f"audius/{service}:{git_commit}-stage"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
 
-                # tag and push -prod image
-                subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}-prod"], check=True)
+                # tag -prod image
+                subprocess.run(["docker", "tag", f"{base_tag}-prod", f"audius/{service}:{git_commit}-prod"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
             else:
                 subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
@@ -312,10 +309,14 @@ def push(ctx, services, prod):
 
     try:
         for service in services:
-            subprocess.run(
-                ["docker", "push", f"audius/{service}:{git_commit}"],
-                check=True,
-            )
+            if service == "dashboard" and prod:
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
+            else:
+                subprocess.run(
+                    ["docker", "push", f"audius/{service}:{git_commit}"],
+                    check=True,
+                )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to push images")
 
