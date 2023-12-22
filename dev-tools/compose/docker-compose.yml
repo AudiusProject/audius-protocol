@@ -90,8 +90,9 @@ services:
   # Protocol dashboard
 
   dashboard:
+    image: audius-protocol-dashboard:${DASHBOARD_ENV_TYPE:-latest}
     extends:
-      file: docker-compose.protocol-dashboard.yml
+      file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
       service: dashboard
     <<: *common
 
