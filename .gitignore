@@ -209,3 +209,4 @@ packages/identity-service/emailCache
 
 # CloudFlare
 .wrangler
+.vercel

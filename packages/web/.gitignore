@@ -54,3 +54,4 @@ yarn-error.log*
 .idea
 .yalc
 yalc.lock
+.vercel
