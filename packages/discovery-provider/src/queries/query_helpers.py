@@ -618,7 +618,7 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
             current_user_id in stream_gated_content_access["track"]
             and track_id in stream_gated_content_access["track"][current_user_id]
             and stream_gated_content_access["track"][current_user_id][track_id][
-                "does_user_have_access"
+                "has_stream_access"
             ]
         )
         track_access[track_id]["has_stream_access"] = has_stream_access
@@ -629,7 +629,7 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
             current_user_id in download_gated_content_access["track"]
             and track_id in download_gated_content_access["track"][current_user_id]
             and download_gated_content_access["track"][current_user_id][track_id][
-                "does_user_have_access"
+                "has_download_access"
             ]
         )
         track_access[track_id]["has_download_access"] = has_download_access

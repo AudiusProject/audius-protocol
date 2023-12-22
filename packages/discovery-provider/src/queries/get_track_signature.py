@@ -90,11 +90,10 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
         access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
-            content_id=track_entity.track_id,
             content_type="track",
             content_entity=track_entity,
         )
-        if not access["does_user_have_access"]:
+        if not access["has_stream_access"]:
             return None
 
     signature = get_gated_content_signature(
@@ -178,12 +177,10 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
-            content_id=track_entity.track_id,
             content_type="track",
             content_entity=track_entity,
-            is_download=True,
         )
-        if not access["does_user_have_access"]:
+        if not access["has_download_access"]:
             return None
 
     signature = get_gated_content_signature(

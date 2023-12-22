@@ -540,7 +540,7 @@ def validate_remixability(params: ManageEntityParameters):
 
     for track_id in gated_content_batch_access["track"][user_id]:
         access = gated_content_batch_access["track"][user_id][track_id]
-        if not access["does_user_have_access"]:
+        if not access["has_stream_access"]:
             raise IndexingValidationError(
                 f"User {user_id} does not have access to remix parent gated track {track_id}"
             )
