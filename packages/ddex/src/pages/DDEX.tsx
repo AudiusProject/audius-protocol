@@ -245,7 +245,7 @@ const TrackList = ({ uploadedTracks, uploadingTrack }: {
 
   return (
     <div>
-      {isListExpanded ? (
+      {isListExpanded ? uploadedTracks.length ? (
         <div className="flex justify-end items-center py-4">
           <button
             onClick={() => setIsListExpanded(!isListExpanded)}
@@ -254,7 +254,7 @@ const TrackList = ({ uploadedTracks, uploadingTrack }: {
             {'Hide'}
           </button>
         </div>
-      ) : (
+      ) : null : (
         <div className="flex justify-between items-center py-4">
           <p className="text-center">{uploadedTracks.length} tracks uploaded</p>
           <button
@@ -376,6 +376,10 @@ const XmlImporter = ({
       alert("Please upload an XML file.");
       return;
     }
+
+    setUploadSucceeded(false);
+    setUploadedTracks([]);
+    setUploadingTrack(null);
 
     readXml(selectedFile, audiusSdk!);
   };
