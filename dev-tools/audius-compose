@@ -218,7 +218,6 @@ def build(
         for target in ["stage", "prod"]:
             env = os.environ.copy()
             env["DASHBOARD_ENV_TYPE"] = target
-            env["DASHBOARD_IMAGE_SUFFIX"] = f"-{target}"
             proc = subprocess.run(
                 [
                     "docker",
@@ -296,11 +295,11 @@ def push(ctx, services, prod):
 
             if service == "dashboard" and prod:
                 # tag -stage image
-                subprocess.run(["docker", "tag", f"{base_tag}-stage", f"audius/{service}:{git_commit}-stage"], check=True)
+                subprocess.run(["docker", "tag", f"{base_tag}:stage", f"audius/{service}:{git_commit}-stage"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
 
                 # tag -prod image
-                subprocess.run(["docker", "tag", f"{base_tag}-prod", f"audius/{service}:{git_commit}-prod"], check=True)
+                subprocess.run(["docker", "tag", f"{base_tag}:prod", f"audius/{service}:{git_commit}-prod"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
             else:
                 subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
