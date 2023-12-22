@@ -11,4 +11,4 @@ COPY scripts ./scripts
 COPY public ./public
 COPY types ./types
 
-RUN npm run start:stage
+CMD npm run start:stage
