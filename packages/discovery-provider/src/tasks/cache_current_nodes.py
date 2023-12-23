@@ -39,7 +39,16 @@ def cache_current_nodes_task(self):
             if current_node is not None:
                 discovery_nodes.append(current_node)
 
-            set_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY, discovery_nodes)
+            set_json_cached_key(
+                redis,
+                ALL_DISCOVERY_NODES_CACHE_KEY,
+                [
+                    {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
+                    for endpoint, delegateOwnerWallet in zip(
+                        discovery_nodes, discovery_nodes_wallets
+                    )
+                ],
+            )
             set_json_cached_key(
                 redis, ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY, discovery_nodes_wallets
             )
