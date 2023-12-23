@@ -51,7 +51,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * List of services to select from
    */
-  private services: string[]
+  private services: DiscoveryNode[]
 
   /**
    * Currently selected discovery node
