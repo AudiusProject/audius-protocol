@@ -8,6 +8,7 @@ import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 import type { SolanaRelayService, SolanaWalletAdapter } from './services/Solana'
 import type { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
+import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
 
 export type ServicesContainer = {
   /**
@@ -54,6 +55,11 @@ export type ServicesContainer = {
    * Claimable Tokens Program client for Solana
    */
   claimableTokensProgram: ClaimableTokens
+
+  /**
+   * Service used to choose a healthy Anti Abuse Oracle
+   */
+  antiAbuseOracleSelector: AntiAbuseOracleSelectorService
 }
 
 const DevAppSchema = z.object({
