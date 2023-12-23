@@ -13,6 +13,7 @@ export type Decision = {
 export enum DECISION_TREE_STATE {
   CHECK_SHORT_CIRCUIT = 'Check Short Circuit',
   GET_ALL_SERVICES = 'Get All Services',
+  EXCLUDE_OWNERS = 'Exclude Owners',
   FILTER_TO_WHITELIST = 'Filter To Whitelist',
   FILTER_FROM_BLACKLIST = 'Filter From Blacklist',
   FILTER_OUT_KNOWN_UNHEALTHY = 'Filter Out Known Unhealthy',
@@ -99,4 +100,8 @@ export type DiscoveryNodeSelectorService =
   EventEmitterTarget<ServiceSelectionEvents> & {
     getSelectedEndpoint: () => Promise<string | null>
     createMiddleware: () => Middleware
+    getUniquelyOwnedEndpoints: (
+      n: number,
+      excludeOwners?: string[]
+    ) => Promise<string[]>
   }

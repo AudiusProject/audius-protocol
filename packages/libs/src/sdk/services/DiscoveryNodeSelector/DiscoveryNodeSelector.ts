@@ -264,6 +264,143 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     return await this.select(null)
   }
 
+  public async getUniquelyOwnedEndpoints(
+    nodeCount: number,
+    excludeOwners: string[] = []
+  ) {
+    const decisionTree: Decision[] = []
+
+    // Get all services
+    let services = await this.getServices()
+    decisionTree.push({
+      stage: DECISION_TREE_STATE.GET_ALL_SERVICES,
+      val: services
+    })
+
+    if (excludeOwners) {
+      services = services.filter(
+        (s) => !excludeOwners.includes(s.delegateOwnerWallet)
+      )
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.EXCLUDE_OWNERS,
+        val: services
+      })
+    }
+
+    // If a whitelist is provided, filter down to it
+    if (this.config.allowlist) {
+      services = services.filter((s) => this.config.allowlist?.has(s.endpoint))
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
+        val: services
+      })
+    }
+
+    // if a blacklist is provided, filter out services in the list
+    if (this.config.blocklist) {
+      services = services.filter((s) => !this.config.blocklist?.has(s.endpoint))
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
+        val: services
+      })
+    }
+
+    // Filter out anything we know is already unhealthy
+    const filteredServices = services.filter(
+      (s) => !this.unhealthyServices.has(s.endpoint)
+    )
+    decisionTree.push({
+      stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
+      val: filteredServices
+    })
+
+    // Group services by owner
+    const endpointsByOwner = filteredServices.reduce<Record<string, string[]>>(
+      (acc, cur) => {
+        if (cur.delegateOwnerWallet in acc) {
+          acc[cur.delegateOwnerWallet]!.push(cur.endpoint)
+        } else {
+          acc[cur.delegateOwnerWallet] = [cur.endpoint]
+        }
+        return acc
+      },
+      {}
+    )
+
+    // Find nodeCount healthy nodes from unique owners
+    const ownersToTry = new Set(Object.keys(endpointsByOwner))
+    if (ownersToTry.size < nodeCount) {
+      this.logger.error('Not enough unique owners to choose from', {
+        decisionTree
+      })
+      throw new Error('Not enough unique owners to choose from')
+    }
+
+    const selectedNodes: string[] = []
+    while (ownersToTry.size > 0 && selectedNodes.length < nodeCount) {
+      // Get an unattempted owner
+      const [sampledOwner] = sampleSize(Object.keys(endpointsByOwner), 1)
+      ownersToTry.delete(sampledOwner!) // always defined
+
+      // Get the owner's services
+      const servicesToTry = new Set(endpointsByOwner[sampledOwner!])
+
+      // Find a healthy node from this owner
+      let healthyService: string | null = null
+      let attemptedServicesCount = 0
+      while (healthyService === null && servicesToTry.size > 0) {
+        // Get a round to select from
+        const round = sampleSize(
+          [...servicesToTry],
+          this.config.maxConcurrentRequests
+        )
+        round.forEach((s) => servicesToTry.delete(s))
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.GET_SELECTION_ROUND,
+          val: round
+        })
+        attemptedServicesCount += round.length
+        healthyService = await this.anyHealthyEndpoint(round)
+        if (!healthyService) {
+          decisionTree.push({
+            stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
+          })
+          this.logger.debug(
+            'No healthy services found. Attempting another round...',
+            {
+              attemptedServicesCount
+            }
+          )
+        }
+      }
+      if (healthyService === null) {
+        // Don't try backups, just go to the next owner
+        this.logger.error(
+          `No healthy services for owner ${sampledOwner}. Trying new owner...`
+        )
+      } else {
+        // Add the healthy node to the result
+        selectedNodes.push(healthyService)
+      }
+    }
+
+    if (selectedNodes.length < nodeCount) {
+      // Reset if we fail
+      this.unhealthyServices = new Set([])
+      this.backupServices = {}
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
+      })
+      throw new Error('Not enough healthy services to choose from')
+    }
+
+    // Trigger a cleanup event for all of the unhealthy and backup services,
+    // so they can get retried in the future
+    this.triggerCleanup()
+
+    return selectedNodes
+  }
+
   /**
    * Gets the list of services
    */
