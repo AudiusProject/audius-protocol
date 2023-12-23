@@ -12,13 +12,19 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
-import { Solana } from '../../services'
-import { ClaimableTokensProgram } from '@audius/spl'
 import {
   PublicKey,
   Secp256k1Program,
-  TransactionMessage
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
 } from '@solana/web3.js'
+import { ClaimableTokensProgram } from '@audius/spl'
+import {
+  ClaimableTokens,
+  SolanaRelay,
+  SolanaRelayWalletAdapter
+} from '../../services'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -61,7 +67,11 @@ describe('UsersApi', () => {
     discoveryNodeSelector,
     logger
   })
-  const solana = new Solana()
+  const solanaRelay = new SolanaRelay()
+  const claimableTokens = new ClaimableTokens(
+    {},
+    new SolanaRelayWalletAdapter(solanaRelay)
+  )
 
   beforeAll(() => {
     users = new UsersApi(
@@ -71,7 +81,7 @@ describe('UsersApi', () => {
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       new Logger(),
-      solana
+      claimableTokens
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -259,10 +269,16 @@ describe('UsersApi', () => {
 
       // Turn the relay call into a bunch of assertions on the final transaction
       jest
-        .spyOn(Solana.prototype, 'relay')
+        .spyOn(SolanaRelay.prototype, 'relay')
         .mockImplementation(async ({ transaction }) => {
-          const message = TransactionMessage.decompile(transaction.message)
-          const [secp, transfer] = message.instructions
+          let instructions: TransactionInstruction[] = []
+          if (transaction instanceof VersionedTransaction) {
+            const message = TransactionMessage.decompile(transaction.message)
+            instructions = message.instructions
+          } else {
+            instructions = transaction.instructions
+          }
+          const [secp, transfer] = instructions
           expect(secp?.programId.toBase58()).toBe(
             Secp256k1Program.programId.toBase58()
           )
@@ -292,7 +308,7 @@ describe('UsersApi', () => {
 
       // Mock getFeePayer
       jest
-        .spyOn(Solana.prototype, 'getFeePayer')
+        .spyOn(SolanaRelay.prototype, 'getFeePayer')
         .mockImplementation(async () => {
           return feePayer
         })
@@ -321,7 +337,7 @@ describe('UsersApi', () => {
       })
 
       // Ensure relay was attempted to ensure the assertions run
-      expect(solana.relay).toHaveBeenCalledTimes(1)
+      expect(solanaRelay.relay).toHaveBeenCalledTimes(1)
     })
   })
 })
