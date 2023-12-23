@@ -1,4 +1,4 @@
-import {
+import type {
   SupportedTransactionVersions,
   TransactionOrVersionedTransaction,
   WalletName,
@@ -23,7 +23,8 @@ export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
     'AudiusSolanaWallet' as WalletName<'AudiusSolanaWallet'>
   public readonly url = ''
   public readonly icon = ''
-  public readonly readyState: WalletReadyState = WalletReadyState.Loadable
+  public readonly readyState: WalletReadyState =
+    'Loadable' as WalletReadyState.Loadable
   public readonly supportedTransactionVersions?: SupportedTransactionVersions
 
   private _publicKey: PublicKey | null = null
