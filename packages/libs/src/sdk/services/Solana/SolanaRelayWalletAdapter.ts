@@ -28,9 +28,9 @@ export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
 
   private _publicKey: PublicKey | null = null
   private _connecting = false
-  private _connected = true
+  private _connected = false
 
-  constructor(private solanaRelay: SolanaRelay) {}
+  constructor(private readonly solanaRelay: SolanaRelay) {}
 
   public get publicKey() {
     return this._publicKey
@@ -54,6 +54,11 @@ export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
   public async connect() {
     this._connecting = true
     this._publicKey = await this.solanaRelay.getFeePayer()
+    if (!this._publicKey) {
+      throw new Error(
+        'Failed to connect SolanaRelayWalletAdapter: Failed to get fee payer.'
+      )
+    }
     this._connecting = false
     this._connected = true
   }
