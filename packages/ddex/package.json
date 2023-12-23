@@ -1,12 +1,13 @@
 {
-  "name": "ddex",
+  "name": "@audius/ddex",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "env-cmd -f .env.dev vite",
-    "stage": "env-cmd -f .env.stage.local vite",
-    "prod": "env-cmd -f .env.prod.local vite",
+    "start": "vite",
+    "start:dev": "env-cmd -f .env.dev turbo run start --filter=@audius/ddex",
+    "start:stage": "env-cmd -f .env.stage.local turbo run start --filter=@audius/ddex",
+    "start:prod": "env-cmd -f .env.prod.local turbo run start --filter=@audius/ddex",
     "stage:preview": "env-cmd -f .env.stage.local vite build && vite preview",
     "prod:preview": "env-cmd -f .env.prod.local vite build && vite preview",
     "build": "tsc && vite build",
@@ -19,7 +20,7 @@
   "dependencies": {
     "@audius/sdk": "*",
     "@headlessui/react": "1.7.17",
-    "@heroicons/react": "2.0.18",
+    "@heroicons/react": "1.0.6",
     "@tanstack/query-core": "5.8.7",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
