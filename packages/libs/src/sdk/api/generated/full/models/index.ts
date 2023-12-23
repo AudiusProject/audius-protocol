@@ -1,6 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './ActivityFull';
+export * from './Attestation';
+export * from './AttestationReponse';
 export * from './CollectionActivityFull';
 export * from './CollectionLibraryResponseFull';
 export * from './CoverArt';

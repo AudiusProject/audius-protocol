@@ -1,3 +1,4 @@
+apis/ChallengesApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
 apis/SearchApi.ts
@@ -8,6 +9,8 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/ActivityFull.ts
+models/Attestation.ts
+models/AttestationReponse.ts
 models/CollectionActivityFull.ts
 models/CollectionLibraryResponseFull.ts
 models/CoverArt.ts

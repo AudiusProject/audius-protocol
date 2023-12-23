@@ -36,9 +36,10 @@ from src.utils.redis_cache import cache
 logger = logging.getLogger(__name__)
 
 ns = Namespace("challenges", description="Challenge related operations")
+full_ns = Namespace("challenges", description="Challenge related operations")
 
 attestation_response = make_response(
-    "attestation_reponse", ns, fields.Nested(attestation)
+    "attestation_reponse", full_ns, fields.Nested(attestation)
 )
 
 attest_route = "/<string:challenge_id>/attest"
@@ -61,9 +62,9 @@ attest_parser.add_argument(
 )
 
 
-@ns.route(attest_route, doc=False)
-class Attest(Resource):
-    @ns.doc(
+@full_ns.route(attest_route)
+class FullAttest(Resource):
+    @full_ns.doc(
         id="Get Challenge Attestation",
         description="Produces an attestation that a given user has completed a challenge, or errors.",
         params={
@@ -75,19 +76,19 @@ class Attest(Resource):
             500: "Server error",
         },
     )
-    @ns.expect(attest_parser)
-    @ns.marshal_with(attestation_response)
+    @full_ns.expect(attest_parser)
+    @full_ns.marshal_with(attestation_response)
     @cache(ttl_sec=5)
     def get(self, challenge_id: str):
         args = attest_parser.parse_args(strict=True)
         user_id: str = args["user_id"]
         oracle_address: str = args["oracle"]
         specifier: str = args["specifier"]
-        decoded_user_id = decode_with_abort(user_id, ns)
+        decoded_user_id = decode_with_abort(user_id, full_ns)
         db = get_db_read_replica()
         with db.scoped_session() as session:
             try:
-                owner_wallet, signature = get_attestation(
+                owner_wallet, signature, bytes = get_attestation(
                     session,
                     user_id=decoded_user_id,
                     oracle_address=oracle_address,
@@ -96,11 +97,21 @@ class Attest(Resource):
                 )
 
                 return success_response(
-                    {"owner_wallet": owner_wallet, "attestation": signature}
+                    {
+                        "owner_wallet": owner_wallet,
+                        "attestation": signature,
+                        "bytes": bytes.hex(),
+                    }
                 )
             except AttestationError as e:
                 abort(400, e)
                 return None
+
+
+@ns.route(attest_route, doc=False)
+class Attest(FullAttest):
+    def get(self, challenge_id: str):
+        super(self, challenge_id)
 
 
 undisbursed_route = "/undisbursed"
