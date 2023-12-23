@@ -41,6 +41,7 @@ import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAda
 import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokens/constants'
 import { defaultRewardManagerConfig } from './services/Solana/programs/RewardManager/constants'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
+import { ChallengesApi } from './api/challenges/ChallengesApi'
 
 /**
  * The Audius SDK
@@ -224,6 +225,16 @@ const initializeApis = ({
     services.auth
   )
 
+  const challenges = new ChallengesApi(
+    generatedApiClientConfig,
+    users,
+    services.discoveryNodeSelector,
+    services.rewardManagerProgram,
+    services.claimableTokensProgram,
+    services.antiAbuseOracleSelector,
+    services.logger
+  )
+
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
     middleware
@@ -251,6 +262,7 @@ const initializeApis = ({
     grants,
     developerApps,
     dashboardWalletUsers,
+    challenges,
     services
   }
 }
