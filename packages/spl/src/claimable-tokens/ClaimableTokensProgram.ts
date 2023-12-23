@@ -12,6 +12,7 @@ import bs58 from 'bs58'
 
 import { ethAddress } from '../layout-utils'
 
+import { ClaimableTokensInstruction } from './constants'
 import {
   CreateClaimableTokensAccountParams,
   CreateClaimableTokensAccountInstructionData,
@@ -28,10 +29,7 @@ const TRANSFER_NONCE_PREFIX = 'N_'
 const TRANSFER_NONCE_PREFIX_BYTES = new TextEncoder().encode(
   TRANSFER_NONCE_PREFIX
 )
-enum ClaimableTokensInstruction {
-  Create = 0,
-  Transfer = 1
-}
+
 /** @see {@link https://github.com/solana-labs/solana-web3.js/blob/974193946d5e6fade11b96d141f21ebe8f3ff5e2/packages/library-legacy/src/programs/secp256k1.ts#L47C11-L47C11 SECP256K1_INSTRUCTION_LAYOUT} */
 const SECP256K1_INSTRUCTION_MESSAGE_DATA_START = 97
 
@@ -49,11 +47,11 @@ const SECP256K1_INSTRUCTION_MESSAGE_DATA_START = 97
  * A user can have multiple user banks, one for each token mint.
  */
 export class ClaimableTokensProgram {
-  static programId = new PublicKey(
+  public static readonly programId = new PublicKey(
     'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ'
   )
 
-  static layouts = {
+  public static readonly layouts = {
     createAccountInstructionData:
       struct<CreateClaimableTokensAccountInstructionData>([
         u8('instruction'),
@@ -73,7 +71,7 @@ export class ClaimableTokensProgram {
     nonceAccountData: struct<NonceAccountData>([u8('version'), u64('nonce')])
   }
 
-  static createAccountInstruction({
+  public static createAccountInstruction({
     ethAddress,
     payer,
     mint,
@@ -101,7 +99,7 @@ export class ClaimableTokensProgram {
     return new TransactionInstruction({ keys, programId, data })
   }
 
-  static decodeCreateAccountInstruction({
+  public static decodeCreateAccountInstruction({
     programId,
     keys: [
       payer,
@@ -131,7 +129,7 @@ export class ClaimableTokensProgram {
     }
   }
 
-  static createTransferInstruction({
+  public static createTransferInstruction({
     payer,
     sourceEthAddress,
     sourceUserBank,
@@ -169,7 +167,7 @@ export class ClaimableTokensProgram {
     return new TransactionInstruction({ programId, keys, data })
   }
 
-  static decodeTransferInstruction({
+  public static decodeTransferInstruction({
     programId,
     keys: [
       payer,
@@ -203,7 +201,7 @@ export class ClaimableTokensProgram {
     }
   }
 
-  static decodeInstruction(
+  public static decodeInstruction(
     instruction: TransactionInstruction
   ): DecodedClaimableTokenInstruction {
     switch (instruction.data[0]) {
@@ -218,19 +216,19 @@ export class ClaimableTokensProgram {
     }
   }
 
-  static isCreateAccountInstruction(
+  public static isCreateAccountInstruction(
     decoded: DecodedClaimableTokenInstruction
   ): decoded is DecodedCreateClaimableTokensAccountInstruction {
     return decoded.data.instruction === ClaimableTokensInstruction.Create
   }
 
-  static isTransferInstruction(
+  public static isTransferInstruction(
     decoded: DecodedClaimableTokenInstruction
   ): decoded is DecodedTransferClaimableTokensInstruction {
     return decoded.data.instruction === ClaimableTokensInstruction.Transfer
   }
 
-  static createSignedTransferInstructionData({
+  public static createSignedTransferInstructionData({
     destination,
     amount,
     nonce
@@ -249,7 +247,7 @@ export class ClaimableTokensProgram {
     return data
   }
 
-  static decodeSignedTransferInstructionData(
+  public static decodeSignedTransferInstructionData(
     instruction: TransactionInstruction
   ) {
     return ClaimableTokensProgram.layouts.signedTransferInstructionData.decode(
@@ -259,7 +257,7 @@ export class ClaimableTokensProgram {
     )
   }
 
-  static deriveNonce({
+  public static deriveNonce({
     ethAddress: wallet,
     programId,
     authority
@@ -278,7 +276,7 @@ export class ClaimableTokensProgram {
     )[0]
   }
 
-  static async deriveUserBank({
+  public static async deriveUserBank({
     ethAddress: wallet,
     claimableTokensPDA,
     tokenProgramId = TOKEN_PROGRAM_ID
@@ -298,7 +296,7 @@ export class ClaimableTokensProgram {
     )
   }
 
-  static deriveAuthority = ({
+  public static deriveAuthority = ({
     programId,
     mint
   }: {
