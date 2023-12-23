@@ -23,10 +23,7 @@ import {
   isCreateAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction
 } from './programs/associatedToken'
-import {
-  ClaimableTokensProgram,
-  decodeRewardManagerInstruction
-} from '@audius/spl'
+import { ClaimableTokensProgram, RewardManagerProgram } from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -188,8 +185,9 @@ const assertAllowedRewardsManagerProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
 ) => {
-  const decodedInstruction = decodeRewardManagerInstruction(instruction)
-  const rewardManager = decodedInstruction.keys.rewardManager.pubkey.toBase58()
+  const decodedInstruction = RewardManagerProgram.decodeInstruction(instruction)
+  const rewardManager =
+    decodedInstruction.keys.rewardManagerState.pubkey.toBase58()
   if (rewardManager !== REWARD_MANAGER) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
