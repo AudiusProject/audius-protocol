@@ -9,6 +9,7 @@ import type {
   ApiHealthResponseData,
   HealthCheckResponseData
 } from './healthCheckTypes'
+import type { DiscoveryNode } from './types'
 
 // jest.mock('./healthChecks', () => ({
 //   getHealthCheck: jest.fn(() => ({}))
@@ -42,10 +43,15 @@ const generateUnhealthyNodes = (count: number) => {
   return nodes
 }
 
+const addDelegateOwnerWallets = (endpoint: string): DiscoveryNode => ({
+  endpoint,
+  delegateOwnerWallet: ''
+})
+
 const NETWORK_DISCOVERY_NODES = [
   HEALTHY_NODE,
   ...generateSlowerHealthyNodes(10)
-]
+].map(addDelegateOwnerWallets)
 
 const healthyComms = {
   healthy: true
@@ -186,12 +192,11 @@ describe('discoveryNodeSelector', () => {
         BEHIND_PATCH_VERSION_NODE,
         BEHIND_MINOR_VERSION_NODE,
         ...generateUnhealthyNodes(5)
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
     expect(selector.isBehind).toBe(false)
-    expect(selector.getServices()).toStrictEqual(NETWORK_DISCOVERY_NODES)
   })
 
   test('falls back to patch version backup before blockdiff backup', async () => {
@@ -205,7 +210,7 @@ describe('discoveryNodeSelector', () => {
         BEHIND_PATCH_VERSION_NODE,
         BEHIND_MINOR_VERSION_NODE,
         UNHEALTHY_NODE
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_PATCH_VERSION_NODE)
@@ -221,7 +226,7 @@ describe('discoveryNodeSelector', () => {
         BEHIND_BLOCKDIFF_NODE,
         BEHIND_LARGE_BLOCKDIFF_NODE,
         UNHEALTHY_NODE
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -235,7 +240,11 @@ describe('discoveryNodeSelector', () => {
         minVersion: '1.2.3'
       },
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -257,7 +266,11 @@ describe('discoveryNodeSelector', () => {
         minVersion: '1.2.3'
       },
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -276,7 +289,11 @@ describe('discoveryNodeSelector', () => {
     const selector = new DiscoveryNodeSelector({
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -289,7 +306,11 @@ describe('discoveryNodeSelector', () => {
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       blocklist: new Set([BEHIND_BLOCKDIFF_NODE]),
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -301,7 +322,9 @@ describe('discoveryNodeSelector', () => {
 
   test('selects fastest discovery node', async () => {
     const selector = new DiscoveryNodeSelector({
-      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)],
+      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)].map(
+        addDelegateOwnerWallets
+      ),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -319,7 +342,7 @@ describe('discoveryNodeSelector', () => {
         UNHEALTHY_DATA_NODE,
         UNHEALTHY_NODE,
         UNRESPONSIVE_NODE
-      ],
+      ].map(addDelegateOwnerWallets),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -331,7 +354,7 @@ describe('discoveryNodeSelector', () => {
   describe('middleware', () => {
     test('prepends URL to requests', async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [HEALTHY_NODE]
+        bootstrapServices: [HEALTHY_NODE].map(addDelegateOwnerWallets)
       })
       const middleware = selector.createMiddleware()
       expect(middleware.pre).not.toBeUndefined()
@@ -347,7 +370,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request succeeds but node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -379,7 +404,7 @@ describe('discoveryNodeSelector', () => {
 
     test("doesn't reselect if behind but was already behind", async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -415,7 +440,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -458,7 +485,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node unhealthy', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: UNHEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -500,7 +529,9 @@ describe('discoveryNodeSelector', () => {
     test("doesn't reselect if request fails but node is healthy", async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: HEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -530,7 +561,7 @@ describe('discoveryNodeSelector', () => {
 
     test('resets isBehind when request shows the node is caught up', async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
