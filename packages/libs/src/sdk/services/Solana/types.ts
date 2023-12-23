@@ -27,14 +27,14 @@ export const MintSchema = z.enum(['wAUDIO', 'USDC']).default('wAUDIO')
 
 export type Mint = z.infer<typeof MintSchema>
 
-export const PublicKeySchema = z.custom<PublicKey>((data) => {
-  try {
-    new PublicKey(data as PublicKey)
-    return true
-  } catch {
-    return false
-  }
-})
+export const PublicKeySchema = z.union([
+  z.string().transform<PublicKey>((data) => {
+    return new PublicKey(data)
+  }),
+  z.custom<PublicKey>((data) => {
+    return data instanceof PublicKey
+  })
+])
 
 export const RelaySchema = z
   .object({
