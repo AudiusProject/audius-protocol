@@ -38,6 +38,7 @@ import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
 import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokens/constants'
+import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 
 /**
  * The Audius SDK
@@ -105,6 +106,8 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultStorage = new Storage({ storageNodeSelector, logger })
 
+  const defaultAntiAbuseOracleSelector = new AntiAbuseOracleSelector({ logger })
+
   const defaultSolanaRelay = new SolanaRelay({
     middleware: [
       config.services?.discoveryNodeSelector?.createMiddleware() ??
@@ -128,6 +131,7 @@ const initializeServices = (config: SdkConfig) => {
     claimableTokensProgram,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
     solanaRelay: defaultSolanaRelay,
+    antiAbuseOracleSelector: defaultAntiAbuseOracleSelector,
     logger
   }
   return { ...defaultServices, ...config.services }
