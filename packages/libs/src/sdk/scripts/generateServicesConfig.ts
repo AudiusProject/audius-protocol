@@ -58,7 +58,13 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
 
 const devConfig: ServicesConfig = {
   minVersion: '0.0.0',
-  discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
+  discoveryNodes: [
+    {
+      delegateOwnerWallet:
+        '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8',
+      endpoint: 'http://audius-protocol-discovery-provider-1'
+    }
+  ],
   storageNodes: [
     {
       delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
@@ -128,7 +134,10 @@ const generateServicesConfig = async (
   const minVersion = await contracts.getCurrentVersion('discovery-node')
   return {
     minVersion,
-    discoveryNodes: discoveryNodes.map((node) => node.endpoint),
+    discoveryNodes: discoveryNodes.map(({ endpoint, delegateOwnerWallet }) => ({
+      endpoint,
+      delegateOwnerWallet
+    })),
     storageNodes: storageNodes.map(({ endpoint, delegateOwnerWallet }) => ({
       endpoint,
       delegateOwnerWallet

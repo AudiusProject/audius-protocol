@@ -30,7 +30,8 @@ import {
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelectorServiceConfig,
   DiscoveryNodeSelectorServiceConfigInternal,
-  ServiceSelectionEvents
+  ServiceSelectionEvents,
+  DiscoveryNode
 } from './types'
 
 const getPathFromUrl = (url: string) => {
@@ -227,7 +228,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           const userError = response !== undefined && response.status < 500
 
           if (userError) {
-            this.logger.warn(`status code ${response.status} below 500, not reselecting`, endpoint, context)
+            this.logger.warn(
+              `status code ${response.status} below 500, not reselecting`,
+              endpoint,
+              context
+            )
             return response
           }
           return await this.reselectAndRetry({ context, endpoint })
@@ -237,7 +242,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       onError: async (context: ErrorContext) => {
         const endpoint = await this.getSelectedEndpoint()
         const response = context.response
-        
+
         if (!endpoint) {
           await this.select(endpoint)
         } else {
@@ -296,7 +301,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       // If a whitelist is provided, filter down to it
       if (this.config.allowlist) {
-        services = services.filter((s) => this.config.allowlist?.has(s))
+        services = services.filter((s) =>
+          this.config.allowlist?.has(s.endpoint)
+        )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
           val: services
@@ -305,7 +312,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       // if a blacklist is provided, filter out services in the list
       if (this.config.blocklist) {
-        services = services.filter((s) => !this.config.blocklist?.has(s))
+        services = services.filter(
+          (s) => !this.config.blocklist?.has(s.endpoint)
+        )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
           val: services
@@ -319,7 +328,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       while (selectedService === null) {
         // Filter out anything we know is already unhealthy
         const filteredServices = services.filter(
-          (s) => !this.unhealthyServices.has(s)
+          (s) => !this.unhealthyServices.has(s.endpoint)
         )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
@@ -365,7 +374,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         })
 
         // Race this "round" of services to find the quickest healthy node
-        selectedService = await this.anyHealthyEndpoint(round)
+        selectedService = await this.anyHealthyEndpoint(
+          round.map((s) => s.endpoint)
+        )
         attemptedServicesCount += round.length
 
         // Retry if none were found
