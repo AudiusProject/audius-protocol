@@ -267,7 +267,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Gets the list of services
    */
-  public getServices() {
+  public async getServices() {
+    const selected = await this.getSelectedEndpoint()
+    if (selected) {
+      // refresh the list
+      await this.refreshServiceList(selected)
+    }
     return this.services
   }
 
@@ -460,17 +465,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
-        if (
-          data?.network?.discovery_nodes &&
-          data.network.discovery_nodes.length > 0
-        ) {
-          this.services = data.network.discovery_nodes
-        } else {
-          this.logger.warn(
-            "Couldn't load new service list from healthy service",
-            endpoint
-          )
-        }
+        await this.refreshServiceList(endpoint, data?.network?.discovery_nodes)
         return endpoint
       }
     })
@@ -480,6 +475,25 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     } catch (e) {
       this.logger.error('No healthy nodes', e)
       return null
+    }
+  }
+
+  private async refreshServiceList(endpoint: string, nodes?: DiscoveryNode[]) {
+    if (!nodes) {
+      const { data } = await getDiscoveryNodeHealthCheck({
+        endpoint,
+        healthCheckThresholds: this.config.healthCheckThresholds
+      })
+      nodes = data?.network?.discovery_nodes
+    }
+    if (nodes && nodes.length > 0) {
+      this.logger.debug(`Refreshed service list with ${nodes.length} nodes.`)
+      this.services = nodes
+    } else {
+      this.logger.warn(
+        "Couldn't load new service list from healthy service",
+        endpoint
+      )
     }
   }
 
