@@ -1,4 +1,5 @@
 import {
+  Commitment,
   Connection,
   PublicKey,
   TransactionMessage,
@@ -42,6 +43,38 @@ export class SolanaProgram {
       this.connection,
       sendOptions
     )
+  }
+
+  /**
+   * Confirms all the transactions provided
+   */
+  public async confirmAllTransactions(
+    signatures: string[],
+    commitment: Commitment = 'confirmed'
+  ) {
+    const { blockhash, lastValidBlockHeight } =
+      await this.connection.getLatestBlockhash()
+    const results = await Promise.all(
+      signatures.map(async (signature) => {
+        const res = await this.connection.confirmTransaction(
+          {
+            signature,
+            blockhash,
+            lastValidBlockHeight
+          },
+          commitment
+        )
+        return { signature, err: res.value.err }
+      })
+    )
+    const errors = results.filter((r) => !!r.err)
+    if (errors.length > 0) {
+      throw new Error(
+        `Failed to confirm transactions: ${errors
+          .map((e) => `${e.signature}: ${e.err}`)
+          .join(', ')}`
+      )
+    }
   }
 
   /**
