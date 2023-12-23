@@ -1,2 +1,5 @@
 export * from './SolanaRelay'
+export * from './SolanaRelayWalletAdapter'
+export * from './programs/ClaimableTokens/ClaimableTokens'
+export * from './programs/RewardManager/RewardManager'
 export * from './types'

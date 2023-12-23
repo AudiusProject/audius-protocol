@@ -28,7 +28,8 @@ import {
   Auth,
   Storage,
   EntityManager,
-  AppAuth
+  AppAuth,
+  RewardManager
 } from './services'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
@@ -38,6 +39,7 @@ import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
 import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokens/constants'
+import { defaultRewardManagerConfig } from './services/Solana/programs/RewardManager/constants'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 
 /**
@@ -114,11 +116,18 @@ const initializeServices = (config: SdkConfig) => {
         defaultDiscoveryNodeSelector.createMiddleware()
     ]
   })
+
   const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter(
     config.services?.solanaRelay ?? defaultSolanaRelay
   )
-  const claimableTokensProgram = new ClaimableTokens(
+
+  const defaultClaimableTokensProgram = new ClaimableTokens(
     defaultClaimableTokensConfig,
+    config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+  )
+
+  const defaultRewardManagerProgram = new RewardManager(
+    defaultRewardManagerConfig,
     config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
   )
 
@@ -128,7 +137,8 @@ const initializeServices = (config: SdkConfig) => {
     entityManager: defaultEntityManager,
     storage: defaultStorage,
     auth: defaultAuthService,
-    claimableTokensProgram,
+    claimableTokensProgram: defaultClaimableTokensProgram,
+    rewardManagerProgram: defaultRewardManagerProgram,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
     solanaRelay: defaultSolanaRelay,
     antiAbuseOracleSelector: defaultAntiAbuseOracleSelector,

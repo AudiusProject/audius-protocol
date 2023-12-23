@@ -6,8 +6,12 @@ import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
-import type { SolanaRelayService, SolanaWalletAdapter } from './services/Solana'
-import type { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
+import type {
+  RewardManager,
+  ClaimableTokens,
+  SolanaRelayService,
+  SolanaWalletAdapter
+} from './services/Solana'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
 
 export type ServicesContainer = {
@@ -55,6 +59,11 @@ export type ServicesContainer = {
    * Claimable Tokens Program client for Solana
    */
   claimableTokensProgram: ClaimableTokens
+
+  /**
+   * Reward Manager Program client for Solana
+   */
+  rewardManagerProgram: RewardManager
 
   /**
    * Service used to choose a healthy Anti Abuse Oracle
