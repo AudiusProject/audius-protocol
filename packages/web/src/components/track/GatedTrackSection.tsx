@@ -11,7 +11,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   Nullable,
-  StreamConditions,
+  AccessConditions,
   gatedContentSelectors,
   removeNullable,
   tippingActions,
@@ -95,7 +95,7 @@ const messages = {
 type GatedTrackAccessSectionProps = {
   trackId: ID
   trackOwner: Nullable<User>
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
@@ -614,7 +614,7 @@ const UnlockedGatedTrackSection = ({
 type GatedTrackSectionProps = {
   isLoading: boolean
   trackId: ID
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   hasStreamAccess: boolean
   isOwner: boolean
   wrapperClassName?: string

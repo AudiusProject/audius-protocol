@@ -20,7 +20,7 @@ import {
   TipGatedConditions,
   ID,
   useFeatureFlag,
-  StreamConditions
+  AccessConditions
 } from '@audius/common'
 import {
   IconCart,
@@ -133,7 +133,7 @@ export const PREVIEW = 'preview_start_seconds'
 export type AccessAndSaleFormValues = {
   [IS_UNLISTED]: boolean
   [AVAILABILITY_TYPE]: TrackAvailabilityType
-  [STREAM_CONDITIONS]: Nullable<StreamConditions>
+  [STREAM_CONDITIONS]: Nullable<AccessConditions>
   [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
   [FIELD_VISIBILITY]: FieldVisibility
   [PRICE_HUMANIZED]: string
@@ -524,7 +524,7 @@ type AccesAndSaleMenuFieldsProps = {
   isRemix: boolean
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
-  initialStreamConditions?: StreamConditions
+  initialStreamConditions?: AccessConditions
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {

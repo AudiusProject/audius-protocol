@@ -10,7 +10,7 @@ import {
   Remix,
   CoverArtSizes,
   ID,
-  StreamConditions,
+  AccessConditions,
   FieldVisibility,
   getDogEarType,
   isContentUSDCPurchaseGated
@@ -121,7 +121,7 @@ export type GiantTrackTileProps = {
   onUnfollow: () => void
   playing: boolean
   previewing: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
   released: string
   repostCount: number
   saveCount: number

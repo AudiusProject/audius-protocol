@@ -11,7 +11,7 @@ import {
   formatDate,
   OverflowAction,
   imageBlank as placeholderArt,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   getDogEarType,
   FeatureFlags,
@@ -122,7 +122,7 @@ type TrackHeaderProps = {
   repostCount: number
   isUnlisted: boolean
   isStreamGated: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
   hasStreamAccess: boolean
   hasDownloadAccess: boolean
   isRemix: boolean

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   FeatureFlags,
   Name,
-  StreamConditions,
+  AccessConditions,
   TrackAvailabilityType,
   useAccessAndRemixSettings,
   useFeatureFlag
@@ -32,7 +32,7 @@ const messages = {
 type UsdcPurchaseGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
-  initialStreamConditions?: StreamConditions
+  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
 }
 

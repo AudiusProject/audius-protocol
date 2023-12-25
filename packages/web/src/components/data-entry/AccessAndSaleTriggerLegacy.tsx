@@ -14,7 +14,7 @@ import {
   isContentUSDCPurchaseGated,
   useUSDCPurchaseConfig,
   Nullable,
-  StreamConditions
+  AccessConditions
 } from '@audius/common'
 import {
   Button,
@@ -80,7 +80,7 @@ enum UnlistedTrackMetadataField {
 
 type TrackMetadataState = {
   [GatedTrackMetadataField.IS_STREAM_GATED]: boolean
-  [GatedTrackMetadataField.STREAM_CONDITIONS]: Nullable<StreamConditions>
+  [GatedTrackMetadataField.STREAM_CONDITIONS]: Nullable<AccessConditions>
   [GatedTrackMetadataField.PREVIEW]: Nullable<number>
   [UnlistedTrackMetadataField.UNLISTED]: boolean
   [UnlistedTrackMetadataField.GENRE]: boolean

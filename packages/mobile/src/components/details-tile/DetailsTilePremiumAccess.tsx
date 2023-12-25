@@ -1,4 +1,4 @@
-import type { ID, StreamConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
@@ -11,7 +11,7 @@ import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 
 type DetailsTileGatedAccessProps = {
   trackId: ID
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   isOwner: boolean
   hasStreamAccess: boolean
   style?: ViewStyle

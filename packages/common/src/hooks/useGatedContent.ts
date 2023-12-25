@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { Chain } from 'models/Chain'
 import { ID } from 'models/Identifiers'
 import {
-  StreamConditions,
+  AccessConditions,
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
@@ -105,7 +105,7 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
 }
 
 export const useStreamConditionsEntity = (
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
 ) => {
   const followUserId = isContentFollowGated(streamConditions)
     ? streamConditions?.follow_user_id

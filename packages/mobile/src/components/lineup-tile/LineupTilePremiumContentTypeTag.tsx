@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  type StreamConditions,
+  type AccessConditions,
   GatedContentType
 } from '@audius/common'
 import { View } from 'react-native'
@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 type LineupTileGatedContentTypeTagProps = {
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   hasStreamAccess?: boolean
   isOwner: boolean
 }

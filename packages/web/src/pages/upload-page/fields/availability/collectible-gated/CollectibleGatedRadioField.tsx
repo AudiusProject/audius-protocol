@@ -1,5 +1,5 @@
 import {
-  StreamConditions,
+  AccessConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
   useAccessAndRemixSettings
@@ -23,7 +23,7 @@ const messages = {
 type CollectibleGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
-  initialStreamConditions?: StreamConditions
+  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
 }
 

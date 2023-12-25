@@ -4,7 +4,7 @@ import type {
   ID,
   FavoriteType,
   RepostType,
-  StreamConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import {
@@ -107,7 +107,7 @@ type Props = {
   saveCount: number
   showRankIcon?: boolean
   hasStreamAccess?: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean

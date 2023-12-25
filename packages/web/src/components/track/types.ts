@@ -10,7 +10,7 @@ import {
   FieldVisibility,
   LineupTrack,
   Remix,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   Genre,
   Collection
@@ -139,7 +139,7 @@ export type DesktopTrackTileProps = {
   isUnlisted?: boolean
 
   /** Stream conditions if track is gated */
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
 
   /** If logged in user has access to track */
   hasStreamAccess?: boolean

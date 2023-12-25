@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { StreamConditions, User } from '@audius/common'
+import type { AccessConditions, User } from '@audius/common'
 import {
   formatPrice,
   isContentCollectibleGated,
@@ -85,7 +85,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 type HasAccessProps = {
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   handlePressCollection: () => void
   style?: ViewStyle
 }
@@ -165,7 +165,7 @@ const DetailsTileOwnerSection = ({
 }
 
 type DetailsTileHasAccessProps = {
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   isOwner: boolean
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>

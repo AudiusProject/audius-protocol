@@ -2,7 +2,7 @@ import { MouseEvent, memo } from 'react'
 
 import {
   Nullable,
-  StreamConditions,
+  AccessConditions,
   GatedTrackStatus,
   isContentUSDCPurchaseGated
 } from '@audius/common'
@@ -35,7 +35,7 @@ type BottomButtonsProps = {
   isTrack?: boolean
   hasStreamAccess?: boolean
   readonly?: boolean
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   gatedTrackStatus?: GatedTrackStatus
   isMatrixMode: boolean
 }

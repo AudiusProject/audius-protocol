@@ -15,11 +15,10 @@ import {
   Supporter,
   Supporting,
   UserTip,
-  StreamConditions,
+  AccessConditions,
   AccessSignature,
   ID,
-  AccessPermissions,
-  DownloadConditions
+  AccessPermissions
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -143,9 +142,9 @@ export type APITrack = {
   permalink: string
   is_available: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
+  stream_conditions: Nullable<AccessConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<DownloadConditions>
+  download_conditions: Nullable<AccessConditions>
   access: AccessPermissions
   preview_cid: Nullable<CID>
   track_cid: Nullable<CID>

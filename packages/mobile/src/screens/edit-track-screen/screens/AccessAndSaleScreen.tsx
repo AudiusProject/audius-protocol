@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable, StreamConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   TrackAvailabilityType,
   isContentFollowGated,
@@ -86,7 +86,7 @@ export const AccessAndSaleScreen = () => {
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
   const [{ value: streamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf

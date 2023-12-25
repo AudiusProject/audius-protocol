@@ -1,5 +1,5 @@
 import {
-  StreamConditions,
+  AccessConditions,
   Nullable,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
@@ -23,7 +23,7 @@ export const GatedContentLabel = ({
   hasStreamAccess,
   isOwner
 }: {
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   hasStreamAccess: boolean
   isOwner: boolean
 }) => {

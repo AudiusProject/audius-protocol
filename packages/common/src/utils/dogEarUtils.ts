@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 
 import { DogEarType } from 'models/DogEar'
-import { StreamConditions } from 'models/Track'
+import { AccessConditions } from 'models/Track'
 
 import { Nullable } from './typeUtils'
 
@@ -10,7 +10,7 @@ type GetDogEarTypeArgs = {
   isArtistPick?: boolean
   isOwner?: boolean
   isUnlisted?: boolean
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
 }
 
 /** Determines appropriate DogEar type based on conditions provided. Note: all conditions

@@ -4,7 +4,7 @@ import {
   isContentUSDCPurchaseGated,
   type ID,
   type Nullable,
-  type StreamConditions
+  type AccessConditions
 } from '@audius/common'
 import { View } from 'react-native'
 
@@ -29,7 +29,7 @@ type Props = {
   isShareHidden?: boolean
   isUnlisted?: boolean
   trackId?: ID
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler

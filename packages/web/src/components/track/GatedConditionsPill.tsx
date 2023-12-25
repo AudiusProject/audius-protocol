@@ -3,7 +3,7 @@ import type { MouseEvent } from 'react'
 import {
   formatPrice,
   isContentUSDCPurchaseGated,
-  StreamConditions
+  AccessConditions
 } from '@audius/common'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
 import cn from 'classnames'
@@ -23,7 +23,7 @@ export const GatedConditionsPill = ({
   showIcon = true,
   buttonSize = ButtonSize.SMALL
 }: {
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   unlocking: boolean
   onClick?: (e: MouseEvent) => void
   showIcon?: boolean

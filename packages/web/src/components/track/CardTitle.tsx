@@ -1,7 +1,7 @@
 import {
   FeatureFlags,
   Nullable,
-  StreamConditions,
+  AccessConditions,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
 } from '@audius/common'
@@ -31,7 +31,7 @@ type CardTitleProps = {
   isRemix: boolean
   isStreamGated: boolean
   isPodcast: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
 }
 
 export const CardTitle = ({

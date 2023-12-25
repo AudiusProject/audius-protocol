@@ -57,7 +57,7 @@ export type RemixOf = {
 // Gated content
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type StreamConditionsEthNFTCollection = {
+export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
   address: string
@@ -67,7 +67,7 @@ export type StreamConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type StreamConditionsSolNFTCollection = {
+export type AccessConditionsSolNFTCollection = {
   chain: Chain.Sol
   address: string
   name: string
@@ -80,8 +80,8 @@ export type StreamConditionsSolNFTCollection = {
 // after user has set the collection.
 export type CollectibleGatedConditions = {
   nft_collection:
-    | StreamConditionsEthNFTCollection
-    | StreamConditionsSolNFTCollection
+    | AccessConditionsEthNFTCollection
+    | AccessConditionsSolNFTCollection
     | undefined
 }
 
@@ -96,18 +96,11 @@ export type USDCPurchaseConditions = {
   }
 }
 
-export type StreamConditions =
+export type AccessConditions =
   | CollectibleGatedConditions
   | FollowGatedConditions
   | TipGatedConditions
   | USDCPurchaseConditions
-
-export type DownloadConditions = Partial<
-  CollectibleGatedConditions &
-    FollowGatedConditions &
-    TipGatedConditions &
-    USDCPurchaseConditions
->
 
 export type AccessPermissions = {
   stream: boolean
@@ -129,22 +122,22 @@ export enum TrackAccessType {
 }
 
 export const isContentCollectibleGated = (
-  gatedConditions?: Nullable<StreamConditions>
+  gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is CollectibleGatedConditions =>
   'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
-  gatedConditions?: Nullable<StreamConditions>
+  gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is FollowGatedConditions =>
   'follow_user_id' in (gatedConditions ?? {})
 
 export const isContentTipGated = (
-  gatedConditions?: Nullable<StreamConditions>
+  gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is TipGatedConditions =>
   'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  gatedConditions?: Nullable<StreamConditions>
+  gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 
@@ -206,9 +199,9 @@ export type TrackMetadata = {
   is_unlisted: boolean
   is_available: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
+  stream_conditions: Nullable<AccessConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<DownloadConditions>
+  download_conditions: Nullable<AccessConditions>
   access: AccessPermissions
   field_visibility?: FieldVisibility
   listenCount?: number

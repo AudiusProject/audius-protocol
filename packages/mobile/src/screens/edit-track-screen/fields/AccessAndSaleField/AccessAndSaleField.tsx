@@ -4,7 +4,7 @@ import {
   isContentFollowGated,
   type FieldVisibility,
   type Nullable,
-  type StreamConditions,
+  type AccessConditions,
   isContentTipGated,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
@@ -46,7 +46,7 @@ type AccessAndSaleFieldProps = Partial<ContextualMenuProps>
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: streamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')

@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect, MouseEvent } from 'react'
 import {
   ID,
   formatCount,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   gatedContentSelectors,
   gatedContentActions,
@@ -56,7 +56,7 @@ type ExtraProps = {
   darkMode: boolean
   isMatrix: boolean
   isStreamGated: boolean
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   hasPreview?: boolean
   hasStreamAccess: boolean
 }

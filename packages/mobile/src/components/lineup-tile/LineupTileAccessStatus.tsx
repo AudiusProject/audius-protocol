@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { ID, StreamConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common'
 import {
   ModalSource,
   formatPrice,
@@ -58,7 +58,7 @@ export const LineupTileAccessStatus = ({
   streamConditions
 }: {
   trackId: ID
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
 }) => {
   const styles = useStyles()
   const dispatch = useDispatch()

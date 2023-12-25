@@ -6,7 +6,7 @@ import {
   remixSettingsSelectors,
   remixSettingsActions,
   Nullable,
-  StreamConditions
+  AccessConditions
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -19,7 +19,7 @@ const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
 
 type OwnProps = {
   isStreamGated: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
   isRemix: boolean
   setIsRemix: (isRemix: boolean) => void
   isOpen: boolean
