@@ -66,6 +66,21 @@ def test_access(app):
             "is_download_gated": True,
             "download_conditions": follow_gate_1,
         }
+        stem_track_1 = {
+            "track_id": 7,
+            "owner_id": 1,
+            "stem_of": {"category": "SAMPLE", "parent_track_id": 1},
+        }
+        stem_track_2 = {
+            "track_id": 8,
+            "owner_id": 1,
+            "stem_of": {"category": "SAMPLE", "parent_track_id": 2},
+        }
+        stem_track_3 = {
+            "track_id": 9,
+            "owner_id": 1,
+            "stem_of": {"category": "SAMPLE", "parent_track_id": 4},
+        }
         tracks = [
             non_gated_track,
             stream_gated_track_1,
@@ -73,6 +88,9 @@ def test_access(app):
             stream_gated_track_3,
             download_gated_track_1,
             download_gated_track_2,
+            stem_track_1,
+            stem_track_2,
+            stem_track_3,
         ]
         track_entities = []
         for track in tracks:
@@ -87,19 +105,25 @@ def test_access(app):
                     stream_conditions=track.get("stream_conditions", None),
                     is_download_gated=track.get("is_download_gated", False),
                     download_conditions=track.get("download_conditions", None),
+                    stem_of=track.get("stem_of", None),
                     is_current=True,
                     is_delete=False,
                 )
             )
 
+        follows = [{"follower_user_id": 2, "followee_user_id": 1}]
         populate_mock_db(
-            db, {"follows": [{"follower_user_id": 2, "followee_user_id": 1}]}
+            db,
+            {
+                "tracks": tracks,
+                "follows": follows,
+            },
         )
 
         content_access_checker = ContentAccessChecker()
 
-        # test non-gated content
         with db.scoped_session() as session:
+            # test non-gated track
             result = content_access_checker.check_access(
                 session=session,
                 user_id=1,
@@ -155,6 +179,36 @@ def test_access(app):
                 user_id=2,
                 content_type="track",
                 content_entity=track_entities[5],
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # test stem access for non-gated parent track
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=track_entities[6],
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # test stem access for gated parent track with user who has no access
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=track_entities[7],
+            )
+            assert not result["has_stream_access"]
+            assert not result["has_download_access"]
+
+            # test stem access for gated parent track with user who has access
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="track",
+                content_entity=track_entities[8],
             )
             assert result["has_stream_access"]
             assert result["has_download_access"]

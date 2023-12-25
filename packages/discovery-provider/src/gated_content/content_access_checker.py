@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, List, Optional, TypedDict, Union, cast
+from typing import Dict, List, TypedDict, Union, cast
 
 from sqlalchemy.orm.session import Session
 from typing_extensions import Protocol
@@ -74,7 +74,6 @@ class ContentAccessChecker:
         user_id: int,
         content_type: GatedContentType,
         content_entity: Track,
-        is_download: Optional[bool] = False,
     ) -> ContentAccessResponse:
         # for now, we only allow tracks to be gated; gated playlists/albums will come later
         if content_type != "track":
@@ -88,13 +87,20 @@ class ContentAccessChecker:
         if content_owner_id == user_id:
             return {"has_stream_access": True, "has_download_access": True}
 
-        # not gated on either stream or download
+        # if not gated on either stream or download,
+        # then check if track is a stem track and check parent track access,
+        # otherwise, user has access to stream and download.
+        # note that stem tracks do not have stream/download conditions.
         stream_conditions = content_entity.stream_conditions
         download_conditions = content_entity.download_conditions
         if not stream_conditions and not download_conditions:
-            return {"has_stream_access": True, "has_download_access": True}
+            access = self._check_stem_access(
+                session=session,
+                user_id=user_id,
+                content_entity=helpers.model_to_dictionary(content_entity),
+            )
+            return {"has_stream_access": access, "has_download_access": access}
 
-        entity = helpers.model_to_dictionary(content_entity)
         # if stream gated, check stream access which also determines download access
         if stream_conditions:
             has_access = self._evaluate_conditions(
@@ -102,7 +108,6 @@ class ContentAccessChecker:
                 user_id=user_id,
                 content_id=content_entity.track_id,
                 content_type="track",
-                content_entity=entity,
                 conditions=cast(dict, stream_conditions),
             )
             return {"has_stream_access": has_access, "has_download_access": has_access}
@@ -114,7 +119,6 @@ class ContentAccessChecker:
             user_id=user_id,
             content_id=content_entity.track_id,
             content_type="track",
-            content_entity=entity,
             conditions=cast(dict, download_conditions),
         )
         return {"has_stream_access": True, "has_download_access": has_download_access}
@@ -166,13 +170,21 @@ class ContentAccessChecker:
                 }
                 continue
 
-            # not gated on either stream or download
+            # if not gated on either stream or download,
+            # then check if track is a stem track and check parent track access,
+            # otherwise, user has access to stream and download.
+            # note that stem tracks do not have stream/download conditions.
             stream_conditions = track_entity["stream_conditions"]
             download_conditions = track_entity["download_conditions"]
             if not stream_conditions and not download_conditions:
+                access = self._check_stem_access(
+                    session=session,
+                    user_id=user_id,
+                    content_entity=track_entity,
+                )
                 track_access_result[user_id][track_id] = {
-                    "has_stream_access": True,
-                    "has_download_access": True,
+                    "has_stream_access": access,
+                    "has_download_access": access,
                 }
                 continue
 
@@ -183,7 +195,6 @@ class ContentAccessChecker:
                     user_id=user_id,
                     content_id=track_id,
                     content_type="track",
-                    content_entity=track_entity,
                     conditions=stream_conditions,
                 )
                 track_access_result[user_id][track_id] = {
@@ -199,7 +210,6 @@ class ContentAccessChecker:
                 user_id=user_id,
                 content_id=track_id,
                 content_type="track",
-                content_entity=track_entity,
                 conditions=download_conditions,
             )
             track_access_result[user_id][track_id] = {
@@ -238,7 +248,6 @@ class ContentAccessChecker:
         user_id: int,
         content_id: int,
         content_type: GatedContentType,
-        content_entity: dict,
         conditions: dict,
     ):
         valid_conditions = set(GATED_CONDITION_TO_HANDLER_MAP.keys())
@@ -260,13 +269,7 @@ class ContentAccessChecker:
             )
             if not has_access:
                 return False
-
-        # if stem track, check parent track access
-        return self._check_stem_access(
-            session=session,
-            user_id=user_id,
-            content_entity=content_entity,
-        )
+        return True
 
     def _check_stem_access(
         self,
