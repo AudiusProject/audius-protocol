@@ -572,6 +572,8 @@ def get_remix_parent_track_ids(track_metadata):
 def validate_access_conditions(params: ManageEntityParameters):
     track_metadata = params.metadata
 
+    stem_of = track_metadata.get("stem_of")
+
     is_stream_gated = track_metadata.get("is_stream_gated")
     stream_conditions = track_metadata.get("stream_conditions", {}) or {}
 
@@ -579,6 +581,15 @@ def validate_access_conditions(params: ManageEntityParameters):
     is_downloadable = download.get("is_downloadable") if download else False
     is_download_gated = track_metadata.get("is_download_gated")
     download_conditions = track_metadata.get("download_conditions", {}) or {}
+
+    # if stem track, must not be have stream/download conditions
+    # stem tracks must rely on their parent track's access conditions
+    # otherwise the access checker may e.g. look for a purchase
+    # on the stem track instead of the parent track
+    if stem_of and (is_stream_gated or is_download_gated):
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is a stem track but has stream/download conditions"
+        )
 
     if is_stream_gated:
         # if stream gated, must have stream conditions
