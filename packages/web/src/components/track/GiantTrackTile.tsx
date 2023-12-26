@@ -26,7 +26,7 @@ import {
   IconHeart,
   IconKebabHorizontal
 } from '@audius/stems'
-import { APlaylist } from '@audius/trpc-server/src/db'
+import type { APlaylist } from '@audius/trpc-server'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -47,6 +47,7 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { NOT_FOUND_PAGE } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
@@ -195,13 +196,8 @@ export const GiantTrackTile = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
   const { data: playlists } = trpc.playlists.containTrackId.useQuery(
-    {
-      trackId,
-      collectionType: 'album'
-    },
-    {
-      enabled: !!trackId
-    }
+    { trackId, collectionType: 'album' },
+    { enabled: !!trackId }
   )
   const album = playlists?.[0] as unknown as APlaylist | undefined
   let isScheduledRelease = false
@@ -551,13 +547,13 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-                {isEditAlbumsEnabled &&
-                album?.playlistName &&
-                album.permalink ? (
+                {isEditAlbumsEnabled && album ? (
                   <>
                     <span>from</span>
                     <TextLink variant='visible' textVariant='display' asChild>
-                      <Link to={album.permalink}>{album.playlistName}</Link>
+                      <Link to={album?.permalink ?? NOT_FOUND_PAGE}>
+                        {album.playlistName}
+                      </Link>
                     </TextLink>
                   </>
                 ) : null}

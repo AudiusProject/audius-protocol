@@ -1,14 +1,12 @@
 import DataLoader from 'dataloader'
 import {
-  APlaylist,
-  ATrack,
-  AUser,
   selectPlaylistsCamel,
   selectTracksCamel,
   selectUsersCamel,
   sql,
 } from './db'
 import { FollowRow, SubscriptionRow } from './db-tables'
+import { APlaylist, ATrack, AUser } from './types'
 
 export const prepareLoaders = (myId: number | undefined) => ({
   // bulk load user by id

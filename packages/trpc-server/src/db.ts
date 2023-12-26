@@ -1,12 +1,5 @@
 import postgres from 'postgres'
-import {
-  AggregatePlaylistRow,
-  AggregateTrackRow,
-  AggregateUserRow,
-  PlaylistRow,
-  TrackRow,
-  UserRow,
-} from './db-tables'
+import { APlaylist, ATrack, AUser } from './types'
 
 const connectionString = process.env.audius_db_url || ''
 
@@ -29,10 +22,6 @@ export const sql = postgres(connectionString, {
     },
   },
 })
-
-export type AUser = UserRow & AggregateUserRow
-export type ATrack = TrackRow & AggregateTrackRow
-export type APlaylist = PlaylistRow & AggregatePlaylistRow
 
 //
 // USERS

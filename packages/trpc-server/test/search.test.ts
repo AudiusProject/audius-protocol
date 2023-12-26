@@ -37,7 +37,7 @@ test('search tracks', async () => {
   }
 })
 
-test('you can get playlists that contain a track id', async () => {
+test('you can query for playlists that contain a track id', async () => {
   const caller = await testRouter()
 
   const playlistIds = await caller.playlists.containTrackId({ trackId: 101 })
