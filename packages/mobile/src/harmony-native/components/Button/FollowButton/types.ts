@@ -31,5 +31,4 @@ export type FollowButtonProps = {
   onUnfollow?: () => void
   value?: any
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
-  // onChange?: (e: { target: { value: any; checked: boolean } }) => void
 } & Pick<PressableProps, 'onPress' | 'disabled'>

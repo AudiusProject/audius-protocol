@@ -5,7 +5,7 @@ services:
     container_name: dashboard
     build:
       context: ${PROJECT_ROOT}/protocol-dashboard
-    command: ["npm", "run", "start:stage"]
+      dockerfile: ${PROJECT_ROOT}/protocol-dashboard/Dockerfile.prod
     ports:
       - 5173:5173
     deploy:

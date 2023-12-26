@@ -7,7 +7,7 @@ import { useCoverPhoto } from '../image/CoverPhoto'
 
 type UserCoverPhotoProps = {
   userId: ID
-} & Pick<CoverPhotoProps, 'style' | 'topCornerRadius'>
+} & Pick<CoverPhotoProps, 'style' | 'topCornerRadius' | 'children'>
 
 export const UserCoverPhoto = (props: UserCoverPhotoProps) => {
   const { userId, ...other } = props

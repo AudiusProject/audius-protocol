@@ -33,6 +33,7 @@ import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
+import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 
 /**
  * The Audius SDK
@@ -181,6 +182,11 @@ const initializeApis = ({
     services.auth
   )
 
+  const dashboardWalletUsers = new DashboardWalletUsersApi(
+    services.entityManager,
+    services.auth
+  )
+
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
     middleware
@@ -206,7 +212,8 @@ const initializeApis = ({
     full,
     chats,
     grants,
-    developerApps
+    developerApps,
+    dashboardWalletUsers
   }
 }
 

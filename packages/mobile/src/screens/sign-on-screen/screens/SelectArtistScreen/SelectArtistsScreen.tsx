@@ -18,6 +18,7 @@ import { Heading, PageFooter } from '../../components/layout'
 
 import { SelectedGenresTabBar } from './SelectedGenresTabBar'
 import { TopArtistsCardList } from './TopArtistsCardList'
+import { SelectArtistsPreviewContextProvider } from './selectArtistPreviewContext'
 
 const Tab = createMaterialCollapsibleTopTabNavigator()
 
@@ -72,32 +73,34 @@ export const SelectArtistsScreen = () => {
       {({ dirty, isValid, values }) => {
         const { selectedArtists } = values
         return (
-          <Flex flex={1}>
-            <Tab.Navigator
-              tabBar={SelectedGenresTabBar}
-              collapsibleOptions={{
-                renderHeader,
-                headerHeight: 244,
-                disableSnap: true
-              }}
-            >
-              {genres.map((genre) => (
-                <Tab.Screen
-                  key={genre}
-                  name={genre}
-                  component={TopArtistsCardList}
-                />
-              ))}
-            </Tab.Navigator>
-            <PageFooter
-              buttonProps={{ disabled: !dirty || !isValid }}
-              postfix={
-                <Text variant='body'>
-                  {messages.selected} {selectedArtists.length || 0}/3
-                </Text>
-              }
-            />
-          </Flex>
+          <SelectArtistsPreviewContextProvider>
+            <Flex flex={1}>
+              <Tab.Navigator
+                tabBar={SelectedGenresTabBar}
+                collapsibleOptions={{
+                  renderHeader,
+                  headerHeight: 244,
+                  disableSnap: true
+                }}
+              >
+                {genres.map((genre) => (
+                  <Tab.Screen
+                    key={genre}
+                    name={genre}
+                    component={TopArtistsCardList}
+                  />
+                ))}
+              </Tab.Navigator>
+              <PageFooter
+                buttonProps={{ disabled: !dirty || !isValid }}
+                postfix={
+                  <Text variant='body'>
+                    {messages.selected} {selectedArtists.length || 0}/3
+                  </Text>
+                }
+              />
+            </Flex>
+          </SelectArtistsPreviewContextProvider>
         )
       }}
     </Formik>
