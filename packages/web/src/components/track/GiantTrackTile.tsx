@@ -15,6 +15,7 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { TextLink } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
   Button,
@@ -191,7 +192,7 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
-  const { data: playlistIds, error } = trpc.playlists.containTrackId.useQuery(
+  const { data: playlists } = trpc.playlists.containTrackId.useQuery(
     {
       trackId
     },
@@ -550,9 +551,10 @@ export const GiantTrackTile = ({
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
-              <span> from </span>
-              {JSON.stringify(playlistIds)}
-              {JSON.stringify(error)}
+              <span> from {playlists?.[0].permalink}</span>
+              <TextLink to={playlists?.[0].permalink}>
+                {playlists?.[0].name}
+              </TextLink>
             </div>
           </div>
 
