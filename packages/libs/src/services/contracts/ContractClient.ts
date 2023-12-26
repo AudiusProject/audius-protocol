@@ -227,9 +227,9 @@ export class ContractClient {
     return method
   }
 
-  async getEthNetId() {
+  async getEthChainId() {
     await this.init()
-    const netId = await this.web3Manager.getWeb3().eth.net.getId()
+    const netId = await this.web3Manager.getWeb3().eth.getChainId()
 
     return netId
   }
