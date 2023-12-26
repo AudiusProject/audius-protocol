@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -336,6 +336,10 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create track {track_id} below the offset"
             )
+
+    if params.action == Action.UPDATE:
+        validate_update_access_conditions(params)
+
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -636,3 +640,53 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} is not download gated but is stream gated"
             )
+
+
+# Make sure that access conditions do not incorrectly change during track update.
+# Rule of thumb is that access can only be modified to decrease strictness.
+def validate_update_access_conditions(params: ManageEntityParameters):
+    track_id = params.entity_id
+    if track_id not in params.existing_records["Track"]:
+        raise IndexingValidationError(f"Track {track_id} is not in existing records")
+
+    existing_track = params.existing_records["Track"][track_id]
+    updated_track = params.metadata
+
+    # validate changes to conditions
+    def validate_update(
+        existing_conditions: Optional[Dict], updated_conditions: Optional[Dict]
+    ):
+        # currently non gated track cannot be updated to be gated
+        if not existing_conditions and updated_conditions:
+            raise IndexingValidationError(
+                f"Track {track_id} cannot increase strictness of access conditions"
+            )
+
+        if existing_conditions:
+            # note that usdc purchase may be edited to change price (and maybe splits?)
+            is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
+            is_updated_usdc_purchase = (
+                updated_conditions and USDC_PURCHASE_KEY in updated_conditions
+            )
+            is_valid_usdc_purchase = (
+                is_existing_usdc_purchase and is_updated_usdc_purchase
+            )
+            # the updated stream conditions must be:
+            # - public (None),
+            # - equal to the existing stream conditions,
+            # - or a valid usdc purchase
+            if (
+                updated_conditions
+                and existing_conditions != updated_conditions
+                and not is_valid_usdc_purchase
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} cannot change access conditions"
+                )
+
+    validate_update(
+        existing_track.stream_conditions, updated_track.get("stream_conditions")
+    )
+    validate_update(
+        existing_track.download_conditions, updated_track.get("download_conditions")
+    )
