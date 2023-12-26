@@ -11,9 +11,9 @@ x-common: &common
     driver: json-file
   extra_hosts:
     # Allows the containers can talk to each other via their hostnames routed through nginx
-    - 'audius-protocol-comms-discovery-1:host-gateway'
-    - 'audius-protocol-comms-discovery-2:host-gateway'
-    - 'audius-protocol-comms-discovery-3:host-gateway'
+    - 'audius-protocol-comms-1:host-gateway'
+    - 'audius-protocol-comms-2:host-gateway'
+    - 'audius-protocol-comms-3:host-gateway'
     - 'audius-protocol-creator-node-1:host-gateway'
     - 'audius-protocol-creator-node-2:host-gateway'
     - 'audius-protocol-creator-node-3:host-gateway'
