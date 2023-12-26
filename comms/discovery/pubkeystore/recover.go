@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -44,6 +45,12 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 		// got from:
 		// https://identityservice.staging.audius.co/health_check/poa
 		finalPoaBlock = 30000000
+	}
+
+	if discoveryConfig.IsSandbox {
+		acdcEndpoint = os.Getenv("audius_web3_host")
+		poaEndpoint = os.Getenv("audius_web3_host")
+		verifyingContract = os.Getenv("audius_contracts_entity_manager_address")
 	}
 
 	poaClient, err = ethclient.Dial(poaEndpoint)
