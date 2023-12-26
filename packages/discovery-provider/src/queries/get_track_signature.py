@@ -64,15 +64,12 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
 
     if nft_access_signature:
         # check that authed user is the same as user for whom the gated content signature was signed
+        # there is no need to perform other checks as CN would take care of them
         signature_obj = json.loads(urllib.parse.unquote(nft_access_signature))
         signature_data = json.loads(signature_obj["data"])
-
-        if (
-            signature_data.get("user_wallet", False)
-            != authed_user["user_wallet"].lower()
-            or signature_data.get("cid", False) != cid
-            or signature_data.get("shouldCache", False)
-        ):
+        signature_user_wallet = signature_data.get("user_wallet", None)
+        authed_user_wallet = authed_user["user_wallet"].lower()
+        if signature_user_wallet != authed_user_wallet:
             return None
         return {"signature": signature_obj, "cid": cid}
 
@@ -151,15 +148,12 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
 
     if nft_access_signature:
         # check that authed user is the same as user for whom the gated content signature was signed
+        # there is no need to perform other checks as CN would take care of them
         signature_obj = json.loads(urllib.parse.unquote(nft_access_signature))
         signature_data = json.loads(signature_obj["data"])
-
-        if (
-            signature_data.get("user_wallet", False)
-            != authed_user["user_wallet"].lower()
-            or signature_data.get("cid", False) != cid
-            or signature_data.get("shouldCache", False)
-        ):
+        signature_user_wallet = signature_data.get("user_wallet", None)
+        authed_user_wallet = authed_user["user_wallet"].lower()
+        if signature_user_wallet != authed_user_wallet:
             return None
         return {"signature": signature_obj, "cid": cid, "filename": filename}
 
