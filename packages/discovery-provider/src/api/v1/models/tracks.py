@@ -111,7 +111,7 @@ track = ns.model(
         "duration": fields.Integer(required=True),
         # Whether or not the track is downloadable, see `download`
         # on `track_full` for more details
-        "downloadable": fields.Boolean,
+        "downloadable": fields.Boolean,  # todo: rename to 'is_downloadable' and use new column with same name after client upgrade
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,

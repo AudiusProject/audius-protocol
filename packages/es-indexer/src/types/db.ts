@@ -697,6 +697,7 @@ export interface TrackRow {
   'preview_start_seconds': number | null;
   'orig_file_cid': string | null;
   'orig_filename': string | null;
+  'is_downloadable': boolean;
   'is_original_available': boolean;
   'track_segments': any;
   'txhash': string;

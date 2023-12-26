@@ -110,8 +110,10 @@ const createSdkSchema = () =>
     previewStartSeconds: z.optional(z.number()),
     audioUploadId: z.optional(z.string()),
     previewCid: z.optional(z.string()),
-    origFileCid: z.optional(z.string()),
-    origFilename: z.optional(z.string())
+    orig_file_cid: z.optional(z.string()),
+    orig_filename: z.optional(z.string()),
+    is_downloadable: z.optional(z.string()),
+    is_original_available: z.optional(z.string())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(

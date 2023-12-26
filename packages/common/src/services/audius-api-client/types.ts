@@ -150,6 +150,7 @@ export type APITrack = {
   track_cid: Nullable<CID>
   orig_file_cid: Nullable<CID>
   orig_filename: Nullable<string>
+  is_downloadable: boolean
   is_original_available: boolean
 }
 

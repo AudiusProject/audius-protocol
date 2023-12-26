@@ -39,6 +39,10 @@
           ],
           "default": null
         },
+        "is_downloadable": {
+          "type": "boolean",
+          "default": false
+        },
         "is_original_available": {
           "type": "boolean",
           "default": false

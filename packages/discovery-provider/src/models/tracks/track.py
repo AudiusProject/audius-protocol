@@ -42,6 +42,7 @@ class Track(Base, RepresentableMixin):
     )  # todo: after backfill, add nullable=False, both here and in a db migration
     orig_file_cid = Column(String, index=True)
     orig_filename = Column(Text)
+    is_downloadable = Column(Boolean, nullable=False, server_default=text("false"))
     is_original_available = Column(
         Boolean, nullable=False, server_default=text("false")
     )

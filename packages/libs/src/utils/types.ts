@@ -131,6 +131,7 @@ export type TrackMetadata = {
   preview_cid: Nullable<CID>
   orig_file_cid: CID
   orig_filename: string
+  is_downloadable: boolean
   is_original_available: boolean
   created_at: string
   isrc: Nullable<string>

@@ -41,6 +41,7 @@ class TrackMetadata(TypedDict):
     preview_cid: Optional[str]
     orig_file_cid: Optional[str]
     orig_filename: Optional[str]
+    is_downloadable: Optional[bool]
     is_original_available: Optional[bool]
     owner_id: Optional[int]
     audio_upload_id: Optional[str]
@@ -80,6 +81,7 @@ track_metadata_format: TrackMetadata = {
     "preview_cid": None,
     "orig_file_cid": None,
     "orig_filename": None,
+    "is_downloadable": False,
     "is_original_available": False,
     "owner_id": None,
     "audio_upload_id": None,
