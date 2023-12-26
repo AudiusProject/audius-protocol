@@ -76,6 +76,8 @@ export type SearchTrack = TrackImage & {
   is_unlisted: boolean
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<AccessConditions>
   has_current_user_saved: undefined
   stem_of: null
   updated_at: string
