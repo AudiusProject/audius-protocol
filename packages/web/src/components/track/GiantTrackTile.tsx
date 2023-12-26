@@ -26,6 +26,7 @@ import {
   IconHeart,
   IconKebabHorizontal
 } from '@audius/stems'
+import { APlaylist } from '@audius/trpc-server/src/db'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -187,6 +188,7 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
@@ -194,12 +196,14 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
   const { data: playlists } = trpc.playlists.containTrackId.useQuery(
     {
-      trackId
+      trackId,
+      collectionType: 'album'
     },
     {
       enabled: !!trackId
     }
   )
+  const album = playlists?.[0] as unknown as APlaylist | undefined
   let isScheduledRelease = false
   if (!isPublishing && moment.utc(released).isAfter(moment())) {
     isScheduledRelease = true
@@ -547,13 +551,13 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-                {playlists?.[0].playlistName ? (
+                {isEditAlbumsEnabled &&
+                album?.playlistName &&
+                album.permalink ? (
                   <>
                     <span>from</span>
                     <TextLink variant='visible' textVariant='display' asChild>
-                      <Link to={playlists?.[0].permalink}>
-                        {playlists?.[0].playlistName}
-                      </Link>
+                      <Link to={album.permalink}>{album.playlistName}</Link>
                     </TextLink>
                   </>
                 ) : null}

@@ -21,7 +21,9 @@ export const playlistRouter = router({
   }),
 
   containTrackId: publicProcedure
-    .input(z.object({ trackId: z.number() }))
+    .input(
+      z.object({ trackId: z.number(), collectionType: z.string().optional() })
+    )
     .query(async ({ ctx, input }) => {
       const found = await esc.search<PlaylistRow>({
         index: 'playlists',
@@ -31,6 +33,12 @@ export const playlistRouter = router({
               { term: { 'playlist_contents.track_ids.track': input.trackId } },
               { term: { is_delete: false } },
               { term: { is_private: false } },
+              ...(input.collectionType === 'album'
+                ? [{ term: { is_album: true } }]
+                : []),
+              ...(input.collectionType === 'playlist'
+                ? [{ term: { is_album: false } }]
+                : []),
             ],
             must_not: [],
             should: [],
