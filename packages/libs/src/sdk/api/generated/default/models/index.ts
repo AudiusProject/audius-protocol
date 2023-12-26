@@ -6,6 +6,8 @@ export * from './AuthorizedApps';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';
+export * from './DashboardWalletUser';
+export * from './DashboardWalletUsersResponse';
 export * from './DecodedUserToken';
 export * from './DeveloperApp';
 export * from './DeveloperAppResponse';
