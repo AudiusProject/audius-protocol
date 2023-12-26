@@ -15,7 +15,7 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
-import { TextLink } from '@audius/harmony'
+import { Flex, TextLink } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
   Button,
@@ -32,7 +32,7 @@ import moment from 'moment'
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { UserLink } from 'components/link'
+import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -536,7 +536,7 @@ export const GiantTrackTile = ({
               {isLoading && <Skeleton className={styles.skeleton} />}
             </div>
             <div className={styles.artistWrapper}>
-              <div className={cn(fadeIn)}>
+              <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
                   color='secondary'
@@ -547,14 +547,20 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-              </div>
+                {playlists?.[0].playlistName ? (
+                  <>
+                    <span>from</span>
+                    <TextLink variant='visible' textVariant='display' asChild>
+                      <Link to={playlists?.[0].permalink}>
+                        {playlists?.[0].playlistName}
+                      </Link>
+                    </TextLink>
+                  </>
+                ) : null}
+              </Flex>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
-              <span> from {playlists?.[0].permalink}</span>
-              <TextLink to={playlists?.[0].permalink}>
-                {playlists?.[0].name}
-              </TextLink>
             </div>
           </div>
 

@@ -38,6 +38,7 @@ export const playlistRouter = router({
         },
         _source: false,
       })
+
       return await ctx.loaders.playlistLoader.loadMany(
         found.hits.hits.map((h) => parseInt(h._id))
       )
