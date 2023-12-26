@@ -98,23 +98,27 @@ export const createUploadTrackMetadataSchema = () =>
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
       .nullable(),
     isStreamGated: z.optional(z.boolean()),
-    streamConditions: z.optional(
-      z.union([
-        CollectibleGatedConditions,
-        FollowGatedConditions,
-        TipGatedConditions,
-        USDCPurchaseConditions
-      ])
-    ),
+    streamConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     isDownloadGated: z.optional(z.boolean()),
-    downloadConditions: z.optional(
-      z.union([
-        CollectibleGatedConditions,
-        FollowGatedConditions,
-        TipGatedConditions,
-        USDCPurchaseConditions
-      ])
-    ),
+    downloadConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     releaseDate: z.optional(
       z.date().max(new Date(), { message: messages.invalidReleaseDateError })
     ),

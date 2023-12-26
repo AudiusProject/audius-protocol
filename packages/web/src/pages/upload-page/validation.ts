@@ -68,23 +68,27 @@ const createSdkSchema = () =>
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
     is_stream_gated: z.optional(z.boolean()),
-    stream_conditions: z.optional(
-      z.union([
-        CollectibleGatedConditions,
-        FollowGatedConditions,
-        TipGatedConditions,
-        USDCPurchaseConditions
-      ])
-    ),
+    stream_conditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     is_download_gated: z.optional(z.boolean()),
-    download_conditions: z.optional(
-      z.union([
-        CollectibleGatedConditions,
-        FollowGatedConditions,
-        TipGatedConditions,
-        USDCPurchaseConditions
-      ])
-    ),
+    download_conditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     release_date: z.optional(z.string()).nullable(),
     remixOf: z.optional(
       z
