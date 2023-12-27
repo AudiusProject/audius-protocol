@@ -48,7 +48,7 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 	}
 
 	if discoveryConfig.IsSandbox {
-		acdcEndpoint = os.Getenv("audius_web3_host")
+		acdcEndpoint = os.Getenv("audius_web3_eth_provider_url")
 		poaEndpoint = os.Getenv("audius_web3_host")
 		verifyingContract = os.Getenv("audius_contracts_entity_manager_address")
 	}
