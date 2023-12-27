@@ -46,6 +46,13 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 		finalPoaBlock = 30000000
 	}
 
+	if discoveryConfig.IsDev {
+		acdcEndpoint = "http://audius-protocol-poa-ganache-1"
+		poaEndpoint = "http://audius-protocol-poa-ganache-1" // won't ever be used
+		verifyingContract = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
+		finalPoaBlock = -1
+	}
+
 	poaClient, err = ethclient.Dial(poaEndpoint)
 	if err != nil {
 		return err

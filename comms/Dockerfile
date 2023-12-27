@@ -20,4 +20,4 @@ COPY --from=builder /app/comms /bin/comms
 
 EXPOSE 4222
 VOLUME ["/tmp"]
-ENTRYPOINT ["comms"]
+CMD ["comms"]
