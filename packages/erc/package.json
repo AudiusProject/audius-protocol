@@ -21,5 +21,6 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/erc",
   "dependencies": {
+    "viem": "1.21.1"
   }
 }
