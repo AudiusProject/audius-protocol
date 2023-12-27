@@ -6,10 +6,7 @@ import { useIsFocused, type RouteProp } from '@react-navigation/native'
 import { Box, useTheme } from '@audius/harmony-native'
 import { CardList } from 'app/components/core'
 
-import {
-  FollowArtistField,
-  FollowArtistTileSkeleton
-} from './FollowArtistField'
+import { FollowArtistCard, FollowArtistTileSkeleton } from './FollowArtistCard'
 import { PreviewArtistHint } from './PreviewArtistHint'
 
 export const useGetTopArtists = (genre: string, options?: QueryHookOptions) => {
@@ -38,7 +35,7 @@ export const TopArtistsCardList = (props: Props) => {
       data={artists}
       style={css({ paddingTop: spacing.xl })}
       renderItem={({ item, index }) => (
-        <FollowArtistField
+        <FollowArtistCard
           artist={item}
           showPreviewHint={genre === 'Featured' && index === 0}
         />

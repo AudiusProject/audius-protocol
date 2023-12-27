@@ -17,6 +17,7 @@ import { SelectArtistsPreviewContextProvider } from './selectArtistPreviewContex
 
 const Tab = createMaterialCollapsibleTopTabNavigator()
 
+// Note for this screen we are not using Formik due to performance issues, and using redux instead.
 export const SelectArtistsScreen = () => {
   const genres = useSelector((state: any) => [
     'Featured',

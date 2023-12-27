@@ -38,12 +38,12 @@ import { StaticSkeleton } from 'app/components/skeleton'
 
 import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
 
-type FollowArtistFieldProps = {
+type FollowArtistCardProps = {
   artist: UserMetadata
   showPreviewHint?: boolean
 }
 
-export const FollowArtistField = (props: FollowArtistFieldProps) => {
+export const FollowArtistCard = (props: FollowArtistCardProps) => {
   const { artist, showPreviewHint } = props
   const { user_id, track_count, follower_count } = artist
   const { spacing } = useTheme()
