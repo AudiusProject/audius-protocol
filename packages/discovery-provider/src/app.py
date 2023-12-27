@@ -323,7 +323,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
-            "src.tasks.cache_entity_counts",
+            "src.tasks.cache_entity_counts"
             # "src.tasks.publish_scheduled_releases",
         ],
         beat_schedule={
