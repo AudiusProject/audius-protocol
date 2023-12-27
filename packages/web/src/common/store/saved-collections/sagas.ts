@@ -9,6 +9,8 @@ import { all, call, select, put, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
+import { FETCH_ACCOUNT_COLLECTIONS } from './actions'
+
 const { fetchCollections, fetchCollectionsSucceeded } = savedCollectionsActions
 const { getAccountAlbums, getAccountPlaylists } = savedCollectionsSelectors
 
@@ -51,6 +53,10 @@ export function* fetchAllAccountCollections() {
   ])
 }
 
+function* watchFetchAccountCollections() {
+  yield* takeEvery(FETCH_ACCOUNT_COLLECTIONS, fetchAllAccountCollections)
+}
+
 function* watchFetchCollections() {
   yield* takeEvery(
     fetchCollections.type,
@@ -61,5 +67,5 @@ function* watchFetchCollections() {
 }
 
 export default function sagas() {
-  return [watchFetchCollections]
+  return [watchFetchAccountCollections, watchFetchCollections]
 }

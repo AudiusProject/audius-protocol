@@ -82,7 +82,7 @@ export type BaseButtonProps = {
   /**
    * Internal styling used by derived button components
    */
-  styles: BaseButtonStyles
+  styles?: BaseButtonStyles
 
   /**
    * Change the default rendered element for the one passed as a child,

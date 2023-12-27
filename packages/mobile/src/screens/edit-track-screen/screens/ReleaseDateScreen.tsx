@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { remixSettingsActions, removeNullable } from '@audius/common'
+import {
+  getLocalTimezone,
+  remixSettingsActions,
+  removeNullable
+} from '@audius/common'
 import { useField } from 'formik'
 import moment from 'moment'
 import { Dimensions, View } from 'react-native'
@@ -35,8 +39,8 @@ const messages = {
   done: 'Done',
   releaseNowRadio: 'Release immediately',
   scheduleReleaseDateRadio: 'Schedule a release date',
-  futureReleaseHint:
-    'Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone.',
+  futureReleaseHint: (timezone: string) =>
+    `Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (${timezone}).`,
   pastReleaseHint:
     'Setting a release date in the past will impact the order tracks appear on your profile.'
 }
@@ -121,7 +125,7 @@ export const ScheduledReleaseRadioField = (props) => {
       setReleaseDateValue(newReleaseDate.toString())
       setIsTimeOpen(false)
     },
-    [setReleaseDateValue, setIsTimeOpen]
+    [releaseDateValue, setReleaseDateValue]
   )
 
   return (
@@ -134,22 +138,21 @@ export const ScheduledReleaseRadioField = (props) => {
           {selected ? (
             <TextField
               name={'release_date_day'}
-              label={'Release Date'}
+              label={messages.screenTitle}
               onFocus={() => setIsDateOpen(true)}
               noGutter
+              hideKeyboard={true}
               style={styles.releaseDateInput}
-              value={
-                releaseDateValue
-                  ? moment(releaseDateValue).calendar(undefined, {
-                      sameDay: '[Today]',
-                      nextDay: '[Tomorrow]',
-                      nextWeek: 'dddd',
-                      lastDay: '[Yesterday]',
-                      lastWeek: '[Last] dddd',
-                      sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
-                    })
-                  : undefined
-              }
+              value={moment(
+                releaseDateValue === null ? undefined : releaseDateValue
+              ).calendar(undefined, {
+                sameDay: '[Today]',
+                nextDay: '[Tomorrow]',
+                nextWeek: 'dddd',
+                lastDay: '[Yesterday]',
+                lastWeek: '[Last] dddd',
+                sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
+              })}
             />
           ) : null}
           {selected &&
@@ -161,6 +164,7 @@ export const ScheduledReleaseRadioField = (props) => {
               onFocus={() => setIsTimeOpen(true)}
               noGutter
               style={styles.releaseDateInput}
+              hideKeyboard={true}
               value={
                 releaseDateValue
                   ? moment(releaseDateValue).format('h:mm A')
@@ -192,7 +196,7 @@ export const ScheduledReleaseRadioField = (props) => {
               style={styles.releaseDateInput}
               content={
                 moment(releaseDateValue).isAfter(moment())
-                  ? messages.futureReleaseHint
+                  ? messages.futureReleaseHint(getLocalTimezone())
                   : messages.pastReleaseHint
               }
             />

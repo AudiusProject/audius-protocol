@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.20",
+  "version": "3.0.23",
   "audius": {
     "releaseSHA": "949a60db4b019706777d4bdbf679e29f06ef2b40"
   },
@@ -59,7 +59,8 @@
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./src/sdk/api/generator/gen.js",
     "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full",
-    "prepare": "patch-package"
+    "prepare": "patch-package",
+    "prepack": "turbo run build"
   },
   "dependencies": {
     "@audius/hedgehog": "2.1.0",

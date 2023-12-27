@@ -218,7 +218,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud, bucket, config.Self.Host)
+	dbMigrate(crud, config.Self.Host)
 
 	// req.cool http client
 	reqClient := req.C().

@@ -10,6 +10,7 @@ export const zeroBalance = () => new BN(0) as BNUSDC
 
 export const isContentPurchaseInProgress = (stage: PurchaseContentStage) => {
   return [
+    PurchaseContentStage.START,
     PurchaseContentStage.BUY_USDC,
     PurchaseContentStage.PURCHASING,
     PurchaseContentStage.CONFIRMING_PURCHASE

@@ -268,7 +268,6 @@ def update_user(
     cid_metadata[updated_metadata_cid] = updated_metadata
     user_record.metadata_multihash = updated_metadata_cid
 
-    user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
     params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
@@ -535,28 +534,6 @@ def recover_user_id_hash(web3, user_id, signature):
         message_hash, signature=signature
     )
     return wallet_address
-
-
-def update_legacy_user_images(user_record):
-    # All incoming profile photos intended to be a directory
-    # Any write to profile_picture field is replaced by profile_picture_sizes
-    if user_record.profile_picture:
-        logger.info(
-            f"index.py | users.py | Processing user profile_picture {user_record.profile_picture}"
-        )
-        user_record.profile_picture_sizes = user_record.profile_picture
-        user_record.profile_picture = None
-
-    # All incoming cover photos intended to be a directory
-    # Any write to cover_photo field is replaced by cover_photo_sizes
-    if user_record.cover_photo:
-        logger.info(
-            f"index.py | users.py | Processing user cover photo {user_record.cover_photo}"
-        )
-        user_record.cover_photo_sizes = user_record.cover_photo
-        user_record.cover_photo = None
-
-    return user_record
 
 
 def validate_user_record(user_record):

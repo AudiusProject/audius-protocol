@@ -6,7 +6,8 @@ import {
   Track,
   cacheUsersSelectors,
   toastActions,
-  useGetSuggestedTracks
+  useGetSuggestedTracks,
+  useGetPlaylistById
 } from '@audius/common'
 import {
   Button,
@@ -43,7 +44,7 @@ const messages = {
   refresh: 'Refresh',
   expandLabel: 'Expand suggested tracks panel',
   collapseLabel: 'Collapse suggested tracks panel',
-  trackAdded: 'Added to Playlist'
+  trackAdded: (isAlbum: boolean) => `Added to ${isAlbum ? 'Album' : 'Playlist'}`
 }
 
 type SuggestedTrackProps = {
@@ -56,14 +57,23 @@ const SuggestedTrack = (props: SuggestedTrackProps) => {
   const { collectionId, track, onAddTrack } = props
   const { track_id, title, owner_id } = track
   const user = useSelector((state) => getUser(state, { id: owner_id }))
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId: null
+  })
   const dispatch = useDispatch()
 
   const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
 
   const handleAddTrack = useCallback(() => {
     onAddTrack(track_id, collectionId)
-    dispatch(toast({ content: messages.trackAdded, timeout: 1500 }))
-  }, [onAddTrack, track_id, collectionId, dispatch])
+    dispatch(
+      toast({
+        content: messages.trackAdded(collection.is_album),
+        timeout: 1500
+      })
+    )
+  }, [onAddTrack, track_id, collectionId, dispatch, collection.is_album])
 
   return (
     <div className={styles.suggestedTrack}>

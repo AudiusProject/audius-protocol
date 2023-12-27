@@ -1,5 +1,4 @@
 import {
-  Box,
   Flex,
   IconCloudUpload,
   IconComponent,
@@ -23,15 +22,18 @@ type AudiusValueProps = { icon: IconComponent; text: string; dynamic?: boolean }
  */
 const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
-  const isSmallDesktop = useMediaQuery('(min-width: 1363px)')
+  const isSmall = useMediaQuery(
+    '(max-width: 1363px) and (min-width: 860px), (max-width: 645px)'
+  )
 
   return (
     <Flex alignItems='center' justifyContent='center' gap='m'>
-      <Icon color='staticWhite' size={isSmallDesktop ? '2xl' : 'l'} />
+      <Icon color='staticWhite' size={isSmall ? 'l' : '2xl'} shadow='drop' />
       <Text
-        variant={isSmallDesktop ? 'heading' : 'title'}
-        size={isSmallDesktop ? 'xl' : 'l'}
-        strength={isSmallDesktop ? 'default' : 'weak'}
+        variant={isSmall ? 'title' : 'heading'}
+        tag='h2'
+        size={isSmall ? 'l' : 'xl'}
+        strength={isSmall ? 'weak' : 'default'}
         color='staticWhite'
         shadow='emphasis'
       >
@@ -50,29 +52,30 @@ type AudiusValuesProps = {
 }
 
 export const AudiusValues = (props: AudiusValuesProps) => {
-  const isSmallDesktop = useMediaQuery('(min-width: 1363px)')
+  const isMobile = useMediaQuery('(max-width: 860px)')
+  const isSmall = useMediaQuery(
+    '(max-width: 1363px) and (min-width: 860px), (max-width: 645px)'
+  )
 
   return (
     <Flex
       direction='column'
-      gap={isSmallDesktop ? 'xl' : 'l'}
+      gap={isSmall ? 'l' : 'xl'}
       alignItems='center'
-      p='xl'
+      p={isSmall ? 'xl' : '2xl'}
       {...props}
     >
-      {isSmallDesktop ? (
-        <Box pb='l'>
-          <Text
-            variant='display'
-            size='s'
-            strength='strong'
-            color='staticWhite'
-            shadow='emphasis'
-          >
-            {messages.heading}
-          </Text>
-        </Box>
-      ) : null}
+      {isMobile ? null : (
+        <Text
+          variant={isSmall ? 'heading' : 'display'}
+          size='s'
+          strength='strong'
+          color='staticWhite'
+          shadow='emphasis'
+        >
+          {messages.heading}
+        </Text>
+      )}
       <AudiusValue icon={IconCloudUpload} text={messages.unlimitedStreaming} />
       <AudiusValue icon={IconMessage} text={messages.directMessages} />
       <AudiusValue icon={IconHeadphones} text={messages.adFree} />

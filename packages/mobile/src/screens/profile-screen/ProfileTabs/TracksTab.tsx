@@ -33,6 +33,7 @@ export const TracksTab = () => {
   return (
     <Lineup
       selfLoad
+      pullToRefresh
       leadingElementId={artist_pick_track_id}
       actions={tracksActions}
       lineup={lineup}

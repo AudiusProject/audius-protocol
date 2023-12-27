@@ -162,46 +162,44 @@ export const PickHandlePage = () => {
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      <Page as={Form} centered={!isMobile} transitionBack='vertical'>
-        {isWaitingForSocialLogin ? (
-          <SocialMediaLoading />
-        ) : (
-          <>
-            <Heading
-              prefix={
-                isMobile ? null : <OutOfText numerator={1} denominator={2} />
-              }
-              heading={messages.title}
-              description={messages.description}
-              centered={!isMobile}
+      {isWaitingForSocialLogin ? (
+        <SocialMediaLoading />
+      ) : (
+        <Page as={Form} centered={!isMobile} transitionBack='vertical'>
+          <Heading
+            prefix={
+              isMobile ? null : <OutOfText numerator={1} denominator={2} />
+            }
+            heading={messages.title}
+            description={messages.description}
+            centered={!isMobile}
+          />
+          <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+            <HandleField
+              autoFocus
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onStartSocialMediaLogin={handleStartSocialMediaLogin}
+              onErrorSocialMediaLogin={handleErrorSocialMediaLogin}
             />
-            <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
-              <HandleField
-                autoFocus
-                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-                onStartSocialMediaLogin={handleStartSocialMediaLogin}
-                onErrorSocialMediaLogin={handleErrorSocialMediaLogin}
-              />
-              <Divider>
-                <Text
-                  variant='body'
-                  color='subdued'
-                  size='s'
-                  css={{ textTransform: 'uppercase' }}
-                >
-                  {messages.or}
-                </Text>
-              </Divider>
-              <SocialMediaSection
-                onStart={handleStartSocialMediaLogin}
-                onError={handleErrorSocialMediaLogin}
-                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-              />
-            </Flex>
-            <PageFooter centered />
-          </>
-        )}
-      </Page>
+            <Divider>
+              <Text
+                variant='body'
+                color='subdued'
+                size='s'
+                css={{ textTransform: 'uppercase' }}
+              >
+                {messages.or}
+              </Text>
+            </Divider>
+            <SocialMediaSection
+              onStart={handleStartSocialMediaLogin}
+              onError={handleErrorSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+            />
+          </Flex>
+          <PageFooter centered />
+        </Page>
+      )}
     </Formik>
   )
 }

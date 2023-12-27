@@ -26,11 +26,12 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
     transformValueOnChange,
     transformValueOnBlur,
     debouncedValidationMs,
+    helperText,
     ...other
   } = props
   const [field, { touched, error }, { setError }] = useField(name)
   const { value } = field
-  const { validateField } = useFormikContext()
+  const { validateField, submitCount } = useFormikContext()
 
   const debouncedValidateField = useDebouncedCallback(
     (field: string) => validateField(field),
@@ -44,13 +45,13 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
     }
   }, [debouncedValidationMs, debouncedValidateField, name, value])
 
-  const hasError = Boolean(touched && error)
+  const hasError = Boolean(touched && error && submitCount > 0)
 
   return (
     <TextInput
       {...field}
       error={hasError}
-      helperText={hasError ? error : undefined}
+      helperText={helperText ?? (hasError ? error : undefined)}
       onChange={(e) => {
         if (clearErrorOnChange) {
           setError(undefined)

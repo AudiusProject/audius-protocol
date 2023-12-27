@@ -216,7 +216,7 @@ export const Lineup = ({
   pullToRefresh,
   rankIconCount = 0,
   refresh: refreshProp,
-  refreshing: refreshingProp,
+  refreshing: refreshingProp = false,
   showLeadingElementArtistPick = true,
   start = 0,
   variant = LineupVariant.MAIN,
@@ -240,9 +240,13 @@ export const Lineup = ({
   const inView = lazy ? lineupInView : true
 
   const handleRefresh = useCallback(() => {
+    if (!refreshing) {
+      dispatch(
+        actions.refreshInView(true, fetchPayload, limit, extraFetchOptions)
+      )
+    }
     setRefreshing(true)
-    dispatch(actions.refreshInView(true))
-  }, [dispatch, actions])
+  }, [refreshing, dispatch, actions, fetchPayload, limit, extraFetchOptions])
 
   useEffect(() => {
     if (status !== Status.LOADING) {

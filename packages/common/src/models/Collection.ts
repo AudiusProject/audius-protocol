@@ -52,6 +52,7 @@ export type CollectionMetadata = {
   repost_count: number
   save_count: number
   upc?: string | null
+  created_at: string
   updated_at: string
   activity_timestamp?: string
   playlist_image_multihash?: string

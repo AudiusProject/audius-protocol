@@ -1,3 +1,5 @@
+import type { ChangeEvent } from 'react'
+
 import type { PressableProps } from 'react-native/types'
 
 export type FollowButtonProps = {
@@ -27,4 +29,6 @@ export type FollowButtonProps = {
    * Callback for when an unfollow is triggered.
    */
   onUnfollow?: () => void
+  value?: any
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
 } & Pick<PressableProps, 'onPress' | 'disabled'>

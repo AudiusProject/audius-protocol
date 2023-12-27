@@ -8,12 +8,12 @@ import {
   SafeAreaProvider,
   initialWindowMetrics
 } from 'react-native-safe-area-context'
+import TrackPlayer from 'react-native-track-player'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
-import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
@@ -70,10 +70,8 @@ const App = () => {
   // Reset libs so that we get a clean app start
   useEffectOnce(() => {
     setLibs(null)
-  })
-
-  useEffectOnce(() => {
     subscribeToNetworkStatusUpdates()
+    TrackPlayer.setupPlayer()
   })
 
   useEnterForeground(() => {
@@ -110,7 +108,6 @@ const App = () => {
                             <RootScreen />
                             <Drawers />
                             <Modals />
-                            <Audio />
                             <OAuth />
                             <NotificationReminder />
                             <RateCtaReminder />

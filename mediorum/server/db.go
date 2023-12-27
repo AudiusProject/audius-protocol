@@ -6,7 +6,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/mediorum/ddl"
-	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -79,7 +78,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
+func dbMigrate(crud *crudr.Crudr, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{})
@@ -93,7 +92,7 @@ func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	sqlDb, _ := crud.DB.DB()
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, bucket, myHost)
+	ddl.Migrate(sqlDb, myHost)
 
 	slog.Info("db: migrate done")
 

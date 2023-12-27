@@ -102,7 +102,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
 
     return (
       <ButtonComponent
-        css={[buttonComponentCss, styles.button]}
+        css={[buttonComponentCss, styles?.button]}
         disabled={disabled || isLoading}
         ref={ref}
         type={asChild ? undefined : 'button'}
@@ -114,13 +114,13 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner css={styles.icon} />
+          <LoadingSpinner css={styles?.icon} />
         ) : LeftIconComponent ? (
-          <LeftIconComponent css={[iconCss, styles.icon]} />
+          <LeftIconComponent css={[iconCss, styles?.icon]} />
         ) : null}
         {!isTextHidden ? <Slottable>{children}</Slottable> : null}
         {RightIconComponent ? (
-          <RightIconComponent css={[iconCss, styles.icon]} />
+          <RightIconComponent css={[iconCss, styles?.icon]} />
         ) : null}
       </ButtonComponent>
     )

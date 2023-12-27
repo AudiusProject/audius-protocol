@@ -189,7 +189,16 @@ export class TransactionHandler {
 
     const feePayerAccount =
       feePayerKeypairOverride ?? this.feePayerKeypairs?.[0]
-    if (!feePayerAccount) {
+    const feePayerPubKey =
+      feePayerAccount?.publicKey ??
+      (feePayerOverride ? new PublicKey(feePayerOverride) : null)
+
+    const alreadySigned = signatures?.some(
+      (s) =>
+        s.publicKey === feePayerOverride?.toString() &&
+        !s.signature.every((b) => b === 0)
+    )
+    if (!feePayerPubKey || (!feePayerAccount && !alreadySigned)) {
       logger.error(
         'transactionHandler: Local feepayer keys missing for direct confirmation!'
       )
@@ -230,12 +239,14 @@ export class TransactionHandler {
         }
       }
       const message = new TransactionMessage({
-        payerKey: feePayerAccount.publicKey,
+        payerKey: feePayerPubKey,
         recentBlockhash,
         instructions
       }).compileToV0Message(lookupTableAccounts)
       const tx = new VersionedTransaction(message)
-      tx.sign([feePayerAccount])
+      if (feePayerAccount) {
+        tx.sign([feePayerAccount])
+      }
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
           tx.addSignature(new PublicKey(publicKey), signature)
@@ -247,8 +258,10 @@ export class TransactionHandler {
       const tx = new Transaction()
       tx.recentBlockhash = recentBlockhash
       instructions.forEach((i) => tx.add(i))
-      tx.feePayer = feePayerAccount.publicKey
-      tx.sign(feePayerAccount)
+      tx.feePayer = feePayerPubKey
+      if (feePayerAccount) {
+        tx.sign(feePayerAccount)
+      }
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
           tx.addSignature(new PublicKey(publicKey), signature)

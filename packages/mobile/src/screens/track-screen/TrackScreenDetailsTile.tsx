@@ -33,6 +33,7 @@ import {
   queueSelectors
 } from '@audius/common'
 import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
+import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
@@ -215,6 +216,9 @@ export const TrackScreenDetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
   const styles = useStyles()
   const navigation = useNavigation()
   const { white, aiPrimary, aiSecondary, neutralLight4 } = useThemeColors()
@@ -259,6 +263,9 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
+  const isScheduledRelease = release_date
+    ? moment.utc(release_date).isAfter(moment.now())
+    : false
 
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
@@ -387,10 +394,13 @@ export const TrackScreenDetailsTile = ({
   const handlePressOverflow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+    const addToAlbumAction =
+      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = !isPremium
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
+      addToAlbumAction,
       addToPlaylistAction,
       isOwner
         ? null
@@ -506,7 +516,7 @@ export const TrackScreenDetailsTile = ({
       )
     }
 
-    return is_unlisted ? (
+    return is_unlisted && !isScheduledRelease ? (
       <View style={styles.hiddenDetailsTileWrapper}>
         <IconHidden fill={neutralLight4} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>

@@ -11,7 +11,8 @@ const external = [
   ...Object.keys(pkg.peerDependencies),
   '@emotion/react/jsx-runtime',
   '@emotion/cache',
-  '@emotion/is-prop-valid'
+  '@emotion/is-prop-valid',
+  '@emotion/css'
 ]
 
 export default {

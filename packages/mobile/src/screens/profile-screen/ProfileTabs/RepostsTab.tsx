@@ -40,6 +40,7 @@ export const RepostsTab = () => {
     <Lineup
       selfLoad
       lazy={lazy}
+      pullToRefresh
       actions={feedActions}
       lineup={lineup}
       fetchPayload={fetchPayload}

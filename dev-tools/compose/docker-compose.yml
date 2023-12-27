@@ -90,8 +90,9 @@ services:
   # Protocol dashboard
 
   dashboard:
+    image: audius-protocol-dashboard:${DASHBOARD_ENV_TYPE:-latest}
     extends:
-      file: docker-compose.protocol-dashboard.yml
+      file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
       service: dashboard
     <<: *common
 
@@ -173,6 +174,14 @@ services:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: sla-auditor
+    <<: *common
+
+  # DDEX
+
+  ddex:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex
     <<: *common
 
   # Storage (content node)

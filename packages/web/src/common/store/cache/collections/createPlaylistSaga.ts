@@ -77,7 +77,11 @@ function* createPlaylistWorker(
 
   yield* call(optimisticallySavePlaylist, collectionId, collection, initTrack)
   yield* put(
-    cacheCollectionsActions.createPlaylistRequested(collectionId, noticeType)
+    cacheCollectionsActions.createPlaylistRequested(
+      collectionId,
+      noticeType,
+      isAlbum
+    )
   )
   yield* call(
     createAndConfirmPlaylist,

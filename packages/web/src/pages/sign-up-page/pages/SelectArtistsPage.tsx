@@ -7,14 +7,15 @@ import {
   Status,
   convertGenreLabelToValue,
   useGetFeaturedArtists,
-  useGetTopArtistsInGenre
+  useGetTopArtistsInGenre,
+  selectArtstsPageMessages as messages,
+  selectArtistsSchema
 } from '@audius/common'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -27,10 +28,10 @@ import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
-  FollowArtistTile,
+  FollowArtistCard,
   FollowArtistTileSkeleton
-} from '../components/FollowArtistTile'
-import { PreviewArtistToast } from '../components/PreviewArtistToast'
+} from '../components/FollowArtistCard'
+import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
   HiddenLegend,
@@ -41,15 +42,6 @@ import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPrevi
 
 const AnimatedFlex = animated(Flex)
 
-const messages = {
-  header: 'Follow At Least 3 Artists',
-  description:
-    'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
-  genresLabel: 'Genre',
-  pickArtists: (genre: string) => `Pick ${genre} Artists`,
-  selected: 'Selected'
-}
-
 type SelectArtistsValues = {
   selectedArtists: ID[]
 }
@@ -57,10 +49,6 @@ type SelectArtistsValues = {
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
-
-const SelectArtistsFormSchema = z.object({
-  selectedArtists: z.array(z.string()).min(3)
-})
 
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -125,7 +113,7 @@ export const SelectArtistsPage = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(SelectArtistsFormSchema)}
+      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
     >
       {({ values, isValid, isSubmitting, isValidating, dirty }) => {
         const { selectedArtists } = values
@@ -193,14 +181,17 @@ export const SelectArtistsPage = () => {
                   backgroundColor='default'
                   pv='xl'
                   ph={isMobile ? 'l' : 'xl'}
-                  css={{ minHeight: 500 }}
+                  css={{
+                    minHeight: 500,
+                    minWidth: !isMobile ? 530 : undefined
+                  }}
                   direction='column'
                 >
                   <HiddenLegend>
                     {messages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
-                  {isLoading || !isMobile ? null : <PreviewArtistToast />}
+                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
@@ -211,7 +202,7 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistTile key={user.user_id} user={user} />
+                          <FollowArtistCard key={user.user_id} user={user} />
                         ))}
                   </Flex>
                 </ArtistsList>

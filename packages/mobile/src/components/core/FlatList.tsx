@@ -1,7 +1,10 @@
 import type { MutableRefObject, Ref } from 'react'
 import { forwardRef, useContext, useRef } from 'react'
 
-import type { FlatListProps, FlatList as RNFlatList } from 'react-native'
+import type {
+  FlatListProps as RNFlatListProps,
+  FlatList as RNFlatList
+} from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
 import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
@@ -17,7 +20,7 @@ export type AnimatedFlatListT<ItemT> = Animated.FlatList<ItemT>
 
 type CollapsibleFlatListProps<ItemT> = {
   sceneName: string
-} & Animated.AnimatedProps<FlatListProps<ItemT>>
+} & Animated.AnimatedProps<RNFlatListProps<ItemT>>
 
 function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
   const { sceneName, onScroll, ...other } = props
@@ -48,7 +51,7 @@ function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
 }
 
 const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
-  props: Animated.AnimatedProps<FlatListProps<ItemT>>,
+  props: Animated.AnimatedProps<RNFlatListProps<ItemT>>,
   ref: MutableRefObject<Animated.FlatList<ItemT> | null>
 ) {
   const { refreshing, onRefresh, onScroll, ...other } = props
@@ -102,6 +105,10 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
   )
 })
 
+export type FlatListProps<ItemT> = RNFlatListProps<ItemT> & {
+  sceneName?: string
+}
+
 /**
  * Provides either a FlatList or an animated FlatList
  * depending on whether or not the list is found in a "collapsible" header tab
@@ -110,8 +117,11 @@ export const FlatList = forwardRef(function FlatList<ItemT>(
   props: FlatListProps<ItemT>,
   ref: Ref<FlatListT<ItemT>>
 ) {
-  const { ListFooterComponent, ...other } = props
-  const { sceneName } = useContext(CollapsibleTabNavigatorContext)
+  const { ListFooterComponent, sceneName: sceneNameProp, ...other } = props
+  const { sceneName: sceneNameContext } = useContext(
+    CollapsibleTabNavigatorContext
+  )
+  const sceneName = sceneNameProp ?? sceneNameContext
   const FooterComponent = ListFooterComponent ? (
     <>
       {ListFooterComponent}
@@ -130,14 +140,14 @@ export const FlatList = forwardRef(function FlatList<ItemT>(
     return (
       <CollapsibleFlatList
         sceneName={sceneName}
-        {...(flatListProps as Animated.AnimatedProps<FlatListProps<ItemT>>)}
+        {...(flatListProps as Animated.AnimatedProps<RNFlatListProps<ItemT>>)}
       />
     )
   }
   return (
     <AnimatedFlatList
       ref={ref as Ref<AnimatedFlatListT<ItemT>>}
-      {...(flatListProps as Animated.AnimatedProps<FlatListProps<ItemT>>)}
+      {...(flatListProps as Animated.AnimatedProps<RNFlatListProps<ItemT>>)}
     />
   )
 })

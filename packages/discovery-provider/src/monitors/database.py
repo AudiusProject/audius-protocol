@@ -133,11 +133,24 @@ def get_slow_queries(**kwargs):
         redis: global redis instance
     """
     db = kwargs["db"]
+
+    version_query = sqlalchemy.text("SHOW server_version_num;")
     with db.scoped_session() as session:
-        q = sqlalchemy.text(
-            "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 100"
-        )
+        version = session.execute(version_query).scalar()
+        version = int(version)
+
+        if version >= 130000:  # postgres 13 or later
+            query_text = """
+            SELECT query, mean_plan_time, mean_exec_time, (mean_plan_time + mean_exec_time) AS total_mean_time
+            FROM pg_stat_statements 
+            ORDER BY total_mean_time DESC 
+            LIMIT 100
+            """
+        else:
+            query_text = "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 100"
+
+        q = sqlalchemy.text(query_text)
         result = session.execute(q).fetchall()
         slow_queries = [dict(row) for row in result]
 
-        return json.dumps(slow_queries)
+    return json.dumps(slow_queries)

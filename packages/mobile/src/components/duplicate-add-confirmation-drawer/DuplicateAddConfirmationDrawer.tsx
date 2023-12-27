@@ -6,6 +6,7 @@ import {
   duplicateAddConfirmationModalUISelectors,
   fillString
 } from '@audius/common'
+import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -19,13 +20,13 @@ const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   drawerTitle: 'Already Added',
-  drawerBody: 'This is already in your%0 playlist.',
+  drawerBody: `This is already in your%0 ${collectionType}.`,
   buttonAddText: 'Add Anyway',
   buttonCancelText: "Don't Add",
-  addedToast: 'Added To Playlist!'
-}
+  addedToast: `Added To ${capitalize(collectionType)}!`
+})
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   title: {
@@ -65,13 +66,15 @@ export const DuplicateAddConfirmationDrawer = () => {
   const { toast } = useToast()
   const { isOpen, onClose } = useDrawerState('DuplicateAddConfirmation')
 
+  const messages = getMessages(playlist?.is_album ? 'album' : 'playlist')
+
   const handleAdd = useCallback(() => {
     if (playlistId && trackId) {
       toast({ content: messages.addedToast })
       dispatch(addTrackToPlaylist(trackId, playlistId))
     }
     onClose()
-  }, [playlistId, trackId, onClose, toast, dispatch])
+  }, [playlistId, trackId, onClose, toast, messages.addedToast, dispatch])
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose}>

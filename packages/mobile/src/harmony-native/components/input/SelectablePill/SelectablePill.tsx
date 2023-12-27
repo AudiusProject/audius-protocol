@@ -6,7 +6,6 @@ import { Pressable } from 'react-native'
 import type { GestureResponderEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
-  Easing,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -23,11 +22,6 @@ import type { SelectablePillProps } from './types'
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
-const animationConfig = {
-  duration: 120,
-  easing: Easing.bezier(0.44, 0, 0.56, 1)
-}
-
 export const SelectablePill = (props: SelectablePillProps) => {
   const {
     icon: Icon,
@@ -38,7 +32,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     onPress,
     ...other
   } = props
-  const { color } = useTheme()
+  const { color, motion } = useTheme()
   const pressed = useSharedValue(0)
   const selected = useSharedValue(0)
   const [isPressing, setIsPressing] = useState(false)
@@ -59,42 +53,25 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
   const tap = Gesture.Tap()
     .onBegin(() => {
-      pressed.value = withTiming(1, animationConfig)
+      pressed.value = withTiming(1, motion.hover)
       if (!isSelected) {
-        selected.value = withTiming(1, animationConfig)
+        selected.value = withTiming(1, motion.hover)
       }
     })
     .onFinalize(() => {
-      pressed.value = withTiming(0, animationConfig)
+      pressed.value = withTiming(0, motion.press)
       if (isSelected) {
-        selected.value = withTiming(0, animationConfig)
+        selected.value = withTiming(0, motion.press)
       }
     })
-
-  const longPress = Gesture.LongPress()
-    .minDuration(animationConfig.duration)
-    .onBegin(() => {
-      pressed.value = withTiming(1, animationConfig)
-      if (!isSelected) {
-        selected.value = withTiming(1, animationConfig)
-      }
-    })
-    .onFinalize(() => {
-      pressed.value = withTiming(0, animationConfig)
-      if (isSelected) {
-        selected.value = withTiming(0, animationConfig)
-      }
-    })
-
-  const taps = Gesture.Exclusive(longPress, tap)
 
   useEffect(() => {
     setIsSelected(isSelectedProp)
-    selected.value = withTiming(isSelectedProp ? 1 : 0, animationConfig)
-  }, [isSelectedProp, selected])
+    selected.value = withTiming(isSelectedProp ? 1 : 0, motion.press)
+  }, [isSelectedProp, motion.press, selected])
 
   const animatedRootStyles = useAnimatedStyle(() => ({
-    opacity: withTiming(disabled ? 0.45 : 1, animationConfig),
+    opacity: withTiming(disabled ? 0.45 : 1, motion.press),
     backgroundColor: interpolateColor(
       selected.value,
       [0, 1],
@@ -117,7 +94,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
   }))
 
   return (
-    <GestureDetector gesture={taps}>
+    <GestureDetector gesture={tap}>
       <Pressable
         onPressIn={handlePressIn}
         onPress={handlePress}
