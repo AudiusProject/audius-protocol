@@ -28,9 +28,9 @@ import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
-  FollowArtistTile,
+  FollowArtistCard,
   FollowArtistTileSkeleton
-} from '../components/FollowArtistTile'
+} from '../components/FollowArtistCard'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
@@ -199,7 +199,7 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistTile key={user.user_id} user={user} />
+                          <FollowArtistCard key={user.user_id} user={user} />
                         ))}
                   </Flex>
                 </ArtistsList>

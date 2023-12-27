@@ -31,7 +31,7 @@ type FollowArtistTileProps = {
   user: UserMetadata
 } & HTMLProps<HTMLInputElement>
 
-export const FollowArtistTile = (props: FollowArtistTileProps) => {
+export const FollowArtistCard = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
