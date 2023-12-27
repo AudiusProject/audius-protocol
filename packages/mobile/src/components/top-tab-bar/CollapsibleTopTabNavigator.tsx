@@ -5,13 +5,13 @@ import type {
   MaterialTopTabBarProps,
   MaterialTopTabNavigationOptions
 } from '@react-navigation/material-top-tabs'
-import { View, type Animated } from 'react-native'
-import type { TabBarProps } from 'react-native-collapsible-tab-view'
-import { Tabs } from 'react-native-collapsible-tab-view'
+import type { Animated } from 'react-native'
+import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
 import type { SvgProps } from 'react-native-svg'
 
-import { Text } from '@audius/harmony-native'
 import { TopTabBar } from 'app/components/top-tab-bar'
+
+const Tab = createMaterialCollapsibleTopTabNavigator()
 
 type CollapsibleTabNavigatorContextProps = {
   sceneName?: string
@@ -55,13 +55,13 @@ export const CollapsibleTabNavigatorContextProvider = (
   )
 }
 
-const tabBar = (props: TabBarProps) => <TopTabBar {...props} />
+const tabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
 
 type CollapsibleTabNavigatorProps = {
   /**
    * Function that renders the collapsible header
    */
-  renderHeader: () => ReactElement
+  renderHeader: () => ReactNode
 
   /**
    * Animated value to capture scrolling. If unset, an
@@ -75,14 +75,6 @@ type CollapsibleTabNavigatorProps = {
   headerHeight?: number
 }
 
-const Header = () => {
-  return (
-    <View>
-      <Text>hello world</Text>
-    </View>
-  )
-}
-
 export const CollapsibleTabNavigator = ({
   renderHeader,
   animatedValue,
@@ -92,21 +84,19 @@ export const CollapsibleTabNavigator = ({
   headerHeight
 }: CollapsibleTabNavigatorProps) => {
   const collapsibleOptions = useMemo(
-    () => ({ disableSnap: true, animatedValue }),
-    [animatedValue]
+    () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
+    [renderHeader, animatedValue, headerHeight]
   )
 
   return (
-    <Tabs.Container
-      renderHeader={renderHeader}
-      headerHeight={headerHeight}
+    <Tab.Navigator
       collapsibleOptions={collapsibleOptions}
       initialRouteName={initialScreenName}
-      // renderTabBar={tabBar}
+      tabBar={tabBar}
       screenOptions={screenOptions}
     >
       {children}
-    </Tabs.Container>
+    </Tab.Navigator>
   )
 }
 
@@ -139,24 +129,26 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
   } = config
 
   return (
-    <Tabs.Tab
+    <Tab.Screen
       key={key}
       name={name}
-      // options={{
-      //   tabBarLabel: label ?? name,
-      //   tabBarIcon: ({ color }) => <Icon fill={color} />
-      // }}
-      // initialParams={initialParams}
+      options={{
+        tabBarLabel: label ?? name,
+        tabBarIcon: ({ color }) => <Icon fill={color} />
+      }}
+      initialParams={initialParams}
     >
-      <CollapsibleTabNavigatorContextProvider
-        sceneName={name}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        scrollY={scrollY}
-        params={initialParams}
-      >
-        <Component />
-      </CollapsibleTabNavigatorContextProvider>
-    </Tabs.Tab>
+      {() => (
+        <CollapsibleTabNavigatorContextProvider
+          sceneName={name}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          scrollY={scrollY}
+          params={initialParams}
+        >
+          <Component />
+        </CollapsibleTabNavigatorContextProvider>
+      )}
+    </Tab.Screen>
   )
 }

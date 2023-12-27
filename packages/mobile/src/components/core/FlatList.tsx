@@ -3,7 +3,7 @@ import { forwardRef, useContext, useRef } from 'react'
 
 import type { FlatListProps, FlatList as RNFlatList } from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
-import { Tabs, useCollapsibleStyle } from 'react-native-collapsible-tab-view'
+import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
 import { useThemeColors } from 'app/utils/theme'
 
@@ -20,20 +20,22 @@ type CollapsibleFlatListProps<ItemT> = {
 } & Animated.AnimatedProps<FlatListProps<ItemT>>
 
 function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
-  const { sceneName, ...other } = props
+  const { sceneName, onScroll, ...other } = props
   const { refreshing, onRefresh } = other
+  const scrollPropsAndRef = useCollapsibleScene(sceneName)
   const { neutral } = useThemeColors()
-  const { progressViewOffset } = useCollapsibleStyle()
-
   return (
     <View>
       {onRefresh ? <PullToRefresh /> : null}
-      <Tabs.FlatList
+      <Animated.FlatList
         {...other}
+        {...scrollPropsAndRef}
+        // @ts-ignore `forkEvent` is not defined on the type but it exists
+        onScroll={Animated.forkEvent(scrollPropsAndRef.onScroll, onScroll)}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl
-              progressViewOffset={progressViewOffset}
+              progressViewOffset={scrollPropsAndRef.progressViewOffset}
               refreshing={!!refreshing}
               onRefresh={onRefresh ?? undefined}
               colors={[neutral]}

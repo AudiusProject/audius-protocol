@@ -1,5 +1,4 @@
 import { Animated, Dimensions, TouchableOpacity, View } from 'react-native'
-import type { TabBarProps } from 'react-native-collapsible-tab-view'
 
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -84,12 +83,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   }
 }))
 
-export const TopTabBar = ({
-  state,
-  descriptors,
-  navigation,
-  position
-}: TabBarProps) => {
+export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   // Horizontal padding decreases as the number of tabs increases
   const horizontalPadding =
     Math.max(6 - state.routes.length, 0) * HORIZONTAL_PADDING
