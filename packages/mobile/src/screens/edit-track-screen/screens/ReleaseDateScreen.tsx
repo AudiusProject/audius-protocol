@@ -50,8 +50,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     borderRadius: 99,
     backgroundColor: palette.secondary,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
     alignItems: 'center',
     gap: spacing(1)
   },
@@ -127,6 +126,12 @@ export const ScheduledReleaseRadioField = (props) => {
     },
     [releaseDateValue, setReleaseDateValue]
   )
+  const currentDate = new Date()
+
+  // Add one year to the current date
+  const oneYearFromNow = new Date(
+    currentDate.setFullYear(currentDate.getFullYear() + 1)
+  )
 
   return (
     <>
@@ -178,8 +183,8 @@ export const ScheduledReleaseRadioField = (props) => {
             mode='date'
             onConfirm={handleDateChange}
             onCancel={() => setIsDateOpen(false)}
+            maximumDate={oneYearFromNow}
             display='inline'
-            themeVariant={'light'}
             isDarkModeEnabled={false}
             accentColor={primary}
           />
@@ -226,8 +231,10 @@ export const ReleaseNowRadioField = (props) => {
       </Text>
       {selected ? (
         <View style={styles.todayPill}>
-          <IconCalendarMonth color='staticWhite' />
-          <Text color='staticWhite'>Today</Text>
+          <IconCalendarMonth color='staticWhite' size='s' />
+          <Text color='staticWhite' size='s'>
+            Today
+          </Text>
         </View>
       ) : null}
     </View>

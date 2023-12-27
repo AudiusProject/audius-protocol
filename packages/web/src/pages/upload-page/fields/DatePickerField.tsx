@@ -70,7 +70,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             }}
             isOutsideRange={(day) =>
               isScheduledRelease
-                ? false
+                ? !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
                 : // @ts-ignore mismatched moment versions; shouldn't be relevant here
                   !isInclusivelyBeforeDay(day, moment())
             }

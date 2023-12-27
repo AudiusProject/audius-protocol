@@ -26,7 +26,8 @@ export enum OverflowAction {
   FOLLOW = 'FOLLOW',
   UNFOLLOW = 'UNFOLLOW',
   MARK_AS_PLAYED = 'MARK_AS_PLAYED',
-  MARK_AS_UNPLAYED = 'MARK_AS_UNPLAYED'
+  MARK_AS_UNPLAYED = 'MARK_AS_UNPLAYED',
+  RELEASE_NOW = 'RELEASE_NOW'
 }
 
 export enum OverflowSource {

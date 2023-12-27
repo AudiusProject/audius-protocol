@@ -145,13 +145,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   releaseContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing(1),
-    alignSelf: 'center',
-    borderWidth: 1, // Sets the width of the border
-    borderColor: 'black', // Sets the color of the border,
-    textAlign: 'center'
+    gap: spacing(1)
+  },
+  releasesLabel: {
+    paddingTop: 2
   }
 }))
 
@@ -419,7 +417,12 @@ export const DetailsTile = ({
                 {isScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
-                      <HarmonyText color='accent' strength='strong' size='s'>
+                      <HarmonyText
+                        color='accent'
+                        strength='strong'
+                        size='m'
+                        style={styles.releasesLabel}
+                      >
                         Releases
                       {' ' +
                         moment

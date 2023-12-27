@@ -54,8 +54,9 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendarMonth />
       <Text color='accent' variant='title'>
-        Releases on{' '}
-        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+        Releases
+        {' ' +
+          moment.utc(released).local().format('M/D/YY [@] h:mm A') +
           ' ' +
           getLocalTimezone()}
       </Text>
