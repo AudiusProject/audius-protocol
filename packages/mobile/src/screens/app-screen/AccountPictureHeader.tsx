@@ -8,7 +8,6 @@ import {
 import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import type { Adaptable } from 'react-native-reanimated'
 import Animated, {
   interpolate,
   useAnimatedStyle
