@@ -1386,7 +1386,8 @@ PODS:
     - React-Core
     - ReactCommon/turbomodule/core
   - RNScreens (3.29.0):
-    - RCT-Folly (= 2021.07.22.00)
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - RNSentry (5.15.1):
     - hermes-engine
@@ -1498,20 +1499,20 @@ DEPENDENCIES:
   - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../../../node_modules/react-native-in-app-review`)
   - "react-native-keep-awake (from `../../../node_modules/@sayem314/react-native-keep-awake`)"
-  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../../../node_modules/react-native-notifications`)
   - react-native-pager-view (from `../../../node_modules/react-native-pager-view`)
   - react-native-performance (from `../../../node_modules/react-native-performance`)
   - react-native-randombytes (from `../../../node_modules/react-native-randombytes`)
   - react-native-restart (from `../../../node_modules/react-native-restart`)
-  - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../../../node_modules/@react-native-community/slider`)"
   - react-native-tiktok (from `../../../node_modules/react-native-tiktok`)
   - react-native-track-player (from `../../../node_modules/react-native-track-player`)
   - react-native-version-number (from `../../../node_modules/react-native-version-number`)
   - react-native-video (from `../../../node_modules/react-native-video`)
   - react-native-view-shot (from `../../../node_modules/react-native-view-shot`)
-  - react-native-webview (from `../node_modules/react-native-webview`)
+  - react-native-webview (from `../../../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1535,10 +1536,10 @@ DEPENDENCIES:
   - rive-react-native (from `../../../node_modules/rive-react-native`)
   - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../../../node_modules/react-native-bootsplash`)
-  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
-  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
-  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
-  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
+  - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCClipboard (from `../../../node_modules/@react-native-clipboard/clipboard`)"
+  - "RNCMaskedView (from `../../../node_modules/@react-native-masked-view/masked-view`)"
+  - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../../../node_modules/react-native-fast-image`)
   - "RNFBAnalytics (from `../../../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../../../node_modules/@react-native-firebase/app`)"
@@ -1550,8 +1551,8 @@ DEPENDENCIES:
   - RNPermissions (from `../../../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../../../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
-  - RNScreens (from `../node_modules/react-native-screens`)
-  - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNScreens (from `../../../node_modules/react-native-screens`)
+  - "RNSentry (from `../../../node_modules/@sentry/react-native`)"
   - RNShare (from `../../../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
@@ -1699,7 +1700,7 @@ EXTERNAL SOURCES:
   react-native-keep-awake:
     :path: "../../../node_modules/@sayem314/react-native-keep-awake"
   react-native-netinfo:
-    :path: "../node_modules/@react-native-community/netinfo"
+    :path: "../../../node_modules/@react-native-community/netinfo"
   react-native-notifications:
     :path: "../../../node_modules/react-native-notifications"
   react-native-pager-view:
@@ -1711,7 +1712,7 @@ EXTERNAL SOURCES:
   react-native-restart:
     :path: "../../../node_modules/react-native-restart"
   react-native-safe-area-context:
-    :path: "../node_modules/react-native-safe-area-context"
+    :path: "../../../node_modules/react-native-safe-area-context"
   react-native-slider:
     :path: "../../../node_modules/@react-native-community/slider"
   react-native-tiktok:
@@ -1725,7 +1726,7 @@ EXTERNAL SOURCES:
   react-native-view-shot:
     :path: "../../../node_modules/react-native-view-shot"
   react-native-webview:
-    :path: "../node_modules/react-native-webview"
+    :path: "../../../node_modules/react-native-webview"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1773,13 +1774,13 @@ EXTERNAL SOURCES:
   RNBootSplash:
     :path: "../../../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
-    :path: "../node_modules/@react-native-async-storage/async-storage"
+    :path: "../../../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
-    :path: "../node_modules/@react-native-clipboard/clipboard"
+    :path: "../../../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
-    :path: "../node_modules/@react-native-masked-view/masked-view"
+    :path: "../../../node_modules/@react-native-masked-view/masked-view"
   RNDateTimePicker:
-    :path: "../node_modules/@react-native-community/datetimepicker"
+    :path: "../../../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
     :path: "../../../node_modules/react-native-fast-image"
   RNFBAnalytics:
@@ -1803,9 +1804,9 @@ EXTERNAL SOURCES:
   RNReanimated:
     :path: "../../../node_modules/react-native-reanimated"
   RNScreens:
-    :path: "../node_modules/react-native-screens"
+    :path: "../../../node_modules/react-native-screens"
   RNSentry:
-    :path: "../node_modules/@sentry/react-native"
+    :path: "../../../node_modules/@sentry/react-native"
   RNShare:
     :path: "../../../node_modules/react-native-share"
   RNSVG:
@@ -1827,7 +1828,7 @@ SPEC CHECKSUMS:
   CodePush: ef496b6fd053012e985e3d4a0ab9f9dbf2739eac
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 39ba45baf4e398618f8b3a4bb6ba8fcdb7fc2133
-  FBReactNativeSpec: 20cfca68498e27879514790359289d1df2b52c56
+  FBReactNativeSpec: 058220250ec8b73769e08775d5a90ed540be07bb
   ffmpeg-kit-ios-https-gpl: fb9fc0617a646209f8f4a62b5581000dc4ee6a67
   ffmpeg-kit-react-native: bc3c900af9f761b6fe30906ee1bd98000c79f9c9
   FingerprintPro: 5c55beb92f4eb7a5a10e1ba13daa6a6baec1f213
@@ -1924,7 +1925,7 @@ SPEC CHECKSUMS:
   React-RCTText: 671518da40bd548943ec12ee6a60f733a751e2e9
   React-RCTVibration: 60bc4d01d7d8ab7cff14852a195a7fa93b38e1f3
   React-rendererdebug: 6aaab394c9fefe395ef61809580a9bf63b98fd3e
-  React-rncore: 6680f0ebb941e256af7dc92c6a512356e77bfea7
+  React-rncore: 27095cbd6882475673c272c4ea3261772028203b
   React-runtimeexecutor: 2ca6f02d3fd6eea5b9575eb30720cf12c5d89906
   React-runtimescheduler: 77543c74df984ce56c09d49d427149c53784aaf6
   React-utils: 42708ea436853045ef1eaff29996813d9fbbe209
@@ -1947,8 +1948,8 @@ SPEC CHECKSUMS:
   RNImageCropPicker: 486e2f7e2b0461ce24321f751410dce1b3b49e6d
   RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
-  RNReanimated: 79f572a7903c60f5aa86cf1698049ab5f75ececd
-  RNScreens: 3c5b9f4a9dcde752466854b6109b79c0e205dad3
+  RNReanimated: 18faeee6e1d8eb9a60f1a62488bb357354569051
+  RNScreens: b582cb834dc4133307562e930e8fa914b8c04ef2
   RNSentry: a6202c19ca31b69969dface2ea0db093e36c97a3
   RNShare: 36aa3e6958373a0ad1c95a1c960adef589da3794
   RNSVG: 255767813dac22db1ec2062c8b7e7b856d4e5ae6
