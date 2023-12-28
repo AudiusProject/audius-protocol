@@ -65,8 +65,6 @@ export const AppDrawerScreen = () => {
     <>
       <AudioPlayer />
       <Drawer.Navigator
-        // legacy implementation uses reanimated-v1
-        useLegacyImplementation
         screenOptions={drawerScreenOptions}
         drawerContent={(props) => (
           <LeftNavDrawer {...gestureProps} {...props} />

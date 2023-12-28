@@ -1,8 +1,12 @@
+import { createRequire } from 'node:module'
+
 import image from '@rollup/plugin-image'
 import rollupTypescript from 'rollup-plugin-typescript2'
-import ttypescript from 'ttypescript'
 
 import pkg from './package.json'
+
+const cjsRequire = createRequire(import.meta.url)
+const tspCompiler = cjsRequire('ts-patch/compiler')
 
 export default [
   {
@@ -17,7 +21,7 @@ export default [
     ],
     plugins: [
       rollupTypescript({
-        typescript: ttypescript
+        typescript: tspCompiler
       }),
       image()
     ],

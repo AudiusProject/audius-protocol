@@ -102,7 +102,6 @@ export const HandleField = (props: HandleFieldProps) => {
     <HarmonyTextField
       name='handle'
       label={messages.handle}
-      error={error && handle}
       helperText={helperText}
       maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'

@@ -1,11 +1,18 @@
+import type { ChangeEvent } from 'react'
 import { useCallback, useContext } from 'react'
 
 import type { UserMetadata } from '@audius/common'
 import { css } from '@emotion/native'
-import { useField } from 'formik'
+import {
+  addFollowArtists,
+  removeFollowArtists
+} from 'audius-client/src/common/store/pages/signon/actions'
+import { getFollowIds } from 'audius-client/src/common/store/pages/signon/selectors'
+import type { AppState } from 'audius-client/src/store/types'
 import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
+import { useDispatch, useSelector } from 'react-redux'
 
 import type { Icon } from '@audius/harmony-native'
 import {
@@ -31,16 +38,34 @@ import { StaticSkeleton } from 'app/components/skeleton'
 
 import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
 
-type FollowArtistFieldProps = {
+type FollowArtistCardProps = {
   artist: UserMetadata
   showPreviewHint?: boolean
 }
 
-export const FollowArtistField = (props: FollowArtistFieldProps) => {
+export const FollowArtistCard = (props: FollowArtistCardProps) => {
   const { artist, showPreviewHint } = props
   const { user_id, track_count, follower_count } = artist
   const { spacing } = useTheme()
-  const [{ onChange }] = useField({ name: 'selectedArtists', type: 'checkbox' })
+  const dispatch = useDispatch()
+
+  const isFollowing = useSelector((state: AppState) =>
+    getFollowIds(state).includes(artist.user_id)
+  )
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const { value, checked } = e.target
+      const artistId = parseInt(value)
+      if (checked) {
+        dispatch(addFollowArtists([artistId]))
+      } else {
+        dispatch(removeFollowArtists([artistId]))
+      }
+    },
+    [dispatch]
+  )
+
   const {
     hasPlayed,
     isPlaying,
@@ -157,7 +182,8 @@ export const FollowArtistField = (props: FollowArtistFieldProps) => {
             variant='pill'
             size='small'
             value={user_id.toString()}
-            onChange={onChange('selectedArtists')}
+            onChange={handleChange}
+            isFollowing={isFollowing}
           />
         </Box>
       </Flex>

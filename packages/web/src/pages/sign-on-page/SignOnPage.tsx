@@ -20,6 +20,7 @@ import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
+import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { ScrollView } from 'pages/sign-up-page/components/layout'
 import {
   SIGN_IN_PAGE,
@@ -256,6 +257,7 @@ export const SignOnPage = () => {
 
   return (
     <SignOnRoot isLoaded={isLoaded}>
+      <NavHeader />
       <Switch>
         <Route path={SIGN_IN_PAGE}>
           <SignInPage />

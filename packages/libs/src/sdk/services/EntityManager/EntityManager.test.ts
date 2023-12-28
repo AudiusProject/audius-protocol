@@ -20,9 +20,7 @@ jest.mock('../../utils/web3', () => {
   return jest.fn().mockImplementation(() => {
     return {
       eth: {
-        net: {
-          getId: () => ''
-        },
+        getChainId: () => '',
         Contract: jest.fn().mockImplementation(() => ({
           methods: {
             manageEntity: () => ({

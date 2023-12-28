@@ -18,6 +18,7 @@ import { getSignOn } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useSelector } from 'utils/reducer'
 import {
+  SIGN_IN_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -84,9 +85,9 @@ export const NavHeader = () => {
 
   return (
     <Switch>
-      <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
-        <HeaderRoot pv='l'>
-          {isMobile ? (
+      <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
+        {isMobile ? (
+          <HeaderRoot pv='l'>
             <PlainButton
               size={PlainButtonSize.LARGE}
               css={{ padding: 0 }}
@@ -94,8 +95,8 @@ export const NavHeader = () => {
               iconLeft={IconCloseAlt}
               variant={PlainButtonType.SUBDUED}
             />
-          ) : null}
-        </HeaderRoot>
+          </HeaderRoot>
+        ) : null}
       </Route>
       {!isMobile ? (
         <Route

@@ -88,7 +88,7 @@ func backgroundRefreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) {
 }
 
 func refreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) error {
-	if discoveryConfig.IsDev {
+	if discoveryConfig.IsDev || discoveryConfig.IsSandbox {
 		discoveryConfig.IsRegisteredWallet = true
 		return nil
 	}

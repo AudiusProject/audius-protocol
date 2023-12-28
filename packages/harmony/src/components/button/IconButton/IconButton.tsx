@@ -10,7 +10,7 @@ export type IconButtonProps = {
   ripple?: boolean
   'aria-label': string
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
-  Pick<BaseButtonProps, 'onClick' | 'disabled'>
+  Pick<BaseButtonProps, 'onClick' | 'disabled' | 'className'>
 
 /**
  * The icon component allows you to pass in an icon and
@@ -32,7 +32,8 @@ export const IconButton = (props: IconButtonProps) => {
     background: 'transparent',
     border: 'none',
     borderRadius: '50%',
-    padding: spacing.xs
+    padding: spacing.xs,
+    overflow: 'unset'
   }
 
   const rippleCss: CSSObject = {

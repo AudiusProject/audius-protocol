@@ -1,18 +1,17 @@
 diff --git a/node_modules/react-native-pager-view/ios/ReactNativePageView.h b/node_modules/react-native-pager-view/ios/ReactNativePageView.h
-index f7f31a5..c6a0356 100644
+index 8887fd2..76edf4e 100644
 --- a/node_modules/react-native-pager-view/ios/ReactNativePageView.h
 +++ b/node_modules/react-native-pager-view/ios/ReactNativePageView.h
-@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
- @property(nonatomic, copy) RCTDirectEventBlock onPageScrollStateChanged;
+@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  @property(nonatomic) BOOL overdrag;
  @property(nonatomic) NSString* layoutDirection;
--
+ @property(nonatomic, assign) BOOL animating;
 +@property(nonatomic) NSUInteger previousNavigationStackCount;
  
  - (void)goTo:(NSInteger)index animated:(BOOL)animated;
  - (void)shouldScroll:(BOOL)scrollEnabled;
 diff --git a/node_modules/react-native-pager-view/ios/ReactNativePageView.m b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
-index 78f266b..6ec966d 100644
+index d7b6c3a..c339a67 100644
 --- a/node_modules/react-native-pager-view/ios/ReactNativePageView.m
 +++ b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
 @@ -3,6 +3,7 @@
@@ -23,15 +22,15 @@ index 78f266b..6ec966d 100644
  #import "UIViewController+CreateExtension.h"
  #import "RCTOnPageScrollEvent.h"
  #import "RCTOnPageScrollStateChanged.h"
-@@ -47,6 +48,7 @@ - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher {
-         _cachedControllers = [NSHashTable weakObjectsHashTable];
+@@ -47,6 +48,7 @@
+         _cachedControllers = [NSHashTable hashTableWithOptions:NSHashTableStrongMemory];
          _overdrag = NO;
          _layoutDirection = @"ltr";
 +        _previousNavigationStackCount = 1;
-     }
-     return self;
- }
-@@ -83,6 +85,62 @@ - (void)didMoveToWindow {
+         UIPanGestureRecognizer* panGestureRecognizer = [UIPanGestureRecognizer new];
+         self.panGestureRecognizer = panGestureRecognizer;
+         panGestureRecognizer.delegate = self;
+@@ -85,6 +87,56 @@
          [self embed];
          [self setupInitialController];
      }
@@ -85,16 +84,10 @@ index 78f266b..6ec966d 100644
 +
 +      _previousNavigationStackCount = count;
 +    }
-+
-+    // Disable tab swipes when the stack navigator receives a "pop" gesture
-+    if (self.reactViewController.navigationController != nil && self.reactViewController.navigationController.interactivePopGestureRecognizer != nil) {
-+        [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.reactViewController.navigationController.interactivePopGestureRecognizer];
-+    }
-+
- }
  
- - (void)embed {
-@@ -191,6 +249,42 @@ - (void)setReactViewControllers:(NSInteger)index
+     if (self.reactViewController.navigationController != nil && self.reactViewController.navigationController.interactivePopGestureRecognizer != nil) {
+         [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.reactViewController.navigationController.interactivePopGestureRecognizer];
+@@ -198,6 +250,42 @@
                  strongSelf.lastReportedIndex = strongSelf.currentIndex;
              }
          }
@@ -137,15 +130,7 @@ index 78f266b..6ec966d 100644
      }];
  }
  
-@@ -322,7 +416,6 @@ - (void)pageViewController:(UIPageViewController *)pageViewController
-         didFinishAnimating:(BOOL)finished
-    previousViewControllers:(nonnull NSArray<UIViewController *> *)previousViewControllers
-        transitionCompleted:(BOOL)completed {
--    
-     if (completed) {
-         UIViewController* currentVC = [self currentlyDisplayed];
-         NSUInteger currentIndex = [self.reactSubviews indexOfObject:currentVC.view];
-@@ -333,6 +426,42 @@ - (void)pageViewController:(UIPageViewController *)pageViewController
+@@ -341,6 +429,42 @@
          [self.eventDispatcher sendEvent:[[RCTOnPageSelected alloc] initWithReactTag:self.reactTag position:@(currentIndex) coalescingKey:_coalescingKey++]];
          [self.eventDispatcher sendEvent:[[RCTOnPageScrollEvent alloc] initWithReactTag:self.reactTag position:@(currentIndex) offset:@(0.0)]];
          self.lastReportedIndex = currentIndex;
