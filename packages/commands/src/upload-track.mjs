@@ -92,32 +92,29 @@ const getDownloadConditions = async ({
 }
 
 const getDownloadMetadata = (isDownloadable, downloadConditions) => {
+  if (!isDownloadable) {
+    return {
+      is_downloadable: false,
+      is_download_gated: false,
+      download_conditions: null
+    }
+  }
+  const downloadability = {
+    is_downloadable: true,
+    download: {
+      cid: '',
+      is_downloadable: true,
+      requires_follow: false
+    }
+  }
   if (downloadConditions) {
     return {
+      ...downloadability,
       is_download_gated: true,
       download_conditions: downloadConditions,
-      download: {
-        cid: '',
-        is_downloadable: true,
-        requires_follow: false
-      }
     }
   }
-  if (isDownloadable) {
-    return {
-      is_download_gated: false,
-      download_conditions: null,
-      download: {
-        cid: '',
-        is_downloadable: true,
-        requires_follow: false
-      }
-    }
-  }
-  return {
-    is_download_gated: false,
-    download_conditions: null
-  }
+  return downloadability
 }
 
 program
