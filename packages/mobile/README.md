@@ -68,8 +68,6 @@ We use a few different plugins as a team, make sure to install and enable the va
 - Shared Preferences Viewer (default)
 - [Redux Debugger](https://github.com/jk-gan/flipper-plugin-redux-debugger)
 - [advanced-async-storage](https://github.com/lbaldy/flipper-plugin-async-storage-advanced)
-- [performance](https://github.com/oblador/react-native-performance)
-- [react-native-performance-monitor](https://github.com/bamlab/react-native-flipper-performance-monitor)
 
 On Android, you can use the adb Android Studio tool or
 

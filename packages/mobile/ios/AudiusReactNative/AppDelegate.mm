@@ -1,7 +1,6 @@
 #import "AppDelegate.h"
 #import "RNBootSplash.h"
 
-#import <Firebase.h>
 #import <GoogleCast/GoogleCast.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
@@ -11,11 +10,6 @@
 
 #import <CodePush/CodePush.h>
 #import <TikTokOpenSDK/TikTokOpenSDKApplicationDelegate.h>
-
-#ifdef FB_SONARKIT_ENABLED
-#import <FlipperKit/FlipperClient.h>
-#import <FlipperPerformancePlugin.h>
-#endif
 
 @implementation AppDelegate
 
@@ -37,13 +31,6 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-#ifdef FB_SONARKIT_ENABLED
-  FlipperClient *client = [FlipperClient sharedClient];
-  [client addPlugin:[FlipperPerformancePlugin new]];
-#endif
-
-
-  [FIRApp configure];
   [RNNotifications startMonitorNotifications];
   NSString *receiverAppID = @"222B31C8";
   GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:receiverAppID];

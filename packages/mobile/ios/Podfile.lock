@@ -27,55 +27,6 @@ PODS:
     - ffmpeg-kit-ios-https-gpl (= 4.5.1.LTS)
     - React-Core
   - FingerprintPro (2.1.8)
-  - Firebase/Analytics (8.15.0):
-    - Firebase/Core
-  - Firebase/Core (8.15.0):
-    - Firebase/CoreOnly
-    - FirebaseAnalytics (~> 8.15.0)
-  - Firebase/CoreOnly (8.15.0):
-    - FirebaseCore (= 8.15.0)
-  - Firebase/Crashlytics (8.15.0):
-    - Firebase/CoreOnly
-    - FirebaseCrashlytics (~> 8.15.0)
-  - FirebaseAnalytics (8.15.0):
-    - FirebaseAnalytics/AdIdSupport (= 8.15.0)
-    - FirebaseCore (~> 8.0)
-    - FirebaseInstallations (~> 8.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/MethodSwizzler (~> 7.7)
-    - GoogleUtilities/Network (~> 7.7)
-    - "GoogleUtilities/NSData+zlib (~> 7.7)"
-    - nanopb (~> 2.30908.0)
-  - FirebaseAnalytics/AdIdSupport (8.15.0):
-    - FirebaseCore (~> 8.0)
-    - FirebaseInstallations (~> 8.0)
-    - GoogleAppMeasurement (= 8.15.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/MethodSwizzler (~> 7.7)
-    - GoogleUtilities/Network (~> 7.7)
-    - "GoogleUtilities/NSData+zlib (~> 7.7)"
-    - nanopb (~> 2.30908.0)
-  - FirebaseCore (8.15.0):
-    - FirebaseCoreDiagnostics (~> 8.0)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/Logger (~> 7.7)
-  - FirebaseCoreDiagnostics (8.15.0):
-    - GoogleDataTransport (~> 9.1)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/Logger (~> 7.7)
-    - nanopb (~> 2.30908.0)
-  - FirebaseCrashlytics (8.15.0):
-    - FirebaseCore (~> 8.0)
-    - FirebaseInstallations (~> 8.0)
-    - GoogleDataTransport (~> 9.1)
-    - GoogleUtilities/Environment (~> 7.7)
-    - nanopb (~> 2.30908.0)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - FirebaseInstallations (8.15.0):
-    - FirebaseCore (~> 8.0)
-    - GoogleUtilities/Environment (~> 7.7)
-    - GoogleUtilities/UserDefaults (~> 7.7)
-    - PromisesObjC (< 3.0, >= 1.2)
   - Flipper (0.175.0):
     - Flipper-Folly (~> 2.6)
   - Flipper-Boost-iOSX (1.76.0.1.11)
@@ -137,49 +88,6 @@ PODS:
   - fmt (6.2.1)
   - glog (0.3.5)
   - google-cast-sdk-dynamic-xcframework-no-bluetooth (4.8.0)
-  - GoogleAppMeasurement (8.15.0):
-    - GoogleAppMeasurement/AdIdSupport (= 8.15.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/MethodSwizzler (~> 7.7)
-    - GoogleUtilities/Network (~> 7.7)
-    - "GoogleUtilities/NSData+zlib (~> 7.7)"
-    - nanopb (~> 2.30908.0)
-  - GoogleAppMeasurement/AdIdSupport (8.15.0):
-    - GoogleAppMeasurement/WithoutAdIdSupport (= 8.15.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/MethodSwizzler (~> 7.7)
-    - GoogleUtilities/Network (~> 7.7)
-    - "GoogleUtilities/NSData+zlib (~> 7.7)"
-    - nanopb (~> 2.30908.0)
-  - GoogleAppMeasurement/WithoutAdIdSupport (8.15.0):
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.7)
-    - GoogleUtilities/MethodSwizzler (~> 7.7)
-    - GoogleUtilities/Network (~> 7.7)
-    - "GoogleUtilities/NSData+zlib (~> 7.7)"
-    - nanopb (~> 2.30908.0)
-  - GoogleDataTransport (9.3.0):
-    - GoogleUtilities/Environment (~> 7.7)
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/AppDelegateSwizzler (7.12.0):
-    - GoogleUtilities/Environment
-    - GoogleUtilities/Logger
-    - GoogleUtilities/Network
-  - GoogleUtilities/Environment (7.12.0):
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.12.0):
-    - GoogleUtilities/Environment
-  - GoogleUtilities/MethodSwizzler (7.12.0):
-    - GoogleUtilities/Logger
-  - GoogleUtilities/Network (7.12.0):
-    - GoogleUtilities/Logger
-    - "GoogleUtilities/NSData+zlib"
-    - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (7.12.0)"
-  - GoogleUtilities/Reachability (7.12.0):
-    - GoogleUtilities/Logger
-  - GoogleUtilities/UserDefaults (7.12.0):
-    - GoogleUtilities/Logger
   - hermes-engine (0.73.1):
     - hermes-engine/Pre-built (= 0.73.1)
   - hermes-engine/Pre-built (0.73.1)
@@ -202,11 +110,6 @@ PODS:
   - lottie-react-native (6.4.1):
     - lottie-ios (~> 4.3.3)
     - React-Core
-  - nanopb (2.30908.0):
-    - nanopb/decode (= 2.30908.0)
-    - nanopb/encode (= 2.30908.0)
-  - nanopb/decode (2.30908.0)
-  - nanopb/encode (2.30908.0)
   - OpenSSL-Universal (1.1.1100)
   - Permission-Notifications (3.0.5):
     - RNPermissions
@@ -1096,13 +999,6 @@ PODS:
     - React-Core
   - react-native-fast-crypto (2.2.0):
     - React
-  - react-native-flipper (0.175.0):
-    - React-Core
-  - react-native-flipper-performance-plugin (0.3.1):
-    - React-Core
-    - react-native-flipper-performance-plugin/FBDefines (= 0.3.1)
-  - react-native-flipper-performance-plugin/FBDefines (0.3.1):
-    - React-Core
   - react-native-get-random-values (1.10.0):
     - React-Core
   - react-native-google-cast (4.6.0):
@@ -1128,8 +1024,6 @@ PODS:
   - react-native-pager-view (6.2.3):
     - glog
     - RCT-Folly (= 2022.05.16.00)
-    - React-Core
-  - react-native-performance (4.0.0):
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
@@ -1337,7 +1231,7 @@ PODS:
     - React-Core
   - RNCAsyncStorage (1.21.0):
     - React-Core
-  - RNCClipboard (1.10.0):
+  - RNCClipboard (1.13.2):
     - React-Core
   - RNCMaskedView (0.3.0):
     - React-Core
@@ -1347,17 +1241,6 @@ PODS:
     - React-Core
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
-  - RNFBAnalytics (14.12.0):
-    - Firebase/Analytics (= 8.15.0)
-    - React-Core
-    - RNFBApp
-  - RNFBApp (14.12.0):
-    - Firebase/CoreOnly (= 8.15.0)
-    - React-Core
-  - RNFBCrashlytics (14.12.0):
-    - Firebase/Crashlytics (= 8.15.0)
-    - React-Core
-    - RNFBApp
   - RNFingerprintjsPro (1.0.4):
     - FingerprintPro (~> 2.1.2)
     - React-Core
@@ -1492,8 +1375,6 @@ DEPENDENCIES:
   - "react-native-cookies (from `../../../node_modules/@react-native-cookies/cookies`)"
   - react-native-document-picker (from `../../../node_modules/react-native-document-picker`)
   - react-native-fast-crypto (from `../../../node_modules/react-native-fast-crypto`)
-  - react-native-flipper (from `../../../node_modules/react-native-flipper`)
-  - react-native-flipper-performance-plugin (from `../../../node_modules/react-native-flipper-performance-plugin`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../../../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
@@ -1502,7 +1383,6 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../../../node_modules/react-native-notifications`)
   - react-native-pager-view (from `../../../node_modules/react-native-pager-view`)
-  - react-native-performance (from `../../../node_modules/react-native-performance`)
   - react-native-randombytes (from `../../../node_modules/react-native-randombytes`)
   - react-native-restart (from `../../../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
@@ -1537,13 +1417,10 @@ DEPENDENCIES:
   - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../../../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
-  - "RNCClipboard (from `../../../node_modules/@react-native-clipboard/clipboard`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../../../node_modules/@react-native-masked-view/masked-view`)"
   - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../../../node_modules/react-native-fast-image`)
-  - "RNFBAnalytics (from `../../../node_modules/@react-native-firebase/analytics`)"
-  - "RNFBApp (from `../../../node_modules/@react-native-firebase/app`)"
-  - "RNFBCrashlytics (from `../../../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFingerprintjsPro (from `../../../node_modules/@fingerprintjs/fingerprintjs-pro-react-native`)"
   - RNFS (from `../../../node_modules/react-native-fs`)
   - RNGestureHandler (from `../../../node_modules/react-native-gesture-handler`)
@@ -1566,12 +1443,6 @@ SPEC REPOS:
     - CocoaAsyncSocket
     - ffmpeg-kit-ios-https-gpl
     - FingerprintPro
-    - Firebase
-    - FirebaseAnalytics
-    - FirebaseCore
-    - FirebaseCoreDiagnostics
-    - FirebaseCrashlytics
-    - FirebaseInstallations
     - Flipper
     - Flipper-Boost-iOSX
     - Flipper-DoubleConversion
@@ -1582,14 +1453,10 @@ SPEC REPOS:
     - FlipperKit
     - fmt
     - google-cast-sdk-dynamic-xcframework-no-bluetooth
-    - GoogleAppMeasurement
-    - GoogleDataTransport
-    - GoogleUtilities
     - JWT
     - libevent
     - libwebp
     - lottie-ios
-    - nanopb
     - OpenSSL-Universal
     - PromisesObjC
     - RiveRuntime
@@ -1685,10 +1552,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-document-picker"
   react-native-fast-crypto:
     :path: "../../../node_modules/react-native-fast-crypto"
-  react-native-flipper:
-    :path: "../../../node_modules/react-native-flipper"
-  react-native-flipper-performance-plugin:
-    :path: "../../../node_modules/react-native-flipper-performance-plugin"
   react-native-get-random-values:
     :path: "../../../node_modules/react-native-get-random-values"
   react-native-google-cast:
@@ -1705,8 +1568,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-notifications"
   react-native-pager-view:
     :path: "../../../node_modules/react-native-pager-view"
-  react-native-performance:
-    :path: "../../../node_modules/react-native-performance"
   react-native-randombytes:
     :path: "../../../node_modules/react-native-randombytes"
   react-native-restart:
@@ -1776,19 +1637,13 @@ EXTERNAL SOURCES:
   RNCAsyncStorage:
     :path: "../../../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
-    :path: "../../../node_modules/@react-native-clipboard/clipboard"
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
     :path: "../../../node_modules/@react-native-masked-view/masked-view"
   RNDateTimePicker:
     :path: "../../../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
     :path: "../../../node_modules/react-native-fast-image"
-  RNFBAnalytics:
-    :path: "../../../node_modules/@react-native-firebase/analytics"
-  RNFBApp:
-    :path: "../../../node_modules/@react-native-firebase/app"
-  RNFBCrashlytics:
-    :path: "../../../node_modules/@react-native-firebase/crashlytics"
   RNFingerprintjsPro:
     :path: "../../../node_modules/@fingerprintjs/fingerprintjs-pro-react-native"
   RNFS:
@@ -1832,12 +1687,6 @@ SPEC CHECKSUMS:
   ffmpeg-kit-ios-https-gpl: fb9fc0617a646209f8f4a62b5581000dc4ee6a67
   ffmpeg-kit-react-native: bc3c900af9f761b6fe30906ee1bd98000c79f9c9
   FingerprintPro: 5c55beb92f4eb7a5a10e1ba13daa6a6baec1f213
-  Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
-  FirebaseAnalytics: 7761cbadb00a717d8d0939363eb46041526474fa
-  FirebaseCore: 5743c5785c074a794d35f2fff7ecc254a91e08b1
-  FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
-  FirebaseCrashlytics: feb07e4e9187be3c23c6a846cce4824e5ce2dd0b
-  FirebaseInstallations: 40bd9054049b2eae9a2c38ef1c3dd213df3605cd
   Flipper: d9d1aa67916620c9a6af11cb8275f06cd522943e
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
   Flipper-DoubleConversion: 2dc99b02f658daf147069aad9dbd29d8feb06d30
@@ -1849,16 +1698,12 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 09d47191ef8821d82e813e754bcf98bc61a3dbc9
-  GoogleAppMeasurement: 4c19f031220c72464d460c9daa1fb5d1acce958e
-  GoogleDataTransport: 57c22343ab29bc686febbf7cbb13bad167c2d8fe
-  GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
   hermes-engine: 34df9d5034e90bd9bf1505e1ca198760373935af
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
   lottie-react-native: a2ae9c27c273b060b2affff2957bc0ff7fdca353
-  nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Notifications: 16ccd862111103378a7bab9fb1c5c71addffc348
   Permission-PhotoLibraryAddOnly: 224d33cea3c2f1f8982a2a4e343c0726fba3acf9
@@ -1889,8 +1734,6 @@ SPEC CHECKSUMS:
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-document-picker: f5ec1a712ca2a975c233117f044817bb8393cad4
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
-  react-native-flipper: fd500c92e89502a8a0e5a87b4bfe8da751ccd435
-  react-native-flipper-performance-plugin: 2b873b68da3e368afeaf29c9c7a8c2b0ff908c4f
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-google-cast: bbbdbeae552d0b55b59031ed7e12ae832e8c5a53
   react-native-image-picker: bf34f3f516d139ed3e24c5f5a381a91819e349ea
@@ -1899,7 +1742,6 @@ SPEC CHECKSUMS:
   react-native-netinfo: d8c9d0c71658e16362de176f22b06bd93186509c
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-pager-view: d81ab2060b9caf57ca8c3a0d57467ff407cdb825
-  react-native-performance: 224bd53e6a835fda4353302cf891d088a0af7406
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-safe-area-context: b8979f5eda6ed5903d4dbc885be3846ea3daa753
@@ -1935,13 +1777,10 @@ SPEC CHECKSUMS:
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBootSplash: 4f968c1e098c7ec97939ace039f735e3d335bd4b
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
-  RNCClipboard: f1736c75ab85b627a4d57587edb4b60999c4dd80
+  RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNCMaskedView: f7c74478c83c4fdfc5cf4df51f80c0dd5cf125c6
   RNDateTimePicker: fc2e4f2795877d45e84d85659bebe627eba5c931
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
-  RNFBAnalytics: ea1421b49a0bf5e5bb7274df4a330713d0e85d2e
-  RNFBApp: e4439717c23252458da2b41b81b4b475c86f90c4
-  RNFBCrashlytics: 94e1f78e2a9aa9e02edbfb0d3f1f0921ce00094b
   RNFingerprintjsPro: 317426b3f0479c4737960f7aa90b0f8a02ac07f9
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   RNGestureHandler: 61bfdfc05db9b79dd61f894dcd29d3dcc6db3c02
@@ -1968,6 +1807,6 @@ SPEC CHECKSUMS:
   Yoga: 2b33a7ac96c58cdaa7b810948fc6a2a76ed2d108
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 130f6c19bd5a2aee232d4d411c53d3601cba6f1e
+PODFILE CHECKSUM: d72dea889fd8006d1062ac2bed37354c4b3f2c56
 
 COCOAPODS: 1.13.0

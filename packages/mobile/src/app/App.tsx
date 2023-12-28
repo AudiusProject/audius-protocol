@@ -12,7 +12,6 @@ import TrackPlayer from 'react-native-track-player'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
-import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
@@ -81,7 +80,6 @@ const App = () => {
   return (
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <FlipperAsyncStorage />
         <Provider store={store}>
           <AudiusTrpcProvider>
             <AudiusQueryContext.Provider
