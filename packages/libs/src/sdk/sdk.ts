@@ -4,6 +4,7 @@ import fetch from 'cross-fetch'
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
 import { ChatsApi } from './api/chats/ChatsApi'
+import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
@@ -33,7 +34,6 @@ import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
-import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 
 /**
  * The Audius SDK
@@ -183,6 +183,7 @@ const initializeApis = ({
   )
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
+    generatedApiClientConfig,
     services.entityManager,
     services.auth
   )
