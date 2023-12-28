@@ -1,4 +1,4 @@
-package co.audius.app;
+package co.audius.app
 
 import android.app.Application
 import com.brentvatne.react.ReactVideoPackage
@@ -8,25 +8,26 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
+import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
 import com.wix.reactnativenotifications.RNNotificationsPackage
-import java.util.List
 import com.microsoft.codepush.react.CodePush
 
-public class MainApplication : Application(), ReactApplication {
+class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> {
-          packages.add(new ReactVideoPackage());
-          return PackageList(this).packages
+          val packages = PackageList(this).packages
+          packages.add(ReactVideoPackage())
+          return packages
         }
 
         override fun getJSMainModuleName(): String = "index"
 
-        overide fun getJSBundleFile(): String = CodePush.getJSBundleFile()
+        override fun getJSBundleFile(): String = CodePush.getJSBundleFile()
 
         override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 

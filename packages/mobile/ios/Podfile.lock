@@ -1,14 +1,16 @@
 PODS:
-  - Amplitude (8.5.0)
-  - amplitude-react-native (2.6.0):
-    - Amplitude (= 8.5.0)
+  - Amplitude (8.16.3):
+    - AnalyticsConnector (~> 1.0.0)
+  - amplitude-react-native (2.17.2):
+    - Amplitude (= 8.16.3)
     - React-Core
+  - AnalyticsConnector (1.0.3)
   - Base64 (1.1.2)
   - boost (1.83.0)
   - BVLinearGradient (2.6.2):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
-  - CodePush (7.0.5):
+  - CodePush (8.1.1):
     - Base64 (~> 1.1)
     - JWT (~> 3.0.0-beta.12)
     - React-Core
@@ -1439,6 +1441,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Amplitude
+    - AnalyticsConnector
     - Base64
     - CocoaAsyncSocket
     - ffmpeg-kit-ios-https-gpl
@@ -1674,13 +1677,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
-  amplitude-react-native: fa5e830e59fd8ed440a74d58fd72ad4b37e7c946
+  Amplitude: 10f20d4436fdcd38ddd5be1da7033fcc21f4143e
+  amplitude-react-native: 6e5b9e38c53e11a86f62f874a42cf176e2b82c86
+  AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 26fad476bfa736552bbfa698a06cc530475c1505
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  CodePush: ef496b6fd053012e985e3d4a0ab9f9dbf2739eac
+  CodePush: c3fdecab0dba1f760a1c6d1a562b9b88ce311fe1
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 2296bacb2fa157a43991048b0a9d71c1c8b65083
   FBReactNativeSpec: 09d23bb00c37d69470c636b61d4bc4170b2bdfd3

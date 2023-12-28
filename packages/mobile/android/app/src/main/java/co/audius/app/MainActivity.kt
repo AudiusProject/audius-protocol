@@ -1,7 +1,6 @@
-package co.audius.app;
+package co.audius.app
 
 import android.os.Bundle
-import androidx.annotation.Nullable
 import com.bytedance.sdk.open.tiktok.TikTokOpenApiFactory
 import com.bytedance.sdk.open.tiktok.TikTokOpenConfig
 import com.facebook.react.ReactActivity
@@ -29,19 +28,19 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
 
-  overide fun invokeDefaultOnBackPressed(): void {
+  override fun invokeDefaultOnBackPressed() {
     // Not calling super. invokeDefaultOnBackPressed() b/c it will close the app.
     // Instead, put the app in the backgroud to allow audio to keep playing.
-    moveTaskToBack(true);
+    moveTaskToBack(true)
   }
 
-  overide fun onCreate(Bundle savedInstanceState): void {
-    RNBootSplash.init(this);
-    super.onCreate(null);
-    RNBars.init(this, "light-content");
-    TikTokOpenApiFactory.init(new TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID));
+  override fun onCreate(savedInstanceState: Bundle?) {
+    RNBootSplash.init(this)
+    super.onCreate(null)
+    RNBars.init(this, "light-content")
+    TikTokOpenApiFactory.init(TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID))
 
     // lazy load Google Cast context
-    CastContext.getSharedInstance(this);
+    CastContext.getSharedInstance(this)
   }
 }
