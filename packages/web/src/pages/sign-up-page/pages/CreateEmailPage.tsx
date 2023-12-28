@@ -10,14 +10,12 @@ import {
   ButtonType,
   Divider,
   Flex,
-  Hint,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
-  IconError,
   Text,
   TextLink
 } from '@audius/harmony'
-import { ErrorMessage, Form, Formik } from 'formik'
+import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -33,7 +31,6 @@ import {
   getEmailField,
   getLinkedSocialOnFirstPage
 } from 'common/store/pages/signon/selectors'
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -45,6 +42,7 @@ import {
   SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
+import { EmailField } from '../components/EmailField'
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
@@ -115,7 +113,7 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       {({ dirty, isSubmitting }) => (
-        <Page as={Form}>
+        <Page as={Form} pt='unit20'>
           <Box alignSelf='center'>
             {isMobile ? (
               <IconAudiusLogoHorizontalColor />
@@ -143,23 +141,7 @@ export const CreateEmailPage = () => {
             centered={isMobile}
           />
           <Flex direction='column' gap='l'>
-            <HarmonyTextField
-              name='email'
-              autoComplete='email'
-              label={messages.emailLabel}
-              debouncedValidationMs={500}
-              autoFocus
-              helperText={null}
-            />
-            <ErrorMessage name='email'>
-              {(errorMessage) =>
-                dirty ? (
-                  <Hint icon={IconError}>
-                    {errorMessage} {signInLink}
-                  </Hint>
-                ) : null
-              }
-            </ErrorMessage>
+            <EmailField />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
@@ -190,7 +172,7 @@ export const CreateEmailPage = () => {
               {messages.haveAccount} {signInLink}
             </Text>
           </Flex>
-          {!isMobile ? (
+          {!isMobile && window.ethereum ? (
             <Flex direction='column' gap='s'>
               <SignUpWithMetaMaskButton />
               <Text size='s' variant='body'>

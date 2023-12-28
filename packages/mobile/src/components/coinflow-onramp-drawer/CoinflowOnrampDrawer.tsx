@@ -65,7 +65,7 @@ const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
 
 export const CoinflowOnrampDrawer = () => {
   const {
-    data: { amount, serializedTransaction },
+    data: { amount, serializedTransaction, purchaseMetadata },
     isOpen,
     onClose
   } = useCoinflowOnrampModal()
@@ -115,6 +115,7 @@ export const CoinflowOnrampDrawer = () => {
         <CoinflowPurchase
           transaction={transaction}
           wallet={adapter.wallet}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           onSuccess={handleSuccess}
           merchantId={env.COINFLOW_MERCHANT_ID || ''}

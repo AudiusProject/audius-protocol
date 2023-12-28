@@ -2,11 +2,9 @@ import { useCallback, useMemo } from 'react'
 
 import {
   emailSchema,
-  emailSchemaMessages,
   useAudiusQueryContext,
   createEmailPageMessages as messages
 } from '@audius/common'
-import { css } from '@emotion/native'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
@@ -18,11 +16,10 @@ import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { EmailInUseHint } from '../components/EmailInUseHint'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
-import { Hint } from '../components/temp-harmony/Hint'
-import IconExclamation from '../components/temp-harmony/IconExclamation.svg'
 import type { SignUpScreenParamList } from '../types'
 
 import type { SignOnScreenProps } from './types'
@@ -59,7 +56,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       onSubmit={handleSubmit}
       validationSchema={emailFormikSchema}
     >
-      {({ handleSubmit, errors }) => (
+      {({ handleSubmit }) => (
         <>
           <Heading
             heading={messages.title}
@@ -80,23 +77,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               noGutter
               onChangeText={onChangeEmail}
             />
-            {errors.email === emailSchemaMessages.emailInUse ? (
-              <Hint icon={IconExclamation}>
-                <Text
-                  variant='body'
-                  size='m'
-                  style={css({ textAlign: 'center' })}
-                >
-                  {emailSchemaMessages.emailInUse}{' '}
-                  <Text
-                    onPress={() => onChangeScreen('sign-in')}
-                    color='accent'
-                  >
-                    {messages.signIn}
-                  </Text>
-                </Text>
-              </Hint>
-            ) : null}
+            <EmailInUseHint onChangeScreen={onChangeScreen} />
             <Divider>
               <Text variant='body' size='s' color='subdued'>
                 {messages.socialsDividerText}

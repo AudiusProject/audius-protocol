@@ -30,7 +30,7 @@ contract EntityManager is SigningLogicInitializable {
 
     function initialize(
         address _verifierAddress,
-        uint _networkId
+        uint _chainId
     ) public initializer
     {
         require(
@@ -41,7 +41,7 @@ contract EntityManager is SigningLogicInitializable {
         SigningLogicInitializable.initialize(
             "Entity Manager",
             "1",
-            _networkId
+            _chainId
         );
     }
 

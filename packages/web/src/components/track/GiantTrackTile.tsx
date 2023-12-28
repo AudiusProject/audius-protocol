@@ -15,6 +15,7 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { Flex, TextLink } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
   Button,
@@ -25,13 +26,14 @@ import {
   IconHeart,
   IconKebabHorizontal
 } from '@audius/stems'
+import type { APlaylist } from '@audius/trpc-server'
 import cn from 'classnames'
 import moment from 'moment'
 
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { UserLink } from 'components/link'
+import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -45,6 +47,8 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { NOT_FOUND_PAGE } from 'utils/route'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
@@ -185,12 +189,17 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
-
+  const { data: playlists } = trpc.playlists.containTrackId.useQuery(
+    { trackId, collectionType: 'album' },
+    { enabled: !!trackId }
+  )
+  const album = playlists?.[0] as unknown as APlaylist | undefined
   let isScheduledRelease = false
   if (!isPublishing && moment.utc(released).isAfter(moment())) {
     isScheduledRelease = true
@@ -527,7 +536,7 @@ export const GiantTrackTile = ({
               {isLoading && <Skeleton className={styles.skeleton} />}
             </div>
             <div className={styles.artistWrapper}>
-              <div className={cn(fadeIn)}>
+              <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
                   color='secondary'
@@ -538,7 +547,17 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-              </div>
+                {isEditAlbumsEnabled && album ? (
+                  <>
+                    <span>from</span>
+                    <TextLink variant='visible' textVariant='display' asChild>
+                      <Link to={album?.permalink ?? NOT_FOUND_PAGE}>
+                        {album.playlistName}
+                      </Link>
+                    </TextLink>
+                  </>
+                ) : null}
+              </Flex>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}

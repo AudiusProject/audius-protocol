@@ -15,11 +15,13 @@ export const appRouter = router({
   search: searchRouter,
 
   version: publicProcedure.query(() => ({
-    version: '0.0.2'
-  }))
+    version: '0.0.2',
+  })),
 })
 
 export type AppRouter = typeof appRouter
 
 export type RouterInput = inferRouterInputs<AppRouter>
 export type RouterOutput = inferRouterOutputs<AppRouter>
+
+export * from './types'
