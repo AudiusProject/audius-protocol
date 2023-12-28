@@ -5,6 +5,10 @@ import {
   EntityType
 } from '../../services/EntityManager/types'
 import { parseParams } from '../../utils/parseParams'
+import {
+  Configuration,
+  DashboardWalletUsersApi as GeneratedDashboardWalletUsersApi
+} from '../generated/default'
 
 import {
   CreateDashboardWalletUser,
@@ -13,14 +17,13 @@ import {
   DeleteDashboardWalletUserSchema
 } from './types'
 
-// TODO(nkang): Extend generated dashboard wallet users API
-export class DashboardWalletUsersApi {
+export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
   constructor(
-    // config: Configuration,
+    config: Configuration,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService
   ) {
-    // super(config)
+    super(config)
   }
 
   /**
