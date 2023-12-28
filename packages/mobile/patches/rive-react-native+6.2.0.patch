@@ -1,0 +1,24 @@
+diff --git a/node_modules/rive-react-native/ios/RiveReactNative-Bridging-Header.h b/node_modules/rive-react-native/ios/RiveReactNative-Bridging-Header.h
+index 5a2bb3f..373b1d7 100644
+--- a/node_modules/rive-react-native/ios/RiveReactNative-Bridging-Header.h
++++ b/node_modules/rive-react-native/ios/RiveReactNative-Bridging-Header.h
+@@ -4,5 +4,6 @@
+ #import "React/RCTUIManager.h"
+ #import <React/RCTUtils.h>
+ #import "React/RCTExceptionsManager.h"
++#import <React/RCTView.h>
+ 
+ 
+diff --git a/node_modules/rive-react-native/ios/RiveReactNativeView.swift b/node_modules/rive-react-native/ios/RiveReactNativeView.swift
+index 92d15b8..445f07f 100644
+--- a/node_modules/rive-react-native/ios/RiveReactNativeView.swift
++++ b/node_modules/rive-react-native/ios/RiveReactNativeView.swift
+@@ -1,7 +1,7 @@
+ import UIKit
+ import RiveRuntime
+ 
+-class RiveReactNativeView: UIView, RivePlayerDelegate, RiveStateMachineDelegate {
++class RiveReactNativeView: RCTView, RivePlayerDelegate, RiveStateMachineDelegate {
+     // MARK: RiveReactNativeView Properties
+     private var resourceFromBundle = true
+     private var requiresLocalResourceReconfigure = false
