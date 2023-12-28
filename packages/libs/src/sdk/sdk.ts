@@ -29,17 +29,17 @@ import {
   Storage,
   EntityManager,
   AppAuth,
-  RewardManager
+  RewardManagerClient
 } from './services'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
-import { ClaimableTokens } from './services/Solana/programs/ClaimableTokens/ClaimableTokens'
+import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
-import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokens/constants'
-import { defaultRewardManagerConfig } from './services/Solana/programs/RewardManager/constants'
+import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/constants'
+import { defaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/constants'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { ChallengesApi } from './api/challenges/ChallengesApi'
 
@@ -118,19 +118,21 @@ const initializeServices = (config: SdkConfig) => {
     ]
   })
 
-  const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter(
-    config.services?.solanaRelay ?? defaultSolanaRelay
-  )
+  const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter({
+    solanaRelay: config.services?.solanaRelay ?? defaultSolanaRelay
+  })
 
-  const defaultClaimableTokensProgram = new ClaimableTokens(
-    defaultClaimableTokensConfig,
-    config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
-  )
+  const defaultClaimableTokensProgram = new ClaimableTokensClient({
+    ...defaultClaimableTokensConfig,
+    solanaWalletAdapter:
+      config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+  })
 
-  const defaultRewardManagerProgram = new RewardManager(
-    defaultRewardManagerConfig,
-    config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
-  )
+  const defaultRewardManagerProgram = new RewardManagerClient({
+    ...defaultRewardManagerClentConfig,
+    solanaWalletAdapter:
+      config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+  })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector,

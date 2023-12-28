@@ -7,8 +7,8 @@ import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 import type {
-  RewardManager,
-  ClaimableTokens,
+  RewardManagerClient,
+  ClaimableTokensClient,
   SolanaRelayService,
   SolanaWalletAdapter
 } from './services/Solana'
@@ -58,12 +58,12 @@ export type ServicesContainer = {
   /**
    * Claimable Tokens Program client for Solana
    */
-  claimableTokensProgram: ClaimableTokens
+  claimableTokensProgram: ClaimableTokensClient
 
   /**
    * Reward Manager Program client for Solana
    */
-  rewardManagerProgram: RewardManager
+  rewardManagerProgram: RewardManagerClient
 
   /**
    * Service used to choose a healthy Anti Abuse Oracle

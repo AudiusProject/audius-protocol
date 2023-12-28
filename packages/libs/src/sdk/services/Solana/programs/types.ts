@@ -6,7 +6,7 @@ import {
 import { z } from 'zod'
 import { PublicKeySchema } from '../types'
 
-export type SolanaProgramConfigInternal = {
+export type BaseSolanaProgramConfigInternal = {
   /** Connection to interact with the Solana RPC */
   rpcEndpoint: string
   /** Configuration to use for the RPC connection. */

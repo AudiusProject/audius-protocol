@@ -1,12 +1,12 @@
-import { RewardManagerProgram, ethAddress } from '@audius/spl'
+import { RewardManagerProgram } from '@audius/spl'
 import type { SolanaWalletAdapter } from '../../types'
-import { SolanaProgram } from '../SolanaProgram'
+import { BaseSolanaProgram } from '../BaseSolanaProgram'
 import {
   CreateEvaluateAttestationsInstructionRequest,
   CreateEvaluateAttestationsInstructionSchema,
   CreateSubmitAttestationInstructionSchema,
   type CreateSubmitAttestationRequest,
-  type RewardManagerConfig,
+  type RewardManagerClientConfig,
   CreateSenderInstructionRequest,
   CreateSenderInstructionSchema,
   CreateSubmitAttestationSecpInstructionRequest,
@@ -18,21 +18,21 @@ import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
 import { parseParams } from '../../../../utils/parseParams'
 import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
-import { defaultRewardManagerConfig } from './constants'
+import { defaultRewardManagerClentConfig } from './constants'
 
-export class RewardManager extends SolanaProgram {
+export class RewardManagerClient extends BaseSolanaProgram {
   private readonly programId: PublicKey
   private readonly rewardManagerStateAccount: PublicKey
   private readonly authority: PublicKey
   private rewardManagerState: RewardManagerStateData | null = null
 
   constructor(
-    config: RewardManagerConfig,
+    config: RewardManagerClientConfig,
     solanaWalletAdapter: SolanaWalletAdapter
   ) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
-      defaultRewardManagerConfig
+      defaultRewardManagerClentConfig
     )
     super(configWithDefaults, solanaWalletAdapter)
     this.programId = configWithDefaults.programId

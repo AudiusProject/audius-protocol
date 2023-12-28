@@ -38,7 +38,7 @@ import {
   SendTipRequest,
   SendTipSchema
 } from './types'
-import type { ClaimableTokens } from '../../services/Solana/programs/ClaimableTokens/ClaimableTokens'
+import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(
@@ -48,7 +48,7 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
     private readonly logger: LoggerService,
-    private readonly claimableTokens: ClaimableTokens
+    private readonly claimableTokens: ClaimableTokensClient
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')

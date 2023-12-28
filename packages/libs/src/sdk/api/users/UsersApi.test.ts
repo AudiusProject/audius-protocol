@@ -21,7 +21,7 @@ import {
 } from '@solana/web3.js'
 import { ClaimableTokensProgram } from '@audius/spl'
 import {
-  ClaimableTokens,
+  ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter
 } from '../../services'
@@ -68,7 +68,7 @@ describe('UsersApi', () => {
     logger
   })
   const solanaRelay = new SolanaRelay()
-  const claimableTokens = new ClaimableTokens(
+  const claimableTokens = new ClaimableTokensClient(
     {},
     new SolanaRelayWalletAdapter(solanaRelay)
   )

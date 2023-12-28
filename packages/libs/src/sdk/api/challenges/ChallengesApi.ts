@@ -1,6 +1,6 @@
 import { wAUDIO } from '@audius/fixed-decimal'
 import type {
-  ClaimableTokens,
+  ClaimableTokensClient,
   DiscoveryNodeSelectorService,
   LoggerService
 } from '../../services'
@@ -8,7 +8,7 @@ import type {
   AntiAbuseOracle,
   AntiAbuseOracleSelectorService
 } from '../../services/AntiAbuseOracleSelector/types'
-import type { RewardManager } from '../../services/Solana/programs/RewardManager/RewardManager'
+import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
 import {
@@ -26,8 +26,8 @@ export class ChallengesApi extends BaseAPI {
     config: Configuration,
     private readonly usersApi: UsersApi,
     private readonly discoveryNodeSelector: DiscoveryNodeSelectorService,
-    private readonly rewardManager: RewardManager,
-    private readonly claimableTokens: ClaimableTokens,
+    private readonly rewardManager: RewardManagerClient,
+    private readonly claimableTokens: ClaimableTokensClient,
     private readonly antiAbuseOracleSelector: AntiAbuseOracleSelectorService,
     logger: LoggerService
   ) {

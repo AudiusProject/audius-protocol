@@ -9,7 +9,7 @@ import type { SolanaWalletAdapter } from '../types'
 import {
   BuildTransactionRequest,
   BuildTransactionSchema,
-  type SolanaProgramConfigInternal
+  type BaseSolanaProgramConfigInternal
 } from './types'
 import { parseParams } from '../../../utils/parseParams'
 
@@ -19,11 +19,11 @@ const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
 /**
  * Abstract class for initializing individual program clients.
  */
-export class SolanaProgram {
+export class BaseSolanaProgram {
   /** The endpoint for the Solana RPC. */
   protected readonly connection: Connection
   constructor(
-    config: SolanaProgramConfigInternal,
+    config: BaseSolanaProgramConfigInternal,
     protected wallet: SolanaWalletAdapter
   ) {
     this.connection = new Connection(config.rpcEndpoint, config.rpcConfig)

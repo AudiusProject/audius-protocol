@@ -7,7 +7,7 @@ import {
   PublicKey
 } from '@solana/web3.js'
 import { parseParams } from '../../../../utils/parseParams'
-import type { Mint, SolanaWalletAdapter } from '../../types'
+import type { Mint } from '../../types'
 
 import {
   type GetOrCreateUserBankRequest,
@@ -20,11 +20,11 @@ import {
   ClaimableTokensConfig
 } from './types'
 
-import { SolanaProgram } from '../SolanaProgram'
+import { BaseSolanaProgram } from '../BaseSolanaProgram'
 import { defaultClaimableTokensConfig } from './constants'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 
-export class ClaimableTokens extends SolanaProgram {
+export class ClaimableTokensClient extends BaseSolanaProgram {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
@@ -32,15 +32,12 @@ export class ClaimableTokens extends SolanaProgram {
   /** Map from token mint name to derived user bank authority. */
   private readonly authorities: Record<Mint, PublicKey>
 
-  constructor(
-    config: ClaimableTokensConfig,
-    solanaWalletAdapter: SolanaWalletAdapter
-  ) {
+  constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       defaultClaimableTokensConfig
     )
-    super(configWithDefaults, solanaWalletAdapter)
+    super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId
     this.mints = configWithDefaults.mints
     this.authorities = {

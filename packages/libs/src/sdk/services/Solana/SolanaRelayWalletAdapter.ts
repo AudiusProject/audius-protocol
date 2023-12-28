@@ -27,11 +27,15 @@ export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
     'Loadable' as WalletReadyState.Loadable
   public readonly supportedTransactionVersions?: SupportedTransactionVersions
 
+  private readonly solanaRelay: SolanaRelay
+
   private _publicKey: PublicKey | null = null
   private _connecting = false
   private _connected = false
 
-  constructor(private readonly solanaRelay: SolanaRelay) {}
+  constructor({ solanaRelay }: { solanaRelay: SolanaRelay }) {
+    this.solanaRelay = solanaRelay
+  }
 
   public get publicKey() {
     return this._publicKey
