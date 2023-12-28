@@ -19,7 +19,7 @@ import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
-type Genre = typeof GENRES[number]
+type Genre = (typeof GENRES)[number]
 type SelectGenresValue = { genres: typeof GENRES }
 
 const initialValues: SelectGenresValue = { genres: [] }

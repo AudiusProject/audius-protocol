@@ -215,7 +215,9 @@
 }
 
 .select
-  :global(.ant-select-item-option-selected:not(.ant-select-item-option-active)) {
+  :global(
+    .ant-select-item-option-selected:not(.ant-select-item-option-active)
+  ) {
   background-color: unset;
 }
 
