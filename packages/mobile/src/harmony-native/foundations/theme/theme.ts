@@ -51,4 +51,4 @@ export const theme = {
   }
 }
 
-export type HarmonyNativeTheme = typeof theme['dark']
+export type HarmonyNativeTheme = (typeof theme)['dark']

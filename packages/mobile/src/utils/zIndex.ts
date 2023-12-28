@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum zIndex {
   CHAT_TAIL = -10,
   PREMIUM_TRACK_TILE_CORNER_TAG = 3,
