@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -50,6 +51,13 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 		acdcEndpoint = "http://audius-protocol-poa-ganache-1"
 		poaEndpoint = "http://audius-protocol-poa-ganache-1" // won't ever be used
 		verifyingContract = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
+		finalPoaBlock = -1
+	}
+
+	if discoveryConfig.IsSandbox {
+		acdcEndpoint = os.Getenv("audius_web3_eth_provider_url")
+		poaEndpoint = os.Getenv("audius_web3_host")
+		verifyingContract = os.Getenv("audius_contracts_entity_manager_address")
 		finalPoaBlock = -1
 	}
 
