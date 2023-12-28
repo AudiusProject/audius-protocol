@@ -118,7 +118,7 @@ func (s *ChatServer) getStatus(c echo.Context) error {
 }
 
 func (s *ChatServer) isHealthy() bool {
-	if s.config.IsDev {
+	if s.config.IsDev || s.config.IsSandbox {
 		return true
 	}
 	return s.config.IsRegisteredWallet && s.websocketError == nil
