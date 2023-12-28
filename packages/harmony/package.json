@@ -83,11 +83,12 @@
     "storybook": "7.4.2",
     "storybook-addon-smart-knobs": "6.0.2",
     "storybook-dark-mode": "3.0.1",
+    "ts-patch": "^3.1.1",
     "tsconfig-paths-webpack-plugin": "3.5.2",
     "ttypescript": "1.5.15",
     "typescript": "5.0.4",
-    "typescript-plugin-css-modules": "3.4.0",
-    "typescript-transform-paths": "3.4.4",
+    "typescript-plugin-css-modules": "5.0.2",
+    "typescript-transform-paths": "3.4.6",
     "webpack": "4.46.0"
   },
   "peerDependencies": {

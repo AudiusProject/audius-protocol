@@ -33,7 +33,6 @@
       "storybook/*": ["src/storybook/*"]
     },
     "plugins": [
-      { "name": "typescript-plugin-css-modules" },
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ],
