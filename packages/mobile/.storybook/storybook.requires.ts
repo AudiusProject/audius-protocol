@@ -62,7 +62,8 @@ const getStories = () => {
     '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
     '../src/harmony-native/FollowButton.stories.tsx': require('../src/harmony-native/components/Button/FollowButton/FollowButton.stories.tsx'),
     '../src/harmony-native/IconButton.stories.tsx': require('../src/harmony-native/components/Button/IconButton/IconButton.stories.tsx'),
-    '../src/harmony-native/CompletionCheck.stories.tsx': require('../src/harmony-native/components/CompletionCheck/CompletionCheck.stories.tsx')
+    '../src/harmony-native/CompletionCheck.stories.tsx': require('../src/harmony-native/components/CompletionCheck/CompletionCheck.stories.tsx'),
+    '../src/harmony-native/Divider.stories.tsx': require('../src/harmony-native/components/layout/Divider/Divider.stories.tsx')
   }
 }
 
