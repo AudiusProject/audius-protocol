@@ -51,17 +51,17 @@ mobile-prepare-ios:
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
           ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
-    - restore_cache:
-        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
+    # - restore_cache:
+    #     key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
         name: install pods
         command: |
           cd packages/mobile/ios
           pod install --deployment
-    - save_cache:
-        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
-        paths:
-          - packages/mobile/ios/pods
+    # - save_cache:
+    #     key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
+    #     paths:
+    #       - packages/mobile/ios/pods
     - run:
         name: Install Sentry CLI
         command: |
@@ -163,7 +163,7 @@ mobile-prepare-android:
         name: install pip
         command: |
           sudo apt update
-          sudo apt install python3-pip
+          sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
     - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
