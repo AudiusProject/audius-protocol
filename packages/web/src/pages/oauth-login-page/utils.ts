@@ -1,10 +1,16 @@
 import { encodeHashId, User, SquareSizes } from '@audius/common'
-import { CreateGrantRequest } from '@audius/sdk'
+import {
+  CreateGrantRequest,
+  CreateDashboardWalletUserRequest
+} from '@audius/sdk'
 import base64url from 'base64url'
+import { isEmpty } from 'lodash'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
+
+import { messages } from './messages'
 
 export const getIsRedirectValid = ({
   parsedRedirectUri,
@@ -192,6 +198,29 @@ export const authWrite = async ({ userId, appApiKey }: CreateGrantRequest) => {
   })
 }
 
+export const getIsWalletAlreadyConnected = async (wallet: string) => {
+  const sdk = await audiusSdk()
+  const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
+    wallets: [wallet]
+  })
+  if (!isEmpty(res)) {
+    return true
+  }
+  return false
+}
+
+export const connectUserToDashboardWallet = async ({
+  userId,
+  wallet,
+  walletSignature
+}: CreateDashboardWalletUserRequest) => {
+  const sdk = await audiusSdk()
+  await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
+    userId,
+    wallet,
+    walletSignature
+  })
+}
 export const getDeveloperApp = async (address: string) => {
   const sdk = await audiusSdk()
   const developerApp = await sdk.developerApps.getDeveloperApp({ address })
@@ -215,4 +244,50 @@ export const getIsAppAuthorized = async ({
     (a) => a.address.toLowerCase() === prefixedAppAddress
   )
   return foundIndex !== undefined && foundIndex > -1
+}
+export type WriteOnceTx = 'connect_dashboard_wallet' // | ...
+
+export type ConnectDashboardWalletParams = {
+  wallet: string
+  wallet_signature: { signature: string; message: string }
+}
+export type WriteOnceParams = ConnectDashboardWalletParams // | ...
+
+export const validateWriteOnceParams = ({
+  tx,
+  params: rawParams
+}: {
+  tx: string | string[] | null
+  params: any
+}) => {
+  let error = null
+  let txParams: WriteOnceParams | null = null
+  if (tx === 'connect_dashboard_wallet') {
+    if (!rawParams.wallet || !rawParams.wallet_signature) {
+      error = messages.writeOnceParamsError
+      return { error, txParams }
+    }
+    let parsedWalletSignature: any
+    try {
+      parsedWalletSignature = JSON.parse(rawParams.wallet_signature)
+    } catch {
+      error = messages.writeOnceParamsError
+      return { error, txParams }
+    }
+    if (!parsedWalletSignature.message || !parsedWalletSignature.signature) {
+      error = messages.writeOnceParamsError
+      return { error, txParams }
+    }
+    txParams = {
+      wallet: rawParams.wallet,
+      wallet_signature: {
+        message: parsedWalletSignature.message,
+        signature: parsedWalletSignature.signature
+      }
+    }
+  } else {
+    // Unknown 'tx' value
+    error = messages.writeOnceTxError
+  }
+  return { error, txParams }
 }
