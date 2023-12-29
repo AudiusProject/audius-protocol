@@ -50,6 +50,7 @@ mobile-prepare-ios:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
@@ -212,6 +213,7 @@ mobile-build-android:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: generating the release apk & bundle
         command: |
@@ -239,6 +241,7 @@ mobile-release-android:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: release android
         command: |
@@ -313,6 +316,7 @@ mobile-release-saga-dapp-store:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: Build Android
         command: |
