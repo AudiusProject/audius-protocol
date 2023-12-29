@@ -498,7 +498,7 @@ const XmlImporter = ({
 
 export const Ddex = () => {
   const { audiusLibs } = useAudiusLibs();
-  const { audiusSdk, initSdk, removeSdk } = useAudiusSdk();
+  const { audiusSdk } = useAudiusSdk();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -530,8 +530,6 @@ export const Ddex = () => {
       }
     } finally {
       // Libs throws an error even if the user was successfully logged in.
-      // initSdk will check whether there is a current user and init accordingly.
-      await initSdk();
       setLoginLoading(false);
     }
   };
@@ -540,7 +538,6 @@ export const Ddex = () => {
     setLoginError(null);
     setLogoutLoading(true);
     await audiusLibs!.Account!.logout();
-    removeSdk();
     setLogoutLoading(false);
   };
 

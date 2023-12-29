@@ -25,15 +25,11 @@ import {
 
 type AudiusSdkContextType = {
   audiusSdk: AudiusSdkType | null;
-  initSdk: () => void;
-  removeSdk: () => void;
   isLoading: boolean;
 };
 
 const AudiusSdkContext = createContext<AudiusSdkContextType>({
   audiusSdk: null,
-  initSdk: () => {},
-  removeSdk: () => {},
   isLoading: true,
 });
 
@@ -47,11 +43,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   window.audiusSdk = audiusSdk;
 
   const initSdk = () => {
-    if (
-      !window.Web3 ||
-      !audiusLibs?.Account?.getCurrentUser() ||
-      !audiusLibs?.hedgehog
-    ) {
+    if (!window.Web3) {
       return;
     }
 
@@ -70,8 +62,8 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Get keys
-      const apiKey = audiusLibs?.hedgehog?.wallet?.getAddressString();
-      const apiSecret = audiusLibs?.hedgehog?.wallet?.getPrivateKeyString();
+      const apiKey = process.env.ddex_key;
+      const apiSecret = process.env.ddex_secret;
       if (!apiKey || !apiSecret) {
         setIsLoading(false);
         return;
@@ -112,10 +104,6 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   };
 
-  const removeSdk = () => {
-    setAudiusSdk(null);
-  };
-
   useEffect(() => {
     void initSdk();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,8 +111,6 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
 
   const contextValue = {
     audiusSdk,
-    initSdk,
-    removeSdk,
     isLoading,
   };
   return (
