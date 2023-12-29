@@ -4,7 +4,7 @@ export const isEthAddressValid = (address: string) => {
       return false
     }
     const hexadecimalRegex = /^[0-9a-fA-F]+$/
-    return hexadecimalRegex.test(address)
+    return hexadecimalRegex.test(address.slice(2))
   } catch (_e) {
     return false
   }
