@@ -19,6 +19,7 @@ import type { UsersApi } from '../users/UsersApi'
 import { ClaimRewardsRequest, ClaimRewardsSchema } from './types'
 import type { PublicKey } from '@solana/web3.js'
 import { AntiAbuseOracleApi } from '../antiAbuseOracle/AntiAbuseOracleApi'
+import { toChecksumAddress } from 'ethereumjs-util'
 
 export class ChallengesApi extends BaseAPI {
   private readonly logger: LoggerService
@@ -85,6 +86,9 @@ export class ChallengesApi extends BaseAPI {
         handle
       })
       attestationTransactionSignatures.push(signature)
+    } else {
+      // Need to convert to checksum address as the attestation is lowercased
+      antiAbuseOracleEthAddress = toChecksumAddress(antiAbuseOracleEthAddress)
     }
 
     const existingSenderOwners =
@@ -110,7 +114,8 @@ export class ChallengesApi extends BaseAPI {
 
     this.logger.debug('Confirming all attestation submissions...')
     await this.rewardManager.confirmAllTransactions(
-      attestationTransactionSignatures
+      attestationTransactionSignatures,
+      'finalized' // for some reason, only works when finalized...
     )
 
     this.logger.debug('Disbursing claim...')

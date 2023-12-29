@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Tuple
 
@@ -104,7 +103,7 @@ def is_valid_oracle(address: str) -> bool:
         oracle_addresses = oracle_addresses.decode().split(",")
     else:
         oracle_addresses = get_oracle_addresses_from_chain(redis)
-    return address.lower() in [a.lower() for a in oracle_addresses]
+    return address in oracle_addresses
 
 
 def sign_attestation(attestation_bytes: bytes, private_key: str):
@@ -194,8 +193,8 @@ def get_attestation(
 
     attestation = Attestation(
         amount=str(user_challenge.amount),
-        oracle_address=oracle_address.lower(),
-        user_address=user_address.lower(),
+        oracle_address=oracle_address,
+        user_address=user_address,
         challenge_id=challenge.id,
         challenge_specifier=user_challenge.specifier,
     )

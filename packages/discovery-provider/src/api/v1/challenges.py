@@ -88,7 +88,7 @@ class FullAttest(Resource):
         db = get_db_read_replica()
         with db.scoped_session() as session:
             try:
-                owner_wallet, signature, bytes = get_attestation(
+                owner_wallet, signature = get_attestation(
                     session,
                     user_id=decoded_user_id,
                     oracle_address=oracle_address,
@@ -97,11 +97,7 @@ class FullAttest(Resource):
                 )
 
                 return success_response(
-                    {
-                        "owner_wallet": owner_wallet,
-                        "attestation": signature,
-                        "bytes": bytes.hex(),
-                    }
+                    {"owner_wallet": owner_wallet, "attestation": signature}
                 )
             except AttestationError as e:
                 abort(400, e)
