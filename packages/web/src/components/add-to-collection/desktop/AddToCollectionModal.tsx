@@ -103,17 +103,19 @@ const AddToCollectionModal = () => {
     } else {
       dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
       if (account && trackTitle) {
-        toast({
-          content: messages.addedToast,
-          link: collectionPage(
-            account.handle,
-            trackTitle,
-            playlist.playlist_id,
-            playlist.permalink,
-            playlist.is_album
-          ),
-          linkText: messages.view
-        })
+        dispatch(
+          toast({
+            content: messages.addedToast,
+            link: collectionPage(
+              account.handle,
+              trackTitle,
+              playlist.playlist_id,
+              playlist.permalink,
+              playlist.is_album
+            ),
+            linkText: messages.view
+          })
+        )
       }
     }
 
