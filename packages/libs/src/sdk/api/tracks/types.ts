@@ -34,10 +34,13 @@ export const SolCollectibleGatedConditions = z
   })
   .strict()
 
-export const CollectibleGatedConditions = z.union([
-  EthCollectibleGatedConditions,
-  SolCollectibleGatedConditions
-])
+export const CollectibleGatedConditions = z
+  .object({
+    nftCollection: z.optional(
+      z.union([EthCollectibleGatedConditions, SolCollectibleGatedConditions])
+    )
+  })
+  .strict()
 
 export const FollowGatedConditions = z
   .object({
