@@ -103,19 +103,17 @@ const AddToCollectionModal = () => {
     } else {
       dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
       if (account && trackTitle) {
-        dispatch(
-          toast({
-            content: messages.addedToast,
-            link: collectionPage(
-              account.handle,
-              trackTitle,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            ),
-            linkText: messages.view
-          })
-        )
+        toast({
+          content: messages.addedToast,
+          link: collectionPage(
+            account.handle,
+            trackTitle,
+            playlist.playlist_id,
+            playlist.permalink,
+            playlist.is_album
+          ),
+          linkText: messages.view
+        })
       }
     }
 
@@ -123,7 +121,7 @@ const AddToCollectionModal = () => {
   }
 
   const handleDisabledPlaylistClick = () => {
-    toast({ content: messages.hiddenAdd })
+    dispatch(toast({ content: messages.hiddenAdd }))
   }
 
   const handleCreateCollection = () => {
