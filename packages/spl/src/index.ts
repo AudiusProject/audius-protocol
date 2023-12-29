@@ -1,4 +1,5 @@
 export { ClaimableTokensProgram } from './claimable-tokens/ClaimableTokensProgram'
+export { RewardManagerInstruction } from './reward-manager/constants'
 export { RewardManagerProgram } from './reward-manager/RewardManagerProgram'
 export { ethAddress } from './layout-utils'
 export * from './associated-token'
