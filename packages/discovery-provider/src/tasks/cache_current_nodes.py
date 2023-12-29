@@ -8,7 +8,6 @@ from src.utils.get_all_other_nodes import (
     filter_healthy_content_nodes,
     get_all_content_nodes,
     get_all_discovery_nodes,
-    get_node_endpoint,
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_cache import set_json_cached_key

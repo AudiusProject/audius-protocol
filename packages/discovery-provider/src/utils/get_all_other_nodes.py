@@ -45,16 +45,6 @@ def fetch_node_info(sp_id, sp_factory_instance, service_type):
     ).call()
 
 
-def get_node_endpoint() -> Optional[str]:
-    """
-    Get endpoint for this discovery node from the config
-    """
-    node_url = shared_config["discprov"]["url"]
-    if not node_url or not is_fqdn(node_url):
-        return None
-    return node_url.rstrip("/")
-
-
 async def get_async_node(sp_id, sp_factory_instance, service_type):
     loop = asyncio.get_running_loop()
     result = await loop.run_in_executor(
