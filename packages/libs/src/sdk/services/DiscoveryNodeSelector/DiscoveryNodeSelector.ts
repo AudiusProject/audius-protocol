@@ -602,7 +602,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
-        await this.refreshServiceList(endpoint, data?.network?.discovery_nodes)
+        await this.refreshServiceList(
+          endpoint,
+          data?.network?.discovery_nodes_with_owner
+        )
         return endpoint
       }
     })
@@ -621,7 +624,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         endpoint,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
-      nodes = data?.network?.discovery_nodes
+      nodes = data?.network?.discovery_nodes_with_owner
     }
     if (nodes && nodes.length > 0) {
       this.logger.debug(`Refreshed service list with ${nodes.length} nodes.`)

@@ -3,7 +3,7 @@ import logging
 import requests
 
 from src.queries.get_skipped_transactions import set_indexing_error
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
+from src.utils.get_all_other_nodes import get_all_discovery_nodes_cached
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def confirm_indexing_transaction_error(
     Gets all other discovery nodes and makes an api call to check the status of a transaction
     given a blocknumber, blockhash, and transactionhash
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
+    all_other_nodes = get_all_discovery_nodes_cached(redis) or []
     if not all_other_nodes:
         return False
 
@@ -27,7 +27,7 @@ def confirm_indexing_transaction_error(
     num_transaction_failures = 0
     for node in all_other_nodes:
         try:
-            endpoint = f"{node}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
+            endpoint = f"{node['endpoint']}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
             response = requests.get(endpoint, timeout=10)
             if response.status_code != 200:
                 raise Exception(

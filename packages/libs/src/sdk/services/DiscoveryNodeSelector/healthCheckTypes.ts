@@ -58,7 +58,8 @@ export type HealthCheckResponseData = DeepPartial<{
   meets_min_requirements: boolean
   network: {
     content_nodes: StorageNode[]
-    discovery_nodes: DiscoveryNode[]
+    discovery_nodes: string[]
+    discovery_nodes_with_owner: DiscoveryNode[]
   }
   num_users_in_immediate_balance_refresh_queue: number
   num_users_in_lazy_balance_refresh_queue: number

@@ -322,7 +322,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
         "audius_db_url", ""
     )
-    discovery_nodes = get_all_other_nodes.get_all_other_discovery_nodes_cached(redis)
+    discovery_nodes = get_all_other_nodes.get_all_discovery_nodes_cached(redis)
     content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     health_results = {
@@ -359,7 +359,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
+        "network": {
+            "discovery_nodes_with_owner": discovery_nodes,
+            "discovery_nodes": [d["endpoint"] for d in discovery_nodes]
+            if discovery_nodes
+            else None,
+            "content_nodes": content_nodes,
+        },
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:

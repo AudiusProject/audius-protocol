@@ -11,7 +11,7 @@ from src.queries.update_historical_metrics import (
     update_historical_monthly_route_metrics,
 )
 from src.tasks.celery_app import celery
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
+from src.utils.get_all_other_nodes import get_all_discovery_nodes_cached
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -76,7 +76,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     and merge with this node's metrics so that this node will be aware
     of all the metrics across users hitting different providers
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
+    all_other_nodes = get_all_discovery_nodes_cached(redis) or []
 
     visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
@@ -128,8 +128,8 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     # Merge & persist metrics for other nodes
     for node in all_other_nodes:
         start_time_str = (
-            visited_node_timestamps[node]
-            if node in visited_node_timestamps
+            visited_node_timestamps[node["endpoint"]]
+            if node["endpoint"] in visited_node_timestamps
             else one_iteration_ago_str
         )
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
@@ -237,10 +237,12 @@ def synchronize_all_node_metrics(self, db, redis):
     monthly_route_metrics = {}
     daily_app_metrics = {}
     monthly_app_metrics = {}
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
+    all_other_nodes = get_all_discovery_nodes_cached(redis) or []
     for node in all_other_nodes:
-        historical_metrics = get_historical_metrics(node)
-        logger.debug(f"got historical metrics from {node}: {historical_metrics}")
+        historical_metrics = get_historical_metrics(node["endpoint"])
+        logger.debug(
+            f"got historical metrics from {node['endpoint']}: {historical_metrics}"
+        )
         if historical_metrics:
             update_route_metrics_count(
                 daily_route_metrics, historical_metrics["routes"]["daily"]

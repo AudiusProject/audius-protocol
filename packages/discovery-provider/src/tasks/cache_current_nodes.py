@@ -4,11 +4,10 @@ from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import (
     ALL_CONTENT_NODES_CACHE_KEY,
     ALL_DISCOVERY_NODES_CACHE_KEY,
-    ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY,
     ALL_HEALTHY_CONTENT_NODES_CACHE_KEY,
     filter_healthy_content_nodes,
-    get_all_other_content_nodes,
-    get_all_other_discovery_nodes,
+    get_all_content_nodes,
+    get_all_discovery_nodes,
     get_node_endpoint,
 )
 from src.utils.prometheus_metric import save_duration_metric
@@ -33,29 +32,21 @@ def cache_current_nodes_task(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("cache_current_nodes.py | fetching all other discovery nodes")
-            discovery_nodes, discovery_nodes_wallets = get_all_other_discovery_nodes()
-            current_node = get_node_endpoint()
-            # add current node to list
-            if current_node is not None:
-                discovery_nodes.append(current_node)
-
-            set_json_cached_key(
-                redis,
-                ALL_DISCOVERY_NODES_CACHE_KEY,
-                [
-                    {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
-                    for endpoint, delegateOwnerWallet in zip(
-                        discovery_nodes, discovery_nodes_wallets
-                    )
-                ],
-            )
-            set_json_cached_key(
-                redis, ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY, discovery_nodes_wallets
-            )
+            (
+                discovery_node_endpoints,
+                discovery_nodes_wallets,
+            ) = get_all_discovery_nodes()
+            discovery_nodes = [
+                {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
+                for endpoint, delegateOwnerWallet in zip(
+                    discovery_node_endpoints, discovery_nodes_wallets
+                )
+            ]
+            set_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY, discovery_nodes)
             logger.info("cache_current_nodes.py | set current discovery nodes in redis")
 
             logger.info("cache_current_nodes.py | fetching all other content nodes")
-            content_node_endpoints, content_node_wallets = get_all_other_content_nodes()
+            content_node_endpoints, content_node_wallets = get_all_content_nodes()
             content_nodes = [
                 {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
                 for endpoint, delegateOwnerWallet in zip(
