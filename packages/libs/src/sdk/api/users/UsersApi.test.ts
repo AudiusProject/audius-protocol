@@ -68,10 +68,9 @@ describe('UsersApi', () => {
     logger
   })
   const solanaRelay = new SolanaRelay()
-  const claimableTokens = new ClaimableTokensClient(
-    {},
-    new SolanaRelayWalletAdapter(solanaRelay)
-  )
+  const claimableTokens = new ClaimableTokensClient({
+    solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+  })
 
   beforeAll(() => {
     users = new UsersApi(

@@ -1,5 +1,4 @@
 import { RewardManagerProgram } from '@audius/spl'
-import type { SolanaWalletAdapter } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 import {
   CreateEvaluateAttestationsInstructionRequest,
@@ -26,15 +25,12 @@ export class RewardManagerClient extends BaseSolanaProgram {
   private readonly authority: PublicKey
   private rewardManagerState: RewardManagerStateData | null = null
 
-  constructor(
-    config: RewardManagerClientConfig,
-    solanaWalletAdapter: SolanaWalletAdapter
-  ) {
+  constructor(config: RewardManagerClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       defaultRewardManagerClentConfig
     )
-    super(configWithDefaults, solanaWalletAdapter)
+    super(configWithDefaults, config.solanaWalletAdapter)
     this.programId = configWithDefaults.programId
     this.rewardManagerStateAccount = configWithDefaults.rewardManagerState
     this.authority = RewardManagerProgram.deriveAuthority({
