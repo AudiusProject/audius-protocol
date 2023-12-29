@@ -1,11 +1,13 @@
 import { EventEmitter } from 'events'
 
 import type { AudiusSdk } from '@audius/sdk'
-import { sdk } from '@audius/sdk'
+import { AntiAbuseOracleSelector, sdk } from '@audius/sdk'
+
+import { env } from '../env'
 
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
-import { solanaService } from './solana'
+import { claimableTokensService, rewardManagerService } from './solana'
 import { getStorageNodeSelector } from './storageNodeSelector'
 
 let inProgress = false
@@ -22,7 +24,12 @@ const initSdk = async () => {
       discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
       auth,
       storageNodeSelector: await getStorageNodeSelector(),
-      solana: solanaService
+      claimableTokensProgram: claimableTokensService,
+      rewardManagerProgram: rewardManagerService,
+      antiAbuseOracleSelector: new AntiAbuseOracleSelector({
+        endpoints: [env.AAO_ENDPOINT],
+        addresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
+      })
     }
   })
   sdkInstance = audiusSdk

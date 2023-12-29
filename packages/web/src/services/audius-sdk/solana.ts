@@ -1,6 +1,6 @@
 import {
-  ClaimableTokens,
-  RewardManager,
+  ClaimableTokensClient,
+  RewardManagerClient,
   SolanaRelay,
   SolanaRelayWalletAdapter
 } from '@audius/sdk'
@@ -18,27 +18,23 @@ const solanaRelay = new SolanaRelay({
   ]
 })
 
-const solanaWalletAdapter = new SolanaRelayWalletAdapter(solanaRelay)
+const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
 
-export const claimableTokensService = new ClaimableTokens(
-  {
-    rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
-    mints: {
-      wAUDIO: new PublicKey(process.env.VITE_WAUDIO_MINT_ADDRESS!),
-      USDC: new PublicKey(process.env.VITE_USDC_MINT_ADDRESS!)
-    },
-    programId: new PublicKey(process.env.VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS!)
+export const claimableTokensService = new ClaimableTokensClient({
+  rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+  mints: {
+    wAUDIO: new PublicKey(process.env.VITE_WAUDIO_MINT_ADDRESS!),
+    USDC: new PublicKey(process.env.VITE_USDC_MINT_ADDRESS!)
   },
+  programId: new PublicKey(process.env.VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS!),
   solanaWalletAdapter
-)
+})
 
-export const rewardManagerService = new RewardManager(
-  {
-    programId: new PublicKey(process.env.VITE_REWARDS_MANAGER_PROGRAM_ID!),
-    rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
-    rewardManagerState: new PublicKey(
-      process.env.VITE_REWARDS_MANAGER_PROGRAM_PDA!
-    )
-  },
+export const rewardManagerService = new RewardManagerClient({
+  programId: new PublicKey(process.env.VITE_REWARDS_MANAGER_PROGRAM_ID!),
+  rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+  rewardManagerState: new PublicKey(
+    process.env.VITE_REWARDS_MANAGER_PROGRAM_PDA!
+  ),
   solanaWalletAdapter
-)
+})
