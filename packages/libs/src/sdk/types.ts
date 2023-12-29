@@ -7,6 +7,7 @@ import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 import type { SolanaService } from './services/Solana'
+import type { ServiceTypeManagerClient } from './services/Ethereum'
 
 export type ServicesContainer = {
   /**
@@ -33,6 +34,11 @@ export type ServicesContainer = {
    * Helpers to faciliate requests that require signatures or encryption
    */
   auth: AuthService
+
+  /**
+   * Contract client to interact with service types
+   */
+  serviceTypeManagerClient: ServiceTypeManagerClient
 
   /**
    * Service used to log and set a desired log level

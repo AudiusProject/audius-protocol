@@ -118,6 +118,7 @@
     "stream-browserify": "3.0.0",
     "ulid": "2.3.0",
     "url": "0.11.1",
+    "viem": "1.21.1",
     "web3": "1.8.2",
     "xmlhttprequest": "1.8.0",
     "zod": "3.21.4"

@@ -35,6 +35,7 @@ import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 import { Solana } from './services/Solana/Solana'
+import { ServiceTypeManagerClient, defaultServiceTypeManagerConfig } from './services/Ethereum'
 
 /**
  * The Audius SDK
@@ -109,6 +110,10 @@ const initializeServices = (config: SdkConfig) => {
     ]
   })
 
+  const defaultServiceTypeManagerClient = new ServiceTypeManagerClient({
+    ...defaultServiceTypeManagerConfig
+  })
+
   const defaultServices: ServicesContainer = {
     storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
@@ -116,6 +121,8 @@ const initializeServices = (config: SdkConfig) => {
     storage: defaultStorage,
     auth: defaultAuthService,
     solana: defaultSolana,
+    // Ethereum contracts
+    serviceTypeManagerClient: defaultServiceTypeManagerClient,
     logger
   }
   return { ...defaultServices, ...config.services }
