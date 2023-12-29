@@ -136,7 +136,11 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
                 top: spacing.s
               })}
             >
-              <LottieView source={SoundwaveCircle} autoPlay />
+              <LottieView
+                style={css({ height: '100%', width: '100%' })}
+                source={SoundwaveCircle}
+                autoPlay
+              />
             </Box>
           ) : null}
         </UserCoverPhoto>

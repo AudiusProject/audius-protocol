@@ -11,7 +11,7 @@
     "android:release": "ENVFILE=.env.prod turbo run android -- --mode=prodRelease",
     "ios": "react-native run-ios",
     "ios:dev": "turbo run ios -- --scheme 'Dev' --simulator \"iPhone 15 Pro\"",
-    "ios:stage": "turbo run ios -- --scheme 'Staging' --configuration Staging.Debug --simulator \"iPhone 15 Pro\"",
+    "ios:stage": "turbo run ios -- --scheme 'Staging' --simulator \"iPhone 15 Pro\"",
     "ios:prod": "turbo run ios -- --simulator \"iPhone 15 Pro\"",
     "ios:release": "turbo run ios -- --simulator \"iPhone 15 Pro\" --configuration Release",
     "ios:device:dev": "turbo run ios -- --scheme 'Dev' --device",
