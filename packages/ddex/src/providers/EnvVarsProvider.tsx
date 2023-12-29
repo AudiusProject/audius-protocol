@@ -11,6 +11,9 @@ interface EnvVars {
   nodeType: string;
   audiusUrl: string;
 
+  ddexKey: string;
+  ddexSecret: string;
+
   ethNetworkId: string;
   ethTokenAddress: string;
   ethRegistryAddress: string;
@@ -44,6 +47,9 @@ const envVarOverrides = {
   env: (import.meta.env.VITE_ENV_OVERRIDE ?? "") as string,
   nodeType: (import.meta.env.VITE_NODE_TYPE_OVERRIDE ?? "") as string,
   audiusUrl: (import.meta.env.VITE_AUDIUS_URL_OVERRIDE ?? "") as string,
+
+  ddexKey: (import.meta.env.VITE_DDEX_KEY_OVERRIDE ?? "") as string,
+  ddexSecret: (import.meta.env.VITE_DDEX_SECRET_OVERRIDE ?? "") as string,
 
   ethNetworkId: (import.meta.env.VITE_ETH_NETWORK_ID_OVERRIDE ?? "") as string,
   ethTokenAddress: (import.meta.env.VITE_ETH_TOKEN_ADDRESS_OVERRIDE ??

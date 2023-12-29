@@ -62,8 +62,8 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Get keys
-      const apiKey = process.env.ddex_key;
-      const apiSecret = process.env.ddex_secret;
+      const apiKey = envVars.ddexKey;
+      const apiSecret = envVars.ddexSecret;
       if (!apiKey || !apiSecret) {
         setIsLoading(false);
         return;
