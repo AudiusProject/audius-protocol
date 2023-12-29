@@ -424,7 +424,6 @@ describe('Solana Relay', function () {
     })
 
     it('should not allow non-public instructions', async function () {
-      const disbursementId = 'some:id:thing'
       // Some dummy eth addresses to make the encoder happy
       const senderEthAddress = '0x1dc3070311552fce47e06db9f4f1328187f14c85'
       const operatorEthAddress = '0x430ef095e4c5ac71a465b30d566bab0bb0985346'
