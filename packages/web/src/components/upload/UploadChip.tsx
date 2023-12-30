@@ -1,10 +1,23 @@
-import { IconMultiselectAdd } from '@audius/stems'
+import { Ref, useCallback, useMemo } from 'react'
+
+import { Name, cacheCollectionsActions } from '@audius/common'
+import {
+  HTMLButtonProps,
+  IconCloudUpload,
+  IconPlaylists
+} from '@audius/harmony'
+import { IconMultiselectAdd, PopupMenu, PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 
 import IconUpload from 'assets/img/iconUpload.svg'
 import { Tile } from 'components/tile'
+import { track, make } from 'services/analytics'
+import { UPLOAD_PAGE } from 'utils/route'
 
 import styles from './UploadChip.module.css'
+const { createAlbum, createPlaylist } = cacheCollectionsActions
 
 const messages = {
   track: 'Upload Track',
@@ -14,7 +27,11 @@ const messages = {
   artistPlaylist: 'Upload New Playlist',
   firstAlbum: 'Upload Your First Album',
   firstPlaylist: 'Create Your First Playlist',
-  firstArtistPlaylist: 'Upload Your First Playlist'
+  firstArtistPlaylist: 'Upload Your First Playlist',
+  uploadCollection: (collectionType: 'album' | 'playlist') =>
+    `Upload ${collectionType}`,
+  createCollection: (collectionType: 'album' | 'playlist') =>
+    `Create ${collectionType}`
 }
 
 type UploadChipProps = {
@@ -30,8 +47,8 @@ type UploadChipProps = {
   /**
    * Is this upload the user's first of this type
    * */
+  source: 'nav' | 'profile' | 'signup'
   isFirst?: boolean
-  onClick: () => void
   isArtist?: boolean
 }
 
@@ -40,7 +57,7 @@ const UploadChip = ({
   variant = 'tile',
   isArtist = false,
   isFirst = false,
-  onClick
+  source
 }: UploadChipProps) => {
   const icon =
     type === 'track' || type === 'album' ? (
@@ -49,7 +66,7 @@ const UploadChip = ({
       <IconMultiselectAdd className={styles.iconPlus} />
     )
 
-  let text
+  let text: string
   switch (type) {
     case 'track':
       text = variant === 'nav' ? messages.track : messages.aTrack
@@ -68,7 +85,38 @@ const UploadChip = ({
       break
   }
 
-  return (
+  const dispatch = useDispatch()
+
+  const handleClickUpload = useCallback(() => {
+    dispatch(pushRoute(UPLOAD_PAGE))
+    track(make({ eventName: Name.TRACK_UPLOAD_OPEN, source }))
+  }, [dispatch, source])
+
+  const handleCreateCollection = useCallback(() => {
+    dispatch((type === 'album' ? createAlbum : createPlaylist)({}, source))
+    // track(make({ eventName: , source }))
+  }, [dispatch, source, type])
+
+  const items: PopupMenuItem[] = useMemo(
+    () =>
+      type === 'track'
+        ? []
+        : [
+            {
+              text: messages.uploadCollection(type),
+              icon: <IconCloudUpload />,
+              onClick: handleClickUpload
+            },
+            {
+              text: messages.createCollection(type),
+              icon: <IconPlaylists />,
+              onClick: handleCreateCollection
+            }
+          ],
+    [type, handleClickUpload, handleCreateCollection]
+  )
+
+  const renderTile = (props: HTMLButtonProps, ref?: Ref<HTMLButtonElement>) => (
     <Tile
       className={cn(styles.root, {
         [styles.nav]: variant === 'nav',
@@ -76,11 +124,25 @@ const UploadChip = ({
         [styles.tile]: variant === 'tile'
       })}
       as='button'
-      onClick={onClick}
+      ref={ref}
+      {...props}
     >
       <span>{icon}</span>
       <span className={styles.text}>{text}</span>
     </Tile>
+  )
+
+  return type === 'track' ? (
+    renderTile({ onClick: handleClickUpload })
+  ) : (
+    <PopupMenu
+      items={items}
+      anchorOrigin={{ horizontal: 'right', vertical: 'center' }}
+      transformOrigin={{ horizontal: 'center', vertical: 'center' }}
+      renderTrigger={(anchorRef, onClick, triggerProps) =>
+        renderTile({ onClick: () => onClick(), ...triggerProps }, anchorRef)
+      }
+    />
   )
 }
 
