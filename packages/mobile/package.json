@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.57",
+  "version": "1.5.58",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
