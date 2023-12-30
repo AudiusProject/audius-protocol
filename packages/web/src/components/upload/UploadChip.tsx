@@ -7,11 +7,14 @@ import {
   cacheCollectionsActions
 } from '@audius/common'
 import {
+  Box,
   HTMLButtonProps,
   IconCloudUpload,
-  IconPlaylists
+  IconPlaylists,
+  IconPlus,
+  Text
 } from '@audius/harmony'
-import { IconMultiselectAdd, PopupMenu, PopupMenuItem } from '@audius/stems'
+import { PopupMenu, PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'
@@ -61,10 +64,10 @@ const UploadChip = ({
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const messages = getMessages(type)
   const icon =
-    type === 'track' || type === 'album' ? (
+    type === 'track' ? (
       <IconUpload className={styles.iconUpload} />
     ) : (
-      <IconMultiselectAdd className={styles.iconPlus} />
+      <IconPlus className={styles.iconPlus} color='subdued' />
     )
 
   let text: string
@@ -134,7 +137,11 @@ const UploadChip = ({
       {...props}
     >
       <span>{icon}</span>
-      <span className={styles.text}>{text}</span>
+      <Box w={100}>
+        <Text variant='title' size='m' color='subdued' strength='default'>
+          {text}
+        </Text>
+      </Box>
     </Tile>
   )
 
