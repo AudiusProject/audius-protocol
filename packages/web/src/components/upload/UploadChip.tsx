@@ -1,6 +1,10 @@
 import { Ref, useCallback, useMemo } from 'react'
 
-import { Name, cacheCollectionsActions } from '@audius/common'
+import {
+  CreatePlaylistSource,
+  Name,
+  cacheCollectionsActions
+} from '@audius/common'
 import {
   HTMLButtonProps,
   IconCloudUpload,
@@ -9,6 +13,7 @@ import {
 import { IconMultiselectAdd, PopupMenu, PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import IconUpload from 'assets/img/iconUpload.svg'
@@ -19,20 +24,14 @@ import { UPLOAD_PAGE } from 'utils/route'
 import styles from './UploadChip.module.css'
 const { createAlbum, createPlaylist } = cacheCollectionsActions
 
-const messages = {
+const getMessages = (type: 'track' | 'album' | 'playlist') => ({
   track: 'Upload Track',
   aTrack: 'Upload A Track',
-  album: 'Upload New Album',
-  playlist: 'Create Playlist',
-  artistPlaylist: 'Upload New Playlist',
-  firstAlbum: 'Upload Your First Album',
-  firstPlaylist: 'Create Your First Playlist',
-  firstArtistPlaylist: 'Upload Your First Playlist',
-  uploadCollection: (collectionType: 'album' | 'playlist') =>
-    `Upload ${collectionType}`,
-  createCollection: (collectionType: 'album' | 'playlist') =>
-    `Create ${collectionType}`
-}
+  createNewCollection: (isFirst: boolean) =>
+    `Create ${isFirst ? 'Your First' : 'New'} ${capitalize(type)}`,
+  uploadCollection: `Upload ${type}`,
+  createCollection: `Create ${type}`
+})
 
 type UploadChipProps = {
   type?: 'track' | 'album' | 'playlist'
@@ -47,18 +46,17 @@ type UploadChipProps = {
   /**
    * Is this upload the user's first of this type
    * */
-  source: 'nav' | 'profile' | 'signup'
+  source: 'nav' | 'profile' | CreatePlaylistSource
   isFirst?: boolean
-  isArtist?: boolean
 }
 
 const UploadChip = ({
   type = 'track',
   variant = 'tile',
-  isArtist = false,
   isFirst = false,
   source
 }: UploadChipProps) => {
+  const messages = getMessages(type)
   const icon =
     type === 'track' || type === 'album' ? (
       <IconUpload className={styles.iconUpload} />
@@ -72,14 +70,8 @@ const UploadChip = ({
       text = variant === 'nav' ? messages.track : messages.aTrack
       break
     case 'album':
-      text = isFirst ? messages.firstAlbum : messages.album
-      break
     case 'playlist':
-      if (isArtist) {
-        text = isFirst ? messages.firstArtistPlaylist : messages.artistPlaylist
-      } else {
-        text = isFirst ? messages.firstPlaylist : messages.playlist
-      }
+      text = messages.createNewCollection(isFirst)
       break
     default:
       break
@@ -89,12 +81,21 @@ const UploadChip = ({
 
   const handleClickUpload = useCallback(() => {
     dispatch(pushRoute(UPLOAD_PAGE))
-    track(make({ eventName: Name.TRACK_UPLOAD_OPEN, source }))
+    track(
+      make({
+        eventName: Name.TRACK_UPLOAD_OPEN,
+        source: source as 'nav' | 'profile'
+      })
+    )
   }, [dispatch, source])
 
   const handleCreateCollection = useCallback(() => {
-    dispatch((type === 'album' ? createAlbum : createPlaylist)({}, source))
-    // track(make({ eventName: , source }))
+    dispatch(
+      (type === 'album' ? createAlbum : createPlaylist)(
+        {},
+        source as CreatePlaylistSource
+      )
+    )
   }, [dispatch, source, type])
 
   const items: PopupMenuItem[] = useMemo(
@@ -103,17 +104,17 @@ const UploadChip = ({
         ? []
         : [
             {
-              text: messages.uploadCollection(type),
+              text: messages.uploadCollection,
               icon: <IconCloudUpload />,
               onClick: handleClickUpload
             },
             {
-              text: messages.createCollection(type),
+              text: messages.createCollection,
               icon: <IconPlaylists />,
               onClick: handleCreateCollection
             }
           ],
-    [type, handleClickUpload, handleCreateCollection]
+    [type, messages, handleClickUpload, handleCreateCollection]
   )
 
   const renderTile = (props: HTMLButtonProps, ref?: Ref<HTMLButtonElement>) => (
