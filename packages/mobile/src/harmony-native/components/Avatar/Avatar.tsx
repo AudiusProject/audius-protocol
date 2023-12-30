@@ -9,7 +9,7 @@ export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
   SetRequired<ImageBackgroundProps, 'accessibilityLabel'>
 
 const sizeMap = {
-  auto: '100%',
+  auto: '100%' as const,
   small: 24,
   medium: 40,
   large: 72,

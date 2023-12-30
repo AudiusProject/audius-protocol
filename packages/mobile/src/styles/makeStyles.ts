@@ -20,17 +20,15 @@ type StylesOptions = {
   type: Theme
 }
 
-type NamedStyles<T> = {
-  [P in keyof T]:
-    | ViewStyle
-    | TextStyle
-    | ImageStyle
-    | (ViewStyle & { fill: string }) // For SVGs
-}
+type StyleTypes =
+  | ImageStyle
+  | ViewStyle
+  | TextStyle
+  | (ViewStyle & { fill: string })
 
-export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>>(
-  styles: (options: StylesOptions) => T | NamedStyles<T>
-) => {
+export const makeStyles = <T extends Record<string, StyleTypes>>(
+  styles: (options: StylesOptions) => T
+): (() => T) => {
   const baseOptions = { spacing, typography }
 
   const defaultStylesheet = StyleSheet.create(

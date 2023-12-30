@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 
-import type { StyleProp, ViewStyle } from 'react-native'
+import type { DimensionValue, StyleProp, ViewStyle } from 'react-native'
 import { Animated, Easing, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -11,9 +11,9 @@ const ANIMATION_DURATION_MS = 1500
 
 type SkeletonProps = {
   // Width (css string) of the skeleton to display. Default 100%.
-  width?: string | number
+  width?: DimensionValue
   // Height (css string) of the skeleton to display. Default 100%.
-  height?: string | number
+  height?: DimensionValue
   // Optional style to pass in and override styles with
   style?: StyleProp<ViewStyle>
   noShimmer?: boolean

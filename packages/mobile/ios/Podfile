@@ -1,7 +1,11 @@
-require_relative '../../../node_modules/react-native/scripts/react_native_pods'
-require_relative '../../../node_modules/@react-native-community/cli-platform-ios/native_modules'
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
-platform :ios, '14.0'
+platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled(["Debug", "Staging.Debug"], { 'Flipper' => '0.175.0' })
@@ -25,17 +29,12 @@ target 'AudiusReactNative' do
 
   pod 'SRSRadialGradient', :path => '../../../node_modules/react-native-radial-gradient/ios'
   pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
-  pod 'react-native-flipper', :path => '../../../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
+  # pod 'react-native-flipper', :path => '../../../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
 
   config = use_native_modules!
 
-  # Flags change depending on the env values.
-  flags = get_default_flags()
-
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => flags[:hermes_enabled],
-    :fabric_enabled => flags[:fabric_enabled],
     # Enables Flipper.
     #
     # Note that if you have use_frameworks! enabled, Flipper will not work and
@@ -48,11 +47,9 @@ target 'AudiusReactNative' do
   post_install do |installer|
    react_native_post_install(
       installer,
-      # Set `mac_catalyst_enabled` to `true` in order to apply patches
-      # necessary for Mac Catalyst builds
+      config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
 
     installer.pods_project.build_configurations.each do |config|
@@ -68,12 +65,6 @@ target 'AudiusReactNative' do
       end
     end
 
-    # https://github.com/facebook/react-native/issues/37748
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
-      end
-    end
   end
 end
 

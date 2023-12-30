@@ -53,7 +53,7 @@ export const AppDrawerScreen = () => {
       headerShown: false,
       swipeEdgeWidth: SCREEN_WIDTH,
       drawerType: 'slide' as const,
-      drawerStyle: { width: '75%' },
+      drawerStyle: { width: '75%' as const },
       gestureHandlerProps: { enabled: !gesturesDisabled }
     }),
     [gesturesDisabled]
