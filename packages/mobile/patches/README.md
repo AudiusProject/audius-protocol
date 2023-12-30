@@ -18,12 +18,6 @@ Patch to support full screen swipe gestures in native stack. and navigation draw
 
 Patch to support full screen swipe gestures in native stack. and navigation drawers and their interplay with material top tabs.See https://github.com/callstack/react-native-pager-view/pull/500
 
-## react-native+0.71.8.patch
-
-Patch to prevent a freezing issue on some Android 13 devices when using an inverted FlatList with a lot of text or any animations. See https://github.com/facebook/react-native/issues/35350 and https://github.com/facebook/react-native/issues/30034
-
-Patch to fix an issue with TextInput not sending onChange events on the first character entered, when multiline is set to true. See https://github.com/facebook/react-native/issues/37784
-
 ## react-native-code-push+8.1.1.patch
 
 Patch to fix code-push with latest react native https://github.com/microsoft/react-native-code-push/issues/2626
