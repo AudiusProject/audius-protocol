@@ -15,6 +15,6 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   cd ../../..
 fi
 
-if [[ -z "${CI}" ]]; then
-  ./dev-tools/setup.sh
-fi
+# if [[ -z "${CI}" ]]; then
+#   ./dev-tools/setup.sh
+# fi
