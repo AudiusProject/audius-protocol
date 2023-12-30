@@ -2,6 +2,7 @@ import { Ref, useCallback, useMemo } from 'react'
 
 import {
   CreatePlaylistSource,
+  FeatureFlags,
   Name,
   cacheCollectionsActions
 } from '@audius/common'
@@ -18,6 +19,7 @@ import { useDispatch } from 'react-redux'
 
 import IconUpload from 'assets/img/iconUpload.svg'
 import { Tile } from 'components/tile'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { track, make } from 'services/analytics'
 import { UPLOAD_PAGE } from 'utils/route'
 
@@ -56,6 +58,7 @@ const UploadChip = ({
   isFirst = false,
   source
 }: UploadChipProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const messages = getMessages(type)
   const icon =
     type === 'track' || type === 'album' ? (
@@ -92,8 +95,10 @@ const UploadChip = ({
   const handleCreateCollection = useCallback(() => {
     dispatch(
       (type === 'album' ? createAlbum : createPlaylist)(
-        {},
-        source as CreatePlaylistSource
+        { playlist_name: `New ${type}` },
+        source as CreatePlaylistSource,
+        undefined,
+        'route'
       )
     )
   }, [dispatch, source, type])
@@ -133,7 +138,7 @@ const UploadChip = ({
     </Tile>
   )
 
-  return type === 'track' ? (
+  return !isEditAlbumsEnabled || type === 'track' ? (
     renderTile({ onClick: handleClickUpload })
   ) : (
     <PopupMenu
