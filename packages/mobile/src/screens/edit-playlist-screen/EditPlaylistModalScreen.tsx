@@ -36,7 +36,6 @@ export const EditPlaylistModalScreen = () => {
     (values: EditPlaylistValues) => {
       if (playlist) {
         dispatch(editPlaylist(playlist.playlist_id, values))
-        dispatch(tracksActions.fetchLineupMetadatas())
       }
     },
     [dispatch, playlist]
