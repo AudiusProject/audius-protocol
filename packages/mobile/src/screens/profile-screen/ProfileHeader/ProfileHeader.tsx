@@ -31,12 +31,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingTop: spacing(2),
     paddingHorizontal: spacing(3)
   },
-  profilePicture: {
-    position: 'absolute',
-    top: spacing(13),
-    left: spacing(3),
-    zIndex: 100
-  },
   divider: { marginHorizontal: -12, marginBottom: spacing(2) },
   bottomDivider: { marginTop: spacing(2), marginHorizontal: -12 }
 }))
@@ -120,7 +114,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   return (
     <>
       <ProfileCoverPhoto scrollY={scrollY} />
-      <ProfilePicture style={styles.profilePicture} />
+      <ProfilePicture />
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
         <OnlineOnly>
