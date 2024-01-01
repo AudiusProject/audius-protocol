@@ -4,7 +4,7 @@ const DEFAULT_LOG_LEVEL = 'warn'
 const DEFAULT_LOG_PREFIX = '[audius-sdk]'
 const logLevels = ['debug', 'info', 'warn', 'error'] as const
 
-type LogLevel = typeof logLevels[number]
+type LogLevel = (typeof logLevels)[number]
 
 type LoggerConfiguration = {
   logLevel?: LogLevel

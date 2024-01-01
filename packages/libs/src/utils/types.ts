@@ -115,9 +115,7 @@ type USDCPurchaseConditions = {
 }
 
 export type GatedConditions = {
-  nft_collection?:
-  | EthCollectibleGatedConditions
-  | SolCollectibleGatedConditions
+  nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
   follow_user_id?: number
   tip_user_id?: number
 } & USDCPurchaseConditions
