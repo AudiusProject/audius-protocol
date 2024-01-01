@@ -590,7 +590,10 @@ def validate_access_conditions(params: ManageEntityParameters):
     stream_conditions = track_metadata.get("stream_conditions", {}) or {}
 
     download = track_metadata.get("download")
-    is_downloadable = download.get("is_downloadable") if download else False
+    new_is_downloadable = track_metadata.get("is_downloadable")
+    is_downloadable = new_is_downloadable or (
+        download.get("is_downloadable") if download else False
+    )
     is_download_gated = track_metadata.get("is_download_gated")
     download_conditions = track_metadata.get("download_conditions", {}) or {}
 
@@ -641,12 +644,6 @@ def validate_access_conditions(params: ManageEntityParameters):
         if len(download_conditions) != 1:
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of download conditions"
-            )
-    else:
-        # if not download gated, must not be stream gated
-        if is_stream_gated:
-            raise IndexingValidationError(
-                f"Track {params.entity_id} is not download gated but is stream gated"
             )
 
 
