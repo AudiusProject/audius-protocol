@@ -121,7 +121,6 @@ export const CoinflowOnrampDrawer = () => {
           wallet={adapter.wallet}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
-          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           onSuccess={handleSuccess}
           merchantId={env.COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
