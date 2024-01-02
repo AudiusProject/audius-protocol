@@ -233,7 +233,7 @@ const TrackTile = ({
         isOwner,
         isUnlisted:
           isUnlisted &&
-          (!releaseDate || moment(releaseDate).isBefore(moment())),
+          (!releaseDate || moment.utc(releaseDate).isBefore(moment())),
         premiumConditions
       })
 
