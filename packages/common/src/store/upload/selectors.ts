@@ -56,5 +56,5 @@ export const getCombinedUploadPercentage = (state: CommonState) => {
   const percent = round(
     100 * (ART_WEIGHT * artProgress + AUDIO_WEIGHT * audioProgress)
   )
-  return percent
+  return Math.min(percent, 100)
 }
