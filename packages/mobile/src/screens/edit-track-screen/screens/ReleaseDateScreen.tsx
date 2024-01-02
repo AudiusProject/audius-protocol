@@ -38,7 +38,7 @@ const messages = {
     'Specify a release date for your music or schedule it to be released in the future.',
   done: 'Done',
   releaseNowRadio: 'Release immediately',
-  scheduleReleaseDateRadio: 'Schedule a release date',
+  scheduleReleaseDateRadio: 'Select a release date',
   futureReleaseHint: (timezone: string) =>
     `Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (${timezone}).`,
   pastReleaseHint:

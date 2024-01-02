@@ -17,6 +17,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
+import moment from 'moment'
 import {
   call,
   fork,
@@ -233,7 +234,24 @@ function* confirmEditTrack(
 function* watchEditTrack() {
   yield takeEvery(trackActions.EDIT_TRACK, editTrackAsync)
 }
+function* publishTrackAsync(action) {
+  let track = yield select(getTrack, { id: action.trackId })
 
+  track = {
+    ...track,
+    is_unlisted: false,
+    release_date: moment().toString(),
+    field_visibility: {
+      genre: true,
+      mood: true,
+      tags: true,
+      share: true,
+      play_count: true,
+      remixes: track.field_visibility?.remixes ?? true
+    }
+  }
+  yield put(cacheActions.editTrack(action.trackId, track))
+}
 function* deleteTrackAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield waitForWrite()
@@ -341,6 +359,10 @@ function* confirmDeleteTrack(trackId) {
 
 function* watchDeleteTrack() {
   yield takeEvery(trackActions.DELETE_TRACK, deleteTrackAsync)
+}
+
+function* watchPublishTrack() {
+  yield takeEvery(trackActions.PUBLISH_TRACK, publishTrackAsync)
 }
 
 function* watchFetchCoverArt() {

@@ -1,8 +1,6 @@
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timezone from 'dayjs/plugin/timezone'
-import type { MomentInput } from 'moment'
-import moment from 'moment'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
@@ -59,10 +57,6 @@ export const formatDateWithTimezoneOffset = (date: string): string => {
 
 export const utcToLocalTime = (date: string) => {
   return dayjs.tz(dayjs.utc(date))
-}
-
-export const getLocalTimezone = () => {
-  return dayjs.tz(dayjs()).format('z')
 }
 
 export const getLocalTimezone = () => {
