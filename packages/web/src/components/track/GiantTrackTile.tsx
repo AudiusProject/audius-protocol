@@ -284,8 +284,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isReposted
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
                 text={
@@ -294,7 +294,7 @@ export const GiantTrackTile = ({
                     : messages.repostButtonText
                 }
                 leftIcon={<IconRepost />}
-                onClick={isOwner ? () => { } : onRepost}
+                onClick={isOwner ? () => {} : onRepost}
               />
             </div>
           </Tooltip>
@@ -325,8 +325,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isSaved
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
@@ -477,10 +477,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      streamConditions,
-      isUnlisted:
-        isUnlisted && (!released || moment(released).isBefore(moment()))
-    })
+        streamConditions,
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
+      })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
