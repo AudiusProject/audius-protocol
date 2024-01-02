@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -653,9 +653,7 @@ def validate_update_access_conditions(params: ManageEntityParameters):
     updated_track = params.metadata
 
     # validate changes to conditions
-    def validate_update(
-        existing_conditions: Optional[Dict], updated_conditions: Optional[Dict]
-    ):
+    def validate_update(existing_conditions, updated_conditions):
         # currently non gated track cannot be updated to be gated
         if not existing_conditions and updated_conditions:
             raise IndexingValidationError(
