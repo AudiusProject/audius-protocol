@@ -418,13 +418,13 @@ stream_parser.add_argument(
 # todo: remove after clients are updated to use /download
 stream_parser.add_argument(
     "filename",
-    description="""Optional - name of file to download. Redirects to /download if provided.""",
+    description="""(DEPRECATED) Optional - name of file to download. Redirects to /download if provided.""",
     type=str,
 )
 # todo: remove after clients are updated to use 'nft_access_signature'
 stream_parser.add_argument(
     "premium_content_signature",
-    description="""Optional - same as 'nft_access_signature'. Temporarily leaving it here for backwards compatibility.""",
+    description="""(DEPRECATED) Optional - same as 'nft_access_signature'. Temporarily leaving it here for backwards compatibility.""",
     type=str,
 )
 

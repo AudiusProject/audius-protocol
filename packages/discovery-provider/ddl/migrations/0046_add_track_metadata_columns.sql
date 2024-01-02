@@ -35,7 +35,7 @@ update tracks set download_conditions = premium_conditions
 
 -- set follow gated download conditions for non gated tracks that are downloadable and that require follow
 update tracks t
-set is_premium = true, download_conditions = jsonb_build_object('follow_user_id', download_requires_follow.owner_id)
+set is_download_gated = true, download_conditions = jsonb_build_object('follow_user_id', download_requires_follow.owner_id)
 from (
   select track_id, owner_id from tracks
   where is_current is true
