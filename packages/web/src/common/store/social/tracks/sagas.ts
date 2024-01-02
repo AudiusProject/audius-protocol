@@ -668,7 +668,7 @@ function* downloadTrack({
     yield* call(trackDownload.downloadTrack, { url, filename })
   } catch (e) {
     console.error(
-      `Could not download track ${trackId}: ${
+      `Could not download track ${track.track_id}: ${
         (e as Error).message
       }. Error: ${e}`
     )

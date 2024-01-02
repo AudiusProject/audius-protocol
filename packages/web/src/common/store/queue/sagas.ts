@@ -301,6 +301,7 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
+    const currentUserId = yield* select(getUserId)
     const doesUserHaveStreamAccess = !!track?.access?.stream
 
     // Skip deleted, owner deactivated, or locked gated track
