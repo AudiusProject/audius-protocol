@@ -194,6 +194,7 @@ dependencies {
 
     implementation project(':react-native-notifications')
     implementation 'com.google.firebase:firebase-core:16.0.0'
+    implementation 'com.github.nsure-ai:android-sdk:1.3.2'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
@@ -206,4 +207,4 @@ apply from: "../../../../node_modules/react-native-code-push/android/codepush.gr
 apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 // Google Services Gradle plugin
-apply plugin: 'com.google.gms.google-services' 
+apply plugin: 'com.google.gms.google-services'
