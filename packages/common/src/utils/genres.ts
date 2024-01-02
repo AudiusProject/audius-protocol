@@ -121,7 +121,9 @@ export const GENRES = [
   ...Object.values(ELECTRONIC_SUBGENRES)
 ]
 
-export const convertGenreLabelToValue = (genreLabel: typeof GENRES[number]) => {
+export const convertGenreLabelToValue = (
+  genreLabel: (typeof GENRES)[number]
+) => {
   return genreLabel.replace(ELECTRONIC_PREFIX, '')
 }
 

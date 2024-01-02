@@ -65,6 +65,11 @@ jobs:
       context: [Vercel, dockerhub]
       service: uptime
       notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex
+      notify_slack_on_failure: true
 
   - push-arm-image:
       name: push-discovery-provider-arm
@@ -139,9 +144,12 @@ jobs:
       service: uptime
       requires:
         - push-uptime
-
-
-
+  - push-arm-image:
+      name: push-ddex-arm
+      context: [Vercel, dockerhub]
+      service: ddex
+      requires:
+        - push-ddex
 
   - release-github-draft-trigger:
       type: approval
@@ -181,6 +189,7 @@ jobs:
         - push-healthz
         - push-protocol-dashboard
         - push-uptime
+        - push-ddex
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
@@ -193,7 +202,8 @@ jobs:
         # - push-trpc-arm
         # - push-healthz-arm
         # - push-protocol-dashboard-arm
-
+        # - push-uptime-arm
+        # - push-ddex-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

@@ -121,16 +121,18 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                   {collectibleChainElement}
                 </div>
               )}
-              {mediaType === CollectibleMediaType.VIDEO && !frame && videoUrl && (
-                <div className={cn(styles.media, styles.imageWrapper)}>
-                  <IconPlay className={styles.playIcon} />
-                  <video
-                    style={{ height: '100%', width: '100%' }}
-                    src={`${videoUrl}#t=0.1`}
-                  />
-                  {collectibleChainElement}
-                </div>
-              )}
+              {mediaType === CollectibleMediaType.VIDEO &&
+                !frame &&
+                videoUrl && (
+                  <div className={cn(styles.media, styles.imageWrapper)}>
+                    <IconPlay className={styles.playIcon} />
+                    <video
+                      style={{ height: '100%', width: '100%' }}
+                      src={`${videoUrl}#t=0.1`}
+                    />
+                    {collectibleChainElement}
+                  </div>
+                )}
               {(mediaType === CollectibleMediaType.IMAGE ||
                 mediaType === CollectibleMediaType.THREE_D) && (
                 <div className={styles.imageWrapper}>

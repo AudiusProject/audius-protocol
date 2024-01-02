@@ -6,7 +6,7 @@ import { Flex } from '../layout/Flex/Flex'
 import { CompletionCheck } from './CompletionCheck'
 
 const meta: Meta<CompletionCheckProps> = {
-  title: 'Components/Input/CompletionCheck',
+  title: 'Components/CompletionCheck',
   component: CompletionCheck,
   argTypes: {
     value: {

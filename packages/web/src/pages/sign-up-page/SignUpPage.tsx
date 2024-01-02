@@ -2,7 +2,6 @@ import { Helmet } from 'react-helmet'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
-import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { determineAllowedRoute } from 'pages/sign-up-page/utils/determineAllowedRoutes'
 import { useSelector } from 'utils/reducer'
 import {
@@ -26,7 +25,7 @@ import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
-import { SelectGenrePage } from './pages/SelectGenrePage'
+import { SelectGenresPage } from './pages/SelectGenresPage'
 import { RouteContextProvider } from './utils/RouteContext'
 
 const messages = {
@@ -67,7 +66,6 @@ export const SignUpPage = () => {
         <title>{messages.metaTitle}</title>
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
-      <NavHeader />
       <Switch>
         <SignUpRoute exact path={SIGN_UP_PAGE} />
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
@@ -89,7 +87,7 @@ export const SignUpPage = () => {
           <FinishProfilePage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-          <SelectGenrePage />
+          <SelectGenresPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
           <SelectArtistsPage />

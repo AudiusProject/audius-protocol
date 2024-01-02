@@ -6,6 +6,8 @@ import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/types
 import { useNavigation } from '@react-navigation/native'
 import { Dimensions } from 'react-native'
 
+import { AudioPlayer } from 'app/components/audio/AudioPlayer'
+
 import { AppScreen } from '../app-screen'
 
 import { AppDrawerContextProvider } from './AppDrawerContext'
@@ -60,15 +62,18 @@ export const AppDrawerScreen = () => {
   const gestureProps = { gesturesDisabled, setGesturesDisabled }
 
   return (
-    <Drawer.Navigator
-      // legacy implementation uses reanimated-v1
-      useLegacyImplementation
-      screenOptions={drawerScreenOptions}
-      drawerContent={(props) => <LeftNavDrawer {...gestureProps} {...props} />}
-    >
-      <Drawer.Screen name='App'>
-        {(props) => <AppStack {...props} {...gestureProps} />}
-      </Drawer.Screen>
-    </Drawer.Navigator>
+    <>
+      <AudioPlayer />
+      <Drawer.Navigator
+        screenOptions={drawerScreenOptions}
+        drawerContent={(props) => (
+          <LeftNavDrawer {...gestureProps} {...props} />
+        )}
+      >
+        <Drawer.Screen name='App'>
+          {(props) => <AppStack {...props} {...gestureProps} />}
+        </Drawer.Screen>
+      </Drawer.Navigator>
+    </>
   )
 }

@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
-import { expectSaga } from 'redux-saga-test-plan'
 import { call } from 'redux-saga/effects'
+import { expectSaga } from 'redux-saga-test-plan'
 
 import * as actions from './actions'
 import reducer from './reducer'

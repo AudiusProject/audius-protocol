@@ -421,6 +421,7 @@ def create_track(params: ManageEntityParameters):
         blocknumber=params.block_number,
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
+        release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
     )
 

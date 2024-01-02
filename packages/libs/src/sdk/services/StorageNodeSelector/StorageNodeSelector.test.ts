@@ -28,10 +28,8 @@ class MockAuth implements AuthService {
 
   signTransaction: (data: EIP712TypedData) => Promise<string> = async () => ''
 
-  sign: (data: string) => Promise<[Uint8Array, number]> = async () => [
-    new Uint8Array(),
-    0
-  ]
+  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
+    async () => [new Uint8Array(), 0]
 
   hashAndSign: (data: string) => Promise<string> = async () => ''
 

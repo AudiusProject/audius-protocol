@@ -19,7 +19,6 @@ export audius_delegate_private_key=$(printenv "DP${replica}_DELEGATE_OWNER_PRIVA
 elasticsearch_host=$(nslookup $(hostname -i) | grep -o "name = .*" | grep -o "[^ ]\+$" | sed 's/discovery-provider/discovery-provider-elasticsearch/')
 if nslookup "$elasticsearch_host" >/dev/null 2>&1; then
     export audius_elasticsearch_url="http://$elasticsearch_host:9200"
-    export audius_elasticsearch_run_indexer="true"
 fi
 
 # Run register script in background

@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.pageContainer {
+  @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+}
+
+.pageContentContainer {
+  @apply mx-auto flex flex-col space-y-8;
+}
+
+.btn {
+  @apply font-bold py-2 px-4 rounded;
+}
+
+.btn-blue {
+  @apply bg-blue-500 text-white;
+}
+
+.btn-blue:hover {
+  @apply bg-blue-700;
+}
+
+.btn-outline {
+  @apply bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded;
+}
+
+.tableHeaderCellFirst {
+  @apply py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 uppercase;
+}
+
+.tableHeaderCell {
+  @apply px-3 py-3.5 text-left text-sm font-semibold text-gray-900 uppercase;
+}
+
+.tableCellFirst {
+  @apply whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6;
+}
+
+.tableCell {
+  @apply whitespace-nowrap px-3 py-4 text-sm text-gray-500;
+}
+
+.card {
+  @apply rounded-xl shadow overflow-scroll mb-8;
+  @apply border border-gray-100;
+}
+
+.card h2 {
+  @apply bg-gray-50 p-2 text-xl;
+}
+
+.chip {
+  @apply flex items-center overflow-hidden rounded-full p-2 pr-4 gap-2 block;
+  @apply border border-gray-100;
+}

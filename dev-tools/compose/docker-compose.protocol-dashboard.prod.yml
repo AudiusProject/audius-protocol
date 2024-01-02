@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  dashboard:
+    container_name: dashboard
+    build:
+      context: ${PROJECT_ROOT}/protocol-dashboard
+      dockerfile: ${PROJECT_ROOT}/protocol-dashboard/Dockerfile.prod
+    ports:
+      - 5173:5173
+    deploy:
+      mode: global

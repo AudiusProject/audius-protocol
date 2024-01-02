@@ -17,8 +17,8 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress =
       config.blacklisterAddress || accounts[accounts.length - 1]
-    const networkId = await web3.eth.net.getId()
-    console.log(`Deploying EntityManager to ${networkId}`)
+    const chainId = await web3.eth.getChainId()
+    console.log(`Deploying EntityManager to ${chainId}`)
     const deployLogicTx = await deployer.deploy(EntityManager)
     const logicContractAddress = deployLogicTx.address
     console.log(logicContractAddress)
@@ -26,7 +26,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeData = encodeCall(
       'initialize',
       ['address', 'uint'],
-      [verifierAddress, networkId]
+      [verifierAddress, chainId]
     )
     // Deploy proxy contract with encoded initialize function
     let deployedProxyTx = await deployer.deploy(

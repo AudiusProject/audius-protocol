@@ -54,8 +54,8 @@ export const getChallengesDisbursementsUserbanks = async (
 export const getChallengesDisbursementsUserbanksFriendly = async (
   discoveryDb: Knex,
   specifier: string
-): Promise<ChallengeDisbursementUserbankFriendly[]> =>
-  await discoveryDb<ChallengeDisbursementUserbankFriendly>(
+): Promise<ChallengeDisbursementUserbankFriendly[]> => {
+  const query =  discoveryDb<ChallengeDisbursementUserbankFriendly>(
     'user_challenges as u'
   )
     .select(
@@ -78,6 +78,9 @@ export const getChallengesDisbursementsUserbanksFriendly = async (
     .where('users.is_current', true)
     .orderBy('u.challenge_id')
     .orderBy('u.specifier')
+
+    return await query
+  }
 
 export const getChallengesDisbursementsUserbanksFriendlyEnsureSlots = async (
   discoveryDb: Knex,

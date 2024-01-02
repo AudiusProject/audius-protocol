@@ -71,12 +71,6 @@ export interface User {
     followerCount: number;
     /**
      * 
-     * @type {boolean}
-     * @memberof User
-     */
-    doesFollowCurrentUser?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof User
      */
@@ -215,7 +209,6 @@ export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User
         'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
         'followeeCount': json['followee_count'],
         'followerCount': json['follower_count'],
-        'doesFollowCurrentUser': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
         'handle': json['handle'],
         'id': json['id'],
         'isVerified': json['is_verified'],
@@ -250,7 +243,6 @@ export function UserToJSON(value?: User | null): any {
         'cover_photo': CoverPhotoToJSON(value.coverPhoto),
         'followee_count': value.followeeCount,
         'follower_count': value.followerCount,
-        'does_follow_current_user': value.doesFollowCurrentUser,
         'handle': value.handle,
         'id': value.id,
         'is_verified': value.isVerified,

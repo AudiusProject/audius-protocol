@@ -247,9 +247,11 @@ export class LineupActions {
   refreshInView(
     overwrite = false,
     payload?: unknown,
-    limit: number | null = null
+    limit: number | null = null,
+    other?: Record<string, unknown>
   ) {
     return {
+      ...other,
       type: addPrefix(this.prefix, REFRESH_IN_VIEW),
       overwrite,
       payload,

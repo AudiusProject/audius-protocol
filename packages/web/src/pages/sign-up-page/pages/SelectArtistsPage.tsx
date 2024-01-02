@@ -28,10 +28,10 @@ import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
-  FollowArtistTile,
+  FollowArtistCard,
   FollowArtistTileSkeleton
-} from '../components/FollowArtistTile'
-import { PreviewArtistToast } from '../components/PreviewArtistToast'
+} from '../components/FollowArtistCard'
+import { PreviewArtistHint } from '../components/PreviewArtistHint'
 import {
   Heading,
   HiddenLegend,
@@ -181,14 +181,17 @@ export const SelectArtistsPage = () => {
                   backgroundColor='default'
                   pv='xl'
                   ph={isMobile ? 'l' : 'xl'}
-                  css={{ minHeight: 500 }}
+                  css={{
+                    minHeight: 500,
+                    minWidth: !isMobile ? 530 : undefined
+                  }}
                   direction='column'
                 >
                   <HiddenLegend>
                     {messages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
-                  {isLoading || !isMobile ? null : <PreviewArtistToast />}
+                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
@@ -199,7 +202,7 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistTile key={user.user_id} user={user} />
+                          <FollowArtistCard key={user.user_id} user={user} />
                         ))}
                   </Flex>
                 </ArtistsList>

@@ -417,13 +417,13 @@ export const DetailsTile = ({
                 {isScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
-                      <HarmonyText
-                        color='accent'
-                        strength='strong'
-                        size='m'
-                        style={styles.releasesLabel}
-                      >
-                        Releases
+                    <HarmonyText
+                      color='accent'
+                      strength='strong'
+                      size='m'
+                      style={styles.releasesLabel}
+                    >
+                      Releases
                       {' ' +
                         moment
                           .utc(track.release_date)
