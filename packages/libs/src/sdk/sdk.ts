@@ -4,6 +4,7 @@ import fetch from 'cross-fetch'
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
 import { ChatsApi } from './api/chats/ChatsApi'
+import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
@@ -33,6 +34,7 @@ import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
+import { Solana } from './services/Solana/Solana'
 
 /**
  * The Audius SDK
@@ -100,12 +102,20 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultStorage = new Storage({ storageNodeSelector, logger })
 
+  const defaultSolana = new Solana({
+    middleware: [
+      config.services?.discoveryNodeSelector?.createMiddleware() ??
+        defaultDiscoveryNodeSelector.createMiddleware()
+    ]
+  })
+
   const defaultServices: ServicesContainer = {
     storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,
     auth: defaultAuthService,
+    solana: defaultSolana,
     logger
   }
   return { ...defaultServices, ...config.services }
@@ -141,7 +151,8 @@ const initializeApis = ({
     services.storage,
     services.entityManager,
     services.auth,
-    services.logger
+    services.logger,
+    services.solana
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -181,6 +192,12 @@ const initializeApis = ({
     services.auth
   )
 
+  const dashboardWalletUsers = new DashboardWalletUsersApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
+
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
     middleware
@@ -206,7 +223,9 @@ const initializeApis = ({
     full,
     chats,
     grants,
-    developerApps
+    developerApps,
+    dashboardWalletUsers,
+    services
   }
 }
 

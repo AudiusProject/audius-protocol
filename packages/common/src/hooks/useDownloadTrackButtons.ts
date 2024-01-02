@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 
-import moment from 'moment'
 import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
+
+import dayjs from 'utils/dayjs'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
@@ -52,6 +53,9 @@ const messages = {
     `${friendlyName} ${categoryCount || ''}`
 }
 
+const sortByDateAsc = (a: Track, b: Track) =>
+  dayjs(a.created_at).diff(dayjs(b.created_at))
+
 const doesRequireFollow = (
   isOwner: boolean,
   following: boolean,
@@ -78,11 +82,7 @@ const useCurrentStems = ({
   // Sort the stems, filter deletes
   const stemTracks = Object.values(stemTracksMap)
     .filter((t) => !t._marked_deleted && !t.is_delete)
-    .sort(
-      (a, b) =>
-        moment(a.created_at).milliseconds() -
-        moment(b.created_at).milliseconds()
-    )
+    .sort(sortByDateAsc)
     .map((t) => ({
       downloadURL: t.download?.cid,
       category: t.stem_of.category,

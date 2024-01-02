@@ -76,7 +76,8 @@ export const TrackList = ({
 
   const renderDraggableTrack: DraggableFlatListProps<UID | ID>['renderItem'] =
     useCallback(
-      ({ item, index = -1, drag }) => {
+      ({ item, getIndex = () => -1, drag }) => {
+        const index = getIndex() ?? -1
         const RootView = isReorderable ? OpacityDecorator : Fragment
         return (
           <RootView>
@@ -119,7 +120,7 @@ export const TrackList = ({
     ({ item, index }) =>
       renderDraggableTrack({
         item,
-        index,
+        getIndex: () => index,
         drag: noOp,
         isActive: false
       }) as ReactElement,

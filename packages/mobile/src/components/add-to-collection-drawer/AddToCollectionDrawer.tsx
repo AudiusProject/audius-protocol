@@ -168,6 +168,7 @@ export const AddToCollectionDrawer = () => {
     [
       trackId,
       addToNewCollection,
+      collectionType,
       isTrackUnlisted,
       account?.name,
       renderImage,

@@ -1,14 +1,12 @@
 import DataLoader from 'dataloader'
 import {
-  APlaylist,
-  ATrack,
-  AUser,
   selectPlaylistsCamel,
   selectTracksCamel,
   selectUsersCamel,
-  sql
+  sql,
 } from './db'
 import { FollowRow, SubscriptionRow } from './db-tables'
+import { APlaylist, ATrack, AUser } from './types'
 
 export const prepareLoaders = (myId: number | undefined) => ({
   // bulk load user by id
@@ -51,7 +49,7 @@ export const prepareLoaders = (myId: number | undefined) => ({
           from subscriptions
           where is_delete = false
             and user_id in ${sql(ids)}
-            and subscriber_id = ${myId}`
+            and subscriber_id = ${myId}`,
         ])
 
         for (const row of followRows) {
@@ -68,7 +66,7 @@ export const prepareLoaders = (myId: number | undefined) => ({
       return ids.map((id) => ({
         followed: outboundIds.has(id),
         followsMe: inboundIds.has(id),
-        subscribed: subscribedIds.has(id)
+        subscribed: subscribedIds.has(id),
       }))
     }
   ),
@@ -96,7 +94,9 @@ export const prepareLoaders = (myId: number | undefined) => ({
           from reposts
           where is_delete = false
             and user_id = ${myId}
-            and repost_type in ${sql(kinds)} and repost_item_id in ${sql(ids)};`
+            and repost_type in ${sql(kinds)} and repost_item_id in ${sql(
+            ids
+          )};`,
         ])
 
         for (const row of savedRows) {
@@ -110,10 +110,10 @@ export const prepareLoaders = (myId: number | undefined) => ({
 
       return ids.map((id) => ({
         saved: saved.has(id),
-        reposted: reposted.has(id)
+        reposted: reposted.has(id),
       }))
     })
-  }
+  },
 })
 
 function mapRowsUsingKey(keyName: string, rows: any[], keys: readonly any[]) {

@@ -143,5 +143,15 @@
     "owner": 5,
     "app": -1,
     "whitelist": 1000
+  },
+  "CreateDashboardWalletUser": {
+    "owner": 100,
+    "app": 100,
+    "whitelist": 1000
+  },
+  "DeleteDashboardWalletUser": {
+    "owner": 100,
+    "app": 100,
+    "whitelist": 1000
   }
 }

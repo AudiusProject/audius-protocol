@@ -13,10 +13,11 @@ import {
 import { setField, setValueField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import type { ImageURISource } from 'react-native'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Paper, useTheme } from '@audius/harmony-native'
+import { Paper, useTheme, Text } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
@@ -24,6 +25,8 @@ import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionS
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+
+const AnimatedText = Animated.createAnimatedComponent(Text)
 
 const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
@@ -80,7 +83,10 @@ export const FinishProfileScreen = () => {
               })}
             />
           </Paper>
-          <PageFooter onSubmit={handleSubmit} />
+          <PageFooter
+            prefix={<UploadProfilePhotoHelperText />}
+            onSubmit={handleSubmit}
+          />
         </Page>
       )}
     </Formik>
@@ -131,5 +137,25 @@ const AccountHeaderField = () => {
       handle={handle}
       isVerified={isVerified}
     />
+  )
+}
+
+const UploadProfilePhotoHelperText = () => {
+  const [{ value: displayName }, { touched }] = useField('displayName')
+  const [{ value: profileImage }] = useField('profileImage')
+  const isVisible = displayName && touched && !profileImage
+  const { motion } = useTheme()
+
+  if (!isVisible) return null
+
+  return (
+    <AnimatedText
+      variant='body'
+      textAlign='center'
+      entering={FadeIn.duration(motion.calm.duration)}
+      exiting={FadeOut.duration(motion.calm.duration)}
+    >
+      {messages.uploadProfilePhoto}
+    </AnimatedText>
   )
 }

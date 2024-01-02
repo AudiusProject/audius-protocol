@@ -70,7 +70,8 @@ export enum EntityType {
   USER_REPLICA_SET = 'UserReplicaSet',
   NOTIFICATION = 'Notification',
   DEVELOPER_APP = 'DeveloperApp',
-  GRANT = 'Grant'
+  GRANT = 'Grant',
+  DASHBOARD_WALLET_USER = 'DashboardWalletUser'
 }
 
 export type AdvancedOptions = {

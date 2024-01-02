@@ -68,7 +68,7 @@ export class EntityManager implements EntityManagerService {
     Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
   > {
     const nonce = await signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = Number(await this.web3.eth.getChainId())
     const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       this.config.contractAddress,

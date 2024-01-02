@@ -89,7 +89,7 @@ export const Page = (props: PageProps) => {
 
   if (centered) {
     return (
-      <Flex h='100%' direction='column' alignItems='center' as={as}>
+      <Flex flex={1} direction='column' alignItems='center' as={as}>
         <AnimatedFlex
           {...layoutProps}
           {...other}
@@ -107,7 +107,7 @@ export const Page = (props: PageProps) => {
   return (
     <AnimatedFlex
       as={as}
-      h='100%'
+      flex={1}
       {...layoutProps}
       {...other}
       css={

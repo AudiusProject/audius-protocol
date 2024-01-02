@@ -9,7 +9,6 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react/recommended',
     'plugin:import/typescript',
-    // 'plugin:mdx/recommended',
     'plugin:prettier/recommended'
   ],
   globals: {
@@ -18,6 +17,8 @@ module.exports = {
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
+    // TODO: enable after react-native migration [C-3548]
+    // project: true,
     ecmaFeatures: {
       jsx: true
     },
@@ -30,10 +31,11 @@ module.exports = {
     '@typescript-eslint',
     '@emotion',
     'jest',
-    'import',
-    'mdx'
+    'import'
   ],
   rules: {
+    // TODO: enable after react-native migration [C-3548]
+    // '@typescript-eslint/consistent-type-exports': 'error',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/member-delimiter-style': 'off',
@@ -135,7 +137,13 @@ module.exports = {
   overrides: [
     {
       files: ['*.mdx'],
+      extends: 'plugin:mdx/recommended',
+      plugins: ['mdx'],
       parser: 'eslint-mdx'
+      // TODO: enable after react-native migration [C-3548]
+      // rules: {
+      //   '@typescript-eslint/consistent-type-exports': 'off'
+      // }
     }
   ]
 }

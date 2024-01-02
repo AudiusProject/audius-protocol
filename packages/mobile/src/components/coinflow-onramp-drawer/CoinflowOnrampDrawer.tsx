@@ -46,7 +46,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-const { transactionSucceeded } = coinflowModalUIActions
+const { transactionCanceled, transactionSucceeded } = coinflowModalUIActions
 
 const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
   const styles = useStyles()
@@ -97,6 +97,11 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const handleClose = useCallback(() => {
+    dispatch(transactionCanceled({}))
+    onClose()
+  }, [dispatch, onClose])
+
   const showContent = isOpen && adapter
 
   return (
@@ -107,13 +112,14 @@ export const CoinflowOnrampDrawer = () => {
       modalName={MODAL_NAME}
       isGestureSupported={false}
       isFullscreen
-      onClose={onClose}
+      onClose={handleClose}
     >
       {showContent ? (
         <CoinflowPurchase
           deviceId={deviceId}
           transaction={transaction}
           wallet={adapter.wallet}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           onSuccess={handleSuccess}

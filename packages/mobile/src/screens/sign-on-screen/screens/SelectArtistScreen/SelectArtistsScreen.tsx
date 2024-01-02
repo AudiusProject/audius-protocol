@@ -1,15 +1,10 @@
 import { useCallback } from 'react'
 
-import {
-  selectArtstsPageMessages as messages,
-  selectArtistsSchema
-} from '@audius/common'
-import { addFollowArtists } from 'common/store/pages/signon/actions'
-import { getGenres } from 'common/store/pages/signon/selectors'
-import { Formik } from 'formik'
+import { selectArtstsPageMessages as messages } from '@audius/common'
+import { followArtists } from 'common/store/pages/signon/actions'
+import { getFollowIds, getGenres } from 'common/store/pages/signon/selectors'
 import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
-import { useDispatch, useSelector } from 'react-redux'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
+import { useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
 
@@ -18,24 +13,17 @@ import { Heading, PageFooter } from '../../components/layout'
 
 import { SelectedGenresTabBar } from './SelectedGenresTabBar'
 import { TopArtistsCardList } from './TopArtistsCardList'
+import { SelectArtistsPreviewContextProvider } from './selectArtistPreviewContext'
 
 const Tab = createMaterialCollapsibleTopTabNavigator()
 
-type SelectArtistsValues = {
-  selectedArtists: string[]
-}
-
-const initialValues: SelectArtistsValues = {
-  selectedArtists: []
-}
-
+// Note for this screen we are not using Formik due to performance issues, and using redux instead.
 export const SelectArtistsScreen = () => {
   const genres = useSelector((state: any) => [
     'Featured',
     ...(getGenres(state) ?? [])
   ])
-  const dispatch = useDispatch()
-
+  const selectedArtists = useSelector(getFollowIds)
   const renderHeader = useCallback(
     () => (
       <Flex pointerEvents='none' backgroundColor='white'>
@@ -53,53 +41,39 @@ export const SelectArtistsScreen = () => {
     []
   )
 
-  const handleSubmit = useCallback(
-    (values: SelectArtistsValues) => {
-      const { selectedArtists } = values
-      dispatch(
-        addFollowArtists(selectedArtists.map((artist) => parseInt(artist)))
-      )
-    },
-    [dispatch]
-  )
+  const handleSubmit = useCallback(() => {
+    // TODO
+  }, [])
 
   return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
-    >
-      {({ dirty, isValid, values }) => {
-        const { selectedArtists } = values
-        return (
-          <Flex flex={1}>
-            <Tab.Navigator
-              tabBar={SelectedGenresTabBar}
-              collapsibleOptions={{
-                renderHeader,
-                headerHeight: 244,
-                disableSnap: true
-              }}
-            >
-              {genres.map((genre) => (
-                <Tab.Screen
-                  key={genre}
-                  name={genre}
-                  component={TopArtistsCardList}
-                />
-              ))}
-            </Tab.Navigator>
-            <PageFooter
-              buttonProps={{ disabled: !dirty || !isValid }}
-              postfix={
-                <Text variant='body'>
-                  {messages.selected} {selectedArtists.length || 0}/3
-                </Text>
-              }
+    <SelectArtistsPreviewContextProvider>
+      <Flex flex={1}>
+        <Tab.Navigator
+          tabBar={SelectedGenresTabBar}
+          collapsibleOptions={{
+            renderHeader,
+            headerHeight: 244,
+            disableSnap: true
+          }}
+        >
+          {genres.map((genre) => (
+            <Tab.Screen
+              key={genre}
+              name={genre}
+              component={TopArtistsCardList}
             />
-          </Flex>
-        )
-      }}
-    </Formik>
+          ))}
+        </Tab.Navigator>
+        <PageFooter
+          onSubmit={handleSubmit}
+          buttonProps={{ disabled: followArtists.length < 3 }}
+          postfix={
+            <Text variant='body'>
+              {messages.selected} {selectedArtists.length || 0}/3
+            </Text>
+          }
+        />
+      </Flex>
+    </SelectArtistsPreviewContextProvider>
   )
 }

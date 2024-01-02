@@ -140,6 +140,7 @@ mobile-build-upload-production-ios-if-full-release:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
+        slack-notify: false
 
 mobile-deploy-codepush-production-ios-if-ota-release:
   working_directory: ~/audius-protocol
@@ -289,6 +290,7 @@ mobile-build-upload-production-android-if-full-release:
         build-directory: 'build-mobile-production'
         upload-type: 'prod'
         track: 'alpha'
+        slack-notify: false
 
 mobile-deploy-codepush-production-android-if-ota-release:
   working_directory: ~/audius-protocol

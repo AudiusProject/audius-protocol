@@ -274,7 +274,12 @@ def validate_purchase(
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
-        if account not in balance_changes or balance_changes[account]["change"] < split:
+        if account not in balance_changes:
+            logger.error(
+                f"index_payment_router.py | No split given to account={account}, expected={split}"
+            )
+            return False
+        if balance_changes[account]["change"] < split:
             logger.error(
                 f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
