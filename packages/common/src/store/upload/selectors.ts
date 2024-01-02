@@ -1,4 +1,4 @@
-import { round } from 'lodash'
+import { round, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
 
@@ -56,5 +56,5 @@ export const getCombinedUploadPercentage = (state: CommonState) => {
   const percent = round(
     100 * (ART_WEIGHT * artProgress + AUDIO_WEIGHT * audioProgress)
   )
-  return Math.min(percent, 100)
+  return clamp(percent, 0, 100)
 }
