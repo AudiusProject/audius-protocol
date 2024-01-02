@@ -29,7 +29,7 @@ const topArtistsApi = createApi({
       async fetch(_, context) {
         const { env, fetch } = context
 
-        const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES)
+        const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES!)
         const featuredArtists: ID[] = await response.json()
         return await userApiFetch.getUsersByIds(
           { ids: featuredArtists },

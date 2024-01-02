@@ -97,6 +97,7 @@
   },
   "dependencies": {
     "@escape.tech/mookme": "2.4.1",
+    "react-native-svg": "12.3.0",
     "pg": "8.8.0"
   },
   "overrides": {
