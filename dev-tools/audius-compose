@@ -215,7 +215,7 @@ def build(
 
     # build 2 extra images for protocol dashboard (stage and prod)
     if "dashboard" in services and prod:
-        for target in ["stage", "prod"]:
+        for target in ["dev", "stage", "prod"]:
             env = os.environ.copy()
             env["DASHBOARD_ENV_TYPE"] = target
             proc = subprocess.run(
@@ -294,6 +294,10 @@ def push(ctx, services, prod):
             base_tag = f"{protocol_dir.name}-{service}"
 
             if service == "dashboard" and prod:
+                # tag -dev image (for audius-d)
+                subprocess.run(["docker", "tag", f"{base_tag}:dev", f"audius/{service}:{git_commit}-dev"], check=True)
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True)
+                
                 # tag -stage image
                 subprocess.run(["docker", "tag", f"{base_tag}:stage", f"audius/{service}:{git_commit}-stage"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
@@ -310,6 +314,7 @@ def push(ctx, services, prod):
     try:
         for service in services:
             if service == "dashboard" and prod:
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
                 subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
 
