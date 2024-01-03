@@ -294,17 +294,9 @@ def push(ctx, services, prod):
             base_tag = f"{protocol_dir.name}-{service}"
 
             if service == "dashboard" and prod:
-                # tag -dev image (for audius-d)
                 subprocess.run(["docker", "tag", f"{base_tag}:dev", f"audius/{service}:{git_commit}-dev"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True)
-                
-                # tag -stage image
                 subprocess.run(["docker", "tag", f"{base_tag}:stage", f"audius/{service}:{git_commit}-stage"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
-
-                # tag -prod image
                 subprocess.run(["docker", "tag", f"{base_tag}:prod", f"audius/{service}:{git_commit}-prod"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
 
             subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
             subprocess.run(["docker", "push", f"audius/{service}:{git_commit}"], check=True)
