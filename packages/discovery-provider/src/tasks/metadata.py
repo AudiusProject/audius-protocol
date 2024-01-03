@@ -61,6 +61,7 @@ class TrackMetadata(TypedDict):
     track_segments: List[TrackSegment]
     download: Any
     remix_of: Optional[TrackRemix]
+    is_scheduled_release: bool
     is_unlisted: bool
     field_visibility: Optional[TrackFieldVisibility]
     stem_of: Optional[TrackStem]
@@ -178,6 +179,7 @@ immutable_track_fields = immutable_fields | {
     "track_cid",
     "duration",
     "is_available",
+    "is_scheduled_release",
 }
 
 immutable_user_fields = immutable_fields | {

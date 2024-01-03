@@ -296,9 +296,16 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
 
             # allow scheduled_releases to override is_unlisted value based on release date
             # only for CREATE because publish_scheduled releases will publish this once
-            if track_record.is_scheduled_release and action == Action.CREATE:
-                track_record.is_unlisted = track_record.release_date >= str(
-                    datetime.now()
+            if (
+                track_record.is_scheduled_release
+                and track_record.release_date
+                and action == Action.CREATE
+            ):
+                track_record.is_unlisted = (
+                    track_record.release_date
+                    >= str(  # type:ignore
+                        datetime.now()
+                    )
                 )
         else:
             # For most fields, update the track_record when the corresponding field exists
