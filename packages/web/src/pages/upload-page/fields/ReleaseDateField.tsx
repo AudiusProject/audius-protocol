@@ -206,7 +206,7 @@ const RadioItems = (props: any) => {
         />
         <ModalRadioItem
           value={ReleaseDateType.SCHEDULED_RELEASE}
-          label='Select a release date'
+          label='Select a Release Date'
         />
       </RadioButtonGroup>
       {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (

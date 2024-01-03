@@ -60,6 +60,8 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         anchorRef={anchorRef}
         isVisible={isFocused}
         onClose={() => setIsFocused(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <div className={cn(styles.datePicker, style)}>
           <DayPickerSingleDateController
