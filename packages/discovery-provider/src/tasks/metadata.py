@@ -99,6 +99,7 @@ track_metadata_format: TrackMetadata = {
         "cid": None,
     },
     "remix_of": None,
+    "is_scheduled_release": False,
     "is_unlisted": False,
     "field_visibility": None,
     "stem_of": None,

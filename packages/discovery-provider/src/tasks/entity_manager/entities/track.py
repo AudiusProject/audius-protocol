@@ -280,25 +280,26 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     track_metadata["title"], handle
                 )
 
-        elif key == "release_date" or key == "is_unlisted":
-            # if scheduled release
-            # release_date can override is_unlisted
-
-            track_record.is_unlisted = track_metadata.get(
-                "is_unlisted", track_record.is_unlisted
-            )
-
+        elif key == "release_date":
             if "release_date" in track_metadata:
                 # casting to string because datetime doesn't work for some reason
                 parsed_release_date = parse_release_date(track_metadata["release_date"])
                 # postgres will convert to a timestamp
                 if parsed_release_date:
                     track_record.release_date = str(parsed_release_date)  # type: ignore
-                    if parsed_release_date > datetime.now(timezone.utc):
-                        track_record.is_unlisted = (
-                            parsed_release_date
-                            and parsed_release_date > datetime.now(timezone.utc)
-                        )
+                    logger.info(
+                        f"asdf set release_date {parsed_release_date} {track_record.release_date}"
+                    )
+        elif key == "is_unlisted":
+            if "is_unlisted" in track_metadata:
+                track_record.is_unlisted = track_metadata["is_unlisted"]
+
+            # allow scheduled_releases to override is_unlisted value based on release date
+            # only for CREATE because publish_scheduled releases will publish this once
+            if track_record.is_scheduled_release and action == Action.CREATE:
+                track_record.is_unlisted = track_record.release_date >= str(
+                    datetime.now()
+                )
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
