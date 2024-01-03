@@ -556,9 +556,11 @@ export const GiantTrackTile = ({
             </div>
           </ClientOnly>
 
-          <div className={cn(styles.statsSection, fadeIn)}>
-            {renderStatsRow()}
-          </div>
+          <ClientOnly>
+            <div className={cn(styles.statsSection, fadeIn)}>
+              {renderStatsRow()}
+            </div>
+          </ClientOnly>
 
           <ClientOnly>
             <div

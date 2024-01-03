@@ -10,6 +10,7 @@ import { profilePage } from 'utils/route'
 
 import { Link, LinkProps } from './Link'
 import styles from './UserLink.module.css'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 
 const { getUser } = cacheUsersSelectors
 
@@ -44,11 +45,13 @@ export const UserLink = (props: UserLinkProps) => {
       <Text as={textAs} variant='inherit' className={styles.name}>
         {userName}
       </Text>
-      <UserBadges
-        badgeSize={badgeSize}
-        userId={userId}
-        className={styles.badge}
-      />
+      <ClientOnly>
+        <UserBadges
+          badgeSize={badgeSize}
+          userId={userId}
+          className={styles.badge}
+        />
+      </ClientOnly>
     </Link>
   )
 

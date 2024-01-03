@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer'
 
 import 'setimmediate'
-import { full as FullSdk } from '@audius/sdk'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import { PageContextClient } from 'vike/types'
@@ -21,7 +20,7 @@ window.process = { ...processBrowser, env: process.env }
 const HYDRATE_CLIENT = true
 
 export default async function render(
-  pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
+  pageContext: PageContextClient & { pageProps: any }
 ) {
   const { pageProps, urlPathname } = pageContext
 

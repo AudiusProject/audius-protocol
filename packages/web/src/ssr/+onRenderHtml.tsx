@@ -1,31 +1,22 @@
 import { SsrPageProps } from '@audius/common'
-import { createMemoryHistory } from 'history'
 import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import { PageContextServer } from 'vike/types'
 
 import indexHtml from '../../index.html?raw'
-import { Root } from '../Root'
-
-import { SsrContextProvider } from './SsrContext'
 
 export const passToClient = ['pageProps', 'urlPathname']
 
 export default function render(
   pageContext: PageContextServer & { pageProps: SsrPageProps }
 ) {
-  const { pageProps, urlPathname } = pageContext
-
-  const history = createMemoryHistory({
-    initialEntries: [urlPathname]
-  })
+  const { Page, pageProps } = pageContext
 
   const pageHtml = ReactDOMServer.renderToString(
-    <SsrContextProvider
-      value={{ path: urlPathname, isServerSide: true, pageProps, history }}
-    >
-      <Root />
-    </SsrContextProvider>
+    <>
+      {/* @ts-ignore */}
+      <Page {...pageProps} />
+    </>
   )
 
   const pattern = /%(\S+?)%/g

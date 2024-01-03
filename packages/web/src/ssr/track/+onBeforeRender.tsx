@@ -1,12 +1,8 @@
-import type { Maybe } from '@audius/common'
 import {
-  sdk,
-  full as FullSdk,
-  DiscoveryNodeSelector,
+  developmentConfig,
   productionConfig,
-  stagingConfig,
-  developmentConfig
-} from '@audius/sdk'
+  stagingConfig
+} from '@audius/sdk/src/sdk/config'
 import { PageContextServer } from 'vike/types'
 
 const sdkConfigs = {
@@ -15,37 +11,42 @@ const sdkConfigs = {
   development: developmentConfig
 }
 
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  bootstrapServices: (
-    sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
-    productionConfig
-  ).discoveryNodes
-})
-
-const audiusSdk = sdk({
-  appName: process.env.VITE_PUBLIC_HOSTNAME ?? 'audius.co',
-  services: {
-    discoveryNodeSelector
-  }
-})
-
 export type TrackPageProps = {
-  track: Maybe<FullSdk.TrackFull>
+  track: any | undefined
 }
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle, slug } = pageContext.routeParams
 
   try {
-    const { data: tracks } = await audiusSdk.full.tracks.getBulkTracks({
-      permalink: [`${handle}/${slug}`]
-    })
+    const t = Date.now()
 
-    const pageProps = { track: tracks?.[0] }
+    // Fetching directly from discovery node rather than using the sdk
+    // because including the sdk increases bundle size and creates substantial
+    // cold start times
+    const discoveryNodes = (
+      sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+      productionConfig
+    ).discoveryNodes
+
+    const discoveryNode =
+      discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+
+    const discoveryRequestPath = `v1/full/tracks?handle=${handle}&slug=${slug}`
+    const discoveryRequestUrl = `${discoveryNode}/${discoveryRequestPath}`
+
+    const res = await fetch(discoveryRequestUrl)
+    if (res.status !== 200) {
+      throw new Error(discoveryRequestUrl)
+    }
+
+    const json = await res.json()
+
+    console.log('profile sdk', Date.now() - t)
 
     return {
       pageContext: {
-        pageProps
+        pageProps: { track: json.data }
       }
     }
   } catch (e) {
