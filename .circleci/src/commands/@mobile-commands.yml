@@ -166,7 +166,7 @@ mobile-prepare-android:
           sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
-    - run: cd packages/mobile/android && (bundle check || sudo bundle install --path vendor/bundle)
+    - run: cd packages/mobile/android && (bundle check || sudo bundle install --path vendor/bundle --full-index)
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
         paths:
