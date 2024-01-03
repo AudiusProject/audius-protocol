@@ -26,6 +26,7 @@ class Signature(TypedDict):
 
 class CreateDashboardWalletUserMetadata(TypedDict):
     wallet_signature: Union[Signature, None]
+    user_signature: Union[Signature, None]
     wallet: Union[str, None]
 
 
@@ -44,18 +45,76 @@ def matches_user_id(hash_or_int_id, int_id):
     return hash_or_int_id == str(int_id) or decode_string_id(hash_or_int_id) == int_id
 
 
+def verify_dashboard_wallet_signature(dashboard_wallet, user_id, wallet_signature):
+    if (
+        # Expect wallet_signature message to be "Connecting Audius user id {user hash id} at {timestamp}"
+        not isinstance(wallet_signature, dict)
+        or not wallet_signature.get("message", "").startswith(
+            "Connecting Audius user id"
+        )
+        or not matches_user_id(
+            (wallet_signature.get("message", "").split()[-3]), user_id
+        )
+        or not is_within_5_minutes((wallet_signature.get("message", "").split())[-1])
+    ):
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet Transaction, wallet signature provided does not have correct message"
+        )
+    try:
+        signature_address = get_address_from_signature(wallet_signature)
+    except:
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
+        )
+    if not signature_address or not signature_address.lower() == dashboard_wallet:
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
+        )
+
+
+def verify_user_signature(user_wallet, dashboard_wallet, user_signature):
+    if (
+        not isinstance(user_signature, dict)
+        or not user_signature.get("message", "").startswith(
+            "Connecting Audius protocol dashboard wallet "
+        )
+        or not dashboard_wallet
+        == (user_signature.get("message", "").split()[-3]).lower()
+        or not is_within_5_minutes((user_signature.get("message", "").split())[-1])
+    ):
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet Transaction, user signature provided does not have correct message"
+        )
+    try:
+        signature_address = get_address_from_signature(user_signature)
+    except:
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
+        )
+    if (
+        not user_wallet
+        or not signature_address
+        or not signature_address.lower() == user_wallet.lower()
+    ):
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
+        )
+
+
 def get_create_dashboard_wallet_user_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[CreateDashboardWalletUserMetadata]:
     metadata: CreateDashboardWalletUserMetadata = {
         "wallet": None,
         "wallet_signature": None,
+        "user_signature": None,
     }
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
 
             metadata["wallet_signature"] = json_metadata.get("wallet_signature", None)
+            metadata["user_signature"] = json_metadata.get("user_signature", None)
             raw_wallet = json_metadata.get("wallet", None)
             if raw_wallet:
                 metadata["wallet"] = raw_wallet.lower()
@@ -113,6 +172,7 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
 
     user_wallet = params.existing_records["User"][user_id].wallet
     user_matches_signer = user_wallet and user_wallet.lower() == params.signer.lower()
+    dashboard_wallet_matches_signer = dashboard_wallet == params.signer.lower()
     if params.action == Action.DELETE:
         if dashboard_wallet not in params.existing_records["DashboardWalletUser"]:
             raise IndexingValidationError(
@@ -133,13 +193,13 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
                 "Invalid Delete Dashboard Wallet User Transaction, user is not assigned to this wallet"
             )
     elif params.action == Action.CREATE:
-        if not user_matches_signer:
+        if not user_matches_signer and not dashboard_wallet_matches_signer:
             raise IndexingValidationError(
                 "Invalid Create Dashboard Wallet User Transaction, signature does not match user"
             )
-        if not metadata["wallet_signature"]:
+        if not metadata["wallet_signature"] and not metadata["user_signature"]:
             raise IndexingValidationError(
-                "Invalid Create Dashboard Wallet User Transaction, wallet signature is required and was not provided"
+                "Invalid Create Dashboard Wallet User Transaction, wallet signature or user signature is required and was not provided"
             )
         if (
             dashboard_wallet in params.existing_records["DashboardWalletUser"]
@@ -151,31 +211,13 @@ def validate_dashboard_wallet_user_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 f"Invalid Create Dashboard Wallet User Transaction, dashboard wallet {dashboard_wallet} already has an assigned user"
             )
-        # Expect wallet_signature message to be "Connecting Audius user id {user hash id} at {timestamp}"
-        if (
-            not isinstance(metadata["wallet_signature"], dict)
-            or not metadata["wallet_signature"]
-            .get("message", "")
-            .startswith("Connecting Audius user id")
-            or not matches_user_id(
-                (metadata["wallet_signature"].get("message", "").split()[-3]), user_id
+        if user_matches_signer:
+            verify_dashboard_wallet_signature(
+                dashboard_wallet, user_id, metadata["wallet_signature"]
             )
-            or not is_within_5_minutes(
-                (metadata["wallet_signature"].get("message", "").split())[-1]
-            )
-        ):
-            raise IndexingValidationError(
-                "Invalid Create Dashboard Wallet Transaction, wallet signature provided does not have correct message"
-            )
-        try:
-            signature_address = get_address_from_signature(metadata["wallet_signature"])
-        except:
-            raise IndexingValidationError(
-                "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
-            )
-        if not signature_address or not signature_address.lower() == dashboard_wallet:
-            raise IndexingValidationError(
-                "Invalid Create Dashboard Wallet User Transaction, signature provided is invalid"
+        else:
+            verify_user_signature(
+                user_wallet, dashboard_wallet, metadata["user_signature"]
             )
     else:
         raise IndexingValidationError(
