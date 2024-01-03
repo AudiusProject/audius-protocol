@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
+
 import { Text } from 'components/text/Text'
 
 import type { TextLinkProps } from './types'
