@@ -40,7 +40,7 @@ mobile-prepare-ios:
         command: |
           cd packages/mobile/ios
           sudo bundle update --bundler
-          bundle check || bundle install --path vendor/bundle
+          bundle check || sudo bundle install --path vendor/bundle
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
         paths:
@@ -75,7 +75,7 @@ mobile-prepare-ios:
         command: cd packages/mobile && npx turbo run bundle:ios
     - run:
         name: update fastlane
-        command: cd packages/mobile/ios
+        command: cd packages/mobile/ios && sudo bundle update fastlane
 
 # Build ios app
 mobile-build-ios:
@@ -166,14 +166,14 @@ mobile-prepare-android:
           sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
-    - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
+    - run: cd packages/mobile/android && (bundle check || sudo bundle install --path vendor/bundle)
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
         paths:
           - packages/mobile/android/vendor/bundle
     - run:
         name: update fastlane
-        command: cd packages/mobile/android
+        command: cd packages/mobile/android && sudo bundle update fastlane
     - run:
         name: Build dependencies
         command: npx turbo run build --filter=audius-mobile-client

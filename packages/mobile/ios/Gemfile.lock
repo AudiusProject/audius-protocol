@@ -277,7 +277,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 7.0.8)
   cocoapods (~> 1.13)
-  fastlane
+  fastlane (!= 2.218.0)
   fastlane-plugin-versioning
 
 BUNDLED WITH
