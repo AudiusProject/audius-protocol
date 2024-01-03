@@ -6,7 +6,7 @@ export type Env = {
   EXPLORE_CONTENT_URL?: string
   ENVIRONMENT?: Environment
   ORACLE_ETH_ADDRESSES?: string
-  SUGGESTED_FOLLOW_HANDLES: string
+  SUGGESTED_FOLLOW_HANDLES?: string
   GENERAL_ADMISSION?: string
   IDENTITY_SERVICE?: string
   PUBLIC_HOSTNAME?: string

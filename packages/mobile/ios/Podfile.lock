@@ -7,7 +7,7 @@ PODS:
   - AnalyticsConnector (1.0.3)
   - Base64 (1.1.2)
   - boost (1.83.0)
-  - BVLinearGradient (2.6.2):
+  - BVLinearGradient (2.8.3):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
   - CodePush (8.1.1):
@@ -24,11 +24,11 @@ PODS:
     - React-Core (= 0.73.1)
     - React-jsi (= 0.73.1)
     - ReactCommon/turbomodule/core (= 0.73.1)
-  - ffmpeg-kit-ios-https-gpl (4.5.1.LTS)
-  - ffmpeg-kit-react-native/https-gpl-lts (4.5.2):
-    - ffmpeg-kit-ios-https-gpl (= 4.5.1.LTS)
+  - ffmpeg-kit-ios-https-gpl (6.0.LTS)
+  - ffmpeg-kit-react-native/https-gpl-lts (6.0.2):
+    - ffmpeg-kit-ios-https-gpl (= 6.0.LTS)
     - React-Core
-  - FingerprintPro (2.1.8)
+  - FingerprintPro (2.3.2)
   - Flipper (0.175.0):
     - Flipper-Folly (~> 2.6)
   - Flipper-Boost-iOSX (1.76.0.1.11)
@@ -112,11 +112,8 @@ PODS:
   - lottie-react-native (6.4.1):
     - lottie-ios (~> 4.3.3)
     - React-Core
+  - nSure (1.3.1)
   - OpenSSL-Universal (1.1.1100)
-  - Permission-Notifications (3.0.5):
-    - RNPermissions
-  - Permission-PhotoLibraryAddOnly (3.0.5):
-    - RNPermissions
   - PromisesObjC (2.3.1)
   - RCT-Folly (2022.05.16.00):
     - boost
@@ -989,39 +986,41 @@ PODS:
   - React-Mapbuffer (0.73.1):
     - glog
     - React-debug
-  - react-native-blur (4.3.0):
+  - react-native-blur (4.3.2):
     - React-Core
-  - react-native-config (1.4.5):
-    - react-native-config/App (= 1.4.5)
-  - react-native-config/App (1.4.5):
+  - react-native-config (1.5.1):
+    - react-native-config/App (= 1.5.1)
+  - react-native-config/App (1.5.1):
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
-  - react-native-document-picker (8.1.2):
+  - react-native-document-picker (9.1.0):
     - React-Core
   - react-native-fast-crypto (2.2.0):
     - React
   - react-native-get-random-values (1.10.0):
     - React-Core
-  - react-native-google-cast (4.6.0):
+  - react-native-google-cast (4.6.2):
     - React
-    - react-native-google-cast/NoBluetoothArm (= 4.6.0)
-  - react-native-google-cast/NoBluetoothArm (4.6.0):
+    - react-native-google-cast/NoBluetoothArm (= 4.6.2)
+  - react-native-google-cast/NoBluetoothArm (4.6.2):
     - google-cast-sdk-dynamic-xcframework-no-bluetooth
     - React
     - react-native-google-cast/RNGoogleCast
-  - react-native-google-cast/RNGoogleCast (4.6.0):
+  - react-native-google-cast/RNGoogleCast (4.6.2):
     - PromisesObjC
     - React
-  - react-native-image-picker (4.10.2):
+  - react-native-image-picker (7.1.0):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - react-native-in-app-review (4.2.1):
+  - react-native-in-app-review (4.3.3):
     - React-Core
-  - react-native-keep-awake (1.1.0):
+  - react-native-keep-awake (1.2.2):
     - React-Core
-  - react-native-netinfo (11.0.1):
+  - react-native-netinfo (11.2.1):
     - React-Core
-  - react-native-notifications (4.3.3):
+  - react-native-notifications (5.1.0):
     - React-Core
   - react-native-pager-view (6.2.3):
     - glog
@@ -1029,15 +1028,13 @@ PODS:
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
-  - react-native-restart (0.0.24):
+  - react-native-restart (0.0.27):
     - React-Core
-  - react-native-safe-area-context (4.5.3):
-    - RCT-Folly
-    - RCTRequired
-    - RCTTypeSafety
+  - react-native-safe-area-context (4.8.2):
     - React-Core
-    - ReactCommon/turbomodule/core
-  - react-native-slider (4.4.3):
+  - react-native-slider (4.5.0):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - react-native-tiktok (1.1.1):
     - React-Core
@@ -1052,7 +1049,7 @@ PODS:
     - react-native-video/Video (= 5.2.1)
   - react-native-video/Video (5.2.1):
     - React-Core
-  - react-native-view-shot (3.4.0):
+  - react-native-view-shot (3.8.0):
     - React-Core
   - react-native-webview (13.6.3):
     - React-Core
@@ -1229,13 +1226,13 @@ PODS:
   - RiveRuntime (5.5.1)
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNBootSplash (4.4.1):
+  - RNBootSplash (5.2.1):
     - React-Core
   - RNCAsyncStorage (1.21.0):
     - React-Core
   - RNCClipboard (1.13.2):
     - React-Core
-  - RNCMaskedView (0.3.0):
+  - RNCMaskedView (0.3.1):
     - React-Core
   - RNDateTimePicker (7.6.2):
     - React-Core
@@ -1244,26 +1241,26 @@ PODS:
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
   - RNFingerprintjsPro (1.0.4):
-    - FingerprintPro (~> 2.1.2)
+    - FingerprintPro (~> 2.3.1)
     - React-Core
-  - RNFS (2.18.0):
-    - React
+  - RNFS (2.20.0):
+    - React-Core
   - RNGestureHandler (2.14.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - RNImageCropPicker (0.40.0):
+  - RNImageCropPicker (0.40.2):
     - React-Core
     - React-RCTImage
-    - RNImageCropPicker/QBImagePickerController (= 0.40.0)
+    - RNImageCropPicker/QBImagePickerController (= 0.40.2)
     - TOCropViewController
-  - RNImageCropPicker/QBImagePickerController (0.40.0):
+  - RNImageCropPicker/QBImagePickerController (0.40.2):
     - React-Core
     - React-RCTImage
     - TOCropViewController
-  - RNPermissions (3.0.5):
+  - RNPermissions (4.0.1):
     - React-Core
-  - RNReactNativeHapticFeedback (1.11.0):
+  - RNReactNativeHapticFeedback (2.2.0):
     - React-Core
   - RNReanimated (3.6.1):
     - glog
@@ -1274,14 +1271,14 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - RNSentry (5.15.1):
+  - RNSentry (5.15.2):
     - hermes-engine
     - React-Core
     - React-hermes
     - Sentry/HybridSDK (= 8.17.1)
-  - RNShare (8.0.0):
+  - RNShare (10.0.2):
     - React-Core
-  - RNSVG (14.0.0):
+  - RNSVG (13.14.0):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -1302,7 +1299,7 @@ PODS:
   - SnapSDK/SCSDKLoginKit (1.15.0):
     - SnapSDK/SCSDKCoreKit
   - SocketRocket (0.6.1)
-  - SRSRadialGradient (1.1.2):
+  - SRSRadialGradient (1.1.4):
     - React
   - SSZipArchive (2.2.3)
   - SwiftAudioEx (0.15.3)
@@ -1315,12 +1312,12 @@ PODS:
 DEPENDENCIES:
   - "amplitude-react-native (from `../../../node_modules/@amplitude/react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
-  - BVLinearGradient (from `../../../node_modules/react-native-linear-gradient`)
+  - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - CodePush (from `../node_modules/react-native-code-push`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
-  - ffmpeg-kit-react-native/https-gpl-lts (from `../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
+  - ffmpeg-kit-react-native/https-gpl-lts (from `../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
   - Flipper (= 0.175.0)
   - Flipper-Boost-iOSX (= 1.76.0.1.11)
   - Flipper-DoubleConversion (= 3.2.0.1)
@@ -1345,9 +1342,8 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
+  - nSure
   - OpenSSL-Universal (= 1.1.1100)
-  - Permission-Notifications (from `../../../node_modules/react-native-permissions/ios/Notifications`)
-  - Permission-PhotoLibraryAddOnly (from `../../../node_modules/react-native-permissions/ios/PhotoLibraryAddOnly`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -1372,28 +1368,28 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
-  - "react-native-blur (from `../../../node_modules/@react-native-community/blur`)"
-  - react-native-config (from `../../../node_modules/react-native-config`)
+  - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
+  - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-cookies (from `../../../node_modules/@react-native-cookies/cookies`)"
-  - react-native-document-picker (from `../../../node_modules/react-native-document-picker`)
+  - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-fast-crypto (from `../../../node_modules/react-native-fast-crypto`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
-  - react-native-google-cast (from `../../../node_modules/react-native-google-cast`)
-  - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
-  - react-native-in-app-review (from `../../../node_modules/react-native-in-app-review`)
-  - "react-native-keep-awake (from `../../../node_modules/@sayem314/react-native-keep-awake`)"
-  - "react-native-netinfo (from `../../../node_modules/@react-native-community/netinfo`)"
-  - react-native-notifications (from `../../../node_modules/react-native-notifications`)
+  - react-native-google-cast (from `../node_modules/react-native-google-cast`)
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
+  - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-pager-view (from `../../../node_modules/react-native-pager-view`)
   - react-native-randombytes (from `../../../node_modules/react-native-randombytes`)
-  - react-native-restart (from `../../../node_modules/react-native-restart`)
+  - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
-  - "react-native-slider (from `../../../node_modules/@react-native-community/slider`)"
+  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-tiktok (from `../../../node_modules/react-native-tiktok`)
   - react-native-track-player (from `../../../node_modules/react-native-track-player`)
   - react-native-version-number (from `../../../node_modules/react-native-version-number`)
   - react-native-video (from `../../../node_modules/react-native-video`)
-  - react-native-view-shot (from `../../../node_modules/react-native-view-shot`)
+  - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../../../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1417,25 +1413,25 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rive-react-native (from `../../../node_modules/rive-react-native`)
   - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
-  - RNBootSplash (from `../../../node_modules/react-native-bootsplash`)
+  - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
-  - "RNCMaskedView (from `../../../node_modules/@react-native-masked-view/masked-view`)"
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNDateTimePicker (from `../../../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../../../node_modules/react-native-fast-image`)
-  - "RNFingerprintjsPro (from `../../../node_modules/@fingerprintjs/fingerprintjs-pro-react-native`)"
+  - "RNFingerprintjsPro (from `../node_modules/@fingerprintjs/fingerprintjs-pro-react-native`)"
   - RNFS (from `../../../node_modules/react-native-fs`)
   - RNGestureHandler (from `../../../node_modules/react-native-gesture-handler`)
-  - RNImageCropPicker (from `../../../node_modules/react-native-image-crop-picker`)
-  - RNPermissions (from `../../../node_modules/react-native-permissions`)
-  - RNReactNativeHapticFeedback (from `../../../node_modules/react-native-haptic-feedback`)
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
-  - "RNSentry (from `../../../node_modules/@sentry/react-native`)"
-  - RNShare (from `../../../node_modules/react-native-share`)
-  - RNSVG (from `../node_modules/react-native-svg`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNShare (from `../node_modules/react-native-share`)
+  - RNSVG (from `../../../node_modules/react-native-svg`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
-  - SRSRadialGradient (from `../../../node_modules/react-native-radial-gradient/ios`)
+  - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1460,6 +1456,7 @@ SPEC REPOS:
     - libevent
     - libwebp
     - lottie-ios
+    - nSure
     - OpenSSL-Universal
     - PromisesObjC
     - RiveRuntime
@@ -1481,7 +1478,7 @@ EXTERNAL SOURCES:
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
-    :path: "../../../node_modules/react-native-linear-gradient"
+    :path: "../node_modules/react-native-linear-gradient"
   CodePush:
     :path: "../node_modules/react-native-code-push"
   DoubleConversion:
@@ -1491,7 +1488,7 @@ EXTERNAL SOURCES:
   FBReactNativeSpec:
     :path: "../node_modules/react-native/React/FBReactNativeSpec"
   ffmpeg-kit-react-native:
-    :podspec: "../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
+    :podspec: "../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
@@ -1499,10 +1496,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2023-11-17-RNv0.73.0-21043a3fc062be445e56a2c10ecd8be028dd9cc5
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  Permission-Notifications:
-    :path: "../../../node_modules/react-native-permissions/ios/Notifications"
-  Permission-PhotoLibraryAddOnly:
-    :path: "../../../node_modules/react-native-permissions/ios/PhotoLibraryAddOnly"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1546,39 +1539,39 @@ EXTERNAL SOURCES:
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-blur:
-    :path: "../../../node_modules/@react-native-community/blur"
+    :path: "../node_modules/@react-native-community/blur"
   react-native-config:
-    :path: "../../../node_modules/react-native-config"
+    :path: "../node_modules/react-native-config"
   react-native-cookies:
     :path: "../../../node_modules/@react-native-cookies/cookies"
   react-native-document-picker:
-    :path: "../../../node_modules/react-native-document-picker"
+    :path: "../node_modules/react-native-document-picker"
   react-native-fast-crypto:
     :path: "../../../node_modules/react-native-fast-crypto"
   react-native-get-random-values:
     :path: "../../../node_modules/react-native-get-random-values"
   react-native-google-cast:
-    :path: "../../../node_modules/react-native-google-cast"
+    :path: "../node_modules/react-native-google-cast"
   react-native-image-picker:
-    :path: "../../../node_modules/react-native-image-picker"
+    :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
-    :path: "../../../node_modules/react-native-in-app-review"
+    :path: "../node_modules/react-native-in-app-review"
   react-native-keep-awake:
-    :path: "../../../node_modules/@sayem314/react-native-keep-awake"
+    :path: "../node_modules/@sayem314/react-native-keep-awake"
   react-native-netinfo:
-    :path: "../../../node_modules/@react-native-community/netinfo"
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
-    :path: "../../../node_modules/react-native-notifications"
+    :path: "../node_modules/react-native-notifications"
   react-native-pager-view:
     :path: "../../../node_modules/react-native-pager-view"
   react-native-randombytes:
     :path: "../../../node_modules/react-native-randombytes"
   react-native-restart:
-    :path: "../../../node_modules/react-native-restart"
+    :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
     :path: "../../../node_modules/react-native-safe-area-context"
   react-native-slider:
-    :path: "../../../node_modules/@react-native-community/slider"
+    :path: "../node_modules/@react-native-community/slider"
   react-native-tiktok:
     :path: "../../../node_modules/react-native-tiktok"
   react-native-track-player:
@@ -1588,7 +1581,7 @@ EXTERNAL SOURCES:
   react-native-video:
     :path: "../../../node_modules/react-native-video"
   react-native-view-shot:
-    :path: "../../../node_modules/react-native-view-shot"
+    :path: "../node_modules/react-native-view-shot"
   react-native-webview:
     :path: "../../../node_modules/react-native-webview"
   React-nativeconfig:
@@ -1636,43 +1629,43 @@ EXTERNAL SOURCES:
   rn-fetch-blob:
     :path: "../../../node_modules/rn-fetch-blob"
   RNBootSplash:
-    :path: "../../../node_modules/react-native-bootsplash"
+    :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../../../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
-    :path: "../../../node_modules/@react-native-masked-view/masked-view"
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNDateTimePicker:
     :path: "../../../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
     :path: "../../../node_modules/react-native-fast-image"
   RNFingerprintjsPro:
-    :path: "../../../node_modules/@fingerprintjs/fingerprintjs-pro-react-native"
+    :path: "../node_modules/@fingerprintjs/fingerprintjs-pro-react-native"
   RNFS:
     :path: "../../../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../../../node_modules/react-native-gesture-handler"
   RNImageCropPicker:
-    :path: "../../../node_modules/react-native-image-crop-picker"
+    :path: "../node_modules/react-native-image-crop-picker"
   RNPermissions:
-    :path: "../../../node_modules/react-native-permissions"
+    :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
-    :path: "../../../node_modules/react-native-haptic-feedback"
+    :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../../../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../../../node_modules/react-native-screens"
   RNSentry:
-    :path: "../../../node_modules/@sentry/react-native"
+    :path: "../node_modules/@sentry/react-native"
   RNShare:
-    :path: "../../../node_modules/react-native-share"
+    :path: "../node_modules/react-native-share"
   RNSVG:
-    :path: "../node_modules/react-native-svg"
+    :path: "../../../node_modules/react-native-svg"
   snap-kit-react-native:
     :path: "../../../node_modules/@snapchat/snap-kit-react-native"
   SRSRadialGradient:
-    :path: "../../../node_modules/react-native-radial-gradient/ios"
+    :path: "../node_modules/react-native-radial-gradient/ios"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1682,15 +1675,15 @@ SPEC CHECKSUMS:
   AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 26fad476bfa736552bbfa698a06cc530475c1505
-  BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
+  BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: c3fdecab0dba1f760a1c6d1a562b9b88ce311fe1
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 2296bacb2fa157a43991048b0a9d71c1c8b65083
   FBReactNativeSpec: 09d23bb00c37d69470c636b61d4bc4170b2bdfd3
-  ffmpeg-kit-ios-https-gpl: fb9fc0617a646209f8f4a62b5581000dc4ee6a67
-  ffmpeg-kit-react-native: bc3c900af9f761b6fe30906ee1bd98000c79f9c9
-  FingerprintPro: 5c55beb92f4eb7a5a10e1ba13daa6a6baec1f213
+  ffmpeg-kit-ios-https-gpl: 4f25b11cc9d0f20ed0d938061d242541a8ae531a
+  ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
+  FingerprintPro: c6444f5a00d1126446da664124529e754475f198
   Flipper: d9d1aa67916620c9a6af11cb8275f06cd522943e
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
   Flipper-DoubleConversion: 2dc99b02f658daf147069aad9dbd29d8feb06d30
@@ -1708,9 +1701,8 @@ SPEC CHECKSUMS:
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
   lottie-react-native: a2ae9c27c273b060b2affff2957bc0ff7fdca353
+  nSure: b2d7022f54c180c5afd88f9f79073841e1cfa844
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
-  Permission-Notifications: 16ccd862111103378a7bab9fb1c5c71addffc348
-  Permission-PhotoLibraryAddOnly: 224d33cea3c2f1f8982a2a4e343c0726fba3acf9
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: 6dda55e483f75d2b43781d8ad5bd7df276a50981
@@ -1733,28 +1725,28 @@ SPEC CHECKSUMS:
   React-jsinspector: 369048694e39942063c5d08e9580b43e2edd379a
   React-logger: e0c1e918d9588a9f39c9bc62d9d6bfe9ca238d9d
   React-Mapbuffer: 9731a0a63ebaf8976014623c4d637744d7353a7c
-  react-native-blur: 50c9feabacbc5f49b61337ebc32192c6be7ec3c3
-  react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
+  react-native-blur: cfdad7b3c01d725ab62a8a729f42ea463998afa2
+  react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
-  react-native-document-picker: f5ec1a712ca2a975c233117f044817bb8393cad4
+  react-native-document-picker: b4f4a23b73f864ce17965b284c0757648993805b
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
-  react-native-google-cast: bbbdbeae552d0b55b59031ed7e12ae832e8c5a53
-  react-native-image-picker: bf34f3f516d139ed3e24c5f5a381a91819e349ea
-  react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
-  react-native-keep-awake: acbee258db16483744910f0da3ace39eb9ab47fd
-  react-native-netinfo: d8c9d0c71658e16362de176f22b06bd93186509c
-  react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
+  react-native-google-cast: 18b9b2fc518caabfa65d309409e160b3fc6d1733
+  react-native-image-picker: 6c51359eca7a7df9f07e297218c25696eb9da976
+  react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
+  react-native-keep-awake: ad1d67f617756b139536977a0bf06b27cec0714a
+  react-native-netinfo: 8a7fd3f7130ef4ad2fb4276d5c9f8d3f28d2df3d
+  react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-pager-view: d81ab2060b9caf57ca8c3a0d57467ff407cdb825
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
-  react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
-  react-native-safe-area-context: b8979f5eda6ed5903d4dbc885be3846ea3daa753
-  react-native-slider: 1cdd6ba29675df21f30544253bf7351d3c2d68c4
+  react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
+  react-native-safe-area-context: 0ee144a6170530ccc37a0fd9388e28d06f516a89
+  react-native-slider: 7d387c7e8dd0b4c12bf49c975c8666435f082a33
   react-native-tiktok: b3d7f50aff5b52a660169ef828768c67d59855d3
   react-native-track-player: 0c26d981b5097910486cbbeb6d8f5352d41be069
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-view-shot: a60a98a18c72bcaaaf2138f9aab960ae9b0d96c7
+  react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
   react-native-webview: 88293a0f23eca8465c0433c023ec632930e644d0
   React-nativeconfig: 37aecd26d64b79327c3f10e43b2e9a6c425e0a60
   React-NativeModulesApple: 9ca6d2eaa1dd5606588262195b46d0774bdec83a
@@ -1779,23 +1771,23 @@ SPEC CHECKSUMS:
   rive-react-native: 82eb809ebec7ab5059982dc1a2b6097c74d722ea
   RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
-  RNBootSplash: 4f968c1e098c7ec97939ace039f735e3d335bd4b
+  RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
-  RNCMaskedView: f7c74478c83c4fdfc5cf4df51f80c0dd5cf125c6
+  RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
   RNDateTimePicker: fc2e4f2795877d45e84d85659bebe627eba5c931
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
-  RNFingerprintjsPro: 317426b3f0479c4737960f7aa90b0f8a02ac07f9
-  RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
+  RNFingerprintjsPro: b92c7eeff80f567abea771a4a3aaa196799caf7c
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 61bfdfc05db9b79dd61f894dcd29d3dcc6db3c02
-  RNImageCropPicker: 486e2f7e2b0461ce24321f751410dce1b3b49e6d
-  RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
-  RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
+  RNImageCropPicker: d9616a0cb9b72e8551ff94a7a5021fbd29050aa5
+  RNPermissions: e6379535a4f3166931b2ada9dfe6cdd10c80ae6a
+  RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: 18faeee6e1d8eb9a60f1a62488bb357354569051
   RNScreens: b582cb834dc4133307562e930e8fa914b8c04ef2
-  RNSentry: a6202c19ca31b69969dface2ea0db093e36c97a3
-  RNShare: 36aa3e6958373a0ad1c95a1c960adef589da3794
-  RNSVG: 255767813dac22db1ec2062c8b7e7b856d4e5ae6
+  RNSentry: b7f4f53bb7076f119558f8898fca901b48213f12
+  RNShare: 859ff710211285676b0bcedd156c12437ea1d564
+  RNSVG: d00c8f91c3cbf6d476451313a18f04d220d4f396
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: d9f99f9cc13777c5d938650c1e1c85047bb4f0d1
@@ -1803,7 +1795,7 @@ SPEC CHECKSUMS:
   snap-kit-react-native: 751006199818fccb38c8a01196495167bc25e9fb
   SnapSDK: 1e68aad748e080f49e3802559b3b76026666ef62
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
-  SRSRadialGradient: f88dfa41215854bfb721dfe926bd9bf09338a602
+  SRSRadialGradient: 8363f6c3ce63636f5ffee74a7016f5c84a6df0a1
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   SwiftAudioEx: 83eabba2940924fc1c0d5cb0896049921365229c
   TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
@@ -1811,6 +1803,6 @@ SPEC CHECKSUMS:
   Yoga: 2b33a7ac96c58cdaa7b810948fc6a2a76ed2d108
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: b60d785795ce58a3044acc192f162675c80aae6a
+PODFILE CHECKSUM: ab62f00b76ec92f97506cd7b0a75c5c470923f11
 
 COCOAPODS: 1.13.0

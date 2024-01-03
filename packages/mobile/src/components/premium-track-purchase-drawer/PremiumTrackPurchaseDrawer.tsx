@@ -449,7 +449,7 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   return (
     <Drawer
-      blockClose={isUnlocking}
+      blockClose={isUnlocking && stage !== PurchaseContentStage.START}
       isOpen={isOpen}
       onClose={onClose}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}
