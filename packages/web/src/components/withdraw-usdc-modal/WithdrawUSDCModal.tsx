@@ -27,6 +27,7 @@ import { make, track } from 'services/analytics'
 import { isValidSolAddress } from 'services/solana/solana'
 
 import styles from './WithdrawUSDCModal.module.css'
+import { CoinflowWithdrawPage } from './components/CoinflowWithdrawPage'
 import { ConfirmTransferDetails } from './components/ConfirmTransferDetails'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
 import { ErrorPage } from './components/ErrorPage'
@@ -66,16 +67,17 @@ const WithdrawUSDCFormSchema = (userBalance: number) => {
   }
 
   return z.object({
-    [AMOUNT]: amount,
-    [ADDRESS]: z
-      .string()
-      .refine(
-        (value) => isValidSolAddress(value as SolanaWalletAddress),
-        messages.errors.invalidAddress
-      ),
-    [CONFIRM]: z.literal(true, {
-      errorMap: () => ({ message: messages.errors.pleaseConfirm })
-    })
+    [AMOUNT]: amount
+    // TODO: Make this conditional on type of withdrawal
+    // [ADDRESS]: z
+    //   .string()
+    //   .refine(
+    //     (value) => isValidSolAddress(value as SolanaWalletAddress),
+    //     messages.errors.invalidAddress
+    //   ),
+    // [CONFIRM]: z.literal(true, {
+    //   errorMap: () => ({ message: messages.errors.pleaseConfirm })
+    // })
   })
 }
 
@@ -153,6 +155,9 @@ export const WithdrawUSDCModal = () => {
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
       formPage = <EnterTransferDetails />
+      break
+    case WithdrawUSDCModalPages.COINFLOW_TRANSFER:
+      formPage = <CoinflowWithdrawPage />
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
       formPage = <ConfirmTransferDetails />

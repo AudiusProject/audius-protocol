@@ -2,8 +2,19 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from 'models/Status'
 
+export enum CoinflowWithdrawalState {
+  IDLE = 'IDLE',
+  FUNDING_ROOT_WALLET = 'FUNDING_ROOT_WALLET',
+  READY_FOR_WITHDRAWAL = 'READY_FOR_WITHDRAWAL',
+  WITHDRAWING = 'WITHDRAWING',
+  CANCELED = 'CANCELED',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR'
+}
+
 type WithdrawUSDCState = {
   withdrawStatus: Status
+  coinflowState: CoinflowWithdrawalState
   destinationAddress?: string
   amount?: number
   withdrawError?: Error
@@ -13,7 +24,8 @@ type WithdrawUSDCState = {
 }
 
 const initialState: WithdrawUSDCState = {
-  withdrawStatus: Status.IDLE
+  withdrawStatus: Status.IDLE,
+  coinflowState: CoinflowWithdrawalState.IDLE
 }
 
 const slice = createSlice({
@@ -32,6 +44,19 @@ const slice = createSlice({
     ) => {
       state.withdrawStatus = Status.LOADING
     },
+    beginCoinflowWithdrawal: (state) => {
+      state.coinflowState = CoinflowWithdrawalState.FUNDING_ROOT_WALLET
+    },
+    coinflowWithdrawalReady: (state) => {
+      state.coinflowState = CoinflowWithdrawalState.READY_FOR_WITHDRAWAL
+    },
+    coinflowWithdrawalSucceeded: (state) => {
+      state.coinflowState = CoinflowWithdrawalState.SUCCESS
+    },
+    coinflowWithdrawalCanceled: (state) => {
+      state.coinflowState = CoinflowWithdrawalState.CANCELED
+    },
+
     withdrawUSDCSucceeded: (
       state,
       action: PayloadAction<{ transaction: string }>
@@ -50,6 +75,10 @@ const slice = createSlice({
 
 export const {
   beginWithdrawUSDC,
+  beginCoinflowWithdrawal,
+  coinflowWithdrawalReady,
+  coinflowWithdrawalSucceeded,
+  coinflowWithdrawalCanceled,
   withdrawUSDCSucceeded,
   withdrawUSDCFailed,
   cleanup

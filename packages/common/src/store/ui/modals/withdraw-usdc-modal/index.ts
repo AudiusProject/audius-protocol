@@ -2,6 +2,7 @@ import { createModal } from '../createModal'
 
 export enum WithdrawUSDCModalPages {
   ENTER_TRANSFER_DETAILS = 'enter_transfer_details',
+  COINFLOW_TRANSFER = 'coinflow_transfer',
   CONFIRM_TRANSFER_DETAILS = 'confirm_transfer_details',
   TRANSFER_IN_PROGRESS = 'transfer_in_progress',
   TRANSFER_SUCCESSFUL = 'transfer_successful',
