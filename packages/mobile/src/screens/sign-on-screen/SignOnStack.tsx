@@ -8,7 +8,7 @@ import { FinishProfileScreen } from './screens/FinishProfileScreen'
 import { PickHandleScreen } from './screens/PickHandleScreen'
 import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
-import { SelectGenreScreen } from './screens/SelectGenreScreen'
+import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
 
 const Stack = createNativeStackNavigator()
@@ -27,7 +27,7 @@ export const SignOnStack = () => {
       <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
       <Stack.Screen name='PickHandle' component={PickHandleScreen} />
       <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-      <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
+      <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
       <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
       <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
       <Stack.Screen

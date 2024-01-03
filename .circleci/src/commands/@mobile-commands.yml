@@ -50,13 +50,14 @@ mobile-prepare-ios:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
         name: install pods
         command: |
           cd packages/mobile/ios
-          pod install --deployment
+          bundle exec pod install
     - save_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
         paths:
@@ -110,6 +111,9 @@ mobile-release-ios:
     env:
       default: '.env.prod'
       type: string
+    slack-notify:
+      default: true
+      type: boolean
   steps:
     - run:
         name: fastlane build and upload
@@ -117,23 +121,25 @@ mobile-release-ios:
     - run:
         name: slack announce
         command: |
-          cd packages/mobile
-          deploying_version=$(jq -r '.version' package.json)
-          job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
-          environment=<<parameters.bundle-id>>
-          if [ "$environment" = 'co.audius.audiusmusic' ] ||
-             [ "$environment" = 'co.audius.audiusmusic.releasecandidate' ] ||
-             [ "$environment" = 'co.audius.audiusmusic.staging.releasecandidate' ]; then
+          if [ <<parameters.slack-notify>> = true ]; then
+            cd packages/mobile
+            deploying_version=$(jq -r '.version' package.json)
+            job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
+            environment=<<parameters.bundle-id>>
+            if [ "$environment" = 'co.audius.audiusmusic' ] ||
+              [ "$environment" = 'co.audius.audiusmusic.releasecandidate' ] ||
+              [ "$environment" = 'co.audius.audiusmusic.staging.releasecandidate' ]; then
 
-            json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to mobile ios \n\" } }"
-            json_content+="]}"
-            echo "Text to send to slack: $json_content"
+              json_content="{ \"blocks\": ["
+              json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to mobile ios \n\" } }"
+              json_content+="]}"
+              echo "Text to send to slack: $json_content"
 
-            # Send Slack message
-            curl -f -X POST -H 'Content-type: application/json' \
-              --data "$json_content" \
-              $SLACK_DAILY_DEPLOY_WEBHOOK
+              # Send Slack message
+              curl -f -X POST -H 'Content-type: application/json' \
+                --data "$json_content" \
+                $SLACK_DAILY_DEPLOY_WEBHOOK
+            fi
           fi
 
 # Prepare to build/upload/release Android
@@ -157,7 +163,7 @@ mobile-prepare-android:
         name: install pip
         command: |
           sudo apt update
-          sudo apt install python3-pip
+          sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
     - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
@@ -207,6 +213,7 @@ mobile-build-android:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: generating the release apk & bundle
         command: |
@@ -225,12 +232,16 @@ mobile-release-android:
     track:
       default: 'alpha'
       type: string
+    slack-notify:
+      default: true
+      type: boolean
   steps:
     - run:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: release android
         command: |
@@ -239,24 +250,26 @@ mobile-release-android:
     - run:
         name: slack announce
         command: |
-          cd packages/mobile
-          deploying_version=$(jq -r '.version' package.json)
-          job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
-          environment=<<parameters.upload-type>>
+          if [ <<parameters.slack-notify>> = true ]; then
+            cd packages/mobile
+            deploying_version=$(jq -r '.version' package.json)
+            job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
+            environment=<<parameters.upload-type>>
 
-          if [ "$environment" = 'prod' ] ||
-             [ "$environment" = 'releaseCandidate' ] ||
-             [ "$environment" = 'stagingReleaseCandidate' ]; then
+            if [ "$environment" = 'prod' ] ||
+              [ "$environment" = 'releaseCandidate' ] ||
+              [ "$environment" = 'stagingReleaseCandidate' ]; then
 
-            json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to mobile android \n\" } }"
-            json_content+="]}"
-            echo "Text to send to slack: $json_content"
+              json_content="{ \"blocks\": ["
+              json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to mobile android \n\" } }"
+              json_content+="]}"
+              echo "Text to send to slack: $json_content"
 
-            # Send Slack message
-            curl -f -X POST -H 'Content-type: application/json' \
-              --data "$json_content" \
-              $SLACK_DAILY_DEPLOY_WEBHOOK
+              # Send Slack message
+              curl -f -X POST -H 'Content-type: application/json' \
+                --data "$json_content" \
+                $SLACK_DAILY_DEPLOY_WEBHOOK
+            fi
           fi
 
 # Deploy Solana saga dApp store
@@ -303,6 +316,7 @@ mobile-release-saga-dapp-store:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: Build Android
         command: |

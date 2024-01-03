@@ -1,12 +1,6 @@
-import type { ReactNode } from 'react'
-
 import { CSSObject, useTheme } from '@emotion/react'
 
-export type DividerProps = {
-  orientation?: 'horizontal' | 'vertical'
-  children?: ReactNode
-  className?: string
-}
+import { DividerProps } from './types'
 
 /**
  * A separator between two elements, usually consisting of a horizontal or vertical line.

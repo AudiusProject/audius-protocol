@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
-import type { PressableProps, StyleProp, ViewStyle } from 'react-native/types'
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native'
+import type { SharedValue } from 'react-native-reanimated'
 
 import type { Icon } from 'app/harmony-native/icons'
 
@@ -53,12 +54,9 @@ export type BaseButtonProps = {
   styles?: BaseButtonStyles
 
   /**
-   * Native styling for the pressable component
+   * reanimated sharedValue to apply additional animated styles
    */
-  style?: ViewStyle
+  sharedValue?: SharedValue<number>
 
-  /**
-   * Child elements
-   */
-  children?: ReactNode
-} & Omit<PressableProps, 'children' | 'style'>
+  children: ReactNode
+} & PressableProps

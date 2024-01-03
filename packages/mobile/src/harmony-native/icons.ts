@@ -231,3 +231,6 @@ export { default as IconLogoCircleSOL } from '@audius/harmony/src/assets/icons/L
 export { default as IconLogoCircleSTR } from '@audius/harmony/src/assets/icons/LogoCircleSTR.svg'
 export { default as IconLogoCircleUSD } from '@audius/harmony/src/assets/icons/LogoCircleUSD.svg'
 export { default as IconLogoCircleUSDC } from '@audius/harmony/src/assets/icons/LogoCircleUSDC.svg'
+
+export { default as Soundwave } from '@audius/harmony/src/assets/animations/Soundwave.json'
+export { default as SoundwaveCircle } from '@audius/harmony/src/assets/animations/SoundwaveCircle.json'

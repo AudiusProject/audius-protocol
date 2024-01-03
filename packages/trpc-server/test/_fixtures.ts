@@ -84,6 +84,13 @@ const fixtures = {
         trackId: 203,
         title: 'Dogs remix',
       },
+      {
+        ownerId: 101,
+        trackId: 204,
+        title: 'Future dogs release',
+        isUnlisted: true,
+        releaseDate: dateAddDays(30),
+      },
     ],
   } as TableFixture<TrackRow>,
 
@@ -105,12 +112,14 @@ const fixtures = {
         playlistOwnerId: 101,
         playlistId: 301,
         playlistName: "Steve's Playlist",
+        playlistContents: { track_ids: [{ track: 101 }, { track: 103 }] },
       },
       {
         playlistOwnerId: 101,
         playlistId: 302,
         playlistName: "Steve's private Playlist",
         isPrivate: true,
+        playlistContents: { track_ids: [{ track: 101 }, { track: 103 }] },
       },
     ],
   } as TableFixture<PlaylistRow>,
@@ -148,6 +157,12 @@ const fixtures = {
       },
     ],
   } as TableFixture<SaveRow>,
+}
+
+function dateAddDays(dayDelta: number) {
+  const date = new Date()
+  date.setDate(date.getDate() + dayDelta)
+  return date
 }
 
 async function main() {

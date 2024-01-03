@@ -10,9 +10,9 @@ import {
   playerActions
 } from '@audius/common'
 import { combineReducers } from 'redux'
+import { take } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { take } from 'redux-saga/effects'
 import { describe, it, expect } from 'vitest'
 
 import * as sagas from 'common/store/queue/sagas'

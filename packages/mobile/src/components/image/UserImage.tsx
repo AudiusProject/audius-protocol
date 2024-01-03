@@ -1,9 +1,5 @@
-import type { ID } from '@audius/common'
-import {
-  cacheUsersSelectors,
-  type Nullable,
-  type SquareSizes
-} from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
+import type { ID, Nullable, SquareSizes } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'

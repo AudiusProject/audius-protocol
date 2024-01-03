@@ -11,6 +11,7 @@ from web3.types import TxReceipt
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
+from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
@@ -34,10 +35,13 @@ from src.queries.get_skipped_transactions import (
     save_and_get_skip_tx_hash,
     set_indexing_error,
 )
+from src.tasks.entity_manager.entities.dashboard_wallet_user import (
+    create_dashboard_wallet_user,
+    delete_dashboard_wallet_user,
+)
 from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
-    get_app_address_from_signature,
 )
 from src.tasks.entity_manager.entities.grant import create_grant, revoke_grant
 from src.tasks.entity_manager.entities.notification import (
@@ -72,6 +76,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     RecordDict,
     expect_cid_metadata_json,
+    get_address_from_signature,
     get_record_key,
     parse_metadata,
     reset_entity_manager_event_tx_context,
@@ -101,6 +106,7 @@ entity_type_table_mapping = {
     "PlaylistRoute": PlaylistRoute.__tablename__,
     "NotificationSeen": NotificationSeen.__tablename__,
     "PlaylistSeen": PlaylistSeen.__tablename__,
+    "DashboardWalletUser": DashboardWalletUser.__tablename__,
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
 }
@@ -298,6 +304,16 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.DASHBOARD_WALLET_USER
+                    ):
+                        create_dashboard_wallet_user(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.DASHBOARD_WALLET_USER
+                    ):
+                        delete_dashboard_wallet_user(params)
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -382,9 +398,11 @@ def save_new_records(
             if (
                 record_type in original_records
                 and entity_id in original_records[record_type]
-                and "is_current"
-                in get_record_columns(original_records[record_type][entity_id])
-                and original_records[record_type][entity_id].is_current
+                and (
+                    "is_current"
+                    not in get_record_columns(original_records[record_type][entity_id])
+                    or original_records[record_type][entity_id].is_current
+                )
             ):
                 if record_type == "PlaylistRoute" or record_type == "TrackRoute":
                     # these are an exception since we want to keep is_current false to preserve old slugs
@@ -482,7 +500,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 else:
                     try:
                         entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            get_app_address_from_signature(
+                            get_address_from_signature(
                                 json_metadata.get("app_signature", {})
                             )
                         )
@@ -511,6 +529,26 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 else:
                     logger.error(
                         "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
+                    )
+
+            if entity_type == EntityType.DASHBOARD_WALLET_USER:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                raw_wallet = json_metadata.get("wallet", None)
+                if raw_wallet:
+                    entities_to_fetch[EntityType.DASHBOARD_WALLET_USER].add(
+                        raw_wallet.lower()
+                    )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing wallet in metadata required for create dashboard wallet user tx"
                     )
 
             # Query social operations as needed
@@ -900,6 +938,29 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         }
         existing_entities_in_json[EntityType.DEVELOPER_APP] = {
             app_json["address"].lower(): app_json for _, app_json in developer_apps
+        }
+
+    # DASHBOARD WALLETS
+    if entities_to_fetch["DashboardWalletUser"]:
+        dashboard_wallets: List[Tuple[DashboardWalletUser, dict]] = (
+            session.query(
+                DashboardWalletUser,
+                literal_column(f"row_to_json({DashboardWalletUser.__tablename__})"),
+            )
+            .filter(
+                func.lower(DashboardWalletUser.wallet).in_(
+                    entities_to_fetch["DashboardWalletUser"]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.DASHBOARD_WALLET_USER] = {
+            dashboard_wallet.wallet.lower(): dashboard_wallet
+            for dashboard_wallet, _ in dashboard_wallets
+        }
+        existing_entities_in_json[EntityType.DASHBOARD_WALLET_USER] = {
+            dashboard_wallet_json["wallet"].lower(): dashboard_wallet_json
+            for _, dashboard_wallet_json in dashboard_wallets
         }
 
     return existing_entities, existing_entities_in_json

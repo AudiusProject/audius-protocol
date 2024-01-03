@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import styled from '@emotion/native'
-import type { LayoutChangeEvent } from 'react-native'
-import { Pressable } from 'react-native'
+import { Pressable, type LayoutChangeEvent, type ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
-  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -14,36 +11,11 @@ import Animated, {
 
 import LoadingSpinner from 'app/components/loading-spinner'
 
+import { useTheme } from '../../../foundations/theme'
 import { Text } from '../../Text/Text'
 import type { BaseButtonProps } from '../types'
 
-const animationConfig = {
-  duration: 120,
-  easing: Easing.bezier(0.44, 0, 0.56, 1)
-}
-
-const Root = styled(
-  Animated.createAnimatedComponent(Pressable)
-)<BaseButtonProps>(({ theme, minWidth, disabled, fullWidth }) => ({
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: theme.spacing.xs,
-  boxSizing: 'border-box',
-  flexShrink: 0,
-  justifyContent: 'center',
-  overflow: 'hidden',
-  minWidth: minWidth && `${minWidth}px`,
-
-  // TODO: This might not be needed, but here now for testing
-  opacity: disabled ? 0.45 : 1,
-
-  ...(fullWidth && {
-    width: '100%',
-    flexShrink: 1
-  })
-}))
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 export const BaseButton = (props: BaseButtonProps) => {
   const {
@@ -54,34 +26,52 @@ export const BaseButton = (props: BaseButtonProps) => {
     styles,
     children,
     style,
+    sharedValue: sharedValueProp,
+    minWidth,
+    fullWidth,
     ...other
   } = props
-  const pressed = useSharedValue(0)
+  const pressedInternal = useSharedValue(0)
+  const pressed = sharedValueProp || pressedInternal
+  const { spacing, motion } = useTheme()
   const [buttonWidth, setButtonWidth] = useState<number | null>(null)
+  const isTextChild = typeof children === 'string'
 
   const isTextHidden =
-    widthToHideText && buttonWidth && buttonWidth <= widthToHideText
+    isTextChild &&
+    widthToHideText &&
+    buttonWidth &&
+    buttonWidth <= widthToHideText
+
+  const childElement = isTextChild ? (
+    !isTextHidden ? (
+      <Text>{children}</Text>
+    ) : null
+  ) : (
+    children
+  )
 
   const tap = Gesture.Tap()
     .onBegin(() => {
-      pressed.value = withTiming(1, animationConfig)
+      pressed.value = withTiming(1, motion.hover)
     })
     .onFinalize(() => {
-      pressed.value = withTiming(0, animationConfig)
+      pressed.value = withTiming(0, motion.press)
     })
 
-  const longPress = Gesture.LongPress()
-    .minDuration(animationConfig.duration)
-    .onBegin(() => {
-      pressed.value = withTiming(1, animationConfig)
+  const rootStyles: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    minWidth,
+    ...(fullWidth && {
+      width: '100%',
+      flexShrink: 1
     })
-    .onFinalize(() => {
-      pressed.value = withTiming(0, animationConfig)
-    })
+  }
 
-  const taps = Gesture.Exclusive(longPress, tap)
-
-  const rootStyles = useAnimatedStyle(() => ({
+  const animatedStyles = useAnimatedStyle(() => ({
     transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
   }))
 
@@ -91,9 +81,9 @@ export const BaseButton = (props: BaseButtonProps) => {
   }, [])
 
   return (
-    <GestureDetector gesture={taps}>
-      <Root
-        style={[rootStyles, style]}
+    <GestureDetector gesture={tap}>
+      <AnimatedPressable
+        style={[rootStyles, animatedStyles, style]}
         onLayout={handleLayoutChange}
         {...other}
       >
@@ -102,11 +92,11 @@ export const BaseButton = (props: BaseButtonProps) => {
         ) : LeftIconComponent ? (
           <LeftIconComponent style={styles?.icon} size='s' color='default' />
         ) : null}
-        {!isTextHidden ? <Text>{children}</Text> : null}
+        {childElement}
         {RightIconComponent ? (
           <RightIconComponent style={styles?.icon} size='s' color='default' />
         ) : null}
-      </Root>
+      </AnimatedPressable>
     </GestureDetector>
   )
 }

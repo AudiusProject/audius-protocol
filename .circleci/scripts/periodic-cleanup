@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-PRUNE_THRESHOLD=80
-FULL_PRUNE_THRESHOLD=60
+PRUNE_THRESHOLD=70
+FULL_PRUNE_THRESHOLD=50
 
 function disk_usage_above_threshold() {
     threshold="$1"

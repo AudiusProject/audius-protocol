@@ -1,7 +1,7 @@
 import fetch from 'cross-fetch'
 import semver from 'semver'
 
-import type { CommsResponse } from '../../../legacy'
+import type { CommsResponse } from '../../../sdk/api/chats/serverTypes'
 
 import { DISCOVERY_SERVICE_NAME } from './constants'
 import {

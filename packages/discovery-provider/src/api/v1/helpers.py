@@ -975,6 +975,13 @@ def format_authorized_app(authorized_app):
     }
 
 
+def format_dashboard_wallet_user(dashboard_wallet_user):
+    return {
+        "wallet": dashboard_wallet_user["wallet"],
+        "user": extend_user(dashboard_wallet_user["user"]),
+    }
+
+
 def get_prefixed_eth_address(address: str):
     if not address.startswith("0x"):
         return "0x" + address

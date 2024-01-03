@@ -1,5 +1,3 @@
-import { Moment } from 'moment'
-
 import {
   ID,
   UID,
@@ -9,8 +7,9 @@ import {
   Status,
   LineupTrack
 } from 'models'
+import type { Dayjs } from 'utils/dayjs'
 
-export type CollectionTrack = LineupTrack & { dateAdded: Moment } & {
+export type CollectionTrack = LineupTrack & { dateAdded: Dayjs } & {
   collectible?: Collectible
 }
 
@@ -31,7 +30,7 @@ export type CollectionPageTrackRecord = CollectionTrack & {
   name: string
   artist: string
   handle: string
-  date: Moment
+  date: Dayjs
   time: number
   plays: number | undefined
 }

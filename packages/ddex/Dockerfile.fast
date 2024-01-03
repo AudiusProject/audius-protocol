@@ -1,0 +1,14 @@
+# To use this file for testing on staging:
+# 0. npm i && npm run build
+# 1. in docker-compose.ddex.yml, set dockerfile to Dockerfile.fast
+# 2. comment out dist/ in .dockerignore
+# 3. run audius-compose push --prod "ddex" (first do env = os.environ.copy() and env["DOCKER_DEFAULT_PLATFORM"] = "linux/amd64") in the audius-compose build command code)
+
+FROM alpine:latest
+WORKDIR /app
+RUN apk add --no-cache findutils coreutils
+COPY dist /tmp/dist
+
+COPY ./scripts/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

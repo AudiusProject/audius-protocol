@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { type UploadTrack } from '@audius/common'
+import { FeatureFlags, type UploadTrack } from '@audius/common'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -13,10 +13,10 @@ import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
-import { messages as completeTrackMessage } from '../../screens/upload-screen'
 import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer, FormScreen } from './components'
@@ -94,6 +94,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }
   }, [dirty, navigation, dispatch])
 
+  const { isEnabled: isScheduledReleasesEnabled } = useFeatureFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
   return (
     <>
       <FormScreen
@@ -141,11 +145,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <DescriptionField />
               <SubmenuList removeBottomDivider>
                 <AccessAndSaleField />
-                {completeTrackMessage.title === props.title ? (
-                  <ReleaseDateField />
-                ) : (
-                  <></>
-                )}
+                {isScheduledReleasesEnabled ? <ReleaseDateField /> : <></>}
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>

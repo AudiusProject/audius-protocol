@@ -28,6 +28,7 @@ export const FollowButton = (props: FollowButtonProps) => {
   const { disabled } = other
   const [following, setFollowing] = useState(isFollowing)
   const { color, cornerRadius } = useTheme()
+  const isInput = !!onChange
 
   useEffect(() => {
     setFollowing(isFollowing)
@@ -42,13 +43,22 @@ export const FollowButton = (props: FollowButtonProps) => {
       onFollow?.()
     }
     onChange?.({
-      target: { value, checked: true, type: 'checkbox' }
+      target: { value, checked: !following, type: 'checkbox' }
     } as ChangeEvent<HTMLInputElement>)
     setFollowing(!following)
   }, [following, onChange, value, onUnfollow, onFollow])
 
+  const inputProps = isInput
+    ? {
+        testID: `follow-${value}`,
+        accessibilityRole: 'checkbox' as const,
+        accessibilityState: { checked: following, value },
+        accessibilityLiveRegion: 'polite' as const
+      }
+    : null
+
   return (
-    <Pressable onPress={handlePress} {...other}>
+    <Pressable onPress={handlePress} {...other} {...inputProps}>
       <Flex
         h={size === 'small' ? 28 : 32}
         direction='row'

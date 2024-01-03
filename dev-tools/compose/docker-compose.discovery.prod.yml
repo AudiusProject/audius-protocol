@@ -43,15 +43,19 @@ services:
     build:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
-    command: discovery
+    command: sh -c ". /tmp/dev-tools/startup/startup.sh && comms discovery"
     restart: unless-stopped
+    env_file: .env # used by the startup script
     environment:
       comms_dev_mode: true
-      audius_delegate_private_key: 'c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7'
-      audius_db_url: 'postgresql://postgres:postgres@db:5432/discovery_provider_1'
     depends_on:
       db:
         condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
+    volumes:
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
 
   trpc:
     build:
@@ -67,6 +71,9 @@ services:
       context: ${PROJECT_ROOT}/packages/es-indexer
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
+      audius_db_url: 'postgresql://postgres:postgres@db:5432/discovery_provider_1'
     depends_on:
       db:
         condition: service_healthy
@@ -113,6 +120,7 @@ services:
       audius_contracts_entity_manager_address: '${ENTITY_MANAGER_ADDRESS}'
       audius_eth_contracts_registry: '${ETH_REGISTRY_ADDRESS}'
       audius_eth_contracts_token: '${ETH_TOKEN_ADDRESS}'
+      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
 
       audius_solana_endpoint: 'http://solana-test-validator:8899'
       audius_solana_track_listen_count_address: '${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}'
