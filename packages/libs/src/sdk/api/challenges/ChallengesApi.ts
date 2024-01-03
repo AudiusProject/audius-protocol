@@ -50,6 +50,8 @@ export class ChallengesApi extends BaseAPI {
    * this includes more data like the referred user ID or purchased track ID
    * to allow the challenge to be claimed multiple times, but only once per
    * completed instance.
+   *
+   * @hidden
    */
   public async generateSpecifier(request: GenerateSpecifierRequest) {
     const args = await parseParams(
@@ -79,7 +81,7 @@ export class ChallengesApi extends BaseAPI {
 
   /**
    * Claims a reward on behalf of a user.
-   *
+   * @hidden
    * @see {@link generateSpecifier} to create the specifier argument.
    */
   public async claimReward(request: ClaimRewardsRequest) {
