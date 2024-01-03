@@ -2,6 +2,7 @@ import { useState, ChangeEvent, DragEvent } from "react";
 import { CheckCircleIcon, RefreshIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 import { useAudiusSdk } from "../providers/AudiusSdkProvider";
 import { useAudiusLibs } from "../providers/AudiusLibsProvider";
+import { FeatureFlags, useRemoteConfig } from "../providers/RemoteConfigProvider";
 import type { AudiusLibs } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
 import type {
   AudiusSdk,
@@ -499,6 +500,7 @@ const XmlImporter = ({
 export const Ddex = () => {
   const { audiusLibs } = useAudiusLibs();
   const { audiusSdk } = useAudiusSdk();
+  const { didInit, getFeatureEnabled } = useRemoteConfig();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -515,6 +517,14 @@ export const Ddex = () => {
     setPassword(e.target.value);
   };
 
+  const checkUserAllowlisted = async (userId: number) => {
+    const uploadsAllowed = getFeatureEnabled({flag: FeatureFlags.DDEX_UPLOADS, userId});
+    if (!uploadsAllowed) {
+      setLoginError("401: User not authorized");
+      await audiusLibs!.Account!.logout();
+    }
+  }
+
   const handleLogin = async () => {
     setLoginLoading(true);
     try {
@@ -530,6 +540,10 @@ export const Ddex = () => {
       }
     } finally {
       // Libs throws an error even if the user was successfully logged in.
+      const currentUserId = audiusLibs?.Account?.getCurrentUser()?.user_id
+      if (currentUserId) {
+        await checkUserAllowlisted(currentUserId);
+      }
       setLoginLoading(false);
     }
   };
@@ -543,7 +557,7 @@ export const Ddex = () => {
 
   return (
     <div className="flex flex-col space-y-4">
-      {!audiusLibs || !audiusLibs.Account ? (
+      {!audiusLibs || !audiusLibs.Account || !didInit ? (
         "loading..."
       ) : !audiusLibs.Account.getCurrentUser() ? (
         <AudiusLogin

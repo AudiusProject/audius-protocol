@@ -289,6 +289,7 @@ type EnvResponse struct {
 	RewardsManagerProgramId          string `json:"rewardsManagerProgramId"`
 	RewardsManagerProgramPda         string `json:"rewardsManagerProgramPda"`
 	RewardsManagerTokenPda           string `json:"rewardsManagerTokenPda"`
+	OptimizelySdkKey                 string `json:"optimizelySdkKey"`
 }
 
 func (u *Uptime) handleGetEnv(c echo.Context) error {
@@ -323,6 +324,7 @@ func (u *Uptime) handleGetEnv(c echo.Context) error {
 		RewardsManagerProgramId:          u.Config.RewardsManagerProgramId,
 		RewardsManagerProgramPda:         u.Config.RewardsManagerProgramPda,
 		RewardsManagerTokenPda:           u.Config.RewardsManagerTokenPda,
+		OptimizelySdkKey:                 u.Config.OptimizelySdkKey,
 	}
 	return c.JSON(http.StatusOK, resp)
 }
