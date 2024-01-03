@@ -16,12 +16,6 @@ const flagDefaults: FlagDefaults = {
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
-// type RemoteConfigClient = Client extends Pick<
-//   Client,
-//   | 'isFeatureEnabled'
-//   | 'onReady'
-// >
-
 type RemoteConfigContextType = {
   didInit: boolean;
   getFeatureEnabled: ({ flag, userId }: { flag: FeatureFlags; userId?: number | undefined; }) => boolean;
