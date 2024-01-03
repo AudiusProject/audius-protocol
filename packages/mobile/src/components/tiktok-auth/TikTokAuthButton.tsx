@@ -1,3 +1,4 @@
+import type { TikTokProfileData } from '@audius/common'
 import { formatTikTokProfile } from '@audius/common'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -9,14 +10,25 @@ import * as oauthActions from 'app/store/oauth/actions'
 import { SocialButton } from '../social-button'
 import type { SocialButtonProps } from '../social-button/SocialButton'
 
-type TikTokAuthButtonProps = SocialButtonProps
+type TikTokAuthButtonProps = Partial<SocialButtonProps> & {
+  onSuccess?: ({
+    profileData,
+    requiresReview
+  }: {
+    profileData: TikTokProfileData
+    requiresReview: boolean
+  }) => void
+  onError?: (e: unknown) => void
+  onClose?: () => void
+}
 
 export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
-  const { onPress, ...buttonProps } = props
+  const { onPress, onSuccess, onError, ...buttonProps } = props
   const dispatch = useDispatch()
 
   const withTikTokAuth = useTikTokAuth({
     onError: (error) => {
+      onError?.(error)
       dispatch(oauthActions.setTikTokError(error))
     }
   })
@@ -45,9 +57,12 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
         const resultJson = await result.json()
         const tikTokProfile = resultJson.data.user
 
-        const { profile, profileImage, requiresUserReview } =
-          await formatTikTokProfile(tikTokProfile, async (image: File) => image)
+        const profileData = await formatTikTokProfile(
+          tikTokProfile,
+          async (image: File) => image
+        )
 
+        const { profile, profileImage, requiresUserReview } = profileData
         dispatch(
           oauthActions.setTikTokInfo(
             tikTokProfile.open_id,
@@ -56,6 +71,10 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
             requiresUserReview
           )
         )
+        onSuccess?.({
+          requiresReview: requiresUserReview,
+          profileData
+        })
       } catch (e) {
         console.error(e)
       }
@@ -68,6 +87,8 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
       fullWidth
       icon={IconTikTok}
       onPress={handleTikTokPress}
+      title='Sign up with TikTok'
+      noText
       {...buttonProps}
     />
   )

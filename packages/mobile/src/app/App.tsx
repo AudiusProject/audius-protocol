@@ -16,7 +16,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
-import OAuth from 'app/components/oauth/OAuth'
+import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
 import { useEnterForeground } from 'app/hooks/useAppState'
@@ -106,7 +106,7 @@ const App = () => {
                             <RootScreen />
                             <Drawers />
                             <Modals />
-                            <OAuth />
+                            <OAuthWebView />
                             <NotificationReminder />
                             <RateCtaReminder />
                             <PortalHost name='ChatReactionsPortal' />

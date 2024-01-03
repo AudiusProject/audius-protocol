@@ -1,10 +1,13 @@
 import type { CreatePasswordParams } from './screens/CreatePasswordScreen'
+import type { SignOnScreenParams } from './screens/SignOnScreen'
 
 export type SignUpScreenParamList = {
-  CreateEmail: undefined
+  SignOn: SignOnScreenParams
   CreatePassword: CreatePasswordParams
   PickHandle: undefined
   FinishProfile: undefined
   SelectGenre: undefined
   SelectArtists: undefined
+  ReviewHandle: undefined
+  CreateLoginDetails: undefined
 }

@@ -169,11 +169,25 @@ const TIKTOK_POLLER = `
 })();
 `
 
-const OAuth = () => {
+type OAuthWebViewProps = {
+  isOpen?: boolean
+  url?: string
+  provider?: Provider
+  onResponse?: (res: any) => void
+  onClose?: () => void
+}
+
+const OAuthWebView = (props: OAuthWebViewProps) => {
+  const { onResponse, onClose } = props
   const dispatch = useDispatch()
-  const url = useSelector(getUrl)
-  const isOpen = useSelector(getIsOpen)
-  const provider = useSelector(getAuthProvider)
+  const urlStore = useSelector(getUrl)
+  const isOpenStore = useSelector(getIsOpen)
+  const providerStore = useSelector(getAuthProvider)
+
+  const useProps = props.isOpen !== undefined
+  const { url, isOpen, provider } = useProps
+    ? props
+    : { url: urlStore, isOpen: isOpenStore, provider: providerStore }
 
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
@@ -208,11 +222,17 @@ const OAuth = () => {
         }
 
         const payload = payloadByProvider[provider as Provider](data)
+        onResponse?.(payload)
 
         dispatch(setCredentials(payload as Credentials))
         dispatch(closePopup(false))
       }
     }
+  }
+
+  const handleClose = () => {
+    dispatch(closePopup(true))
+    onClose?.()
   }
 
   const injected = {
@@ -237,7 +257,7 @@ const OAuth = () => {
             marginBottom: 8
           }}
         >
-          <Button onPress={() => dispatch(closePopup(true))} title='Close' />
+          <Button onPress={handleClose} title='Close' />
         </View>
         <WebView
           injectedJavaScript={injected}
@@ -251,4 +271,4 @@ const OAuth = () => {
   )
 }
 
-export default OAuth
+export default OAuthWebView
