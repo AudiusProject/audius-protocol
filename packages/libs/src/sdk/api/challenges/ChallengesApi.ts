@@ -16,7 +16,13 @@ import {
   Configuration as ConfigurationFull
 } from '../generated/full'
 import type { UsersApi } from '../users/UsersApi'
-import { ClaimRewardsRequest, ClaimRewardsSchema } from './types'
+import {
+  ChallengeRewardID,
+  ClaimRewardsRequest,
+  ClaimRewardsSchema,
+  GenerateSpecifierRequest,
+  GenerateSpecifierSchema
+} from './types'
 import type { PublicKey } from '@solana/web3.js'
 import { AntiAbuseOracleApi } from '../antiAbuseOracle/AntiAbuseOracleApi'
 import { toChecksumAddress } from 'ethereumjs-util'
@@ -36,7 +42,47 @@ export class ChallengesApi extends BaseAPI {
     this.logger = logger.createPrefixedLogger('[challenges-api]')
   }
 
-  public async claimRewards(request: ClaimRewardsRequest) {
+  /**
+   * Formats the specifier for a claimable instance of a challenge.
+   *
+   * For most challenges, this is the user ID of the user that's claiming the
+   * the challenge reward. For challenges like referrals or $AUDIO matching,
+   * this includes more data like the referred user ID or purchased track ID
+   * to allow the challenge to be claimed multiple times, but only once per
+   * completed instance.
+   */
+  public async generateSpecifier(request: GenerateSpecifierRequest) {
+    const args = await parseParams(
+      'generateSpecifier',
+      GenerateSpecifierSchema
+    )(request)
+    switch (args.challengeId) {
+      case ChallengeRewardID.COMPLETE_PROFILE:
+      case ChallengeRewardID.CONNECT_VERIFIED_ACCOUNT:
+      case ChallengeRewardID.CREATE_FIRST_PLAYLIST:
+      case ChallengeRewardID.LISTEN_STREAK:
+      case ChallengeRewardID.MOBILE_INSTALL:
+      case ChallengeRewardID.SEND_FIRST_TIP:
+      case ChallengeRewardID.TRACK_UPLOADS:
+        return `${args.userId}`
+      case ChallengeRewardID.AUDIO_MATCHING_BUYER:
+        return `${args.sellerUserId}=>${args.trackId}`
+      case ChallengeRewardID.AUDIO_MATCHING_SELLER:
+        return `${args.buyerUserId}=>${args.trackId}`
+      case ChallengeRewardID.REFERRALS:
+      case ChallengeRewardID.VERIFIED_REFERRALS:
+        return `${args.userId}=>${args.userId}`
+      default:
+        throw new Error(`Unknown challenge ID: ${args.challengeId}`)
+    }
+  }
+
+  /**
+   * Claims a reward on behalf of a user.
+   *
+   * @see {@link generateSpecifier} to create the specifier argument.
+   */
+  public async claimReward(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const { userId } = request
@@ -140,7 +186,7 @@ export class ChallengesApi extends BaseAPI {
     handle
   }: {
     antiAbuseOracle: AntiAbuseOracle
-    challengeId: string
+    challengeId: ChallengeRewardID
     specifier: string
     amount: bigint
     recipientEthAddress: string
@@ -190,7 +236,7 @@ export class ChallengesApi extends BaseAPI {
   }: {
     userId: string
     antiAbuseOracleEthAddress: string
-    challengeId: string
+    challengeId: ChallengeRewardID
     specifier: string
     amount: bigint
     recipientEthAddress: string
@@ -252,7 +298,7 @@ export class ChallengesApi extends BaseAPI {
     antiAbuseOracleEthAddress,
     amount
   }: {
-    challengeId: string
+    challengeId: ChallengeRewardID
     specifier: string
     recipientEthAddress: string
     destinationUserBank: PublicKey
