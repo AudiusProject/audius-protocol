@@ -17,7 +17,7 @@ import {
 } from '../generated/full'
 import type { UsersApi } from '../users/UsersApi'
 import {
-  ChallengeRewardID,
+  ChallengeId,
   ClaimRewardsRequest,
   ClaimRewardsSchema,
   GenerateSpecifierRequest,
@@ -57,20 +57,20 @@ export class ChallengesApi extends BaseAPI {
       GenerateSpecifierSchema
     )(request)
     switch (args.challengeId) {
-      case ChallengeRewardID.COMPLETE_PROFILE:
-      case ChallengeRewardID.CONNECT_VERIFIED_ACCOUNT:
-      case ChallengeRewardID.CREATE_FIRST_PLAYLIST:
-      case ChallengeRewardID.LISTEN_STREAK:
-      case ChallengeRewardID.MOBILE_INSTALL:
-      case ChallengeRewardID.SEND_FIRST_TIP:
-      case ChallengeRewardID.TRACK_UPLOADS:
+      case ChallengeId.COMPLETE_PROFILE:
+      case ChallengeId.CONNECT_VERIFIED_ACCOUNT:
+      case ChallengeId.CREATE_FIRST_PLAYLIST:
+      case ChallengeId.LISTEN_STREAK:
+      case ChallengeId.MOBILE_INSTALL:
+      case ChallengeId.SEND_FIRST_TIP:
+      case ChallengeId.TRACK_UPLOADS:
         return `${args.userId}`
-      case ChallengeRewardID.AUDIO_MATCHING_BUYER:
+      case ChallengeId.AUDIO_MATCHING_BUYER:
         return `${args.sellerUserId}=>${args.trackId}`
-      case ChallengeRewardID.AUDIO_MATCHING_SELLER:
+      case ChallengeId.AUDIO_MATCHING_SELLER:
         return `${args.buyerUserId}=>${args.trackId}`
-      case ChallengeRewardID.REFERRALS:
-      case ChallengeRewardID.VERIFIED_REFERRALS:
+      case ChallengeId.REFERRALS:
+      case ChallengeId.VERIFIED_REFERRALS:
         return `${args.userId}=>${args.userId}`
       default:
         throw new Error(`Unknown challenge ID: ${args.challengeId}`)
@@ -186,7 +186,7 @@ export class ChallengesApi extends BaseAPI {
     handle
   }: {
     antiAbuseOracle: AntiAbuseOracle
-    challengeId: ChallengeRewardID
+    challengeId: ChallengeId
     specifier: string
     amount: bigint
     recipientEthAddress: string
@@ -236,7 +236,7 @@ export class ChallengesApi extends BaseAPI {
   }: {
     userId: string
     antiAbuseOracleEthAddress: string
-    challengeId: ChallengeRewardID
+    challengeId: ChallengeId
     specifier: string
     amount: bigint
     recipientEthAddress: string
@@ -298,7 +298,7 @@ export class ChallengesApi extends BaseAPI {
     antiAbuseOracleEthAddress,
     amount
   }: {
-    challengeId: ChallengeRewardID
+    challengeId: ChallengeId
     specifier: string
     recipientEthAddress: string
     destinationUserBank: PublicKey

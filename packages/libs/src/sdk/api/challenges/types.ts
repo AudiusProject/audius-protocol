@@ -4,7 +4,7 @@ import { HashId } from '../../types/HashId'
 // @ts-ignore:next-line ignore the unused import, used in jsdoc
 import type { ChallengesApi } from './ChallengesApi'
 
-export enum ChallengeRewardID {
+export enum ChallengeId {
   TRACK_UPLOADS = 'track-upload',
   REFERRALS = 'referrals',
   VERIFIED_REFERRALS = 'ref-v',
@@ -25,14 +25,14 @@ export enum ChallengeRewardID {
 const DefaultSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
   challengeId: z.enum([
-    ChallengeRewardID.COMPLETE_PROFILE,
-    ChallengeRewardID.CONNECT_VERIFIED_ACCOUNT,
-    ChallengeRewardID.CREATE_FIRST_PLAYLIST,
-    ChallengeRewardID.LISTEN_STREAK,
-    ChallengeRewardID.MOBILE_INSTALL,
-    ChallengeRewardID.REFERRED,
-    ChallengeRewardID.SEND_FIRST_TIP,
-    ChallengeRewardID.TRACK_UPLOADS
+    ChallengeId.COMPLETE_PROFILE,
+    ChallengeId.CONNECT_VERIFIED_ACCOUNT,
+    ChallengeId.CREATE_FIRST_PLAYLIST,
+    ChallengeId.LISTEN_STREAK,
+    ChallengeId.MOBILE_INSTALL,
+    ChallengeId.REFERRED,
+    ChallengeId.SEND_FIRST_TIP,
+    ChallengeId.TRACK_UPLOADS
   ]),
   /** The user ID of the user completing the challenge. */
   userId: HashId
@@ -40,10 +40,7 @@ const DefaultSpecifier = z.object({
 
 const ReferralSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
-  challengeId: z.enum([
-    ChallengeRewardID.REFERRALS,
-    ChallengeRewardID.VERIFIED_REFERRALS
-  ]),
+  challengeId: z.enum([ChallengeId.REFERRALS, ChallengeId.VERIFIED_REFERRALS]),
   /** The user ID of the user that was referred. */
   referredUserId: HashId,
   /** The user ID of the user completing the challenge. */
@@ -52,7 +49,7 @@ const ReferralSpecifier = z.object({
 
 const TrackSellerSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
-  challengeId: z.enum([ChallengeRewardID.AUDIO_MATCHING_BUYER]),
+  challengeId: z.enum([ChallengeId.AUDIO_MATCHING_BUYER]),
   /** The user ID of the owner of the track purchased. */
   sellerUserId: HashId,
   /** The track ID that was purchased. */
@@ -61,7 +58,7 @@ const TrackSellerSpecifier = z.object({
 
 const TrackBuyerSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
-  challengeId: z.enum([ChallengeRewardID.AUDIO_MATCHING_SELLER]),
+  challengeId: z.enum([ChallengeId.AUDIO_MATCHING_SELLER]),
   /** The user ID of the user that bought the track. */
   buyerUserId: HashId,
   /** The track ID that was purchased. */
@@ -80,7 +77,7 @@ export type GenerateSpecifierRequest = z.input<typeof GenerateSpecifierSchema>
 export const ClaimRewardsSchema = z
   .object({
     /** The challenge identifier. As in, the challenge "name." */
-    challengeId: z.nativeEnum(ChallengeRewardID),
+    challengeId: z.nativeEnum(ChallengeId),
     /**
      * Identifier for the completed challenge instance.
      *

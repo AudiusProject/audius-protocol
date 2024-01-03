@@ -11,10 +11,12 @@ export { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 export { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 export { UsersApi } from './api/users/UsersApi'
 export { ResolveApi } from './api/ResolveApi'
+export { ChallengesApi } from './api/challenges/ChallengesApi'
 export {
   GetAudioTransactionHistorySortMethodEnum,
   GetAudioTransactionHistorySortDirectionEnum
 } from './api/generated/full'
+export * from './api/challenges/types'
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
 export * from './api/albums/types'
