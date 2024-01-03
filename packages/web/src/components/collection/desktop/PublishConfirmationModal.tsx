@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { cacheCollectionsActions } from '@audius/common'
+import {
+  Collection,
+  CommonState,
+  cacheCollectionsActions,
+  collectionPageSelectors
+} from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -13,16 +18,17 @@ import {
   ModalProps,
   ModalTitle
 } from '@audius/stems'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import styles from './PublishConfirmationModal.module.css'
+const { getCollection } = collectionPageSelectors
 
 const { publishPlaylist } = cacheCollectionsActions
 
 const messages = {
   title: 'Make Public',
-  description:
-    'Are you sure you want to make this playlist public? It will be shared to your feed and your subscribed followers will be notified.',
+  description: (collectionType: 'album' | 'playlist') =>
+    `Are you sure you want to make this ${collectionType} public? It will be shared to your feed and your subscribed followers will be notified.`,
   cancel: 'Cancel',
   publish: 'Make Public'
 }
@@ -38,6 +44,10 @@ export const PublishConfirmationModal = (
   const { onClose } = other
   const dispatch = useDispatch()
 
+  const { is_album } = useSelector((state: CommonState) =>
+    getCollection(state, { id: collectionId })
+  ) as Collection
+
   const handlePublish = useCallback(() => {
     dispatch(publishPlaylist(collectionId))
     onClose()
@@ -52,7 +62,9 @@ export const PublishConfirmationModal = (
         />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>{messages.description}</ModalContentText>
+        <ModalContentText>
+          {messages.description(is_album ? 'album' : 'playlist')}
+        </ModalContentText>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button
