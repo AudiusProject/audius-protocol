@@ -77,7 +77,7 @@ const TrackItem = ({ track, index, showSkeleton, uid }: TrackItemProps) => {
       <View style={styles.divider} />
       <View style={styles.item}>
         {showSkeleton ? (
-          <Skeleton width='100%' height='10' />
+          <Skeleton width='100%' height={10} />
         ) : !track ? null : (
           <>
             <Text style={[styles.text, isPlayingUid && styles.active]}>

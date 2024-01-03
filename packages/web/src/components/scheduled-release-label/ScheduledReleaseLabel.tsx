@@ -41,12 +41,6 @@ export const ScheduledReleaseGiantLabel = ({
   released,
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  console.log(
-    'asdf released: ',
-    released,
-    moment().toString(),
-    moment.utc(released).isBefore(moment())
-  )
   if (!released || !isUnlisted || moment.utc(released).isBefore(moment())) {
     return null
   }

@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 
-import type { ViewStyle, TextStyle, StyleProp } from 'react-native'
+import type { ViewStyle, TextStyle, StyleProp, ColorValue } from 'react-native'
 import { TouchableHighlight, View, Animated } from 'react-native'
-import type { Color } from 'react-native-svg'
 
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -109,7 +108,7 @@ export type ButtonProps = {
    * const renderIconArrow = color => <IconArrow fill={color} />
    * export const myComponent = () => <Button renderIcon={renderIconArrow} />
    */
-  renderIcon?: (color: Color) => React.ReactElement
+  renderIcon?: (color: ColorValue) => React.ReactElement
   iconPosition?: 'left' | 'right'
   containerStyle?: StyleProp<ViewStyle>
   style?: StyleProp<ViewStyle>
@@ -172,7 +171,7 @@ const Button = ({
         <View style={styles.buttonContent}>
           {(icon || renderIcon) && iconPosition === 'left' ? (
             <View style={[styles.iconLeft, iconStyle]}>
-              {renderIcon ? renderIcon(typeStyles.icon.color as Color) : icon}
+              {renderIcon ? renderIcon(typeStyles.icon.color) : icon}
             </View>
           ) : null}
           <Text style={[styles.buttonText, typeStyles.buttonText, textStyle]}>
@@ -180,7 +179,7 @@ const Button = ({
           </Text>
           {(icon || renderIcon) && iconPosition === 'right' ? (
             <View style={[styles.iconRight, iconStyle]}>
-              {renderIcon ? renderIcon(typeStyles.icon.color as Color) : icon}
+              {renderIcon ? renderIcon(typeStyles.icon.color) : icon}
             </View>
           ) : null}
         </View>

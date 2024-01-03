@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 
 import type { ReactionTypes } from '@audius/common'
-import type { AnimatedLottieViewProps } from 'lottie-react-native'
+import type { LottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type {
   LayoutChangeEvent,
@@ -20,6 +20,10 @@ const useStyles = makeStyles(({ spacing }) => ({
     height: 84,
     width: 84,
     padding: spacing(3)
+  },
+  lottie: {
+    height: '100%',
+    width: '100%'
   }
 }))
 
@@ -32,7 +36,7 @@ export type OnMeasure = (config: OnMeasureConfig) => void
 export type ReactionProps = ViewProps & {
   reactionType: ReactionTypes
   autoPlay?: boolean
-  source: AnimatedLottieViewProps['source']
+  source: LottieViewProps['source']
   scale?: number
   style?: StyleProp<ViewStyle>
   status?: ReactionStatus
@@ -127,6 +131,7 @@ export const Reaction = (props: ReactionProps) => {
         autoPlay={isVisible && autoPlay}
         loop
         source={source}
+        style={styles.lottie}
       />
     </Animated.View>
   )

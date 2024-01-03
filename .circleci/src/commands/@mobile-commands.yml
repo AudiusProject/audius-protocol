@@ -50,13 +50,14 @@ mobile-prepare-ios:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
         name: install pods
         command: |
           cd packages/mobile/ios
-          pod install --deployment
+          bundle exec pod install
     - save_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
         paths:
@@ -162,7 +163,7 @@ mobile-prepare-android:
         name: install pip
         command: |
           sudo apt update
-          sudo apt install python3-pip
+          sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
     - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
@@ -212,6 +213,7 @@ mobile-build-android:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: generating the release apk & bundle
         command: |
@@ -239,6 +241,7 @@ mobile-release-android:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: release android
         command: |
@@ -313,11 +316,12 @@ mobile-release-saga-dapp-store:
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
+          ln -s $PWD/node_modules/react-native-code-push $PWD/packages/mobile/node_modules/react-native-code-push || true
     - run:
         name: Build Android
         command: |
           cd packages/mobile/android
-          ./gradlew app:assembleRelease
+          ./gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a
     - run:
         name: Validate release
         command: |

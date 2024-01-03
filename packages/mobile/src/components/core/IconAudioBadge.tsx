@@ -18,6 +18,8 @@ const audioTierMap = {
 }
 
 type IconBadgeProps = IconProps & {
+  height: number
+  width: number
   tier: BadgeTier
   showNoTier?: boolean
 }
