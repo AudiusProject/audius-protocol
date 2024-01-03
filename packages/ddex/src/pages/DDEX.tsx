@@ -499,8 +499,8 @@ const XmlImporter = ({
 
 export const Ddex = () => {
   const { audiusLibs } = useAudiusLibs();
-  const { audiusSdk } = useAudiusSdk();
   const { didInit, getFeatureEnabled } = useRemoteConfig();
+  const { audiusSdk, initSdk, removeSdk } = useAudiusSdk();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -522,6 +522,8 @@ export const Ddex = () => {
     if (!uploadsAllowed) {
       setLoginError("401: User not authorized");
       await audiusLibs!.Account!.logout();
+    } else {
+      await initSdk();
     }
   }
 
@@ -552,6 +554,7 @@ export const Ddex = () => {
     setLoginError(null);
     setLogoutLoading(true);
     await audiusLibs!.Account!.logout();
+    removeSdk();
     setLogoutLoading(false);
   };
 
