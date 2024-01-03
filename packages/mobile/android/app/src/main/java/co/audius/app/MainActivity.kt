@@ -35,7 +35,7 @@ class MainActivity : ReactActivity() {
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    RNBootSplash.init(this)
+    RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(null)
     RNBars.init(this, "light-content")
     TikTokOpenApiFactory.init(TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID))
