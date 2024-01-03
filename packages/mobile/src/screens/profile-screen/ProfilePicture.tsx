@@ -23,6 +23,7 @@ export const ProfilePicture = (props: Partial<ProfilePictureProps>) => {
         position: 'absolute',
         top: spacing.unit13,
         left: spacing.unit3,
+        // TODO: use zIndex enum
         zIndex: 100
       })}
       pointerEvents='none'
