@@ -17,6 +17,7 @@ export const TextLink = (props: TextLinkProps) => {
     onClick,
     textVariant,
     showUnderline,
+    applyHoverStylesToInnerSvg,
     ...other
   } = props
 
@@ -24,19 +25,28 @@ export const TextLink = (props: TextLinkProps) => {
 
   const variantColors = {
     default: color.link.default,
+    subdued: color.link.subdued,
     visible: color.link.visible,
     inverted: color.static.white
   }
 
   const variantHoverColors = {
     default: color.primary.p300,
+    subdued: color.primary.p300,
     visible: color.link.visible,
     inverted: color.static.white
   }
 
   const hoverStyles = {
     textDecoration: 'underline',
-    color: variantHoverColors[variant]
+    color: variantHoverColors[variant],
+    ...(applyHoverStylesToInnerSvg
+      ? {
+          path: {
+            fill: variantHoverColors[variant]
+          }
+        }
+      : {})
   }
 
   return (
@@ -47,6 +57,7 @@ export const TextLink = (props: TextLinkProps) => {
       css={{
         color: variantColors[variant],
         textDecoration: 'none',
+        transition: 'none',
         ':hover': hoverStyles,
         ...(showUnderline && hoverStyles)
       }}
