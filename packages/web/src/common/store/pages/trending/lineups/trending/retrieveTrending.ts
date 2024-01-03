@@ -12,12 +12,13 @@ import {
   trendingPageSelectors,
   getContext
 } from '@audius/common'
-import { keccak_256 } from 'js-sha3'
+import jsSha3 from 'js-sha3'
 import { call, put, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { AppState } from 'store/types'
 import { waitForRead } from 'utils/sagaHelpers'
+const { keccak_256 } = jsSha3
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
 const { getTrendingEntries } = trendingPageLineupSelectors

@@ -5,13 +5,14 @@ import {
   trendingUndergroundPageLineupActions,
   getContext
 } from '@audius/common'
-import { keccak_256 } from 'js-sha3'
+import jsSha3 from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
+const { keccak_256 } = jsSha3
 const { getLineup } = trendingUndergroundPageLineupSelectors
 const getUserId = accountSelectors.getUserId
 

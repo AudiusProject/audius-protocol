@@ -11,7 +11,7 @@ import {
   reachabilitySelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
-import { keccak_256 } from 'js-sha3'
+import jsSha3 from 'js-sha3'
 import moment from 'moment'
 import {
   call,
@@ -29,6 +29,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 import { NOT_FOUND_PAGE, trackRemixesPage } from '../../../../utils/route'
 
 import tracksSagas from './lineups/sagas'
+const { keccak_256 } = jsSha3
 const { getIsReachable } = reachabilitySelectors
 const { tracksActions } = trackPageLineupActions
 const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
