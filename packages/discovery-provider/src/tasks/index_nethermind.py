@@ -52,7 +52,7 @@ BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 FINAL_POA_BLOCK = helpers.get_final_poa_block()
 
-
+# asdfasdf
 logger = StructuredLogger(__name__)
 
 
