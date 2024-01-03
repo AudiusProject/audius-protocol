@@ -126,7 +126,7 @@ def test_index_valid_track(app, mocker):
             "is_playlist_upload": True,
             "duration": 200,
         },
-        "QmCreateTrack3": {
+        "QmCreateTrack3": {  # scheduled release
             "owner_id": 1,
             "track_cid": "some-track-cid-3",
             "title": "track 3",
@@ -144,7 +144,8 @@ def test_index_valid_track(app, mocker):
             "track_segments": [],
             "has_current_user_reposted": False,
             "is_current": True,
-            "is_unlisted": False,
+            "is_scheduled_release": True,
+            "is_unlisted": False,  # is_unlisted is overriden by is_scheduled_release
             "is_premium": False,
             "premium_conditions": None,
             "field_visibility": {
