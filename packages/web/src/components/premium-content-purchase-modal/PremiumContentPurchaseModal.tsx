@@ -103,7 +103,7 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm>
+    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: mobile })}>
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
         onClose={onClose}
