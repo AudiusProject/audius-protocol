@@ -16,7 +16,7 @@ import { PasswordField } from 'components/form-fields/PasswordField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
-import { CompletionChecklist } from '../components/CompletionChecklist'
+import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { loginDetailsSchema } from '../utils/loginDetailsSchema'
@@ -102,7 +102,7 @@ export const CreateLoginDetailsPage = () => {
                 name='confirmPassword'
                 label={messages.confirmPasswordLabel}
               />
-              <CompletionChecklist />
+              <PasswordCompletionChecklist />
             </Flex>
           </Flex>
           <PageFooter

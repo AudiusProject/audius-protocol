@@ -2,7 +2,7 @@ import { Flex } from '@audius/harmony'
 
 import { PasswordField } from 'components/form-fields/PasswordField'
 
-import { CompletionChecklist } from './CompletionChecklist'
+import { PasswordCompletionChecklist } from './PasswordCompletionChecklist'
 
 const messages = {
   passwordLabel: 'Password',
@@ -17,7 +17,7 @@ export const EnterPasswordSection = () => {
         name='confirmPassword'
         label={messages.confirmPasswordLabel}
       />
-      <CompletionChecklist />
+      <PasswordCompletionChecklist />
     </Flex>
   )
 }

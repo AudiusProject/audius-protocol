@@ -5,6 +5,7 @@ import { signUpFetch } from 'src/api'
 import { EMAIL_REGEX } from 'utils/email'
 
 export const emailSchemaMessages = {
+  emailRequired: 'Please enter an email.',
   invalidEmail: 'Please enter a valid email.',
   emailInUse: 'Email already taken.'
 }
@@ -14,7 +15,7 @@ export const emailSchema = <T extends AudiusQueryContextType>(
 ) =>
   z.object({
     email: z
-      .string({ required_error: emailSchemaMessages.invalidEmail })
+      .string({ required_error: emailSchemaMessages.emailRequired })
       .regex(EMAIL_REGEX, { message: emailSchemaMessages.invalidEmail })
       .refine(
         async (email) => {

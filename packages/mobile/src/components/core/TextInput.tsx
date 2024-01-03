@@ -119,6 +119,7 @@ export type TextInputProps = RNTextInputProps & {
   iconProp?: Pick<SvgProps, 'fill' | 'width' | 'height'>
   hideInputAccessory?: boolean
   hideKeyboard?: boolean
+  error?: boolean
 }
 
 export type TextInputRef = RNTextInput
@@ -149,6 +150,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       placeholder,
       hideInputAccessory: hideInputAccessoryProp,
       autoCorrect = false,
+      error,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
@@ -263,7 +265,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       onClear?.()
     }, [onClear])
 
-    const { neutral, neutralLight4, secondary, neutralLight7 } =
+    const { neutral, neutralLight4, secondary, neutralLight7, accentRed } =
       useThemeColors()
 
     const themeVariant = useThemeVariant()
@@ -277,13 +279,15 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             style,
             stylesProp?.root,
             {
-              borderColor: borderFocusAnimation.current.interpolate({
-                inputRange: [0, 1],
-                outputRange: [
-                  convertHexToRGBA(neutralLight7),
-                  convertHexToRGBA(secondary)
-                ]
-              })
+              borderColor: error
+                ? accentRed
+                : borderFocusAnimation.current.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [
+                      convertHexToRGBA(neutralLight7),
+                      convertHexToRGBA(secondary)
+                    ]
+                  })
             }
           ]}
         >

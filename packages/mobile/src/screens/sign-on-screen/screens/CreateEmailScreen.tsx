@@ -13,10 +13,9 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
-import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { EmailInUseHint } from '../components/EmailInUseHint'
+import { NewEmailField } from '../components/NewEmailField'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
@@ -37,7 +36,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
-  const emailFormikSchema = useMemo(() => {
+  const EmailSchema = useMemo(() => {
     return toFormikValidationSchema(emailSchema(queryContext))
   }, [queryContext])
 
@@ -54,7 +53,8 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={emailFormikSchema}
+      validationSchema={EmailSchema}
+      validateOnChange={false}
     >
       {({ handleSubmit }) => (
         <>
@@ -70,14 +70,13 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             centered
           />
           <Flex direction='column' gap='l'>
-            {/* TODO: replace with harmony text input */}
-            <TextField
+            <NewEmailField
               name='email'
               label={messages.emailLabel}
               noGutter
               onChangeText={onChangeEmail}
+              onChangeScreen={onChangeScreen}
             />
-            <EmailInUseHint onChangeScreen={onChangeScreen} />
             <Divider>
               <Text variant='body' size='s' color='subdued'>
                 {messages.socialsDividerText}
