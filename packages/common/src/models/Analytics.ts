@@ -833,7 +833,7 @@ type EmbedCopy = {
 // Track Upload
 type TrackUploadOpen = {
   eventName: Name.TRACK_UPLOAD_OPEN
-  source: 'nav' | 'profile' | 'signup'
+  source: 'nav' | 'profile' | 'signup' | 'library'
 }
 type TrackUploadStartUploading = {
   eventName: Name.TRACK_UPLOAD_START_UPLOADING

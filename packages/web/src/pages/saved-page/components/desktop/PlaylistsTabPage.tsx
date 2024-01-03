@@ -68,7 +68,7 @@ export const PlaylistsTabPage = () => {
       <UploadChip
         type='playlist'
         variant='card'
-        onClick={handleCreatePlaylist}
+        source={CreatePlaylistSource.LIBRARY_PAGE}
       />
     )
     return [
@@ -77,7 +77,7 @@ export const PlaylistsTabPage = () => {
         return <CollectionCard index={i} key={id} albumId={id} />
       })
     ]
-  }, [collections, handleCreatePlaylist])
+  }, [collections])
 
   if (isLoadingInitial) {
     return <LoadingSpinner className={styles.spinner} />

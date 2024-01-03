@@ -35,7 +35,7 @@ project 'AudiusReactNative',
 target 'AudiusReactNative' do
   pod 'SRSRadialGradient', :path => '../node_modules/react-native-radial-gradient/ios'
   pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
-  # pod 'react-native-flipper', :path => '../../../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
+  pod 'nSure'
 
   config = use_native_modules!
 
