@@ -17,7 +17,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   image: {
     height: 152,
-    width: '100%',
+    width: 152,
     borderRadius: 152 / 2
   },
   textContainer: {

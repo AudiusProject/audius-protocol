@@ -161,10 +161,10 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
-      <View style={styles.actionButtons}>
+      <View pointerEvents='box-none' style={styles.actionButtons}>
         {isReachable ? actionButtons : null}
       </View>
-      <View style={styles.text}>
+      <View pointerEvents='none' style={styles.text}>
         <View style={styles.name}>
           <Text
             accessibilityRole='header'

@@ -1,5 +1,5 @@
 import { BlurView } from '@react-native-community/blur'
-import { Animated, StyleSheet } from 'react-native'
+import { Animated, StyleSheet, View } from 'react-native'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { CoverPhoto } from 'app/components/image/CoverPhoto'
@@ -47,7 +47,7 @@ export const ProfileCoverPhoto = (props: ProfileCoverPhotoProps) => {
   const isArtist = track_count > 0
 
   return (
-    <>
+    <View pointerEvents='none'>
       <CoverPhoto
         animatedValue={scrollY}
         style={styles.coverPhoto}
@@ -82,6 +82,6 @@ export const ProfileCoverPhoto = (props: ProfileCoverPhotoProps) => {
           <BadgeArtist />
         </Animated.View>
       ) : null}
-    </>
+    </View>
   )
 }
