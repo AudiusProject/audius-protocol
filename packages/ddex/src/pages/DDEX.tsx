@@ -2,7 +2,8 @@ import { useState, ChangeEvent, DragEvent } from "react";
 import { CheckCircleIcon, RefreshIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 import { useAudiusSdk } from "../providers/AudiusSdkProvider";
 import { useAudiusLibs } from "../providers/AudiusLibsProvider";
-import { FeatureFlags, useRemoteConfig } from "../providers/RemoteConfigProvider";
+import { useRemoteConfig } from "../providers/RemoteConfigProvider";
+import { FeatureFlags } from "../utils/constants";
 import type { AudiusLibs } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
 import type {
   AudiusSdk,

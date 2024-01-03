@@ -7,13 +7,9 @@ import {
 } from "react";
 import optimizely, { Client } from "@optimizely/optimizely-sdk";
 import { useEnvVars } from "../providers/EnvVarsProvider";
-
-export enum FeatureFlags {
-  DDEX_UPLOADS = 'ddex_uploads'
-}
+import { FeatureFlags } from "../utils/constants";
 
 type FlagDefaults = Record<FeatureFlags, boolean>
-
 const flagDefaults: FlagDefaults = {
   [FeatureFlags.DDEX_UPLOADS]: false,
 }
