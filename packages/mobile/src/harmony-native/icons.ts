@@ -140,7 +140,6 @@ export { default as IconValidationCheck } from '@audius/harmony/src/assets/icons
 export { default as IconValidationX } from '@audius/harmony/src/assets/icons/ValidationX.svg'
 export { default as IconSoundwave } from '@audius/harmony/src/assets/icons/Soundwave.svg'
 export { default as IconCreditCard } from '@audius/harmony/src/assets/icons/CreditCard.svg'
-export { default as IconExclamationCircle } from '@audius/harmony/src/assets/icons/ExclamationCircle.svg'
 
 // Two Tone / Special Styling
 

@@ -169,7 +169,7 @@ const TIKTOK_POLLER = `
 })();
 `
 
-type OAuthProps = {
+type OAuthWebViewProps = {
   isOpen?: boolean
   url?: string
   provider?: Provider
@@ -177,7 +177,7 @@ type OAuthProps = {
   onClose?: () => void
 }
 
-const OAuth = (props: OAuthProps) => {
+const OAuthWebView = (props: OAuthWebViewProps) => {
   const { onResponse, onClose } = props
   const dispatch = useDispatch()
   const urlStore = useSelector(getUrl)
@@ -271,4 +271,4 @@ const OAuth = (props: OAuthProps) => {
   )
 }
 
-export default OAuth
+export default OAuthWebView

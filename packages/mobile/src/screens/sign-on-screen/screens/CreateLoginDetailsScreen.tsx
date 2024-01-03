@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   createLoginDetailsSchema,
@@ -17,20 +17,14 @@ import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  Text,
-  Flex,
-  IconVerified,
-  useTheme,
-  IconExclamationCircle
-} from '@audius/harmony-native'
+import { Text, Flex, IconVerified, useTheme } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { EmailInUseHint } from '../components/EmailInUseHint'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
-import { Hint } from '../components/temp-harmony/Hint'
 import type { SignUpScreenParamList } from '../types'
 
 export type CreateLoginDetailsValues = {
@@ -65,8 +59,10 @@ export const CreateLoginDetailsScreen = () => {
 
   const audiusQueryContext = useAudiusQueryContext()
 
-  const loginDetailsFormikSchema = toFormikValidationSchema(
-    createLoginDetailsSchema(audiusQueryContext)
+  const loginDetailsFormikSchema = useMemo(
+    () =>
+      toFormikValidationSchema(createLoginDetailsSchema(audiusQueryContext)),
+    [audiusQueryContext]
   )
 
   const navigateToLogin = () => {
@@ -106,18 +102,7 @@ export const CreateLoginDetailsScreen = () => {
               />
               <TextField label={messages.emailLabel} name='email' noGutter />
               {errors.email === emailSchemaMessages.emailInUse ? (
-                <Hint icon={IconExclamationCircle}>
-                  <Text
-                    variant='body'
-                    size='m'
-                    style={css({ textAlign: 'center' })}
-                  >
-                    {emailSchemaMessages.emailInUse}{' '}
-                    <Text onPress={navigateToLogin} color='accent'>
-                      {messages.signIn}
-                    </Text>
-                  </Text>
-                </Hint>
+                <EmailInUseHint onChangeScreen={navigateToLogin} />
               ) : null}
               <TextField
                 name='password'

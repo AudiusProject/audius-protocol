@@ -19,7 +19,7 @@ import { getInstagramProfile } from 'app/store/oauth/sagas'
 import type { InstagramCredentials } from 'app/store/oauth/types'
 import { EventNames } from 'app/types/analytics'
 
-import OAuthWebview from '../../../components/oauth/OAuth'
+import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
 
 type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
@@ -142,7 +142,7 @@ export const SignUpFlowInstagramAuth = ({
 
   return (
     <>
-      <OAuthWebview
+      <OAuthWebView
         isOpen={isModalOpen}
         url={signUpFlowInstagramAuthorizeUrl}
         provider={Provider.INSTAGRAM}

@@ -59,7 +59,7 @@ export const SignupFlowTikTokAuth = ({
     <TikTokAuth
       onClick={() => {
         onStart()
-        dispatch(make(Name.CREATE_ACCOUNT_COMPLETE_TIKTOK, {}))
+        dispatch(make(Name.CREATE_ACCOUNT_START_TIKTOK, {}))
       }}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleTikTokLogin({ uuid, profile })}

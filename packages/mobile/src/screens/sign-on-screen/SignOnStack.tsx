@@ -26,14 +26,14 @@ export const SignOnStack = () => {
       />
       <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
       <Stack.Screen name='PickHandle' component={PickHandleScreen} />
-      <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-      <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
-      <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
       <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
       <Stack.Screen
         name='CreateLoginDetails'
         component={CreateLoginDetailsScreen}
       />
+      <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
+      <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
+      <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
     </Stack.Navigator>
   )
 }

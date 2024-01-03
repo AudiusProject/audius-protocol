@@ -15,7 +15,7 @@ import { env } from 'app/services/env'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 
-import OAuthWebview from '../../../components/oauth/OAuth'
+import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
 
 type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
@@ -121,9 +121,7 @@ const useSetProfileFromTwitter = () => {
 }
 
 const useTwitterAuthToken = () => {
-  const [authToken, setAuthToken] = useState()
-
-  useAsync(async () => {
+  const { value: authToken } = useAsync(async () => {
     if (!authToken) {
       const tokenResp = await fetch(twitterApi.requestTokenUrl, {
         method: 'POST',
@@ -131,7 +129,7 @@ const useTwitterAuthToken = () => {
         headers: twitterApi.headers
       })
       const tokenRespJson = await tokenResp.json()
-      setAuthToken(tokenRespJson.oauth_token)
+      return tokenRespJson.oauth_token
     }
   }, [])
 
@@ -183,7 +181,7 @@ export const SignUpFlowTwitterAuth = ({
   return (
     <>
       {authToken && (
-        <OAuthWebview
+        <OAuthWebView
           isOpen={isModalOpen}
           url={authenticationUrl(authToken)}
           provider={Provider.TWITTER}

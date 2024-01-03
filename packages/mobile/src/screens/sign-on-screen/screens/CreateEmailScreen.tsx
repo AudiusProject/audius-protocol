@@ -5,6 +5,7 @@ import {
   useAudiusQueryContext,
   createEmailPageMessages as messages
 } from '@audius/common'
+import { Flex, Text } from '@audius/harmony-native'
 import {
   setLinkedSocialOnFirstPage,
   setValueField
@@ -17,7 +18,6 @@ import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Text, IconExclamationCircle } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
