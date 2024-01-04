@@ -4,7 +4,6 @@ import type { EditPlaylistValues } from '@audius/common'
 import {
   SquareSizes,
   cacheCollectionsActions,
-  collectionPageLineupActions as tracksActions,
   cacheCollectionsSelectors
 } from '@audius/common'
 import { Formik } from 'formik'
