@@ -19,19 +19,14 @@ import {
   reformatCollection,
   toastActions
 } from '@audius/common'
-import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import {
-  retrieveCollection,
-  retrieveCollections
-} from './utils/retrieveCollections'
+import { retrieveCollection } from './utils/retrieveCollections'
 
 const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTrack } = cacheTracksSelectors
