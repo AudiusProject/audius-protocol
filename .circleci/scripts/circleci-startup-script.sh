@@ -91,12 +91,6 @@ chmod 755 /usr/local/sbin/periodic-cleanup
 
 cat <<EOT > /etc/cron.hourly/audius-ci-hourly
 #!/bin/sh
-/usr/local/sbin/periodic-cleanup | logger -t cleanup
-EOT
-chmod 755 /etc/cron.hourly/audius-ci-hourly
-
-cat <<EOT > /etc/cron.daily/audius-ci-daily
-#!/bin/sh
 /usr/local/sbin/periodic-cleanup --full | logger -t cleanup
 EOT
-chmod 755 /etc/cron.daily/audius-ci-daily
+chmod 755 /etc/cron.hourly/audius-ci-hourly
