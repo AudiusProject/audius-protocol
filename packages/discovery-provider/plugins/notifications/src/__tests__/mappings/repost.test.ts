@@ -23,9 +23,6 @@ import { EntityType } from '../../email/notifications/types'
 describe('Repost Notification', () => {
   let processor: Processor
 
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
-
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
@@ -35,6 +32,7 @@ describe('Repost Notification', () => {
     .mockImplementation(() => Promise.resolve(true))
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     const setup = await setupTest()
     processor = setup.processor
   })

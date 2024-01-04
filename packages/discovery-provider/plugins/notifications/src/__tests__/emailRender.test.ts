@@ -25,10 +25,8 @@ const initDB = async (processor: Processor) => {
 describe('Render email', () => {
   let processor: Processor
 
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
-
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     const setup = await setupTest()
     processor = setup.processor
     await initDB(processor)
