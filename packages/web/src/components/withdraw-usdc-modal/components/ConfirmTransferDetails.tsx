@@ -6,7 +6,8 @@ import {
   useWithdrawUSDCModal,
   useUSDCBalance,
   formatUSDCWeiToFloorCentsNumber,
-  BNUSDC
+  BNUSDC,
+  WithdrawalMethod
 } from '@audius/common'
 import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
@@ -20,7 +21,8 @@ import { Text } from 'components/typography'
 import {
   ADDRESS,
   AMOUNT,
-  CONFIRM
+  CONFIRM,
+  METHOD
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 
 import styles from './ConfirmTransferDetails.module.css'
@@ -42,6 +44,8 @@ const messages = {
   goBack: 'Go Back',
   confirm: 'Confirm Transfer',
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
+  coinflowDescription:
+    'Your funds will be sent to Coinflow for withdrawal to a bank account or debit card. Additional payment provider fees may apply.',
   guide: 'Guide to USDC Transfers on Audius'
 }
 
@@ -50,6 +54,7 @@ export const ConfirmTransferDetails = () => {
   const { setData } = useWithdrawUSDCModal()
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
+  const [{ value: methodValue }] = useField(METHOD)
   const [confirmField, { error: confirmError }] = useField(CONFIRM)
 
   const { data: balance } = useUSDCBalance()
@@ -66,7 +71,12 @@ export const ConfirmTransferDetails = () => {
   const handleContinue = useCallback(() => {
     setTouchedContinue(true)
     if (!confirmError) {
-      setData({ page: WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS })
+      setData({
+        page:
+          methodValue === WithdrawalMethod.COINFLOW
+            ? WithdrawUSDCModalPages.COINFLOW_TRANSFER
+            : WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
+      })
       submitForm()
     }
   }, [setData, submitForm, confirmError])
@@ -82,29 +92,37 @@ export const ConfirmTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
-          {addressValue}
+      {methodValue === WithdrawalMethod.COINFLOW ? (
+        <Text variant='body' size='medium'>
+          {messages.coinflowDescription}
         </Text>
-      </div>
-      <div className={styles.details}>
-        <Text variant='title' size='medium' strength='default'>
-          {messages.review}
-        </Text>
-        <Text variant='body' size='small' strength='default'>
-          {messages.byProceeding}
-        </Text>
-        <div className={styles.acknowledge}>
-          <Switch {...confirmField} />
-          <Text variant='body' size='small' strength='default'>
-            {messages.haveCarefully}
-          </Text>
-        </div>
-        {touchedContinue && confirmError ? (
-          <HelperText error>{confirmError}</HelperText>
-        ) : null}
-      </div>
+      ) : (
+        <>
+          <div className={styles.destination}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {addressValue}
+            </Text>
+          </div>
+          <div className={styles.details}>
+            <Text variant='title' size='medium' strength='default'>
+              {messages.review}
+            </Text>
+            <Text variant='body' size='small' strength='default'>
+              {messages.byProceeding}
+            </Text>
+            <div className={styles.acknowledge}>
+              <Switch {...confirmField} />
+              <Text variant='body' size='small' strength='default'>
+                {messages.haveCarefully}
+              </Text>
+            </div>
+            {touchedContinue && confirmError ? (
+              <HelperText error>{confirmError}</HelperText>
+            ) : null}
+          </div>
+        </>
+      )}
       <div className={styles.buttons}>
         <Button
           iconLeft={IconCaretLeft}

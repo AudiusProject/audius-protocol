@@ -2,21 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from 'models/Status'
 
-export enum CoinflowWithdrawalState {
-  IDLE = 'IDLE',
-  FUNDING_ROOT_WALLET = 'FUNDING_ROOT_WALLET',
-  READY_FOR_WITHDRAWAL = 'READY_FOR_WITHDRAWAL',
-  WITHDRAWING = 'WITHDRAWING',
-  CANCELED = 'CANCELED',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
-}
+import { CoinflowWithdrawalState, WithdrawalMethod } from './types'
 
 type WithdrawUSDCState = {
   withdrawStatus: Status
   coinflowState: CoinflowWithdrawalState
   destinationAddress?: string
   amount?: number
+  method: WithdrawalMethod
   withdrawError?: Error
   withdrawTransaction?: string
   destinationError?: Error
@@ -25,6 +18,7 @@ type WithdrawUSDCState = {
 
 const initialState: WithdrawUSDCState = {
   withdrawStatus: Status.IDLE,
+  method: WithdrawalMethod.MANUAL_TRANSFER,
   coinflowState: CoinflowWithdrawalState.IDLE
 }
 
@@ -38,6 +32,7 @@ const slice = createSlice({
         /** Balance in cents. Used for analytics */
         currentBalance: number
         /** Transfer amount in cents */
+        method: WithdrawalMethod
         amount: number
         destinationAddress: string
       }>

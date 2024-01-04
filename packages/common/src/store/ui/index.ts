@@ -133,6 +133,7 @@ export {
   actions as withdrawUSDCActions
 } from './withdraw-usdc/slice'
 export * as withdrawUSDCSelectors from './withdraw-usdc/selectors'
+export * from './withdraw-usdc/types'
 
 export {
   default as transactionDetailsReducer,

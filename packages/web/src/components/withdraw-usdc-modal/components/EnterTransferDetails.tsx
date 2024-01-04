@@ -14,24 +14,27 @@ import {
   filterDecimalString,
   padDecimalValue,
   decimalIntegerToHumanReadable,
-  Name
+  Name,
+  WithdrawalMethod
 } from '@audius/common'
 import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { Text } from 'components/typography'
 import {
   ADDRESS,
-  AMOUNT
+  AMOUNT,
+  METHOD
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { make, track } from 'services/analytics'
 
 import styles from './EnterTransferDetails.module.css'
 import { Hint } from './Hint'
 import { TextRow } from './TextRow'
+import { SegmentedControl } from '@audius/stems'
 
 const LEARN_MORE_LINK =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -48,8 +51,18 @@ const messages = {
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
   guide: 'Guide to USDC Transfers on Audius',
   dollars: '$',
+  transferMethod: 'Transfer Method',
+  withdrawWithCoinflow: 'Withdraw with Coinflow',
+  manualTransfer: 'Manual Transfer',
+  coinflowDescription:
+    'Your funds will be sent to Coinflow for withdrawal to a bank account or debit card. Additional payment provider fees may apply.',
   usdc: '(USDC)'
 }
+
+const withdrawalMethodOptions = [
+  { key: WithdrawalMethod.COINFLOW, text: messages.withdrawWithCoinflow },
+  { key: WithdrawalMethod.MANUAL_TRANSFER, text: messages.manualTransfer }
+]
 
 export const EnterTransferDetails = () => {
   const { data: balance } = useUSDCBalance()
@@ -66,6 +79,8 @@ export const EnterTransferDetails = () => {
     { error: amountError },
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
+  const [{ value: methodValue }, _, { setValue: setMethod }] =
+    useField<WithdrawalMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(value || balanceNumber)
   )
@@ -86,6 +101,11 @@ export const EnterTransferDetails = () => {
   )
 
   const [{ value: address }, { error: addressError }] = useField(ADDRESS)
+
+  const disableContinue =
+    methodValue === WithdrawalMethod.COINFLOW
+      ? !!(amountError || balance?.isZero())
+      : !!(amountError || addressError || !address || balance?.isZero())
 
   const handleClickHelpGuide = useCallback(() => {
     track(
@@ -145,28 +165,40 @@ export const EnterTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <div className={styles.destinationText}>
-          <TextRow left={messages.destinationAddress} />
-          <Text variant='body' size='medium' strength='default'>
-            {messages.destinationDetails}
-          </Text>
+      <SegmentedControl
+        fullWidth
+        label={messages.transferMethod}
+        options={withdrawalMethodOptions}
+        onSelectOption={setMethod}
+        selected={methodValue}
+      />
+      {methodValue === WithdrawalMethod.COINFLOW ? (
+        <Text variant='body' size='medium'>
+          {messages.coinflowDescription}
+        </Text>
+      ) : (
+        <div className={styles.destination}>
+          <div className={styles.destinationText}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {messages.destinationDetails}
+            </Text>
+          </div>
+          <TextField
+            title={messages.destinationAddress}
+            onPaste={handlePasteAddress}
+            label={messages.solanaWallet}
+            aria-label={messages.destinationAddress}
+            name={ADDRESS}
+            placeholder=''
+          />
         </div>
-        <TextField
-          title={messages.destinationAddress}
-          onPaste={handlePasteAddress}
-          label={messages.solanaWallet}
-          aria-label={messages.destinationAddress}
-          name={ADDRESS}
-          placeholder=''
-        />
-      </div>
+      )}
+
       <Button
         variant={ButtonType.SECONDARY}
         fullWidth
-        disabled={
-          !!(amountError || addressError || !address || balance?.isZero())
-        }
+        disabled={disableContinue}
         onClick={handleContinue}
       >
         {messages.continue}

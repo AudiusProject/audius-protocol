@@ -1,0 +1,6 @@
+.spinner {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  align-self: center;
+  margin: var(--unit-3);
+}

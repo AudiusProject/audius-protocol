@@ -11,7 +11,8 @@ import {
   Nullable,
   withdrawUSDCSelectors,
   Status,
-  Name
+  Name,
+  WithdrawalMethod
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
@@ -52,11 +53,13 @@ const messages = {
 export const AMOUNT = 'amount'
 export const ADDRESS = 'address'
 export const CONFIRM = 'confirm'
+export const METHOD = 'method'
 
 type WithdrawFormValues = {
   [AMOUNT]: number
   [ADDRESS]: string
   [CONFIRM]: boolean
+  [METHOD]: WithdrawalMethod
 }
 
 const WithdrawUSDCFormSchema = (userBalance: number) => {
@@ -66,19 +69,25 @@ const WithdrawUSDCFormSchema = (userBalance: number) => {
     amount = amount.gte(1, messages.errors.amountTooLow)
   }
 
-  return z.object({
-    [AMOUNT]: amount
-    // TODO: Make this conditional on type of withdrawal
-    // [ADDRESS]: z
-    //   .string()
-    //   .refine(
-    //     (value) => isValidSolAddress(value as SolanaWalletAddress),
-    //     messages.errors.invalidAddress
-    //   ),
-    // [CONFIRM]: z.literal(true, {
-    //   errorMap: () => ({ message: messages.errors.pleaseConfirm })
-    // })
-  })
+  return z.discriminatedUnion(METHOD, [
+    z.object({
+      [METHOD]: z.literal(WithdrawalMethod.COINFLOW),
+      [AMOUNT]: amount
+    }),
+    z.object({
+      [METHOD]: z.literal(WithdrawalMethod.MANUAL_TRANSFER),
+      [AMOUNT]: amount,
+      [ADDRESS]: z
+        .string()
+        .refine(
+          (value) => isValidSolAddress(value as SolanaWalletAddress),
+          messages.errors.invalidAddress
+        ),
+      [CONFIRM]: z.literal(true, {
+        errorMap: () => ({ message: messages.errors.pleaseConfirm })
+      })
+    })
+  ])
 }
 
 /** Tracks form errors of interest, only sending events the first time
@@ -139,10 +148,19 @@ export const WithdrawUSDCModal = () => {
   }, [withdrawalStatus, setData])
 
   const handleSubmit = useCallback(
-    ({ amount, address }: { amount: number; address: string }) => {
+    ({
+      amount,
+      address,
+      method
+    }: {
+      amount: number
+      address: string
+      method: WithdrawalMethod
+    }) => {
       dispatch(
         beginWithdrawUSDC({
           amount,
+          method,
           currentBalance: balanceNumberCents,
           destinationAddress: address
         })
@@ -180,6 +198,7 @@ export const WithdrawUSDCModal = () => {
       amount: number
       address: string
       confirm: boolean
+      method: WithdrawalMethod
     }>
   >(null)
 
@@ -215,7 +234,8 @@ export const WithdrawUSDCModal = () => {
           initialValues={{
             [AMOUNT]: balanceNumberCents,
             [ADDRESS]: '',
-            [CONFIRM]: false
+            [CONFIRM]: false,
+            [METHOD]: WithdrawalMethod.COINFLOW
           }}
           validationSchema={toFormikValidationSchema(
             WithdrawUSDCFormSchema(balanceNumberCents)
