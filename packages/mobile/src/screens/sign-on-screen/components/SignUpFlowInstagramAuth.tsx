@@ -34,7 +34,7 @@ type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
 }
 
 const instagramAppId = Config.INSTAGRAM_APP_ID
-const instagramRedirectUrl = Config.INSTAGRAM_REDIRECT_URL
+const instagramRedirectUrl = Config.INSTAGRAM_REDIRECT_URL!
 
 const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(
   instagramRedirectUrl
@@ -47,7 +47,7 @@ const useSetProfileFromInstagram = () => {
   return async ({ code }: { code: string }) => {
     const { igUserProfile: profile } = await getInstagramProfile(
       code,
-      env.IDENTITY_SERVICE
+      env.IDENTITY_SERVICE!
     )
     // Update info in redux
     dispatch(
