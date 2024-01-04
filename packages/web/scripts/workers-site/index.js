@@ -1,15 +1,11 @@
-import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
+import manifestJSON from '__STATIC_CONTENT_MANIFEST'
+const assetManifest = JSON.parse(manifestJSON)
+import { handleSsr } from './ssr.js'
 
-import { handleSsr } from './ssr'
-
-/* globals GA, GA_ACCESS_TOKEN, EMBED, DISCOVERY_NODES, HTMLRewriter */
-
+const SSR = true
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
-
-const discoveryNodes = DISCOVERY_NODES.split(',')
-const discoveryNode =
-  discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
 
 let h1 = null
 
@@ -31,21 +27,6 @@ const routes = [
     keys: ['handle', 'title']
   }
 ]
-
-addEventListener('fetch', (event) => {
-  try {
-    event.respondWith(handleEvent(event))
-  } catch (e) {
-    if (DEBUG) {
-      return event.respondWith(
-        new Response(e.message || e.toString(), {
-          status: 500
-        })
-      )
-    }
-    event.respondWith(new Response('Internal Error', { status: 500 }))
-  }
-})
 
 function matchRoute(input) {
   for (const route of routes) {
@@ -228,8 +209,8 @@ class SEOHandlerHead {
   }
 }
 
-async function handleEvent(event) {
-  const url = new URL(event.request.url)
+async function handleEvent(request, env, ctx) {
+  const url = new URL(request.url)
   const { pathname, search, hash } = url
 
   const isUndefined = pathname === '/undefined'
@@ -237,14 +218,18 @@ async function handleEvent(event) {
     return Response.redirect(url.origin, 302)
   }
 
+  const discoveryNodes = env.DISCOVERY_NODES.split(',')
+  const discoveryNode =
+    discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+
   const isSitemap = pathname.startsWith('/sitemaps')
   if (isSitemap) {
     const destinationURL = discoveryNode + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
+    const newRequest = new Request(destinationURL, request)
     return await fetch(newRequest)
   }
 
-  const userAgent = event.request.headers.get('User-Agent') || ''
+  const userAgent = request.headers.get('User-Agent') || ''
 
   const is204 = pathname === '/204'
   if (is204) {
@@ -257,18 +242,18 @@ async function handleEvent(event) {
   const isBot = checkIsBot(userAgent)
 
   if (isBot) {
-    const destinationURL = GA + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
-    newRequest.headers.set('host', GA)
-    newRequest.headers.set('x-access-token', GA_ACCESS_TOKEN)
+    const destinationURL = env.GA + pathname + search + hash
+    const newRequest = new Request(destinationURL, request)
+    newRequest.headers.set('host', env.GA)
+    newRequest.headers.set('x-access-token', env.GA_ACCESS_TOKEN)
 
     return await fetch(newRequest)
   }
 
   const isEmbed = pathname.startsWith('/embed')
   if (isEmbed) {
-    const destinationURL = EMBED + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
+    const destinationURL = env.EMBED + pathname + search + hash
+    const newRequest = new Request(destinationURL, request)
 
     return await fetch(newRequest)
   }
@@ -283,16 +268,31 @@ async function handleEvent(event) {
       }
     }
 
-    if (!isAssetUrl(event.request.url)) {
-      const response = await handleSsr(event.request.url)
-      if (response !== null) return response
+    if (!isAssetUrl(request.url)) {
+      if (SSR) {
+        const response = await handleSsr(request.url)
+        if (response !== null) return response
+      } else {
+        // TODO: return normal SPA
+        return new Response('hi')
+      }
     } else {
       // Adjust browser cache on assets that don't change frequently and/or
       // are given unique hashes when they do.
-      const asset = await getAssetFromKV(event, options)
+      const asset = await getAssetFromKV(
+        {
+          request,
+          waitUntil: ctx.waitUntil.bind(ctx)
+        },
+        {
+          ASSET_NAMESPACE: env.__STATIC_CONTENT,
+          ASSET_MANIFEST: assetManifest
+        }
+      )
 
       const response = new Response(asset.body, asset)
       response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+
       return response
     }
   } catch (e) {
@@ -309,4 +309,19 @@ function isAssetUrl(url) {
     pathname.startsWith('/favicons') ||
     pathname.startsWith('/manifest.json')
   )
+}
+
+export default {
+  fetch(request, env, ctx) {
+    try {
+      return handleEvent(request, env, ctx)
+    } catch (e) {
+      if (DEBUG) {
+        return new Response(e.message || e.toString(), {
+          status: 500
+        })
+      }
+      return new Response('Internal Error', { status: 500 })
+    }
+  }
 }
