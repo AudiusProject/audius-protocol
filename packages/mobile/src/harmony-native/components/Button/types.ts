@@ -1,13 +1,37 @@
 import type { ReactNode } from 'react'
 
-import type { PressableProps, StyleProp, ViewStyle } from 'react-native'
+import type { SpecialColors } from '@audius/harmony'
+import type { PressableProps, TextStyle, ViewProps } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 
-import type { Icon } from 'app/harmony-native/icons'
+import type { LoadingSpinnerProps } from 'app/components/loading-spinner/LoadingSpinner'
+import type { Icon, IconProps } from 'app/harmony-native/icons'
+
+import type { TextProps } from '../Text/Text'
 
 type BaseButtonStyles = {
-  button?: StyleProp<ViewStyle>
-  icon?: StyleProp<ViewStyle>
+  text?: TextStyle
+  icon?: IconProps['style']
+}
+
+type BaseButtonInnerProps = {
+  button?: ViewProps
+  text?: TextProps
+  icon?: IconProps
+  loader?: LoadingSpinnerProps
+}
+
+export enum ButtonType {
+  PRIMARY = 'primary',
+  SECONDARY = 'secondary',
+  TERTIARY = 'tertiary',
+  DESTRUCTIVE = 'destructive'
+}
+
+export enum ButtonSize {
+  SMALL = 'small',
+  DEFAULT = 'default',
+  LARGE = 'large'
 }
 
 export type BaseButtonProps = {
@@ -49,14 +73,41 @@ export type BaseButtonProps = {
   fullWidth?: boolean
 
   /**
-   * Internal styling used by derived button components
+   * Internal styles used by derived button components
    */
   styles?: BaseButtonStyles
+
+  /**
+   * Internal props used by derived button components
+   */
+  innerProps?: BaseButtonInnerProps
 
   /**
    * reanimated sharedValue to apply additional animated styles
    */
   sharedValue?: SharedValue<number>
 
-  children: ReactNode
+  children?: ReactNode
 } & PressableProps
+
+export type ButtonProps = {
+  /**
+   * Override the color of the button, only valid for the `PRIMARY` variant
+   */
+  color?: Exclude<SpecialColors, 'gradient'>
+
+  /**
+   * Override the color of the button using any hex color, only valid for the `PRIMARY` variant
+   */
+  hexColor?: `#${string}`
+
+  /**
+   * The type of the button
+   */
+  variant?: ButtonType
+
+  /**
+   * The button size
+   */
+  size?: ButtonSize
+} & Omit<BaseButtonProps, 'styles'>
