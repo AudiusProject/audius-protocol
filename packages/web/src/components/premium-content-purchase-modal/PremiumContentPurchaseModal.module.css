@@ -2,6 +2,10 @@
   width: 720px;
 }
 
+.modalRoot.mobile {
+  height: 100%;
+}
+
 .modalHeader.mobile {
   margin: 0;
   padding: 0;
@@ -33,5 +37,6 @@
 }
 
 .mobileWrapper {
+  height: 100%;
   padding: 0px 0px;
 }

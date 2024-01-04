@@ -10,6 +10,13 @@ export const getCoinflowDeviceId = (): string => {
     return deviceId
   }
 
+  /* Bail early if native module isn't found */
+  if (!nsureSDK) {
+    console.warn('Native module NSureSDK not found')
+    deviceId = ''
+    return deviceId
+  }
+
   if (Platform.OS === 'ios') {
     nsureSDK.sharedInstanceWithAppID(
       env.COINFLOW_APP_ID,

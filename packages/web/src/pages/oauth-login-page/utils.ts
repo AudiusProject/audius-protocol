@@ -1,10 +1,12 @@
-import { encodeHashId, User, SquareSizes } from '@audius/common'
+import { SquareSizes, User, encodeHashId } from '@audius/common'
 import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
+
+import { messages } from './messages'
 
 export const getIsRedirectValid = ({
   parsedRedirectUri,
@@ -97,11 +99,13 @@ export const getFormattedAppAddress = ({
 export const formOAuthResponse = async ({
   account,
   userEmail,
+  txSignature, // Only applicable to scope = write_once
   onError
 }: {
   account: User
   userEmail?: string | null
   onError: () => void
+  txSignature?: { message: string; signature: string }
 }) => {
   let email: string
   if (!userEmail) {
@@ -164,6 +168,7 @@ export const formOAuthResponse = async ({
     handle: account?.handle,
     verified: account?.is_verified,
     profilePicture,
+    ...(txSignature ? { txSignature } : {}),
     sub: userId,
     iat: timestamp
   }
@@ -215,4 +220,34 @@ export const getIsAppAuthorized = async ({
     (a) => a.address.toLowerCase() === prefixedAppAddress
   )
   return foundIndex !== undefined && foundIndex > -1
+}
+export type WriteOnceTx = 'connect_dashboard_wallet' // | ...
+
+export type ConnectDashboardWalletParams = {
+  wallet: string
+}
+export type WriteOnceParams = ConnectDashboardWalletParams // | ...
+
+export const validateWriteOnceParams = ({
+  tx,
+  params: rawParams
+}: {
+  tx: string | string[] | null
+  params: any
+}) => {
+  let error = null
+  let txParams: WriteOnceParams | null = null
+  if (tx === 'connect_dashboard_wallet') {
+    if (!rawParams.wallet) {
+      error = messages.writeOnceParamsError
+      return { error, txParams }
+    }
+    txParams = {
+      wallet: rawParams.wallet
+    }
+  } else {
+    // Unknown 'tx' value
+    error = messages.writeOnceTxError
+  }
+  return { error, txParams }
 }

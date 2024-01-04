@@ -2,7 +2,7 @@ import type {
   AudiusSdk as AudiusSdkType,
   ServicesConfig,
 } from "@audius/sdk/dist/sdk/index.d.ts";
-import { useAudiusLibs } from "../providers/AudiusLibsProvider";
+import { useAudiusLibs } from "./AudiusLibsProvider";
 import {
   ReactNode,
   createContext,
@@ -10,7 +10,7 @@ import {
   useState,
   useEffect,
 } from "react";
-import { useEnvVars } from "../providers/EnvVarsProvider";
+import { useEnvVars } from "./EnvVarsProvider";
 import {
   AppAuth,
   DiscoveryNodeSelector,
@@ -32,8 +32,8 @@ type AudiusSdkContextType = {
 
 const AudiusSdkContext = createContext<AudiusSdkContextType>({
   audiusSdk: null,
-  initSdk: () => {},
-  removeSdk: () => {},
+  initSdk: () => { },
+  removeSdk: () => { },
   isLoading: true,
 });
 

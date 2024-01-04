@@ -82,6 +82,7 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
+            - ./packages/ddex-frontend/node_modules
 
   generate-release-branch:
     working_directory: ~/audius-protocol
@@ -443,6 +444,7 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/.* run-ddex-workflow true
+            packages/ddex-frontend/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
@@ -526,6 +528,7 @@ workflows:
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/ddex/.* run-ddex-workflow true
+            packages/ddex-frontend/.* run-ddex-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:

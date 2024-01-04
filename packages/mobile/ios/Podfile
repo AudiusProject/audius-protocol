@@ -1,12 +1,22 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
 
-platform :ios, min_ios_version_supported
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
+
+platform :ios, 14
 prepare_react_native_project!
+
+setup_permissions([
+  'Notifications',
+  'PhotoLibraryAddOnly',
+])
 
 flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled(["Debug", "Staging.Debug"], { 'Flipper' => '0.175.0' })
 
@@ -23,14 +33,9 @@ project 'AudiusReactNative',
 'Prod.Release' => :release
 
 target 'AudiusReactNative' do
-  permissions_path = '../../../node_modules/react-native-permissions/ios'
-  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
-  pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
-
-  pod 'SRSRadialGradient', :path => '../../../node_modules/react-native-radial-gradient/ios'
-  pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
+  pod 'SRSRadialGradient', :path => '../node_modules/react-native-radial-gradient/ios'
+  pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
   pod 'nSure'
-  # pod 'react-native-flipper', :path => '../../../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
 
   config = use_native_modules!
 

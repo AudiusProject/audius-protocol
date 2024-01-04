@@ -44,7 +44,7 @@ const authenticate = async (): Promise<Credentials> => {
     })
   }
 
-  tikTokInit(Config.TIKTOK_APP_ID)
+  tikTokInit(Config.TIKTOK_APP_ID!)
 
   return new Promise((resolve, reject) => {
     let authDone = false
@@ -64,7 +64,7 @@ const authenticate = async (): Promise<Credentials> => {
       }
 
       // Need to set a csrf cookie because it is required for web
-      await CookieManager.set(Config.IDENTITY_SERVICE, {
+      await CookieManager.set(Config.IDENTITY_SERVICE!, {
         name: 'csrfState',
         value: 'true'
       })

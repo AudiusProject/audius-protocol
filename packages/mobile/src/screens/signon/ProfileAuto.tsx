@@ -461,6 +461,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
             {isTikTokEnabled ? (
               <TikTokAuthButton
                 onPress={handleTikTokPress}
+                noText={false}
                 styles={{ root: styles.socialButtonContainer }}
                 title={messages.tiktokButton}
               />

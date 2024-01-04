@@ -163,6 +163,7 @@ def test_valid_parse_metadata(app):
                     "requires_follow": False,
                 },
                 "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+                "is_scheduled_release": False,
                 "is_unlisted": False,
                 "field_visibility": {
                     "mood": True,
@@ -298,6 +299,7 @@ def test_invalid_parse_metadata(app):
                 "requires_follow": False,
             },
             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "is_scheduled_release": False,
             "is_unlisted": False,
             "field_visibility": {
                 "mood": True,

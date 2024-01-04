@@ -5,8 +5,14 @@ import {
   useAudiusQueryContext,
   createEmailPageMessages as messages
 } from '@audius/common'
-import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import {
+  setLinkedSocialOnFirstPage,
+  setValueField
+} from 'common/store/pages/signon/actions'
+import {
+  getEmailField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -14,11 +20,14 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { Flex, Text } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { resetOAuthState } from 'app/store/oauth/actions'
 
 import { NewEmailField } from '../components/NewEmailField'
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
+import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
+import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 
 import type { SignOnScreenProps } from './types'
@@ -32,6 +41,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
   const existingEmailValue = useSelector(getEmailField) || email
+  const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -49,6 +59,31 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     [dispatch, navigation]
   )
 
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin,
+    handleCloseSocialMediaLogin,
+    setIsWaitingForSocialLogin
+  } = useSocialMediaLoader({
+    resetAction: resetOAuthState,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+
+  const handleCompleteSocialMediaLogin = useCallback(
+    (result: { requiresReview: boolean; handle: string }) => {
+      const { handle, requiresReview } = result
+      setIsWaitingForSocialLogin(false)
+      dispatch(setLinkedSocialOnFirstPage(true))
+      dispatch(setValueField('handle', handle))
+
+      navigation.navigate(
+        requiresReview ? 'ReviewHandle' : 'CreateLoginDetails'
+      )
+    },
+    [dispatch, navigation, setIsWaitingForSocialLogin]
+  )
+
   return (
     <Formik
       initialValues={initialValues}
@@ -58,6 +93,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     >
       {({ handleSubmit }) => (
         <>
+          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
           <Heading
             heading={messages.title}
             description={
@@ -82,7 +118,13 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <SocialMediaLoginOptions />
+
+            <SocialMediaSignUpButtons
+              onError={handleErrorSocialMediaLogin}
+              onStart={handleStartSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onClose={handleCloseSocialMediaLogin}
+            />
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
