@@ -12,6 +12,7 @@ systemctl disable circleci.service &>/dev/null || true
 # set platform used for circleci installer and token
 export platform="linux/amd64"
 gcp_key="circleci-auth-token"
+cpus="$(lscpu | grep -E '^CPU\(s\)\:\s+[0-9]+$' | awk '{print $2}')"
 
 case "$(uname -m)" in
     "arm64" | "aarch64" | "arm")
@@ -20,7 +21,14 @@ case "$(uname -m)" in
         ;;
     "x86_64" | *)
         platform="linux/amd64"
-        gcp_key="circleci-auth-token"
+        case "$cpus" in
+            8)
+            gcp_key="circleci-auth-token-gcp-n2-standard-8"
+            ;;
+            4 | *)
+            gcp_key="circleci-auth-token"
+            ;;
+        esac
         ;;
 esac
 
