@@ -27,6 +27,7 @@
     "web:dev": "npm run start:dev -w audius-client",
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
+    "web:prod-local-trpc": "npm run start:prod-local-trpc -w audius-client",
     "web:stage-local-trpc": "npm run start:stage-local-trpc -w audius-client",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
