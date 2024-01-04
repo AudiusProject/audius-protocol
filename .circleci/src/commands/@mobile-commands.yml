@@ -40,7 +40,7 @@ mobile-prepare-ios:
         command: |
           cd packages/mobile/ios
           sudo bundle update --bundler
-          bundle check || bundle install --path vendor/bundle
+          bundle check || sudo bundle install --path vendor/bundle
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
         paths:
@@ -166,7 +166,7 @@ mobile-prepare-android:
           sudo apt install python3-pip ninja-build
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
-    - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
+    - run: cd packages/mobile/android && (bundle check || sudo bundle install --path vendor/bundle --full-index)
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
         paths:
