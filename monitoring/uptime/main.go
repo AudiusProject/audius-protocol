@@ -187,7 +187,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		rewardsManagerProgramId = mustGetenv("audius_solana_rewards_manager_program_address")
 		rewardsManagerProgramPda = mustGetenv("audius_solana_rewards_manager_account")
 		rewardsManagerTokenPda = mustGetenv("audius_solana_rewards_manager_token_pda")
-		optimizelySdkKey = mustGetenv("OPTIMIZELY_SDK_KEY")
+		optimizelySdkKey = os.Getenv("OPTIMIZELY_SDK_KEY")
 	}
 
 	logger := slog.With("endpoint", myEndpoint)
