@@ -46,7 +46,7 @@ export const TextField = (props: TextFieldProps) => {
     id,
     onChangeText,
     error: errorProp,
-    debouncedValidationMs,
+    debouncedValidationMs = 0,
     ...other
   } = props
 
@@ -62,7 +62,7 @@ export const TextField = (props: TextFieldProps) => {
   const debouncedValidateField = useDebouncedCallback(
     (field: string) => validateField(field),
     [validateField],
-    500
+    debouncedValidationMs
   )
 
   useEffect(() => {
