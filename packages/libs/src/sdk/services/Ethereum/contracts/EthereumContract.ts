@@ -7,8 +7,9 @@ import type { EthereumContractConfigInternal } from './types'
  * Abstract class for initializing individual contract clients.
  */
 export class EthereumContract {
-    /** The viem client */
+    /** A viem client */
     protected readonly client: PublicClient
+ 
     constructor(
       config: EthereumContractConfigInternal,
     ) {
