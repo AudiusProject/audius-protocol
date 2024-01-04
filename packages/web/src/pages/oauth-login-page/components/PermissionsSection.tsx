@@ -1,3 +1,5 @@
+import { PropsWithChildren } from 'react'
+
 import { IconAtSign, IconPencil, IconVisibilityPublic } from '@audius/stems'
 import cn from 'classnames'
 
@@ -6,7 +8,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import styles from '../OAuthLoginPage.module.css'
 import { messages } from '../messages'
 import { WriteOnceParams, WriteOnceTx } from '../utils'
-import { PropsWithChildren } from 'react'
 
 type PermissionTextProps = PropsWithChildren<{}>
 const PermissionText = ({ children }: PermissionTextProps) => {

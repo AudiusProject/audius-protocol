@@ -1,10 +1,6 @@
-import { encodeHashId, User, SquareSizes } from '@audius/common'
-import {
-  CreateGrantRequest,
-  CreateDashboardWalletUserRequest
-} from '@audius/sdk'
+import { SquareSizes, User, encodeHashId } from '@audius/common'
+import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
-import { isEmpty } from 'lodash'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
@@ -172,7 +168,7 @@ export const formOAuthResponse = async ({
     handle: account?.handle,
     verified: account?.is_verified,
     profilePicture,
-    ...(txSignature ? { txSignature: txSignature } : {}),
+    ...(txSignature ? { txSignature } : {}),
     sub: userId,
     iat: timestamp
   }
