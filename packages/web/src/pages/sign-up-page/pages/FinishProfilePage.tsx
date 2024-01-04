@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import {
   finishProfileSchema,
@@ -51,6 +51,7 @@ export const FinishProfilePage = () => {
   const history = useHistory()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
@@ -92,6 +93,7 @@ export const FinishProfilePage = () => {
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
           transitionBack='horizontal'
+          inputRef={displayNameInputRef}
         >
           <Heading
             prefix={
@@ -110,11 +112,11 @@ export const FinishProfilePage = () => {
               formProfileImage={values.profileImage}
             />
             <HarmonyTextField
+              ref={displayNameInputRef}
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
               required
-              autoFocus
               maxLength={32}
               css={(theme) => ({
                 padding: theme.spacing.l,

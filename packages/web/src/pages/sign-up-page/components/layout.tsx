@@ -4,7 +4,8 @@ import {
   ElementType,
   ReactNode,
   forwardRef,
-  useContext
+  useContext,
+  RefObject
 } from 'react'
 
 import { Maybe } from '@audius/common'
@@ -36,6 +37,7 @@ type PageProps = FlexProps & {
   centered?: boolean
   transition?: 'horizontal' | 'vertical'
   transitionBack?: 'horizontal' | 'vertical'
+  inputRef?: RefObject<HTMLInputElement>
 }
 
 const transitionAxisConfig = {
@@ -46,7 +48,15 @@ const transitionAxisConfig = {
 const AnimatedFlex = animated(Flex)
 
 export const Page = (props: PageProps) => {
-  const { centered, children, as, transition, transitionBack, ...other } = props
+  const {
+    centered,
+    children,
+    as,
+    transition,
+    transitionBack,
+    inputRef,
+    ...other
+  } = props
   const { isMobile } = useMedia()
   const { isGoBack } = useContext(RouteContext)
 
@@ -74,6 +84,9 @@ export const Page = (props: PageProps) => {
     to: {
       opacity: 1,
       transform: toTransform
+    },
+    onRest: () => {
+      inputRef?.current?.focus()
     }
   })
 
