@@ -2,10 +2,6 @@
   max-width: 480px;
 }
 
-.icon path {
-  fill: var(--neutral);
-}
-
 .content {
   line-height: 130%;
   font-size: var(--font-l);

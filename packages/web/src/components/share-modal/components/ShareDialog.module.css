@@ -21,10 +21,6 @@
   margin-right: var(--unit-2);
 }
 
-.titleIcon path {
-  fill: var(--neutral);
-}
-
 .title {
   font-size: var(--font-xl);
 }
