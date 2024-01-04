@@ -414,7 +414,6 @@ export const TrackScreenDetailsTile = ({
         : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner ? OverflowAction.EDIT_TRACK : null,
-      isOwner ? OverflowAction.RELEASE_NOW : null,
       isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 

@@ -168,7 +168,7 @@ export const parseHealthStatusReason = ({
 
   if (!comms?.healthy) {
     return {
-      health: HealthCheckStatus.HEALTHY,
+      health: HealthCheckStatus.UNHEALTHY,
       reason: 'comms'
     }
   }

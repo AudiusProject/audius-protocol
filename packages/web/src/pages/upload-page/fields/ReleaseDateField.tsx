@@ -191,7 +191,6 @@ const RadioItems = (props: any) => {
       setTimePeriod(TimePeriodType.PRESENT)
     }
   }, [releaseDateField.value, setReleaseDateHour, setReleaseDateMeridian])
-  console.log('asdf timePeriod: ', timePeriod)
 
   return (
     <>

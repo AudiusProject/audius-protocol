@@ -314,7 +314,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       let selectedService: string | null = null
       let attemptedServicesCount: number = 0
-      console.log('asdf unhealthy: ', this.unhealthyServices, selectedService, services)
 
       // Loop until a healthy node is found, batching health_check requests by maxConcurrentRequests
       while (selectedService === null) {
@@ -350,8 +349,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             decisionTree.push({
               stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
             })
-            console.log('asdf filteredServices: ', filteredServices, this.config.blocklist, this.config.allowlist)
-
             this.logger.error('Failed to select discovery node', decisionTree)
             return null
           }
@@ -427,7 +424,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         timeoutMs: this.config.requestTimeout,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
-      console.log('asdf anyHealthyEndpoint health: ', health, data, reason)
       if (health !== HealthCheckStatus.HEALTHY) {
         if (reason?.toLowerCase().includes('aborted')) {
           // Ignore aborted requests

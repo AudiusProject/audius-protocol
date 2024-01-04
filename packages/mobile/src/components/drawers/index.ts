@@ -1,6 +1,5 @@
 export * from './ConfirmationDrawer'
 export * from './DeleteTrackConfirmationDrawer'
-export * from './ReleaseNowConfirmationDrawer'
 export * from './RemoveAllDownloadsDrawer'
 export * from './RemoveDownloadedCollectionDrawer'
 export * from './RemoveDownloadedFavoritesDrawer'

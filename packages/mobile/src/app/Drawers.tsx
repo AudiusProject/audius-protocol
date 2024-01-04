@@ -17,7 +17,6 @@ import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-a
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
-import { ReleaseNowConfirmationDrawer } from 'app/components/drawers/ReleaseNowConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
@@ -134,7 +133,6 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
-  ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
   RateCallToAction: RateCtaDrawer,
   RemoveAllDownloads: RemoveAllDownloadsDrawer,

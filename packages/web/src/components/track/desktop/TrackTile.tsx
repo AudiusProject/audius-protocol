@@ -224,9 +224,7 @@ const TrackTile = ({
       return formatLineupTileDuration(duration, isLongFormContent)
     }
   }
-  if (title === '10:00am') {
-    console.log('asdf dogear: ', moment(releaseDate).isBefore(moment()))
-  }
+
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
