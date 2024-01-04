@@ -177,7 +177,7 @@ const RadioItems = (props: any) => {
     if (releaseDateField.value === undefined) {
       return
     }
-    const truncatedReleaseDate = moment(releaseDateField.value).startOf('day')
+    const truncatedReleaseDate = moment(releaseDateField.value)
 
     const today = moment().startOf('day')
 
@@ -205,7 +205,7 @@ const RadioItems = (props: any) => {
         />
         <ModalRadioItem
           value={ReleaseDateType.SCHEDULED_RELEASE}
-          label='Select a release date'
+          label='Select a Release Date'
         />
       </RadioButtonGroup>
       {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
@@ -252,16 +252,18 @@ const RadioItems = (props: any) => {
           )}
         </div>
       )}
-      <ModalContent className={styles.releaseDateHint}>
-        <HelpCallout
-          icon={<IconInfo />}
-          content={
-            timePeriod === TimePeriodType.PAST
-              ? messages.pastReleaseHint
-              : messages.futureReleaseHint(getLocalTimezone())
-          }
-        />
-      </ModalContent>
+      {releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE ? (
+        <ModalContent className={styles.releaseDateHint}>
+          <HelpCallout
+            icon={<IconInfo />}
+            content={
+              timePeriod === TimePeriodType.PAST
+                ? messages.pastReleaseHint
+                : messages.futureReleaseHint(getLocalTimezone())
+            }
+          />
+        </ModalContent>
+      ) : null}
     </>
   )
 }
