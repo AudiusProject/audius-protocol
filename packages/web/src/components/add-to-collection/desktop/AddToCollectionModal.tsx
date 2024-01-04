@@ -121,7 +121,7 @@ const AddToCollectionModal = () => {
   }
 
   const handleDisabledPlaylistClick = () => {
-    toast({ content: messages.hiddenAdd })
+    dispatch(toast({ content: messages.hiddenAdd }))
   }
 
   const handleCreateCollection = () => {

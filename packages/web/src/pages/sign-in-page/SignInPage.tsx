@@ -67,6 +67,7 @@ export const SignInPage = () => {
           justifyContent='space-between'
           h='100%'
           p='2xl'
+          pt='unit20'
           pb={!isMobile ? 'unit14' : undefined}
         >
           <Flex as={Form} direction='column' gap='2xl'>

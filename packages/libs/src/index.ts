@@ -1,1 +1,4 @@
-export * from './legacy'
+export * from './sdk'
+
+export * from './AudiusLibs'
+export * from './AudiusLibsLegacyShim'

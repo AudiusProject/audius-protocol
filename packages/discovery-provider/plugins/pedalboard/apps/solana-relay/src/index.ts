@@ -13,7 +13,8 @@ import {
   userSignerRecoveryMiddleware,
   discoveryNodeSignerRecoveryMiddleware
 } from './middleware/signerRecovery'
-import { cache } from './routes/cache/cache'
+import { cache } from './routes/cache'
+import { feePayer } from './routes/feePayer'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -25,6 +26,7 @@ const main = async () => {
   app.use(discoveryNodeSignerRecoveryMiddleware)
   app.post('/solana/relay', relay)
   app.post('/solana/cache', cache)
+  app.get('/solana/feePayer', feePayer)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 

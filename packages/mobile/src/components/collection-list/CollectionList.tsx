@@ -53,8 +53,8 @@ const FullCollectionList = (props: FullCollectionListProps) => {
     ...other
   } = props
 
-  const renderCard = useCallback(
-    ({ item }: { item: Collection | CreateCard }) =>
+  const renderCard: ListRenderItem<Collection | CreateCard> = useCallback(
+    ({ item }) =>
       '_create' in item ? (
         <AddCollectionCard
           source={createPlaylistSource!}
@@ -107,8 +107,8 @@ const CollectionIDList = (props: CollectionIdListProps) => {
     ...other
   } = props
 
-  const renderCard = useCallback(
-    ({ item }: { item: IDCardListItem | CreateCard }) =>
+  const renderCard: ListRenderItem<IDCardListItem | CreateCard> = useCallback(
+    ({ item }) =>
       '_create' in item ? (
         <AddCollectionCard
           source={createPlaylistSource!}

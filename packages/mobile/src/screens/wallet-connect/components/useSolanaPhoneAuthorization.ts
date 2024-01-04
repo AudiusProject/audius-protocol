@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
+import { PublicKey } from '@solana/web3.js'
 import type {
   Account as AuthorizedAccount,
   AuthorizationResult,
@@ -10,7 +11,6 @@ import type {
   DeauthorizeAPI,
   ReauthorizeAPI
 } from '@solana-mobile/mobile-wallet-adapter-protocol'
-import { PublicKey } from '@solana/web3.js'
 import { toUint8Array } from 'js-base64'
 
 export type Account = Readonly<{

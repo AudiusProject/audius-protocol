@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AudiusLibsProvider } from "../providers/AudiusLibsProvider";
 import { AudiusSdkProvider } from "../providers/AudiusSdkProvider";
+import { RemoteConfigProvider } from "../providers/RemoteConfigProvider"
 import App from "./App";
 import Web3 from "web3";
 
@@ -17,11 +18,13 @@ const AppWithProviders = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AudiusLibsProvider>
-        <AudiusSdkProvider>
-          <App />
-        </AudiusSdkProvider>
-      </AudiusLibsProvider>
+      <RemoteConfigProvider>
+        <AudiusLibsProvider>
+          <AudiusSdkProvider>
+            <App />
+          </AudiusSdkProvider>
+        </AudiusLibsProvider>
+      </RemoteConfigProvider>
     </QueryClientProvider>
   );
 };

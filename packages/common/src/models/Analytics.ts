@@ -465,22 +465,28 @@ type CreateAccountCompleteTwitter = {
 }
 type CreateAccountStartInstagram = {
   eventName: Name.CREATE_ACCOUNT_START_INSTAGRAM
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartTikTok = {
   eventName: Name.CREATE_ACCOUNT_START_TIKTOK
-  emailAddress: string
+  emailAddress?: string
 }
-type CreateAccountCompleteTikTok = {
-  eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
-  emailAddress: string
-}
+type CreateAccountCompleteTikTok =
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      emailAddress: string
+    }
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      isVerified: boolean
+      handle: string
+    }
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
   emailAddress: string
@@ -833,7 +839,7 @@ type EmbedCopy = {
 // Track Upload
 type TrackUploadOpen = {
   eventName: Name.TRACK_UPLOAD_OPEN
-  source: 'nav' | 'profile' | 'signup'
+  source: 'nav' | 'profile' | 'signup' | 'library'
 }
 type TrackUploadStartUploading = {
   eventName: Name.TRACK_UPLOAD_START_UPLOADING

@@ -218,7 +218,7 @@ export const outputConfigs = {
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
-        file: 'dist/sdk.js',
+        file: 'dist/sdk.min.js',
         globals: {
           web3: 'window.Web3'
         },

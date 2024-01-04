@@ -56,7 +56,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   } = props
 
   const styles = useStyles()
-  const ref = useRef<FlatListT<ItemT>>(null)
+  const ref = useRef<FlatListT<ItemT | LoadingCard>>(null)
   const isLoading = isLoadingProp ?? !dataProp
 
   useScrollToTop(() => {
@@ -93,7 +93,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
       data={data}
       renderItem={handleRenderItem}
       numColumns={2}
-      {...other}
+      {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
     />
   )
 }

@@ -20,7 +20,7 @@ export type TextLinkProps = TextLinkTextProps &
      * Which variant to display.
      * @default default
      */
-    variant?: 'default' | 'visible' | 'inverted'
+    variant?: 'default' | 'subdued' | 'visible' | 'inverted'
 
     /**
      * Which text variant to display.
@@ -39,4 +39,11 @@ export type TextLinkProps = TextLinkTextProps &
      * @default false
      */
     isExternal?: boolean
+
+    /**
+     * Whether or not to apply styling to inner svgs.
+     * Some text links may include an icon that you wish to style similarly to the text
+     * (e.g. hover change colors/animations)
+     */
+    applyHoverStylesToInnerSvg?: boolean
   }

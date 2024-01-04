@@ -68,6 +68,7 @@ export const finishProfilePageMessages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
+  uploadProfilePhoto: 'Upload a profile photo to continue',
   goBack: 'Go back'
 }
 
@@ -75,6 +76,23 @@ export const selectGenresPageMessages = {
   header: 'Select Your Genres',
   description: 'Start by picking some of your favorite genres.',
   continue: 'Continue'
+}
+
+export const reviewHandlePageMessages = {
+  heading: 'Review Your Handle',
+  handle: 'Handle',
+  description:
+    "We've connected your social account but need your help with an issue we encountered. "
+}
+
+export const createLoginDetailsPageMessages = {
+  title: 'Create Login Details',
+  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  emailLabel: 'Email',
+  handleLabel: 'Handle',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  signIn: 'Sign In'
 }
 
 export const selectArtstsPageMessages = {

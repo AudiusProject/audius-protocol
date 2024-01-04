@@ -103,7 +103,7 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm>
+    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: mobile })}>
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
         onClose={onClose}
@@ -202,10 +202,10 @@ export const PremiumContentPurchaseModal = () => {
 
   const handleClose = useCallback(() => {
     // Don't allow closing if we're in the middle of a purchase
-    if (!isUnlocking) {
+    if (!isUnlocking || stage === PurchaseContentStage.START) {
       onClose()
     }
-  }, [isUnlocking, onClose])
+  }, [isUnlocking, stage, onClose])
 
   const handleClosed = useCallback(() => {
     onClosed()

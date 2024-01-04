@@ -182,7 +182,10 @@ type InstagramNativeMobileAuthProps = {
   remoteConfigInstance: RemoteConfigInstance
 }
 
-const getProfile = async (code: string, identityService: string) => {
+export const getInstagramProfile = async (
+  code: string,
+  identityService: string
+) => {
   try {
     const profileResp = await fetch(`${identityService}/instagram`, {
       method: 'POST',
@@ -228,7 +231,7 @@ function* doInstagramAuth({
           if (code) {
             try {
               const { username, igUserProfile } = yield call(
-                getProfile,
+                getInstagramProfile,
                 code,
                 IDENTITY_SERVICE
               )

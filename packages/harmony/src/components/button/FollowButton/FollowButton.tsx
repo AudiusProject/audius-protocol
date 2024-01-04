@@ -103,11 +103,14 @@ export const FollowButton = (props: FollowButtonProps) => {
   }
 
   const { color, cornerRadius } = useTheme()
+
   const textColor =
     checkedValue || isHovering || isPressing
       ? color.static.white
       : color.primary.primary
+
   const rootCss: CSSObject = {
+    cursor: 'pointer',
     minWidth: size === 'small' ? 128 : 152,
     width: '100%',
     userSelect: 'none',

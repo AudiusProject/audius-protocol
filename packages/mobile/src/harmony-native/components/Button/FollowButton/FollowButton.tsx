@@ -43,7 +43,7 @@ export const FollowButton = (props: FollowButtonProps) => {
       onFollow?.()
     }
     onChange?.({
-      target: { value, checked: true, type: 'checkbox' }
+      target: { value, checked: !following, type: 'checkbox' }
     } as ChangeEvent<HTMLInputElement>)
     setFollowing(!following)
   }, [following, onChange, value, onUnfollow, onFollow])
