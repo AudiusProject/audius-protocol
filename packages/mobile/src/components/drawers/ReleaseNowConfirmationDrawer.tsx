@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { cacheTracksActions } from '@audius/common'
+import { cacheTracksActions, useGetTrackById } from '@audius/common'
+import moment from 'moment'
 import { useDispatch } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -10,7 +11,7 @@ import { navigationRef } from '../navigation-container/NavigationContainer'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 
-const { ReleaseNow } = cacheTracksActions
+const { editTrack } = cacheTracksActions
 
 const messages = {
   header: 'Confirm Release',
@@ -27,9 +28,17 @@ export const ReleaseNowConfirmationDrawer = () => {
   const { trackId } = data
   const dispatch = useDispatch()
   const navigation = useNavigation()
-
+  const { data: track } = useGetTrackById(
+    { id: trackId },
+    { disabled: !trackId }
+  )
   const handleConfirm = useCallback(() => {
-    dispatch(ReleaseNow(trackId))
+    if (track) {
+      track.is_unlisted = false
+      track.release_date = moment().toString()
+      dispatch(editTrack(trackId, track))
+    }
+
     const currentRouteName = navigationRef.getCurrentRoute()?.name
     if (currentRouteName === 'Track') {
       navigation.goBack()
@@ -41,7 +50,6 @@ export const ReleaseNowConfirmationDrawer = () => {
       drawerName={drawerName}
       messages={messages}
       onConfirm={handleConfirm}
-      variant={'primary'}
     />
   )
 }

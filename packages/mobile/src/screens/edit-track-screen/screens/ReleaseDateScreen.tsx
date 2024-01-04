@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { Theme, remixSettingsActions, removeNullable } from '@audius/common'
+import {
+  Theme,
+  dayjs,
+  remixSettingsActions,
+  removeNullable
+} from '@audius/common'
 import { useField } from 'formik'
 import moment from 'moment'
 import { Dimensions, View } from 'react-native'
@@ -158,8 +163,8 @@ export const ScheduledReleaseRadioField = (props) => {
             />
           ) : null}
           {selected &&
-          releaseDateValue &&
-          moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
+            releaseDateValue &&
+            moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
             <TextField
               name={'release_date_time'}
               label={'Time'}

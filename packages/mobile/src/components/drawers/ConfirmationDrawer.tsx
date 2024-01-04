@@ -4,7 +4,6 @@ import type { Modals } from '@audius/common'
 import { View } from 'react-native'
 
 import IconInfo from 'app/assets/images/iconInfo.svg'
-import type { ButtonVariant } from 'app/components/core'
 import { Button, Text } from 'app/components/core'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -66,7 +65,6 @@ type ConfirmationDrawerProps =
 
 type DrawerContentProps = BaseConfirmationDrawerProps & {
   onClose: () => void
-  variant?: ButtonVariant | undefined
 }
 
 const ConfirmationDrawerContent = (props: DrawerContentProps) => {
@@ -75,8 +73,7 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
     onConfirm,
     onCancel,
     bottomChinHeight = spacing(6),
-    onClose,
-    variant = 'destructive'
+    onClose
   } = props
   const styles = useStyles()
   const { neutral } = useThemeColors()
@@ -109,7 +106,7 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
         {messages.description}
       </Text>
       <Button
-        variant={variant}
+        variant='destructive'
         size='large'
         title={messages.confirm}
         style={styles.confirmButton}
