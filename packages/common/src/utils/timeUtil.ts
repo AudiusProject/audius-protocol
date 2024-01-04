@@ -60,5 +60,5 @@ export const utcToLocalTime = (date: string) => {
 }
 
 export const getLocalTimezone = () => {
-  return dayjs().format('z')
+  return dayjs.tz(dayjs()).format('z')
 }
