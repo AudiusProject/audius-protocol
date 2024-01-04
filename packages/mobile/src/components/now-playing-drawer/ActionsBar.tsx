@@ -126,11 +126,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       )
     }
   }, [track?.track_id, openPremiumContentPurchaseModal])
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const shouldShowPurchasePill =
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
-    !doesUserHaveAccess
+    !hasStreamAccess
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {

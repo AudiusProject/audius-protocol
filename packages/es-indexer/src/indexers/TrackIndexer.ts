@@ -96,7 +96,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     select 
       tracks.*,
       case when tracks.stream_conditions->>'usdc_purchase'
-        or tracks.download_conditions->>'usdc_purchase'
         is not null then true
         else false
       end as purchaseable,

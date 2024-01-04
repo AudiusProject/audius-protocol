@@ -72,12 +72,12 @@ const PlayingTrackInfo = ({
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    (!hasStreamAccess || isPreviewing)
 
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)

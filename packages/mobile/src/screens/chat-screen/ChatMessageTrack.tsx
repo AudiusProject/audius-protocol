@@ -36,9 +36,9 @@ export const ChatMessageTrack = ({
     },
     { disabled: !permalink }
   )
-  const { doesUserHaveAccess } = useGatedContentAccess(track ?? null)
+  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
-    !!track?.is_stream_gated && !!track?.preview_cid && !doesUserHaveAccess
+    !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
 
   const user = useMemo(() => (track ? { ...track.user } : null), [track])
 

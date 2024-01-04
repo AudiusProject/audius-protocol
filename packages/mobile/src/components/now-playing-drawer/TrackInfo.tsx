@@ -61,12 +61,12 @@ export const TrackInfo = ({
   user
 }: TrackInfoProps) => {
   const styles = useStyles()
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    (!hasStreamAccess || isPreviewing)
 
   return (
     <View style={styles.root}>

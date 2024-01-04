@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, StreamConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   Chain,
   collectiblesSelectors,
@@ -60,7 +60,7 @@ export const NFTCollectionsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const { ethCollectionMap, solCollectionMap, collectionImageMap } =
     useSelector(getSupportedUserCollections)
   const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)

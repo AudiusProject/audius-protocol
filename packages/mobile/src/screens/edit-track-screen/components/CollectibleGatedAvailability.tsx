@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { Nullable, StreamConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   collectiblesSelectors,
   isContentCollectibleGated
@@ -174,7 +174,7 @@ export const CollectibleGatedAvailability = ({
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: streamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
     isContentCollectibleGated(previousStreamConditions)
       ? previousStreamConditions.nft_collection

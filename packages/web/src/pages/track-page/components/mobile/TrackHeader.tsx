@@ -11,7 +11,7 @@ import {
   formatDate,
   OverflowAction,
   imageBlank as placeholderArt,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   getDogEarType,
   FeatureFlags,
@@ -122,8 +122,9 @@ type TrackHeaderProps = {
   repostCount: number
   isUnlisted: boolean
   isStreamGated: boolean
-  streamConditions: Nullable<StreamConditions>
-  doesUserHaveAccess: boolean
+  streamConditions: Nullable<AccessConditions>
+  hasStreamAccess: boolean
+  hasDownloadAccess: boolean
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
@@ -160,7 +161,8 @@ const TrackHeader = ({
   isUnlisted,
   isStreamGated,
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
+  hasDownloadAccess,
   isRemix,
   fieldVisibility,
   coSign,
@@ -184,13 +186,13 @@ const TrackHeader = ({
 }: TrackHeaderProps) => {
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
-  const showSocials = !isUnlisted && doesUserHaveAccess
+  const showSocials = !isUnlisted && hasStreamAccess
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
-  const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
+  const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
-  const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
+  const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount =
     isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
 
@@ -229,13 +231,13 @@ const TrackHeader = ({
       isOwner || !showSocials
         ? null
         : isReposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST,
+        ? OverflowAction.UNREPOST
+        : OverflowAction.REPOST,
       isOwner || !showSocials
         ? null
         : isSaved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE,
+        ? OverflowAction.UNFAVORITE
+        : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isFollowing
@@ -277,7 +279,7 @@ const TrackHeader = ({
         trackId={trackId}
         isOwner={isOwner}
         following={isFollowing}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasDownloadAccess={hasDownloadAccess}
         onDownload={onDownload}
       />
     )
@@ -321,7 +323,7 @@ const TrackHeader = ({
   )
 
   const renderDogEar = () => {
-    // Omitting isOwner and doesUserHaveAccess to ensure we always show gated DogEars
+    // Omitting isOwner and hasStreamAccess to ensure we always show gated DogEars
     const DogEarType = getDogEarType({
       isUnlisted,
       streamConditions
@@ -393,7 +395,7 @@ const TrackHeader = ({
       </div>
       {showPlay ? (
         <PlayButton
-          disabled={!doesUserHaveAccess}
+          disabled={!hasStreamAccess}
           playing={isPlaying && !isPreviewing}
           onPlay={onPlay}
         />
@@ -403,7 +405,7 @@ const TrackHeader = ({
           isLoading={isLoading}
           trackId={trackId}
           streamConditions={streamConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}
           wrapperClassName={styles.gatedTrackSectionWrapper}
           className={styles.gatedTrackSection}
@@ -490,7 +492,7 @@ TrackHeader.defaultProps = {
 
   saveCount: 0,
   tags: [],
-  onPlay: () => { }
+  onPlay: () => {}
 }
 
 export default TrackHeader

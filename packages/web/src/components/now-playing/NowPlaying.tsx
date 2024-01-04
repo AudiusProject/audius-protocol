@@ -402,11 +402,11 @@ const NowPlaying = g(
       )
     }, [track_id, openPremiumContentPurchaseModal])
 
-    const { doesUserHaveAccess } = useGatedContentAccess(track)
+    const { hasStreamAccess } = useGatedContentAccess(track)
     const shouldShowPurchasePreview =
       track?.stream_conditions &&
       'usdc_purchase' in track.stream_conditions &&
-      !doesUserHaveAccess
+      !hasStreamAccess
 
     return (
       <div className={styles.nowPlaying}>

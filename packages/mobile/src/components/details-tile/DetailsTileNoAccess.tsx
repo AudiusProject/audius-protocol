@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { ID, StreamConditions, User } from '@audius/common'
+import type { ID, AccessConditions, User } from '@audius/common'
 import {
   Chain,
   FollowSource,
@@ -137,7 +137,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 type NoAccessProps = {
   renderDescription: () => ReactNode
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   isUnlocking: boolean
   style?: ViewStyle
 }
@@ -175,7 +175,7 @@ const DetailsTileNoAccessSection = ({
 }
 
 type DetailsTileNoAccessProps = {
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   trackId: ID
   style?: ViewStyle
 }

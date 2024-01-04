@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { Nullable, StreamConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   createRemixOfMetadata,
   isContentCollectibleGated,
@@ -104,7 +104,7 @@ export const RemixSettingsScreen = () => {
     useField<boolean>('field_visibility.remixes')
   const [{ value: isStreamGated }] = useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
   const isCollectibleGated = isContentCollectibleGated(streamConditions)
 
@@ -202,10 +202,10 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
-  const { doesUserHaveAccess } = useGatedContentAccess(parentTrack)
+  const { hasStreamAccess } = useGatedContentAccess(parentTrack)
   const hasErrors = Boolean(
     isTrackRemix &&
-      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
+      (isInvalidParentTrack || isRemixUrlMissing || !hasStreamAccess)
   )
 
   return (
@@ -272,7 +272,7 @@ export const RemixSettingsScreen = () => {
               {hasErrors ? (
                 <InputErrorMessage
                   message={
-                    !doesUserHaveAccess
+                    !hasStreamAccess
                       ? messages.remixAccessError
                       : isInvalidParentTrack
                       ? messages.invalidRemixUrl

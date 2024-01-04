@@ -71,8 +71,8 @@ field_visibility = ns.model(
     },
 )
 
-stream_signature = ns.model(
-    "stream_signature",
+premium_content_signature = ns.model(
+    "premium_content_signature",
     {"data": fields.String, "signature": fields.String},
 )
 
@@ -98,6 +98,7 @@ track = ns.model(
         "orig_filename": fields.String(
             allow_null=True
         ),  # remove nullability after backfill
+        "is_original_available": fields.Boolean,
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -110,7 +111,7 @@ track = ns.model(
         "duration": fields.Integer(required=True),
         # Whether or not the track is downloadable, see `download`
         # on `track_full` for more details
-        "downloadable": fields.Boolean,
+        "downloadable": fields.Boolean,  # todo: rename to 'is_downloadable' and use new column with same name after client upgrade
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,
@@ -159,11 +160,10 @@ track_full = ns.clone(
             attribute="stream_conditions", allow_null=True
         ),
         "premium_content_signature": fields.Nested(
-            stream_signature, attribute="stream_signature", allow_null=True
+            premium_content_signature, allow_null=True
         ),
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
-        "stream_signature": fields.Nested(stream_signature, allow_null=True),
         "is_download_gated": fields.Boolean,
         "download_conditions": fields.Raw(allow_null=True),
         "access": fields.Nested(access),

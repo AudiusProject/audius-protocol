@@ -1,4 +1,4 @@
-import type { ID, StreamConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
@@ -11,9 +11,9 @@ import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 
 type DetailsTileGatedAccessProps = {
   trackId: ID
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   isOwner: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   style?: ViewStyle
 }
 
@@ -21,7 +21,7 @@ export const DetailsTileGatedAccess = ({
   trackId,
   streamConditions,
   isOwner,
-  doesUserHaveAccess,
+  hasStreamAccess,
   style
 }: DetailsTileGatedAccessProps) => {
   const shouldDisplay =
@@ -31,7 +31,7 @@ export const DetailsTileGatedAccess = ({
 
   if (!shouldDisplay) return null
 
-  if (doesUserHaveAccess) {
+  if (hasStreamAccess) {
     return (
       <DetailsTileHasAccess
         streamConditions={streamConditions}

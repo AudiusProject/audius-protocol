@@ -183,6 +183,8 @@ def test_valid_parse_metadata(app):
                 "preview_cid": None,
                 "orig_file_cid": None,
                 "orig_filename": None,
+                "is_downloadable": False,
+                "is_original_available": False,
                 "preview_start_seconds": None,
                 "audio_upload_id": None,
             },

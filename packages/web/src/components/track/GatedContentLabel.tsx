@@ -1,5 +1,5 @@
 import {
-  StreamConditions,
+  AccessConditions,
   Nullable,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
@@ -20,14 +20,14 @@ const messages = {
  */
 export const GatedContentLabel = ({
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isOwner
 }: {
-  streamConditions?: Nullable<StreamConditions>
-  doesUserHaveAccess: boolean
+  streamConditions?: Nullable<AccessConditions>
+  hasStreamAccess: boolean
   isOwner: boolean
 }) => {
-  const showColor = isOwner || !doesUserHaveAccess
+  const showColor = isOwner || !hasStreamAccess
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
   let colorStyle = styles.gatedContent

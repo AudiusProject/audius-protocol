@@ -485,17 +485,17 @@ export type GetNFTGatedTrackSignaturesArgs = {
 type InitializationState =
   | { state: 'uninitialized' }
   | {
-    state: 'initialized'
-    endpoint: string
-    // Requests are dispatched via APIClient rather than libs
-    type: 'manual'
-  }
+      state: 'initialized'
+      endpoint: string
+      // Requests are dispatched via APIClient rather than libs
+      type: 'manual'
+    }
   | {
-    state: 'initialized'
-    endpoint: string
-    // Requests are dispatched and handled via libs
-    type: 'libs'
-  }
+      state: 'initialized'
+      endpoint: string
+      // Requests are dispatched and handled via libs
+      type: 'libs'
+    }
 
 const emptySearchResponse: APIResponse<APISearch> = {
   data: {
@@ -1571,9 +1571,9 @@ export class AudiusAPIClient {
     blocknumber: number
   ): Promise<
     | {
-      block_found: boolean
-      block_passed: boolean
-    }
+        block_found: boolean
+        block_passed: boolean
+      }
     | {}
   > {
     const response = await this._getResponse<APIResponse<APIBlockConfirmation>>(
@@ -1598,8 +1598,8 @@ export class AudiusAPIClient {
     this._assertInitialized()
     const headers = current_user_id
       ? {
-        'X-User-ID': current_user_id.toString()
-      }
+          'X-User-ID': current_user_id.toString()
+        }
       : undefined
     const response = await this._getResponse<
       APIResponse<GetSocialFeedResponse>

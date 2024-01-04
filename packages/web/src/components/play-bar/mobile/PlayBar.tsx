@@ -87,12 +87,12 @@ const PlayBar = ({
     collectible?.frameUrl ??
     collectible?.gifUrl
 
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    (!hasStreamAccess || isPreviewing)
 
   if (((!uid || !track) && !collectible) || !user) return null
 

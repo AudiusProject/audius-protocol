@@ -143,9 +143,9 @@ const ConnectedTrackTile = ({
   )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
+  const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isUserAccessTBD
+  const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
     if (has_current_user_saved) {
@@ -185,13 +185,13 @@ const ConnectedTrackTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const repostAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null
     const favoriteAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
@@ -272,7 +272,7 @@ const ConnectedTrackTile = ({
       isUnlisted={is_unlisted}
       isStreamGated={isStreamGated}
       streamConditions={streamConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      hasStreamAccess={hasStreamAccess}
       showRankIcon={showRankIcon}
       variant={variant}
       releaseDate={releaseDate}

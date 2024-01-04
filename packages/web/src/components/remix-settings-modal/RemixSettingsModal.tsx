@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect, useRef } from 'react'
 import {
   ID,
   Nullable,
-  StreamConditions,
+  AccessConditions,
   SquareSizes,
   Track,
   User,
@@ -95,7 +95,7 @@ type RemixSettingsModalProps = {
   onClose: (trackId: ID | null) => void
   onEditUrl: (url: string) => void
   isStreamGated: boolean
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
   isRemix: boolean
   setIsRemix: (isRemix: boolean) => void
   onChangeField: (field: string, value: any) => void

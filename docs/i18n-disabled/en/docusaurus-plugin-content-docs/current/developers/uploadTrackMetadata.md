@@ -22,8 +22,10 @@ Contains required and optional fields for uploading a track.
   tags?: string; // Comma separated list of tags
   remixOf?: { tracks: Array<{ parentTrackId: string }> }; // For specifying the track(s) that your track is a remix of
   aiAttributionUserId?: string; // Audius user ID of the artist whom your AI-generated track was trained on. Note: Only artists who have opted into AI attribution can be used.
-  isStreamGated?: boolean; // Whether your track is only available to users who meet certain criteria, which must be specified by `streamConditions`.
-  streamConditions?: StreamConditions; // See "Specifying Stream Conditions" section below
+  isStreamGated?: boolean; // Whether streaming your track is only available to users who meet certain criteria, which must be specified by `streamConditions`.
+  streamConditions?: AccessConditions; // See "Specifying Stream Conditions" section below
+  isDownloadGated?: boolean; // Whether downloading your track is only available to users who meet certain criteria, which must be specified by `downloadConditions`. Note that stream gated tracks are automatically download gated, whereas the reverse is not true.
+  downloadConditions?: AccessConditions;
   isUnlisted?: boolean; // If set to true, only users with a link to your track will be able to listen, and your track will not show up in your profile or in any feed. Defaults to false.
   fieldVisibility?: {
     mood?: boolean;
@@ -91,7 +93,7 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 
 ## Specifying Stream Conditions
 
-Use the `StreamConditions` field to specify the criteria required to unlock a track.
+Use the `AccessConditions` field to specify the criteria required to unlock a track.
 
 ### Tip-gated
 

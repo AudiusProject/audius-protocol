@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, StreamingSignature, GatedTrackStatus } from 'models'
+import { ID, AccessSignature, GatedTrackStatus } from 'models'
 import { Nullable } from 'utils'
 
 type GatedContentState = {
-  gatedTrackSignatureMap: { [id: ID]: Nullable<StreamingSignature> }
+  nftAccessSignatureMap: { [id: ID]: Nullable<AccessSignature> }
   statusMap: { [id: ID]: GatedTrackStatus }
   lockedContentId: Nullable<ID>
   followeeIds: ID[]
@@ -12,18 +12,18 @@ type GatedContentState = {
 }
 
 const initialState: GatedContentState = {
-  gatedTrackSignatureMap: {},
+  nftAccessSignatureMap: {},
   statusMap: {},
   lockedContentId: null,
   followeeIds: [],
   tippedUserIds: []
 }
 
-type UpdateStreamingSignaturesPayload = {
-  [id: ID]: Nullable<StreamingSignature>
+type UpdateNftAccessSignaturesPayload = {
+  [id: ID]: Nullable<AccessSignature>
 }
 
-type RemoveStreamingSignaturesPayload = {
+type RevokeAccessPayload = {
   trackIds: ID[]
 }
 
@@ -44,22 +44,17 @@ const slice = createSlice({
   name: 'gatedContent',
   initialState,
   reducers: {
-    updateStreamingSignatures: (
+    updateNftAccessSignatures: (
       state,
-      action: PayloadAction<UpdateStreamingSignaturesPayload>
+      action: PayloadAction<UpdateNftAccessSignaturesPayload>
     ) => {
-      state.gatedTrackSignatureMap = {
-        ...state.gatedTrackSignatureMap,
+      state.nftAccessSignatureMap = {
+        ...state.nftAccessSignatureMap,
         ...action.payload
       }
     },
-    removeStreamingSignatures: (
-      state,
-      action: PayloadAction<RemoveStreamingSignaturesPayload>
-    ) => {
-      action.payload.trackIds.forEach((trackId) => {
-        delete state.gatedTrackSignatureMap[trackId]
-      })
+    revokeAccess: (_state, __action: PayloadAction<RevokeAccessPayload>) => {
+      // triggers saga
     },
     updateGatedTrackStatus: (
       state,
@@ -102,8 +97,8 @@ const slice = createSlice({
 })
 
 export const {
-  updateStreamingSignatures,
-  removeStreamingSignatures,
+  updateNftAccessSignatures,
+  revokeAccess,
   updateGatedTrackStatus,
   updateGatedTrackStatuses,
   setLockedContentId,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { StreamConditions, Nullable } from '@audius/common'
+import type { AccessConditions, Nullable } from '@audius/common'
 import {
   accountSelectors,
   isContentFollowGated,
@@ -117,7 +117,7 @@ export const SpecialAccessAvailability = ({
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: streamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const currentUserId = useSelector(getUserId)
   const defaultSpecialAccess = currentUserId
     ? { follow_user_id: currentUserId }

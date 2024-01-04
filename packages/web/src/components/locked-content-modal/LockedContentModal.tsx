@@ -27,7 +27,7 @@ export const LockedContentModal = () => {
   const [isOpen, setIsOpen] = useModalState('LockedContent')
   const dispatch = useDispatch()
   const { track, owner } = useLockedContent()
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -64,7 +64,7 @@ export const LockedContentModal = () => {
               isLoading={false}
               trackId={track.track_id}
               streamConditions={track.stream_conditions}
-              doesUserHaveAccess={doesUserHaveAccess}
+              hasStreamAccess={hasStreamAccess}
               isOwner={false}
               wrapperClassName={styles.gatedTrackSectionWrapper}
               className={styles.gatedTrackSection}

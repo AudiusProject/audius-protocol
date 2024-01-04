@@ -1,29 +1,29 @@
 import { isEmpty } from 'lodash'
 
 import { DogEarType } from 'models/DogEar'
-import { StreamConditions } from 'models/Track'
+import { AccessConditions } from 'models/Track'
 
 import { Nullable } from './typeUtils'
 
 type GetDogEarTypeArgs = {
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isArtistPick?: boolean
   isOwner?: boolean
   isUnlisted?: boolean
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
 }
 
 /** Determines appropriate DogEar type based on conditions provided. Note: all conditions
  * are optional. Omitting a condition is effectively ignoring it. This can be used, for example
- * to always show gated variants if present by omitting `doesUserHaveAccess`.
+ * to always show gated variants if present by omitting `hasStreamAccess`.
  * Behavior:
- * * isArtistPick: if true and doesUserHaveAccess is true, prefers artist pick variant
- * * doesUserHaveAccess: if true, will never return gated variants
+ * * isArtistPick: if true and hasStreamAccess is true, prefers artist pick variant
+ * * hasStreamAccess: if true, will never return gated variants
  * * isOwner: if true, will always return gated variants if present
  * * isUnlisted: if true, will always return hidden variant
  */
 export const getDogEarType = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   isArtistPick,
   isOwner,
   isUnlisted,
@@ -31,7 +31,7 @@ export const getDogEarType = ({
 }: GetDogEarTypeArgs) => {
   // Show gated variants for track owners or if user does not yet have access
   if (
-    (isOwner || !doesUserHaveAccess) &&
+    (isOwner || !hasStreamAccess) &&
     streamConditions != null &&
     !isEmpty(streamConditions)
   ) {

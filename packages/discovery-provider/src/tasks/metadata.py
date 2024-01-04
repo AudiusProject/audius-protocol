@@ -41,6 +41,8 @@ class TrackMetadata(TypedDict):
     preview_cid: Optional[str]
     orig_file_cid: Optional[str]
     orig_filename: Optional[str]
+    is_downloadable: Optional[bool]
+    is_original_available: Optional[bool]
     owner_id: Optional[int]
     audio_upload_id: Optional[str]
     title: Optional[str]
@@ -80,6 +82,8 @@ track_metadata_format: TrackMetadata = {
     "preview_cid": None,
     "orig_file_cid": None,
     "orig_filename": None,
+    "is_downloadable": False,
+    "is_original_available": False,
     "owner_id": None,
     "audio_upload_id": None,
     "title": None,
@@ -187,6 +191,7 @@ immutable_track_fields = immutable_fields | {
     "track_cid",
     "orig_file_cid",
     "orig_filename",
+    "is_original_available",
     "duration",
     "is_available",
     "is_scheduled_release",

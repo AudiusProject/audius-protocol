@@ -10,7 +10,7 @@ import {
   FieldVisibility,
   LineupTrack,
   Remix,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   Genre,
   Collection
@@ -142,10 +142,10 @@ export type DesktopTrackTileProps = {
   isScheduledRelease?: boolean
 
   /** Stream conditions if track is gated */
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
 
   /** If logged in user has access to track */
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
 
   /** If track metadata is loading in */
   isLoading?: boolean

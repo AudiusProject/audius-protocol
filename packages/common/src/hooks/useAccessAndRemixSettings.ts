@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 
 import {
-  StreamConditions,
+  AccessConditions,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
@@ -14,7 +14,7 @@ import { Nullable } from 'utils/typeUtils'
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
   isRemix: boolean
-  initialStreamConditions: Nullable<StreamConditions>
+  initialStreamConditions: Nullable<AccessConditions>
   isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
 }

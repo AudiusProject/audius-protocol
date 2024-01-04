@@ -39,6 +39,14 @@
           ],
           "default": null
         },
+        "is_downloadable": {
+          "type": "boolean",
+          "default": false
+        },
+        "is_original_available": {
+          "type": "boolean",
+          "default": false
+        },
         "audio_upload_id": {
           "type": [
             "string",
@@ -222,13 +230,13 @@
                 "type": "null"
               },
               {
-                "$ref": "#/definitions/StreamConditionsNFTCollection"
+                "$ref": "#/definitions/CollectibleGatedConditions"
               },
               {
-                "$ref": "#/definitions/StreamConditionsFollowUserId"
+                "$ref": "#/definitions/FollowGatedConditions"
               },
               {
-                "$ref": "#/definitions/StreamConditionsTipUserId"
+                "$ref": "#/definitions/TipGatedConditions"
               },
               {
                 "$ref": "#/definitions/USDCPurchaseConditions"
@@ -247,9 +255,18 @@
             "null"
           ],
           "items": {
-            "oneOf": [
+            "anyOf": [
               {
                 "type": "null"
+              },
+              {
+                "$ref": "#/definitions/CollectibleGatedConditions"
+              },
+              {
+                "$ref": "#/definitions/FollowGatedConditions"
+              },
+              {
+                "$ref": "#/definitions/TipGatedConditions"
               },
               {
                 "$ref": "#/definitions/USDCPurchaseConditions"
@@ -429,7 +446,7 @@
       "pattern": "^Qm[a-zA-Z0-9]{44}$",
       "title": "CID"
     },
-    "StreamConditionsNFTCollection": {
+    "CollectibleGatedConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -438,10 +455,10 @@
           "items": {
             "oneOf": [
               {
-                "$ref": "#/definitions/StreamConditionsEthNFTCollection"
+                "$ref": "#/definitions/EthCollectibleGatedConditions"
               },
               {
-                "$ref": "#/definitions/StreamConditionsSolNFTCollection"
+                "$ref": "#/definitions/SolCollectibleGatedConditions"
               }
             ]
           }
@@ -450,9 +467,9 @@
       "required": [
         "nft_collection"
       ],
-      "title": "StreamConditionsNFTCollection"
+      "title": "CollectibleGatedConditions"
     },
-    "StreamConditionsEthNFTCollection": {
+    "EthCollectibleGatedConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -497,9 +514,9 @@
         "name",
         "slug"
       ],
-      "title": "StreamConditionsEthNFTCollection"
+      "title": "EthCollectibleGatedConditions"
     },
-    "StreamConditionsSolNFTCollection": {
+    "SolCollectibleGatedConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -533,9 +550,9 @@
         "address",
         "name"
       ],
-      "title": "StreamConditionsSolNFTCollection"
+      "title": "SolCollectibleGatedConditions"
     },
-    "StreamConditionsFollowUserId": {
+    "FollowGatedConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -546,9 +563,9 @@
       "required": [
         "follow_user_id"
       ],
-      "title": "StreamConditionsFollowUserId"
+      "title": "FollowGatedConditions"
     },
-    "StreamConditionsTipUserId": {
+    "TipGatedConditions": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -559,7 +576,7 @@
       "required": [
         "tip_user_id"
       ],
-      "title": "StreamConditionsTipUserId"
+      "title": "TipGatedConditions"
     },
     "USDCPurchaseConditions": {
       "type": "object",

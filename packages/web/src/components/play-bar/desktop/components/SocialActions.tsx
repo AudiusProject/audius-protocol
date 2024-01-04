@@ -67,7 +67,7 @@ export const SocialActions = ({
     )
   }, [trackId, openPremiumContentPurchaseModal])
 
-  const { doesUserHaveAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const theme = useSelector(getTheme)
   const matrix = theme === Theme.MATRIX
@@ -76,7 +76,7 @@ export const SocialActions = ({
     <div className={styles.root}>
       {track?.stream_conditions &&
       'usdc_purchase' in track.stream_conditions &&
-      !doesUserHaveAccess ? (
+      !hasStreamAccess ? (
         <GatedConditionsPill
           showIcon={false}
           streamConditions={track.stream_conditions}

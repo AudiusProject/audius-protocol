@@ -1,12 +1,7 @@
-import { select } from 'typed-redux-saga'
-
-import { StreamingSignature, Track } from 'models'
+import { AccessSignature, Track } from 'models'
 import { AudiusBackend, QueryParams } from 'services/index'
-import { gatedContentSelectors } from 'store/gated-content'
 
 import { Nullable } from './typeUtils'
-
-const { getGatedTrackSignatureMap } = gatedContentSelectors
 
 const PREVIEW_LENGTH_SECONDS = 30
 
@@ -20,37 +15,19 @@ export async function generateUserSignature(
 
 export async function getQueryParams({
   audiusBackendInstance,
-  streamSignature
+  nftAccessSignature
 }: {
   audiusBackendInstance: AudiusBackend
-  streamSignature: Nullable<StreamingSignature>
+  nftAccessSignature?: Nullable<AccessSignature>
 }) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
   queryParams.user_data = data
   queryParams.user_signature = signature
-  if (streamSignature) {
-    queryParams.stream_signature = JSON.stringify(
-      streamSignature
-    )
+  if (nftAccessSignature) {
+    queryParams.nft_access_signature = JSON.stringify(nftAccessSignature)
   }
   return queryParams
-}
-
-export function* doesUserHaveTrackAccess(track: Nullable<Track>) {
-  const gatedTrackSignatureMap = yield* select(getGatedTrackSignatureMap)
-
-  const {
-    track_id: trackId,
-    is_stream_gated: isStreamGated,
-    stream_signature: streamSignature
-  } = track ?? {}
-
-  const hasStreamSignature =
-    !!streamSignature ||
-    !!(trackId && gatedTrackSignatureMap[trackId])
-
-  return !isStreamGated || hasStreamSignature
 }
 
 export function getTrackPreviewDuration(track: Track) {

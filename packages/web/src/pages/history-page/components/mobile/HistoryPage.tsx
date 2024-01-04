@@ -57,10 +57,10 @@ const HistoryPage = ({
 
   const tracks = entries.map((track: LineupTrack, index: number) => {
     const isActive = track.uid === currentQueueItem.uid
-    const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+    const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
       track.track_id
-    ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-    const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+    ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+    const isLocked = !isFetchingNFTAccess && !hasStreamAccess
     return {
       isLoading: loading,
       isStreamGated: track.is_stream_gated,

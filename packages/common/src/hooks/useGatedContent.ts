@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { Chain } from 'models/Chain'
 import { ID } from 'models/Identifiers'
 import {
-  StreamConditions,
+  AccessConditions,
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
@@ -19,52 +19,59 @@ import { Nullable, removeNullable } from 'utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors
-const { getLockedContentId, getGatedTrackSignatureMap } =
-  gatedContentSelectors
+const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
 // Returns whether user has access to given track.
 export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
-  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
+  const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const user = useSelector(getAccountUser)
 
-  const { isUserAccessTBD, doesUserHaveAccess } = useMemo(() => {
-    if (!track) {
-      return { isUserAccessTBD: false, doesUserHaveAccess: true }
-    }
+  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+    useMemo(() => {
+      if (!track) {
+        return {
+          isFetchingNFTAccess: false,
+          hasStreamAccess: true,
+          hasDownloadAccess: true
+        }
+      }
 
-    const trackId = track.track_id
-    const isStreamGated = track.is_stream_gated
-    const hasStreamSignature =
-      !!track.stream_signature ||
-      !!(trackId && gatedTrackSignatureMap[trackId])
-    const isCollectibleGated = isContentCollectibleGated(
-      track.stream_conditions
-    )
-    const isSignatureToBeFetched =
-      isCollectibleGated &&
-      !!trackId &&
-      gatedTrackSignatureMap[trackId] === undefined &&
-      !!user // We're only fetching a sig if the user is logged in
+      const trackId = track.track_id
+      const { stream, download } = track.access ?? {}
+      const hasNftAccessSignature = !!(
+        trackId && nftAccessSignatureMap[trackId]
+      )
+      const isCollectibleGated = isContentCollectibleGated(
+        track.stream_conditions
+      )
+      const isSignatureToBeFetched =
+        isCollectibleGated &&
+        !!trackId &&
+        // if nft gated track, the signature would have been fetched separately
+        nftAccessSignatureMap[trackId] === undefined &&
+        // signature is fetched only if the user is logged in
+        !!user
 
-    return {
-      isUserAccessTBD: !hasStreamSignature && isSignatureToBeFetched,
-      doesUserHaveAccess: !isStreamGated || hasStreamSignature
-    }
-  }, [track, gatedTrackSignatureMap, user])
+      return {
+        isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
+        hasStreamAccess: !!stream,
+        hasDownloadAccess: !!download
+      }
+    }, [track, nftAccessSignatureMap, user])
 
-  return { isUserAccessTBD, doesUserHaveAccess }
+  return { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess }
 }
 
 // Similar to `useGatedContentAccess` above, but for multiple tracks.
 // Returns a map of track id -> track access i.e.
-// {[id: ID]: { isUserAccessTBD: boolean, doesUserHaveAccess: boolean }}
+// {[id: ID]: { isFetchingNFTAccess: boolean, hasStreamAccess: boolean }}
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
-  const gatedTrackSignatureMap = useSelector(getGatedTrackSignatureMap)
+  const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const user = useSelector(getAccountUser)
 
   const result = useMemo(() => {
     const map: {
-      [id: ID]: { isUserAccessTBD: boolean; doesUserHaveAccess: boolean }
+      [id: ID]: { isFetchingNFTAccess: boolean; hasStreamAccess: boolean }
     } = {}
 
     tracks.forEach((track) => {
@@ -74,31 +81,31 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
 
       const trackId = track.track_id
       const isStreamGated = track.is_stream_gated
-      const hasStreamSignature = !!(
-        track.stream_signature || gatedTrackSignatureMap[trackId]
-      )
+      const hasNftAccessSignature = !!nftAccessSignatureMap[trackId]
       const isCollectibleGated = isContentCollectibleGated(
         track.stream_conditions
       )
       const isSignatureToBeFetched =
         isCollectibleGated &&
-        gatedTrackSignatureMap[trackId] === undefined &&
-        !!user // We're only fetching a sig if the user is logged in
+        // if nft gated track, the signature would have been fetched separately
+        nftAccessSignatureMap[trackId] === undefined &&
+        // signature is fetched only if the user is logged in
+        !!user
 
       map[trackId] = {
-        isUserAccessTBD: !hasStreamSignature && isSignatureToBeFetched,
-        doesUserHaveAccess: !isStreamGated || hasStreamSignature
+        isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
+        hasStreamAccess: !isStreamGated
       }
     })
 
     return map
-  }, [tracks, gatedTrackSignatureMap, user])
+  }, [tracks, nftAccessSignatureMap, user])
 
   return result
 }
 
 export const useStreamConditionsEntity = (
-  streamConditions: Nullable<StreamConditions>
+  streamConditions: Nullable<AccessConditions>
 ) => {
   const followUserId = isContentFollowGated(streamConditions)
     ? streamConditions?.follow_user_id

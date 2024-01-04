@@ -198,7 +198,7 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const { doesUserHaveAccess } = useGatedContentAccess(
+  const { hasStreamAccess } = useGatedContentAccess(
     track ? (track as unknown as Track) : null
   )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -229,7 +229,7 @@ export const DetailsTile = ({
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -378,16 +378,13 @@ export const DetailsTile = ({
                 <DetailsProgressInfo track={track} />
               ) : null}
               <View style={styles.buttonSection}>
-                {!doesUserHaveAccess &&
-                  !isOwner &&
-                  streamConditions &&
-                  trackId ? (
+                {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
                     streamConditions={streamConditions}
                   />
                 ) : null}
-                {doesUserHaveAccess || isOwner ? (
+                {hasStreamAccess || isOwner ? (
                   <Button
                     styles={{
                       text: styles.playButtonText,
@@ -402,7 +399,7 @@ export const DetailsTile = ({
                     fullWidth
                   />
                 ) : null}
-                {(doesUserHaveAccess || isOwner) && streamConditions ? (
+                {(hasStreamAccess || isOwner) && streamConditions ? (
                   <DetailsTileHasAccess
                     streamConditions={streamConditions}
                     isOwner={isOwner}

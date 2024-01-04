@@ -4,7 +4,7 @@ import {
   isContentUSDCPurchaseGated,
   type ID,
   type Nullable,
-  type StreamConditions
+  type AccessConditions
 } from '@audius/common'
 import { View } from 'react-native'
 
@@ -29,8 +29,8 @@ type Props = {
   isShareHidden?: boolean
   isUnlisted?: boolean
   trackId?: ID
-  streamConditions?: Nullable<StreamConditions>
-  doesUserHaveAccess?: boolean
+  streamConditions?: Nullable<AccessConditions>
+  hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
@@ -67,7 +67,7 @@ export const LineupTileActionButtons = ({
   isShareHidden,
   isUnlisted,
   trackId,
-  doesUserHaveAccess = false,
+  hasStreamAccess = false,
   readonly = false,
   streamConditions,
   onPressOverflow,
@@ -121,7 +121,7 @@ export const LineupTileActionButtons = ({
     />
   )
 
-  const showGatedAccessStatus = trackId && !doesUserHaveAccess
+  const showGatedAccessStatus = trackId && !hasStreamAccess
   const showLeftButtons = !showGatedAccessStatus && !isUnlisted
 
   let content: ReactElement | null = null

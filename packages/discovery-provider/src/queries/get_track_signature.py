@@ -14,7 +14,8 @@ class GetTrackStreamSignature(TypedDict):
     is_preview: Optional[bool]
     user_data: Optional[str]
     user_signature: Optional[str]
-    stream_signature: Optional[str]
+    nft_access_signature: Optional[str]
+    filename: Optional[str]
 
 
 class GetTrackDownloadSignature(TypedDict):
@@ -23,6 +24,7 @@ class GetTrackDownloadSignature(TypedDict):
     filename: Optional[str]
     user_data: Optional[str]
     user_signature: Optional[str]
+    nft_access_signature: Optional[str]
 
 
 # Returns a dictionary {signature, cid} if user has stream access
@@ -33,7 +35,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     is_preview = args.get("is_preview", False)
     user_data = args["user_data"]
     user_signature = args["user_signature"]
-    stream_signature = args["stream_signature"]
+    nft_access_signature = args["nft_access_signature"]
     cid = track.get("preview_cid") if is_preview else track.get("track_cid")
     if not cid:
         return None
@@ -60,19 +62,16 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     if not authed_user_id:
         return None
 
-    if stream_signature:
+    if nft_access_signature:
         # check that authed user is the same as user for whom the gated content signature was signed
-        stream_signature_obj = json.loads(urllib.parse.unquote(stream_signature))
-        signature_data = json.loads(stream_signature_obj["data"])
-
-        if (
-            signature_data.get("user_wallet", False)
-            != authed_user["user_wallet"].lower()
-            or signature_data.get("cid", False) != cid
-            or signature_data.get("shouldCache", False)
-        ):
+        # there is no need to perform other checks as CN would take care of them
+        signature_obj = json.loads(urllib.parse.unquote(nft_access_signature))
+        signature_data = json.loads(signature_obj["data"])
+        signature_user_wallet = signature_data.get("user_wallet", None)
+        authed_user_wallet = authed_user["user_wallet"].lower()
+        if signature_user_wallet != authed_user_wallet:
             return None
-        return {"signature": stream_signature_obj, "cid": cid}
+        return {"signature": signature_obj, "cid": cid}
 
     # build a track instance from the track dict
     track_entity = Track(
@@ -88,11 +87,10 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
         access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
-            gated_content_id=track_entity.track_id,
-            gated_content_type="track",
-            gated_content_entity=track_entity,
+            content_type="track",
+            content_entity=track_entity,
         )
-        if not access["does_user_have_access"]:
+        if not access["has_stream_access"]:
             return None
 
     signature = get_gated_content_signature(
@@ -107,7 +105,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     return {"signature": signature, "cid": cid}
 
 
-# Returns a dictionary {signature, cid, filename} if user has stream access
+# Returns a dictionary {signature, cid, filename} if user has download access
 # Returns None otherwise
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]
@@ -119,6 +117,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         filename = track.get("orig_filename", title) if is_original else f"{title}.mp3"
     user_data = args["user_data"]
     user_signature = args["user_signature"]
+    nft_access_signature = args["nft_access_signature"]
     is_downloadable = track.get("download", {}).get("is_downloadable")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
     if not cid or not is_downloadable:
@@ -147,6 +146,17 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     if not authed_user_id:
         return None
 
+    if nft_access_signature:
+        # check that authed user is the same as user for whom the gated content signature was signed
+        # there is no need to perform other checks as CN would take care of them
+        signature_obj = json.loads(urllib.parse.unquote(nft_access_signature))
+        signature_data = json.loads(signature_obj["data"])
+        signature_user_wallet = signature_data.get("user_wallet", None)
+        authed_user_wallet = authed_user["user_wallet"].lower()
+        if signature_user_wallet != authed_user_wallet:
+            return None
+        return {"signature": signature_obj, "cid": cid, "filename": filename}
+
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
@@ -161,12 +171,10 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         access = content_access_checker.check_access(
             session=session,
             user_id=authed_user["user_id"],
-            gated_content_id=track_entity.track_id,
-            gated_content_type="track",
-            gated_content_entity=track_entity,
-            is_download=True,
+            content_type="track",
+            content_entity=track_entity,
         )
-        if not access["does_user_have_access"]:
+        if not access["has_download_access"]:
             return None
 
     signature = get_gated_content_signature(

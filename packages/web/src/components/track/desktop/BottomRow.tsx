@@ -4,7 +4,7 @@ import {
   FieldVisibility,
   gatedContentSelectors,
   ID,
-  StreamConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import cn from 'classnames'
@@ -28,7 +28,7 @@ const messages = {
 }
 
 type BottomRowProps = {
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isDisabled?: boolean
   isLoading?: boolean
   isFavorited?: boolean
@@ -43,7 +43,7 @@ type BottomRowProps = {
   showIconButtons?: boolean
   isTrack?: boolean
   trackId?: ID
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
@@ -51,7 +51,7 @@ type BottomRowProps = {
 }
 
 export const BottomRow = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   isDisabled,
   isLoading,
   isFavorited,
@@ -111,7 +111,7 @@ export const BottomRow = ({
     )
   }
 
-  if (isTrack && streamConditions && !isLoading && !doesUserHaveAccess) {
+  if (isTrack && streamConditions && !isLoading && !hasStreamAccess) {
     return (
       <div
         className={cn(

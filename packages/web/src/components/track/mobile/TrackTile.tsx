@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect, MouseEvent } from 'react'
 import {
   ID,
   formatCount,
-  StreamConditions,
+  AccessConditions,
   Nullable,
   gatedContentSelectors,
   gatedContentActions,
@@ -56,15 +56,15 @@ type ExtraProps = {
   darkMode: boolean
   isMatrix: boolean
   isStreamGated: boolean
-  streamConditions?: Nullable<StreamConditions>
+  streamConditions?: Nullable<AccessConditions>
   hasPreview?: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
 
 const renderLockedOrPlaysContent = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   fieldVisibility,
   isOwner,
   isStreamGated,
@@ -72,7 +72,7 @@ const renderLockedOrPlaysContent = ({
   variant
 }: Pick<
   CombinedProps,
-  | 'doesUserHaveAccess'
+  | 'hasStreamAccess'
   | 'fieldVisibility'
   | 'isOwner'
   | 'isStreamGated'
@@ -80,7 +80,7 @@ const renderLockedOrPlaysContent = ({
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
   if (isStreamGated && !isOwner) {
-    return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
+    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -168,7 +168,7 @@ const TrackTile = (props: CombinedProps) => {
     isStreamGated,
     listenCount,
     streamConditions,
-    doesUserHaveAccess,
+    hasStreamAccess,
     isTrending,
     showRankIcon,
     permalink,
@@ -200,7 +200,7 @@ const TrackTile = (props: CombinedProps) => {
     : getDogEarType({
         streamConditions,
         isOwner,
-        doesUserHaveAccess,
+        hasStreamAccess,
         isArtistPick,
         isUnlisted
       })
@@ -229,14 +229,14 @@ const TrackTile = (props: CombinedProps) => {
         { contentId: trackId },
         { source: ModalSource.TrackTile }
       )
-    } else if (trackId && !doesUserHaveAccess) {
+    } else if (trackId && !hasStreamAccess) {
       openLockedContentModal()
     }
   }, [
     isPurchase,
     trackId,
     openPremiumContentPurchaseModal,
-    doesUserHaveAccess,
+    hasStreamAccess,
     openLockedContentModal
   ])
 
@@ -255,7 +255,7 @@ const TrackTile = (props: CombinedProps) => {
   const handleClick = useCallback(() => {
     if (showSkeleton) return
 
-    if (trackId && !doesUserHaveAccess && !hasPreview) {
+    if (trackId && !hasStreamAccess && !hasPreview) {
       openLockedContentModal()
       return
     }
@@ -267,7 +267,7 @@ const TrackTile = (props: CombinedProps) => {
     uid,
     id,
     trackId,
-    doesUserHaveAccess,
+    hasStreamAccess,
     hasPreview,
     openLockedContentModal
   ])
@@ -281,7 +281,7 @@ const TrackTile = (props: CombinedProps) => {
       specialContentLabel = (
         <GatedContentLabel
           streamConditions={streamConditions}
-          doesUserHaveAccess={!!doesUserHaveAccess}
+          hasStreamAccess={!!hasStreamAccess}
           isOwner={isOwner}
         />
       )
@@ -486,7 +486,7 @@ const TrackTile = (props: CombinedProps) => {
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                  doesUserHaveAccess,
+                  hasStreamAccess,
                   fieldVisibility,
                   isOwner,
                   isStreamGated,
@@ -508,7 +508,7 @@ const TrackTile = (props: CombinedProps) => {
           readonly={isReadonly}
           isLoading={isLoading}
           isUnlisted={isUnlisted}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}
           gatedTrackStatus={gatedTrackStatus}
           isShareHidden={hideShare}

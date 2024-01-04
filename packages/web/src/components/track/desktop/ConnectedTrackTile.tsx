@@ -152,9 +152,9 @@ const ConnectedTrackTile = ({
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
   const hasPreview = !!track?.preview_cid
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
+  const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
-  const loading = isLoading || isUserAccessTBD
+  const loading = isLoading || isFetchingNFTAccess
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -190,7 +190,7 @@ const ConnectedTrackTile = ({
       showSkeleton: loading,
       callback: () => setArtworkLoaded(true),
       label: `${title} by ${name}`,
-      doesUserHaveAccess: doesUserHaveAccess || hasPreview
+      hasStreamAccess: hasStreamAccess || hasPreview
     }
     return <TrackArtwork {...artworkProps} />
   }
@@ -326,7 +326,7 @@ const ConnectedTrackTile = ({
 
       // Show the locked content modal if gated track and user does not have access.
       // Also skip toggle play in this case.
-      if (trackId && !doesUserHaveAccess && !hasPreview) {
+      if (trackId && !hasStreamAccess && !hasPreview) {
         openLockedContentModal()
         return
       }
@@ -338,7 +338,7 @@ const ConnectedTrackTile = ({
       hasPreview,
       uid,
       trackId,
-      doesUserHaveAccess,
+      hasStreamAccess,
       openLockedContentModal
     ]
   )
@@ -366,7 +366,7 @@ const ConnectedTrackTile = ({
       isScheduledRelease={isScheduledRelease}
       isStreamGated={isStreamGated}
       streamConditions={streamConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      hasStreamAccess={hasStreamAccess}
       isLoading={loading}
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}

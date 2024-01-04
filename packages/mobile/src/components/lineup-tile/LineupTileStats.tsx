@@ -4,7 +4,7 @@ import type {
   ID,
   FavoriteType,
   RepostType,
-  StreamConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import {
@@ -106,8 +106,8 @@ type Props = {
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
-  doesUserHaveAccess?: boolean
-  streamConditions: Nullable<StreamConditions>
+  hasStreamAccess?: boolean
+  streamConditions: Nullable<AccessConditions>
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
@@ -128,7 +128,7 @@ export const LineupTileStats = ({
   repostCount,
   saveCount,
   showRankIcon,
-  doesUserHaveAccess,
+  hasStreamAccess,
   streamConditions,
   isOwner,
   isArtistPick,
@@ -170,7 +170,7 @@ export const LineupTileStats = ({
         {streamConditions ? (
           <LineupTileGatedContentTypeTag
             streamConditions={streamConditions}
-            doesUserHaveAccess={doesUserHaveAccess}
+            hasStreamAccess={hasStreamAccess}
             isOwner={isOwner}
           />
         ) : null}
@@ -264,7 +264,7 @@ export const LineupTileStats = ({
       </View>
       {streamConditions && !isOwner ? (
         <LockedStatusBadge
-          locked={!doesUserHaveAccess}
+          locked={!hasStreamAccess}
           variant={
             isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }

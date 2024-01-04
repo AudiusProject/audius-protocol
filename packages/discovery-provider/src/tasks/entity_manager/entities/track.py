@@ -10,7 +10,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.gated_content.constants import USDC_PURCHASE_KEY
 from src.gated_content.content_access_checker import (
-    GatedContentAccessBatchArgs,
+    ContentAccessBatchArgs,
     content_access_checker,
 )
 from src.models.tracks.remix import Remix
@@ -248,14 +248,14 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
         if key == "stream_conditions":
             if "stream_conditions" in track_metadata and (
                 is_valid_json_field(track_metadata, "stream_conditions")
-                or track_metadata.get("stream_conditions") is None
+                or track_metadata["stream_conditions"] is None
             ):
                 track_record.stream_conditions = track_metadata["stream_conditions"]
 
         elif key == "download_conditions":
             if "download_conditions" in track_metadata and (
                 is_valid_json_field(track_metadata, "download_conditions")
-                or track_metadata.get("download_conditions") is None
+                or track_metadata["download_conditions"] is None
             ):
                 track_record.download_conditions = track_metadata["download_conditions"]
 
@@ -344,6 +344,10 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create track {track_id} below the offset"
             )
+
+    if params.action == Action.UPDATE:
+        validate_update_access_conditions(params)
+
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -360,7 +364,7 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
         validate_remixability(params)
-        validate_downloadability(params)
+        validate_access_conditions(params)
 
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
@@ -518,6 +522,7 @@ def delete_track(params: ManageEntityParameters):
     params.add_record(track_id, deleted_track)
 
 
+# Make sure that the user has access to remix parent tracks
 def validate_remixability(params: ManageEntityParameters):
     track_metadata = params.metadata
     user_id = params.user_id
@@ -527,12 +532,12 @@ def validate_remixability(params: ManageEntityParameters):
     if not parent_track_ids:
         return
 
-    args: List[GatedContentAccessBatchArgs] = list(
+    args: List[ContentAccessBatchArgs] = list(
         map(
             lambda track_id: {
                 "user_id": user_id,
-                "gated_content_id": track_id,
-                "gated_content_type": "track",
+                "content_id": track_id,
+                "content_type": "track",
             },
             parent_track_ids,
         )
@@ -547,9 +552,9 @@ def validate_remixability(params: ManageEntityParameters):
 
     for track_id in gated_content_batch_access["track"][user_id]:
         access = gated_content_batch_access["track"][user_id][track_id]
-        if not access["does_user_have_access"]:
+        if not access["has_stream_access"]:
             raise IndexingValidationError(
-                f"User {user_id} does not have access to gated track {track_id}"
+                f"User {user_id} does not have access to remix parent gated track {track_id}"
             )
 
 
@@ -576,45 +581,118 @@ def get_remix_parent_track_ids(track_metadata):
     return parent_track_ids
 
 
-def validate_downloadability(params: ManageEntityParameters):
+def validate_access_conditions(params: ManageEntityParameters):
     track_metadata = params.metadata
+
+    stem_of = track_metadata.get("stem_of")
+
+    is_stream_gated = track_metadata.get("is_stream_gated")
+    stream_conditions = track_metadata.get("stream_conditions", {}) or {}
+
     download = track_metadata.get("download")
     is_downloadable = download.get("is_downloadable") if download else False
     is_download_gated = track_metadata.get("is_download_gated")
-    download_conditions = track_metadata.get("download_conditions")
-    stream_conditions = track_metadata.get("stream_conditions")
-    is_stream_usdc_purchase_gated = stream_conditions and (
-        USDC_PURCHASE_KEY in stream_conditions
-    )
+    download_conditions = track_metadata.get("download_conditions", {}) or {}
 
-    # if stream gated on usdc purchase, must also be download gated
-    if is_stream_usdc_purchase_gated and not is_download_gated:
+    # if stem track, must not be have stream/download conditions
+    # stem tracks must rely on their parent track's access conditions
+    # otherwise the access checker may e.g. look for a purchase
+    # on the stem track instead of the parent track
+    if stem_of and (is_stream_gated or is_download_gated):
         raise IndexingValidationError(
-            f"Track {params.entity_id} is usdc purchase stream gated but not download gated"
+            f"Track {params.entity_id} is a stem track but has stream/download conditions"
         )
 
-    # if download gated, must also be downloadable
-    if is_download_gated and not is_downloadable:
-        raise IndexingValidationError(
-            f"Track {params.entity_id} is download gated but not downloadable"
-        )
-
-    # if download gated, must have download conditions
-    if is_download_gated and not download_conditions:
-        raise IndexingValidationError(
-            f"Track {params.entity_id} is download gated but has no download conditions"
-        )
-
-    # if both usdc purchase stream gated and download gated,
-    # usdc purchase price must be the same for stream and download conditions
-    if is_stream_usdc_purchase_gated and is_download_gated:
-        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get(
-            "price"
-        )
-        download_usdc_purchase_price = download_conditions.get(
-            USDC_PURCHASE_KEY, {}
-        ).get("price")
-        if stream_usdc_purchase_price != download_usdc_purchase_price:
+    if is_stream_gated:
+        # if stream gated, must have stream conditions
+        if not stream_conditions:
             raise IndexingValidationError(
-                f"Track {params.entity_id} is usdc purchase stream and download gated but has different prices"
+                f"Track {params.entity_id} is stream gated but has no stream conditions"
             )
+        # must be gated on a single condition
+        if len(stream_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of stream conditions"
+            )
+        if is_downloadable:
+            # if stream gated and downloadable, must be download gated
+            if not is_download_gated:
+                raise IndexingValidationError(
+                    f"Track {params.entity_id} is stream gated but not download gated"
+                )
+            # if stream gated and downloadable, stream conditions must be same as download conditions
+            if stream_conditions != download_conditions:
+                raise IndexingValidationError(
+                    f"Track {params.entity_id} stream conditions do not match download conditions"
+                )
+
+    if is_download_gated:
+        # if download gated, must be downloadable
+        if not is_downloadable:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is download gated but not downloadable"
+            )
+        # if download gated, must have download conditions
+        if not download_conditions:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is download gated but has no download conditions"
+            )
+        # must be gated on a single condition
+        if len(download_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of download conditions"
+            )
+    else:
+        # if not download gated, must not be stream gated
+        if is_stream_gated:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is not download gated but is stream gated"
+            )
+
+
+# Make sure that access conditions do not incorrectly change during track update.
+# Rule of thumb is that access can only be modified to decrease strictness.
+def validate_update_access_conditions(params: ManageEntityParameters):
+    track_id = params.entity_id
+    if track_id not in params.existing_records["Track"]:
+        raise IndexingValidationError(f"Track {track_id} is not in existing records")
+
+    existing_track = params.existing_records["Track"][track_id]
+    updated_track = params.metadata
+
+    # validate changes to conditions
+    def validate_update(existing_conditions, updated_conditions):
+        # currently non gated track cannot be updated to be gated
+        if not existing_conditions and updated_conditions:
+            raise IndexingValidationError(
+                f"Track {track_id} cannot increase strictness of access conditions"
+            )
+
+        if existing_conditions:
+            # note that usdc purchase may be edited to change price (and maybe splits?)
+            is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
+            is_updated_usdc_purchase = (
+                updated_conditions and USDC_PURCHASE_KEY in updated_conditions
+            )
+            is_valid_usdc_purchase = (
+                is_existing_usdc_purchase and is_updated_usdc_purchase
+            )
+            # the updated stream conditions must be:
+            # - public (None),
+            # - equal to the existing stream conditions,
+            # - or a valid usdc purchase
+            if (
+                updated_conditions
+                and existing_conditions != updated_conditions
+                and not is_valid_usdc_purchase
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} cannot change access conditions"
+                )
+
+    validate_update(
+        existing_track.stream_conditions, updated_track.get("stream_conditions")
+    )
+    validate_update(
+        existing_track.download_conditions, updated_track.get("download_conditions")
+    )

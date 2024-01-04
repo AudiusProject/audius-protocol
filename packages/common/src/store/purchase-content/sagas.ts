@@ -71,14 +71,14 @@ const { getUserId, getAccountUser } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
-  | ReturnType<typeof buyUSDCFlowSucceeded>
-  | ReturnType<typeof buyCryptoSucceeded>
+    | ReturnType<typeof buyUSDCFlowSucceeded>
+    | ReturnType<typeof buyCryptoSucceeded>
   failed?:
-  | ReturnType<typeof buyUSDCFlowFailed>
-  | ReturnType<typeof buyCryptoFailed>
+    | ReturnType<typeof buyUSDCFlowFailed>
+    | ReturnType<typeof buyCryptoFailed>
   canceled?:
-  | ReturnType<typeof onrampCanceled>
-  | ReturnType<typeof buyCryptoCanceled>
+    | ReturnType<typeof onrampCanceled>
+    | ReturnType<typeof buyCryptoCanceled>
 }
 
 type GetPurchaseConfigArgs = {
@@ -92,10 +92,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (
-    !trackInfo ||
-    !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)
-  ) {
+  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
     throw new Error('Content is missing stream conditions')
   }
   const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
@@ -205,10 +202,7 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (
-    !trackInfo ||
-    !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)
-  ) {
+  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
     throw new Error('Content is missing stream conditions')
   }
 
@@ -555,8 +549,8 @@ function* doStartPurchaseContentFlow({
     // have a properly contstructed error to put into the slice.
     const error =
       e instanceof PurchaseContentError ||
-        e instanceof BuyUSDCError ||
-        e instanceof BuyCryptoError
+      e instanceof BuyUSDCError ||
+      e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
 

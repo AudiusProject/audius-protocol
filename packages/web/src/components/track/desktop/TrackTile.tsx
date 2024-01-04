@@ -70,7 +70,7 @@ const RankAndIndexIndicator = ({
 }
 
 const renderLockedOrPlaysContent = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   fieldVisibility,
   isOwner,
   isStreamGated,
@@ -78,7 +78,7 @@ const renderLockedOrPlaysContent = ({
   variant
 }: Pick<
   TrackTileProps,
-  | 'doesUserHaveAccess'
+  | 'hasStreamAccess'
   | 'fieldVisibility'
   | 'isOwner'
   | 'isStreamGated'
@@ -86,7 +86,7 @@ const renderLockedOrPlaysContent = ({
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
   if (isStreamGated && !isOwner) {
-    return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
+    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -119,7 +119,7 @@ const TrackTile = ({
   isScheduledRelease,
   isStreamGated,
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
   listenCount,
   isActive,
   isArtistPick,
@@ -179,14 +179,14 @@ const TrackTile = ({
         { contentId: trackId },
         { source: ModalSource.TrackTile }
       )
-    } else if (trackId && !doesUserHaveAccess && onClickLocked) {
+    } else if (trackId && !hasStreamAccess && onClickLocked) {
       onClickLocked()
     }
   }, [
     isPurchase,
     trackId,
     openPremiumContentPurchaseModal,
-    doesUserHaveAccess,
+    hasStreamAccess,
     onClickLocked
   ])
 
@@ -228,7 +228,7 @@ const TrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      doesUserHaveAccess,
+      hasStreamAccess,
       isArtistPick,
       isOwner,
       isUnlisted:
@@ -244,7 +244,7 @@ const TrackTile = ({
       specialContentLabel = (
         <GatedContentLabel
           streamConditions={streamConditions}
-          doesUserHaveAccess={!!doesUserHaveAccess}
+          hasStreamAccess={!!hasStreamAccess}
           isOwner={isOwner}
         />
       )
@@ -391,7 +391,7 @@ const TrackTile = ({
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                doesUserHaveAccess,
+                hasStreamAccess,
                 fieldVisibility,
                 isOwner,
                 isStreamGated,
@@ -403,7 +403,7 @@ const TrackTile = ({
         </div>
         <div className={styles.divider} />
         <BottomRow
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isDisabled={isDisabled}
           isLoading={isLoading}
           isFavorited={isFavorited}

@@ -41,13 +41,13 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       props.isLocked
         ? null
         : props.isReposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST,
+        ? OverflowAction.UNREPOST
+        : OverflowAction.REPOST,
       props.isLocked
         ? null
         : props.isSaved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE,
+        ? OverflowAction.UNFAVORITE
+        : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && props.user?.user_id === props.currentUserId
         ? OverflowAction.ADD_TO_ALBUM
         : null,

@@ -44,9 +44,9 @@ export const ChatMessageTrack = ({
     { disabled: !permalink || !currentUserId }
   )
 
-  const { doesUserHaveAccess } = useGatedContentAccess(track ?? null)
+  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
-    !!track?.is_stream_gated && !!track?.preview_cid && !doesUserHaveAccess
+    !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
 
   const trackId = track?.track_id
 

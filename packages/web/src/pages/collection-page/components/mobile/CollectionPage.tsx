@@ -195,10 +195,10 @@ const CollectionPage = ({
 
   const trackAccessMap = useGatedContentAccessMap(tracks.entries)
   const trackList = tracks.entries.map((entry) => {
-    const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+    const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
       entry.track_id
-    ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-    const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+    ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+    const isLocked = !isFetchingNFTAccess && !hasStreamAccess
     return {
       isLoading: false,
       isSaved: entry.has_current_user_saved,

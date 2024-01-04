@@ -57,7 +57,7 @@ export type RemixOf = {
 // Gated content
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type StreamConditionsEthNFTCollection = {
+export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
   address: string
@@ -67,7 +67,7 @@ export type StreamConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type StreamConditionsSolNFTCollection = {
+export type AccessConditionsSolNFTCollection = {
   chain: Chain.Sol
   address: string
   name: string
@@ -78,16 +78,16 @@ export type StreamConditionsSolNFTCollection = {
 // nft_collection can be undefined during upload flow when user has set track to
 // collectible-gated but hasn't specified collection yet, but should always be defined
 // after user has set the collection.
-export type StreamConditionsCollectibleGated = {
+export type CollectibleGatedConditions = {
   nft_collection:
-  | StreamConditionsEthNFTCollection
-  | StreamConditionsSolNFTCollection
-  | undefined
+    | AccessConditionsEthNFTCollection
+    | AccessConditionsSolNFTCollection
+    | undefined
 }
 
-export type StreamConditionsFollowGated = { follow_user_id: number }
+export type FollowGatedConditions = { follow_user_id: number }
 
-export type StreamConditionsTipGated = { tip_user_id: number }
+export type TipGatedConditions = { tip_user_id: number }
 
 export type USDCPurchaseConditions = {
   usdc_purchase: {
@@ -96,10 +96,10 @@ export type USDCPurchaseConditions = {
   }
 }
 
-export type StreamConditions =
-  | StreamConditionsCollectibleGated
-  | StreamConditionsFollowGated
-  | StreamConditionsTipGated
+export type AccessConditions =
+  | CollectibleGatedConditions
+  | FollowGatedConditions
+  | TipGatedConditions
   | USDCPurchaseConditions
 
 export type AccessPermissions = {
@@ -122,26 +122,26 @@ export enum TrackAccessType {
 }
 
 export const isContentCollectibleGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsCollectibleGated =>
-  'nft_collection' in (streamConditions ?? {})
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is CollectibleGatedConditions =>
+  'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsFollowGated =>
-  'follow_user_id' in (streamConditions ?? {})
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is FollowGatedConditions =>
+  'follow_user_id' in (gatedConditions ?? {})
 
 export const isContentTipGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is StreamConditionsTipGated =>
-  'tip_user_id' in (streamConditions ?? {})
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is TipGatedConditions =>
+  'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  streamConditions?: Nullable<StreamConditions>
-): streamConditions is USDCPurchaseConditions =>
-  'usdc_purchase' in (streamConditions ?? {})
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is USDCPurchaseConditions =>
+  'usdc_purchase' in (gatedConditions ?? {})
 
-export type StreamingSignature = {
+export type AccessSignature = {
   data: string
   signature: string
 }
@@ -200,17 +200,18 @@ export type TrackMetadata = {
   is_unlisted: boolean
   is_available: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
-  stream_signature: Nullable<StreamingSignature>
+  stream_conditions: Nullable<AccessConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<StreamConditions>
-  access: AccessPermissions,
+  download_conditions: Nullable<AccessConditions>
+  access: AccessPermissions
   field_visibility?: FieldVisibility
   listenCount?: number
   permalink: string
   track_cid: Nullable<CID>
   orig_file_cid: Nullable<CID>
   orig_filename: Nullable<string>
+  is_downloadable: boolean
+  is_original_available: boolean
 
   // Optional Fields
   is_playlist_upload?: boolean

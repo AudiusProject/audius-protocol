@@ -10,11 +10,11 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
+  gatedContentSelectors,
   getContext,
   tracksSocialActions as socialActions,
   waitForValue,
   QueryParams,
-  gatedContentSelectors,
   encodeHashId,
   getQueryParams,
   confirmerActions,
@@ -34,7 +34,7 @@ import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
-const { getGatedTrackSignatureMap } = gatedContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -651,19 +651,18 @@ function* downloadTrack({
     const trackDownload = yield* getContext('trackDownload')
     let queryParams: QueryParams = {}
 
-    const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
-    const streamSignature =
-      track.stream_signature || streamSignatureMap[track.track_id]
-    queryParams = yield* call(getQueryParams, {
+    const trackId = track.track_id
+    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+    const nftAccessSignature = nftAccessSignatureMap[trackId]
+    queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
-      streamSignature
-    })
-
+      nftAccessSignature
+    })) as unknown as QueryParams
     queryParams.filename = filename
 
-    const encodedTrackId = encodeHashId(track.track_id)
+    const encodedTrackId = encodeHashId(trackId)
     const url = apiClient.makeUrl(
-      `/tracks/${encodedTrackId}/stream`,
+      `/tracks/${encodedTrackId}/download`,
       queryParams
     )
     yield* call(trackDownload.downloadTrack, { url, filename })
@@ -698,27 +697,13 @@ function* watchDownloadTrack() {
       if (!user) return
 
       let filename
-      // Determine if this track requires a follow to download.
-      // In the case of a stem, check the parent track
-      let requiresFollow =
-        track.download?.requires_follow && userId !== accountUserId
       if (track.stem_of?.parent_track_id) {
         const parentTrack = yield* select(getTrack, {
           id: track.stem_of?.parent_track_id
         })
-        requiresFollow =
-          requiresFollow ||
-          (parentTrack?.download?.requires_follow && userId !== accountUserId)
-
         filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
       } else {
         filename = `${track.title} - ${user.name} (Audius).mp3`
-      }
-
-      // If a follow is required and the current user is not following
-      // bail out of downloading.
-      if (requiresFollow && !user.does_current_user_follow) {
-        return
       }
 
       yield* call(downloadTrack, { track, filename })

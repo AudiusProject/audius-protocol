@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, StreamConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import { useField } from 'formik'
 
 
@@ -10,7 +10,7 @@ export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setIsStreamGated }] =
     useField<boolean>('is_stream_gated')
   const [, , { setValue: setStreamConditions }] =
-    useField<Nullable<StreamConditions>>('stream_conditions')
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
     useField<boolean>('is_unlisted')
   const [{ value: isScheduledRelease }, ,] = useField<boolean>(
@@ -36,7 +36,7 @@ export const useSetTrackAvailabilityFields = () => {
 
   const defaultTrackAvailabilityFields = {
     is_stream_gated: false,
-    stream_conditions: null as Nullable<StreamConditions>,
+    stream_conditions: null as Nullable<AccessConditions>,
     is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
     preview_start_seconds: null as Nullable<Number>,
     'field_visibility.genre': true,

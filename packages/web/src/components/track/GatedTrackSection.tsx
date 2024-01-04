@@ -11,7 +11,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   Nullable,
-  StreamConditions,
+  AccessConditions,
   gatedContentSelectors,
   removeNullable,
   tippingActions,
@@ -95,7 +95,7 @@ const messages = {
 type GatedTrackAccessSectionProps = {
   trackId: ID
   trackOwner: Nullable<User>
-  streamConditions: StreamConditions
+  streamConditions: AccessConditions
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
@@ -427,7 +427,7 @@ const UnlockingGatedTrackSection = ({
     }
 
     console.warn(
-      'No entity for gated conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [streamConditions, followee, tippedUser, goToCollection, renderArtist])
@@ -552,7 +552,7 @@ const UnlockedGatedTrackSection = ({
     }
 
     console.warn(
-      'No entity for gated conditions... should not have reached here.'
+      'No entity for stream conditions... should not have reached here.'
     )
     return null
   }, [
@@ -614,8 +614,8 @@ const UnlockedGatedTrackSection = ({
 type GatedTrackSectionProps = {
   isLoading: boolean
   trackId: ID
-  streamConditions: StreamConditions
-  doesUserHaveAccess: boolean
+  streamConditions: AccessConditions
+  hasStreamAccess: boolean
   isOwner: boolean
   wrapperClassName?: string
   className?: string
@@ -627,7 +627,7 @@ export const GatedTrackSection = ({
   isLoading,
   trackId,
   streamConditions,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isOwner,
   wrapperClassName,
   className,
@@ -712,7 +712,7 @@ export const GatedTrackSection = ({
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
-  if (doesUserHaveAccess) {
+  if (hasStreamAccess) {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedTrackSection

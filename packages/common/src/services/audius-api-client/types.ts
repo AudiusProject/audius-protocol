@@ -15,10 +15,9 @@ import {
   Supporter,
   Supporting,
   UserTip,
-  StreamConditions,
-  StreamingSignature,
+  AccessConditions,
+  AccessSignature,
   ID,
-  USDCPurchaseConditions,
   AccessPermissions
 } from '../../models'
 import { License, Nullable } from '../../utils'
@@ -144,15 +143,16 @@ export type APITrack = {
   permalink: string
   is_available: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
-  stream_signature: Nullable<StreamingSignature>
+  stream_conditions: Nullable<AccessConditions>
   is_download_gated: boolean
-  download_conditions: Nullable<USDCPurchaseConditions>
+  download_conditions: Nullable<AccessConditions>
   access: AccessPermissions
   preview_cid: Nullable<CID>
   track_cid: Nullable<CID>
   orig_file_cid: Nullable<CID>
   orig_filename: Nullable<string>
+  is_downloadable: boolean
+  is_original_available: boolean
 }
 
 export type APISearchTrack = Omit<
@@ -288,5 +288,5 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
 }
 
 export type GetNFTGatedTrackSignaturesResponse = {
-  [id: ID]: StreamingSignature
+  [id: ID]: AccessSignature
 }

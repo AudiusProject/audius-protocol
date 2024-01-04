@@ -2,12 +2,7 @@ import { Nullable } from 'utils/typeUtils'
 
 import { CollectionImage } from './Collection'
 import { Repost } from './Repost'
-import {
-  StreamConditions,
-  StreamingSignature,
-  TrackImage,
-  TrackSegment
-} from './Track'
+import { AccessConditions, TrackImage, TrackSegment } from './Track'
 import { User, UserImage, UserMultihash } from './User'
 
 type BaseUser = Pick<
@@ -81,8 +76,9 @@ export type SearchTrack = TrackImage & {
   is_unlisted: boolean
   is_scheduled_release: boolean
   is_stream_gated: boolean
-  stream_conditions: Nullable<StreamConditions>
-  stream_signature: Nullable<StreamingSignature>
+  stream_conditions: Nullable<AccessConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<AccessConditions>
   has_current_user_saved: undefined
   stem_of: null
   updated_at: string

@@ -61,10 +61,17 @@ const getStreamConditions = async ({
 }
 
 const getDownloadConditions = async ({
+  streamConditions,
   downloadConditions,
   downloadPrice: downloadPriceString,
   audiusLibs
 }) => {
+  if (streamConditions) {
+    return JSON.parse(streamConditions)
+  }
+  if (downloadConditions) {
+    return JSON.parse(downloadConditions)
+  }
   if (downloadPriceString) {
     const price = Number.parseInt(downloadPriceString)
     if (!Number.isFinite(price) || price <= 0) {
@@ -80,8 +87,6 @@ const getDownloadConditions = async ({
         splits: { [userbank.toString()]: price * 10 ** 4 }
       }
     }
-  } else if (downloadConditions) {
-    return JSON.parse(downloadConditions)
   }
   return null
 }
@@ -149,7 +154,7 @@ program
   .option('-f, --from <from>', 'The account to upload track from')
   .option(
     '-u, --price <price>',
-    'Generate a stream conditions object with the given price in cents. Cannot be used with -p'
+    'Generate a stream conditions object with the given price in cents. Cannot be used with -r'
   )
   .option(
     '-r, --stream-conditions <stream conditions>',
@@ -220,6 +225,7 @@ program
         const downloadMetadata = getDownloadMetadata(
           isDownloadable,
           await getDownloadConditions({
+            streamConditions,
             downloadConditions,
             downloadPrice,
             audiusLibs

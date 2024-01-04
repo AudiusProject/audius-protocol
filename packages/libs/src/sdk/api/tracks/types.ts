@@ -12,7 +12,7 @@ const messages = {
   invalidReleaseDateError: 'Release date should not be in the future'
 }
 
-export const StreamConditionsEthNFTCollection = z
+export const EthCollectibleGatedConditions = z
   .object({
     chain: z.literal('eth'),
     address: z.string(),
@@ -24,7 +24,7 @@ export const StreamConditionsEthNFTCollection = z
   })
   .strict()
 
-export const StreamConditionsSolNFTCollection = z
+export const SolCollectibleGatedConditions = z
   .object({
     chain: z.literal('sol'),
     address: z.string(),
@@ -34,18 +34,18 @@ export const StreamConditionsSolNFTCollection = z
   })
   .strict()
 
-export const StreamConditionsNFTCollection = z.union([
-  StreamConditionsEthNFTCollection,
-  StreamConditionsSolNFTCollection
+export const CollectibleGatedConditions = z.union([
+  EthCollectibleGatedConditions,
+  SolCollectibleGatedConditions
 ])
 
-export const StreamConditionsFollowUserId = z
+export const FollowGatedConditions = z
   .object({
     followUserId: HashId
   })
   .strict()
 
-export const StreamConditionsTipUserId = z
+export const TipGatedConditions = z
   .object({
     tipUserId: HashId
   })
@@ -98,16 +98,27 @@ export const createUploadTrackMetadataSchema = () =>
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
       .nullable(),
     isStreamGated: z.optional(z.boolean()),
-    streamConditions: z.optional(
-      z.union([
-        StreamConditionsNFTCollection,
-        StreamConditionsFollowUserId,
-        StreamConditionsTipUserId,
-        USDCPurchaseConditions
-      ])
-    ),
+    streamConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     isDownloadGated: z.optional(z.boolean()),
-    downloadConditions: z.optional(USDCPurchaseConditions),
+    downloadConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     releaseDate: z.optional(
       z.date().max(new Date(), { message: messages.invalidReleaseDateError })
     ),
@@ -132,7 +143,9 @@ export const createUploadTrackMetadataSchema = () =>
     audioUploadId: z.optional(z.string()),
     previewCid: z.optional(z.string()),
     origFileCid: z.optional(z.string()),
-    origFilename: z.optional(z.string())
+    origFilename: z.optional(z.string()),
+    isDownloadable: z.optional(z.string()),
+    isOriginalAvailable: z.optional(z.string())
   })
 
 export type TrackMetadata = z.input<

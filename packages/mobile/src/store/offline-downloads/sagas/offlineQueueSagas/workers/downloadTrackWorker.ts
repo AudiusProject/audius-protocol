@@ -7,12 +7,12 @@ import type {
 } from '@audius/common'
 import {
   getQueryParams,
-  gatedContentSelectors,
   removeNullable,
   SquareSizes,
   encodeHashId,
   accountSelectors,
-  getContext
+  getContext,
+  gatedContentSelectors
 } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
@@ -48,7 +48,7 @@ import { shouldCancelJob } from '../../utils/shouldCancelJob'
 import { downloadFile } from './downloadFile'
 
 const { getUserId } = accountSelectors
-const { getGatedTrackSignatureMap } = gatedContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 const MAX_RETRY_COUNT = 3
 const MAX_REQUEUE_COUNT = 3
@@ -158,7 +158,7 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata) {
-  const { track_id, user, stream_signature } = track
+  const { track_id, title, user } = track
 
   const { creator_node_endpoint } = user
   const creatorNodeEndpoints = creator_node_endpoint?.split(',')
@@ -169,17 +169,18 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
+  const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+  const nftAccessSignature = nftAccessSignatureMap[track_id]
   let queryParams: QueryParams = {}
-  const streamSignatureMap = yield* select(getGatedTrackSignatureMap)
-  const streamSignature = stream_signature || streamSignatureMap[track_id]
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,
-    streamSignature
+    nftAccessSignature
   })
-  queryParams.filename = `${track_id}.mp3`
+  // todo: pass in correct filename and whether to download original or mp3
+  queryParams.filename = `${title}.mp3`
 
   const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/stream`,
+    `/tracks/${encodedTrackId}/download`,
     queryParams
   )
   const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
