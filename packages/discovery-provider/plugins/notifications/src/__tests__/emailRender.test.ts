@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { expect, jest, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { DMEntityType } from '../email/notifications/types'
@@ -24,6 +24,9 @@ const initDB = async (processor: Processor) => {
 
 describe('Render email', () => {
   let processor: Processor
+
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
   beforeEach(async () => {
     const setup = await setupTest()

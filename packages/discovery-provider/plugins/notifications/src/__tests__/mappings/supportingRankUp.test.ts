@@ -20,6 +20,9 @@ import {
 describe('Supporting Rank Up Notification', () => {
   let processor: Processor
 
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
