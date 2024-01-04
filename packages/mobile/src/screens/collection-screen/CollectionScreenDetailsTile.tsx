@@ -78,8 +78,10 @@ const useRefetchLineupOnTrackAdd = (
   const trackCount = useSelector((state) =>
     typeof collectionId !== 'number'
       ? 0
-      : getCollection(state, { id: collectionId })?.track_count
+      : getCollection(state, { id: collectionId })?.playlist_contents.track_ids
+          .length
   )
+
   const previousTrackCount = usePrevious(trackCount)
   const dispatch = useDispatch()
 

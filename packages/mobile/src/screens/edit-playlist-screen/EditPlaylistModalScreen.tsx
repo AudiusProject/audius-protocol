@@ -4,7 +4,6 @@ import type { EditPlaylistValues } from '@audius/common'
 import {
   SquareSizes,
   cacheCollectionsActions,
-  collectionPageLineupActions as tracksActions,
   cacheCollectionsSelectors
 } from '@audius/common'
 import { Formik } from 'formik'
@@ -36,7 +35,6 @@ export const EditPlaylistModalScreen = () => {
     (values: EditPlaylistValues) => {
       if (playlist) {
         dispatch(editPlaylist(playlist.playlist_id, values))
-        dispatch(tracksActions.fetchLineupMetadatas())
       }
     },
     [dispatch, playlist]
