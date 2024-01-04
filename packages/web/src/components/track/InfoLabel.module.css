@@ -22,10 +22,6 @@
   text-transform: capitalize;
   word-break: keep-all;
   text-decoration: none;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .labelValue > * {

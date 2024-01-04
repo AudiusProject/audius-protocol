@@ -7,7 +7,6 @@ type AlbumBacklinkMetadata = {
   playlist_id: number
   playlist_name: string
   permalink: string
-  playlist_owner_id: number
 }
 
 export const trackRouter = router({
@@ -38,12 +37,7 @@ export const trackRouter = router({
         },
         size: 1,
         sort: [{ created_at: { order: 'desc' } }],
-        _source: [
-          'playlist_id',
-          'playlist_name',
-          'permalink',
-          'playlist_owner_id',
-        ],
+        _source: ['playlist_id', 'playlist_name', 'permalink'],
       })
 
       const hits = found.hits.hits.map((h) => h._source)
