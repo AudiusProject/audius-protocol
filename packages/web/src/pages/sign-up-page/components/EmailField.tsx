@@ -14,6 +14,7 @@ export const EmailField = () => {
   const [, { error }] = useField('email')
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
+  // Used to ensure the hint doesn't go away while validation is ocurring
   const hadError = usePrevious(emailInUse)
 
   const signInLink = (

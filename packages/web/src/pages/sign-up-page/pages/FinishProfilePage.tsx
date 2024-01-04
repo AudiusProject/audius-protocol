@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import {
-  MAX_DISPLAY_NAME_LENGTH,
+  finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
 import {
@@ -14,7 +14,6 @@ import {
 import { Formik, Form, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -45,19 +44,7 @@ export type FinishProfileValues = {
   displayName: string
 }
 
-const formSchema = toFormikValidationSchema(
-  z.object({
-    displayName: z.string().max(MAX_DISPLAY_NAME_LENGTH, ''),
-    profileImage: z.object({
-      url: z.string()
-    }),
-    coverPhoto: z
-      .object({
-        url: z.string().optional()
-      })
-      .optional()
-  })
-)
+const formSchema = toFormikValidationSchema(finishProfileSchema)
 
 export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
