@@ -37,7 +37,23 @@ new_dashboard_wallet_users_data = [
             "message": "Connecting Audius user id 2 at 1686252024",
         },
     },
+    {
+        # 0x09439dc8d52396c29e4414664C84f36Cf9A8d500
+        # eaedfd9295db6c513c59d77c14f49ba2ae8aa5910433594cc144fecd0b085790
+        "wallet": "0x09439dc8d52396c29e4414664C84f36Cf9A8d500",
+        "user_id": 5,
+        "user_signature": {
+            "signature": "c8fc661fb47f76d165154e2906561c5f18b58bf4f39704d630144730207fc1d475f3127456622d2c48d4c828837d995dade7e696bb91c808aa93985120a8884f1c",
+            "message": "Connecting Audius protocol dashboard wallet 0x09439dc8d52396c29e4414664C84f36Cf9A8d500 at 1686252024",
+        },
+    },
 ]
+
+
+user_wallets = {
+    5: "0xE4491e30992d53873301a7a28Ae2ff7F6Fa818f2"
+    # de5e5f8fbae5683eeb2ec93553d0d4189f40af50f45064543d6a36d764ba0e1a
+}
 
 second_set_new_dashboard_wallet_users_data = [
     {
@@ -114,6 +130,20 @@ def test_index_dashboard_wallet_user(app, mocker):
                 )
             },
         ],
+        "CreateDashboardWalletUserTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": new_dashboard_wallet_users_data[3]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{"wallet": "{new_dashboard_wallet_users_data[3]["wallet"]}", "user_signature": {{"signature": "{new_dashboard_wallet_users_data[3]["user_signature"]["signature"]}", "message": "{new_dashboard_wallet_users_data[3]["user_signature"]["message"]}"}}}}""",
+                        "_signer": "0x09439dc8d52396c29e4414664C84f36Cf9A8d500",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -132,7 +162,10 @@ def test_index_dashboard_wallet_user(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": user_id, "wallet": f"user{user_id}wallet"}
+            {
+                "user_id": user_id,
+                "wallet": user_wallets.get(user_id, None) or f"user{user_id}wallet",
+            }
             for user_id in range(1, 6)
         ],
         "dashboard_wallet_users": [
@@ -157,7 +190,7 @@ def test_index_dashboard_wallet_user(app, mocker):
 
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 4
+        assert len(all_dwus) == 5
         for expected_item in new_dashboard_wallet_users_data:
             found_matches = [
                 item
@@ -291,6 +324,112 @@ def test_index_dashboard_wallet_user(app, mocker):
                 )
             },
         ],
+        "CreateDashboardWalletUserInvalidTx9": [
+            {
+                # User signature - wrong wallet specified in msg
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "user_signature": {"signature": "a7a2d4a4e33d40baad13dea3e3b83c8df67eee6a9977b76cc224c11586ac7578794fc6489d25f984aaafe7c5186b13dcf37fed94f700f46c6071e5def61e311a1c", "message": "Connecting Audius protocol dashboard wallet 0x1D72Df50f7d9538e988bDf1533EAc22fb0075EBc at 1686252026"}}""",
+                        "_signer": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx10": [
+            {
+                # Missing user signature
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x1D72Df50f7d9538e988bDf1533EAc22fb0075EBc"}""",
+                        "_signer": "0x1D72Df50f7d9538e988bDf1533EAc22fb0075EBc",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx11": [
+            {
+                # Not the right message in user signature
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "user_signature": {"signature": "ec37a30631a1748a107ad815c215a0668710c0bb8d10e6eb562d52dbcfcb82dc1a512177bb956d8c2c5b2f184ab9c7f2be69a70ee90b1ba6f5512a639e63df6c1b", "message": "Hey there"}}""",
+                        "_signer": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx12": [
+            {
+                # Bad user signature format
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "user_signature": "e9f6039fd06f96dbbee9d8d933424f2fa32dfa25075331f762adbd2b28f2dfba7b2bcec2f03b73757a8369766a82854b723f767c07b7bfda57938c2ec09b286d1b"}',
+                        "_signer": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx13": [
+            {
+                # Timestamp in user signature message too old
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B", "user_signature": {"signature": "284d678115dcc59f90a55cf1935fd8b691f9122f97db0d5d07688c59cee40377467e234ffc2ccb6501b35f05dbdae29cbb9b7e49537400410ec40880297694251c", "message": "Connecting Audius protocol dashboard wallet 0xD5d54a844e59C71e1Fed525D5ee620c492296D8B at 1686200400"}}""",
+                        "_signer": "0xD5d54a844e59C71e1Fed525D5ee620c492296D8B",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx14": [
+            {
+                # Used wallet signature when tx signer was wallet
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        # 23eedde12523b5bb837183d40b457469e15ab3c0bf731ee002ab984d726ea0c5
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "wallet_signature": {"signature": "8429bb5f85c34e532515205cf937f4fcc16f9d4e9118c836e23c8c089acf85264632588569a1231b2e4b2fb8d78cc94f11e686a957db6c508231d19f4ab6c8cb1b", "message": "Connecting Audius user id 5 at 1686252026"}}""",
+                        "_signer": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx15": [
+            {
+                # Used user signature when tx signer was user
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 5,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "user_signature": {"signature": "02192d53849b7cdf39b3fe81630dcbc8a9b34e57be0f0ef9dbeea0d6a3aaef4e50c381c7db74c7dd953ff1d8996c1cc3c482dcf618a23dc9ad6af446b4adbe871c", "message": "Connecting Audius protocol dashboard wallet 0x5B905C04b15e3BD152224E9738dA726DF6d103B6 at 1686252026"}}""",
+                        "_signer": user_wallets[5],
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -312,7 +451,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
         # make sure no new rows were added
-        assert len(all_dwus) == 4
+        assert len(all_dwus) == 5
 
     # # Test invalid delete txs
     tx_receipts = {
@@ -382,7 +521,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
         # make sure no new rows were added or deleted
-        assert len(all_dwus) == 4
+        assert len(all_dwus) == 5
 
     expected_deleted_items = [
         new_dashboard_wallet_users_data[0],
@@ -440,7 +579,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         )
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 4
+        assert len(all_dwus) == 5
 
         for expected_item in expected_deleted_items:
             found_matches = [
@@ -495,7 +634,7 @@ def test_index_dashboard_wallet_user(app, mocker):
 
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 4
+        assert len(all_dwus) == 5
         for expected_item in second_set_new_dashboard_wallet_users_data:
             found_matches = [
                 item

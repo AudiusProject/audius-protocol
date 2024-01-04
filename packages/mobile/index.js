@@ -7,7 +7,7 @@ import 'react-native-gesture-handler'
 // JS runtime check, which we disable here.
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes'
 ViewReactNativeStyleAttributes.scaleY = true
-import { AppRegistry, LogBox } from 'react-native'
+import { AppRegistry, LogBox, Text } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
 import { Crypto } from '@peculiar/webcrypto'
 
@@ -31,6 +31,10 @@ LogBox.ignoreLogs(['new NativeEventEmitter'])
 // Ignore LogBox logs for preferred log messages in external
 // React Native debug tools
 LogBox.ignoreAllLogs()
+
+// Prevent device font-scaling
+Text.defaultProps = Text.defaultProps || {}
+Text.defaultProps.allowFontScaling = false
 
 AppRegistry.registerComponent(appName, () => App)
 TrackPlayer.registerPlaybackService(() => require('./audio-service'))

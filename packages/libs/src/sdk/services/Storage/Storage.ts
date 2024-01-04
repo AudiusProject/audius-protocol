@@ -132,8 +132,8 @@ export class Storage implements StorageService {
       data: formData,
       headers: formData.getBoundary
         ? {
-          'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-        }
+            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+          }
         : undefined,
       onUploadProgress: (progressEvent) =>
         onProgress?.(progressEvent.loaded, progressEvent.total)
@@ -226,7 +226,9 @@ export class Storage implements StorageService {
         if (response.ok) {
           return await response.json()
         } else {
-          lastErr = `HTTP error: ${response.status} ${response.statusText}, ${await response.text()}`
+          lastErr = `HTTP error: ${response.status} ${
+            response.statusText
+          }, ${await response.text()}`
         }
       } catch (e: any) {
         lastErr = e

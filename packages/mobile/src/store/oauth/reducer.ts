@@ -14,7 +14,7 @@ import {
 } from './actions'
 import type { AUTH_RESPONSE_MESSAGE_TYPE } from './types'
 
-type TwitterInfo = {
+export type TwitterInfo = {
   uuid: any
   profile: any
   profileImage: any
@@ -23,7 +23,7 @@ type TwitterInfo = {
   twitterId?: any
 }
 
-type InstagramInfo = {
+export type InstagramInfo = {
   uuid: any
   profile: any
   profileImage: any

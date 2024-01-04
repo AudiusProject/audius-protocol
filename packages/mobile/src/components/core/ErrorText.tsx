@@ -1,19 +1,24 @@
-import type { TextProps } from 'app/components/core'
-import { Text } from 'app/components/core'
+import { css } from '@emotion/native'
+
+import type { TextProps } from '@audius/harmony-native'
+import { Text } from '@audius/harmony-native'
 
 type ErrorTextProps = TextProps
 
+const wrap = css({
+  // Ensure that word wrapping occurs
+  flexShrink: 1
+})
+
 export const ErrorText = (props: ErrorTextProps) => {
+  const { style, ...other } = props
   return (
     <Text
-      fontSize='medium'
-      weight='demiBold'
-      color='error'
-      style={{
-        // Ensure that word wrapping occurs
-        flexShrink: 1
-      }}
-      {...props}
+      variant='body'
+      size='m'
+      color='danger'
+      style={[wrap, style]}
+      {...other}
     />
   )
 }

@@ -26,6 +26,7 @@
 		23C6F6592977C46F00F66384 /* trending_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6542977C46F00F66384 /* trending_matrix.riv */; };
 		23C6F65A2977C46F00F66384 /* notifications_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6552977C46F00F66384 /* notifications_matrix.riv */; };
 		23C6F65B2977C46F00F66384 /* feed_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6562977C46F00F66384 /* feed_matrix.riv */; };
+		253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 253BCCF92B324974007DC74C /* NSureSDK.m */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */; };
@@ -76,6 +77,8 @@
 		23C6F6542977C46F00F66384 /* trending_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending_matrix.riv; path = Assets/trending_matrix.riv; sourceTree = "<group>"; };
 		23C6F6552977C46F00F66384 /* notifications_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications_matrix.riv; path = Assets/notifications_matrix.riv; sourceTree = "<group>"; };
 		23C6F6562977C46F00F66384 /* feed_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = feed_matrix.riv; path = Assets/feed_matrix.riv; sourceTree = "<group>"; };
+		253BCCF82B324974007DC74C /* NSureSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSureSDK.h; path = AudiusReactNative/NSureSDK.h; sourceTree = "<group>"; };
+		253BCCF92B324974007DC74C /* NSureSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSureSDK.m; path = AudiusReactNative/NSureSDK.m; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
 		453FC09EC343ACA359EB312C /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		622045C334F0F16E3CF4011F /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -138,6 +141,8 @@
 		13B07FAE1A68108700A75B9A /* AudiusReactNative */ = {
 			isa = PBXGroup;
 			children = (
+				253BCCF82B324974007DC74C /* NSureSDK.h */,
+				253BCCF92B324974007DC74C /* NSureSDK.m */,
 				23C6F63D2977C23800F66384 /* Assets */,
 				838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */,
 				A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */,
@@ -494,6 +499,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */,
 				13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */,

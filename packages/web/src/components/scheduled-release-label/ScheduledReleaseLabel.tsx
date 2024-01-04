@@ -16,7 +16,7 @@ export const ScheduledReleaseLabel = ({
   released,
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted) {
+  if (!released || !isUnlisted || moment.utc(released).isBefore(moment())) {
     return null
   }
   return (
@@ -41,7 +41,7 @@ export const ScheduledReleaseGiantLabel = ({
   released,
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted) {
+  if (!released || !isUnlisted || moment.utc(released).isBefore(moment())) {
     return null
   }
 
@@ -54,8 +54,9 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendarMonth />
       <Text color='accent' variant='title'>
-        Releases on{' '}
-        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+        Releases
+        {' ' +
+          moment.utc(released).local().format('M/D/YY [@] h:mm A') +
           ' ' +
           getLocalTimezone()}
       </Text>

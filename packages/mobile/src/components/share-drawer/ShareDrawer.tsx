@@ -236,13 +236,14 @@ export const ShareDrawer = () => {
       icon: React.ReactElement
       style?: Record<string, string>
       callback: (() => void) | (() => Promise<void>)
-    }[] = [shareToChatAction, shareToTwitterAction]
+    }[] = [shareToChatAction]
 
     if (shouldIncludeTikTokSoundAction) {
       result.push(shareSoundToTiktokAction)
     }
 
     if (isShareableTrack) {
+      result.push(shareToTwitterAction)
       result.push(shareToInstagramStoriesAction)
       result.push(shareVideoToTiktokAction)
       result.push(shareToSnapchatAction)

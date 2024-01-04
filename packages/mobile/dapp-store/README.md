@@ -48,7 +48,7 @@ The version code needs to be a monotonically increasing number.
 
 ### Preparing the apk
 cd ../android
-./gradlew app:assembleRelease
+./gradlew app:assembleRelease -PreactNativeArchitectures=arm64-v8a
 cd ../dapp-store
 
 ### Validating the release

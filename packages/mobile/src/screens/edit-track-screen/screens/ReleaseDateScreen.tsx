@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
 import {
+  Theme,
   getLocalTimezone,
   remixSettingsActions,
   removeNullable
@@ -18,7 +19,7 @@ import { TextField } from 'app/components/fields'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
@@ -37,8 +38,8 @@ const messages = {
   description:
     'Specify a release date for your music or schedule it to be released in the future.',
   done: 'Done',
-  releaseNowRadio: 'Release immediately',
-  scheduleReleaseDateRadio: 'Schedule a release date',
+  releaseNowRadio: 'Release Immediately',
+  scheduleReleaseDateRadio: 'Select a Release Date',
   futureReleaseHint: (timezone: string) =>
     `Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (${timezone}).`,
   pastReleaseHint:
@@ -50,8 +51,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     borderRadius: 99,
     backgroundColor: palette.secondary,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
     alignItems: 'center',
     gap: spacing(1)
   },
@@ -91,6 +91,7 @@ export const ScheduledReleaseRadioField = (props) => {
   const { selected } = props
   const { primary } = useThemeColors()
   const styles = useStyles()
+  const theme = useThemeVariant()
 
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
@@ -126,6 +127,12 @@ export const ScheduledReleaseRadioField = (props) => {
       setIsTimeOpen(false)
     },
     [releaseDateValue, setReleaseDateValue]
+  )
+  const currentDate = new Date()
+
+  // Add one year to the current date
+  const oneYearFromNow = new Date(
+    currentDate.setFullYear(currentDate.getFullYear() + 1)
   )
 
   return (
@@ -178,10 +185,11 @@ export const ScheduledReleaseRadioField = (props) => {
             mode='date'
             onConfirm={handleDateChange}
             onCancel={() => setIsDateOpen(false)}
+            maximumDate={oneYearFromNow}
             display='inline'
-            themeVariant={'light'}
-            isDarkModeEnabled={false}
             accentColor={primary}
+            themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
+            isDarkModeEnabled={theme !== Theme.DEFAULT}
           />
           <DateTimePickerModal
             isVisible={isTimeOpen}
@@ -190,6 +198,8 @@ export const ScheduledReleaseRadioField = (props) => {
             onConfirm={handleTimeChange}
             onCancel={() => setIsTimeOpen(false)}
             accentColor={primary}
+            themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
+            isDarkModeEnabled={theme !== Theme.DEFAULT}
           />
           {selected && releaseDateValue ? (
             <HelpCallout
@@ -226,8 +236,10 @@ export const ReleaseNowRadioField = (props) => {
       </Text>
       {selected ? (
         <View style={styles.todayPill}>
-          <IconCalendarMonth color='staticWhite' />
-          <Text color='staticWhite'>Today</Text>
+          <IconCalendarMonth color='staticWhite' size='s' />
+          <Text color='staticWhite' size='s'>
+            Today
+          </Text>
         </View>
       ) : null}
     </View>

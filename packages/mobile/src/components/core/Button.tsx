@@ -24,7 +24,7 @@ import { useThemeColors, useThemePalette } from 'app/utils/theme'
 
 import { Link } from './Link'
 
-type ButtonVariant =
+export type ButtonVariant =
   | 'primary'
   | 'primaryAlt'
   | 'secondary'
@@ -339,7 +339,7 @@ export const Button = (props: ButtonProps) => {
     // darken the color by 10% for the press state
     if (customColor) {
       const c = new Color(customColor)
-      return c.light(0.1).hex()
+      return c.darken(0.1).hex()
     }
 
     // If no custom color is specified

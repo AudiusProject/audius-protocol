@@ -21,7 +21,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  const { track_count, is_private, is_album } = collection ?? {}
+  const { track_count, is_private } = collection ?? {}
 
   const isDisabled = track_count === 0
 
@@ -39,7 +39,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
         }
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
-      {is_private && !is_album ? (
+      {is_private ? (
         <PublishButton
           collectionId={collectionId}
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}

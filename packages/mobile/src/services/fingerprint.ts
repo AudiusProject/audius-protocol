@@ -11,7 +11,7 @@ export const fingerprintClient = new FingerprintClient<FingerprintJsProAgent>({
   endpoint,
   identityService,
   initFingerprint: async (apiKey, endpoint) => {
-    return new FingerprintJsProAgent(apiKey, undefined, endpoint)
+    return new FingerprintJsProAgent({ apiKey, endpointUrl: endpoint })
   },
   getFingerprint: (client, { tag, linkedId }) => {
     return client.getVisitorId(tag, linkedId)

@@ -25,7 +25,7 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
     clearErrorOnChange = true,
     transformValueOnChange,
     transformValueOnBlur,
-    debouncedValidationMs,
+    debouncedValidationMs = 0,
     helperText,
     ...other
   } = props
@@ -36,7 +36,7 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
   const debouncedValidateField = useDebouncedCallback(
     (field: string) => validateField(field),
     [validateField],
-    500
+    debouncedValidationMs
   )
 
   useEffect(() => {

@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   }
 })
 
-type LoadingSpinnerProps = {
+export type LoadingSpinnerProps = {
   /**
    * @deprecated The color of the spinner
    */

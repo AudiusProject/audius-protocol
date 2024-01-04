@@ -1,15 +1,17 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useAddFundsModal,
   buyUSDCActions,
   PurchaseMethod,
   DEFAULT_PURCHASE_AMOUNT_CENTS,
-  PurchaseVendor
+  PurchaseVendor,
+  buyUSDCSelectors,
+  BuyUSDCStage
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
@@ -19,6 +21,8 @@ import { isMobile } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
+
+const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
   addFunds: 'Add Funds',
@@ -30,6 +34,7 @@ type Page = 'add-funds' | 'crypto-transfer'
 export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
   const dispatch = useDispatch()
+  const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const mobile = isMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
@@ -37,6 +42,13 @@ export const AddFundsModal = () => {
   const handleClosed = useCallback(() => {
     setPage('add-funds')
   }, [setPage])
+
+  useEffect(() => {
+    // Close modal if the buy USDC stage flips to finish
+    if (buyUSDCStage === BuyUSDCStage.FINISH) {
+      onClose()
+    }
+  }, [buyUSDCStage, onClose])
 
   const handleContinue = useCallback(
     (purchaseMethod: PurchaseMethod, purchaseVendor?: PurchaseVendor) => {
