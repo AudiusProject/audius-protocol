@@ -51,7 +51,7 @@ export class ChallengesApi extends BaseAPI {
    * to allow the challenge to be claimed multiple times, but only once per
    * completed instance.
    *
-   * @hidden
+   * @hidden subject to change
    */
   public async generateSpecifier(request: GenerateSpecifierRequest) {
     const args = await parseParams(
@@ -73,7 +73,7 @@ export class ChallengesApi extends BaseAPI {
         return `${args.buyerUserId}=>${args.trackId}`
       case ChallengeId.REFERRALS:
       case ChallengeId.VERIFIED_REFERRALS:
-        return `${args.userId}=>${args.userId}`
+        return `${args.userId}=>${args.referredUserId}`
       default:
         throw new Error(`Unknown challenge ID: ${args.challengeId}`)
     }
@@ -81,7 +81,9 @@ export class ChallengesApi extends BaseAPI {
 
   /**
    * Claims a reward on behalf of a user.
-   * @hidden
+   *
+   * @hidden subject to change
+   *
    * @see {@link generateSpecifier} to create the specifier argument.
    */
   public async claimReward(request: ClaimRewardsRequest) {
