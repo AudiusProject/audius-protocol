@@ -10,8 +10,7 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
-  getLocalTimezone
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
@@ -429,7 +428,7 @@ export const DetailsTile = ({
                           .utc(track.release_date)
                           .local()
                           .format('M/D/YY @ h:mm A ') +
-                        getLocalTimezone()}
+                          dayjs().format('z')}
                     </HarmonyText>
                   </View>
                 ) : null}

@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import {
-  Theme,
-  getLocalTimezone,
-  remixSettingsActions,
-  removeNullable
-} from '@audius/common'
+import { Theme, remixSettingsActions, removeNullable } from '@audius/common'
 import { useField } from 'formik'
 import moment from 'moment'
 import { Dimensions, View } from 'react-native'
@@ -206,7 +201,7 @@ export const ScheduledReleaseRadioField = (props) => {
               style={styles.releaseDateInput}
               content={
                 moment(releaseDateValue).isAfter(moment())
-                  ? messages.futureReleaseHint(getLocalTimezone())
+                  ? messages.futureReleaseHint(dayjs().format('z'))
                   : messages.pastReleaseHint
               }
             />

@@ -12,7 +12,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   isPremiumContentUSDCPurchaseGated,
-  getLocalTimezone
+  dayjs
 } from '@audius/common'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -135,6 +135,11 @@ export const LineupTileStats = ({
   showArtistPick,
   releaseDate
 }: Props) => {
+  console.log(
+    'asdf releaseDate: ',
+    releaseDate,
+    moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')
+  )
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
   const { neutralLight4, accentPurple } = useThemeColors()
@@ -211,7 +216,7 @@ export const LineupTileStats = ({
               {' ' +
                 moment.utc(releaseDate).local().format('M/D/YY @ h:mm A') +
                 ' ' +
-                getLocalTimezone()}
+                dayjs().format('z')}
             </Text>
           </View>
         ) : null}

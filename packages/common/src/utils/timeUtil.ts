@@ -60,5 +60,17 @@ export const utcToLocalTime = (date: string) => {
 }
 
 export const getLocalTimezone = () => {
+  dayjs.extend(timezone)
+  dayjs.extend(advancedFormat)
+  dayjs.tz.setDefault(dayjs.tz.guess())
+
+  console.log(
+    'asdf getLocalTimezone: ',
+    dayjs().tz(dayjs.tz.guess()).format('z'),
+    dayjs.tz(dayjs(), 'America/New_York'),
+    dayjs.tz(dayjs()),
+    dayjs(),
+    dayjs.tz.guess()
+  )
   return dayjs.tz(dayjs()).format('z')
 }

@@ -5,6 +5,7 @@ import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
+import { initial } from 'lodash'
 import moment from 'moment'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -82,7 +83,7 @@ export const ReleaseDateField = () => {
 
   const initialValues = useMemo(() => {
     return {
-      [RELEASE_DATE]: trackReleaseDate ?? undefined,
+      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day'),
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
         : moment().format('h:mm'),
@@ -94,7 +95,7 @@ export const ReleaseDateField = () => {
         : ReleaseDateType.RELEASE_NOW
     }
   }, [trackReleaseDate])
-
+  console.log('asdf initial values: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
@@ -161,13 +162,32 @@ export const ReleaseDateField = () => {
   )
 }
 
+const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
+  const truncatedReleaseDate = moment(day).startOf('day')
+  const hour = parseInt(time.split(':')[0])
+  let adjustedHours = releaseDateHour
+
+  if (meridian === 'PM' && hour < 12) {
+    adjustedHours += 12
+  } else if (meridian === 'AM' && hour === 12) {
+    adjustedHours = 0
+  }
+  const combinedDateTime = truncatedReleaseDate
+    .add(adjustedHours, 'hours')
+    .add(time.split(':')[1], 'minutes')
+
+  return combinedDateTime
+}
+
 const RadioItems = (props: any) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-  const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
+  const [releaseDateTimeField, , { setValue: setReleaseDateHour }] =
+    useField(RELEASE_DATE_HOUR)
+  const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
+    useTrackField<ReleaseDateValue>(RELEASE_DATE)
 
-  const [, , { setValue: setReleaseDateMeridian }] = useField(
-    RELEASE_DATE_MERIDIAN
-  )
+  const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
+    useField(RELEASE_DATE_MERIDIAN)
 
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
@@ -177,6 +197,7 @@ const RadioItems = (props: any) => {
     if (releaseDateField.value === undefined) {
       return
     }
+    console.log('asdf useeffect date: ', releaseDateField.value)
     const truncatedReleaseDate = moment(releaseDateField.value)
 
     const today = moment().startOf('day')
@@ -190,7 +211,38 @@ const RadioItems = (props: any) => {
     } else {
       setTimePeriod(TimePeriodType.PRESENT)
     }
-  }, [releaseDateField.value, setReleaseDateHour, setReleaseDateMeridian])
+  }, [
+    releaseDateField.value,
+    setReleaseDateHour,
+    setReleaseDateMeridian,
+    setTrackReleaseDate
+  ])
+
+  useEffect(() => {
+    if (releaseDateField.value === undefined) {
+      return
+    }
+    console.log('asdf useeffect meridian: ')
+    const truncatedReleaseDate = moment(releaseDateField.value)
+
+    const today = moment().startOf('day')
+
+    if (moment(truncatedReleaseDate).isBefore(today)) {
+      setTimePeriod(TimePeriodType.PAST)
+    } else if (moment(truncatedReleaseDate).isAfter(today)) {
+      setTimePeriod(TimePeriodType.FUTURE)
+    } else {
+      setTimePeriod(TimePeriodType.PRESENT)
+    }
+  }, [releaseDateMeridianField.value, setTrackReleaseDate])
+
+  const onTimeChange = useCallback((e: { target: { value: string } }) => {
+    mergeDateTimeValues(
+      releaseDateField.value,
+      e.target.value,
+      releaseDateMeridianField.value
+    )
+  }, [])
 
   return (
     <>
@@ -246,6 +298,7 @@ const RadioItems = (props: any) => {
                   }
                   return value
                 }}
+                onBlur={onTimeChange}
               />
               <SelectMeridianField />
             </>
