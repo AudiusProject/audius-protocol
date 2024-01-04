@@ -17,8 +17,8 @@ export default async function handler(req, res) {
   console.log('httpResponse', !!httpResponse)
 
   if (!httpResponse) {
-    res.statusCode = 200
-    res.end()
+    res.statusCode = 500
+    res.end(pageContext.errorWhileRendering)
     return
   }
 

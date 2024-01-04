@@ -1,5 +1,5 @@
 import { isEqual } from 'lodash'
-import { createSelectorCreator, defaultMemoize } from 'reselect'
+import { createSelectorCreator, lruMemoize } from 'reselect'
 
 export const shallowCompare = <T>(a: T, b: T) =>
   a &&
@@ -14,11 +14,11 @@ export const areSetsEqual = <T>(a: Set<T>, b: Set<T>) =>
 
 // A selector creator that memoizes based on a shallow object comparison.
 export const createShallowSelector = createSelectorCreator(
-  defaultMemoize,
+  lruMemoize,
   shallowCompare
 )
 
 export const createDeepEqualSelector = createSelectorCreator(
-  defaultMemoize,
+  lruMemoize,
   isEqual
 )
