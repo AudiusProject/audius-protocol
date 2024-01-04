@@ -27,6 +27,7 @@ import { SingleTrackEditValues } from '../types'
 
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
+import { IS_UNLISTED } from './AccessAndSaleField'
 
 const messages = {
   title: 'Release Date',
@@ -42,9 +43,10 @@ const RELEASE_DATE = 'release_date'
 const RELEASE_DATE_HOUR = 'release_date_hour'
 const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
 const RELEASE_DATE_TYPE = 'release_date_type'
+const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 
 export type ReleaseDateFormValues = {
-  [RELEASE_DATE]: string | undefined
+  [RELEASE_DATE]: string
   [RELEASE_DATE_HOUR]: string
   [RELEASE_DATE_MERIDIAN]: string
   [RELEASE_DATE_TYPE]: string
@@ -75,15 +77,21 @@ const timeValidationSchema = z.object({
 })
 
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
+type IsScheduledReleaseValue = SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]
 
 export const ReleaseDateField = () => {
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [, , { setValue: setIsScheduledRelease }] =
+    useTrackField<IsScheduledReleaseValue>(IS_SCHEDULED_RELEASE)
+  const [, , { setValue: setIsUnlisted }] =
+    useTrackField<IsScheduledReleaseValue>(IS_UNLISTED)
+
   const trackReleaseDate = trackReleaseDateField.value
 
   const initialValues = useMemo(() => {
     return {
-      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day'),
+      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day').toString(),
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
         : moment().format('h:mm'),
@@ -98,27 +106,16 @@ export const ReleaseDateField = () => {
   console.log('asdf initial values: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
-        setTrackReleaseDate(null)
-        return
+      const mergedReleaseDate = mergeDateTimeValues(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
+      if (mergedReleaseDate.isAfter(moment())) {
+        // set is scheduled release
+        setIsScheduledRelease(true)
+        setIsUnlisted(true)
+        console.log('asdf set is scheduled release')
+      } else {
+        setIsScheduledRelease(false)
       }
-      const releaseDateValue = values[RELEASE_DATE]
-      const releaseDateHour = parseInt(values[RELEASE_DATE_HOUR].split(':')[0])
-      const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
-
-      const truncatedReleaseDate = moment(releaseDateValue).startOf('day')
-
-      let adjustedHours = releaseDateHour
-      if (releaseDateMeridian === 'PM' && releaseDateHour < 12) {
-        adjustedHours += 12
-      } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
-        adjustedHours = 0
-      }
-      const combinedDateTime = truncatedReleaseDate
-        .add(adjustedHours, 'hours')
-        .add(values[RELEASE_DATE_HOUR].split(':')[1], 'minutes')
-
-      setTrackReleaseDate(combinedDateTime.toString() ?? null)
+      setTrackReleaseDate(mergedReleaseDate.toString())
     },
     [setTrackReleaseDate]
   )
@@ -165,7 +162,7 @@ export const ReleaseDateField = () => {
 const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
   const truncatedReleaseDate = moment(day).startOf('day')
   const hour = parseInt(time.split(':')[0])
-  let adjustedHours = releaseDateHour
+  let adjustedHours = hour
 
   if (meridian === 'PM' && hour < 12) {
     adjustedHours += 12
@@ -206,8 +203,6 @@ const RadioItems = (props: any) => {
       setTimePeriod(TimePeriodType.PAST)
     } else if (moment(truncatedReleaseDate).isAfter(today)) {
       setTimePeriod(TimePeriodType.FUTURE)
-      setReleaseDateHour('12:00')
-      setReleaseDateMeridian(ReleaseDateMeridian.AM)
     } else {
       setTimePeriod(TimePeriodType.PRESENT)
     }
@@ -231,17 +226,29 @@ const RadioItems = (props: any) => {
       setTimePeriod(TimePeriodType.PAST)
     } else if (moment(truncatedReleaseDate).isAfter(today)) {
       setTimePeriod(TimePeriodType.FUTURE)
+      setReleaseDateHour('12:00')
+      setReleaseDateMeridian(ReleaseDateMeridian.AM)
     } else {
       setTimePeriod(TimePeriodType.PRESENT)
     }
   }, [releaseDateMeridianField.value, setTrackReleaseDate])
 
   const onTimeChange = useCallback((e: { target: { value: string } }) => {
-    mergeDateTimeValues(
+    const mergedReleaseDate = mergeDateTimeValues(
       releaseDateField.value,
       e.target.value,
       releaseDateMeridianField.value
-    )
+    ).toString()
+    const today = moment().startOf('day')
+
+    console.log('asdf merged: ', mergedReleaseDate, moment().toString())
+    if (moment(mergedReleaseDate).isBefore(today)) {
+      setTimePeriod(TimePeriodType.PAST)
+      console.log('asdf setting past')
+    } else {
+      setTimePeriod(TimePeriodType.FUTURE)
+      console.log('asdf setting future')
+    }
   }, [])
 
   return (
@@ -288,6 +295,7 @@ const RadioItems = (props: any) => {
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
                 transformValueOnBlur={(value) => {
+                  console.log('asdf transform blur')
                   if (value.includes(':')) {
                     return value
                   }

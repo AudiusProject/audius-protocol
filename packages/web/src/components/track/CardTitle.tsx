@@ -28,6 +28,7 @@ const messages = {
 type CardTitleProps = {
   className: string
   isUnlisted: boolean
+  isScheduledRelease: boolean
   isRemix: boolean
   isPremium: boolean
   isPodcast: boolean
@@ -36,6 +37,7 @@ type CardTitleProps = {
 
 export const CardTitle = ({
   className,
+  isScheduledRelease,
   isUnlisted,
   isRemix,
   isPremium,
@@ -70,7 +72,7 @@ export const CardTitle = ({
       </div>
     )
   } else {
-    content = isUnlisted ? (
+    content = isUnlisted && !isScheduledRelease ? (
       <Tooltip
         text={messages.hiddenTrackTooltip}
         mouseEnterDelay={0}

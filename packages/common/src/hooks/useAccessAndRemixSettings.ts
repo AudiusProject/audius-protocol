@@ -16,6 +16,7 @@ type UseAccessAndRemixSettingsProps = {
   isRemix: boolean
   initialPremiumConditions: Nullable<PremiumConditions>
   isInitiallyUnlisted: boolean
+  isScheduledRelease: boolean
 }
 
 /**
@@ -33,7 +34,8 @@ export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
   initialPremiumConditions,
-  isInitiallyUnlisted
+  isInitiallyUnlisted,
+  isScheduledRelease
 }: UseAccessAndRemixSettingsProps) => {
   const hasNoCollectibles = useSelector((state: CommonState) => {
     const { ethCollectionMap, solCollectionMap } =
@@ -43,14 +45,15 @@ export const useAccessAndRemixSettings = ({
     const numSolCollectibles = Object.keys(solCollectionMap).length
     return numEthCollectibles + numSolCollectibles === 0
   })
-
+  const isReleased = (!isInitiallyUnlisted && isScheduledRelease)
   const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-
+    !isUpload && (isReleased) && !initialPremiumConditions
+  console.log('asdf isInitiallyPublic: ', isInitiallyPublic)
   const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+    isReleased && !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
 
   const isInitiallySpecialAccess =
+    isReleased &&
     !isUpload &&
     !!(
       isPremiumContentFollowGated(initialPremiumConditions) ||
@@ -58,7 +61,7 @@ export const useAccessAndRemixSettings = ({
     )
 
   const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
+    isReleased && !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
@@ -85,8 +88,7 @@ export const useAccessAndRemixSettings = ({
   const noCollectibleGateFields =
     noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden = !isUpload && !isInitiallyUnlisted
-
+  const noHidden = isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
   return {
     noUsdcGate,
     noSpecialAccessGate,

@@ -116,6 +116,7 @@ const TrackTile = ({
   isReposted,
   isOwner,
   isUnlisted,
+  isScheduledRelease,
   isPremium,
   premiumConditions,
   doesUserHaveAccess,
@@ -371,7 +372,7 @@ const TrackTile = ({
               styles.topRight
             )}
           >
-            {isUnlisted ? (
+            {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}

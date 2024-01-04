@@ -26,6 +26,7 @@ const trackMetadataSchema = {
   followee_reposts: null,
   followee_saves: null,
   is_current: true,
+  is_scheduled_release: false,
   is_unlisted: false,
   is_premium: false,
   premium_conditions: null,
@@ -92,9 +93,9 @@ const collectionMetadataSchema = {
 export const newCollectionMetadata = (fields?: any, validate = false) => {
   const validFields = validate
     ? pick(
-        fields,
-        Object.keys(collectionMetadataSchema).concat(['playlist_id'])
-      )
+      fields,
+      Object.keys(collectionMetadataSchema).concat(['playlist_id'])
+    )
     : fields
   return {
     ...collectionMetadataSchema,

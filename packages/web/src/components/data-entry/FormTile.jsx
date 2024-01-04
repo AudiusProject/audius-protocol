@@ -358,6 +358,7 @@ const AdvancedForm = (props) => {
   if (showAvailability) {
     availabilityState = {
       ...availabilityState,
+      scheduled_release: props.defaultFields.is_scheduled_release,
       unlisted: props.defaultFields.is_unlisted,
       genre: props.defaultFields.field_visibility.genre,
       mood: props.defaultFields.field_visibility.mood,
