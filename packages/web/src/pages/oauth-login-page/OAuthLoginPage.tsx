@@ -58,7 +58,8 @@ export const OAuthLoginPage = () => {
     apiKey,
     appName,
     userEmail,
-    authorize
+    authorize,
+    txParams
   } = useOAuthSetup()
 
   const clearErrors = () => {
@@ -228,6 +229,7 @@ export const OAuthLoginPage = () => {
           tx={tx as WriteOnceTx}
           userEmail={userEmail}
           isLoggedIn={isLoggedIn}
+          txParams={txParams}
         />
       )}
       {isLoggedIn ? (

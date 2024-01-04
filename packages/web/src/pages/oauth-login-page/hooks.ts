@@ -21,7 +21,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { messages } from './messages'
 import {
   authWrite,
-  connectUserToDashboardWallet,
   formOAuthResponse,
   getDeveloperApp,
   getIsAppAuthorized,
@@ -262,7 +261,8 @@ export const useOAuthSetup = () => {
     async ({
       account,
       grantCreated,
-      onError
+      onError,
+      txSignature
     }: {
       account: User
       grantCreated?: boolean | undefined
@@ -275,6 +275,7 @@ export const useOAuthSetup = () => {
         errorMessage: string
         error?: Error
       }) => void
+      txSignature?: { message: string; signature: string }
     }) => {
       const jwt = await formOAuthResponse({
         account,
@@ -287,7 +288,8 @@ export const useOAuthSetup = () => {
               shouldRedirect: true
             })
           )
-        }
+        },
+        txSignature
       })
       if (jwt == null) {
         onError({ isUserError: false, errorMessage: messages.miscError })
@@ -399,6 +401,7 @@ export const useOAuthSetup = () => {
     }) => void
   }) => {
     let shouldCreateWriteGrant = false
+    let txSignature: { message: string; signature: string } | undefined
 
     if (scope === 'write') {
       try {
@@ -428,31 +431,20 @@ export const useOAuthSetup = () => {
       }
     } else if (scope === 'write_once') {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
-      try {
-        await connectUserToDashboardWallet({
-          userId: encodeHashId(account.user_id),
-          wallet: txParams!.wallet,
-          walletSignature: txParams!.wallet_signature
-        })
-      } catch (e: unknown) {
-        let error = 'Connecting dashboard wallet failed'
-        if (typeof e === 'string') {
-          error = e
-        } else if (e instanceof Error) {
-          error = e.message
-        }
-        onError({
-          isUserError: false,
-          errorMessage: messages.miscError,
-          error: e instanceof Error ? e : new Error(error)
-        })
-        return
-      }
+      const message = `Connecting Audius protocol dashboard wallet ${
+        txParams!.wallet
+      } at ${Date.now()}`
+      // Make signature and return
+      const { signature } =
+        await audiusBackendInstance.signDiscoveryNodeRequest(message)
+      txSignature = { message, signature }
     }
+
     await formResponseAndRedirect({
       account,
       grantCreated: shouldCreateWriteGrant,
-      onError
+      onError,
+      txSignature
     })
   }
 
@@ -465,6 +457,7 @@ export const useOAuthSetup = () => {
     appName,
     userEmail,
     authorize,
-    tx
+    tx,
+    txParams: txParams as WriteOnceParams
   }
 }

@@ -6,6 +6,8 @@ export const messages = {
   alreadyAuthorizedContinuePrompt: (appName: string) => `Sign in to ${appName}`,
   permissionsRequestedHeader: 'This application will receive',
   readOnlyAccountAccess: 'Read-only access to your account',
+  connectDashboardWalletAccess:
+    'Permission to link this wallet to your account',
   writeAccountAccess: 'Read/Write access to your account',
   emailLoading: 'Email loading',
   emailAddressAccess: 'Your Email Address',

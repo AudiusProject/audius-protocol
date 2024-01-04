@@ -5,17 +5,44 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from '../OAuthLoginPage.module.css'
 import { messages } from '../messages'
-import { WriteOnceTx } from '../utils'
+import { WriteOnceParams, WriteOnceTx } from '../utils'
+import { PropsWithChildren } from 'react'
+
+type PermissionTextProps = PropsWithChildren<{}>
+const PermissionText = ({ children }: PermissionTextProps) => {
+  return <span className={styles.permissionText}>{children}</span>
+}
+
+type PermissionDetailProps = PropsWithChildren<{
+  className?: string
+}>
+const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
+  return (
+    <div className={cn(styles.permissionDetailTextContainer)}>
+      <span
+        className={cn(
+          styles.permissionText,
+          styles.permissionDetailText,
+          className
+        )}
+      >
+        {children}
+      </span>
+    </div>
+  )
+}
 
 export const PermissionsSection = ({
   scope,
   isLoggedIn,
-  userEmail
+  userEmail,
+  txParams
 }: {
   scope: string | string[] | null
   tx: WriteOnceTx | null
   isLoggedIn: boolean
   userEmail?: string | null
+  txParams?: WriteOnceParams
 }) => {
   return (
     <>
@@ -31,7 +58,7 @@ export const PermissionsSection = ({
               [styles.visibilityIconWrapper]: scope === 'read'
             })}
           >
-            {scope === 'write' ? (
+            {scope === 'write' || scope === 'write_once' ? (
               <IconPencil
                 className={cn(styles.permissionIcon)}
                 width={18}
@@ -47,25 +74,25 @@ export const PermissionsSection = ({
           </div>
 
           <div className={styles.permissionTextContainer}>
-            <span className={styles.permissionText}>
+            <PermissionText>
               {scope === 'write'
                 ? messages.writeAccountAccess
+                : scope === 'write_once'
+                ? messages.connectDashboardWalletAccess
                 : messages.readOnlyAccountAccess}
-            </span>
-            {scope !== 'write' ? null : (
-              <div className={cn(styles.permissionDetailTextContainer)}>
-                <p
-                  className={cn(
-                    styles.permissionText,
-                    styles.permissionDetailText
-                  )}
-                >
-                  {messages.doesNotGrantAccessTo}
-                  <br />
-                  {messages.walletsOrDMs}
-                </p>
-              </div>
-            )}
+            </PermissionText>
+            {scope === 'write' ? (
+              <PermissionDetail>
+                {messages.doesNotGrantAccessTo}
+                <br />
+                {messages.walletsOrDMs}
+              </PermissionDetail>
+            ) : null}
+            {scope === 'write_once' ? (
+              <PermissionDetail>
+                {txParams?.wallet.slice(0, 4)}...{txParams?.wallet.slice(-4)}
+              </PermissionDetail>
+            ) : null}
           </div>
         </div>
         <div
@@ -82,30 +109,24 @@ export const PermissionsSection = ({
             />
           </div>
           <div className={styles.permissionTextContainer}>
-            <span className={styles.permissionText}>
-              {messages.emailAddressAccess}
-            </span>
+            <PermissionText>{messages.emailAddressAccess}</PermissionText>
             {isLoggedIn ? (
-              <div className={cn(styles.permissionDetailTextContainer)}>
-                <span
-                  className={cn(
-                    styles.permissionText,
-                    styles.permissionDetailText,
-                    {
-                      [styles.permissionTextExtraLight]: !userEmail
-                    }
-                  )}
-                >
-                  {userEmail == null ? (
-                    <>
-                      <LoadingSpinner className={styles.loadingSpinner} />{' '}
-                      {messages.emailLoading}&#8230;
-                    </>
-                  ) : (
-                    userEmail
-                  )}
-                </span>
-              </div>
+              <PermissionDetail
+                className={
+                  userEmail == null
+                    ? styles.permissionTextExtraLight
+                    : undefined
+                }
+              >
+                {userEmail == null ? (
+                  <>
+                    <LoadingSpinner className={styles.loadingSpinner} />{' '}
+                    {messages.emailLoading}&#8230;
+                  </>
+                ) : (
+                  userEmail
+                )}
+              </PermissionDetail>
             ) : null}
           </div>
         </div>

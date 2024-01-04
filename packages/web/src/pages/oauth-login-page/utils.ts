@@ -103,11 +103,13 @@ export const getFormattedAppAddress = ({
 export const formOAuthResponse = async ({
   account,
   userEmail,
+  txSignature, // Only applicable to scope = write_once
   onError
 }: {
   account: User
   userEmail?: string | null
   onError: () => void
+  txSignature?: { message: string; signature: string }
 }) => {
   let email: string
   if (!userEmail) {
@@ -170,6 +172,7 @@ export const formOAuthResponse = async ({
     handle: account?.handle,
     verified: account?.is_verified,
     profilePicture,
+    ...(txSignature ? { txSignature: txSignature } : {}),
     sub: userId,
     iat: timestamp
   }
@@ -198,29 +201,6 @@ export const authWrite = async ({ userId, appApiKey }: CreateGrantRequest) => {
   })
 }
 
-export const getIsWalletAlreadyConnected = async (wallet: string) => {
-  const sdk = await audiusSdk()
-  const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
-    wallets: [wallet]
-  })
-  if (!isEmpty(res)) {
-    return true
-  }
-  return false
-}
-
-export const connectUserToDashboardWallet = async ({
-  userId,
-  wallet,
-  walletSignature
-}: CreateDashboardWalletUserRequest) => {
-  const sdk = await audiusSdk()
-  await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
-    userId,
-    wallet,
-    walletSignature
-  })
-}
 export const getDeveloperApp = async (address: string) => {
   const sdk = await audiusSdk()
   const developerApp = await sdk.developerApps.getDeveloperApp({ address })
@@ -249,7 +229,6 @@ export type WriteOnceTx = 'connect_dashboard_wallet' // | ...
 
 export type ConnectDashboardWalletParams = {
   wallet: string
-  wallet_signature: { signature: string; message: string }
 }
 export type WriteOnceParams = ConnectDashboardWalletParams // | ...
 
@@ -263,27 +242,12 @@ export const validateWriteOnceParams = ({
   let error = null
   let txParams: WriteOnceParams | null = null
   if (tx === 'connect_dashboard_wallet') {
-    if (!rawParams.wallet || !rawParams.wallet_signature) {
-      error = messages.writeOnceParamsError
-      return { error, txParams }
-    }
-    let parsedWalletSignature: any
-    try {
-      parsedWalletSignature = JSON.parse(rawParams.wallet_signature)
-    } catch {
-      error = messages.writeOnceParamsError
-      return { error, txParams }
-    }
-    if (!parsedWalletSignature.message || !parsedWalletSignature.signature) {
+    if (!rawParams.wallet) {
       error = messages.writeOnceParamsError
       return { error, txParams }
     }
     txParams = {
-      wallet: rawParams.wallet,
-      wallet_signature: {
-        message: parsedWalletSignature.message,
-        signature: parsedWalletSignature.signature
-      }
+      wallet: rawParams.wallet
     }
   } else {
     // Unknown 'tx' value
