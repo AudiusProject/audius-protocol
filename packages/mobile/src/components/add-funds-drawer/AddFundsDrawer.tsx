@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import {
+  PurchaseVendor,
   useAddFundsModal,
   useUSDCManualTransferModal,
   buyUSDCActions,
@@ -52,7 +53,7 @@ export const AddFundsDrawer = () => {
   const openCardFlow = useCallback(() => {
     dispatch(
       buyUSDCActions.onrampOpened({
-        vendor: purchaseVendorState,
+        vendor: purchaseVendorState ?? PurchaseVendor.STRIPE,
         purchaseInfo: {
           desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
         }
