@@ -41,6 +41,9 @@ export const trackRouter = router({
       })
 
       const hits = found.hits.hits.map((h) => h._source)
-      return hits.length > 0 ? hits[0] : null
+      if (hits.length === 0) {
+        throw new TRPCError({ code: 'NOT_FOUND' })
+      }
+      return hits[0]
     }),
 })
