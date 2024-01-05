@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Sql } from 'postgres'
 import type { queueAsPromised } from 'fastq'
 import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
