@@ -37,7 +37,10 @@ const app: Express = express()
  * Define API routes
  */
 
-app.post('/api/upload', uploadController.postUploadXml(dbService, sdkService.getSdk()))
+app.post(
+  '/api/upload',
+  uploadController.postUploadXml(dbService, sdkService.getSdk())
+)
 app.get('/api/health_check', (req: Request, res: Response) => {
   res.status(200).send('DDEX is alive!')
 })
