@@ -1,29 +1,36 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import BN from 'bn.js'
-import Button from 'components/Button'
-import { Position } from 'components/Tooltip'
-import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
+import { IconLink } from '@audius/stems'
 import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
-import { useAccount } from 'store/account/hooks'
-import { useUser } from 'store/cache/user/hooks'
-import { Address } from 'types'
-import { formatShortWallet } from 'utils/format'
-import { usePushRoute } from 'utils/effects'
-import { accountPage, AUDIUS_DAPP_URL, isCryptoPage } from 'utils/routes'
-import { useEthBlockNumber } from 'store/cache/protocol/hooks'
+import BN from 'bn.js'
 import clsx from 'clsx'
-import { useLocation } from 'react-router-dom'
-import { createStyles } from 'utils/mobile'
-import desktopStyles from './AppBar.module.css'
-import mobileStyles from './AppBarMobile.module.css'
-import { useIsMobile } from 'utils/hooks'
+import Button from 'components/Button'
+import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import DisplayAudio from 'components/DisplayAudio'
+import { Position } from 'components/Tooltip'
 import UserImage from 'components/UserImage'
 import useOpenLink from 'hooks/useOpenLink'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { audiusSdk } from 'services/Audius/sdk'
+import { useAccount } from 'store/account/hooks'
+import { useEthBlockNumber } from 'store/cache/protocol/hooks'
+import { useUser } from 'store/cache/user/hooks'
+import { Address } from 'types'
 import getActiveStake from 'utils/activeStake'
-import { IconLink } from '@audius/stems'
+import { usePushRoute } from 'utils/effects'
+import { formatShortWallet } from 'utils/format'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
+import { AUDIUS_DAPP_URL, accountPage, isCryptoPage } from 'utils/routes'
+import {
+  AUDIUS_NETWORK_ID,
+  ETH_NETWORK_ID,
+  disableRefreshAfterNetworkChange,
+  switchNetwork
+} from 'utils/switchNetwork'
+import desktopStyles from './AppBar.module.css'
+import mobileStyles from './AppBarMobile.module.css'
 
+const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
@@ -124,27 +131,60 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   )
 }
 
-const ConnectProfileButton = () => {
-  const loadOauth = () => {
-    audiusSdk.oauth.init({
-      successCallback: profile => {
-        // TODO(nkang)
-        console.log(profile)
-      },
+const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
+  const { user } = useUser({ wallet })
+
+  const handleSuccess = async profile => {
+    const sdk = await audiusSdk()
+    disableRefreshAfterNetworkChange.value = true
+    const switched = await switchNetwork(AUDIUS_NETWORK_ID)
+    if (switched) {
+      await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
+        wallet: user?.wallet ?? wallet,
+        userId: profile.userId,
+        userSignature: profile.txSignature
+      })
+      const switchedBack = await switchNetwork(ETH_NETWORK_ID)
+      if (switchedBack) {
+        window.ethereum.on('chainChanged', () => {
+          disableRefreshAfterNetworkChange.value = false
+        })
+      } else {
+        disableRefreshAfterNetworkChange.value = false
+      }
+    }
+  }
+
+  const loadOauth = async () => {
+    const sdk = await audiusSdk()
+    sdk.oauth.init({
+      env: env === 'production' ? 'production' : 'staging',
+      successCallback: handleSuccess,
       errorCallback: errorMessage => {
         // Error calllback
         console.error(errorMessage)
       }
     })
+    console.log('initcompleteybyp')
   }
 
-  const loginWithAudius = () => {
-    audiusSdk.oauth.login({ scope: 'read' })
+  const loginWithAudius = async () => {
+    const sdk = await audiusSdk()
+    sdk.oauth.login({
+      scope: 'write_once',
+      params: {
+        tx: 'connect_dashboard_wallet',
+        wallet
+      }
+    })
   }
-
   useEffect(() => {
     loadOauth()
   }, [])
+
+  if (!user || !user?.wallet) {
+    return null
+  }
 
   return (
     <Button
@@ -210,8 +250,8 @@ const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
               isLoggedIn && wallet && <UserAccountSnippet wallet={wallet} />
             )}
           </div>
-          {isLoggedIn && wallet && hasConnectedAudiusAccount ? null : (
-            <ConnectProfileButton />
+          {hasConnectedAudiusAccount || !wallet || !isLoggedIn ? null : (
+            <ConnectProfileButton wallet={wallet} />
           )}
         </div>
       )}
