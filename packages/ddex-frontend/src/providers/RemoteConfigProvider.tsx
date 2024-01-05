@@ -4,10 +4,10 @@ import {
   useContext,
   useState,
   useEffect,
-} from "react";
-import optimizely, { Client } from "@optimizely/optimizely-sdk";
-import { useEnvVars } from "../providers/EnvVarsProvider";
-import { FeatureFlags } from "../utils/constants";
+} from 'react'
+import optimizely, { Client } from '@optimizely/optimizely-sdk'
+import { useEnvVars } from '../providers/EnvVarsProvider'
+import { FeatureFlags } from '../utils/constants'
 
 type FlagDefaults = Record<FeatureFlags, boolean>
 const flagDefaults: FlagDefaults = {
@@ -17,49 +17,55 @@ const flagDefaults: FlagDefaults = {
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 type RemoteConfigContextType = {
-  didInit: boolean;
-  getFeatureEnabled: ({ flag, userId }: { flag: FeatureFlags; userId?: number | undefined; }) => boolean;
-};
+  didInit: boolean
+  getFeatureEnabled: ({
+    flag,
+    userId,
+  }: {
+    flag: FeatureFlags
+    userId?: number | undefined
+  }) => boolean
+}
 
 const RemoteConfigContext = createContext<RemoteConfigContextType>({
   didInit: false,
   getFeatureEnabled: () => false,
-});
+})
 
 export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
-  const [didInit, setDidInit] = useState(false);
-  const [id, setId] = useState<number | null>(null);
-  const [client, setClient] = useState<Client | null>(null);
-  const { optimizelySdkKey } = useEnvVars();
+  const [didInit, setDidInit] = useState(false)
+  const [id, setId] = useState<number | null>(null)
+  const [client, setClient] = useState<Client | null>(null)
+  const { optimizelySdkKey } = useEnvVars()
 
   const createOptimizelyClient = () => {
-    optimizely.setLogLevel('warn');
+    optimizely.setLogLevel('warn')
     return optimizely.createInstance({
-      sdkKey: optimizelySdkKey || "MX4fYBgANQetvmBXGpuxzF",
+      sdkKey: optimizelySdkKey || 'MX4fYBgANQetvmBXGpuxzF',
       datafileOptions: {
         autoUpdate: true,
-        updateInterval: 5000 // Poll for updates every 5s
+        updateInterval: 5000, // Poll for updates every 5s
       },
       errorHandler: {
         handleError: (error: any) => {
-          console.error(error);
-        }
-      }
+          console.error(error)
+        },
+      },
     })
   }
 
   const getFeatureFlagSessionId = () => {
     const item = window.localStorage.getItem(
       FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY
-    );
-    return item ? parseInt(item) : null;
+    )
+    return item ? parseInt(item) : null
   }
 
   const setFeatureFlagSessionId = (id: number) => {
     window.localStorage?.setItem(
       FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY,
       id.toString()
-    );
+    )
   }
 
   const generateSessionId = () => {
@@ -77,18 +83,18 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
       setId(savedSessionId)
     }
     if (didInit) {
-      return;
+      return
     }
 
     const opClient = createOptimizelyClient()
 
     if (opClient) {
       try {
-        await opClient!.onReady();
-        setDidInit(true);
-        setClient(opClient);
+        await opClient!.onReady()
+        setDidInit(true)
+        setClient(opClient)
       } catch (error) {
-        console.error('Error initializing Optimizely:', error);
+        console.error('Error initializing Optimizely:', error)
       }
     }
   }
@@ -98,30 +104,41 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
   /**
    * Gets whether a given feature flag is enabled.
    */
-  const getFeatureEnabled = ({ flag, userId }: {
-    flag: FeatureFlags;
-    userId?: number;
+  const getFeatureEnabled = ({
+    flag,
+    userId,
+  }: {
+    flag: FeatureFlags
+    userId?: number
   }): boolean => {
     const defaultVal = flagDefaults[flag]
 
     // If the client is not ready yet, return early with `null`
     if (!client || (!id && !userId)) return defaultVal
 
-    const isFeatureEnabled = ({ flag, userId }: { flag: FeatureFlags; userId?: number; }) => {
+    const isFeatureEnabled = ({
+      flag,
+      userId,
+    }: {
+      flag: FeatureFlags
+      userId?: number
+    }) => {
       if (!client) {
         return defaultVal
       }
 
-      return client.isFeatureEnabled(flag, userId ? userId.toString() : id!.toString(), {
-        userId: userId || id,
-      })
+      return client.isFeatureEnabled(
+        flag,
+        userId ? userId.toString() : id!.toString(),
+        {
+          userId: userId || id,
+        }
+      )
     }
 
     try {
       if (didInit) {
-        return (
-          isFeatureEnabled({ flag, userId })
-        )
+        return isFeatureEnabled({ flag, userId })
       }
       return defaultVal
     } catch (err) {
@@ -130,20 +147,20 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    void init();
+    void init()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const contextValue = {
     didInit,
     getFeatureEnabled,
-  };
+  }
   return (
     <RemoteConfigContext.Provider value={contextValue}>
       {children}
     </RemoteConfigContext.Provider>
-  );
-};
+  )
+}
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useRemoteConfig = () => useContext(RemoteConfigContext);
+export const useRemoteConfig = () => useContext(RemoteConfigContext)
