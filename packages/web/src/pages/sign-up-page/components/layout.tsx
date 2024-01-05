@@ -22,7 +22,7 @@ import {
 } from '@audius/harmony'
 import styled, { CSSObject } from '@emotion/styled'
 import { animated, useSpring } from '@react-spring/web'
-import { useFormik, useFormikContext } from 'formik'
+import { useFormikContext } from 'formik'
 
 import { useMedia } from 'hooks/useMedia'
 

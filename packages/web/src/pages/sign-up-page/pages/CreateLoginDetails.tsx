@@ -47,7 +47,6 @@ const EmailField = () => {
       await schema.parseAsync({
         email: existingEmailValue.value
       })
-      console.log('Setting value to', existingEmailValue.value)
       setValue(existingEmailValue.value)
     } catch (e) {
       // invalid schema means we don't update the initial value

@@ -103,7 +103,7 @@ export const CreateLoginDetailsScreen = () => {
       onSubmit={handleSubmit}
       validationSchema={loginDetailsFormikSchema}
     >
-      {({ isValid, dirty, errors, values }) => (
+      {({ isValid, dirty }) => (
         <Page>
           <Heading
             heading={messages.title}
