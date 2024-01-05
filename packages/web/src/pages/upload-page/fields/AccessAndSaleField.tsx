@@ -418,7 +418,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsPremiumValue,
       setIsUnlistedValue,
       setPremiumConditionsValue,
-      setPreviewValue
+      setPreviewValue,
+      isUnlisted
     ]
   )
 

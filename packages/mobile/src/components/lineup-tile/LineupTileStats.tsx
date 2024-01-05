@@ -135,11 +135,6 @@ export const LineupTileStats = ({
   showArtistPick,
   releaseDate
 }: Props) => {
-  console.log(
-    'asdf releaseDate: ',
-    releaseDate,
-    moment(releaseDate).format('M/D/YY @ h:mm A')
-  )
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
   const { neutralLight4, accentPurple } = useThemeColors()

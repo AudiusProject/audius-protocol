@@ -18,10 +18,11 @@ ddex-init:
     - run:
         name: lint & typecheck
         command: |
-          npx turbo run verify --filter=@audius/ddex
+          npx turbo run verify --filter=@audius/ddex --filter=@audius/ddex-frontend
 
     - persist_to_workspace:
         root: ./
         paths:
           - node_modules
           - packages/ddex/node_modules
+          - packages/ddex-frontend/node_modules

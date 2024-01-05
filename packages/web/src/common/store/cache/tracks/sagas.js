@@ -17,7 +17,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
-import moment from 'moment'
 import {
   call,
   fork,

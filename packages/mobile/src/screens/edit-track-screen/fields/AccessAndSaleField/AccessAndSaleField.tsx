@@ -77,7 +77,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       return [messages.hidden, ...fieldVisibilityLabels]
     }
     return [messages.public]
-  }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
+  }, [premiumConditions, isUnlisted, fieldVisibilityLabels, isScheduledRelease])
 
   return (
     <ContextualMenu

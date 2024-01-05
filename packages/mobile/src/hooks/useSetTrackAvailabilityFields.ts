@@ -11,7 +11,7 @@ export const useSetTrackAvailabilityFields = () => {
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
     useField<boolean>('is_unlisted')
-  const [{ value: isScheduledRelease }, , {}] = useField<boolean>(
+  const [{ value: isScheduledRelease }, ,] = useField<boolean>(
     'is_scheduled_release'
   )
 

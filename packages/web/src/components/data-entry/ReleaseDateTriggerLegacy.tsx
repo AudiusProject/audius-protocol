@@ -1,62 +1,27 @@
 import { useMemo, useState } from 'react'
 
-import {
-  PremiumConditionsCollectibleGated,
-  PremiumConditionsFollowGated,
-  PremiumConditionsTipGated,
-  PremiumConditionsUSDCPurchase,
-  Track,
-  TrackAvailabilityType,
-  accountSelectors,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig,
-  Nullable,
-  PremiumConditions,
-  dayjs,
-  getLocalTimezone
-} from '@audius/common'
+import { Track, dayjs } from '@audius/common'
 import { Flex } from '@audius/harmony'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCalendar,
-  IconCart,
-  IconCollectible,
-  IconHidden,
-  IconSpecialAccess,
-  IconVisibilityPublic
-} from '@audius/stems'
-import { set, get } from 'lodash'
+import { Button, ButtonSize, ButtonType, IconCalendar } from '@audius/stems'
 import moment from 'moment'
-import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Text } from 'components/typography'
-import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
   RELEASE_DATE,
   RELEASE_DATE_HOUR,
   RELEASE_DATE_MERIDIAN,
   RELEASE_DATE_TYPE,
   ReleaseDateRadioItems,
-  ReleaseDateField,
   ReleaseDateType,
-  SelectReleaseDate,
   mergeDateTimeValues,
   ReleaseDateFormValues,
   timeValidationSchema
 } from 'pages/upload-page/fields/ReleaseDateField'
-import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
 import { formatCalendarTime } from 'utils/dateUtils'
 
 import { ContextualMenu } from './ContextualMenu'
 import styles from './ReleaseDateTriggerLegacy.module.css'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Release Date',
@@ -67,22 +32,6 @@ const messages = {
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
   hidden: 'Hidden'
-}
-
-enum PremiumTrackMetadataField {
-  IS_PREMIUM = 'is_premium',
-  PREMIUM_CONDITIONS = 'premium_conditions',
-  PREVIEW = 'preview_start_seconds'
-}
-
-enum UnlistedTrackMetadataField {
-  SCHEDULED_RELEASE = 'scheduled_release',
-  UNLISTED = 'unlisted',
-  GENRE = 'genre',
-  MOOD = 'mood',
-  TAGS = 'tags',
-  SHARE = 'share',
-  PLAYS = 'plays'
 }
 
 type TrackMetadataState = {
@@ -107,11 +56,6 @@ export const ReleaseDateTriggerLegacy = (
   const trackReleaseDate = props.metadataState.release_date
   const [trackReleaseDateState, setTrackReleaseDateState] = useState(
     moment(trackReleaseDate).toString()
-  )
-  console.log(
-    'asdf trackReleaseDate: ',
-    trackReleaseDate,
-    trackReleaseDateState
   )
   const initialValues = useMemo(() => {
     return {
@@ -153,7 +97,6 @@ export const ReleaseDateTriggerLegacy = (
       newState.is_unlisted = true
     }
 
-    console.log('asdf edit state: ', newState)
     setTrackReleaseDateState(newState.release_date)
     didUpdateState(newState)
   }

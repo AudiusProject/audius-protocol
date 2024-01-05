@@ -37,8 +37,8 @@ const twitterApi = {
   credentialsType: 'same-origin' as CredentialsType,
   headers: {
     'Content-Type': 'application/json',
-    origin: Config.AUDIUS_URL,
-    referrer: Config.AUDIUS_URL
+    origin: Config.AUDIUS_URL!,
+    referrer: Config.AUDIUS_URL!
   }
 }
 

@@ -19,8 +19,6 @@ export const ScheduledReleaseLabel = ({
   if (!released || !isUnlisted || moment(released).isBefore(moment())) {
     return null
   }
-  console.log('asdf released: ', released, isUnlisted)
-
   return (
     <div
       className={cn(

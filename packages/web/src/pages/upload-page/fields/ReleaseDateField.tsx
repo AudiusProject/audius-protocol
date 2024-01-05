@@ -125,7 +125,7 @@ export const ReleaseDateField = () => {
       }
       setTrackReleaseDate(mergedReleaseDate.toString())
     },
-    [setTrackReleaseDate]
+    [setTrackReleaseDate, setIsScheduledRelease, setIsUnlisted]
   )
 
   const renderValue = useCallback(() => {
@@ -222,20 +222,23 @@ export const SelectReleaseDate = () => {
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
-  const onTimeChange = useCallback((e: { target: { value: string } }) => {
-    const mergedReleaseDate = mergeDateTimeValues(
-      releaseDateField.value,
-      e.target.value,
-      releaseDateMeridianField.value
-    ).toString()
-    const today = moment().startOf('day')
+  const onTimeChange = useCallback(
+    (e: { target: { value: string } }) => {
+      const mergedReleaseDate = mergeDateTimeValues(
+        releaseDateField.value,
+        e.target.value,
+        releaseDateMeridianField.value
+      ).toString()
+      const today = moment().startOf('day')
 
-    if (moment(mergedReleaseDate).isBefore(today)) {
-      setTimePeriod(TimePeriodType.PAST)
-    } else {
-      setTimePeriod(TimePeriodType.FUTURE)
-    }
-  }, [])
+      if (moment(mergedReleaseDate).isBefore(today)) {
+        setTimePeriod(TimePeriodType.PAST)
+      } else {
+        setTimePeriod(TimePeriodType.FUTURE)
+      }
+    },
+    [releaseDateField.value, releaseDateMeridianField.value]
+  )
   useEffect(() => {
     if (releaseDateField.value === undefined) {
       return

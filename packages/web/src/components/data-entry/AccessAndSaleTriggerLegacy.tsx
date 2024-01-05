@@ -191,7 +191,8 @@ export const AccessAndSaleTriggerLegacy = (
     savedPremiumConditions,
     tempPremiumConditions,
     initialPremiumConditions,
-    preview
+    preview,
+    isScheduledRelease
   ])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {

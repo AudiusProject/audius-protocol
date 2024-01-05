@@ -43,7 +43,7 @@ export const ReleaseNowConfirmationDrawer = () => {
     if (currentRouteName === 'Track') {
       navigation.goBack()
     }
-  }, [dispatch, trackId, navigation])
+  }, [track, dispatch, trackId, navigation])
 
   return (
     <ConfirmationDrawer

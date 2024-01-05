@@ -57,6 +57,7 @@ const { getTrack } = cacheTracksSelectors
 const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
+  editingToast: 'Saving changes...',
   editToast: 'Changes saved!'
 }
 
@@ -84,6 +85,8 @@ function* editPlaylistAsync(action) {
   const audiusBackend = yield getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield getContext('imageUtils')
 
+  yield put(toast({ content: messages.editingToast }))
+
   formFields.description = squashNewLines(formFields.description)
 
   // Updated the stored account playlist shortcut
@@ -102,6 +105,9 @@ function* editPlaylistAsync(action) {
       .filter(removeNullable)
   })
 
+  // Optimistic update #1 to quickly update metadata and track lineup
+  yield call(optimisticUpdateCollection, playlist)
+
   playlist = yield call(
     updatePlaylistArtwork,
     playlist,
@@ -110,9 +116,10 @@ function* editPlaylistAsync(action) {
     { audiusBackend, generateImage: generatePlaylistArtwork }
   )
 
+  // Optimistic update #2 to update the artwork
   yield call(optimisticUpdateCollection, playlist)
-  yield call(confirmEditPlaylist, playlistId, userId, playlist)
 
+  yield call(confirmEditPlaylist, playlistId, userId, playlist)
   yield put(collectionActions.editPlaylistSucceeded())
   yield put(toast({ content: messages.editToast }))
 }

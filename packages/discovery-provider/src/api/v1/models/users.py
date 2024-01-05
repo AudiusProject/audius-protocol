@@ -133,6 +133,14 @@ user_token_profile_picture = ns.model(
     },
 )
 
+tx_signature = ns.model(
+    "tx_signature",
+    {
+        "message": fields.String(required=True),
+        "signature": fields.String(required=True),
+    },
+)
+
 decoded_user_token = ns.model(
     "decoded_user_token",
     {
@@ -146,6 +154,9 @@ decoded_user_token = ns.model(
         ),
         "sub": fields.String(required=True),
         "iat": fields.String(required=True),
+        "txSignature": fields.Nested(
+            tx_signature, required=False, allow_null=True, skip_none=True
+        ),
     },
 )
 

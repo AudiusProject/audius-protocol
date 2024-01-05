@@ -112,11 +112,9 @@ export const ScheduledReleaseRadioField = (props) => {
     (selectedDate: Date) => {
       const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
       if (newReleaseDate.isAfter(moment())) {
-        console.log('asdf set scheduled release')
         setIsUnlisted(true)
         setIsScheduledRelease(true)
       } else {
-        console.log('asdf set public release')
         setIsUnlisted(false)
         setIsScheduledRelease(false)
       }
@@ -124,7 +122,7 @@ export const ScheduledReleaseRadioField = (props) => {
       setReleaseDateValue(newReleaseDate.toString())
       setIsDateOpen(false)
     },
-    [setReleaseDateValue, setIsDateOpen]
+    [setReleaseDateValue, setIsDateOpen, setIsScheduledRelease, setIsUnlisted]
   )
   const handleTimeChange = useCallback(
     (selectedTime) => {
@@ -137,18 +135,21 @@ export const ScheduledReleaseRadioField = (props) => {
           .day(releaseDateMoment.day())
       }
       if (newReleaseDate.isAfter(moment())) {
-        console.log('asdf set scheduled release')
         setIsUnlisted(true)
         setIsScheduledRelease(true)
       } else {
-        console.log('asdf set public release')
         setIsUnlisted(false)
         setIsScheduledRelease(false)
       }
       setReleaseDateValue(newReleaseDate.toString())
       setIsTimeOpen(false)
     },
-    [releaseDateValue, setReleaseDateValue]
+    [
+      releaseDateValue,
+      setReleaseDateValue,
+      setIsScheduledRelease,
+      setIsUnlisted
+    ]
   )
   const currentDate = new Date()
 
@@ -255,7 +256,13 @@ export const ReleaseNowRadioField = (props) => {
       setIsUnlisted(false)
       setIsScheduledRelease(false)
     }
-  }, [selected, releaseDateValue, setReleaseDateValue])
+  }, [
+    selected,
+    releaseDateValue,
+    setReleaseDateValue,
+    setIsScheduledRelease,
+    setIsUnlisted
+  ])
 
   return (
     <View style={styles.releaseNowContainer}>
