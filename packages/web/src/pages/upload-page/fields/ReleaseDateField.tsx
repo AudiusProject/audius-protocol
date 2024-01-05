@@ -68,7 +68,7 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
-const timeValidationSchema = z.object({
+export const timeValidationSchema = z.object({
   release_date_hour: z
     .string()
     .refine((value) => /^([0-9]|0[1-9]|1[0-2]):([0-5][0-9])$/.test(value), {
@@ -103,10 +103,8 @@ export const ReleaseDateField = () => {
         : ReleaseDateType.RELEASE_NOW
     }
   }, [trackReleaseDate])
-  console.log('asdf initial values: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      console.log('asdf submit values: ', values)
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
         setTrackReleaseDate(null)
         setIsScheduledRelease(false)
@@ -118,7 +116,6 @@ export const ReleaseDateField = () => {
         // set is scheduled release
         setIsScheduledRelease(true)
         setIsUnlisted(true)
-        console.log('asdf set is scheduled release')
       } else {
         setIsScheduledRelease(false)
       }
@@ -166,7 +163,7 @@ export const ReleaseDateField = () => {
   )
 }
 
-const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
+export const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
   const truncatedReleaseDate = moment(day).startOf('day')
   const hour = parseInt(time.split(':')[0])
   let adjustedHours = hour
@@ -195,7 +192,6 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
     useField(RELEASE_DATE_HOUR)
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  console.log('asdf trackReleaseDateField: ', trackReleaseDateField)
   const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
     useField(RELEASE_DATE_MERIDIAN)
 
@@ -203,11 +199,58 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
 
+
+
+  return (
+    <>
+      <RadioButtonGroup
+        {...releaseDateTypeField}
+        className={styles.radioGroup}
+        defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
+      >
+        <ModalRadioItem
+          value={ReleaseDateType.RELEASE_NOW}
+          label='Release Immediately'
+        />
+        <ModalRadioItem
+          value={ReleaseDateType.SCHEDULED_RELEASE}
+          label='Select a Release Date'
+        />
+      </RadioButtonGroup>
+      <SelectReleaseDate />
+    </>
+  )
+}
+export const SelectReleaseDate = () => {
+  const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
+  const [releaseDateTimeField, , { setValue: setReleaseDateHour }] =
+    useField(RELEASE_DATE_HOUR)
+  const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
+    useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
+    useField(RELEASE_DATE_MERIDIAN)
+
+  const [releaseDateField, ,] = useField(RELEASE_DATE)
+
+  const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
+  const onTimeChange = useCallback((e: { target: { value: string } }) => {
+    const mergedReleaseDate = mergeDateTimeValues(
+      releaseDateField.value,
+      e.target.value,
+      releaseDateMeridianField.value
+    ).toString()
+    const today = moment().startOf('day')
+
+    if (moment(mergedReleaseDate).isBefore(today)) {
+      setTimePeriod(TimePeriodType.PAST)
+    } else {
+      setTimePeriod(TimePeriodType.FUTURE)
+    }
+  }, [])
   useEffect(() => {
     if (releaseDateField.value === undefined) {
       return
     }
-    console.log('asdf useeffect date: ', releaseDateField.value)
     const truncatedReleaseDate = moment(releaseDateField.value)
 
     const today = moment().startOf('day')
@@ -226,60 +269,8 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
     setTrackReleaseDate
   ])
 
-  useEffect(() => {
-    if (releaseDateField.value === undefined) {
-      return
-    }
-    console.log('asdf useeffect meridian: ')
-    const truncatedReleaseDate = moment(releaseDateField.value)
-
-    const today = moment().startOf('day')
-
-    if (moment(truncatedReleaseDate).isBefore(today)) {
-      setTimePeriod(TimePeriodType.PAST)
-    } else if (moment(truncatedReleaseDate).isAfter(today)) {
-      setTimePeriod(TimePeriodType.FUTURE)
-      setReleaseDateHour('12:00')
-      setReleaseDateMeridian(ReleaseDateMeridian.AM)
-    } else {
-      setTimePeriod(TimePeriodType.PRESENT)
-    }
-  }, [releaseDateMeridianField.value, setTrackReleaseDate])
-
-  const onTimeChange = useCallback((e: { target: { value: string } }) => {
-    const mergedReleaseDate = mergeDateTimeValues(
-      releaseDateField.value,
-      e.target.value,
-      releaseDateMeridianField.value
-    ).toString()
-    const today = moment().startOf('day')
-
-    console.log('asdf merged: ', mergedReleaseDate, moment().toString())
-    if (moment(mergedReleaseDate).isBefore(today)) {
-      setTimePeriod(TimePeriodType.PAST)
-      console.log('asdf setting past')
-    } else {
-      setTimePeriod(TimePeriodType.FUTURE)
-      console.log('asdf setting future')
-    }
-  }, [])
-
   return (
     <>
-      <RadioButtonGroup
-        {...releaseDateTypeField}
-        className={styles.radioGroup}
-        defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
-      >
-        <ModalRadioItem
-          value={ReleaseDateType.RELEASE_NOW}
-          label='Release Immediately'
-        />
-        <ModalRadioItem
-          value={ReleaseDateType.SCHEDULED_RELEASE}
-          label='Select a Release Date'
-        />
-      </RadioButtonGroup>
       {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
         <div
           className={cn(
@@ -308,7 +299,6 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
                 transformValueOnBlur={(value) => {
-                  console.log('asdf transform blur')
                   if (value.includes(':')) {
                     return value
                   }

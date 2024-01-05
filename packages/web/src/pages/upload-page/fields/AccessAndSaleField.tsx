@@ -33,7 +33,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
-import { get, isEmpty, set } from 'lodash'
+import { get, initial, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -86,6 +86,7 @@ const messages = {
   hidden: 'Hidden',
   hiddenSubtitle:
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
+  hiddenHint: 'Scheduled tracks are hidden by default until release.',
   learnMore: 'Learn More',
   fieldVisibility: {
     genre: 'Show Genre',
@@ -256,7 +257,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
   const [{ value: isScheduledRelease }, ,] =
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(IS_SCHEDULED_RELEASE)
-  console.log('asdf isScheduledRelease: ', isScheduledRelease)
+
+  console.log('asdf isScheduledRelease isUnlisted', isScheduledRelease, isUnlisted)
   const [{ value: isPremium }, , { setValue: setIsPremiumValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
   const [
@@ -343,8 +345,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isPremium,
     tempPremiumConditions,
     fieldVisibility,
-    preview
+    preview,
+    isScheduledRelease
   ])
+  console.log('asdf initialValues: ', initialValues)
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
@@ -353,7 +357,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const premiumConditions = get(values, PREMIUM_CONDITIONS)
-      console.log('asdf handleSubmit: ', initialValues, isUnlisted, values)
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
         remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
@@ -406,6 +409,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           break
         }
         case TrackAvailabilityType.PUBLIC: {
+          setIsUnlistedValue(false)
           break
         }
       }
@@ -420,6 +424,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const renderValue = useCallback(() => {
+    console.log('asdf render selected value: ', isScheduledRelease, isUnlisted)
     if (isPremiumContentCollectibleGated(savedPremiumConditions)) {
       const { nft_collection } = savedPremiumConditions
       if (!nft_collection) return null
@@ -502,7 +507,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         })}
       </div>
     )
-  }, [fieldVisibility, isUnlisted, savedPremiumConditions, preview])
+  }, [fieldVisibility, isUnlisted, savedPremiumConditions, preview, isScheduledRelease])
 
   return (
     <ContextualMenu
@@ -539,7 +544,6 @@ type AccesAndSaleMenuFieldsProps = {
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const { isRemix, isUpload, isInitiallyUnlisted, initialPremiumConditions, isScheduledRelease } =
     props
-  console.log('asdf AccessAndSaleMenuFields props: ', props)
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
@@ -563,7 +567,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease
     })
-  console.log('asdf noHidden: ', noHidden)
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -611,6 +614,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           value={TrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
           disabled={noHidden}
+          hintContent={isScheduledRelease ? messages.hiddenHint : ''}
           checkedContent={<HiddenAvailabilityFields />}
         />
       </RadioButtonGroup>

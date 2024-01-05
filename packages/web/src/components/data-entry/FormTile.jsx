@@ -361,7 +361,6 @@ const AdvancedForm = (props) => {
     is_scheduled_release: props.defaultFields.is_scheduled_release,
     release_date: props.defaultFields.release_date,
   }
-  console.log('asdf releaseDateState: ', releaseDateState)
 
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
   if (showAvailability) {
@@ -406,6 +405,10 @@ const AdvancedForm = (props) => {
       isInvalidNFTCollection
     )
     props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
+  }
+
+  const didUpdateReleaseDate = (newState) => {
+    props.onChangeField('release_date', newState.release_date)
   }
 
   const didToggleHideRemixesState = () => {
@@ -524,7 +527,7 @@ const AdvancedForm = (props) => {
           )}
           {showAvailability && (
             <ReleaseDateTriggerLegacy
-              didUpdateState={didUpdateAvailabilityState}
+              didUpdateState={didUpdateReleaseDate}
               metadataState={releaseDateState}
               initialForm={props.initialForm}
             />

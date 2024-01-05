@@ -121,7 +121,6 @@ export const AccessAndSaleTriggerLegacy = (
     preview_start_seconds: preview,
     ...fieldVisibility
   } = metadataState
-  console.log('asdf access edit isScheduledRelease: ', isScheduledRelease, isUnlisted)
   /**
    * Premium conditions from inside the modal.
    * Upon submit, these values along with the selected access option will

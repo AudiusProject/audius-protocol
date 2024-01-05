@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
     PremiumConditionsCollectibleGated,
@@ -14,7 +14,9 @@ import {
     isPremiumContentUSDCPurchaseGated,
     useUSDCPurchaseConfig,
     Nullable,
-    PremiumConditions
+    PremiumConditions,
+    dayjs,
+    getLocalTimezone
 } from '@audius/common'
 import {
     Button,
@@ -36,8 +38,9 @@ import { SpecialAccessType } from 'pages/upload-page/fields/availability/Special
 
 import styles from './ReleaseDateTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
-import { RELEASE_DATE, RELEASE_DATE_HOUR, RELEASE_DATE_MERIDIAN, RELEASE_DATE_TYPE, ReleaseDateRadioItems, ReleaseDateField, ReleaseDateType } from 'pages/upload-page/fields/ReleaseDateField'
+import { RELEASE_DATE, RELEASE_DATE_HOUR, RELEASE_DATE_MERIDIAN, RELEASE_DATE_TYPE, ReleaseDateRadioItems, ReleaseDateField, ReleaseDateType, SelectReleaseDate, mergeDateTimeValues, ReleaseDateFormValues, timeValidationSchema } from 'pages/upload-page/fields/ReleaseDateField'
 import moment from 'moment'
+import { formatCalendarTime } from 'utils/dateUtils'
 
 const { getUserId } = accountSelectors
 
@@ -87,34 +90,57 @@ type ReleaseDateTriggerLegacyProps = {
 export const ReleaseDateTriggerLegacy = (
     props: ReleaseDateTriggerLegacyProps
 ) => {
+    const { didUpdateState, metadataState } = props
     const trackReleaseDate = props.metadataState.release_date
-
+    const [trackReleaseDateState, setTrackReleaseDateState] = useState(moment(trackReleaseDate).toString())
+    console.log('asdf trackReleaseDate: ', trackReleaseDate, trackReleaseDateState)
     const initialValues = useMemo(() => {
         return {
-            [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day').toString(),
-            [RELEASE_DATE_HOUR]: trackReleaseDate
-                ? moment(trackReleaseDate).format('h:mm')
+            [RELEASE_DATE]: trackReleaseDateState ?? moment(trackReleaseDateState).startOf('day').toString(),
+            [RELEASE_DATE_HOUR]: trackReleaseDateState
+                ? moment(trackReleaseDateState).format('h:mm')
                 : moment().format('h:mm'),
-            [RELEASE_DATE_MERIDIAN]: trackReleaseDate
-                ? moment(trackReleaseDate).format('A')
+            [RELEASE_DATE_MERIDIAN]: trackReleaseDateState
+                ? moment(trackReleaseDateState).format('A')
                 : moment().format('A'),
-            [RELEASE_DATE_TYPE]: trackReleaseDate
-                ? ReleaseDateType.SCHEDULED_RELEASE
-                : ReleaseDateType.RELEASE_NOW
+            [RELEASE_DATE_TYPE]: ReleaseDateType.SCHEDULED_RELEASE
         }
-    }, [trackReleaseDate])
-    console.log('asdf initialValues: ', initialValues, trackReleaseDate, props)
-    const onSubmit = () => {
+    }, [trackReleaseDateState])
+    const onSubmit = (values: ReleaseDateFormValues) => {
+        const mergedReleaseDate = mergeDateTimeValues(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
+        const dayjsTime = dayjs(mergedReleaseDate.toString()).utc().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
+
+        let newState = {
+            ...metadataState,
+            release_date: dayjsTime
+        }
+        if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
+            // publish if release now or release date has passed
+            newState.is_unlisted = false
+            newState.release_date = dayjs().utc().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+        } else if (mergedReleaseDate.isBefore(moment())) {
+            newState.is_unlisted = false
+        } else {
+            newState.is_unlisted = true
+        }
+
+        console.log('asdf edit state: ', newState)
+        setTrackReleaseDateState(newState.release_date)
+        didUpdateState(newState)
     }
+
     return (
         <ContextualMenu
             label={messages.title}
             description={messages.description}
-            icon={<IconHidden />}
+            icon={<IconCalendar />}
             initialValues={initialValues}
+            validationSchema={toFormikValidationSchema(
+                timeValidationSchema
+            )}
             onSubmit={onSubmit}
             menuFields={
-                <ReleaseDateRadioItems isUnlisted={props.metadataState.is_unlisted} isScheduledRelease={props.metadataState.is_scheduled_release} />
+                <ReleaseDateRadioItems isScheduledRelease={false} isUnlisted={false} />
             }
             renderValue={() => null}
             previewOverride={(toggleMenu) => (
@@ -122,7 +148,7 @@ export const ReleaseDateTriggerLegacy = (
                     className={styles.releaseDateButton}
                     type={ButtonType.COMMON_ALT}
                     name='availabilityModal'
-                    text={'Release Date: ' + trackReleaseDate}
+                    text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
                     size={ButtonSize.SMALL}
                     onClick={toggleMenu}
                     leftIcon={<IconCalendar />}
