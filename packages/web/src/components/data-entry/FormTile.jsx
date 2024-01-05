@@ -35,6 +35,8 @@ import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
+import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
+
 import styles from './FormTile.module.css'
 
 const {
@@ -354,6 +356,13 @@ const AdvancedForm = (props) => {
     premium_conditions: props.defaultFields.premium_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
+  let releaseDateState = {
+    is_unlisted: props.defaultFields.is_unlisted,
+    is_scheduled_release: props.defaultFields.is_scheduled_release,
+    release_date: props.defaultFields.release_date,
+  }
+  console.log('asdf releaseDateState: ', releaseDateState)
+
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
   if (showAvailability) {
     availabilityState = {
@@ -511,6 +520,13 @@ const AdvancedForm = (props) => {
             <AiAttributionButton
               className={styles.releaseButton}
               onClick={() => setAiAttributionModalVisible(true)}
+            />
+          )}
+          {showAvailability && (
+            <ReleaseDateTriggerLegacy
+              didUpdateState={didUpdateAvailabilityState}
+              metadataState={releaseDateState}
+              initialForm={props.initialForm}
             />
           )}
           {props.type !== 'track' && (

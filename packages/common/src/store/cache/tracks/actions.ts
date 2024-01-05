@@ -4,7 +4,6 @@ import { ID } from '../../../models'
 export const EDIT_TRACK = 'CACHE/TRACKS/EDIT_TRACK'
 export const EDIT_TRACK_SUCCEEDED = 'CACHE/TRACKS/EDIT_TRACK_SUCCEEDED'
 export const EDIT_TRACK_FAILED = 'CACHE/TRACKS/EDIT_TRACK_FAILED'
-export const PUBLISH_TRACK = 'CACHE/TRACKS/PUBLISH_TRACK'
 
 export const DELETE_TRACK = 'CACHE/TRACKS/DELETE_TRACK'
 export const DELETE_TRACK_SUCCEEDED = 'CACHE/TRACKS/DELETE_TRACK_SUCCEEDED'
@@ -24,10 +23,6 @@ export function editTrackSucceeded() {
 
 export function editTrackFailed() {
   return { type: EDIT_TRACK_FAILED }
-}
-
-export function publishTrack(trackId) {
-  return { type: PUBLISH_TRACK, trackId }
 }
 
 export function deleteTrack(trackId) {

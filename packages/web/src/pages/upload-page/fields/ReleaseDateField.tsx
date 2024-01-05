@@ -39,11 +39,11 @@ const messages = {
     `Your scheduled track will become live on Audius on the date and time you've chosen above in your time zone (${timezone}).`
 }
 
-const RELEASE_DATE = 'release_date'
-const RELEASE_DATE_HOUR = 'release_date_hour'
-const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
-const RELEASE_DATE_TYPE = 'release_date_type'
-const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
+export const RELEASE_DATE = 'release_date'
+export const RELEASE_DATE_HOUR = 'release_date_hour'
+export const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
+export const RELEASE_DATE_TYPE = 'release_date_type'
+export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 
 export type ReleaseDateFormValues = {
   [RELEASE_DATE]: string
@@ -82,9 +82,9 @@ type IsScheduledReleaseValue = SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE
 export const ReleaseDateField = () => {
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  const [, , { setValue: setIsScheduledRelease }] =
+  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
     useTrackField<IsScheduledReleaseValue>(IS_SCHEDULED_RELEASE)
-  const [, , { setValue: setIsUnlisted }] =
+  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
     useTrackField<IsScheduledReleaseValue>(IS_UNLISTED)
 
   const trackReleaseDate = trackReleaseDateField.value
@@ -157,7 +157,7 @@ export const ReleaseDateField = () => {
         menuFields={
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <RadioItems />
+            <ReleaseDateRadioItems isScheduledRelease={isScheduledRelease} isUnlisted={isUnlisted} />
           </Flex>
         }
         renderValue={renderValue}
@@ -183,13 +183,19 @@ const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
   return combinedDateTime
 }
 
-const RadioItems = (props: any) => {
+type ReleaseDateRadioItemsProps = {
+  isScheduledRelease: boolean,
+  isUnlisted: boolean
+
+}
+
+export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
   const [releaseDateTimeField, , { setValue: setReleaseDateHour }] =
     useField(RELEASE_DATE_HOUR)
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-
+  console.log('asdf trackReleaseDateField: ', trackReleaseDateField)
   const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
     useField(RELEASE_DATE_MERIDIAN)
 
