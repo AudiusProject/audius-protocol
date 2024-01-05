@@ -32,6 +32,8 @@ const trackMetadataSchema = {
   stream_conditions: null,
   is_download_gated: false,
   download_conditions: null,
+  is_original_available: false,
+  is_downloadable: false,
   preview_start_seconds: null,
   audio_upload_id: null,
   field_visibility: {
