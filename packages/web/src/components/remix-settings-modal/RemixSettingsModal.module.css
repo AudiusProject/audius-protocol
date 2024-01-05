@@ -34,10 +34,6 @@
   height: var(--unit-5);
 }
 
-.remixSettingsModalTitleIcon path {
-  fill: var(--neutral-light-2);
-}
-
 .modalTitle {
   color: var(--neutral);
   font-size: var(--font-l);
