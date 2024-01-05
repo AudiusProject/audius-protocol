@@ -256,7 +256,8 @@ const TrackTile = ({
           {messages.artistPick}
         </div>
       )
-    } else if (isScheduledReleasesEnabled) {
+    }
+    if (isScheduledReleasesEnabled) {
       scheduledReleaseLabel = (
         <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )

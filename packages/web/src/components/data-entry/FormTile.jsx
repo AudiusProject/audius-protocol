@@ -341,6 +341,11 @@ const AdvancedForm = (props) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
+
 
   const {
     remixSettingsModalVisible,
@@ -356,6 +361,7 @@ const AdvancedForm = (props) => {
     premium_conditions: props.defaultFields.premium_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
+
   let releaseDateState = {
     is_unlisted: props.defaultFields.is_unlisted,
     is_scheduled_release: props.defaultFields.is_scheduled_release,
@@ -525,7 +531,7 @@ const AdvancedForm = (props) => {
               onClick={() => setAiAttributionModalVisible(true)}
             />
           )}
-          {showAvailability && (
+          {showAvailability && isScheduledReleasesEnabled && (
             <ReleaseDateTriggerLegacy
               didUpdateState={didUpdateReleaseDate}
               metadataState={releaseDateState}

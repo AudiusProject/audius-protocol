@@ -5,6 +5,8 @@ import { useToast } from 'app/hooks/useToast'
 import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
 import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
 
+import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
+
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
     requiresReview: boolean
@@ -70,6 +72,14 @@ export const SocialMediaSignUpButtons = ({
       {isInstagramEnabled ? (
         <SignUpFlowInstagramAuth
           onError={handleFailure}
+          onSuccess={handleSuccess}
+          onStart={onStart}
+          onClose={onClose}
+        />
+      ) : null}
+      {isTikTokEnabled ? (
+        <SignUpFlowTikTokAuth
+          onFailure={handleFailure}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}

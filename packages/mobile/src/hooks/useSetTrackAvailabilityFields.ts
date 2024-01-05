@@ -11,7 +11,7 @@ export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
-  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] = useField<boolean>('is_scheduled_release')
+  const [{ value: isScheduledRelease }, , { }] = useField<boolean>('is_scheduled_release')
 
   const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
     'preview_start_seconds'
@@ -44,7 +44,6 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.play_count': true,
     'field_visibility.remixes': true
   }
-  console.log('asdf defaultTrackAvailabilityFields: ', defaultTrackAvailabilityFields)
   type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
 

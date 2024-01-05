@@ -228,7 +228,7 @@ export const DetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-  const isUnpublished = track?.is_scheduled_release && track?.is_unlisted
+  const isUnpublishedScheduledRelease = track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
     isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
 
@@ -256,7 +256,7 @@ export const DetailsTile = ({
     const dogEarType = getDogEarType({
       isOwner,
       premiumConditions,
-      isUnlisted: isUnlisted && !isUnpublished
+      isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -411,7 +411,7 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
-                  {isUnpublished && track?.release_date ? (
+                  {isUnpublishedScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
                     <HarmonyText
@@ -422,9 +422,7 @@ export const DetailsTile = ({
                     >
                       Releases
                       {' ' +
-                        moment
-                          .utc(track.release_date)
-                          .local()
+                          moment(track.release_date)
                           .format('M/D/YY @ h:mm A ') +
                           dayjs().format('z')}
                     </HarmonyText>

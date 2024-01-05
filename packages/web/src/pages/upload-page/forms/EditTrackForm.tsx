@@ -85,7 +85,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }),
     [tracks]
   )
-  console.log('tracks: ', tracks, initialValues)
 
   const onSubmit = useCallback(
     (values: TrackEditFormValues) => {
@@ -118,7 +117,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const trackIdx = values.trackMetadatasIndex
-  const [tracksField, , { setValue: setIndex }] = useField('trackMetadatasIndex')
+  const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
     setIndex(0)
   })

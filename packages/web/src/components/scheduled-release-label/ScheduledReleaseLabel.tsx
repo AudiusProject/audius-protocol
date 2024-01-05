@@ -19,6 +19,8 @@ export const ScheduledReleaseLabel = ({
   if (!released || !isUnlisted || moment(released).isBefore(moment())) {
     return null
   }
+  console.log('asdf released: ', released, isUnlisted)
+
   return (
     <div
       className={cn(
@@ -26,7 +28,7 @@ export const ScheduledReleaseLabel = ({
         styles.scheduledReleaseLabel
       )}
     >
-      <IconCalendarMonth />
+      <IconCalendarMonth size='s' />
       <Text>
         Releases{' '}
         {moment(released).format('M/D/YY [@] h:mm A') +

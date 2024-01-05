@@ -33,7 +33,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
-import { get, initial, isEmpty, set } from 'lodash'
+import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -257,8 +257,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
   const [{ value: isScheduledRelease }, ,] =
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(IS_SCHEDULED_RELEASE)
-
-  console.log('asdf isScheduledRelease isUnlisted', isScheduledRelease, isUnlisted)
   const [{ value: isPremium }, , { setValue: setIsPremiumValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
   const [
@@ -348,7 +346,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     preview,
     isScheduledRelease
   ])
-  console.log('asdf initialValues: ', initialValues)
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
@@ -424,7 +421,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const renderValue = useCallback(() => {
-    console.log('asdf render selected value: ', isScheduledRelease, isUnlisted)
     if (isPremiumContentCollectibleGated(savedPremiumConditions)) {
       const { nft_collection } = savedPremiumConditions
       if (!nft_collection) return null

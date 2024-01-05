@@ -5,7 +5,6 @@ import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
-import { initial } from 'lodash'
 import moment from 'moment'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -82,9 +81,9 @@ type IsScheduledReleaseValue = SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE
 export const ReleaseDateField = () => {
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  const [{ value: isScheduledRelease }, , { setValue: setIsScheduledRelease }] =
+  const [, , { setValue: setIsScheduledRelease }] =
     useTrackField<IsScheduledReleaseValue>(IS_SCHEDULED_RELEASE)
-  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
+  const [, , { setValue: setIsUnlisted }] =
     useTrackField<IsScheduledReleaseValue>(IS_UNLISTED)
 
   const trackReleaseDate = trackReleaseDateField.value
@@ -154,7 +153,7 @@ export const ReleaseDateField = () => {
         menuFields={
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <ReleaseDateRadioItems isScheduledRelease={isScheduledRelease} isUnlisted={isUnlisted} />
+            <ReleaseDateRadioItems />
           </Flex>
         }
         renderValue={renderValue}
@@ -180,24 +179,9 @@ export const mergeDateTimeValues = (day: string, time: string, meridian: string)
   return combinedDateTime
 }
 
-type ReleaseDateRadioItemsProps = {
-  isScheduledRelease: boolean,
-  isUnlisted: boolean
-
-}
-
-export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
+export const ReleaseDateRadioItems = () => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-  const [releaseDateTimeField, , { setValue: setReleaseDateHour }] =
-    useField(RELEASE_DATE_HOUR)
-  const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
-    useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
-    useField(RELEASE_DATE_MERIDIAN)
 
-  const [releaseDateField, ,] = useField(RELEASE_DATE)
-
-  const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
 
 
 
@@ -223,9 +207,9 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioItemsProps) => {
 }
 export const SelectReleaseDate = () => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-  const [releaseDateTimeField, , { setValue: setReleaseDateHour }] =
+  const [, , { setValue: setReleaseDateHour }] =
     useField(RELEASE_DATE_HOUR)
-  const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
+  const [, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
   const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
     useField(RELEASE_DATE_MERIDIAN)
@@ -259,6 +243,8 @@ export const SelectReleaseDate = () => {
       setTimePeriod(TimePeriodType.PAST)
     } else if (moment(truncatedReleaseDate).isAfter(today)) {
       setTimePeriod(TimePeriodType.FUTURE)
+      setReleaseDateHour('12:00')
+      setReleaseDateMeridian('AM')
     } else {
       setTimePeriod(TimePeriodType.PRESENT)
     }
@@ -285,9 +271,6 @@ export const SelectReleaseDate = () => {
               isScheduledRelease={true}
               name={RELEASE_DATE}
               label={messages.title}
-              shouldFocus={
-                releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE
-              }
             />
           </div>
           {timePeriod !== TimePeriodType.PAST && (

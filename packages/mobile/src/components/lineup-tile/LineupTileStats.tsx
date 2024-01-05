@@ -138,7 +138,7 @@ export const LineupTileStats = ({
   console.log(
     'asdf releaseDate: ',
     releaseDate,
-    moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')
+    moment(releaseDate).format('M/D/YY @ h:mm A')
   )
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -166,7 +166,7 @@ export const LineupTileStats = ({
 
   const isReadonly = variant === 'readonly'
   const isScheduledRelease =
-    isUnlisted && moment.utc(releaseDate).isAfter(moment())
+    isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -214,7 +214,7 @@ export const LineupTileStats = ({
             <Text fontSize='xs' colorValue={accentPurple}>
               Releases
               {' ' +
-                moment.utc(releaseDate).local().format('M/D/YY @ h:mm A') +
+                moment(releaseDate).local().format('M/D/YY @ h:mm A') +
                 ' ' +
                 dayjs().format('z')}
             </Text>

@@ -264,7 +264,7 @@ export const TrackScreenDetailsTile = ({
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
   const isScheduledRelease = release_date
-    ? moment.utc(release_date).isAfter(moment.now())
+    ? moment(release_date).isAfter(moment.now())
     : false
 
   const filteredTags = (tags || '').split(',').filter(Boolean)

@@ -41,6 +41,8 @@ import { ContextualMenu } from './ContextualMenu'
 import { RELEASE_DATE, RELEASE_DATE_HOUR, RELEASE_DATE_MERIDIAN, RELEASE_DATE_TYPE, ReleaseDateRadioItems, ReleaseDateField, ReleaseDateType, SelectReleaseDate, mergeDateTimeValues, ReleaseDateFormValues, timeValidationSchema } from 'pages/upload-page/fields/ReleaseDateField'
 import moment from 'moment'
 import { formatCalendarTime } from 'utils/dateUtils'
+import { Flex } from '@audius/harmony'
+import { Text } from 'components/typography'
 
 const { getUserId } = accountSelectors
 
@@ -130,6 +132,8 @@ export const ReleaseDateTriggerLegacy = (
     }
 
     return (
+
+
         <ContextualMenu
             label={messages.title}
             description={messages.description}
@@ -140,7 +144,13 @@ export const ReleaseDateTriggerLegacy = (
             )}
             onSubmit={onSubmit}
             menuFields={
-                <ReleaseDateRadioItems isScheduledRelease={false} isUnlisted={false} />
+                <>
+                    <Flex direction='column' gap='l'>
+                        <Text>{messages.description}</Text>
+                        <ReleaseDateRadioItems isScheduledRelease={false} isUnlisted={false} />
+                    </Flex>
+
+                </>
             }
             renderValue={() => null}
             previewOverride={(toggleMenu) => (

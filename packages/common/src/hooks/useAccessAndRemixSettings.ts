@@ -48,7 +48,6 @@ export const useAccessAndRemixSettings = ({
   const isReleased = (!isInitiallyUnlisted && isScheduledRelease)
   const isInitiallyPublic =
     !isUpload && (isReleased) && !initialPremiumConditions
-  console.log('asdf isInitiallyPublic: ', isInitiallyPublic, isReleased)
   const isInitiallyUsdcGated =
     isReleased && !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
 

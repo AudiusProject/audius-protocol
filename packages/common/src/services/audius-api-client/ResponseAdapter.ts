@@ -271,7 +271,7 @@ export const makeTrack = (
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
     premium_content_signature: track.premium_content_signature ?? null,
-    release_date: dayjs.utc(track.release_date).local().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ'),
+    release_date: dayjs.utc(track.release_date).local().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ'),  // utc -> local
 
     // Fields to prune
     id: undefined,
