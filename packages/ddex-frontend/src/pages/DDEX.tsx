@@ -1,150 +1,24 @@
 import { useState, ChangeEvent, DragEvent } from 'react'
-import {
-  CheckCircleIcon,
-  RefreshIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/outline'
 import { useAudiusSdk } from '../providers/AudiusSdkProvider'
 import { useAudiusLibs } from '../providers/AudiusLibsProvider'
 import { useRemoteConfig } from '../providers/RemoteConfigProvider'
 import { FeatureFlags } from '../utils/constants'
 import type { AudiusLibs } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
-import type {
-  AudiusSdk,
-  Genre,
-  UploadTrackRequest,
-} from '@audius/sdk/dist/sdk/index.d.ts'
-import { DOMParser } from 'linkedom'
+import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
 
-type Track = {
-  title: string
-  artist: string
-  coverArt: string
-}
-
-type UploadedTrack = {
-  blockHash: string
-  blockNumber: number
-  trackId: string | null
-} & Track
-
-const fetchResource = async (url: string, filename: string) => {
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`HTTP error when fetching ${url}. Status: ${res.status}`)
-  }
-  const blob = await res.blob()
-  return new File([blob], filename, { type: blob.type })
-}
-
-const processXml = async ({
-  document,
-  audiusSdk,
-  setUploadingTrack,
-  setUploadedTracks,
-}: {
-  document: any
-  audiusSdk: AudiusSdk
-  setUploadingTrack: (track: Track | null) => void
-  setUploadedTracks: (tracks: UploadedTrack[]) => void
-}) => {
-  // todo remove this and upload images and tracks from xml without hardcoding
-  const [clipperImg, snareAudio] = await Promise.all([
-    fetchResource('/ddex/ddex-examples/clipper.jpg', 'todo_img_name'),
-    fetchResource('/ddex/ddex-examples/snare.wav', 'todo_audio_name'),
-  ])
-
-  // extract SoundRecording
-  const trackNodes = queryAll(document, 'SoundRecording', 'track')
-
-  const uploadedTracks: UploadedTrack[] = []
-  for (const trackNode of Array.from(trackNodes)) {
-    const releaseDateValue = firstValue(
-      trackNode,
-      'OriginalReleaseDate',
-      'originalReleaseDate'
-    )
-    const title = firstValue(trackNode, 'TitleText', 'trackTitle')
-    const tt = {
-      title,
-
-      // todo: need to normalize genre
-      // genre: firstValue(trackNode, "Genre", "trackGenre"),
-      genre: 'Metal' as Genre,
-
-      // todo: need to parse release date if present
-      releaseDate: new Date(releaseDateValue as string | number | Date),
-      // releaseDate: new Date(),
-
-      isUnlisted: false,
-      isPremium: false,
-      fieldVisibility: {
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        play_count: true,
-        remixes: true,
-      },
-      description: '',
-      license: 'Attribution ShareAlike CC BY-SA',
-    }
-    const artistName = firstValue(trackNode, 'ArtistName', 'artistName')
-    const { data: users } = await audiusSdk.users.searchUsers({
-      query: artistName,
-    })
-    if (!users || users.length === 0) {
-      throw new Error(`Could not find user ${artistName}`)
-    }
-    const userId = users[0].id
-    const uploadTrackRequest: UploadTrackRequest = {
-      userId: userId,
-      coverArtFile: clipperImg,
-      metadata: tt,
-      onProgress: (progress: any) => console.log('Progress:', progress),
-      trackFile: snareAudio,
-    }
-    console.log('uploading track...')
-    const currentTrack = {
-      title,
-      artist: artistName,
-      coverArt: '/ddex/ddex-examples/clipper.jpg', //todo
-    }
-    setUploadingTrack(currentTrack)
-    const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest)
-    console.log(result)
-    setUploadingTrack(null)
-    uploadedTracks.push({
-      ...currentTrack,
-      ...result,
-    })
-    setUploadedTracks(uploadedTracks)
-  }
-
-  // todo
-  // extract Release
-  // for (const releaseNode of queryAll(document, "Release", "release")) {
-  // }
-}
-
-const queryAll = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hits = node.querySelectorAll(field)
-    if (hits.length) return Array.from(hits)
-  }
-  return []
-}
-
-const firstValue = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hit = node.querySelector(field)
-    if (hit) return hit.textContent.trim()
-  }
-}
+const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
 const validXmlFile = (file: File) => {
-  return file.type === 'text/xml' && file.name.endsWith('.xml')
+  if (file.type !== 'text/xml') {
+    alert('Please upload a valid XML file.')
+    return false
+  }
+
+  if (file.size > MAX_SIZE) {
+    alert('File is too large.')
+    return false
+  }
+  return true
 }
 
 const AudiusLogin = ({
@@ -236,112 +110,6 @@ const ManageAudiusAccount = ({
   )
 }
 
-const TrackList = ({
-  uploadedTracks,
-  uploadingTrack,
-}: {
-  uploadedTracks: UploadedTrack[]
-  uploadingTrack: Track | null
-}) => {
-  const [expandedUploadDetails, setExpandedUploadDetails] = useState<
-    Set<number>
-  >(new Set())
-  const [isListExpanded, setIsListExpanded] = useState(true)
-
-  const toggleExpand = (index: number) => {
-    setExpandedUploadDetails((prevExpanded) => {
-      const newExpanded = new Set(prevExpanded)
-      if (newExpanded.has(index)) {
-        newExpanded.delete(index)
-      } else {
-        newExpanded.add(index)
-      }
-      return newExpanded
-    })
-  }
-
-  return (
-    <div>
-      {isListExpanded ? (
-        uploadedTracks.length ? (
-          <div className="flex justify-end items-center py-4">
-            <button
-              onClick={() => setIsListExpanded(!isListExpanded)}
-              className="text-blue-500 hover:text-blue-700 transition duration-150 ease-in-out"
-            >
-              {'Hide'}
-            </button>
-          </div>
-        ) : null
-      ) : (
-        <div className="flex justify-between items-center py-4">
-          <p className="text-center">{uploadedTracks.length} tracks uploaded</p>
-          <button
-            onClick={() => setIsListExpanded(!isListExpanded)}
-            className="text-blue-500 hover:text-blue-700 transition duration-150 ease-in-out"
-          >
-            {'View'}
-          </button>
-        </div>
-      )}
-
-      {isListExpanded &&
-        uploadedTracks.map((track, index) => (
-          <div
-            key={index}
-            className="flex flex-col py-4 border-b border-gray-200"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
-                <img
-                  src={track.coverArt}
-                  alt={track.title}
-                  className="h-12 w-12 rounded mr-4"
-                />
-                <div>
-                  <h5 className="text-lg font-semibold">{track.title}</h5>
-                  <p className="text-sm text-gray-600">{track.artist}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <CheckCircleIcon className="h-6 w-6 text-green-500 mr-4" />
-                <button onClick={() => toggleExpand(index)}>
-                  {expandedUploadDetails.has(index) ? (
-                    <ChevronUpIcon className="h-6 w-6" />
-                  ) : (
-                    <ChevronDownIcon className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {expandedUploadDetails.has(index) && (
-              <div className="text-sm text-gray-500">
-                <p>Block Hash: {track.blockHash}</p>
-                <p>Block Number: {track.blockNumber}</p>
-                <p>Track ID: {track.trackId ?? 'N/A'}</p>
-              </div>
-            )}
-          </div>
-        ))}
-
-      {uploadingTrack && (
-        <div className="flex items-center py-4 border-t border-gray-200">
-          <img
-            src={uploadingTrack.coverArt}
-            alt={uploadingTrack.title}
-            className="h-12 w-12 rounded mr-4"
-          />
-          <div className="flex-grow">
-            <h5 className="text-lg font-semibold">{uploadingTrack.title}</h5>
-            <p className="text-sm text-gray-600">{uploadingTrack.artist}</p>
-          </div>
-          <RefreshIcon className="h-6 w-6 text-blue-500 animate-spin" />
-        </div>
-      )}
-    </div>
-  )
-}
-
 const XmlImporter = ({
   audiusSdk,
 }: {
@@ -352,8 +120,6 @@ const XmlImporter = ({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSucceeded, setUploadSucceeded] = useState(false)
-  const [uploadingTrack, setUploadingTrack] = useState<Track | null>(null)
-  const [uploadedTracks, setUploadedTracks] = useState<UploadedTrack[]>([])
 
   const handleDragIn = (e: DragEvent) => {
     e.preventDefault()
@@ -386,68 +152,59 @@ const XmlImporter = ({
 
   const clearSelection = () => {
     setSelectedFile(null)
+    setUploadError(null)
+    setUploadSucceeded(false)
   }
 
   const handleFileChange = (file: File) => {
     if (!validXmlFile(file)) {
-      alert('Please upload an XML file.')
       return
     }
     setSelectedFile(file)
     setUploadError(null)
+    setUploadSucceeded(false)
   }
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) {
       alert('Please select a file first!')
       return
     }
 
     if (!validXmlFile(selectedFile)) {
-      alert('Please upload an XML file.')
       return
     }
 
+    // TODO more extensive sanitation + schema validation
+
     setUploadSucceeded(false)
-    setUploadedTracks([])
-    setUploadingTrack(null)
-
-    readXml(selectedFile, audiusSdk!)
-  }
-
-  const readXml = (file: File, audiusSdk: AudiusSdk) => {
     setIsUploading(true)
-    const reader = new FileReader()
-    reader.onload = async (event: ProgressEvent<FileReader>) => {
-      const xmlText = event.target?.result
-      if (xmlText) {
-        try {
-          const document = new DOMParser().parseFromString(
-            xmlText as string,
-            'text/xml'
-          )
-          await processXml({
-            document,
-            audiusSdk,
-            setUploadingTrack,
-            setUploadedTracks,
-          })
-          setUploadSucceeded(true)
-        } catch (error) {
-          setUploadError('Error processing xml')
-          console.error('Error processing xml:', error)
-        }
-      } else {
-        setUploadError('Error reading file')
+
+    const formData = new FormData()
+    formData.append('file', selectedFile)
+
+    try {
+      // TODO this relative url will not work when running the frontend and
+      // backend separately while developing locally. For now
+      // it requires prepending http://localhost:8926 when dev'ing
+      // locally.
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`)
       }
+
+      const result = await response.json()
+      console.log(JSON.stringify(result))
+      setUploadSucceeded(true)
+    } catch (error: any) {
+      setUploadError(error.message)
+    } finally {
       setIsUploading(false)
     }
-    reader.onerror = (error) => {
-      setUploadError('Error reading file')
-      console.error('Error reading file:', error)
-      setIsUploading(false)
-    }
-    reader.readAsText(file)
   }
 
   if (!audiusSdk) {
@@ -519,10 +276,6 @@ const XmlImporter = ({
             {uploadSucceeded && (
               <div className="text-green-500">Upload success!</div>
             )}
-            <TrackList
-              uploadedTracks={uploadedTracks}
-              uploadingTrack={uploadingTrack}
-            />
           </>
         )}
       </>

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express, { Express, Request, Response } from 'express'
 import path from 'path'
+// import cors from "cors"
 import * as uploadController from './controllers/uploadController'
 import { createSdkService } from './services/sdkService'
 import { createScheduledReleaseService } from './services/scheduledReleaseService'
@@ -20,14 +21,23 @@ const scheduledReleaseService = createScheduledReleaseService(
 )
 
 /*
- * Define API routes
+ * Setup app
  */
 
 const app: Express = express()
-app.post(
-  '/api/upload',
-  uploadController.postUploadXml(dbService, sdkService.getSdk())
-)
+// Uncomment when developing locally as this is required for uploads to work
+// when running the frontend and backend apps separately.
+// TODO make the dev flow more seamless
+// const corsOptions = {
+//   origin: 'http://localhost:5173'
+// }
+// app.use(cors(corsOptions));
+
+/*
+ * Define API routes
+ */
+
+app.post('/api/upload', uploadController.postUploadXml(dbService, sdkService.getSdk()))
 app.get('/api/health_check', (req: Request, res: Response) => {
   res.status(200).send('DDEX is alive!')
 })

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+  <release>
+    <album_action>insert</album_action>
+    <aggregatorName>PKInteractiveInc</aggregatorName>
+    <labelName>DistroKid</labelName>
+    <UPC_EAN>196834227253</UPC_EAN>
+    <catalogNumber>196834227253</catalogNumber>
+    <coverArtFilename>196834227253.jpg</coverArtFilename>
+    <releaseTitle>Satori news Database 1.0</releaseTitle>
+    <releaseSalesType>release</releaseSalesType>
+    <tracks>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>1</trackNumber>
+        <ISRC>QZHN32244654</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Comet C/2010 X1</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_1.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>bd33a8fb157e7beef489baf69edaec33</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>2</trackNumber>
+        <ISRC>QZHN32244656</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Ring Nebula</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_2.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>cddcf8e6509b58ada1cd394566fff205</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>3</trackNumber>
+        <ISRC>QZHN32244657</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Beta Ursae Minoris</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_3.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>ae1a485bfd5d6a7100d88657a9464277</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>4</trackNumber>
+        <ISRC>QZHN32244658</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Alpha Draconis</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_4.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>c7222f333b0e2c4a11a62cc0c3daaddb</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>5</trackNumber>
+        <ISRC>QZHN32244659</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Kaus Australis</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_5.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>fc3f619942264ff3c9e0974d42dd1aad</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>6</trackNumber>
+        <ISRC>QZHN32244660</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Antinous eta Aquilae</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_6.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>74f28766ec296e967dd5cdc38a2a261a</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>7</trackNumber>
+        <ISRC>QZHN32244661</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Sadalmelik</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_7.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>dc81991d7a7ffc8e989716ec1eb67802</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>8</trackNumber>
+        <ISRC>QZHN32244662</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Io &amp; Neptune</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_8.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>f009d324b3b8a45fafca06bdc8c1ea18</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>9</trackNumber>
+        <ISRC>QZHN32244663</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Moon</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_9.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>4a4ac2b43615016453fddceb5598eaf8</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+      <track>
+        <albumOnly>0</albumOnly>
+        <trackNumber>10</trackNumber>
+        <ISRC>QZHN32244664</ISRC>
+        <trackPublisher>Label Control</trackPublisher>
+        <trackTitle>Perséphone (feat. The Matrix)</trackTitle>
+        <originalReleaseDate>2022-04-03</originalReleaseDate>
+        <beatportExclusive>
+          <exclusivePeriod>0</exclusivePeriod>
+        </beatportExclusive>
+        <trackArtists>
+          <artistName>Isaac Solo</artistName>
+          <artistName>The Matrix</artistName>
+        </trackArtists>
+        <trackAudioFile>
+          <audioFilename>196834227253_10.wav</audioFilename>
+          <digestType>MD5</digestType>
+          <digestValue>2976345363a4fb9c5162dc6ba267f2ec</digestValue>
+        </trackAudioFile>
+        <countriesAvailable>
+          <country>WW</country>
+        </countriesAvailable>
+        <trackGenre>Electronica / Downtempo</trackGenre>
+        <trackCopyright>c Gravity Music, 2022</trackCopyright>
+        <songwriters>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>lyricist</type>
+          </songwriter>
+          <songwriter>
+            <name>Julien J Junet</name>
+            <type>composer</type>
+          </songwriter>
+        </songwriters>
+      </track>
+    </tracks>
+  </release>
+
