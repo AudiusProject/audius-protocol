@@ -165,7 +165,6 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
         console.error(errorMessage)
       }
     })
-    console.log('initcompleteybyp')
   }
 
   const loginWithAudius = async () => {
