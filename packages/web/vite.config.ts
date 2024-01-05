@@ -117,7 +117,13 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom'
     },
     ssr: {
-      noExternal: ['eth-sig-util', '@reduxjs/toolkit']
+      noExternal: [
+        'eth-sig-util',
+        '@reduxjs/toolkit',
+        'redux',
+        'immer',
+        'redux-thunk'
+      ]
     }
   }
 })
