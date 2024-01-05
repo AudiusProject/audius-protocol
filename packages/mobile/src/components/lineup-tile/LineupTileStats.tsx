@@ -207,9 +207,11 @@ export const LineupTileStats = ({
               width={spacing(4)}
             />
             <Text fontSize='xs' colorValue={accentPurple}>
-              Releases{' '}
-              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}{' '}
-              {getLocalTimezone()}
+              Releases
+              {' ' +
+                moment.utc(releaseDate).local().format('M/D/YY @ h:mm A') +
+                ' ' +
+                getLocalTimezone()}
             </Text>
           </View>
         ) : null}

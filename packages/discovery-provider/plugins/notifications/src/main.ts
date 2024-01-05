@@ -50,7 +50,7 @@ export class Processor {
   } = {}) => {
     await this.remoteConfig.init()
 
-    logger.info('starting up!')
+    logger.info('starting up!!!')
 
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })

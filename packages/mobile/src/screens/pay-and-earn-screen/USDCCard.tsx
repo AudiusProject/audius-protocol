@@ -51,19 +51,19 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   usdc: {
     fontSize: spacing(5),
     fontWeight: '900',
-    color: palette.white,
+    color: palette.staticWhite,
     opacity: 0.8
   },
   balance: {
     fontSize: spacing(10.5),
     fontWeight: '900',
-    color: palette.white,
+    color: palette.staticWhite,
     lineHeight: spacing(13)
   },
   buyAndSell: {
     fontSize: spacing(4),
     fontWeight: '500',
-    color: palette.white,
+    color: palette.staticWhite,
     marginTop: spacing(2)
   },
   learnMore: {
@@ -84,7 +84,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const USDCCard = () => {
   const styles = useStyles()
-  const white = useColor('white')
+  const white = useColor('staticWhite')
   const { data: balance } = useUSDCBalance()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -123,7 +123,7 @@ export const USDCCard = () => {
             width={spacing(4)}
             fill={white}
           />
-          <Text fontSize='small' weight='bold' color='white'>
+          <Text fontSize='small' weight='bold' color='staticWhite'>
             {messages.learnMore}
           </Text>
         </TouchableOpacity>

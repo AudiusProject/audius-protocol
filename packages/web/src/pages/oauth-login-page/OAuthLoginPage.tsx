@@ -1,195 +1,32 @@
-import {
-  FormEvent,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState
-} from 'react'
+import { FormEvent, useCallback, useLayoutEffect, useState } from 'react'
 
 import {
   accountSelectors,
-  CommonState,
-  encodeHashId,
   ErrorLevel,
   Name,
-  signOutActions,
-  statusIsNotFinalized,
-  User
+  signOutActions
 } from '@audius/common'
-import {
-  Button,
-  ButtonProps,
-  IconArrow,
-  IconAtSign,
-  IconPencil,
-  IconValidationX,
-  IconVisibilityPublic
-} from '@audius/stems'
+import { IconValidationX } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 
-import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './OAuthLoginPage.module.css'
-import { useParsedQueryParams } from './hooks'
+import { CTAButton } from './components/CTAButton'
+import { ContentWrapper } from './components/ContentWrapper'
+import { PermissionsSection } from './components/PermissionsSection'
+import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
-import {
-  authWrite,
-  formOAuthResponse,
-  getDeveloperApp,
-  getIsAppAuthorized
-} from './utils'
+import { WriteOnceTx } from './utils'
 const { signOut } = signOutActions
-const { getAccountUser, getAccountStatus } = accountSelectors
-
-const CTAButton = ({
-  isSubmitting,
-  ...restProps
-}: { isSubmitting: boolean } & ButtonProps) => {
-  return (
-    <Button
-      isDisabled={isSubmitting}
-      rightIcon={
-        isSubmitting ? (
-          <LoadingSpinner className={styles.buttonLoadingSpinner} />
-        ) : (
-          <IconArrow />
-        )
-      }
-      className={styles.ctaButton}
-      {...restProps}
-    />
-  )
-}
-
-const PermissionsSection = ({
-  scope,
-  isLoggedIn,
-  userEmail
-}: {
-  scope: string | string[] | null
-  isLoggedIn: boolean
-  userEmail?: string | null
-}) => {
-  return (
-    <>
-      <div className={styles.permsTitleContainer}>
-        <h3 className={styles.infoSectionTitle}>
-          {messages.permissionsRequestedHeader}
-        </h3>
-      </div>
-      <div className={styles.tile}>
-        <div className={styles.permissionContainer}>
-          <div
-            className={cn({
-              [styles.visibilityIconWrapper]: scope === 'read'
-            })}
-          >
-            {scope === 'write' ? (
-              <IconPencil
-                className={cn(styles.permissionIcon)}
-                width={18}
-                height={18}
-              />
-            ) : (
-              <IconVisibilityPublic
-                className={cn(styles.permissionIcon, styles.visibilityIcon)}
-                width={21}
-                height={22}
-              />
-            )}
-          </div>
-
-          <div className={styles.permissionTextContainer}>
-            <span className={styles.permissionText}>
-              {scope === 'write'
-                ? messages.writeAccountAccess
-                : messages.readOnlyAccountAccess}
-            </span>
-            {scope === 'read' ? null : (
-              <div className={cn(styles.permissionDetailTextContainer)}>
-                <p
-                  className={cn(
-                    styles.permissionText,
-                    styles.permissionDetailText
-                  )}
-                >
-                  {messages.doesNotGrantAccessTo}
-                  <br />
-                  {messages.walletsOrDMs}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div
-          className={cn(
-            styles.permissionContainer,
-            styles.nonFirstPermissionContainer
-          )}
-        >
-          <div>
-            <IconAtSign
-              width={15}
-              height={15}
-              className={cn(styles.permissionIcon, styles.atSignIcon)}
-            />
-          </div>
-          <div className={styles.permissionTextContainer}>
-            <span className={styles.permissionText}>
-              {messages.emailAddressAccess}
-            </span>
-            {isLoggedIn ? (
-              <div className={cn(styles.permissionDetailTextContainer)}>
-                <span
-                  className={cn(
-                    styles.permissionText,
-                    styles.permissionDetailText,
-                    {
-                      [styles.permissionTextExtraLight]: !userEmail
-                    }
-                  )}
-                >
-                  {userEmail == null ? (
-                    <>
-                      <LoadingSpinner className={styles.loadingSpinner} />{' '}
-                      {messages.emailLoading}&#8230;
-                    </>
-                  ) : (
-                    userEmail
-                  )}
-                </span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-const ContentWrapper = ({ children }: { children: ReactNode }) => (
-  <div className={styles.wrapper}>
-    <div className={styles.container}>
-      <div className={styles.centeredContent}>
-        <div className={styles.logoContainer}>
-          <img src={HorizontalLogo} className={styles.logo} alt='Audius Logo' />
-        </div>
-      </div>
-      {children}
-    </div>
-  </div>
-)
+const { getAccountUser } = accountSelectors
 
 export const OAuthLoginPage = () => {
   useLayoutEffect(() => {
@@ -199,54 +36,31 @@ export const OAuthLoginPage = () => {
     }
   }, [])
   const record = useRecord()
-  const history = useHistory()
-  const dispatch = useDispatch()
-
-  const {
-    appName: queryParamAppName,
-    apiKey,
-    scope,
-    redirectUri,
-    state,
-    responseMode,
-    origin: originParam,
-    parsedRedirectUri,
-    isRedirectValid,
-    parsedOrigin,
-    error: initError
-  } = useParsedQueryParams()
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const accountIsLoading = useSelector((state: CommonState) => {
-    const status = getAccountStatus(state)
-    return statusIsNotFinalized(status)
-  })
   const account = useSelector(getAccountUser)
   const isLoggedIn = Boolean(account)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
-  /** The fetched developer app name if write OAuth (we use `queryParamAppName` if read OAuth and no API key is given) */
-  const [registeredDeveloperAppName, setRegisteredDeveloperAppName] =
-    useState<string>()
-  const appName = registeredDeveloperAppName ?? queryParamAppName
 
-  const [userAlreadyWriteAuthorized, setUserAlreadyWriteAuthorized] =
-    useState<boolean>()
-  const [queryParamsError, setQueryParamsError] = useState<string | null>(
-    initError
-  )
+  const dispatch = useDispatch()
 
-  const loading =
-    accountIsLoading ||
-    (apiKey &&
-      (registeredDeveloperAppName === undefined ||
-        userAlreadyWriteAuthorized === undefined))
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
   const [hasCredentialsError, setHasCredentialsError] = useState(false)
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
+
+  const {
+    scope,
+    tx,
+    queryParamsError,
+    loading,
+    userAlreadyWriteAuthorized,
+    apiKey,
+    appName,
+    userEmail,
+    authorize,
+    txParams
+  } = useOAuthSetup()
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
@@ -283,229 +97,21 @@ export const OAuthLoginPage = () => {
     )
   }
 
-  useEffect(() => {
-    if (!queryParamsError) {
-      record(
-        make(Name.AUDIUS_OAUTH_START, {
-          redirectUriParam:
-            parsedRedirectUri === 'postmessage' ? 'postmessage' : redirectUri!,
-          originParam,
-          responseMode,
-          scope: scope!,
-          apiKeyParam: apiKey,
-          appId: (apiKey || appName)!
-        })
-      )
-    }
-  }, [
-    appName,
-    originParam,
-    parsedRedirectUri,
-    queryParamsError,
-    record,
-    redirectUri,
-    responseMode,
-    apiKey,
-    scope
-  ])
-
-  useEffect(() => {
-    const fetchDeveloperAppName = async () => {
-      if (!apiKey || queryParamsError) {
-        return
-      }
-      let developerApp
-      try {
-        developerApp = await getDeveloperApp(apiKey as string)
-      } catch {
-        setQueryParamsError(messages.invalidApiKeyError)
-        return
-      }
-      if (!developerApp) {
-        setQueryParamsError(messages.invalidApiKeyError)
-        return
-      }
-      setRegisteredDeveloperAppName(developerApp.name)
-    }
-    fetchDeveloperAppName()
-  }, [apiKey, queryParamAppName, queryParamsError, scope])
-
-  const formResponseAndRedirect = useCallback(
-    async ({
-      account,
-      grantCreated
+  const handleAuthError = useCallback(
+    ({
+      isUserError,
+      errorMessage,
+      error
     }: {
-      account: User
-      grantCreated?: boolean | undefined
+      isUserError: boolean
+      errorMessage: string
+      error?: Error
     }) => {
-      const jwt = await formOAuthResponse({
-        account,
-        userEmail,
-        onError: () => {
-          dispatch(
-            errorActions.handleError({
-              name: 'Form OAuth Response Error',
-              message: 'Form OAuth Response Error',
-              shouldRedirect: true
-            })
-          )
-        }
-      })
-      if (jwt == null) {
-        setIsSubmitting(false)
-        setAndLogGeneralSubmitError(false, messages.miscError)
-        return
-      }
-      if (isRedirectValid === true) {
-        record(
-          make(Name.AUDIUS_OAUTH_COMPLETE, {
-            appId: (apiKey || appName)!,
-            scope: scope!,
-            alreadyAuthorized: grantCreated
-          })
-        )
-        if (parsedRedirectUri === 'postmessage') {
-          if (parsedOrigin) {
-            if (!window.opener) {
-              setAndLogGeneralSubmitError(false, messages.noWindowError)
-              setIsSubmitting(false)
-            } else {
-              window.opener.postMessage(
-                { state, token: jwt },
-                parsedOrigin.origin
-              )
-            }
-          }
-        } else {
-          if (responseMode && responseMode === 'query') {
-            if (state != null) {
-              parsedRedirectUri!.searchParams.append('state', state as string)
-            }
-            parsedRedirectUri!.searchParams.append('token', jwt)
-          } else {
-            const statePart = state != null ? `state=${state}&` : ''
-            parsedRedirectUri!.hash = `#${statePart}token=${jwt}`
-          }
-          window.location.href = parsedRedirectUri!.toString()
-        }
-      }
+      setIsSubmitting(false)
+      setAndLogGeneralSubmitError(isUserError, errorMessage, error)
     },
-    [
-      isRedirectValid,
-      parsedOrigin,
-      parsedRedirectUri,
-      record,
-      responseMode,
-      setAndLogGeneralSubmitError,
-      state,
-      userEmail,
-      apiKey,
-      appName,
-      scope,
-      dispatch
-    ]
+    [setAndLogGeneralSubmitError]
   )
-
-  useEffect(() => {
-    const getInitialAuthorizationStatus = async () => {
-      if (queryParamsError || !apiKey || !isLoggedIn) {
-        setUserAlreadyWriteAuthorized(false)
-        return
-      }
-      let appAlreadyAuthorized
-      try {
-        appAlreadyAuthorized = await getIsAppAuthorized({
-          userId: encodeHashId(account!.user_id), // We know account exists because isLoggedIn is true
-          apiKey: apiKey as string
-        })
-      } catch (e) {
-        if (e instanceof Error) {
-          reportToSentry({ level: ErrorLevel.Error, error: e })
-        }
-        dispatch(
-          errorActions.handleError({
-            name: 'Get Is App Authorized',
-            message: 'Get Is App Authorized',
-            shouldRedirect: true
-          })
-        )
-        return
-      }
-      setUserAlreadyWriteAuthorized(appAlreadyAuthorized)
-    }
-    getInitialAuthorizationStatus()
-  }, [
-    account,
-    apiKey,
-    formResponseAndRedirect,
-    history,
-    isLoggedIn,
-    queryParamsError,
-    scope,
-    dispatch
-  ])
-
-  useEffect(() => {
-    const getAndSetEmail = async () => {
-      let email: string
-      try {
-        email = await audiusBackendInstance.getUserEmail()
-      } catch {
-        setUserEmail(null)
-        dispatch(
-          errorActions.handleError({
-            name: 'Get User Email',
-            message: 'Get User Email',
-            shouldRedirect: true
-          })
-        )
-        return
-      }
-      setUserEmail(email)
-    }
-    if (isLoggedIn) {
-      getAndSetEmail()
-    } else {
-      setUserEmail(null)
-    }
-  }, [history, isLoggedIn, dispatch])
-
-  const authorize = async (account: User) => {
-    let shouldCreateWriteGrant
-
-    if (scope === 'write') {
-      try {
-        shouldCreateWriteGrant = await getIsAppAuthorized({
-          userId: encodeHashId(account.user_id),
-          apiKey: apiKey as string
-        })
-        if (!shouldCreateWriteGrant) {
-          await authWrite({
-            userId: encodeHashId(account.user_id),
-            appApiKey: apiKey as string
-          })
-        }
-      } catch (e: unknown) {
-        setIsSubmitting(false)
-        let errorMessage = 'Creating write grant failed'
-        if (typeof e === 'string') {
-          errorMessage = e.toUpperCase()
-        } else if (e instanceof Error) {
-          errorMessage = e.message
-        }
-        setAndLogGeneralSubmitError(
-          false,
-          errorMessage,
-          e instanceof Error ? e : undefined
-        )
-        return
-      }
-    }
-    await formResponseAndRedirect({
-      account,
-      grantCreated: shouldCreateWriteGrant
-    })
-  }
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -543,7 +149,10 @@ export const OAuthLoginPage = () => {
       signInResponse.user.name
     ) {
       // Success - perform Oauth authorization
-      await authorize(signInResponse.user)
+      await authorize({
+        account: signInResponse.user,
+        onError: handleAuthError
+      })
     } else if (
       (!signInResponse.error &&
         signInResponse.user &&
@@ -571,7 +180,7 @@ export const OAuthLoginPage = () => {
       setAndLogGeneralSubmitError(false, messages.miscError)
     } else {
       setIsSubmitting(true)
-      authorize(account)
+      authorize({ account, onError: handleAuthError })
     }
   }
 
@@ -617,8 +226,10 @@ export const OAuthLoginPage = () => {
       {userAlreadyWriteAuthorized ? null : (
         <PermissionsSection
           scope={scope}
+          tx={tx as WriteOnceTx}
           userEmail={userEmail}
           isLoggedIn={isLoggedIn}
+          txParams={txParams}
         />
       )}
       {isLoggedIn ? (

@@ -54,7 +54,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   return (
     <TextBase
       ref={ref}
-      style={[styleProp, textStyles]}
+      style={[textStyles, styleProp]}
       role={isHeading ? 'heading' : undefined}
       {...other}
     />

@@ -60,6 +60,8 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         anchorRef={anchorRef}
         isVisible={isFocused}
         onClose={() => setIsFocused(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <div className={cn(styles.datePicker, style)}>
           <DayPickerSingleDateController
@@ -70,7 +72,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             }}
             isOutsideRange={(day) =>
               isScheduledRelease
-                ? false
+                ? !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
                 : // @ts-ignore mismatched moment versions; shouldn't be relevant here
                   !isInclusivelyBeforeDay(day, moment())
             }

@@ -13,7 +13,7 @@ export const ReleaseDateField = (props) => {
   const [{ value }] = useField<Nullable<string>>('release_date')
   let formattedValue = ''
   if (value) {
-    if (moment.utc(value).isAfter(moment())) {
+    if (moment(value).isAfter(moment())) {
       formattedValue =
         moment(value).format('M/D/YY @ h:mm A') + ' ' + getLocalTimezone()
     } else {

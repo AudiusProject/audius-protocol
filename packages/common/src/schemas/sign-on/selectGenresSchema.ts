@@ -19,5 +19,5 @@ export const selectableGenres = GENRES.filter(
 }))
 
 export const selectGenresSchema = z.object({
-  genres: z.array(z.string()).min(3)
+  genres: z.array(z.string()).min(1)
 })

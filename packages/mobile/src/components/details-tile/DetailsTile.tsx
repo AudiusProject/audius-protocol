@@ -145,9 +145,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   releaseContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'center',
     gap: spacing(1)
+  },
+  releasesLabel: {
+    paddingTop: 2
   }
 }))
 
@@ -415,8 +417,13 @@ export const DetailsTile = ({
                 {isScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
-                    <HarmonyText color='accent' strength='strong' size='m'>
-                      Releases on
+                    <HarmonyText
+                      color='accent'
+                      strength='strong'
+                      size='m'
+                      style={styles.releasesLabel}
+                    >
+                      Releases
                       {' ' +
                         moment
                           .utc(track.release_date)
