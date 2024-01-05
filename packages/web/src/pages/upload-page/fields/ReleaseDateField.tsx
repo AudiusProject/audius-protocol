@@ -24,9 +24,9 @@ import { formatCalendarTime } from 'utils/dateUtils'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
+import { IS_UNLISTED } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
-import { IS_UNLISTED } from './AccessAndSaleField'
 
 const messages = {
   title: 'Release Date',
@@ -76,7 +76,8 @@ export const timeValidationSchema = z.object({
 })
 
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
-type IsScheduledReleaseValue = SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]
+type IsScheduledReleaseValue =
+  SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]
 
 export const ReleaseDateField = () => {
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
@@ -110,7 +111,11 @@ export const ReleaseDateField = () => {
         setIsUnlisted(false)
         return
       }
-      const mergedReleaseDate = mergeDateTimeValues(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
+      const mergedReleaseDate = mergeDateTimeValues(
+        values[RELEASE_DATE],
+        values[RELEASE_DATE_HOUR],
+        values[RELEASE_DATE_MERIDIAN]
+      )
       if (mergedReleaseDate.isAfter(moment())) {
         // set is scheduled release
         setIsScheduledRelease(true)
@@ -162,7 +167,11 @@ export const ReleaseDateField = () => {
   )
 }
 
-export const mergeDateTimeValues = (day: string, time: string, meridian: string) => {
+export const mergeDateTimeValues = (
+  day: string,
+  time: string,
+  meridian: string
+) => {
   const truncatedReleaseDate = moment(day).startOf('day')
   const hour = parseInt(time.split(':')[0])
   let adjustedHours = hour
@@ -181,9 +190,6 @@ export const mergeDateTimeValues = (day: string, time: string, meridian: string)
 
 export const ReleaseDateRadioItems = () => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-
-
-
 
   return (
     <>
@@ -207,8 +213,7 @@ export const ReleaseDateRadioItems = () => {
 }
 export const SelectReleaseDate = () => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-  const [, , { setValue: setReleaseDateHour }] =
-    useField(RELEASE_DATE_HOUR)
+  const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
   const [, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
   const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =

@@ -1,169 +1,194 @@
 import { useMemo, useState } from 'react'
 
 import {
-    PremiumConditionsCollectibleGated,
-    PremiumConditionsFollowGated,
-    PremiumConditionsTipGated,
-    PremiumConditionsUSDCPurchase,
-    Track,
-    TrackAvailabilityType,
-    accountSelectors,
-    isPremiumContentCollectibleGated,
-    isPremiumContentFollowGated,
-    isPremiumContentTipGated,
-    isPremiumContentUSDCPurchaseGated,
-    useUSDCPurchaseConfig,
-    Nullable,
-    PremiumConditions,
-    dayjs,
-    getLocalTimezone
+  PremiumConditionsCollectibleGated,
+  PremiumConditionsFollowGated,
+  PremiumConditionsTipGated,
+  PremiumConditionsUSDCPurchase,
+  Track,
+  TrackAvailabilityType,
+  accountSelectors,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
+  isPremiumContentUSDCPurchaseGated,
+  useUSDCPurchaseConfig,
+  Nullable,
+  PremiumConditions,
+  dayjs,
+  getLocalTimezone
 } from '@audius/common'
+import { Flex } from '@audius/harmony'
 import {
-    Button,
-    ButtonSize,
-    ButtonType,
-    IconCalendar,
-    IconCart,
-    IconCollectible,
-    IconHidden,
-    IconSpecialAccess,
-    IconVisibilityPublic
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCalendar,
+  IconCart,
+  IconCollectible,
+  IconHidden,
+  IconSpecialAccess,
+  IconVisibilityPublic
 } from '@audius/stems'
 import { set, get } from 'lodash'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { defaultFieldVisibility } from 'pages/track-page/utils'
-import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
-
-import styles from './ReleaseDateTriggerLegacy.module.css'
-import { ContextualMenu } from './ContextualMenu'
-import { RELEASE_DATE, RELEASE_DATE_HOUR, RELEASE_DATE_MERIDIAN, RELEASE_DATE_TYPE, ReleaseDateRadioItems, ReleaseDateField, ReleaseDateType, SelectReleaseDate, mergeDateTimeValues, ReleaseDateFormValues, timeValidationSchema } from 'pages/upload-page/fields/ReleaseDateField'
-import moment from 'moment'
-import { formatCalendarTime } from 'utils/dateUtils'
-import { Flex } from '@audius/harmony'
 import { Text } from 'components/typography'
+import { defaultFieldVisibility } from 'pages/track-page/utils'
+import {
+  RELEASE_DATE,
+  RELEASE_DATE_HOUR,
+  RELEASE_DATE_MERIDIAN,
+  RELEASE_DATE_TYPE,
+  ReleaseDateRadioItems,
+  ReleaseDateField,
+  ReleaseDateType,
+  SelectReleaseDate,
+  mergeDateTimeValues,
+  ReleaseDateFormValues,
+  timeValidationSchema
+} from 'pages/upload-page/fields/ReleaseDateField'
+import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
+import { formatCalendarTime } from 'utils/dateUtils'
+
+import { ContextualMenu } from './ContextualMenu'
+import styles from './ReleaseDateTriggerLegacy.module.css'
 
 const { getUserId } = accountSelectors
 
 const messages = {
-    title: 'Release Date',
-    description:
-        "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
-    public: 'Public (Default)',
-    premium: 'Premium',
-    specialAccess: 'Special Access',
-    collectibleGated: 'Collectible Gated',
-    hidden: 'Hidden'
+  title: 'Release Date',
+  description:
+    "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
+  public: 'Public (Default)',
+  premium: 'Premium',
+  specialAccess: 'Special Access',
+  collectibleGated: 'Collectible Gated',
+  hidden: 'Hidden'
 }
 
 enum PremiumTrackMetadataField {
-    IS_PREMIUM = 'is_premium',
-    PREMIUM_CONDITIONS = 'premium_conditions',
-    PREVIEW = 'preview_start_seconds'
+  IS_PREMIUM = 'is_premium',
+  PREMIUM_CONDITIONS = 'premium_conditions',
+  PREVIEW = 'preview_start_seconds'
 }
 
 enum UnlistedTrackMetadataField {
-    SCHEDULED_RELEASE = 'scheduled_release',
-    UNLISTED = 'unlisted',
-    GENRE = 'genre',
-    MOOD = 'mood',
-    TAGS = 'tags',
-    SHARE = 'share',
-    PLAYS = 'plays'
+  SCHEDULED_RELEASE = 'scheduled_release',
+  UNLISTED = 'unlisted',
+  GENRE = 'genre',
+  MOOD = 'mood',
+  TAGS = 'tags',
+  SHARE = 'share',
+  PLAYS = 'plays'
 }
 
 type TrackMetadataState = {
-    is_scheduled_release: boolean,
-    is_unlisted: boolean,
-    release_date: string
-
+  is_scheduled_release: boolean
+  is_unlisted: boolean
+  release_date: string
 }
 
 type ReleaseDateTriggerLegacyProps = {
-    isRemix: boolean
-    isUpload: boolean
-    initialForm: Track
-    metadataState: TrackMetadataState
-    trackLength: number
-    didUpdateState: (newState: TrackMetadataState) => void
+  isRemix: boolean
+  isUpload: boolean
+  initialForm: Track
+  metadataState: TrackMetadataState
+  trackLength: number
+  didUpdateState: (newState: TrackMetadataState) => void
 }
 
 export const ReleaseDateTriggerLegacy = (
-    props: ReleaseDateTriggerLegacyProps
+  props: ReleaseDateTriggerLegacyProps
 ) => {
-    const { didUpdateState, metadataState } = props
-    const trackReleaseDate = props.metadataState.release_date
-    const [trackReleaseDateState, setTrackReleaseDateState] = useState(moment(trackReleaseDate).toString())
-    console.log('asdf trackReleaseDate: ', trackReleaseDate, trackReleaseDateState)
-    const initialValues = useMemo(() => {
-        return {
-            [RELEASE_DATE]: trackReleaseDateState ?? moment(trackReleaseDateState).startOf('day').toString(),
-            [RELEASE_DATE_HOUR]: trackReleaseDateState
-                ? moment(trackReleaseDateState).format('h:mm')
-                : moment().format('h:mm'),
-            [RELEASE_DATE_MERIDIAN]: trackReleaseDateState
-                ? moment(trackReleaseDateState).format('A')
-                : moment().format('A'),
-            [RELEASE_DATE_TYPE]: ReleaseDateType.SCHEDULED_RELEASE
-        }
-    }, [trackReleaseDateState])
-    const onSubmit = (values: ReleaseDateFormValues) => {
-        const mergedReleaseDate = mergeDateTimeValues(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
-        const dayjsTime = dayjs(mergedReleaseDate.toString()).utc().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
+  const { didUpdateState, metadataState } = props
+  const trackReleaseDate = props.metadataState.release_date
+  const [trackReleaseDateState, setTrackReleaseDateState] = useState(
+    moment(trackReleaseDate).toString()
+  )
+  console.log(
+    'asdf trackReleaseDate: ',
+    trackReleaseDate,
+    trackReleaseDateState
+  )
+  const initialValues = useMemo(() => {
+    return {
+      [RELEASE_DATE]:
+        trackReleaseDateState ??
+        moment(trackReleaseDateState).startOf('day').toString(),
+      [RELEASE_DATE_HOUR]: trackReleaseDateState
+        ? moment(trackReleaseDateState).format('h:mm')
+        : moment().format('h:mm'),
+      [RELEASE_DATE_MERIDIAN]: trackReleaseDateState
+        ? moment(trackReleaseDateState).format('A')
+        : moment().format('A'),
+      [RELEASE_DATE_TYPE]: ReleaseDateType.SCHEDULED_RELEASE
+    }
+  }, [trackReleaseDateState])
+  const onSubmit = (values: ReleaseDateFormValues) => {
+    const mergedReleaseDate = mergeDateTimeValues(
+      values[RELEASE_DATE],
+      values[RELEASE_DATE_HOUR],
+      values[RELEASE_DATE_MERIDIAN]
+    )
+    const dayjsTime = dayjs(mergedReleaseDate.toString())
+      .utc()
+      .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
 
-        let newState = {
-            ...metadataState,
-            release_date: dayjsTime
-        }
-        if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
-            // publish if release now or release date has passed
-            newState.is_unlisted = false
-            newState.release_date = dayjs().utc().format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
-        } else if (mergedReleaseDate.isBefore(moment())) {
-            newState.is_unlisted = false
-        } else {
-            newState.is_unlisted = true
-        }
-
-        console.log('asdf edit state: ', newState)
-        setTrackReleaseDateState(newState.release_date)
-        didUpdateState(newState)
+    const newState = {
+      ...metadataState,
+      release_date: dayjsTime
+    }
+    if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
+      // publish if release now or release date has passed
+      newState.is_unlisted = false
+      newState.release_date = dayjs()
+        .utc()
+        .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+    } else if (mergedReleaseDate.isBefore(moment())) {
+      newState.is_unlisted = false
+    } else {
+      newState.is_unlisted = true
     }
 
-    return (
+    console.log('asdf edit state: ', newState)
+    setTrackReleaseDateState(newState.release_date)
+    didUpdateState(newState)
+  }
 
-
-        <ContextualMenu
-            label={messages.title}
-            description={messages.description}
-            icon={<IconCalendar />}
-            initialValues={initialValues}
-            validationSchema={toFormikValidationSchema(
-                timeValidationSchema
-            )}
-            onSubmit={onSubmit}
-            menuFields={
-                <>
-                    <Flex direction='column' gap='l'>
-                        <Text>{messages.description}</Text>
-                        <ReleaseDateRadioItems isScheduledRelease={false} isUnlisted={false} />
-                    </Flex>
-
-                </>
-            }
-            renderValue={() => null}
-            previewOverride={(toggleMenu) => (
-                <Button
-                    className={styles.releaseDateButton}
-                    type={ButtonType.COMMON_ALT}
-                    name='availabilityModal'
-                    text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
-                    size={ButtonSize.SMALL}
-                    onClick={toggleMenu}
-                    leftIcon={<IconCalendar />}
-                />
-            )}
+  return (
+    <ContextualMenu
+      label={messages.title}
+      description={messages.description}
+      icon={<IconCalendar />}
+      initialValues={initialValues}
+      validationSchema={toFormikValidationSchema(timeValidationSchema)}
+      onSubmit={onSubmit}
+      menuFields={
+        <>
+          <Flex direction='column' gap='l'>
+            <Text>{messages.description}</Text>
+            <ReleaseDateRadioItems
+              isScheduledRelease={false}
+              isUnlisted={false}
+            />
+          </Flex>
+        </>
+      }
+      renderValue={() => null}
+      previewOverride={(toggleMenu) => (
+        <Button
+          className={styles.releaseDateButton}
+          type={ButtonType.COMMON_ALT}
+          name='availabilityModal'
+          text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
+          size={ButtonSize.SMALL}
+          onClick={toggleMenu}
+          leftIcon={<IconCalendar />}
         />
-    )
+      )}
+    />
+  )
 }

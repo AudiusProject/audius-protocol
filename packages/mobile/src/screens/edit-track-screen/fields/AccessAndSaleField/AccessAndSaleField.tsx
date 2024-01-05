@@ -48,7 +48,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
-  const [{ value: isScheduledRelease }] = useField<boolean>('is_scheduled_release')
+  const [{ value: isScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')

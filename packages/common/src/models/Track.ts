@@ -80,9 +80,9 @@ export type PremiumConditionsSolNFTCollection = {
 // after user has set the collection.
 export type PremiumConditionsCollectibleGated = {
   nft_collection:
-  | PremiumConditionsEthNFTCollection
-  | PremiumConditionsSolNFTCollection
-  | undefined
+    | PremiumConditionsEthNFTCollection
+    | PremiumConditionsSolNFTCollection
+    | undefined
 }
 
 export type PremiumConditionsFollowGated = { follow_user_id: number }

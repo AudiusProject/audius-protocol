@@ -3,15 +3,17 @@ import { useCallback, useMemo } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import { useField } from 'formik'
 
-
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setIsPremium }] = useField<boolean>('is_premium')
   const [, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
-  const [{ value: isScheduledRelease }, , { }] = useField<boolean>('is_scheduled_release')
+  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
+    useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }, , {}] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
     'preview_start_seconds'
@@ -31,11 +33,10 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.remixes'
   )
 
-
   const defaultTrackAvailabilityFields = {
     is_premium: false,
     premium_conditions: null as Nullable<PremiumConditions>,
-    is_unlisted: (isScheduledRelease && isUnlisted) ? true : false, // scheduled releases cannot be made public via access & sale
+    is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
     preview_start_seconds: null as Nullable<Number>,
     'field_visibility.genre': true,
     'field_visibility.mood': true,
@@ -45,7 +46,6 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.remixes': true
   }
   type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
-
 
   const fieldSetters = useMemo(() => {
     return {

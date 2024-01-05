@@ -35,9 +35,8 @@ import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
-import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
-
 import styles from './FormTile.module.css'
+import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
 
 const {
   ALL_RIGHTS_RESERVED_TYPE,
@@ -345,8 +344,6 @@ const AdvancedForm = (props) => {
     FeatureFlags.SCHEDULED_RELEASES
   )
 
-
-
   const {
     remixSettingsModalVisible,
     setRemixSettingsModalVisible,
@@ -362,10 +359,10 @@ const AdvancedForm = (props) => {
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
 
-  let releaseDateState = {
+  const releaseDateState = {
     is_unlisted: props.defaultFields.is_unlisted,
     is_scheduled_release: props.defaultFields.is_scheduled_release,
-    release_date: props.defaultFields.release_date,
+    release_date: props.defaultFields.release_date
   }
 
   const showAvailability = props.type === 'track' && props.showUnlistedToggle

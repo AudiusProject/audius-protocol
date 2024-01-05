@@ -228,7 +228,8 @@ export const DetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-  const isUnpublishedScheduledRelease = track?.is_scheduled_release && track?.is_unlisted
+  const isUnpublishedScheduledRelease =
+    track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
     isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
 
@@ -411,7 +412,7 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
-                  {isUnpublishedScheduledRelease && track?.release_date ? (
+                {isUnpublishedScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
                     <HarmonyText
@@ -422,9 +423,8 @@ export const DetailsTile = ({
                     >
                       Releases
                       {' ' +
-                          moment(track.release_date)
-                          .format('M/D/YY @ h:mm A ') +
-                          dayjs().format('z')}
+                        moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                        dayjs().format('z')}
                     </HarmonyText>
                   </View>
                 ) : null}

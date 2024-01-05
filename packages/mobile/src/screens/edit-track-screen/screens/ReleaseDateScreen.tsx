@@ -93,7 +93,9 @@ export const ScheduledReleaseRadioField = (props) => {
   const styles = useStyles()
   const theme = useThemeVariant()
   const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
-  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>('is_scheduled_release')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
@@ -183,8 +185,8 @@ export const ScheduledReleaseRadioField = (props) => {
             />
           ) : null}
           {selected &&
-            releaseDateValue &&
-            moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
+          releaseDateValue &&
+          moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
             <TextField
               name={'release_date_time'}
               label={'Time'}
@@ -243,7 +245,9 @@ export const ReleaseNowRadioField = (props) => {
     useField<Nullable<string>>('release_date')
   const styles = useStyles()
   const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
-  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>('is_scheduled_release')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   useEffect(() => {
     if (selected) {

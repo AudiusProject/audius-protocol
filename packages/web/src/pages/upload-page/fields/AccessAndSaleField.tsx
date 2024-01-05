@@ -256,7 +256,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
   const [{ value: isScheduledRelease }, ,] =
-    useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(IS_SCHEDULED_RELEASE)
+    useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
+      IS_SCHEDULED_RELEASE
+    )
   const [{ value: isPremium }, , { setValue: setIsPremiumValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
   const [
@@ -478,7 +480,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isPremiumContentTipGated(savedPremiumConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if ((isUnlisted && !isScheduledRelease) && fieldVisibility) {
+    } else if (isUnlisted && !isScheduledRelease && fieldVisibility) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
@@ -503,7 +505,13 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         })}
       </div>
     )
-  }, [fieldVisibility, isUnlisted, savedPremiumConditions, preview, isScheduledRelease])
+  }, [
+    fieldVisibility,
+    isUnlisted,
+    savedPremiumConditions,
+    preview,
+    isScheduledRelease
+  ])
 
   return (
     <ContextualMenu
@@ -538,8 +546,13 @@ type AccesAndSaleMenuFieldsProps = {
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
-  const { isRemix, isUpload, isInitiallyUnlisted, initialPremiumConditions, isScheduledRelease } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    isInitiallyUnlisted,
+    initialPremiumConditions,
+    isScheduledRelease
+  } = props
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES

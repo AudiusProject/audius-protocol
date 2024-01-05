@@ -45,11 +45,12 @@ export const useAccessAndRemixSettings = ({
     const numSolCollectibles = Object.keys(solCollectionMap).length
     return numEthCollectibles + numSolCollectibles === 0
   })
-  const isReleased = (!isInitiallyUnlisted && isScheduledRelease)
-  const isInitiallyPublic =
-    !isUpload && (isReleased) && !initialPremiumConditions
+  const isReleased = !isInitiallyUnlisted && isScheduledRelease
+  const isInitiallyPublic = !isUpload && isReleased && !initialPremiumConditions
   const isInitiallyUsdcGated =
-    isReleased && !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+    isReleased &&
+    !isUpload &&
+    isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
 
   const isInitiallySpecialAccess =
     isReleased &&
@@ -60,7 +61,9 @@ export const useAccessAndRemixSettings = ({
     )
 
   const isInitiallyCollectibleGated =
-    isReleased && !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
+    isReleased &&
+    !isUpload &&
+    isPremiumContentCollectibleGated(initialPremiumConditions)
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 

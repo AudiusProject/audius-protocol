@@ -165,8 +165,7 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease =
-    isUnlisted && moment(releaseDate).isAfter(moment())
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>

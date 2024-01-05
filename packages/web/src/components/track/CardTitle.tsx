@@ -72,25 +72,26 @@ export const CardTitle = ({
       </div>
     )
   } else {
-    content = isUnlisted && !isScheduledRelease ? (
-      <Tooltip
-        text={messages.hiddenTrackTooltip}
-        mouseEnterDelay={0}
-        shouldWrapContent={false}
-      >
-        <div>
-          <HiddenTrackHeader />
+    content =
+      isUnlisted && !isScheduledRelease ? (
+        <Tooltip
+          text={messages.hiddenTrackTooltip}
+          mouseEnterDelay={0}
+          shouldWrapContent={false}
+        >
+          <div>
+            <HiddenTrackHeader />
+          </div>
+        </Tooltip>
+      ) : (
+        <div className={styles.typeLabel}>
+          {isRemix
+            ? messages.remixTitle
+            : isPodcast && isNewPodcastControlsEnabled
+            ? messages.podcastTitle
+            : messages.trackTitle}
         </div>
-      </Tooltip>
-    ) : (
-      <div className={styles.typeLabel}>
-        {isRemix
-          ? messages.remixTitle
-          : isPodcast && isNewPodcastControlsEnabled
-          ? messages.podcastTitle
-          : messages.trackTitle}
-      </div>
-    )
+      )
   }
 
   return (

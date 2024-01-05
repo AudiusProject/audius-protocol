@@ -283,8 +283,7 @@ export const TracksTable = ({
       suffix = ' (Scheduled)'
     }
     return (
-      moment(track.release_date ?? track.created_at)
-        .format('M/D/YY') + suffix
+      moment(track.release_date ?? track.created_at).format('M/D/YY') + suffix
     )
   }, [])
 
