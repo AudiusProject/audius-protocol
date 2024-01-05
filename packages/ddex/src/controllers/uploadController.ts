@@ -1,7 +1,9 @@
 import { Request, Response } from 'express'
 import fs from 'fs'
+import path from 'path'
 import { DOMParser } from 'linkedom'
 import multer from 'multer'
+import { unlink } from 'fs/promises'
 import type {
   AudiusSdk as AudiusSdkType,
   Genre,
@@ -72,14 +74,18 @@ const processXml = async (document: any, audiusSdk: AudiusSdkType) => {
       userId: userId,
       // TODO replace with actual img file from upload request
       coverArtFile: {
-        buffer: await fs.promises.readFile('examples/clipper.jpg'),
+        buffer: await fs.promises.readFile(
+          path.join(__dirname, '..', 'examples', 'clipper.jpg')
+        ),
         name: 'todo_file_name',
       },
       metadata: tt,
       onProgress: (progress: any) => console.log('Progress:', progress),
       // TODO replace with actual audio file from upload request
       trackFile: {
-        buffer: await fs.promises.readFile('examples/snare.wav'),
+        buffer: await fs.promises.readFile(
+          path.join(__dirname, '..', 'examples', 'snare.wav')
+        ),
         name: 'todo_track_file_name',
       },
     }
@@ -106,20 +112,24 @@ export const postUploadXml =
         return res.status(400).json({ error: 'No file uploaded.' })
       }
 
+      const filePath = req.file.path
       try {
-        const filePath = req.file.path
         const xmlText = await fs.promises.readFile(filePath)
         const document = new DOMParser().parseFromString(
           xmlText.toString(),
           'text/xml'
         )
+        // TODO sanitize document to remove unexpected tags
         await processXml(document, audiusSdk)
 
         // TODO: Persist the upload in DB
 
         res.json({ message: 'File uploaded and processed successfully.' })
       } catch (err: any) {
+        console.log(`Error uploading xml: ${err}`)
         return res.status(500).json({ error: err })
+      } finally {
+        await unlink(filePath)
       }
     })
   }
