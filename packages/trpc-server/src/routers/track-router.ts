@@ -36,7 +36,7 @@ export const trackRouter = router({
           },
         },
         size: 1,
-        sort: [{ created_at: { order: 'desc' } }],
+        sort: [{ created_at: { order: 'desc' as const } }],
         _source: ['playlist_id', 'playlist_name', 'permalink'],
       })
 
