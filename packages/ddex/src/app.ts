@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express, { Express, Request, Response } from 'express'
 import path from 'path'
-// import cors from "cors"
 import * as uploadController from './controllers/uploadController'
 import { createSdkService } from './services/sdkService'
 import { createScheduledReleaseService } from './services/scheduledReleaseService'
@@ -25,13 +24,6 @@ const scheduledReleaseService = createScheduledReleaseService(
  */
 
 const app: Express = express()
-// Uncomment when developing locally as this is required for uploads to work
-// when running the frontend and backend apps separately.
-// TODO make the dev flow more seamless
-// const corsOptions = {
-//   origin: 'http://localhost:5173'
-// }
-// app.use(cors(corsOptions));
 
 /*
  * Define API routes
@@ -49,10 +41,10 @@ app.get('/api/health_check', (req: Request, res: Response) => {
  * Serve the React app as static assets at the root path
  */
 
-const isProduction = process.env.NODE_ENV === 'production'
-const buildPath = isProduction
-  ? path.join(__dirname, '..', 'public')
-  : path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+const isDev = process.env.IS_DEV === 'true'
+const buildPath = isDev
+  ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+  : path.join(__dirname, '..', 'public')
 app.use(express.static(buildPath))
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(buildPath, 'index.html'))
