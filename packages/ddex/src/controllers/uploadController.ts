@@ -18,18 +18,19 @@ export const postUploadXml = (xmlProcessorService: XmlProcessorService) => {
       }
 
       try {
+        const uploadedBy = '' // TODO: Auth should tell us who's uploading this
         const fileBuffer = req.file.buffer
         const fileType = req.file.mimetype // Adjust based on how your file type is determined
 
         // Save XML file to db, or unzip a ZIP file and save multiple XML files to db
         if (fileType === 'text/xml') {
-          xmlProcessorService.addXmlFile(fileBuffer)
+          xmlProcessorService.addXmlFile(fileBuffer, uploadedBy)
         } else if (fileType === 'application/zip') {
           const files = await decompress(fileBuffer)
           const zipFileUUID = uuidv4()
           for (const file of files) {
             if (file.path.endsWith('.xml')) {
-              xmlProcessorService.addXmlFile(file.data, zipFileUUID)
+              xmlProcessorService.addXmlFile(file.data, uploadedBy, zipFileUUID)
             }
           }
         } else {

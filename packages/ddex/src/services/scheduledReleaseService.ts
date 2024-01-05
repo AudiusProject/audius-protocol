@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import type { Sql } from 'postgres'
 import type {
   AudiusSdk as AudiusSdkType,

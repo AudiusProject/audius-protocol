@@ -1,7 +1,7 @@
 export type XmlFileRow = {
   id: number
   from_zip_file?: string // UUID string
-  uploaded_by: number
+  uploaded_by?: string
   uploaded_at: Date
   xml_contents: string
   status: string

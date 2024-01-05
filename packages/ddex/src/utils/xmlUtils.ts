@@ -4,83 +4,65 @@ import type {
 } from '@audius/sdk/dist/sdk/index.d.ts'
 import type { ReleaseRowData } from '../models/dbTypes'
 
-const queryAll = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hits = node.querySelectorAll(field)
-    if (hits.length) return Array.from(hits)
-  }
-  return []
-}
+import { XMLParser } from 'fast-xml-parser'
 
-const firstValue = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hit = node.querySelector(field)
-    if (hit) return hit.textContent.trim()
-  }
-}
-
-// TODO: This function needs a lot of work!
 export const getReleasesFromXml = async (
   xml: string,
   audiusSdk: AudiusSdkType
 ): Promise<{ release_date: Date; data: ReleaseRowData }[]> => {
-  const document = new DOMParser().parseFromString(xml, 'text/xml')
+  try {
+    const parser = new XMLParser({ ignoreAttributes: false })
+    const result = parser.parse(xml)
 
-  // extract SoundRecording
-  const trackNodes = queryAll(document, 'SoundRecording', 'track')
+    const trackNodes = result.release.tracks.track
 
-  const releases: { release_date: Date; data: ReleaseRowData }[] = []
+    // TODO: This should really be mapping result.release, not result.release.tracks.track
+    const releasePromises = trackNodes.map(async (trackNode: any) => {
+      const releaseDateValue =
+        trackNode.OriginalReleaseDate || trackNode.originalReleaseDate
+      const title = trackNode.TitleText || trackNode.trackTitle
+      const tt = {
+        title,
 
-  for (const trackNode of Array.from(trackNodes)) {
-    const releaseDateValue = firstValue(
-      trackNode,
-      'OriginalReleaseDate',
-      'originalReleaseDate'
-    )
-    const title = firstValue(trackNode, 'TitleText', 'trackTitle')
-    const tt = {
-      title,
+        // todo: need to normalize genre
+        // genre: firstValue(trackNode, "Genre", "trackGenre"),
+        genre: 'Metal' as Genre,
 
-      // todo: need to normalize genre
-      // genre: firstValue(trackNode, "Genre", "trackGenre"),
-      genre: 'Metal' as Genre,
+        // todo: need to parse release date if present
+        releaseDate: new Date(releaseDateValue as string | number | Date),
+        // releaseDate: new Date(),
 
-      // todo: need to parse release date if present
-      releaseDate: new Date(releaseDateValue as string | number | Date),
-      // releaseDate: new Date(),
+        isUnlisted: false,
+        isPremium: false,
+        fieldVisibility: {
+          genre: true,
+          mood: true,
+          tags: true,
+          share: true,
+          play_count: true,
+          remixes: true,
+        },
+        description: '',
+        license: 'Attribution ShareAlike CC BY-SA',
+      }
+      const artistName = trackNode.trackArtists.artistName[0]
+      const { data: users } = await audiusSdk.users.searchUsers({
+        query: artistName,
+      })
+      if (!users || users.length === 0) {
+        throw new Error(`Could not find user ${artistName}`)
+      }
+      const userId = users[0].id
 
-      isUnlisted: false,
-      isPremium: false,
-      fieldVisibility: {
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        play_count: true,
-        remixes: true,
-      },
-      description: '',
-      license: 'Attribution ShareAlike CC BY-SA',
-    }
-    const artistName = firstValue(trackNode, 'ArtistName', 'artistName')
-    const { data: users } = await audiusSdk.users.searchUsers({
-      query: artistName,
+      return {
+        release_date: new Date(releaseDateValue),
+        data: { ...tt, userId, artistName },
+      }
     })
-    if (!users || users.length === 0) {
-      throw new Error(`Could not find user ${artistName}`)
-    }
-    const userId = users[0].id
 
-    releases.push({
-      release_date: tt.releaseDate,
-      data: { ...tt, userId, artistName },
-    })
+    const releases = await Promise.all(releasePromises)
+    return releases
+  } catch (error) {
+    throw new Error(`Error parsing XML: ${error}`)
   }
-
-  // todo
-  // extract Release
-  // for (const releaseNode of queryAll(document, "Release", "release")) {
-  // }
-
-  return releases
 }

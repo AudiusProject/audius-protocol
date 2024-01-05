@@ -12,7 +12,11 @@ import { getReleasesFromXml } from '../utils/xmlUtils'
  */
 
 export interface XmlProcessorService {
-  addXmlFile: (fileBuffer: Buffer, zipFileUUID?: string) => Promise<void>
+  addXmlFile: (
+    fileBuffer: Buffer,
+    uploadedBy?: string,
+    zipFileUUID?: string
+  ) => Promise<void>
 }
 
 export const createXmlProcessorService = (
@@ -23,7 +27,7 @@ export const createXmlProcessorService = (
     console.log('Processing XML file with contents:', row.xml_contents)
     const releases = await getReleasesFromXml(row.xml_contents, audiusSdk)
     for (const release of releases) {
-      console.log('Extracting from XML:', release)
+      console.log('Extracted release from XML:', release)
       await sql`INSERT INTO releases (from_xml_file, release_date, data, status) VALUES (
         ${row.id}, ${release.release_date}, ${JSON.stringify(
           release.data
@@ -35,35 +39,21 @@ export const createXmlProcessorService = (
 
   const queue: queueAsPromised<XmlFileRow> = fastq.promise(worker, 1)
 
-  const addXmlFile = async (fileBuffer: Buffer, zipFileUUID = '') => {
-    await sql`INSERT INTO xml_files (from_zip_file, xml_contents, status) VALUES (${zipFileUUID}, ${fileBuffer.toString()}, 'pending')`
+  const addXmlFile = async (
+    fileBuffer: Buffer,
+    uploadedBy: string | null = null,
+    zipFileUUID: string | null = null
+  ) => {
+    const rows = await sql<
+      XmlFileRow[]
+    >`INSERT INTO xml_files (from_zip_file, xml_contents, uploaded_by, status) VALUES (${zipFileUUID}, ${fileBuffer.toString()}, ${uploadedBy}, 'processing') RETURNING *`
+    console.log('Add XML file to queue:', JSON.stringify(rows[0]))
+    queue.push(rows[0])
   }
 
-  // Every 5 seconds, scan the db for pending XML files and enqueue them to be processed
-  const enqueuePendingXml = async () => {
-    try {
-      const pending = await sql<
-        XmlFileRow[]
-      >`SELECT * FROM xml_files WHERE status = 'pending'`
-      for (const row of pending) {
-        // TODO: If we do this then if the server restarts it'll see everything as processing and not re-add it to the queue.
-        // Need to add all 'processing' to the queue on server start in case it restarted in the middle of processing.
-        await sql`UPDATE xml_files SET status = 'processing' WHERE id = ${row.id}`
-        queue.push(row)
-      }
-    } catch (error) {
-      console.error('Error processing XML files:', error)
-    } finally {
-      setTimeout(enqueuePendingXml, 5000)
-    }
-  }
-  enqueuePendingXml()
+  // TODO: Need to add all 'processing' to the queue on server start in case it restarted in the middle of processing
 
-  // TODO: We'll want a similar cron to scan for failed XML parsing and re-process them
-
-  const processXmlFiles = async () => {
-    // TODO: Another queue can scan the db for failed statuses and re-process them
-  }
+  // TODO: We'll also want a cron to scan for failed XML parsing and re-process them
 
   return {
     addXmlFile,
