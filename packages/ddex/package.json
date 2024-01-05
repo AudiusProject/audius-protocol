@@ -18,13 +18,16 @@
     "@audius/sdk": "*",
     "@types/multer": "1.4.11",
     "cors": "2.8.5",
+    "decompress": "4.2.1",
     "dotenv": "16.3.1",
     "express": "4.18.2",
+    "fastq": "1.16.0",
     "linkedom": "0.15.6",
     "multer": "1.4.5-lts.1",
     "postgres": "3.4.3"
   },
   "devDependencies": {
+    "@types/decompress": "^4.2.7",
     "@types/express": "4.17.21",
     "@types/node": "20.10.6",
     "@typescript-eslint/eslint-plugin": "6.17.0",

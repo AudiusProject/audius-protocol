@@ -1,108 +1,13 @@
+import type { XmlProcessorService } from '../services/xmlProcessorService'
 import { Request, Response } from 'express'
-import fs from 'fs'
-import path from 'path'
-import { DOMParser } from 'linkedom'
 import multer from 'multer'
-import { unlink } from 'fs/promises'
-import type {
-  AudiusSdk as AudiusSdkType,
-  Genre,
-  UploadTrackRequest,
-} from '@audius/sdk/dist/sdk/index.d.ts'
+import decompress from 'decompress'
+import { v4 as uuidv4 } from 'uuid'
 
-const upload = multer({ dest: 'uploads/' })
+const upload = multer({ storage: multer.memoryStorage() })
 
-const queryAll = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hits = node.querySelectorAll(field)
-    if (hits.length) return Array.from(hits)
-  }
-  return []
-}
-
-const firstValue = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hit = node.querySelector(field)
-    if (hit) return hit.textContent.trim()
-  }
-}
-
-const processXml = async (document: any, audiusSdk: AudiusSdkType) => {
-  // extract SoundRecording
-  const trackNodes = queryAll(document, 'SoundRecording', 'track')
-
-  for (const trackNode of Array.from(trackNodes)) {
-    const releaseDateValue = firstValue(
-      trackNode,
-      'OriginalReleaseDate',
-      'originalReleaseDate'
-    )
-    const title = firstValue(trackNode, 'TitleText', 'trackTitle')
-    const tt = {
-      title,
-
-      // todo: need to normalize genre
-      // genre: firstValue(trackNode, "Genre", "trackGenre"),
-      genre: 'Metal' as Genre,
-
-      // todo: need to parse release date if present
-      releaseDate: new Date(releaseDateValue as string | number | Date),
-      // releaseDate: new Date(),
-
-      isUnlisted: false,
-      isPremium: false,
-      fieldVisibility: {
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        play_count: true,
-        remixes: true,
-      },
-      description: '',
-      license: 'Attribution ShareAlike CC BY-SA',
-    }
-    const artistName = firstValue(trackNode, 'ArtistName', 'artistName')
-    const { data: users } = await audiusSdk.users.searchUsers({
-      query: artistName,
-    })
-    if (!users || users.length === 0) {
-      throw new Error(`Could not find user ${artistName}`)
-    }
-    const userId = users[0].id
-    const uploadTrackRequest: UploadTrackRequest = {
-      userId: userId,
-      // TODO replace with actual img file from upload request
-      coverArtFile: {
-        buffer: await fs.promises.readFile(
-          path.join(__dirname, '..', 'examples', 'clipper.jpg')
-        ),
-        name: 'todo_file_name',
-      },
-      metadata: tt,
-      onProgress: (progress: any) => console.log('Progress:', progress),
-      // TODO replace with actual audio file from upload request
-      trackFile: {
-        buffer: await fs.promises.readFile(
-          path.join(__dirname, '..', 'examples', 'snare.wav')
-        ),
-        name: 'todo_track_file_name',
-      },
-    }
-    console.log('uploading track...')
-    const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest)
-    console.log(result)
-  }
-
-  // todo
-  // extract Release
-  // for (const releaseNode of queryAll(document, "Release", "release")) {
-  // }
-}
-
-export const postUploadXml =
-  (dbService: any, audiusSdk: AudiusSdkType) =>
-  (req: Request, res: Response) => {
+export const postUploadXml = (xmlProcessorService: XmlProcessorService) => {
+  return async (req: Request, res: Response) => {
     upload.single('file')(req, res, async (err: any) => {
       if (err) {
         return res.status(500).json({ error: err.message })
@@ -112,24 +17,29 @@ export const postUploadXml =
         return res.status(400).json({ error: 'No file uploaded.' })
       }
 
-      const filePath = req.file.path
       try {
-        const xmlText = await fs.promises.readFile(filePath)
-        const document = new DOMParser().parseFromString(
-          xmlText.toString(),
-          'text/xml'
-        )
-        // TODO sanitize document to remove unexpected tags
-        await processXml(document, audiusSdk)
+        const fileBuffer = req.file.buffer
+        const fileType = req.file.mimetype // Adjust based on how your file type is determined
 
-        // TODO: Persist the upload in DB
+        // Save XML file to db, or unzip a ZIP file and save multiple XML files to db
+        if (fileType === 'text/xml') {
+          xmlProcessorService.addXmlFile(fileBuffer)
+        } else if (fileType === 'application/zip') {
+          const files = await decompress(fileBuffer)
+          const zipFileUUID = uuidv4()
+          for (const file of files) {
+            if (file.path.endsWith('.xml')) {
+              xmlProcessorService.addXmlFile(file.data, zipFileUUID)
+            }
+          }
+        } else {
+          return res.status(400).json({ error: 'Unsupported file type.' })
+        }
 
         res.json({ message: 'File uploaded and processed successfully.' })
-      } catch (err: any) {
-        console.log(`Error uploading xml: ${err}`)
-        return res.status(500).json({ error: err })
-      } finally {
-        await unlink(filePath)
+      } catch (error: any) {
+        return res.status(500).json({ error: error.message })
       }
     })
   }
+}
