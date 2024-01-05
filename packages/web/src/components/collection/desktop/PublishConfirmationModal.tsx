@@ -56,10 +56,7 @@ export const PublishConfirmationModal = (
   return (
     <Modal {...other} size='small'>
       <ModalHeader>
-        <ModalTitle
-          title={messages.title}
-          icon={<IconRocket className={styles.icon} />}
-        />
+        <ModalTitle title={messages.title} icon={<IconRocket />} />
       </ModalHeader>
       <ModalContent>
         <ModalContentText>

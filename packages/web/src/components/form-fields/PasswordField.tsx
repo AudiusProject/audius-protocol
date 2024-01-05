@@ -1,3 +1,5 @@
+import { Ref, forwardRef } from 'react'
+
 import { PasswordInput, PasswordInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -5,11 +7,13 @@ export type PasswordFieldProps = PasswordInputProps & {
   name: string
 }
 
-export const PasswordField = (props: PasswordFieldProps) => {
-  const { name, ...other } = props
-  const [field, { touched, error }] = useField(name)
+export const PasswordField = forwardRef(
+  (props: PasswordFieldProps, ref: Ref<HTMLInputElement>) => {
+    const { name, ...other } = props
+    const [field, { touched, error }] = useField(name)
 
-  const hasError = Boolean(touched && error)
+    const hasError = Boolean(touched && error)
 
-  return <PasswordInput {...field} error={hasError} {...other} />
-}
+    return <PasswordInput ref={ref} {...field} error={hasError} {...other} />
+  }
+)

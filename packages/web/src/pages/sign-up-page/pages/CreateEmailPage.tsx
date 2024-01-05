@@ -112,7 +112,7 @@ export const CreateEmailPage = () => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ dirty, isSubmitting }) => (
+      {({ isSubmitting }) => (
         <Page as={Form} pt='unit20'>
           <Box alignSelf='center'>
             {isMobile ? (

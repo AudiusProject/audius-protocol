@@ -23,7 +23,7 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { ForgotPasswordHelper } from 'pages/sign-on/components/desktop/ForgotPasswordHelper'
-import { Heading } from 'pages/sign-up-page/components/layout'
+import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 
@@ -62,14 +62,13 @@ export const SignInPage = () => {
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        <Flex
-          flex={1}
+        <ScrollView
           direction='column'
           justifyContent='space-between'
-          h='100%'
           p='2xl'
           pt='unit20'
           pb={!isMobile ? 'unit14' : undefined}
+          gap='l'
         >
           <Flex as={Form} direction='column' gap='2xl'>
             <Box alignSelf='center'>
@@ -121,7 +120,7 @@ export const SignInPage = () => {
               <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
             </Button>
           ) : null}
-        </Flex>
+        </ScrollView>
       </Formik>
       <ForgotPasswordHelper
         isOpen={showForgotPassword}
