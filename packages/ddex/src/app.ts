@@ -49,7 +49,7 @@ app.get('/api/health_check', (req: Request, res: Response) => {
  * Serve the React app as static assets at the root path
  */
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'prod'
 const buildPath = isProduction
   ? path.join(__dirname, '..', 'public')
   : path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')

@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "NODE_ENV=production node dist/index.js",
+    "start": "NODE_ENV=prod node dist/index.js",
     "dev:stage": "NODE_ENV=stage nodemon src/index.ts",
-    "dev:prod": "NODE_ENV=production nodemon src/index.ts",
+    "dev:prod": "NODE_ENV=prod nodemon src/index.ts",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc",
