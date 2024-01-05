@@ -112,7 +112,7 @@ export async function setup(this: AudiusClient): Promise<void> {
           })
           // Reload anytime the network changes
           window.ethereum.on('chainChanged', () => {
-            console.log('onchange', { ...disableRefreshAfterNetworkChange })
+            console.log('Chain change')
             if (!willReload && !disableRefreshAfterNetworkChange.value) {
               willReload = true
               window.location.reload()

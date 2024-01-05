@@ -22,7 +22,6 @@ export const useDashboardWalletUser = (wallet: string) => {
     queryKey: ['dashboardWalletUsers', wallet],
     queryFn: async () => {
       const res = await dashboardWalletUsersBatcher.fetch(wallet)
-      console.log('ressy', res)
       return res
     }
   })
