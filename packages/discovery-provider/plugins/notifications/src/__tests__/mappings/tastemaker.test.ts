@@ -14,8 +14,6 @@ import {
   resetTests
 } from '../../utils/populateDB'
 
-jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
-
 describe('Tastemaker Notification', () => {
   let processor: Processor
 
@@ -24,6 +22,7 @@ describe('Tastemaker Notification', () => {
     .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     const setup = await setupTest()
     processor = setup.processor
   })

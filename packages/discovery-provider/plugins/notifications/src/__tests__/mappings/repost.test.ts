@@ -32,6 +32,7 @@ describe('Repost Notification', () => {
     .mockImplementation(() => Promise.resolve(true))
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     const setup = await setupTest()
     processor = setup.processor
   })

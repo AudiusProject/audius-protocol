@@ -116,6 +116,7 @@ export const dropTestDB = async (
 
 export const resetTests = async (processor) => {
   jest.clearAllMocks()
+  jest.useRealTimers()
   await processor?.stop()
   await processor?.close()
   const testName = expect

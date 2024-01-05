@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { expect, jest, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { DMEntityType } from '../email/notifications/types'
@@ -26,6 +26,7 @@ describe('Render email', () => {
   let processor: Processor
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     const setup = await setupTest()
     processor = setup.processor
     await initDB(processor)

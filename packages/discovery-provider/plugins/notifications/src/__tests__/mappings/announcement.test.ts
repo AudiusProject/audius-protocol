@@ -29,6 +29,7 @@ describe('Announcement Notification', () => {
     .mockImplementation(() => Promise.resolve(3))
 
   beforeEach(async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
     process.env.ANNOUNCEMENTS_DRY_RUN = 'false'
     process.env.ANNOUNCEMENTS_EMAIL_ENABLED = 'true'
     const setup = await setupTest()
