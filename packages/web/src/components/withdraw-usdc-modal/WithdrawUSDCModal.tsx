@@ -192,7 +192,6 @@ export const WithdrawUSDCModal = () => {
       formPage = <ErrorPage />
       break
   }
-  formPage = <CoinflowWithdrawPage />
 
   const formRef = useRef<
     FormikProps<{
