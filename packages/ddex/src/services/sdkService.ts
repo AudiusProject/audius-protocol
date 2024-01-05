@@ -25,7 +25,7 @@ export const createSdkService = (): AudiusSdk => {
     // Determine config to use
     let config = developmentConfig as ServicesConfig
     let initialSelectedNode = 'http://audius-protocol-discovery-provider-1'
-    if (env === 'production') {
+    if (env === 'prod') {
       config = productionConfig as ServicesConfig
       initialSelectedNode = 'https://discoveryprovider.audius.co'
     } else if (env === 'stage') {

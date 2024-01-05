@@ -40,10 +40,11 @@ export default function createApp(
    * Serve the React app as static assets at the root path
    */
 
-  const isProduction = process.env.NODE_ENV === 'production'
-  const buildPath = isProduction
-    ? path.join(__dirname, '..', 'public')
-    : path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+  const isDev = process.env.IS_DEV === 'true'
+  const buildPath = isDev
+    ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+    : path.join(__dirname, '..', 'public')
+  app.use(express.static(buildPath))
   app.use(express.static(buildPath))
   app.get('/', (req: Request, res: Response) => {
     res.sendFile(path.join(buildPath, 'index.html'))
