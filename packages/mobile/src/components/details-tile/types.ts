@@ -80,6 +80,9 @@ export type DetailsTileProps = {
   /** Is the item unlisted (hidden) */
   isUnlisted?: boolean
 
+  /** Is the item a scheduled release */
+  isScheduledRelease?: boolean
+
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler
 

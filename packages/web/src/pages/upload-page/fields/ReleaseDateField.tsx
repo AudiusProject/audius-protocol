@@ -106,6 +106,13 @@ export const ReleaseDateField = () => {
   console.log('asdf initial values: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
+      console.log('asdf submit values: ', values)
+      if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
+        setTrackReleaseDate(null)
+        setIsScheduledRelease(false)
+        setIsUnlisted(false)
+        return
+      }
       const mergedReleaseDate = mergeDateTimeValues(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
       if (mergedReleaseDate.isAfter(moment())) {
         // set is scheduled release

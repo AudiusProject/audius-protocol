@@ -88,6 +88,8 @@ export const AccessAndSaleScreen = () => {
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }] = useField<boolean>('is_scheduled_release')
+  console.log('asdf access unlisted: ', isUnlisted)
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
 
@@ -113,7 +115,7 @@ export const AccessAndSaleScreen = () => {
     ) {
       return TrackAvailabilityType.SPECIAL_ACCESS
     }
-    if (isUnlisted) {
+    if (isUnlisted && !isScheduledRelease) {
       return TrackAvailabilityType.HIDDEN
     }
     return TrackAvailabilityType.PUBLIC
@@ -132,7 +134,16 @@ export const AccessAndSaleScreen = () => {
     isUpload,
     isRemix,
     initialPremiumConditions,
-    isInitiallyUnlisted: initialValues.is_unlisted
+    isInitiallyUnlisted: initialValues.is_unlisted,
+    isScheduledRelease: isScheduledRelease
+  })
+  console.log('asdf access: ', {
+    noUsdcGateOption,
+    noSpecialAccessGate,
+    noSpecialAccessGateFields,
+    noCollectibleGate,
+    noCollectibleGateFields,
+    noHidden
   })
 
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled

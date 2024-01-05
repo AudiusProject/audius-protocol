@@ -92,6 +92,8 @@ export const ScheduledReleaseRadioField = (props) => {
   const { primary } = useThemeColors()
   const styles = useStyles()
   const theme = useThemeVariant()
+  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>('is_scheduled_release')
 
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
@@ -107,6 +109,16 @@ export const ScheduledReleaseRadioField = (props) => {
   const handleDateChange = useCallback(
     (selectedDate: Date) => {
       const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
+      if (newReleaseDate.isAfter(moment())) {
+        console.log('asdf set scheduled release')
+        setIsUnlisted(true)
+        setIsScheduledRelease(true)
+      } else {
+        console.log('asdf set public release')
+        setIsUnlisted(false)
+        setIsScheduledRelease(false)
+      }
+
       setReleaseDateValue(newReleaseDate.toString())
       setIsDateOpen(false)
     },
@@ -122,7 +134,15 @@ export const ScheduledReleaseRadioField = (props) => {
           .month(releaseDateMoment.month())
           .day(releaseDateMoment.day())
       }
-
+      if (newReleaseDate.isAfter(moment())) {
+        console.log('asdf set scheduled release')
+        setIsUnlisted(true)
+        setIsScheduledRelease(true)
+      } else {
+        console.log('asdf set public release')
+        setIsUnlisted(false)
+        setIsScheduledRelease(false)
+      }
       setReleaseDateValue(newReleaseDate.toString())
       setIsTimeOpen(false)
     },
@@ -222,10 +242,14 @@ export const ReleaseNowRadioField = (props) => {
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
   const styles = useStyles()
+  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>('is_scheduled_release')
 
   useEffect(() => {
     if (selected) {
       setReleaseDateValue(null)
+      setIsUnlisted(false)
+      setIsScheduledRelease(false)
     }
   }, [selected, releaseDateValue, setReleaseDateValue])
 

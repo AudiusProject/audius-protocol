@@ -10,7 +10,8 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  dayjs
 } from '@audius/common'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
@@ -227,7 +228,7 @@ export const DetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-
+  const isUnpublished = track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
     isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
 
@@ -251,14 +252,11 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
-  const isScheduledRelease = track?.release_date
-    ? moment.utc(track.release_date).isAfter(moment())
-    : false
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
       premiumConditions,
-      isUnlisted: isUnlisted && !isScheduledRelease
+      isUnlisted: isUnlisted && !isUnpublished
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -413,7 +411,7 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
-                {isScheduledRelease && track?.release_date ? (
+                  {isUnpublished && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
                     <HarmonyText
