@@ -1,8 +1,12 @@
-import dayjs from './dayjs'
+import dayjs from 'dayjs'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+import timezone from 'dayjs/plugin/timezone'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
 const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+dayjs.extend(timezone)
+dayjs.extend(advancedFormat)
 
 export const formatSeconds = (seconds: number): string => {
   const time = dayjs.duration(seconds, 'seconds')

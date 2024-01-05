@@ -6,7 +6,7 @@ import {
   useState,
   useEffect,
 } from "react";
-import { useEnvVars } from "../providers/EnvVarsProvider";
+import { useEnvVars } from "./EnvVarsProvider";
 
 type AudiusLibsContextType = {
   audiusLibs: AudiusLibsType | null;

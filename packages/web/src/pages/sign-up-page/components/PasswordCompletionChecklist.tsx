@@ -21,7 +21,7 @@ const checklist: ChecklistItem[] = [
   { type: 'notCommon', path: 'password' }
 ]
 
-export const CompletionChecklist = () => {
+export const PasswordCompletionChecklist = () => {
   const { isMobile } = useMedia()
 
   const [{ value: password }, passwordMeta] = useField('password')

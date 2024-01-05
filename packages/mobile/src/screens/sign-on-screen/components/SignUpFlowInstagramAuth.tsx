@@ -33,7 +33,7 @@ type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onClose?: () => void
 }
 
-const instagramAppId = Config.INSTAGRAM_APP_ID
+const instagramAppId = Config.INSTAGRAM_APP_ID!
 const instagramRedirectUrl = Config.INSTAGRAM_REDIRECT_URL!
 
 const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(

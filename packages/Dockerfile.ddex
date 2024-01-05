@@ -1,0 +1,33 @@
+# Build stage for DDEX frontend
+FROM node:18.17-slim AS frontend-dist
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY ddex-frontend/package*.json ddex-frontend/*config*.js ddex-frontend/tsconfig*.json ddex-frontend/vite.config.ts ./
+RUN npm install
+COPY ddex-frontend/src ./src
+COPY ddex-frontend/public ./public
+COPY ddex-frontend/index.html .
+RUN npm run build
+
+# Build stage for DDEX backend
+FROM node:18.17-slim AS backend-dist
+WORKDIR /backend
+COPY ddex/package*.json ddex/tsconfig.json ./
+RUN npm install
+COPY ddex/src ./src
+RUN npm run build
+
+# Final stage
+FROM node:18.17-slim
+WORKDIR /usr/src/app
+COPY --from=frontend-dist /app/dist ./public
+COPY --from=backend-dist /backend/dist ./dist
+COPY --from=backend-dist /backend/node_modules ./node_modules
+
+EXPOSE 8926
+ENV NODE_ENV=production
+CMD [ "node", "dist/index.js" ]

@@ -35,6 +35,6 @@ export const formatCalendarTime = (
     nextWeek: formatReleaseMessage(time, 'dddd', prefixMessage),
     lastDay: '[Yesterday]',
     lastWeek: '[Last] dddd',
-    sameElse: formatReleaseMessage(time, 'MM/DD/YYYY', prefixMessage)
+    sameElse: formatReleaseMessage(time, 'M/D/YYYY', prefixMessage)
   })
 }

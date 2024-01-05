@@ -10,10 +10,10 @@ export const email = ({
   total
 }: {
   purchaserName: string
-	purchaserLink: string
+		purchaserLink: string
   trackTitle: string
-	trackLink: string
-	trackImage: string
+		trackLink: string
+		trackImage: string
   artistName: string
   price: string
   payExtra: string
@@ -685,7 +685,7 @@ export const email = ({
 							<tr><td align="center" valign="top" style="padding: 8px 0px;">
 								<div>
 									<div style="line-height: 20px;">
-										<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;">© 2023 Audius, Inc. All Rights Reserved.</span>
+										<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;">© 2024 Audius, Inc. All Rights Reserved.</span>
 									</div>
 								</div>
 							</td></tr>
