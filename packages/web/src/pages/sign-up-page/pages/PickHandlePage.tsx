@@ -164,7 +164,7 @@ export const PickHandlePage = () => {
           as={Form}
           centered={!isMobile}
           transitionBack='vertical'
-          inputRef={handleInputRef}
+          autoFocusInputRef={handleInputRef}
         >
           <Heading
             prefix={

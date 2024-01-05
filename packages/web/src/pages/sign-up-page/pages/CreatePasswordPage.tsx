@@ -57,7 +57,7 @@ export const CreatePasswordPage = () => {
         <Page
           as={Form}
           transition={isMobile ? undefined : 'horizontal'}
-          inputRef={passwordInputRef}
+          autoFocusInputRef={passwordInputRef}
         >
           <Heading
             heading={messages.createYourPassword}

@@ -37,7 +37,7 @@ type PageProps = FlexProps & {
   centered?: boolean
   transition?: 'horizontal' | 'vertical'
   transitionBack?: 'horizontal' | 'vertical'
-  inputRef?: RefObject<HTMLInputElement>
+  autoFocusInputRef?: RefObject<HTMLInputElement>
 }
 
 const transitionAxisConfig = {
@@ -54,7 +54,7 @@ export const Page = (props: PageProps) => {
     as,
     transition,
     transitionBack,
-    inputRef,
+    autoFocusInputRef,
     ...other
   } = props
   const { isMobile } = useMedia()
@@ -86,7 +86,7 @@ export const Page = (props: PageProps) => {
       transform: toTransform
     },
     onRest: () => {
-      inputRef?.current?.focus()
+      autoFocusInputRef?.current?.focus()
     }
   })
 

@@ -93,7 +93,7 @@ export const FinishProfilePage = () => {
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
           transitionBack='horizontal'
-          inputRef={displayNameInputRef}
+          autoFocusInputRef={displayNameInputRef}
         >
           <Heading
             prefix={
