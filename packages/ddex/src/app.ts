@@ -20,7 +20,7 @@ const scheduledReleaseService = createScheduledReleaseService(sdkService.getSdk(
  */
 
 const app: Express = express();
-app.post('/api/upload', uploadController.postUploadXml(dbService));
+app.post('/api/upload', uploadController.postUploadXml(dbService, sdkService.getSdk()));
 app.get('/api/health_check', (req: Request, res: Response) => {
   res.status(200).send('DDEX is alive!');
 });

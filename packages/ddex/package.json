@@ -15,9 +15,12 @@
   },
   "author": "Audius",
   "dependencies": {
+    "@audius/sdk": "*",
     "dotenv": "16.3.1",
     "express": "4.18.2",
-    "postgres": "3.4.3"
+    "multer": "1.4.5-lts.1",
+    "postgres": "3.4.3",
+    "linkedom": "0.15.6"
   },
   "devDependencies": {
     "@types/express": "4.17.21",
