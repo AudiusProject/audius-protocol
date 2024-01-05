@@ -284,6 +284,12 @@ export interface TrackFull {
      * @type {boolean}
      * @memberof TrackFull
      */
+    isScheduledRelease?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
     isUnlisted: boolean;
     /**
      * 
@@ -449,6 +455,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'fieldVisibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
         'hasCurrentUserReposted': json['has_current_user_reposted'],
+        'isScheduledRelease': !exists(json, 'is_scheduled_release') ? undefined : json['is_scheduled_release'],
         'isUnlisted': json['is_unlisted'],
         'hasCurrentUserSaved': json['has_current_user_saved'],
         'followeeFavorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
@@ -510,6 +517,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'field_visibility': FieldVisibilityToJSON(value.fieldVisibility),
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
         'has_current_user_reposted': value.hasCurrentUserReposted,
+        'is_scheduled_release': value.isScheduledRelease,
         'is_unlisted': value.isUnlisted,
         'has_current_user_saved': value.hasCurrentUserSaved,
         'followee_favorites': ((value.followeeFavorites as Array<any>).map(FavoriteToJSON)),
