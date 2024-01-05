@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import fs from "fs";
 import { DOMParser } from "linkedom";
-import multer from 'multer';
+import multer from "multer";
 import type {
   AudiusSdk as AudiusSdkType,
   Genre,
@@ -94,7 +94,7 @@ const processXml = async (document: any, audiusSdk: AudiusSdkType) => {
   // }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export const postUploadXml = (dbService: any, audiusSdk: AudiusSdkType) => (req: Request, res: Response) => {
   upload.single('file')(req, res, async (err: any) => {
     if (err) {
