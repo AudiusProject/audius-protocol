@@ -1,16 +1,41 @@
+import { ChangeEvent } from 'react'
+
 import {
   emailSchemaMessages,
   createEmailPageMessages as messages
 } from '@audius/common'
 import { Hint, IconError, TextLink } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { usePrevious } from 'react-use'
 
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import { setValueField } from 'common/store/pages/signon/actions'
+import {
+  HarmonyTextField,
+  HarmonyTextFieldProps
+} from 'components/form-fields/HarmonyTextField'
 import { SIGN_IN_PAGE } from 'utils/route'
 
-export const EmailField = () => {
+export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
+  const dispatch = useDispatch()
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    dispatch(setValueField('email', e.target.value))
+  }
+
+  return (
+    <HarmonyTextField
+      name='email'
+      autoComplete='email'
+      label={messages.emailLabel}
+      autoFocus
+      onChange={handleChange}
+      {...props}
+    />
+  )
+}
+
+export const NewEmailField = () => {
   const [, { error }] = useField('email')
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
@@ -25,12 +50,8 @@ export const EmailField = () => {
 
   return (
     <>
-      <HarmonyTextField
-        name='email'
-        autoComplete='email'
-        label={messages.emailLabel}
+      <EmailField
         debouncedValidationMs={500}
-        autoFocus
         // Don't show red error message when emailInUse
         helperText={emailInUse ? '' : undefined}
       />

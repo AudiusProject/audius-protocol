@@ -36,7 +36,7 @@ export type CreateLoginDetailsValues = {
 
 // Same email field but with extra logic to check initial value coming from redux store
 const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
-  const [, , { setValue, setTouched, setError }] = useField('email')
+  const [, , { setValue }] = useField('email')
   const existingEmailValue = useSelector(getEmailField)
   const audiusQueryContext = useAudiusQueryContext()
 
@@ -48,10 +48,7 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
       await schema.parseAsync({
         email: existingEmailValue.value
       })
-      // setTimeout(() => {
-      // console.log('Setting value NOW')
       setValue(existingEmailValue.value)
-      // }, 500)
     } catch (e) {
       // invalid schema means we don't update the initial value
     }

@@ -22,6 +22,7 @@ import {
 } from '@audius/harmony'
 import styled, { CSSObject } from '@emotion/styled'
 import { animated, useSpring } from '@react-spring/web'
+import { useFormik, useFormikContext } from 'formik'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -179,6 +180,7 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
+  const { isSubmitting } = useFormikContext()
 
   return (
     <Paper
@@ -207,6 +209,7 @@ export const PageFooter = (props: PageFooterProps) => {
         iconRight={IconArrowRight}
         fullWidth
         css={!isMobile && centered && { width: 343 }}
+        isLoading={isSubmitting}
         {...buttonProps}
       >
         {messages.continue}

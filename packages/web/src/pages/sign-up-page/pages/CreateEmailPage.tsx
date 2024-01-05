@@ -42,7 +42,7 @@ import {
   SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
-import { EmailField } from '../components/EmailField'
+import { NewEmailField } from '../components/EmailField'
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
@@ -141,7 +141,7 @@ export const CreateEmailPage = () => {
             centered={isMobile}
           />
           <Flex direction='column' gap='l'>
-            <EmailField />
+            <NewEmailField />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
