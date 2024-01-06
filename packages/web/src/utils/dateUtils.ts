@@ -38,8 +38,6 @@ export const formatCalendarTime = (
       lastDay: '[Yesterday]',
       lastWeek: '[Last] dddd',
       sameElse: formatReleaseMessage(time, 'M/D/YYYY', prefixMessage)
-    }) +
-    ' ' +
-    getLocalTimezone()
+    }) + (moment(time).isAfter(moment()) ? getLocalTimezone() : '')
   )
 }

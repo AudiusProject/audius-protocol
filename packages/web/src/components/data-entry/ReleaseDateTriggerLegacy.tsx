@@ -26,12 +26,7 @@ import styles from './ReleaseDateTriggerLegacy.module.css'
 const messages = {
   title: 'Release Date',
   description:
-    "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
-  public: 'Public (Default)',
-  premium: 'Premium',
-  specialAccess: 'Special Access',
-  collectibleGated: 'Collectible Gated',
-  hidden: 'Hidden'
+    "Customize your music's availability for different audiences, and create personalized gated experiences for your fans."
 }
 
 type TrackMetadataState = {
@@ -126,7 +121,7 @@ export const ReleaseDateTriggerLegacy = (
         <Button
           className={styles.releaseDateButton}
           type={ButtonType.COMMON_ALT}
-          name='availabilityModal'
+          name='releaseDateModal'
           text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
           size={ButtonSize.SMALL}
           onClick={toggleMenu}
