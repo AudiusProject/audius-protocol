@@ -58,7 +58,12 @@ const ImageUploadErrorText = ({
   }
   // Profile image error takes priority
   if (errors.profileImage === messages.profileImageUploadError) {
-    errorText = errors.profileImage
+    // If both images have errors, we show a combined error message
+    if (errorText !== undefined) {
+      errorText = messages.bothImageUploadError
+    } else {
+      errorText = errors.profileImage
+    }
   }
 
   return (
