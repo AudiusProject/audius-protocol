@@ -199,7 +199,6 @@ export const GiantTrackTile = ({
     { trackId },
     { enabled: !!trackId }
   )
-  const album = playlists?.[0] as unknown as APlaylist | undefined
 
   const renderCardTitle = (className: string) => {
     return (
@@ -279,8 +278,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isReposted
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
                 text={
@@ -289,7 +288,7 @@ export const GiantTrackTile = ({
                     : messages.repostButtonText
                 }
                 leftIcon={<IconRepost />}
-                onClick={isOwner ? () => { } : onRepost}
+                onClick={isOwner ? () => {} : onRepost}
               />
             </div>
           </Tooltip>
@@ -320,8 +319,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isSaved
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
@@ -495,10 +494,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      premiumConditions,
-      isUnlisted:
-        isUnlisted && (!released || moment(released).isBefore(moment()))
-    })
+        premiumConditions,
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
+      })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
