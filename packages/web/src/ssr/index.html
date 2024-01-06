@@ -54,13 +54,6 @@
     <meta property="twitter:app:name:iphone" content="Audius Music" />
     <meta property="twitter:app:name:googleplay" content="Audius Music" />
 
-    <script type="module">
-      import { Buffer } from 'buffer'
-      import processBrowser from 'process/browser'
-      window.Buffer = Buffer
-      window.process = { ...processBrowser, env: process.env }
-    </script>
-
     <script
       defer
       onLoad="window.web3Loaded = true; window.dispatchEvent(new CustomEvent('WEB3_LOADED'))"
@@ -113,15 +106,14 @@
       src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
     ></script>
     <script>
-      const nodeEnv = '%NODE_ENV%'
-      const reactEnv = '%VITE_ENVIRONMENT%'
-      if (nodeEnv === 'production' && reactEnv === 'production') {
+      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      if (!measurementId.includes('%')) {
         window.dataLayer = window.dataLayer || []
         function gtag() {
           dataLayer.push(arguments)
         }
         gtag('js', new Date())
-        gtag('config', '%VITE_GA_MEASUREMENT_ID%')
+        gtag('config', measurementId)
       }
     </script>
     <!-- end Google Analytics -->
@@ -131,12 +123,7 @@
       const adroll_adv_id = '%VITE_ADROLL_AVD_ID%'
       const adroll_pix_id = '%VITE_ADROLL_PIX_ID%'
       const adroll_version = '2.0'
-      if (
-        nodeEnv === 'production' &&
-        reactEnv === 'production' &&
-        !adroll_adv_id.includes('%') &&
-        !adroll_pix_id.includes('%')
-      ) {
+      if (!adroll_adv_id.includes('%') && !adroll_pix_id.includes('%')) {
         ;(function (w, d, e, o, a) {
           w.__adroll_loaded = true
           w.adroll = w.adroll || []
@@ -206,7 +193,6 @@
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
     <div id="recaptcha-hidden" style="display: none"></div>
 
     <!-- start Meta Pixel -->

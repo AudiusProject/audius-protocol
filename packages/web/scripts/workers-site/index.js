@@ -1,5 +1,8 @@
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
+import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
+
+/* globals HTMLRewriter */
+
 const assetManifest = JSON.parse(manifestJSON)
 
 const SSR = true
@@ -50,7 +53,7 @@ function checkIsBot(val) {
   return botTest.test(val)
 }
 
-async function getMetadata(pathname) {
+async function getMetadata(pathname, discoveryNode) {
   if (pathname.startsWith('/scripts')) {
     return { metadata: null, name: null }
   }
@@ -120,12 +123,16 @@ class SEOHandlerBody {
 }
 
 class SEOHandlerHead {
-  constructor(pathname) {
+  constructor(pathname, discoveryNode) {
     self.pathname = pathname
+    self.discoveryNode = discoveryNode
   }
 
   async element(element) {
-    const { metadata, name } = await getMetadata(self.pathname)
+    const { metadata, name } = await getMetadata(
+      self.pathname,
+      self.discoveryNode
+    )
 
     if (!metadata || !name || !metadata.data || metadata.data.length === 0) {
       // We didn't parse this to anything we have custom tags for, so just return the default tags
@@ -267,36 +274,54 @@ async function handleEvent(request, env, ctx) {
       }
     }
 
-    if (!isAssetUrl(request.url)) {
-      if (SSR) {
-        const ssrResponse = await env.SSR.fetch(request.clone())
-        return ssrResponse
-      } else {
-        // TODO: return normal SPA
-        return new Response('hi')
-      }
+    if (SSR) {
+      const ssrResponse = await env.SSR.fetch(request.clone())
+      return ssrResponse
     } else {
-      // Adjust browser cache on assets that don't change frequently and/or
-      // are given unique hashes when they do.
-      const asset = await getAssetFromKV(
-        {
-          request,
-          waitUntil: ctx.waitUntil.bind(ctx)
-        },
-        {
-          ASSET_NAMESPACE: env.__STATIC_CONTENT,
-          ASSET_MANIFEST: assetManifest
+      if (!isAssetUrl(request.url)) {
+        // Map all non-asset requests to the root path
+        options.mapRequestToAsset = (request) => {
+          const url = new URL(request.url)
+          url.pathname = `/`
+          return mapRequestToAsset(new Request(url, request))
         }
-      )
 
-      const response = new Response(asset.body, asset)
-      response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+        const asset = await getAsset(request, env, ctx, options)
 
-      return response
+        const rewritten = new HTMLRewriter()
+          .on('head', new SEOHandlerHead(pathname, discoveryNode))
+          .on('body', new SEOHandlerBody())
+          .transform(asset)
+
+        return rewritten
+      } else {
+        const asset = await getAsset(request, env, ctx, options)
+
+        // Adjust browser cache on assets that don't change frequently and/or
+        // are given unique hashes when they do.
+        const response = new Response(asset.body, asset)
+        response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+
+        return response
+      }
     }
   } catch (e) {
     return new Response(e.message || e.toString(), { status: 500 })
   }
+}
+
+async function getAsset(request, env, ctx, options) {
+  return await getAssetFromKV(
+    {
+      request,
+      waitUntil: ctx.waitUntil.bind(ctx)
+    },
+    {
+      ASSET_NAMESPACE: env.__STATIC_CONTENT,
+      ASSET_MANIFEST: assetManifest,
+      ...options
+    }
+  )
 }
 
 function isAssetUrl(url) {

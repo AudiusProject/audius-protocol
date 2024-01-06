@@ -4,7 +4,7 @@ main = "./scripts/workers-site/index.js"
 node_compat = true
 
 [site]
-bucket = "./build/client"
+bucket = "./build"
 
 [env.staging]
 name = "audius-staging"

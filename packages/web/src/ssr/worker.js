@@ -1,6 +1,8 @@
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import { renderPage } from 'vike/server'
 
 const DEBUG = true
+const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
   try {
@@ -18,17 +20,41 @@ addEventListener('fetch', (event) => {
 })
 
 async function handleEvent(event) {
-  const pageContextInit = {
-    urlOriginal: event.request.url
-  }
+  if (!isAssetUrl(event.request.url)) {
+    // If the request is not for an asset, then it's a request for a page
 
-  const pageContext = await renderPage(pageContextInit)
+    const pageContextInit = {
+      urlOriginal: event.request.url
+    }
 
-  const { httpResponse } = pageContext
-  if (!httpResponse) {
-    throw new Error(pageContext.errorWhileRendering)
+    const pageContext = await renderPage(pageContextInit)
+
+    const { httpResponse } = pageContext
+    if (!httpResponse) {
+      throw new Error(pageContext.errorWhileRendering)
+    } else {
+      const { body, statusCode: status, headers } = httpResponse
+      return new Response(body, { headers, status })
+    }
   } else {
-    const { body, statusCode: status, headers } = httpResponse
-    return new Response(body, { headers, status })
+    // Adjust browser cache on assets that don't change frequently and/or
+    // are given unique hashes when they do.
+    const asset = await getAssetFromKV(event)
+
+    const response = new Response(asset.body, asset)
+    response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+
+    return response
   }
+}
+
+function isAssetUrl(url) {
+  const { pathname } = new URL(url)
+  return (
+    pathname.startsWith('/assets') ||
+    pathname.startsWith('/scripts') ||
+    pathname.startsWith('/fonts') ||
+    pathname.startsWith('/favicons') ||
+    pathname.startsWith('/manifest.json')
+  )
 }

@@ -13,13 +13,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
+  const ssr = env.VITE_SSR === 'true'
   env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
     base: env.VITE_PUBLIC_URL || '/',
     build: {
-      outDir: 'build',
-      sourcemap: true,
+      outDir: ssr ? 'build-ssr' : 'build',
+      sourcemap: false,
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true
@@ -71,7 +72,7 @@ export default defineConfig(({ mode }) => {
           plugins: ['@emotion/babel-plugin']
         }
       }),
-      vike(),
+      ...(ssr ? [vike()] : []),
       ...((analyze
         ? [
             visualizer({

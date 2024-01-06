@@ -3,7 +3,7 @@
 
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 
-import indexHtml from '../../../index.html?raw'
+import indexHtml from '../index.html?raw'
 
 export function render() {
   const pattern = /%(\S+?)%/g

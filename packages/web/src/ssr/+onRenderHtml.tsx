@@ -4,10 +4,10 @@ import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import { PageContextServer } from 'vike/types'
 
-import indexHtml from '../../index.html?raw'
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
+import indexHtml from './index.html?raw'
 
 export const passToClient = ['pageProps', 'urlPathname']
 
