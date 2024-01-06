@@ -77,7 +77,9 @@ export const ReleaseDateTriggerLegacy = (
       values[RELEASE_DATE_HOUR],
       values[RELEASE_DATE_MERIDIAN]
     )
+
     const dayjsTime = dayjs(mergedReleaseDate.toString())
+      // @ts-ignore
       .utc()
       .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
 
@@ -88,7 +90,9 @@ export const ReleaseDateTriggerLegacy = (
     if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
       // publish if release now or release date has passed
       newState.is_unlisted = false
+
       newState.release_date = dayjs()
+        // @ts-ignore
         .utc()
         .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
     } else if (mergedReleaseDate.isBefore(moment())) {
@@ -113,10 +117,7 @@ export const ReleaseDateTriggerLegacy = (
         <>
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <ReleaseDateRadioItems
-              isScheduledRelease={false}
-              isUnlisted={false}
-            />
+            <ReleaseDateRadioItems />
           </Flex>
         </>
       }
