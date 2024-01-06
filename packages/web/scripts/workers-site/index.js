@@ -1,7 +1,6 @@
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 const assetManifest = JSON.parse(manifestJSON)
-import { handleSsr } from './ssr.js'
 
 const SSR = true
 const DEBUG = false
@@ -270,8 +269,8 @@ async function handleEvent(request, env, ctx) {
 
     if (!isAssetUrl(request.url)) {
       if (SSR) {
-        const response = await handleSsr(request.url)
-        if (response !== null) return response
+        const ssrResponse = await env.SSR.fetch(request.clone())
+        return ssrResponse
       } else {
         // TODO: return normal SPA
         return new Response('hi')

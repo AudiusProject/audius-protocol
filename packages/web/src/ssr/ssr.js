@@ -1,9 +1,12 @@
-import { renderPage } from 'vike/server'
+import { renderPage } from './node_modules/vike/server'
 
 export async function handleSsr(url) {
   const pageContextInit = {
     urlOriginal: url
   }
+
+  // const { renderPage } = await import('vike/server')
+
   const pageContext = await renderPage(pageContextInit)
 
   const { httpResponse } = pageContext

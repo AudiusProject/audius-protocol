@@ -1,0 +1,12 @@
+compatibility_date = "2023-10-25"
+account_id = "3811365464a8e56b2b27a5590e328e49"
+main = "./worker.js"
+node_compat = true
+
+[site]
+bucket = "../../build/client"
+
+# Invoke with npx wrangler dev --watch --env test
+[env.test]
+name = "audius-web-ssr"
+route = "ssr.audius.co/*"

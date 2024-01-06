@@ -26,4 +26,7 @@ vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co",
 # Invoke with npx wrangler dev --watch --env test
 [env.test]
 name = "test"
+services = [
+  { binding = "SSR", service = "audius-web-ssr" }
+]
 vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", EMBED = "https://embed.audius.workers.dev", DISCOVERY_NODES = "https://discoveryprovider.audius.co,https://discoveryprovider2.audius.co,https://discoveryprovider3.audius.co" }
