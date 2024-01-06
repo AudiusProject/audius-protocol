@@ -15,15 +15,13 @@ type CoverPhotoBannerProps = {
   coverPhotoUrl?: string
   profileImageUrl?: string
   isEditing?: boolean
-  css?: CSSObject
 }
 
 export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const {
     coverPhotoUrl: propsCoverPhotoUrl,
     profileImageUrl: propsProfileImageUrl,
-    isEditing,
-    css
+    isEditing
   } = props
   const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: profileImage } = useSelector(getProfileImageField) ?? {}
