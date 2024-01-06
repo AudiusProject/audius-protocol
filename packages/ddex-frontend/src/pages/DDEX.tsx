@@ -184,10 +184,6 @@ const XmlImporter = ({
     formData.append('file', selectedFile)
 
     try {
-      // TODO this relative url will not work when running the frontend and
-      // backend separately while developing locally. For now
-      // it requires prepending http://localhost:8926 when dev'ing
-      // locally.
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,

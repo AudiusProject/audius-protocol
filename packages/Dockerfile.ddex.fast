@@ -24,5 +24,4 @@ COPY --from=backend-dist /backend/node_modules ./node_modules
 COPY ddex-frontend/dist/ ./public
 
 EXPOSE 8926
-ENV NODE_ENV=production
 CMD [ "node", "dist/index.js" ]
