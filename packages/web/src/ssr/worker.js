@@ -1,3 +1,11 @@
+/**
+ * This worker handles SSR
+ *
+ * It's separate from the main worker because the app bundle is heavy
+ * and causes slow cold starts. This way we can conditionally do SSR
+ * and avoid cold starts in the general case.
+ */
+
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import { renderPage } from 'vike/server'
 

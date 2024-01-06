@@ -57,7 +57,7 @@ function checkIsCrawler(val) {
   if (!val) {
     return false
   }
-  const crawlerTest = /Googlebot/i
+  const crawlerTest = /Googlebot|forceSSR/i
   return crawlerTest.test(val)
 }
 
