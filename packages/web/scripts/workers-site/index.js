@@ -53,6 +53,14 @@ function checkIsBot(val) {
   return botTest.test(val)
 }
 
+function checkIsCrawler(val) {
+  if (!val) {
+    return false
+  }
+  const crawlerTest = /Googlebot/i
+  return crawlerTest.test(val)
+}
+
 async function getMetadata(pathname, discoveryNode) {
   if (pathname.startsWith('/scripts')) {
     return { metadata: null, name: null }
@@ -274,7 +282,8 @@ async function handleEvent(request, env, ctx) {
       }
     }
 
-    if (SSR) {
+    // For now, only SSR for crawlers
+    if (SSR && checkIsCrawler(userAgent)) {
       const ssrResponse = await env.SSR.fetch(request.clone())
       return ssrResponse
     } else {
