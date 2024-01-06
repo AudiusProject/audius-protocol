@@ -5,13 +5,14 @@ import {
   finishProfilePageMessages as messages
 } from '@audius/common'
 import {
+  Flex,
   Paper,
   PlainButton,
   PlainButtonType,
   Text,
   useTheme
 } from '@audius/harmony'
-import { Formik, Form, useField } from 'formik'
+import { Formik, Form, useField, FormikErrors } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -45,6 +46,31 @@ export type FinishProfileValues = {
 }
 
 const formSchema = toFormikValidationSchema(finishProfileSchema)
+
+const ImageUploadErrorText = ({
+  errors
+}: {
+  errors: FormikErrors<FinishProfileValues>
+}) => {
+  let errorText
+  if (errors.coverPhoto === messages.coverPhotoUploadError) {
+    errorText = errors.coverPhoto
+  }
+  // Profile image error takes priority
+  if (errors.profileImage === messages.profileImageUploadError) {
+    errorText = errors.profileImage
+  }
+
+  return (
+    <Flex ph='l' pt='2xl'>
+      {errorText ? (
+        <Text variant='body' size='m' strength='default' color='danger'>
+          {errorText}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+}
 
 export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
@@ -86,7 +112,7 @@ export const FinishProfilePage = () => {
       validateOnMount
       validateOnChange
     >
-      {({ isValid, values }) => (
+      {({ isValid, values, errors }) => (
         <Page
           as={Form}
           centered
@@ -109,6 +135,7 @@ export const FinishProfilePage = () => {
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
             />
+            <ImageUploadErrorText errors={errors} />
             <HarmonyTextField
               name='displayName'
               label={messages.displayName}
@@ -117,8 +144,7 @@ export const FinishProfilePage = () => {
               autoFocus
               maxLength={32}
               css={(theme) => ({
-                padding: theme.spacing.l,
-                paddingTop: theme.spacing.unit10
+                padding: theme.spacing.l
               })}
             />
           </Paper>

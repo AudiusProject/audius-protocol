@@ -1,4 +1,5 @@
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
+import { CSSObject } from '@emotion/styled'
 
 import {
   getCoverPhotoField,
@@ -14,13 +15,15 @@ type CoverPhotoBannerProps = {
   coverPhotoUrl?: string
   profileImageUrl?: string
   isEditing?: boolean
+  css?: CSSObject
 }
 
 export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const {
     coverPhotoUrl: propsCoverPhotoUrl,
     profileImageUrl: propsProfileImageUrl,
-    isEditing
+    isEditing,
+    css
   } = props
   const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: profileImage } = useSelector(getProfileImageField) ?? {}
@@ -35,6 +38,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
       w='100%'
       borderRadius={isEditing ? 'm' : undefined}
       css={{
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
         '&:before': {
           content: '""',
           position: 'absolute',
@@ -53,6 +58,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
             : undefined),
           ...(isEditing && {
             overflow: 'hidden',
+            cursor: 'pointer',
             borderTopLeftRadius: cornerRadius.m,
             borderTopRightRadius: cornerRadius.m
           })
