@@ -1,10 +1,9 @@
-from datetime import datetime
+from sqlalchemy import func
 
 from src.models.tracks.track import Track
 from src.tasks.celery_app import celery
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.web3_provider import get_eth_web3
-from sqlalchemy import func
 
 logger = StructuredLogger(__name__)
 web3 = get_eth_web3()
