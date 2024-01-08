@@ -20,10 +20,15 @@ const scheduledReleaseService = createScheduledReleaseService(
 )
 
 /*
- * Define API routes
+ * Setup app
  */
 
 const app: Express = express()
+
+/*
+ * Define API routes
+ */
+
 app.post(
   '/api/upload',
   uploadController.postUploadXml(dbService, sdkService.getSdk())
@@ -36,10 +41,10 @@ app.get('/api/health_check', (req: Request, res: Response) => {
  * Serve the React app as static assets at the root path
  */
 
-const isProduction = process.env.NODE_ENV === 'production'
-const buildPath = isProduction
-  ? path.join(__dirname, '..', 'public')
-  : path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+const isDev = process.env.IS_DEV === 'true'
+const buildPath = isDev
+  ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+  : path.join(__dirname, '..', 'public')
 app.use(express.static(buildPath))
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(buildPath, 'index.html'))

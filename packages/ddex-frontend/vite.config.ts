@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react-swc'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const isDevelopment = process.env.IS_DEV === 'true';
 
 export default defineConfig({
   server: {

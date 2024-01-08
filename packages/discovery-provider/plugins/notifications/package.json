@@ -9,8 +9,8 @@
     "lint:fix": "npm run lint -- --fix",
     "pretty": "prettier --write .",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000 --node-args=\"--max-old-space-size=512\"",
-    "test:watch": "jest ./src --watchAll",
-    "test": "jest ./src --runInBand --forceExit",
+    "test:watch": "jest --watchAll",
+    "test": "jest --runInBand --forceExit",
     "test-push": "ts-node scripts/test-push-notification.ts",
     "typecheck": "tsc --noEmit"
   },

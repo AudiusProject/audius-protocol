@@ -1,13 +1,13 @@
 {
   "name": "@audius/ddex",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Backend server for DDEX ingestion (also serves frontend as static assets)",
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
     "start": "NODE_ENV=production node dist/index.js",
-    "dev:stage": "NODE_ENV=stage nodemon src/index.ts",
-    "dev:prod": "NODE_ENV=production nodemon src/index.ts",
+    "dev:stage": "IS_DEV=true NODE_ENV=stage nodemon src/index.ts",
+    "dev:prod": "IS_DEV=true NODE_ENV=production nodemon src/index.ts",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc",

@@ -1,141 +1,25 @@
-import { useState, ChangeEvent, DragEvent } from "react";
-import { CheckCircleIcon, RefreshIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
-import { useAudiusSdk } from "../providers/AudiusSdkProvider";
-import { useAudiusLibs } from "../providers/AudiusLibsProvider";
-import { useRemoteConfig } from "../providers/RemoteConfigProvider";
-import { FeatureFlags } from "../utils/constants";
-import type { AudiusLibs } from "@audius/sdk/dist/WebAudiusLibs.d.ts";
-import type {
-  AudiusSdk,
-  Genre,
-  UploadTrackRequest,
-} from "@audius/sdk/dist/sdk/index.d.ts";
-import { DOMParser } from "linkedom";
+import { useState, ChangeEvent, DragEvent } from 'react'
+import { useAudiusSdk } from '../providers/AudiusSdkProvider'
+import { useAudiusLibs } from '../providers/AudiusLibsProvider'
+import { useRemoteConfig } from '../providers/RemoteConfigProvider'
+import { FeatureFlags } from '../utils/constants'
+import type { AudiusLibs } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
+import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
 
-type Track = {
-  title: string,
-  artist: string,
-  coverArt: string,
-}
-
-type UploadedTrack = {
-  blockHash: string,
-  blockNumber: number,
-  trackId: string | null,
-} & Track
-
-const fetchResource = async (url: string, filename: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`HTTP error when fetching ${url}. Status: ${res.status}`);
-  }
-  const blob = await res.blob();
-  return new File([blob], filename, { type: blob.type });
-};
-
-const processXml = async ({ document, audiusSdk, setUploadingTrack, setUploadedTracks }: {
-  document: any;
-  audiusSdk: AudiusSdk;
-  setUploadingTrack: (track: Track | null) => void;
-  setUploadedTracks: (tracks: UploadedTrack[]) => void;
-}) => {
-  // todo remove this and upload images and tracks from xml without hardcoding
-  const [clipperImg, snareAudio] = await Promise.all([
-    fetchResource("/ddex/ddex-examples/clipper.jpg", "todo_img_name"),
-    fetchResource("/ddex/ddex-examples/snare.wav", "todo_audio_name"),
-  ]);
-
-  // extract SoundRecording
-  const trackNodes = queryAll(document, "SoundRecording", "track");
-
-  const uploadedTracks: UploadedTrack[] = [];
-  for (const trackNode of Array.from(trackNodes)) {
-    const releaseDateValue = firstValue(
-      trackNode,
-      "OriginalReleaseDate",
-      "originalReleaseDate",
-    );
-    const title = firstValue(trackNode, "TitleText", "trackTitle");
-    const tt = {
-      title,
-
-      // todo: need to normalize genre
-      // genre: firstValue(trackNode, "Genre", "trackGenre"),
-      genre: "Metal" as Genre,
-
-      // todo: need to parse release date if present
-      releaseDate: new Date(releaseDateValue as string | number | Date),
-      // releaseDate: new Date(),
-
-      isUnlisted: false,
-      isPremium: false,
-      fieldVisibility: {
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        play_count: true,
-        remixes: true,
-      },
-      description: "",
-      license: "Attribution ShareAlike CC BY-SA",
-    };
-    const artistName = firstValue(trackNode, "ArtistName", "artistName");
-    const { data: users } = await audiusSdk.users.searchUsers({
-      query: artistName,
-    });
-    if (!users || users.length === 0) {
-      throw new Error(`Could not find user ${artistName}`);
-    }
-    const userId = users[0].id;
-    const uploadTrackRequest: UploadTrackRequest = {
-      userId: userId,
-      coverArtFile: clipperImg,
-      metadata: tt,
-      onProgress: (progress: any) => console.log("Progress:", progress),
-      trackFile: snareAudio,
-    };
-    console.log("uploading track...");
-    const currentTrack = {
-      title,
-      artist: artistName,
-      coverArt: "/ddex/ddex-examples/clipper.jpg" //todo
-    }
-    setUploadingTrack(currentTrack)
-    const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest);
-    console.log(result);
-    setUploadingTrack(null);
-    uploadedTracks.push({
-      ...currentTrack,
-      ...result,
-    })
-    setUploadedTracks(uploadedTracks);
-  }
-
-  // todo
-  // extract Release
-  // for (const releaseNode of queryAll(document, "Release", "release")) {
-  // }
-};
-
-const queryAll = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hits = node.querySelectorAll(field);
-    if (hits.length) return Array.from(hits);
-  }
-  return [];
-};
-
-const firstValue = (node: any, ...fields: string[]) => {
-  for (const field of fields) {
-    const hit = node.querySelector(field);
-    if (hit) return hit.textContent.trim();
-  }
-};
+const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
 const validXmlFile = (file: File) => {
-  return file.type === "text/xml" && file.name.endsWith(".xml");
-};
+  if (file.type !== 'text/xml') {
+    alert('Please upload a valid XML file.')
+    return false
+  }
+
+  if (file.size > MAX_SIZE) {
+    alert('File is too large.')
+    return false
+  }
+  return true
+}
 
 const AudiusLogin = ({
   email,
@@ -146,13 +30,13 @@ const AudiusLogin = ({
   onPasswordChange,
   onLogin,
 }: {
-  email: string;
-  password: string;
-  loginError: string | null;
-  loginLoading: boolean;
-  onEmailChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onPasswordChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onLogin: () => Promise<void>;
+  email: string
+  password: string
+  loginError: string | null
+  loginLoading: boolean
+  onEmailChange: (e: ChangeEvent<HTMLInputElement>) => void
+  onPasswordChange: (e: ChangeEvent<HTMLInputElement>) => void
+  onLogin: () => Promise<void>
 }) => {
   return (
     <div className="bg-gray-200 flex justify-center items-center h-screen">
@@ -197,238 +81,136 @@ const AudiusLogin = ({
             onClick={onLogin}
             disabled={!email || !password || loginLoading}
           >
-            {loginLoading ? "Logging in..." : "Login"}
+            {loginLoading ? 'Logging in...' : 'Login'}
           </button>
           {loginError && <div className="text-red-500">{loginError}</div>}
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const ManageAudiusAccount = ({
   audiusLibs,
   logoutLoading,
   onLogout,
 }: {
-  audiusLibs: AudiusLibs;
-  logoutLoading: boolean;
-  onLogout: () => Promise<void>;
+  audiusLibs: AudiusLibs
+  logoutLoading: boolean
+  onLogout: () => Promise<void>
 }) => {
   return (
     <div className="flex justify-between items-center">
       <div>{`Logged in as @${audiusLibs?.Account?.getCurrentUser()
         ?.handle}`}</div>
       <button className="btn btn-blue" onClick={onLogout}>
-        {logoutLoading ? "Logging out..." : "Logout"}
+        {logoutLoading ? 'Logging out...' : 'Logout'}
       </button>
     </div>
-  );
-};
-
-const TrackList = ({ uploadedTracks, uploadingTrack }: {
-  uploadedTracks: UploadedTrack[];
-  uploadingTrack: Track | null;
-}) => {
-  const [expandedUploadDetails, setExpandedUploadDetails] = useState<Set<number>>(new Set());
-  const [isListExpanded, setIsListExpanded] = useState(true);
-
-  const toggleExpand = (index: number) => {
-    setExpandedUploadDetails(prevExpanded => {
-      const newExpanded = new Set(prevExpanded);
-      if (newExpanded.has(index)) {
-        newExpanded.delete(index);
-      } else {
-        newExpanded.add(index);
-      }
-      return newExpanded;
-    });
-  };
-
-  return (
-    <div>
-      {isListExpanded ? uploadedTracks.length ? (
-        <div className="flex justify-end items-center py-4">
-          <button
-            onClick={() => setIsListExpanded(!isListExpanded)}
-            className="text-blue-500 hover:text-blue-700 transition duration-150 ease-in-out"
-          >
-            {'Hide'}
-          </button>
-        </div>
-      ) : null : (
-        <div className="flex justify-between items-center py-4">
-          <p className="text-center">{uploadedTracks.length} tracks uploaded</p>
-          <button
-            onClick={() => setIsListExpanded(!isListExpanded)}
-            className="text-blue-500 hover:text-blue-700 transition duration-150 ease-in-out"
-          >{'View'}</button>
-        </div>
-      )}
-
-      {isListExpanded && (
-        uploadedTracks.map((track, index) => (
-          <div key={index} className="flex flex-col py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
-                <img src={track.coverArt} alt={track.title} className="h-12 w-12 rounded mr-4" />
-                <div>
-                  <h5 className="text-lg font-semibold">{track.title}</h5>
-                  <p className="text-sm text-gray-600">{track.artist}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <CheckCircleIcon className="h-6 w-6 text-green-500 mr-4" />
-                <button onClick={() => toggleExpand(index)}>
-                  {expandedUploadDetails.has(index) ? (
-                    <ChevronUpIcon className="h-6 w-6" />
-                  ) : (
-                    <ChevronDownIcon className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {expandedUploadDetails.has(index) && (
-              <div className="text-sm text-gray-500">
-                <p>Block Hash: {track.blockHash}</p>
-                <p>Block Number: {track.blockNumber}</p>
-                <p>Track ID: {track.trackId ?? 'N/A'}</p>
-              </div>
-            )}
-          </div>
-        ))
-      )}
-
-      {uploadingTrack && (
-        <div className="flex items-center py-4 border-t border-gray-200">
-          <img src={uploadingTrack.coverArt} alt={uploadingTrack.title} className="h-12 w-12 rounded mr-4" />
-          <div className="flex-grow">
-            <h5 className="text-lg font-semibold">{uploadingTrack.title}</h5>
-            <p className="text-sm text-gray-600">{uploadingTrack.artist}</p>
-          </div>
-          <RefreshIcon className="h-6 w-6 text-blue-500 animate-spin" />
-        </div>
-      )}
-    </div>
-  );
-};
+  )
+}
 
 const XmlImporter = ({
   audiusSdk,
 }: {
-  audiusSdk: AudiusSdk | undefined | null;
+  audiusSdk: AudiusSdk | undefined | null
 }) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadSucceeded, setUploadSucceeded] = useState(false);
-  const [uploadingTrack, setUploadingTrack] = useState<Track | null>(null);
-  const [uploadedTracks, setUploadedTracks] = useState<UploadedTrack[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSucceeded, setUploadSucceeded] = useState(false)
 
   const handleDragIn = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const handleDragOut = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
 
   const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
+      setIsDragging(true)
     }
-  };
+  }
 
   const handleDrop = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileChange(e.dataTransfer.files[0]); // reuse the file change handler
-      e.dataTransfer.clearData();
+      handleFileChange(e.dataTransfer.files[0]) // reuse the file change handler
+      e.dataTransfer.clearData()
     }
-  };
+  }
 
   const clearSelection = () => {
-    setSelectedFile(null);
-  };
+    setSelectedFile(null)
+    setUploadError(null)
+    setUploadSucceeded(false)
+  }
 
   const handleFileChange = (file: File) => {
     if (!validXmlFile(file)) {
-      alert("Please upload an XML file.");
-      return;
+      return
     }
-    setSelectedFile(file);
-    setUploadError(null);
-  };
+    setSelectedFile(file)
+    setUploadError(null)
+    setUploadSucceeded(false)
+  }
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) {
-      alert("Please select a file first!");
-      return;
+      alert('Please select a file first!')
+      return
     }
 
     if (!validXmlFile(selectedFile)) {
-      alert("Please upload an XML file.");
-      return;
+      return
     }
 
-    setUploadSucceeded(false);
-    setUploadedTracks([]);
-    setUploadingTrack(null);
+    // TODO more extensive sanitation + schema validation
 
-    readXml(selectedFile, audiusSdk!);
-  };
+    setUploadSucceeded(false)
+    setIsUploading(true)
 
-  const readXml = (file: File, audiusSdk: AudiusSdk) => {
-    setIsUploading(true);
-    const reader = new FileReader();
-    reader.onload = async (event: ProgressEvent<FileReader>) => {
-      const xmlText = event.target?.result;
-      if (xmlText) {
-        try {
-          const document = new DOMParser().parseFromString(
-            xmlText as string,
-            "text/xml",
-          );
-          await processXml({
-            document,
-            audiusSdk,
-            setUploadingTrack,
-            setUploadedTracks
-          });
-          setUploadSucceeded(true);
-        } catch (error) {
-          setUploadError("Error processing xml");
-          console.error("Error processing xml:", error);
-        }
-      } else {
-        setUploadError("Error reading file");
+    const formData = new FormData()
+    formData.append('file', selectedFile)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`)
       }
-      setIsUploading(false);
-    };
-    reader.onerror = (error) => {
-      setUploadError("Error reading file");
-      console.error("Error reading file:", error);
-      setIsUploading(false);
-    };
-    reader.readAsText(file);
-  };
+
+      const result = await response.json()
+      console.log(JSON.stringify(result))
+      setUploadSucceeded(true)
+    } catch (error: any) {
+      setUploadError(error.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   if (!audiusSdk) {
-    return <div className="text-red-500">{"Error loading XML importer"}</div>;
+    return <div className="text-red-500">{'Error loading XML importer'}</div>
   } else {
     return (
       <>
         <label
           className={`flex justify-center h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none ${
-            isDragging ? "border-gray-400" : "border-gray-300 "
+            isDragging ? 'border-gray-400' : 'border-gray-300 '
           }`}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
@@ -451,7 +233,7 @@ const XmlImporter = ({
               />
             </svg>
             <span className="font-medium text-gray-600">
-              {"Drop files to upload, or "}
+              {'Drop files to upload, or '}
               <span className="text-blue-600 underline">browse</span>
             </span>
           </span>
@@ -480,7 +262,7 @@ const XmlImporter = ({
               onClick={handleUpload}
               disabled={isUploading}
             >
-              {isUploading ? "Uploading..." : "Upload"}
+              {isUploading ? 'Uploading...' : 'Upload'}
             </button>
             {uploadError && (
               <div className="text-red-500">
@@ -490,79 +272,81 @@ const XmlImporter = ({
             {uploadSucceeded && (
               <div className="text-green-500">Upload success!</div>
             )}
-            <TrackList uploadedTracks={uploadedTracks} uploadingTrack={uploadingTrack} />
           </>
         )}
       </>
-    );
+    )
   }
-};
+}
 
 export const Ddex = () => {
-  const { audiusLibs } = useAudiusLibs();
-  const { didInit, getFeatureEnabled } = useRemoteConfig();
-  const { audiusSdk, initSdk, removeSdk } = useAudiusSdk();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [logoutLoading, setLogoutLoading] = useState(false);
+  const { audiusLibs } = useAudiusLibs()
+  const { didInit, getFeatureEnabled } = useRemoteConfig()
+  const { audiusSdk, initSdk, removeSdk } = useAudiusSdk()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [logoutLoading, setLogoutLoading] = useState(false)
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLoginError(null);
-    setEmail(e.target.value);
-  };
+    setLoginError(null)
+    setEmail(e.target.value)
+  }
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLoginError(null);
-    setPassword(e.target.value);
-  };
+    setLoginError(null)
+    setPassword(e.target.value)
+  }
 
   const checkUserAllowlisted = async (userId: number) => {
-    const uploadsAllowed = getFeatureEnabled({flag: FeatureFlags.DDEX_UPLOADS, userId});
+    const uploadsAllowed = getFeatureEnabled({
+      flag: FeatureFlags.DDEX_UPLOADS,
+      userId,
+    })
     if (!uploadsAllowed) {
-      setLoginError("401: User not authorized");
-      await audiusLibs!.Account!.logout();
+      setLoginError('401: User not authorized')
+      await audiusLibs!.Account!.logout()
     } else {
-      await initSdk();
+      await initSdk()
     }
   }
 
   const handleLogin = async () => {
-    setLoginLoading(true);
+    setLoginLoading(true)
     try {
-      const { error } = await audiusLibs!.Account!.login(email, password);
+      const { error } = await audiusLibs!.Account!.login(email, password)
       if (error) {
-        throw new Error(error as string);
+        throw new Error(error as string)
       }
     } catch (error) {
-      if ((error as Error).message.includes("400")) {
-        setLoginError("Email or password is incorrect");
+      if ((error as Error).message.includes('400')) {
+        setLoginError('Email or password is incorrect')
       } else {
-        setLoginError((error as Error).message);
+        setLoginError((error as Error).message)
       }
     } finally {
       // Libs throws an error even if the user was successfully logged in.
       const currentUserId = audiusLibs?.Account?.getCurrentUser()?.user_id
       if (currentUserId) {
-        await checkUserAllowlisted(currentUserId);
+        await checkUserAllowlisted(currentUserId)
       }
-      setLoginLoading(false);
+      setLoginLoading(false)
     }
-  };
+  }
 
   const handleLogout = async () => {
-    setLoginError(null);
-    setLogoutLoading(true);
-    await audiusLibs!.Account!.logout();
-    removeSdk();
-    setLogoutLoading(false);
-  };
+    setLoginError(null)
+    setLogoutLoading(true)
+    await audiusLibs!.Account!.logout()
+    removeSdk()
+    setLogoutLoading(false)
+  }
 
   return (
     <div className="flex flex-col space-y-4">
       {!audiusLibs || !audiusLibs.Account || !didInit ? (
-        "loading..."
+        'loading...'
       ) : !audiusLibs.Account.getCurrentUser() ? (
         <AudiusLogin
           email={email}
@@ -584,5 +368,5 @@ export const Ddex = () => {
         </>
       )}
     </div>
-  );
-};
+  )
+}

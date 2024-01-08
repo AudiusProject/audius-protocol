@@ -26,10 +26,6 @@
   height: var(--unit-5);
 }
 
-.modalTitleIcon path {
-  fill: var(--neutral-light-2);
-}
-
 .modalContent {
   align-self: stretch;
   display: flex;

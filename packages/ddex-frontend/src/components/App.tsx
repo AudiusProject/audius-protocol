@@ -1,7 +1,7 @@
-import React from "react";
-import Layout from "./Layout";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Ddex } from "../pages/DDEX";
+import React from 'react'
+import Layout from './Layout'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { Ddex } from '../pages/DDEX'
 
 const App: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const App: React.FC = () => {
         </Routes>
       </Layout>
     </Router>
-  );
-};
+  )
+}
 
-export default App;
+export default App
