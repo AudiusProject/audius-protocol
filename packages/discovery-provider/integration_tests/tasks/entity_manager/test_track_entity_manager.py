@@ -1085,7 +1085,7 @@ def test_access_conditions(app, mocker):
             "play_count": True,
             "remixes": True,
         },
-        "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+        "remix_of": None,
         "repost_count": 12,
         "save_count": 21,
         "description": "some description",
@@ -1103,7 +1103,7 @@ def test_access_conditions(app, mocker):
     metadatas = {
         "InvalidStreamGatedNoConditions": {
             **default_metadata,
-            "track_id": 1,
+            "track_id": TRACK_ID_OFFSET,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1",
@@ -1120,7 +1120,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidStreamGatedMultipleConditions": {
             **default_metadata,
-            "track_id": 2,
+            "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 2",
@@ -1137,7 +1137,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidStreamGatedDownloadableNotDownloadGated": {
             **default_metadata,
-            "track_id": 3,
+            "track_id": TRACK_ID_OFFSET + 2,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 3",
@@ -1154,7 +1154,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidStreamGatedDownloadableDifferentDownloadConditions": {
             **default_metadata,
-            "track_id": 4,
+            "track_id": TRACK_ID_OFFSET + 3,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 4",
@@ -1171,7 +1171,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidDownloadGatedNotDownloadable": {
             **default_metadata,
-            "track_id": 5,
+            "track_id": TRACK_ID_OFFSET + 4,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 5",
@@ -1188,7 +1188,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidDownloadGatedNoConditions": {
             **default_metadata,
-            "track_id": 6,
+            "track_id": TRACK_ID_OFFSET + 5,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 6",
@@ -1205,7 +1205,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidDownloadGatedMultipleConditions": {
             **default_metadata,
-            "track_id": 7,
+            "track_id": TRACK_ID_OFFSET + 6,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 7",
@@ -1222,7 +1222,7 @@ def test_access_conditions(app, mocker):
         },
         "InvalidStemTrack": {
             **default_metadata,
-            "track_id": 8,
+            "track_id": TRACK_ID_OFFSET + 7,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 8",
@@ -1240,7 +1240,7 @@ def test_access_conditions(app, mocker):
         },
         "ValidDownloadableAndGated": {
             **default_metadata,
-            "track_id": 9,
+            "track_id": TRACK_ID_OFFSET + 8,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 9",
@@ -1353,7 +1353,7 @@ def test_update_access_conditions(app, mocker):
             "play_count": True,
             "remixes": True,
         },
-        "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+        "remix_of": None,
         "repost_count": 12,
         "save_count": 21,
         "description": "some description",
@@ -1371,7 +1371,7 @@ def test_update_access_conditions(app, mocker):
     metadatas = {
         "CreateTrack1DownloadableNotGated": {
             **default_metadata,
-            "track_id": 1,
+            "track_id": TRACK_ID_OFFSET,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1",
@@ -1388,7 +1388,7 @@ def test_update_access_conditions(app, mocker):
         },
         "CreateTrack2DownloadableAndGated": {
             **default_metadata,
-            "track_id": 2,
+            "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 2",
@@ -1405,7 +1405,7 @@ def test_update_access_conditions(app, mocker):
         },
         "CreateTrack3DownloadableAndPurchaseGated": {
             **default_metadata,
-            "track_id": 3,
+            "track_id": TRACK_ID_OFFSET + 2,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 3",
@@ -1426,7 +1426,7 @@ def test_update_access_conditions(app, mocker):
         },
         "InvalidUpdateTrack1StreamGated": {
             **default_metadata,
-            "track_id": 1,
+            "track_id": TRACK_ID_OFFSET,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1 updated",
@@ -1443,7 +1443,7 @@ def test_update_access_conditions(app, mocker):
         },
         "InvalidUpdateTrack1DownloadGated": {
             **default_metadata,
-            "track_id": 1,
+            "track_id": TRACK_ID_OFFSET,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1 updated",
@@ -1460,7 +1460,7 @@ def test_update_access_conditions(app, mocker):
         },
         "InvalidUpdateTrack2DifferentStreamConditionsNotPurchaseGated": {
             **default_metadata,
-            "track_id": 2,
+            "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 2 updated",
@@ -1477,7 +1477,7 @@ def test_update_access_conditions(app, mocker):
         },
         "InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated": {
             **default_metadata,
-            "track_id": 2,
+            "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 2 updated",
@@ -1494,7 +1494,7 @@ def test_update_access_conditions(app, mocker):
         },
         "ValidUpdateTrack2NotGatedNotDownloadable": {
             **default_metadata,
-            "track_id": 4,
+            "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 4",
@@ -1511,7 +1511,7 @@ def test_update_access_conditions(app, mocker):
         },
         "ValidUpdateTrack3DifferentConditionsPurchaseGated": {
             **default_metadata,
-            "track_id": 3,
+            "track_id": TRACK_ID_OFFSET + 2,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 3 updated",
@@ -1739,3 +1739,267 @@ def test_update_access_conditions(app, mocker):
         assert track3.download_conditions == {
             "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
         }
+
+
+def test_remixability(app, mocker):
+    "Tests that tracks cannot have invalid access stream/download conditions"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    default_metadata = {
+        "cover_art": None,
+        "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+        "tags": "realmagic,rickyreed,theroom",
+        "genre": "R&B/Soul",
+        "mood": "Empowering",
+        "credits_splits": None,
+        "created_at": "2020-07-11 08:22:15",
+        "create_date": None,
+        "updated_at": "2020-07-11 08:22:15",
+        "release_date": "2020-07-11 08:22:15",
+        "file_type": None,
+        "is_playlist_upload": True,
+        "track_segments": [
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+            }
+        ],
+        "has_current_user_reposted": False,
+        "is_current": True,
+        "is_unlisted": False,
+        "field_visibility": {
+            "mood": True,
+            "tags": True,
+            "genre": True,
+            "share": True,
+            "play_count": True,
+            "remixes": True,
+        },
+        "remix_of": None,
+        "repost_count": 12,
+        "save_count": 21,
+        "description": "some description",
+        "license": "All rights reserved",
+        "isrc": None,
+        "iswc": None,
+        "track_id": 77955,
+        "stem_of": None,
+        "ai_attribution_user_id": None,
+        "orig_file_cid": "original-file-cid",
+        "orig_filename": "original-filename",
+        "is_original_available": False,
+    }
+
+    metadatas = {
+        "ParentTrack1": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET,
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "parent track 1",
+            "is_stream_gated": True,
+            "stream_conditions": {"tip_user_id": 1},
+            "is_download_gated": True,
+            "download_conditions": {"tip_user_id": 1},
+            "is_downloadable": True,
+            "download": {
+                "cid": "some-track-cid",
+                "is_downloadable": True,
+                "requires_follow": False,
+            },
+        },
+        "ParentTrack2": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET + 1,
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "parent track 2",
+            "is_stream_gated": False,
+            "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
+            "is_downloadable": False,
+            "download": {
+                "cid": "some-track-cid",
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+        },
+        "RemixTrack1": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET + 2,
+            "owner_id": 2,
+            "track_cid": "some-track-cid",
+            "title": "remix track 1",
+            "is_stream_gated": False,
+            "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
+            "is_downloadable": False,
+            "download": {
+                "cid": "some-track-cid",
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": TRACK_ID_OFFSET}]},
+        },
+        "RemixTrack2": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET + 3,
+            "owner_id": 2,
+            "track_cid": "some-track-cid",
+            "title": "remix track 2",
+            "is_stream_gated": False,
+            "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
+            "is_downloadable": False,
+            "download": {
+                "cid": "some-track-cid",
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": TRACK_ID_OFFSET + 1}]},
+        },
+    }
+
+    create_parent_track1_json = json.dumps(metadatas["ParentTrack1"])
+    create_parent_track2_json = json.dumps(metadatas["ParentTrack2"])
+    invalid_create_remix_track1_json = json.dumps(metadatas["RemixTrack1"])
+    valid_create_remix_track2_json = json.dumps(metadatas["RemixTrack2"])
+
+    create_parent_track_1_receipt = [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": TRACK_ID_OFFSET,
+                    "_entityType": "Track",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "", "data": {create_parent_track1_json}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+    create_parent_track_2_receipt = [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": TRACK_ID_OFFSET + 1,
+                    "_entityType": "Track",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "", "data": {create_parent_track2_json}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+    invalid_create_remix_track_1_receipt = [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": TRACK_ID_OFFSET + 2,
+                    "_entityType": "Track",
+                    "_userId": 2,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "", "data": {invalid_create_remix_track1_json}}}',
+                    "_signer": "user2wallet",
+                }
+            )
+        }
+    ]
+    valid_create_remix_track_2_receipt = [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": TRACK_ID_OFFSET + 3,
+                    "_entityType": "Track",
+                    "_userId": 2,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "", "data": {valid_create_remix_track2_json}}}',
+                    "_signer": "user2wallet",
+                }
+            )
+        }
+    ]
+
+    tx_receipts = {
+        "CreateParentTrack1": create_parent_track_1_receipt,
+        "CreateParentTrack2": create_parent_track_2_receipt,
+        "InvalidCreateRemixTrack1": invalid_create_remix_track_1_receipt,
+        "ValidCreateRemixTrack2": valid_create_remix_track_2_receipt,
+    }
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs=[
+                AttributeDict(
+                    {"transactionHash": update_task.web3.to_bytes(text=tx_receipt)}
+                )
+                for tx_receipt in {
+                    "CreateParentTrack1": create_parent_track_1_receipt,
+                    "CreateParentTrack2": create_parent_track_2_receipt,
+                }
+            ],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        all_tracks: List[Track] = session.query(Track).all()
+        assert len(all_tracks) == 2
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs=[
+                AttributeDict(
+                    {"transactionHash": update_task.web3.to_bytes(text=tx_receipt)}
+                )
+                for tx_receipt in {
+                    "InvalidCreateRemixTrack1": invalid_create_remix_track_1_receipt,
+                    "ValidCreateRemixTrack2": valid_create_remix_track_2_receipt,
+                }
+            ],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        all_tracks: List[Track] = session.query(Track).all()
+        assert len(all_tracks) == 3
+
+        track1 = all_tracks[0]
+        assert track1.track_id == TRACK_ID_OFFSET
+
+        track2 = all_tracks[1]
+        assert track2.track_id == TRACK_ID_OFFSET + 1
+
+        track3 = all_tracks[2]
+        assert track3.track_id == TRACK_ID_OFFSET + 3
