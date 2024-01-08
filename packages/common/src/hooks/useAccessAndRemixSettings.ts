@@ -16,6 +16,7 @@ type UseAccessAndRemixSettingsProps = {
   isRemix: boolean
   initialPremiumConditions: Nullable<PremiumConditions>
   isInitiallyUnlisted: boolean
+  isScheduledRelease?: boolean
 }
 
 /**
@@ -33,7 +34,8 @@ export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
   initialPremiumConditions,
-  isInitiallyUnlisted
+  isInitiallyUnlisted,
+  isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
   const hasNoCollectibles = useSelector((state: CommonState) => {
     const { ethCollectionMap, solCollectionMap } =
@@ -45,12 +47,14 @@ export const useAccessAndRemixSettings = ({
   })
 
   const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-
+    !isInitiallyUnlisted && !isUpload && !initialPremiumConditions
   const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+    !isInitiallyUnlisted && // track must be published
+    !isUpload &&
+    isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
 
   const isInitiallySpecialAccess =
+    !isInitiallyUnlisted &&
     !isUpload &&
     !!(
       isPremiumContentFollowGated(initialPremiumConditions) ||
@@ -58,8 +62,9 @@ export const useAccessAndRemixSettings = ({
     )
 
   const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-
+    !isInitiallyUnlisted &&
+    !isUpload &&
+    isPremiumContentCollectibleGated(initialPremiumConditions)
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
   const noUsdcGate =
@@ -85,8 +90,7 @@ export const useAccessAndRemixSettings = ({
   const noCollectibleGateFields =
     noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden = !isUpload && !isInitiallyUnlisted
-
+  const noHidden = isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
   return {
     noUsdcGate,
     noSpecialAccessGate,

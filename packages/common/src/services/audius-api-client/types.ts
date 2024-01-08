@@ -127,6 +127,7 @@ export type APITrack = {
   field_visibility: FieldVisibility
   followee_reposts: APIRepost[]
   has_current_user_reposted: boolean
+  is_scheduled_release: boolean
   is_unlisted: boolean
   has_current_user_saved: boolean
   followee_favorites: APIFavorite[]

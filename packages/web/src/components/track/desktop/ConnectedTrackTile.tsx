@@ -117,6 +117,7 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted: isUnlisted,
+    is_scheduled_release: isScheduledRelease,
     is_premium: isPremium,
     premium_conditions: premiumConditions,
     track_id: trackId,
@@ -362,6 +363,7 @@ const ConnectedTrackTile = ({
       isReposted={isReposted}
       isOwner={isOwner}
       isUnlisted={isUnlisted}
+      isScheduledRelease={isScheduledRelease}
       isPremium={isPremium}
       premiumConditions={premiumConditions}
       doesUserHaveAccess={doesUserHaveAccess}

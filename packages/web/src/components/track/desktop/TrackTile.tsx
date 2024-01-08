@@ -116,6 +116,7 @@ const TrackTile = ({
   isReposted,
   isOwner,
   isUnlisted,
+  isScheduledRelease,
   isPremium,
   premiumConditions,
   doesUserHaveAccess,
@@ -233,7 +234,7 @@ const TrackTile = ({
         isOwner,
         isUnlisted:
           isUnlisted &&
-          (!releaseDate || moment.utc(releaseDate).isBefore(moment())),
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
         premiumConditions
       })
 
@@ -255,7 +256,8 @@ const TrackTile = ({
           {messages.artistPick}
         </div>
       )
-    } else if (isScheduledReleasesEnabled) {
+    }
+    if (isScheduledReleasesEnabled) {
       scheduledReleaseLabel = (
         <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )
@@ -371,7 +373,7 @@ const TrackTile = ({
               styles.topRight
             )}
           >
-            {isUnlisted ? (
+            {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
