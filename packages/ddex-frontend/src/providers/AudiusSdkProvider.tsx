@@ -1,8 +1,10 @@
+import Hashids from 'hashids'
 import type {
   AudiusSdk as AudiusSdkType,
   ServicesConfig,
+  DecodedUserToken,
 } from '@audius/sdk/dist/sdk/index.d.ts'
-import { useAudiusLibs } from './AudiusLibsProvider'
+import type { OAuthEnv } from '@audius/sdk/dist/sdk/oauth/index.d.ts'
 import {
   ReactNode,
   createContext,
@@ -22,36 +24,71 @@ import {
   productionConfig,
   sdk,
 } from '@audius/sdk'
+import { FeatureFlags } from '../utils/constants'
+import { useRemoteConfig } from './RemoteConfigProvider'
+
+const HASH_SALT = 'azowernasdfoia'
+const MIN_LENGTH = 5
+const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 type AudiusSdkContextType = {
   audiusSdk: AudiusSdkType | null
-  initSdk: () => void
-  removeSdk: () => void
+  currentUser: DecodedUserToken | null
+  oauthError: string
   isLoading: boolean
 }
 
 const AudiusSdkContext = createContext<AudiusSdkContextType>({
   audiusSdk: null,
-  initSdk: () => {},
-  removeSdk: () => {},
+  currentUser: null,
+  oauthError: '',
   isLoading: true,
 })
 
 export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
-  const { audiusLibs } = useAudiusLibs()
   const [audiusSdk, setAudiusSdk] = useState<AudiusSdkType | null>(null)
+  const [currentUser, setCurrentUser] = useState<DecodedUserToken | null>(null)
+  const [oauthError, setOauthError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const envVars = useEnvVars()
+  const { didInit, getFeatureEnabled } = useRemoteConfig()
 
   // @ts-expect-error ts(2741). This is only here for debugging and should eventually be removed
   window.audiusSdk = audiusSdk
 
+  /**
+   * Decodes a string id into an int. Returns null if an invalid ID. */
+  const decodeHashId = (id: string): number | null => {
+    try {
+      const ids = hashids.decode(id)
+      if (!ids.length) return null
+      const num = Number(ids[0])
+      if (isNaN(num)) return null
+      return num
+    } catch (e) {
+      setOauthError(`Failed to decode ${id}: ${e}`)
+      return null
+    }
+  }
+
+  const checkUserAllowlisted = (user: DecodedUserToken) => {
+    const decodedUserId = decodeHashId(user.userId)
+    if (decodedUserId) {
+      const uploadsAllowed = getFeatureEnabled({
+        flag: FeatureFlags.DDEX_UPLOADS,
+        userId: decodedUserId,
+      })
+      if (!uploadsAllowed) {
+        // setOauthError('401: User not authorized')
+        alert('401: User not authorized')
+      } else {
+        setCurrentUser(user)
+      }
+    }
+  }
+
   const initSdk = () => {
-    if (
-      !window.Web3 ||
-      !audiusLibs?.Account?.getCurrentUser() ||
-      !audiusLibs?.hedgehog
-    ) {
+    if (!window.Web3 || !didInit) {
       return
     }
 
@@ -70,9 +107,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Get keys
-      const apiKey = audiusLibs?.hedgehog?.wallet?.getAddressString()
-      const apiSecret = audiusLibs?.hedgehog?.wallet?.getPrivateKeyString()
-      if (!apiKey || !apiSecret) {
+      if (!envVars.ddexKey) {
         setIsLoading(false)
         return
       }
@@ -82,7 +117,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         initialSelectedNode,
       })
       const storageNodeSelector = new StorageNodeSelector({
-        auth: new AppAuth(apiKey, apiSecret),
+        auth: new AppAuth(envVars.ddexKey),
         discoveryNodeSelector: discoveryNodeSelector,
         bootstrapNodes: config.storageNodes,
         logger,
@@ -101,30 +136,42 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
           storageNodeSelector,
           logger,
         },
-        apiKey: apiKey,
-        apiSecret: apiSecret,
+        apiKey: envVars.ddexKey,
         appName: 'DDEX Demo',
       })
 
+      let env: OAuthEnv = envVars.env
+      if (env === 'prod') {
+        env = 'production'
+      } else if (env === 'stage') {
+        env = 'staging'
+      }
+      sdkInst.oauth.init({
+        env,
+        successCallback: (user) => {
+          setOauthError('')
+          checkUserAllowlisted(user)
+        },
+        errorCallback: (error) => {
+          setOauthError(error)
+          console.log("Error oauth'ing user:", error)
+        },
+      })
       setAudiusSdk(sdkInst as AudiusSdkType)
     }
 
     setIsLoading(false)
   }
 
-  const removeSdk = () => {
-    setAudiusSdk(null)
-  }
-
   useEffect(() => {
     void initSdk()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audiusLibs])
+  }, [didInit])
 
   const contextValue = {
     audiusSdk,
-    initSdk,
-    removeSdk,
+    currentUser,
+    oauthError,
     isLoading,
   }
   return (

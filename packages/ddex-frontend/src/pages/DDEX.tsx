@@ -1,9 +1,6 @@
-import { useState, ChangeEvent, DragEvent } from 'react'
+import { useState, DragEvent } from 'react'
 import { useAudiusSdk } from '../providers/AudiusSdkProvider'
-import { useAudiusLibs } from '../providers/AudiusLibsProvider'
-import { useRemoteConfig } from '../providers/RemoteConfigProvider'
-import { FeatureFlags } from '../utils/constants'
-import type { AudiusLibs } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
+import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
 import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
@@ -21,91 +18,22 @@ const validXmlFile = (file: File) => {
   return true
 }
 
-const AudiusLogin = ({
-  email,
-  password,
-  loginError,
-  loginLoading,
-  onEmailChange,
-  onPasswordChange,
-  onLogin,
-}: {
-  email: string
-  password: string
-  loginError: string | null
-  loginLoading: boolean
-  onEmailChange: (e: ChangeEvent<HTMLInputElement>) => void
-  onPasswordChange: (e: ChangeEvent<HTMLInputElement>) => void
-  onLogin: () => Promise<void>
-}) => {
-  return (
-    <div className="bg-gray-200 flex justify-center items-center h-screen">
-      <div className="bg-white p-6 rounded shadow-md w-96 mx-auto">
-        <form className="space-y-4">
-          <h2 className="text-center text-2xl font-bold">Login to Audius</h2>
-          <div>
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-700"
-            >
-              Email:
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              onChange={onEmailChange}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-700"
-            >
-              Password:
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              onChange={onPasswordChange}
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-            onClick={onLogin}
-            disabled={!email || !password || loginLoading}
-          >
-            {loginLoading ? 'Logging in...' : 'Login'}
-          </button>
-          {loginError && <div className="text-red-500">{loginError}</div>}
-        </form>
-      </div>
-    </div>
-  )
-}
-
 const ManageAudiusAccount = ({
-  audiusLibs,
-  logoutLoading,
-  onLogout,
+  currentUser,
+  onChangeUser,
+  oauthError,
 }: {
-  audiusLibs: AudiusLibs
-  logoutLoading: boolean
-  onLogout: () => Promise<void>
+  currentUser: DecodedUserToken
+  onChangeUser: () => void
+  oauthError: string | null
 }) => {
   return (
     <div className="flex justify-between items-center">
-      <div>{`Logged in as @${audiusLibs?.Account?.getCurrentUser()
-        ?.handle}`}</div>
-      <button className="btn btn-blue" onClick={onLogout}>
-        {logoutLoading ? 'Logging out...' : 'Logout'}
+      <div>{`Logged in as @${currentUser.handle}`}</div>
+      <button className="btn btn-blue" onClick={onChangeUser}>
+        Switch users
       </button>
+      {oauthError && <div className="text-red-600">{oauthError}</div>}
     </div>
   )
 }
@@ -280,89 +208,28 @@ const XmlImporter = ({
 }
 
 export const Ddex = () => {
-  const { audiusLibs } = useAudiusLibs()
-  const { didInit, getFeatureEnabled } = useRemoteConfig()
-  const { audiusSdk, initSdk, removeSdk } = useAudiusSdk()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState<string | null>(null)
-  const [loginLoading, setLoginLoading] = useState(false)
-  const [logoutLoading, setLogoutLoading] = useState(false)
+  const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
 
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLoginError(null)
-    setEmail(e.target.value)
-  }
-
-  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setLoginError(null)
-    setPassword(e.target.value)
-  }
-
-  const checkUserAllowlisted = async (userId: number) => {
-    const uploadsAllowed = getFeatureEnabled({
-      flag: FeatureFlags.DDEX_UPLOADS,
-      userId,
-    })
-    if (!uploadsAllowed) {
-      setLoginError('401: User not authorized')
-      await audiusLibs!.Account!.logout()
-    } else {
-      await initSdk()
-    }
-  }
-
-  const handleLogin = async () => {
-    setLoginLoading(true)
-    try {
-      const { error } = await audiusLibs!.Account!.login(email, password)
-      if (error) {
-        throw new Error(error as string)
-      }
-    } catch (error) {
-      if ((error as Error).message.includes('400')) {
-        setLoginError('Email or password is incorrect')
-      } else {
-        setLoginError((error as Error).message)
-      }
-    } finally {
-      // Libs throws an error even if the user was successfully logged in.
-      const currentUserId = audiusLibs?.Account?.getCurrentUser()?.user_id
-      if (currentUserId) {
-        await checkUserAllowlisted(currentUserId)
-      }
-      setLoginLoading(false)
-    }
-  }
-
-  const handleLogout = async () => {
-    setLoginError(null)
-    setLogoutLoading(true)
-    await audiusLibs!.Account!.logout()
-    removeSdk()
-    setLogoutLoading(false)
+  const handleOauth = () => {
+    audiusSdk.oauth.login({ scope: 'read' })
   }
 
   return (
     <div className="flex flex-col space-y-4">
-      {!audiusLibs || !audiusLibs.Account || !didInit ? (
+      {!audiusSdk ? (
         'loading...'
-      ) : !audiusLibs.Account.getCurrentUser() ? (
-        <AudiusLogin
-          email={email}
-          password={password}
-          loginError={loginError}
-          loginLoading={loginLoading}
-          onEmailChange={handleEmailChange}
-          onPasswordChange={handlePasswordChange}
-          onLogin={handleLogin}
-        />
+      ) : !currentUser ? (
+        <div className="flex flex-col space-y-4 justify-center items-center h-screen">
+          <button className="btn btn-blue" onClick={handleOauth}>
+            Login with Audius
+          </button>
+          {oauthError && <div className="text-red-600">{oauthError}</div>}
+        </div>
       ) : (
         <>
           <ManageAudiusAccount
-            audiusLibs={audiusLibs}
-            logoutLoading={logoutLoading}
-            onLogout={handleLogout}
+            currentUser={currentUser}
+            onChangeUser={handleOauth}
           />
           <XmlImporter audiusSdk={audiusSdk} />
         </>
