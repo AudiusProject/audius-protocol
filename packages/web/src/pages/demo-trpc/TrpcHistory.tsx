@@ -1,11 +1,12 @@
+import { useState } from 'react'
+
 import { RouterOutput } from '@audius/trpc-server'
 import { Link } from 'react-router-dom'
 
 import { trpc } from 'utils/trpcClientWeb'
 
-import styles from './TrpcHistory.module.css'
-import { useState } from 'react'
 import { CidImage } from './DemoTrpcPage'
+import styles from './TrpcHistory.module.css'
 
 type HistoryRow = RouterOutput['me']['playHistory'][0]
 

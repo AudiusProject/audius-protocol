@@ -14,14 +14,16 @@ export const trackRouter = router({
   }),
 
   topListeners: publicProcedure
+    .meta({ openapi: { method: 'GET', path: '/tracks/top_listeners' } })
     .input(
       z.object({
         trackId: z.number(),
         limit: z.number().default(100),
       })
     )
+    .output(z.array(z.custom<TopListenerRow>()))
     .query(async ({ ctx, input }) => {
-      return sql`
+      const rows: TopListenerRow[] = await sql`
         with
         deduped as (
           select distinct play_item_id, user_id, date_trunc('hour', created_at) as created_at
@@ -39,7 +41,20 @@ export const trackRouter = router({
         join users u using (user_id)
         order by play_count desc
         limit ${input.limit}
-      ` as Promise<TopListenerRow[]>
+      `
+
+      // remove some needless user fields
+      // this could also be done with output validator
+      // or we could just return (userId, playCount)
+      // and client can fetch user rows...
+      rows.forEach((r) => {
+        delete r.playlistLibrary
+        delete r.primaryId
+        delete r.secondaryIds
+        delete r.creatorNodeEndpoint
+      })
+
+      return rows
     }),
 })
 
