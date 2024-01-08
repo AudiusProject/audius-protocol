@@ -24,6 +24,7 @@ import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import TextArea from 'components/data-entry/TextArea'
 import Dropdown from 'components/navigation/Dropdown'
+import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
 import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
@@ -110,9 +111,8 @@ const BasicForm = (props) => {
             <Input
               name='name'
               id='track-name-input'
-              placeholder={`${
-                props.type.charAt(0).toUpperCase() + props.type.slice(1)
-              } Name`}
+              placeholder={`${props.type.charAt(0).toUpperCase() + props.type.slice(1)
+                } Name`}
               defaultValue={
                 props.isPlaylist
                   ? props.defaultFields.playlist_name
@@ -609,8 +609,8 @@ const AdvancedForm = (props) => {
                 props.derivativeWorks === null
                   ? 0
                   : props.derivativeWorks
-                  ? 1
-                  : 2
+                    ? 1
+                    : 2
               }
               onSelect={props.onSelectDerivativeWorks}
             />
@@ -802,6 +802,7 @@ class FormTile extends Component {
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
         />
+
         <AdvancedForm
           {...this.props}
           toggleAdvanced={this.toggleAdvanced}
@@ -822,6 +823,8 @@ class FormTile extends Component {
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
         />
+        <NavigationPrompt when={true} messages={'hi'} />
+
         {this.props.children.length > 0 ? (
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className={styles.children}>
@@ -928,15 +931,15 @@ FormTile.defaultProps = {
   type: 'track',
   isPlaylist: false,
   transformArtworkFunction: resizeImage,
-  onChangeOrder: () => {},
-  onChangeField: () => {},
+  onChangeOrder: () => { },
+  onChangeField: () => { },
   isUpload: true,
   initialForm: {},
   showUnlistedToggle: true,
   showHideTrackSectionInModal: true,
   children: [],
   stems: [],
-  onSelectStemCategory: () => {}
+  onSelectStemCategory: () => { }
 }
 
 export default FormTile

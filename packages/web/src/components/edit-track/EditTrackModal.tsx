@@ -11,10 +11,11 @@ import {
   stemsUploadSelectors,
   stemsUploadActions,
   editTrackModalSelectors,
-  useEditTrackModal
+  useEditTrackModal,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -28,6 +29,8 @@ import { FEED_PAGE, getPathname } from 'utils/route'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
 
 const messages = {
   deleteTrack: 'DELETE TRACK'
@@ -50,6 +53,7 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
+  const dispatch = useDispatch()
   const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
@@ -68,16 +72,37 @@ const EditTrackModal = ({
   const [pendingDeletes, setPendingDeletes] = useState<ID[]>([])
   const onSaveEdit = (formFields: Track) => {
     if (!metadata) return
-    onEdit(metadata.track_id, formFields)
-    if (pendingUploads.length) {
-      uploadStems(metadata.track_id, pendingUploads)
-      setPendingUploads([])
+
+    const confirmEdit = (metadata, formFields) => {
+      onEdit(metadata.track_id, formFields)
+      if (pendingUploads.length) {
+        uploadStems(metadata.track_id, pendingUploads)
+        setPendingUploads([])
+      }
+      if (pendingDeletes.length) {
+        pendingDeletes.forEach((id) => onDelete(id))
+        setPendingDeletes([])
+      }
+      onClose()
     }
-    if (pendingDeletes.length) {
-      pendingDeletes.forEach((id) => onDelete(id))
-      setPendingDeletes([])
+    if (1 === 1) {
+      console.log('asdf dispatch')
+      dispatch(
+        openPublishTrackConfirmationModal(
+
+          {
+            type: publishTrack
+          confirmCallback: () => {
+              console.log('asdf confirming edit')
+              confirmEdit(metadata, formFields)
+              console.log('asdf confirmed edit')
+            }
+          })
+      )
+      console.log('asdf dispatched')
+    } else {
+      confirmEdit(metadata, formFields)
     }
-    onClose()
   }
   const onSelectDelete = () => {
     setShowDeleteConfirmation(true)
@@ -125,7 +150,7 @@ const EditTrackModal = ({
   }
 
   const onAddStems = async (selectedStems: File[]) => {
-    const processed = (await Promise.all(processFiles(selectedStems, () => {})))
+    const processed = (await Promise.all(processFiles(selectedStems, () => { })))
       .filter(removeNullable)
       .map((p) => ({
         ...p,

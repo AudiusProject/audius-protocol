@@ -17,6 +17,7 @@ const getCollection = (id: ID) => (state: CommonState) =>
   getCollectionBase(state, { id })
 
 function* handleRequestOpen(action: ShareModalRequestOpenAction) {
+  console.log('asdf action: ', action)
   switch (action.payload.type) {
     case 'track': {
       const { trackId, source, type } = action.payload
