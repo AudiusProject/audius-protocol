@@ -7,6 +7,8 @@ export const SET_TRACK_ID = 'TRACK_PAGE/SET_TRACK_ID'
 export const SET_TRACK_PERMALINK = 'TRACK_PAGE/SET_TRACK_PERMALINK'
 export const MAKE_TRACK_PUBLIC = 'TRACK_PAGE/MAKE_TRACK_PUBLIC'
 export const SET_TRACK_TRENDING_RANKS = 'TRACK_PAGE/SET_TRACK_TRENDING_RANKS'
+export const SET_IS_INITIAL_FETCH_AFTER_SSR =
+  'TRACK_PAGE/SET_IS_INITIAL_FETCH_AFTER_SSR'
 
 export const FETCH_TRACK = 'TRACK_PAGE/FETCH_TRACK'
 export const FETCH_TRACK_SUCCEEDED = 'TRACK_PAGE/FETCH_TRACK_SUCCEEDED'
@@ -73,4 +75,9 @@ export const refetchLineup = () => ({
 export const setTrackTrendingRanks = (trendingTrackRanks) => ({
   type: SET_TRACK_TRENDING_RANKS,
   trendingTrackRanks
+})
+
+export const setIsInitialFetchAfterSsr = (isInitialFetchAfterSsr: boolean) => ({
+  type: SET_IS_INITIAL_FETCH_AFTER_SSR,
+  isInitialFetchAfterSsr
 })

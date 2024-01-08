@@ -13,11 +13,13 @@ import {
   SET_TRACK_PERMALINK,
   RESET,
   SET_TRACK_RANK,
-  SET_TRACK_TRENDING_RANKS
+  SET_TRACK_TRENDING_RANKS,
+  SET_IS_INITIAL_FETCH_AFTER_SSR
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
+import TrackPageState from './types'
 
-const initialState = {
+const initialState: TrackPageState = {
   trackId: null,
   rank: {
     week: null,
@@ -29,7 +31,8 @@ const initialState = {
     month: null,
     year: null
   },
-  tracks: initialLineupState
+  tracks: initialLineupState,
+  isInitialFetchAfterSsr: false
 }
 
 const actionsMap = {
@@ -69,6 +72,12 @@ const actionsMap = {
       ...initialState,
       tracks: tracksLineupReducer(undefined, action)
     }
+  },
+  [SET_IS_INITIAL_FETCH_AFTER_SSR](state, action) {
+    return {
+      ...state,
+      isInitialFetchAfterSsr: action.isInitialFetchAfterSsr
+    }
   }
 }
 
@@ -76,11 +85,12 @@ const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
 const buildInitialState = (ssrPageProps?: SsrPageProps) => {
   // If we have preloaded data from the server, populate the initial
-  // cache state with it
+  // page state with it
   if (ssrPageProps?.track) {
     return {
       ...initialState,
-      trackId: decodeHashId(ssrPageProps.track.id)
+      trackId: decodeHashId(ssrPageProps.track.id),
+      isInitialFetchAfterSsr: true
     }
   }
   return initialState

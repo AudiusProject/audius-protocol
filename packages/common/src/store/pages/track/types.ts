@@ -14,4 +14,5 @@ export default interface TrackPageState {
     year: ID[] | null
   }
   tracks: LineupState<{ id: ID }>
+  isInitialFetchAfterSsr: boolean
 }

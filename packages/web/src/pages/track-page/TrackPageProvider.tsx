@@ -542,14 +542,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       canBeUnlisted: boolean
     ) =>
       dispatch(
-        trackPageActions.fetchTrack(
-          trackId,
-          slug,
-          ownerHandle,
-          canBeUnlisted,
-          // TODO: only force retrieve on initial load
-          true
-        )
+        trackPageActions.fetchTrack(trackId, slug, ownerHandle, canBeUnlisted)
       ),
     setTrackId: (trackId: number) =>
       dispatch(trackPageActions.setTrackId(trackId)),
