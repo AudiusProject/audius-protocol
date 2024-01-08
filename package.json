@@ -7,7 +7,7 @@
     "packages/discovery-provider/plugins/pedalboard/packages/*",
     "packages/es-indexer"
   ],
-  "cacheBust": 1,
+  "cacheBust": 2,
   "private": true,
   "scripts": {
     "build": "turbo run build",
