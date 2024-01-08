@@ -70,6 +70,7 @@ enum PremiumTrackMetadataField {
 }
 
 enum UnlistedTrackMetadataField {
+  SCHEDULED_RELEASE = 'scheduled_release',
   UNLISTED = 'unlisted',
   GENRE = 'genre',
   MOOD = 'mood',
@@ -82,6 +83,7 @@ type TrackMetadataState = {
   [PremiumTrackMetadataField.IS_PREMIUM]: boolean
   [PremiumTrackMetadataField.PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
   [PremiumTrackMetadataField.PREVIEW]: Nullable<number>
+  [UnlistedTrackMetadataField.SCHEDULED_RELEASE]: boolean
   [UnlistedTrackMetadataField.UNLISTED]: boolean
   [UnlistedTrackMetadataField.GENRE]: boolean
   [UnlistedTrackMetadataField.MOOD]: boolean
@@ -114,11 +116,11 @@ export const AccessAndSaleTriggerLegacy = (
   const {
     premium_conditions: savedPremiumConditions,
     unlisted: isUnlisted,
+    scheduled_release: isScheduledRelease,
     is_premium: isPremium,
     preview_start_seconds: preview,
     ...fieldVisibility
   } = metadataState
-
   /**
    * Premium conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
@@ -167,7 +169,7 @@ export const AccessAndSaleTriggerLegacy = (
     if (isCollectibleGated) {
       availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isUnlisted) {
+    if (isUnlisted && !isScheduledRelease) {
       availabilityType = TrackAvailabilityType.HIDDEN
     }
     set(initialValues, AVAILABILITY_TYPE, availabilityType)
@@ -189,7 +191,8 @@ export const AccessAndSaleTriggerLegacy = (
     savedPremiumConditions,
     tempPremiumConditions,
     initialPremiumConditions,
-    preview
+    preview,
+    isScheduledRelease
   ])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
@@ -204,7 +207,7 @@ export const AccessAndSaleTriggerLegacy = (
       ...defaultFieldVisibility,
       remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
     }
-    newState.unlisted = false
+    newState.unlisted = isScheduledRelease ? isUnlisted : false
     newState.is_premium = false
     newState.premium_conditions = null
     newState.preview_start_seconds = null
@@ -261,7 +264,7 @@ export const AccessAndSaleTriggerLegacy = (
 
   let availabilityButtonTitle = messages.public
   let AvailabilityIcon = IconVisibilityPublic
-  if (isUnlisted) {
+  if (isUnlisted && !isScheduledRelease) {
     availabilityButtonTitle = messages.hidden
     AvailabilityIcon = IconHidden
   } else if (isPremium) {
@@ -294,6 +297,7 @@ export const AccessAndSaleTriggerLegacy = (
           isInitiallyUnlisted={initialForm[IS_UNLISTED]}
           initialPremiumConditions={initialPremiumConditions ?? undefined}
           premiumConditions={tempPremiumConditions}
+          isScheduledRelease={isScheduledRelease}
         />
       }
       renderValue={() => null}

@@ -102,6 +102,7 @@ export type GiantTrackTileProps = {
   isReposted: boolean
   isSaved: boolean
   isUnlisted: boolean
+  isScheduledRelease: boolean
   listenCount: number
   loading: boolean
   mood: string
@@ -148,6 +149,7 @@ export const GiantTrackTile = ({
   isReposted,
   isPublishing,
   isSaved,
+  isScheduledRelease,
   isUnlisted,
   listenCount,
   loading,
@@ -197,16 +199,13 @@ export const GiantTrackTile = ({
     { trackId },
     { enabled: !!trackId }
   )
-  let isScheduledRelease = false
-  if (!isPublishing && moment.utc(released).isAfter(moment())) {
-    isScheduledRelease = true
-  }
 
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
         className={className}
         isUnlisted={isUnlisted}
+        isScheduledRelease={isScheduledRelease}
         isRemix={isRemix}
         isPremium={isPremium}
         isPodcast={genre === Genre.PODCASTS}

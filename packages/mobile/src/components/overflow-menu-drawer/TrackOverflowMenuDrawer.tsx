@@ -135,6 +135,16 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.EDIT_TRACK]: () => {
       navigation?.push('EditTrack', { id })
     },
+    [OverflowAction.RELEASE_NOW]: () => {
+      dispatch(
+        setVisibility({
+          drawer: 'ReleaseNowConfirmation',
+          visible: true,
+          data: { trackId: id }
+        })
+      )
+    },
+
     [OverflowAction.DELETE_TRACK]: () => {
       dispatch(
         setVisibility({

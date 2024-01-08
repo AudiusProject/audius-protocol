@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Nullable } from '@audius/common'
 import {
   Theme,
-  getLocalTimezone,
+  dayjs,
   remixSettingsActions,
   removeNullable
 } from '@audius/common'
@@ -92,6 +92,10 @@ export const ScheduledReleaseRadioField = (props) => {
   const { primary } = useThemeColors()
   const styles = useStyles()
   const theme = useThemeVariant()
+  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
@@ -107,10 +111,19 @@ export const ScheduledReleaseRadioField = (props) => {
   const handleDateChange = useCallback(
     (selectedDate: Date) => {
       const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
+
+      if (newReleaseDate.isAfter(moment())) {
+        setIsUnlisted(true)
+        setIsScheduledRelease(true)
+      } else {
+        setIsUnlisted(false)
+        setIsScheduledRelease(false)
+      }
+
       setReleaseDateValue(newReleaseDate.toString())
       setIsDateOpen(false)
     },
-    [setReleaseDateValue, setIsDateOpen]
+    [setReleaseDateValue, setIsDateOpen, setIsScheduledRelease, setIsUnlisted]
   )
   const handleTimeChange = useCallback(
     (selectedTime) => {
@@ -122,11 +135,22 @@ export const ScheduledReleaseRadioField = (props) => {
           .month(releaseDateMoment.month())
           .day(releaseDateMoment.day())
       }
-
+      if (newReleaseDate.isAfter(moment())) {
+        setIsUnlisted(true)
+        setIsScheduledRelease(true)
+      } else {
+        setIsUnlisted(false)
+        setIsScheduledRelease(false)
+      }
       setReleaseDateValue(newReleaseDate.toString())
       setIsTimeOpen(false)
     },
-    [releaseDateValue, setReleaseDateValue]
+    [
+      releaseDateValue,
+      setReleaseDateValue,
+      setIsScheduledRelease,
+      setIsUnlisted
+    ]
   )
   const currentDate = new Date()
 
@@ -206,7 +230,7 @@ export const ScheduledReleaseRadioField = (props) => {
               style={styles.releaseDateInput}
               content={
                 moment(releaseDateValue).isAfter(moment())
-                  ? messages.futureReleaseHint(getLocalTimezone())
+                  ? messages.futureReleaseHint(dayjs().format('z'))
                   : messages.pastReleaseHint
               }
             />
@@ -222,12 +246,24 @@ export const ReleaseNowRadioField = (props) => {
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
   const styles = useStyles()
+  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setIsScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
 
   useEffect(() => {
     if (selected) {
       setReleaseDateValue(null)
+      setIsUnlisted(false)
+      setIsScheduledRelease(false)
     }
-  }, [selected, releaseDateValue, setReleaseDateValue])
+  }, [
+    selected,
+    releaseDateValue,
+    setReleaseDateValue,
+    setIsScheduledRelease,
+    setIsUnlisted
+  ])
 
   return (
     <View style={styles.releaseNowContainer}>
