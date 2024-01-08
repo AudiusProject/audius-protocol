@@ -155,10 +155,10 @@ export const AccessAndSaleScreen = () => {
     { label: publicAvailability, value: publicAvailability },
     isUsdcEnabled
       ? {
-        label: premiumAvailability,
-        value: premiumAvailability,
-        disabled: noUsdcGate
-      }
+          label: premiumAvailability,
+          value: premiumAvailability,
+          disabled: noUsdcGate
+        }
       : null,
     {
       label: specialAccessAvailability,

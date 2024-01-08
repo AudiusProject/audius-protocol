@@ -308,8 +308,8 @@ export const DetailsTile = ({
 
   const PlayIcon =
     isNewPodcastControlsEnabled &&
-      playbackPositionInfo?.status === 'COMPLETED' &&
-      !isCurrentTrack
+    playbackPositionInfo?.status === 'COMPLETED' &&
+    !isCurrentTrack
       ? IconRepeat
       : IconPlay
 
@@ -471,9 +471,9 @@ export const DetailsTile = ({
                 style={[
                   styles.infoSection,
                   hideFavoriteCount &&
-                  hideListenCount &&
-                  hideRepostCount &&
-                  styles.noStats
+                    hideListenCount &&
+                    hideRepostCount &&
+                    styles.noStats
                 ]}
               >
                 {renderDetailLabels()}

@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react'
 import type { Nullable, AccessConditions } from '@audius/common'
 import { useField } from 'formik'
 
-
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetTrackAvailabilityFields = () => {
@@ -34,18 +33,20 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.remixes'
   )
 
-  const defaultTrackAvailabilityFields = {
-    is_stream_gated: false,
-    stream_conditions: null as Nullable<AccessConditions>,
-    is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
-    preview_start_seconds: null as Nullable<Number>,
-    'field_visibility.genre': true,
-    'field_visibility.mood': true,
-    'field_visibility.tags': true,
-    'field_visibility.share': true,
-    'field_visibility.play_count': true,
-    'field_visibility.remixes': true
-  }
+  const defaultTrackAvailabilityFields = useMemo(() => {
+    return {
+      is_stream_gated: false,
+      stream_conditions: null as Nullable<AccessConditions>,
+      is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
+      preview_start_seconds: null as Nullable<Number>,
+      'field_visibility.genre': true,
+      'field_visibility.mood': true,
+      'field_visibility.tags': true,
+      'field_visibility.share': true,
+      'field_visibility.play_count': true,
+      'field_visibility.remixes': true
+    }
+  }, [isScheduledRelease, isUnlisted])
   type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
   const fieldSetters = useMemo(() => {
@@ -89,7 +90,7 @@ export const useSetTrackAvailabilityFields = () => {
         })
       }
     },
-    [fieldSetters]
+    [fieldSetters, defaultTrackAvailabilityFields]
   )
 
   const reset = useCallback(() => {
@@ -98,7 +99,7 @@ export const useSetTrackAvailabilityFields = () => {
       const setter = fieldSetters[key]
       setter(value)
     })
-  }, [fieldSetters])
+  }, [fieldSetters, defaultTrackAvailabilityFields])
 
   return { set, reset }
 }

@@ -121,7 +121,7 @@ const TrackPage = ({
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
 
   const onSave = isOwner
-    ? () => { }
+    ? () => {}
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
@@ -194,7 +194,7 @@ const TrackPage = ({
 
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
-      (!defaults.remixParentTrackId && entries.length > 1) ? (
+    (!defaults.remixParentTrackId && entries.length > 1) ? (
       <div
         className={styles.lineupHeader}
       >{`${messages.moreBy} ${user?.name}`}</div>
