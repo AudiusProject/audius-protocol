@@ -1,7 +1,8 @@
 import { ReactNode, useState } from 'react'
 
 import { Provider } from 'react-redux'
-import { persistStore } from 'redux-persist'
+import { Persistor, persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/integration/react'
 
 import { configureStore } from 'store/configureStore'
 import logger from 'utils/logger'
@@ -10,17 +11,18 @@ import { useSsrContext } from '../ssr/SsrContext'
 
 import { useHistoryContext } from './HistoryProvider'
 
-// TODO: Figure out persist gate? Do we need to block on loading from localstorage?
 export const ReduxProvider = ({ children }: { children: ReactNode }) => {
-  const { isServerSide, pageProps } = useSsrContext()
+  const { pageProps } = useSsrContext()
   const { history } = useHistoryContext()
 
   const [store, setStore] = useState<ReturnType<typeof configureStore>>()
+  const [persistor, setPersistor] = useState<Persistor>()
 
   if (!store) {
     const store = configureStore(history, pageProps)
     setStore(store)
-    persistStore(store)
+    const persistor = persistStore(store)
+    setPersistor(persistor)
 
     // Mount store to window for easy access
     if (typeof window !== 'undefined') {
@@ -31,5 +33,11 @@ export const ReduxProvider = ({ children }: { children: ReactNode }) => {
     logger(store)
   }
 
-  return store ? <Provider store={store}>{children}</Provider> : null
+  return store && persistor ? (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        {() => children}
+      </PersistGate>
+    </Provider>
+  ) : null
 }
