@@ -79,7 +79,6 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         userId: decodedUserId,
       })
       if (!uploadsAllowed) {
-        // setOauthError('401: User not authorized')
         alert('401: User not authorized')
       } else {
         setCurrentUser(user)
@@ -154,7 +153,6 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         },
         errorCallback: (error) => {
           setOauthError(error)
-          console.log("Error oauth'ing user:", error)
         },
       })
       setAudiusSdk(sdkInst as AudiusSdkType)
