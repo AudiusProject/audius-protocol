@@ -4,7 +4,6 @@ import type {
   ServicesConfig,
   DecodedUserToken,
 } from '@audius/sdk/dist/sdk/index.d.ts'
-import type { OAuthEnv } from '@audius/sdk/dist/sdk/oauth/index.d.ts'
 import {
   ReactNode,
   createContext,
@@ -30,6 +29,8 @@ import { useRemoteConfig } from './RemoteConfigProvider'
 const HASH_SALT = 'azowernasdfoia'
 const MIN_LENGTH = 5
 const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
+
+type OAuthEnv = 'production' | 'staging'
 
 type AudiusSdkContextType = {
   audiusSdk: AudiusSdkType | null
@@ -139,15 +140,13 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         appName: 'DDEX Demo',
       })
 
-      let env: OAuthEnv = envVars.env
-      if (env === 'prod') {
-        env = 'production'
-      } else if (env === 'stage') {
+      let env: OAuthEnv = 'production'
+      if (envVars.env === 'stage') {
         env = 'staging'
       }
-      sdkInst.oauth.init({
+      sdkInst.oauth!.init({
         env,
-        successCallback: (user) => {
+        successCallback: (user: DecodedUserToken) => {
           setOauthError('')
           checkUserAllowlisted(user)
         },

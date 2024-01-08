@@ -211,7 +211,7 @@ export const Ddex = () => {
   const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
 
   const handleOauth = () => {
-    audiusSdk.oauth.login({ scope: 'read' })
+    audiusSdk!.oauth!.login({ scope: 'read' })
   }
 
   return (
@@ -230,6 +230,7 @@ export const Ddex = () => {
           <ManageAudiusAccount
             currentUser={currentUser}
             onChangeUser={handleOauth}
+            oauthError={oauthError}
           />
           <XmlImporter audiusSdk={audiusSdk} />
         </>
