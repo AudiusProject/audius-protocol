@@ -1,6 +1,11 @@
-import { trpc } from 'utils/trpcClientWeb'
-import styles from './TrpcHistory.module.css'
+import { RouterOutput } from '@audius/trpc-server'
 import { Link } from 'react-router-dom'
+
+import { trpc } from 'utils/trpcClientWeb'
+
+import styles from './TrpcHistory.module.css'
+
+type HistoryRow = RouterOutput['me']['playHistory'][0]
 
 const LIMIT = 500
 
@@ -11,7 +16,7 @@ export default function TrpcHistoryPage() {
     },
     {
       getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.length == LIMIT) {
+        if (lastPage.length === LIMIT) {
           const val = allPages.reduce((acc, page) => acc + page.length, 0)
           return val
         }
@@ -31,28 +36,14 @@ export default function TrpcHistoryPage() {
             <th className={styles.right}>Length</th>
             <th className={styles.right}>Plays</th>
             <th className={styles.right}>Reposts</th>
+            <th></th>
+            <th></th>
           </tr>
         </thead>
         {fetcher.data?.pages.map((page, idx) => (
           <tbody key={idx}>
             {page.map((row, idx2) => (
-              <tr key={idx2}>
-                <td></td>
-                <td>
-                  {/* todo: turns out route_id is half busted... where to get actual route?  */}
-                  <Link to={'/' + row.routeId}>{row.trackName}</Link>
-                </td>
-                <td>
-                  {/* todo: artist popover */}
-                  <Link to={'/' + row.artistHandle}>{row.artistName}</Link>
-                </td>
-                <td className={styles.right}>{formatDate(row.releaseDate)}</td>
-                <td className={styles.right}>{formatDate(row.playDate)}</td>
-                <td className={styles.right}>{row.duration}</td>
-                <td className={styles.right}>{row.playCount}</td>
-                <td className={styles.right}>{row.repostCount}</td>
-                {/* todo: repost / save / ... menu button */}
-              </tr>
+              <HistoryTR key={idx2} row={row} />
             ))}
           </tbody>
         ))}
@@ -63,6 +54,34 @@ export default function TrpcHistoryPage() {
         ) : null}
       </div>
     </div>
+  )
+}
+
+function HistoryTR({ row }: { row: HistoryRow }) {
+  const { data: myStatus } = trpc.me.trackRelationship.useQuery(
+    row.trackId.toString()
+  )
+  return (
+    <tr>
+      <td></td>
+      <td>
+        {/* todo: turns out route_id is half busted... where to get actual route?  */}
+        <Link to={'/' + row.routeId}>{row.trackName}</Link>
+      </td>
+      <td>
+        {/* todo: artist popover */}
+        <Link to={'/' + row.artistHandle}>{row.artistName}</Link>
+      </td>
+      <td className={styles.right}>{formatDate(row.releaseDate)}</td>
+      <td className={styles.right}>{formatDate(row.playDate)}</td>
+      <td className={styles.right}>{row.duration}</td>
+      <td className={styles.right}>{row.playCount}</td>
+      <td className={styles.right}>{row.repostCount}</td>
+      {/* todo: save + repost buttons with icons */}
+      <td>{myStatus?.saved ? 'saved' : ''}</td>
+      <td>{myStatus?.reposted ? 'reposted' : ''}</td>
+      {/* todo: ... menu */}
+    </tr>
   )
 }
 

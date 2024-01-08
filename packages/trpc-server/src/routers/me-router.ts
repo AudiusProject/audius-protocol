@@ -13,6 +13,12 @@ export const meRouter = router({
       return result
     }),
 
+  trackRelationship: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      return ctx.loaders.trackRelationLoader.load(parseInt(input))
+    }),
+
   playHistory: publicProcedure
     .input(
       z.object({
