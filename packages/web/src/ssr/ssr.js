@@ -5,12 +5,12 @@ export async function handleSsr(url) {
     urlOriginal: url
   }
 
-  // const { renderPage } = await import('vike/server')
-
   const pageContext = await renderPage(pageContextInit)
 
   const { httpResponse } = pageContext
   if (!httpResponse) {
+    // TODO: throw sentry error
+    // TODO: Once SSR is user-facing, show a nice error page
     return new Response(pageContext.errorWhileRendering, { status: 500 })
   } else {
     const { body, statusCode: status, headers } = httpResponse

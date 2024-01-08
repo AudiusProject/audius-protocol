@@ -8,9 +8,9 @@
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
     "start": "vite",
-    "start:dev": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.dev turbo run start",
-    "start:stage": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.stage turbo run start",
-    "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.prod env-cmd ./.env/.env.source-maps turbo run start",
+    "start:dev": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.dev env-cmd ./.env/.env.ssr turbo run start",
+    "start:stage": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.stage env-cmd ./.env/.env.ssr turbo run start",
+    "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.prod env-cmd ./.env/.env.ssr env-cmd ./.env/.env.source-maps turbo run start",
     "preview:prod": "npm run build:prod && vite preview --outDir build-production",
     "prebuild": "npm run publish-scripts",
     "build": "vite build && cp package.json build/package.json",

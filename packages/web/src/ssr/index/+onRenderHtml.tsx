@@ -3,21 +3,9 @@
 
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 
-import indexHtml from '../index.html?raw'
+import { getIndexHtml } from 'ssr/getIndexHtml'
 
 export function render() {
-  const pattern = /%(\S+?)%/g
-  const env = process.env
-
-  // Replace all %VITE_*% with the corresponding environment variable
-  const html = indexHtml.replace(pattern, (text, key) => {
-    if (key in env) {
-      return env[key]
-    } else {
-      // TODO: throw warning
-      return text
-    }
-  })
-
+  const html = getIndexHtml()
   return escapeInject`${dangerouslySkipEscape(html)}`
 }

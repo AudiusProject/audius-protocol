@@ -1,5 +1,6 @@
 // For all routes except the explicitly defined ones (Track)
 // simply render the SPA without SSR
+// TODO: Use vike SPA setting
 
 import 'setimmediate'
 import { Buffer } from 'buffer'

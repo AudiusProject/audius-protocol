@@ -17,8 +17,7 @@ export const HistoryContext = createContext<HistoryContextType>({
   history: null as any
 })
 
-// TODO: does this cause rerenders on route change?
-// TODO: could puth getPathname in here
+// TODO: could put getPathname in here
 export const HistoryContextProvider = memo(
   (props: { children: JSX.Element }) => {
     const { history: ssrHistory } = useSsrContext()

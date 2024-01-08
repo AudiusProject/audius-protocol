@@ -9,4 +9,3 @@ bucket = "../../build-ssr/client"
 # Invoke with npx wrangler dev --watch --env test
 [env.test]
 name = "audius-web-ssr"
-route = "ssr.audius.co/*"
