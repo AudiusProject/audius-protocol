@@ -80,7 +80,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         userId: decodedUserId,
       })
       if (!uploadsAllowed) {
-        alert('401: User not authorized')
+        alert('401: User not authorized for DDEX')
       } else {
         setCurrentUser(user)
       }
