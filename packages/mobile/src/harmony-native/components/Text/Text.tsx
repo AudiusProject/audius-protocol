@@ -62,3 +62,4 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
 })
 
 export { variantStylesMap }
+export type { TextSize, TextColors } from '@audius/harmony'
