@@ -165,7 +165,9 @@ export const TrackTileComponent = ({
         : null,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
       isOwner ? OverflowAction.EDIT_TRACK : null,
-      isOwner ? OverflowAction.RELEASE_NOW : null,
+      isOwner && track?.is_scheduled_release && track?.is_unlisted
+        ? OverflowAction.RELEASE_NOW
+        : null,
       isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
@@ -185,6 +187,8 @@ export const TrackTileComponent = ({
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,
+    track?.is_scheduled_release,
+    track?.is_unlisted,
     dispatch
   ])
 

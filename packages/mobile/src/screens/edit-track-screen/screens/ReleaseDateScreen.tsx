@@ -111,6 +111,7 @@ export const ScheduledReleaseRadioField = (props) => {
   const handleDateChange = useCallback(
     (selectedDate: Date) => {
       const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
+
       if (newReleaseDate.isAfter(moment())) {
         setIsUnlisted(true)
         setIsScheduledRelease(true)

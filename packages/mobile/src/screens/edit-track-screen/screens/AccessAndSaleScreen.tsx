@@ -136,7 +136,7 @@ export const AccessAndSaleScreen = () => {
     isRemix,
     initialPremiumConditions,
     isInitiallyUnlisted: initialValues.is_unlisted,
-    isScheduledRelease: initialValues.is_scheduled_release
+    isScheduledRelease
   })
 
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
