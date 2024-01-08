@@ -1,0 +1,24 @@
+.historyPage {
+  margin: 20px;
+  padding: 20px;
+}
+.history {
+  border: 10px solid white;
+}
+.history td,
+.history th {
+  padding: 10px;
+  background: white;
+}
+.history th {
+  text-align: left;
+  font-weight: 900;
+}
+
+.right {
+  text-align: right;
+}
+
+.history tr:hover td {
+  background: lightyellow;
+}

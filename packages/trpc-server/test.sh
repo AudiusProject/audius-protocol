@@ -2,7 +2,7 @@
 set -e
 
 # start postgres + elasticsearch
-docker compose up -d
+docker compose up -d --wait
 
 # set env variables
 export audius_db_url='postgres://postgres:testing@localhost:35764'

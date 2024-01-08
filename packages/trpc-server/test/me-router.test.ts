@@ -16,7 +16,7 @@ test('version', async () => {
     // offset
     {
       const plays = await caller.me.playHistory({
-        offset: 1,
+        cursor: 1,
       })
       expect(plays).length(2)
       expect(plays[0].trackId).toEqual(202)
@@ -45,6 +45,21 @@ test('version', async () => {
         sortAscending: true,
       })
       expect(rows.map((r) => r.trackId)).toEqual([203, 202, 201])
+
+      // try all the sorts to ensure no exceptions
+      for (const sort of [
+        'trackName',
+        'artistName',
+        'releaseDate',
+        'playDate',
+        'duration',
+        'playCount',
+        'repostCount',
+      ]) {
+        await caller.me.playHistory({
+          sort: sort as any,
+        })
+      }
     }
   }
 
