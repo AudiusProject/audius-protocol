@@ -487,7 +487,7 @@ function RepostIndicator({ kind, id, suspense = true }: SaveRepostParams) {
 
 // ==================== Image stuff ====================
 
-function CidImage({
+export function CidImage({
   cid,
   size
 }: {

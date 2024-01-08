@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { trpc } from 'utils/trpcClientWeb'
 
 import styles from './TrpcHistory.module.css'
+import { useState } from 'react'
+import { CidImage } from './DemoTrpcPage'
 
 type HistoryRow = RouterOutput['me']['playHistory'][0]
 
@@ -75,13 +77,59 @@ function HistoryTR({ row }: { row: HistoryRow }) {
       <td className={styles.right}>{formatDate(row.releaseDate)}</td>
       <td className={styles.right}>{formatDate(row.playDate)}</td>
       <td className={styles.right}>{row.duration}</td>
-      <td className={styles.right}>{row.playCount}</td>
+      <td className={styles.right}>
+        <TopListenersPopover trackId={row.trackId} playCount={row.playCount} />
+      </td>
       <td className={styles.right}>{row.repostCount}</td>
       {/* todo: save + repost buttons with icons */}
       <td>{myStatus?.saved ? 'saved' : ''}</td>
       <td>{myStatus?.reposted ? 'reposted' : ''}</td>
       {/* todo: ... menu */}
     </tr>
+  )
+}
+
+function TopListenersPopover({
+  trackId,
+  playCount
+}: {
+  trackId: number
+  playCount: number
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+  const { data: topListeners, isLoading } = trpc.tracks.topListeners.useQuery(
+    {
+      trackId
+    },
+    {
+      enabled: isHovered
+    }
+  )
+
+  return (
+    <div
+      className={styles.topListener}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {isHovered && !isLoading ? (
+        <div className={styles.topListenerPopover}>
+          {topListeners?.map((t) => (
+            <div key={t.userId} className={styles.topListenerRow}>
+              <CidImage
+                cid={t.profilePictureSizes || t.profilePicture}
+                size={30}
+              />
+              <div style={{ flexGrow: 1 }}>
+                <Link to={'/' + t.handle}>{t.name}</Link>
+              </div>
+              <div style={{ textAlign: 'right' }}>{t.playCount}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {playCount}
+    </div>
   )
 }
 
