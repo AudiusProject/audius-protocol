@@ -12,7 +12,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { Formik, Form, useField, FormikErrors, useFormikContext } from 'formik'
+import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
