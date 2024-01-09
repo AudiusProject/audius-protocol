@@ -1661,7 +1661,7 @@ EXTERNAL SOURCES:
   RNShare:
     :path: "../node_modules/react-native-share"
   RNSVG:
-    :path: "../../../node_modules/react-native-svg"
+    :path: "../node_modules/react-native-svg"
   snap-kit-react-native:
     :path: "../../../node_modules/@snapchat/snap-kit-react-native"
   SRSRadialGradient:

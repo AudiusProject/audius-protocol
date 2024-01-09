@@ -1,16 +1,17 @@
-import React, { useState } from 'react'
 import clsx from 'clsx'
+import React, { useState } from 'react'
 
+import { IconKebabHorizontal } from '@audius/stems'
 import AppBar from 'components/AppBar'
 import Nav from 'components/Nav'
 import { useInit } from 'store/cache/protocol/hooks'
 import { useIsMobile } from 'utils/hooks'
-import { IconKebabHorizontal } from '@audius/stems'
 
+import MobileNav from 'components/MobileNav'
+import { createStyles } from 'utils/mobile'
 import desktopStyles from './Header.module.css'
 import mobileStyles from './HeaderMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import MobileNav from 'components/MobileNav'
+import { StartListeningBanner } from 'components/StartListeningBanner/StartListeningBanner'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -40,6 +41,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         </>
       )}
       <div className={styles.bgImg}></div>
+      <StartListeningBanner />
       <div className={styles.appBarContainer}>
         <AppBar />
       </div>

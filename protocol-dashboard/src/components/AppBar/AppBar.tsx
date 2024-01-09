@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import BN from 'bn.js'
 import Button from 'components/Button'
 import { Position } from 'components/Tooltip'
@@ -20,7 +20,9 @@ import { useIsMobile } from 'utils/hooks'
 import DisplayAudio from 'components/DisplayAudio'
 import UserImage from 'components/UserImage'
 import useOpenLink from 'hooks/useOpenLink'
+import { audiusSdk } from 'services/Audius/sdk'
 import getActiveStake from 'utils/activeStake'
+import { IconLink } from '@audius/stems'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -33,7 +35,8 @@ const messages = {
   block: 'Block',
   wallet: 'WALLET',
   staked: 'STAKED',
-  profileAlt: 'User Profile'
+  profileAlt: 'User Profile',
+  connectProfile: 'Connect Audius Profile'
 }
 
 // TODO:
@@ -121,6 +124,40 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   )
 }
 
+const ConnectProfileButton = () => {
+  const loadOauth = () => {
+    audiusSdk.oauth.init({
+      successCallback: profile => {
+        // TODO(nkang)
+        console.log(profile)
+      },
+      errorCallback: errorMessage => {
+        // Error calllback
+        console.error(errorMessage)
+      }
+    })
+  }
+
+  const loginWithAudius = () => {
+    audiusSdk.oauth.login({ scope: 'read' })
+  }
+
+  useEffect(() => {
+    loadOauth()
+  }, [])
+
+  return (
+    <Button
+      onClick={loginWithAudius}
+      className={styles.launchAppBtn}
+      textClassName={styles.launchAppBtnText}
+      text={messages.connectProfile}
+      leftIcon={<IconLink width={16} height={16} />}
+      iconClassName={styles.launchAppBtnIcon}
+    />
+  )
+}
+
 type LaunchTheAppButtonProps = {}
 const LaunchTheAppButton = (props: LaunchTheAppButtonProps) => {
   const goToApp = useOpenLink(AUDIUS_DAPP_URL)
@@ -138,6 +175,9 @@ type AppBarProps = {}
 const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
+  // TODO(nkang): Get from API
+  const hasConnectedAudiusAccount = false
+
   const ethBlock = useEthBlockNumber()
   const { pathname } = useLocation()
   const showBlock = isCryptoPage(pathname) && ethBlock
@@ -170,7 +210,9 @@ const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
               isLoggedIn && wallet && <UserAccountSnippet wallet={wallet} />
             )}
           </div>
-          <LaunchTheAppButton />
+          {isLoggedIn && wallet && hasConnectedAudiusAccount ? null : (
+            <ConnectProfileButton />
+          )}
         </div>
       )}
     </div>
