@@ -12,7 +12,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   isPremiumContentUSDCPurchaseGated,
-  getLocalTimezone
+  dayjs
 } from '@audius/common'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -160,8 +160,7 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease =
-    isUnlisted && moment.utc(releaseDate).isAfter(moment())
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -209,9 +208,9 @@ export const LineupTileStats = ({
             <Text fontSize='xs' colorValue={accentPurple}>
               Releases
               {' ' +
-                moment.utc(releaseDate).local().format('M/D/YY @ h:mm A') +
+                moment(releaseDate).local().format('M/D/YY @ h:mm A') +
                 ' ' +
-                getLocalTimezone()}
+                dayjs().format('z')}
             </Text>
           </View>
         ) : null}

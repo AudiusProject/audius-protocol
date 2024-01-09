@@ -10,11 +10,10 @@ import {
   getPathFromPlaylistUrl,
   makeUid,
   playerSelectors,
-  useGetPlaylistById,
   useGetTracksByIds,
   usePlayTrack,
   usePauseTrack,
-  parsePlaylistIdFromPermalink
+  useGetPlaylistByPermalink
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -35,15 +34,13 @@ export const ChatMessagePlaylist = ({
   const playingTrackId = useSelector(getTrackId)
   const playingUid = useSelector(getUid)
 
-  const playlistId = parsePlaylistIdFromPermalink(
-    getPathFromPlaylistUrl(link) ?? ''
-  )
-  const { data: playlist } = useGetPlaylistById(
+  const permalink = getPathFromPlaylistUrl(link) ?? ''
+  const { data: playlist } = useGetPlaylistByPermalink(
     {
-      playlistId,
-      currentUserId
+      permalink,
+      currentUserId: currentUserId!
     },
-    { disabled: !playlistId }
+    { disabled: !permalink || !currentUserId }
   )
 
   const collection = useMemo(() => {

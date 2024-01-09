@@ -79,6 +79,7 @@ export type SearchTrack = TrackImage & {
   followee_reposts: Repost[]
   has_current_user_reposted: undefined
   is_unlisted: boolean
+  is_scheduled_release: boolean
   is_premium: boolean
   premium_conditions: Nullable<PremiumConditions>
   premium_content_signature: Nullable<PremiumContentSignature>

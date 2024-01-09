@@ -1,15 +1,15 @@
 {
   "name": "@audius/ddex-frontend",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "scripts": {
     "start": "vite",
-    "start:dev": "env-cmd -f .env.dev turbo run start --filter=@audius/ddex-frontend",
-    "start:stage": "env-cmd -f .env.stage.local turbo run start --filter=@audius/ddex-frontend",
-    "start:prod": "env-cmd -f .env.prod.local turbo run start --filter=@audius/ddex-frontend",
-    "stage:preview": "env-cmd -f .env.stage.local vite build && vite preview",
-    "prod:preview": "env-cmd -f .env.prod.local vite build && vite preview",
+    "start:dev": "IS_DEV=true env-cmd -f .env.dev turbo run start --filter=@audius/ddex-frontend",
+    "start:stage": "IS_DEV=true env-cmd -f .env.stage.local turbo run start --filter=@audius/ddex-frontend",
+    "start:prod": "IS_DEV=true env-cmd -f .env.prod.local turbo run start --filter=@audius/ddex-frontend",
+    "stage:preview": "IS_DEV=true env-cmd -f .env.stage.local vite build && vite preview",
+    "prod:preview": "IS_DEV=true env-cmd -f .env.prod.local vite build && vite preview",
     "build": "tsc && vite build",
     "serve": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -30,7 +30,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.20.0",
-    "@optimizely/optimizely-sdk": "4.9.2"
+    "@optimizely/optimizely-sdk": "4.9.2",
+    "hashids": "2.2.1"
   },
   "devDependencies": {
     "@tailwindcss/forms": "0.5.7",

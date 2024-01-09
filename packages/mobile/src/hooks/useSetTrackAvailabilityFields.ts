@@ -3,27 +3,18 @@ import { useCallback, useMemo } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import { useField } from 'formik'
 
-const defaultTrackAvailabilityFields = {
-  is_premium: false,
-  premium_conditions: null as Nullable<PremiumConditions>,
-  is_unlisted: false,
-  preview_start_seconds: null as Nullable<Number>,
-  'field_visibility.genre': true,
-  'field_visibility.mood': true,
-  'field_visibility.tags': true,
-  'field_visibility.share': true,
-  'field_visibility.play_count': true,
-  'field_visibility.remixes': true
-}
-type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
-
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setIsPremium }] = useField<boolean>('is_premium')
   const [, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
+    useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }, ,] = useField<boolean>(
+    'is_scheduled_release'
+  )
+
   const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
     'preview_start_seconds'
   )
@@ -41,6 +32,20 @@ export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setRemixes }] = useField<boolean>(
     'field_visibility.remixes'
   )
+
+  const defaultTrackAvailabilityFields = {
+    is_premium: false,
+    premium_conditions: null as Nullable<PremiumConditions>,
+    is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
+    preview_start_seconds: null as Nullable<Number>,
+    'field_visibility.genre': true,
+    'field_visibility.mood': true,
+    'field_visibility.tags': true,
+    'field_visibility.share': true,
+    'field_visibility.play_count': true,
+    'field_visibility.remixes': true
+  }
+  type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
   const fieldSetters = useMemo(() => {
     return {

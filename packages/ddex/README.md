@@ -3,7 +3,8 @@
 NodeJS server for managing Audius bulk ingestion (DDEX uploads). Serves a frontend for uploading DDEX files at the root path (source code in `../ddex-frontend`).
 
 ### Local Dev
-`npm i && npm run dev:[stage|prod]`  
+1. Make sure you can connect to postgres at `postgres://postgres:postgres@localhost:5432/ddex` by doing: `docker run --name ddex_postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=ddex -p 5432:5432 -d postgres`
+2. `npm i && npm run dev:[stage|prod]`  
 
 If you want to run the frontend locally, you'll need to:
 1. Make sure you're running `npm run sdk` at `~/audius-protocol` root
