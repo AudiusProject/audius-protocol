@@ -48,14 +48,17 @@ const fixtures = {
       {
         user_id: 101,
         handle: 'steve',
+        name: 'Steve Steve',
       },
       {
         user_id: 102,
         handle: 'dave',
+        name: 'Dave Dave',
       },
       {
         user_id: 103,
         handle: 'dave again',
+        name: 'Dave Again',
       },
     ],
   },

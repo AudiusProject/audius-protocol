@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
 import { AggregateUserRow } from '../db-tables'
 import { sql } from '../db'
+import { TRPCError } from '@trpc/server'
 
 export const meRouter = router({
   userRelationship: publicProcedure
@@ -20,6 +21,7 @@ export const meRouter = router({
     }),
 
   playHistory: publicProcedure
+    .meta({ openapi: { method: 'GET', path: '/me/play_history' } })
     .input(
       z.object({
         sort: z
@@ -38,21 +40,27 @@ export const meRouter = router({
         limit: z.number().default(1000),
       })
     )
+    .output(
+      z.array(
+        z.object({
+          artistId: z.number(),
+          artistHandle: z.string(),
+          artistName: z.string(),
+          trackId: z.number(),
+          routeId: z.string().nullish(),
+          trackName: z.string(),
+          releaseDate: z.date(),
+          duration: z.number(),
+          playCount: z.number(),
+          repostCount: z.number(),
+          playDate: z.date(),
+        })
+      )
+    )
     .query(async ({ ctx, input }) => {
-      type PlayHistoryRow = {
-        artistId: number
-        artistHandle: string
-        artistName: string
-        trackId: number
-        routeId: string
-        trackName: string
-        releaseDate: Date
-        duration: number
-        playCount: number
-        repostCount: number
-        playDate: Date
+      if (!ctx.currentUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' })
       }
-
       const sortMapping: Record<typeof input.sort, any> = {
         trackName: sql`track_name`,
         artistName: sql`artist_name`,
@@ -97,7 +105,7 @@ export const meRouter = router({
         order by ${sortField} ${sortDirection}
         limit ${input.limit}
         offset ${input.cursor || 0}
-      ` as Promise<PlayHistoryRow[]>
+      `
     }),
 
   actions: publicProcedure
