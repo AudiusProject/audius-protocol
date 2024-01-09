@@ -1,10 +1,14 @@
 import { useState, DragEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAudiusSdk } from '../providers/AudiusSdkProvider'
+import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
 import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
 import Uploads from 'components/Uploads'
 import Releases from 'components/Releases'
+import { Button, Box, Flex } from '@audius/harmony'
+import cn from 'classnames'
+
+import styles from './DDEX.module.css'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -31,13 +35,16 @@ const ManageAudiusAccount = ({
   oauthError: string | null
 }) => {
   return (
-    <div className="flex justify-between items-center">
+    <Flex
+      justifyContent="space-between"
+      alignItems="center"
+    >
       <div>{`Logged in as @${currentUser.handle}`}</div>
-      <button className="btn btn-blue" onClick={onChangeUser}>
+      <Button variant="secondary" onClick={onChangeUser}>
         Switch users
-      </button>
+      </Button>
       {oauthError && <div className="text-red-600">{oauthError}</div>}
-    </div>
+    </Flex>
   )
 }
 
@@ -142,18 +149,20 @@ const XmlImporter = ({
     return (
       <>
         <label
-          className={`flex justify-center h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none ${
-            isDragging ? 'border-gray-400' : 'border-gray-300 '
-          }`}
+         className={cn(
+           styles.fileDrop,
+           { [styles.fileDropBorderDragging]: isDragging },
+           { [styles.fileDropBorder]: !isDragging }
+         )}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <span className="flex items-center space-x-2">
+          <span className={styles.fileDropTextContainer}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6 text-gray-600"
+              className={styles.fileDropIcon}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -165,45 +174,45 @@ const XmlImporter = ({
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <span className="font-medium text-gray-600">
+            <span>
               {'Drop files to upload, or '}
-              <span className="text-blue-600 underline">browse</span>
+              <span className={styles.fileDropBrowseText}>browse</span>
             </span>
           </span>
           <input
             type="file"
             name="file_upload"
             accept="text/xml,application/xml"
-            className="hidden"
+            className={styles.fileDropChooseFile}
             onChange={(e) => handleFileChange(e.target.files![0])}
           />
         </label>
         {selectedFile && (
           <>
             <div>Selected file:</div>
-            <div className="flex space-x-4">
+            <Flex gap="xs">
               <div>{selectedFile.name}</div>
-              <button
-                className="text-xs w-8 p-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
+              <Button
+                variant="destructive"
+                size="small"
                 onClick={clearSelection}
               >
                 x
-              </button>
-            </div>
-            <button
-              className="btn btn-blue"
+              </Button>
+            </Flex>
+            <Button
               onClick={handleUpload}
               disabled={isUploading}
             >
               {isUploading ? 'Uploading...' : 'Upload'}
-            </button>
+            </Button>
             {uploadError && (
-              <div className="text-red-500">
+              <div className={styles.errorText}>
                 {`Error uploading file: ${uploadError}`}
               </div>
             )}
             {uploadSucceeded && (
-              <div className="text-green-500">Upload success!</div>
+              <div className={styles.successText}>Upload success!</div>
             )}
           </>
         )}
@@ -232,28 +241,37 @@ const Ddex = () => {
   // }
 
   return (
-    <>
-      <div className="flex flex-col space-y-4">
+    <Box m="xl">
+      <Flex
+        gap="xs"
+        direction="column"
+      >
         {!audiusSdk ? (
           'loading...'
         ) : !currentUser ? (
-          <div className="flex flex-col space-y-4 justify-center items-center h-screen">
-            <button className="btn btn-blue" onClick={handleOauth}>
-              Login with Audius
-            </button>
-            {oauthError && <div className="text-red-600">{oauthError}</div>}
-          </div>
+          <Flex
+            gap="m"
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button onClick={handleOauth}>Login with Audius</Button>
+            {oauthError && <div className={styles.errorText}>{oauthError}</div>}
+          </Flex>
         ) : (
-          <>
+          <Flex
+            gap="m"
+            direction="column"
+          >
             <ManageAudiusAccount
               currentUser={currentUser}
               onChangeUser={handleOauth}
               oauthError={oauthError}
             />
             <XmlImporter audiusSdk={audiusSdk} />
-          </>
+          </Flex>
         )}
-      </div>
+      </Flex>
 
       {/* <ManageAudiusAccount
         currentUser={currentUser || fakeUser}
@@ -261,8 +279,6 @@ const Ddex = () => {
         oauthError={oauthError}
       />
       <XmlImporter audiusSdk={audiusSdk} /> */}
-
-      <br />
 
       <div className="flex">
         <div className="flex flex-col space-y-4 w-1/2">
@@ -272,7 +288,7 @@ const Ddex = () => {
           <Releases />
         </div>
       </div>
-    </>
+    </Box>
   )
 }
 
