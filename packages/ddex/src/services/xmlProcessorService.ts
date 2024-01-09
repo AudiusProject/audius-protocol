@@ -27,8 +27,9 @@ export const createXmlProcessorService = (
     const releases = await getReleasesFromXml(row.xml_contents, audiusSdk)
     for (const release of releases) {
       console.log('Extracted release from XML:', release)
+      const utcReleaseDate = release.release_date.toISOString()
       await sql`INSERT INTO releases (from_xml_file, release_date, data, status) VALUES (
-        ${row.id}, ${release.release_date}, ${JSON.stringify(
+        ${row.id}, ${utcReleaseDate}, ${JSON.stringify(
           release.data
         )}, 'pending')`
     }

@@ -20,6 +20,12 @@ import {
     ProfilePictureFromJSONTyped,
     ProfilePictureToJSON,
 } from './ProfilePicture';
+import type { TxSignature } from './TxSignature';
+import {
+    TxSignatureFromJSON,
+    TxSignatureFromJSONTyped,
+    TxSignatureToJSON,
+} from './TxSignature';
 
 /**
  * 
@@ -75,6 +81,12 @@ export interface DecodedUserToken {
      * @memberof DecodedUserToken
      */
     iat: string;
+    /**
+     * 
+     * @type {TxSignature}
+     * @memberof DecodedUserToken
+     */
+    txSignature?: TxSignature;
 }
 
 /**
@@ -111,6 +123,7 @@ export function DecodedUserTokenFromJSONTyped(json: any, ignoreDiscriminator: bo
         'profilePicture': !exists(json, 'profilePicture') ? undefined : ProfilePictureFromJSON(json['profilePicture']),
         'sub': json['sub'],
         'iat': json['iat'],
+        'txSignature': !exists(json, 'txSignature') ? undefined : TxSignatureFromJSON(json['txSignature']),
     };
 }
 
@@ -131,6 +144,7 @@ export function DecodedUserTokenToJSON(value?: DecodedUserToken | null): any {
         'profilePicture': ProfilePictureToJSON(value.profilePicture),
         'sub': value.sub,
         'iat': value.iat,
+        'txSignature': TxSignatureToJSON(value.txSignature),
     };
 }
 

@@ -32,7 +32,9 @@ const AppStack = memo(function AppStack(props: AppTabScreenProps) {
     gesturesDisabled,
     setGesturesDisabled
   } = props
+
   const drawerNavigation = useNavigation()
+
   return (
     <AppDrawerContextProvider
       drawerNavigation={drawerNavigation}
@@ -45,35 +47,38 @@ const AppStack = memo(function AppStack(props: AppTabScreenProps) {
   )
 })
 
-export const AppDrawerScreen = () => {
-  const [gesturesDisabled, setGesturesDisabled] = useState(false)
+export const AppDrawerScreen = memo(
+  () => {
+    const [gesturesDisabled, setGesturesDisabled] = useState(false)
 
-  const drawerScreenOptions = useMemo(
-    () => ({
-      headerShown: false,
-      swipeEdgeWidth: SCREEN_WIDTH,
-      drawerType: 'slide' as const,
-      drawerStyle: { width: '75%' as const },
-      gestureHandlerProps: { enabled: !gesturesDisabled }
-    }),
-    [gesturesDisabled]
-  )
+    const drawerScreenOptions = useMemo(
+      () => ({
+        headerShown: false,
+        swipeEdgeWidth: SCREEN_WIDTH,
+        drawerType: 'slide' as const,
+        drawerStyle: { width: '75%' as const },
+        gestureHandlerProps: { enabled: !gesturesDisabled }
+      }),
+      [gesturesDisabled]
+    )
 
-  const gestureProps = { gesturesDisabled, setGesturesDisabled }
+    const gestureProps = { gesturesDisabled, setGesturesDisabled }
 
-  return (
-    <>
-      <AudioPlayer />
-      <Drawer.Navigator
-        screenOptions={drawerScreenOptions}
-        drawerContent={(props) => (
-          <LeftNavDrawer {...gestureProps} {...props} />
-        )}
-      >
-        <Drawer.Screen name='App'>
-          {(props) => <AppStack {...props} {...gestureProps} />}
-        </Drawer.Screen>
-      </Drawer.Navigator>
-    </>
-  )
-}
+    return (
+      <>
+        <AudioPlayer />
+        <Drawer.Navigator
+          screenOptions={drawerScreenOptions}
+          drawerContent={(props) => (
+            <LeftNavDrawer {...gestureProps} {...props} />
+          )}
+        >
+          <Drawer.Screen name='App'>
+            {(props) => <AppStack {...props} {...gestureProps} />}
+          </Drawer.Screen>
+        </Drawer.Navigator>
+      </>
+    )
+  },
+  () => true
+)

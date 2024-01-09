@@ -43,6 +43,7 @@ export type DrawerData = {
   PlaybackRate: undefined
   ReleaseNowConfirmation: {
     trackId: number
+    handleConfirm: () => void
   }
   DeleteTrackConfirmation: {
     trackId: number

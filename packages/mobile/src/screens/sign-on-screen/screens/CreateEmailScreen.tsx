@@ -37,10 +37,10 @@ type SignUpEmailValues = {
 }
 
 export const CreateEmailScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail, onChangeScreen } = props
+  const { onChangeScreen } = props
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
-  const existingEmailValue = useSelector(getEmailField) || email
+  const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
   const initialValues = {
@@ -110,7 +110,6 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               name='email'
               label={messages.emailLabel}
               noGutter
-              onChangeText={onChangeEmail}
               onChangeScreen={onChangeScreen}
             />
             <Divider>

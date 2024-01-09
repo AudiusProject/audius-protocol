@@ -111,3 +111,26 @@ export type ButtonProps = {
    */
   size?: ButtonSize
 } & Omit<BaseButtonProps, 'styles'>
+
+export enum PlainButtonType {
+  DEFAULT = 'default',
+  SUBDUED = 'subdued',
+  INVERTED = 'inverted'
+}
+
+export enum PlainButtonSize {
+  DEFAULT = 'default',
+  LARGE = 'large'
+}
+
+export type PlainButtonProps = {
+  /**
+   * The type of the button
+   */
+  variant?: PlainButtonType
+
+  /**
+   * The button size
+   */
+  size?: PlainButtonSize
+} & Omit<BaseButtonProps, 'styles'>

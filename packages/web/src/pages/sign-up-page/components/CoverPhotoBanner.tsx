@@ -35,6 +35,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
       w='100%'
       borderRadius={isEditing ? 'm' : undefined}
       css={{
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
         '&:before': {
           content: '""',
           position: 'absolute',
@@ -53,6 +55,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
             : undefined),
           ...(isEditing && {
             overflow: 'hidden',
+            cursor: 'pointer',
             borderTopLeftRadius: cornerRadius.m,
             borderTopRightRadius: cornerRadius.m
           })

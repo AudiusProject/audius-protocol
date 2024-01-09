@@ -52,6 +52,7 @@ export const initialState: BasicModalsState = {
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
+  PublishTrackConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },

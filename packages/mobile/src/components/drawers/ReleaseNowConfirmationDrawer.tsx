@@ -49,7 +49,7 @@ export const ReleaseNowConfirmationDrawer = () => {
     <ConfirmationDrawer
       drawerName={drawerName}
       messages={messages}
-      onConfirm={handleConfirm}
+      onConfirm={data.handleConfirm ?? handleConfirm}
     />
   )
 }

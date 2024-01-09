@@ -1,7 +1,10 @@
 import { useState, DragEvent } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAudiusSdk } from '../providers/AudiusSdkProvider'
 import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
 import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
+import Uploads from 'components/Uploads'
+import Releases from 'components/Releases'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -48,6 +51,7 @@ const XmlImporter = ({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSucceeded, setUploadSucceeded] = useState(false)
+  const queryClient = useQueryClient()
 
   const handleDragIn = (e: DragEvent) => {
     e.preventDefault()
@@ -124,6 +128,7 @@ const XmlImporter = ({
       const result = await response.json()
       console.log(JSON.stringify(result))
       setUploadSucceeded(true)
+      queryClient.invalidateQueries({ queryKey: ['uploads'] })
     } catch (error: any) {
       setUploadError(error.message)
     } finally {
@@ -207,34 +212,68 @@ const XmlImporter = ({
   }
 }
 
-export const Ddex = () => {
+const Ddex = () => {
   const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
 
   const handleOauth = () => {
     audiusSdk!.oauth!.login({ scope: 'read' })
   }
 
+  // Use this if you want to skip the oauth flow but still show the UI for a user
+  // const fakeUser = {
+  //   userId: '1',
+  //   email: '1',
+  //   name: 'theo',
+  //   handle: 'theo',
+  //   verified: false,
+  //   profilePicture: undefined,
+  //   sub: '1',
+  //   iat: '',
+  // }
+
   return (
-    <div className="flex flex-col space-y-4">
-      {!audiusSdk ? (
-        'loading...'
-      ) : !currentUser ? (
-        <div className="flex flex-col space-y-4 justify-center items-center h-screen">
-          <button className="btn btn-blue" onClick={handleOauth}>
-            Login with Audius
-          </button>
-          {oauthError && <div className="text-red-600">{oauthError}</div>}
+    <>
+      <div className="flex flex-col space-y-4">
+        {!audiusSdk ? (
+          'loading...'
+        ) : !currentUser ? (
+          <div className="flex flex-col space-y-4 justify-center items-center h-screen">
+            <button className="btn btn-blue" onClick={handleOauth}>
+              Login with Audius
+            </button>
+            {oauthError && <div className="text-red-600">{oauthError}</div>}
+          </div>
+        ) : (
+          <>
+            <ManageAudiusAccount
+              currentUser={currentUser}
+              onChangeUser={handleOauth}
+              oauthError={oauthError}
+            />
+            <XmlImporter audiusSdk={audiusSdk} />
+          </>
+        )}
+      </div>
+
+      {/* <ManageAudiusAccount
+        currentUser={currentUser || fakeUser}
+        onChangeUser={handleOauth}
+        oauthError={oauthError}
+      />
+      <XmlImporter audiusSdk={audiusSdk} /> */}
+
+      <br />
+
+      <div className="flex">
+        <div className="flex flex-col space-y-4 w-1/2">
+          <Uploads />
         </div>
-      ) : (
-        <>
-          <ManageAudiusAccount
-            currentUser={currentUser}
-            onChangeUser={handleOauth}
-            oauthError={oauthError}
-          />
-          <XmlImporter audiusSdk={audiusSdk} />
-        </>
-      )}
-    </div>
+        <div className="flex flex-col space-y-4 w-1/2">
+          <Releases />
+        </div>
+      </div>
+    </>
   )
 }
+
+export default Ddex
