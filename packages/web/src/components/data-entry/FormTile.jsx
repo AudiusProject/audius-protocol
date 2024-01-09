@@ -529,7 +529,7 @@ const AdvancedForm = (props) => {
               onClick={() => setAiAttributionModalVisible(true)}
             />
           )}
-          {showAvailability && isScheduledReleasesEnabled && (
+          {isScheduledReleasesEnabled && (
             <ReleaseDateTriggerLegacy
               didUpdateState={didUpdateReleaseDate}
               metadataState={releaseDateState}
