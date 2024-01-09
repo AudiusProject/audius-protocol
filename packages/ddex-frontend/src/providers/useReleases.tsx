@@ -48,7 +48,7 @@ const useReleases = (statusFilter = '', nextCursor = '', prevCursor = '') => {
         ...release,
         release_date: new Date(release.release_date),
         data: {
-          ...release.data,
+          ...JSON.parse(release.data as unknown as string),
           releaseDate: new Date(release.data.releaseDate),
         },
       }))
