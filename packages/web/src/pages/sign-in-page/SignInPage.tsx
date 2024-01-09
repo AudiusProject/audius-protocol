@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { signIn } from 'common/store/pages/signon/actions'
-import { getStatus } from 'common/store/pages/signon/selectors'
+import { getEmailField, getStatus } from 'common/store/pages/signon/selectors'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
@@ -34,15 +34,16 @@ type SignInValues = {
   password: string
 }
 
-const initialValues = {
-  email: '',
-  password: ''
-}
-
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const existingEmailValue = useSelector(getEmailField)
+
+  const initialValues = {
+    email: existingEmailValue.value ?? '',
+    password: ''
+  }
 
   const signInStatus = useSelector(getStatus)
 
