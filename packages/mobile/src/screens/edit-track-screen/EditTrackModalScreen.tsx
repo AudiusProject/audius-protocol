@@ -4,7 +4,8 @@ import type { ExtendedTrackMetadata } from '@audius/common'
 import {
   SquareSizes,
   cacheTracksActions,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -13,11 +14,14 @@ import { useTrackImage } from 'app/components/image/TrackImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { EditTrackScreen } from './EditTrackScreen'
 
 const { getTrack } = cacheTracksSelectors
 const { editTrack } = cacheTracksActions
+const { requestOpen: openPublishTrackConfirmation } =
+  publishTrackConfirmationModalUIActions
 
 const messages = {
   title: 'Edit Track',
@@ -39,10 +43,25 @@ export const EditTrackModalScreen = () => {
 
   const handleSubmit = useCallback(
     (metadata: ExtendedTrackMetadata) => {
-      dispatch(editTrack(id, metadata))
+      if (track?.is_unlisted === true && metadata.is_unlisted === false) {
+        dispatch(
+          setVisibility({
+            drawer: 'ReleaseNowConfirmation',
+            visible: true,
+            data: {
+              trackId: id,
+              handleConfirm: () => {
+                dispatch(editTrack(id, metadata))
+              }
+            }
+          })
+        )
+      } else {
+        dispatch(editTrack(id, metadata))
+      }
       navigation.goBack()
     },
-    [dispatch, id, navigation]
+    [dispatch, id, navigation, track?.is_unlisted]
   )
 
   if (!track) return null

@@ -73,7 +73,7 @@ const EditTrackModal = ({
   const onSaveEdit = (formFields: Track) => {
     if (!metadata) return
 
-    const confirmEdit = (metadata, formFields) => {
+    const confirmEdit = (metadata: Track, formFields: Track) => {
       onEdit(metadata.track_id, formFields)
       if (pendingUploads.length) {
         uploadStems(metadata.track_id, pendingUploads)
@@ -85,21 +85,15 @@ const EditTrackModal = ({
       }
       onClose()
     }
-    if (1 === 1) {
-      console.log('asdf dispatch')
+    if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
+      // confirm for unlisted -> listed
       dispatch(
-        openPublishTrackConfirmationModal(
-
-          {
-            type: publishTrack
+        openPublishTrackConfirmationModal({
           confirmCallback: () => {
-              console.log('asdf confirming edit')
-              confirmEdit(metadata, formFields)
-              console.log('asdf confirmed edit')
-            }
-          })
+            confirmEdit(metadata, formFields)
+          }
+        })
       )
-      console.log('asdf dispatched')
     } else {
       confirmEdit(metadata, formFields)
     }

@@ -116,6 +116,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
+  PublishTrackConfirmation: ReleaseNowConfirmationDrawer,
   // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,

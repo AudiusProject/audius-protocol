@@ -187,8 +187,8 @@ export const ScheduledReleaseRadioField = (props) => {
             />
           ) : null}
           {selected &&
-          releaseDateValue &&
-          moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
+            releaseDateValue &&
+            moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
             <TextField
               name={'release_date_time'}
               label={'Time'}
@@ -253,7 +253,7 @@ export const ReleaseNowRadioField = (props) => {
 
   useEffect(() => {
     if (selected) {
-      setReleaseDateValue(null)
+      setReleaseDateValue(moment().toString())
       setIsUnlisted(false)
       setIsScheduledRelease(false)
     }

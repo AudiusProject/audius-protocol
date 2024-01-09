@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import { publishTrackConfirmationModalUISelectors } from '@audius/common'
+import { IconRocket } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconUpload,
   Modal,
   ModalContent,
   ModalContentText,
@@ -23,16 +23,14 @@ const { getConfirmCallback } = publishTrackConfirmationModalUISelectors
 
 const messages = {
   title: 'Confirm Release',
-  publicDescription:
+  description:
     'Ready to release your new track? Your followers will be notified and your track will be released to the public.',
-  hiddenDescription: 'Ready to begin uploading?',
   cancel: 'Go Back',
-  release: 'Release now '
+  release: 'Release Now '
 }
 
 export const PublishTrackConfirmationModal = () => {
   const confirmCallback = useSelector(getConfirmCallback)
-  console.log('asdf confirmCallback: ', confirmCallback)
   const [isOpen, setIsOpen] = useModalState('PublishTrackConfirmation')
 
   const onClose = useCallback(() => {
@@ -48,7 +46,7 @@ export const PublishTrackConfirmationModal = () => {
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
         <ModalTitle
-          icon={<IconUpload className={styles.titleIcon} />}
+          icon={<IconRocket className={styles.titleIcon} />}
           title={
             <Text
               variant='label'
@@ -62,7 +60,9 @@ export const PublishTrackConfirmationModal = () => {
         />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText className={styles.modalText}></ModalContentText>
+        <ModalContentText className={styles.modalText}>
+          {messages.description}
+        </ModalContentText>
       </ModalContent>
       <ModalFooter className={styles.modalFooter}>
         <Button
