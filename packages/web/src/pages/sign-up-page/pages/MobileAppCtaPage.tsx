@@ -2,18 +2,10 @@ import { useCallback } from 'react'
 
 import { Flex, Hint, IconInfo } from '@audius/harmony'
 import { keyframes } from '@emotion/css'
-import { useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
-import { useModalState } from 'common/hooks/useModalState'
-import { getStatus } from 'common/store/pages/signon/selectors'
-import { EditingStatus } from 'common/store/pages/signon/types'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import {
-  SIGN_UP_COMPLETED_REDIRECT,
-  SIGN_UP_LOADING_PAGE,
-  TRENDING_PAGE
-} from 'utils/route'
+import { SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { Heading, Page, PageFooter } from '../components/layout'
 
