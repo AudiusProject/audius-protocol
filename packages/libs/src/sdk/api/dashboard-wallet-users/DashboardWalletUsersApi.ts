@@ -39,6 +39,20 @@ export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
         CreateDashboardWalletUser
       )(params)
 
+    const signatureMetadata = walletSignature
+      ? {
+          wallet_signature: {
+            message: walletSignature.message,
+            signature: walletSignature.signature
+          }
+        }
+      : {
+          user_signature: {
+            message: userSignature!.message,
+            signature: userSignature!.signature
+          }
+        }
+
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.DASHBOARD_WALLET_USER,
@@ -46,19 +60,7 @@ export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         wallet,
-        ...(walletSignature
-          ? {
-              wallet_signature: {
-                message: walletSignature.message,
-                signature: walletSignature.signature
-              }
-            }
-          : {
-              user_signature: {
-                message: userSignature!.message,
-                signature: userSignature!.signature
-              }
-            })
+        ...signatureMetadata
       }),
       auth: this.auth,
       ...advancedOptions
