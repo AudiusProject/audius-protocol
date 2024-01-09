@@ -6,7 +6,7 @@ import { PasswordInput } from './PasswordInput'
 import type { PasswordInputProps } from './types'
 
 const ControlledPasswordInput = (props: PasswordInputProps) => {
-  const [value, setValue] = useState(props.value)
+  const [value, setValue] = useState(props.value ?? '')
   return (
     <PasswordInput
       {...props}
