@@ -69,7 +69,11 @@ export const finishProfilePageMessages = {
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
   uploadProfilePhoto: 'Upload a profile photo to continue',
-  goBack: 'Go back'
+  goBack: 'Go back',
+  profileImageUploadError: 'There was an issue uploading your profile image.',
+  coverPhotoUploadError: 'There was an issue uploading your cover photo image.',
+  bothImageUploadError:
+    'There was an issue uploading your profile and cover photo image.'
 }
 
 export const selectGenresPageMessages = {
