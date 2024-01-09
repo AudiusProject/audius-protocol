@@ -69,6 +69,7 @@ export const BaseButton = (props: BaseButtonProps) => {
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
+    overflow: 'hidden',
     minWidth,
     ...(fullWidth && {
       width: '100%',
