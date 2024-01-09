@@ -54,9 +54,9 @@ export const SelectablePill = (props: SelectablePillProps) => {
   const tap = Gesture.Tap()
     .shouldCancelWhenOutside(true)
     .onBegin(() => {
-      pressed.value = withTiming(1, motion.hover)
+      pressed.value = withTiming(1, motion.press)
       if (!isSelected) {
-        selected.value = withTiming(1, motion.hover)
+        selected.value = withTiming(1, motion.press)
       }
     })
     .onFinalize((event) => {

@@ -1,6 +1,8 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-import type { IconComponent } from '../../icon'
+import type { TextInputProps as RNTextInputProps } from 'react-native'
+
+import type { Icon } from '../../../icons'
 
 export enum TextInputSize {
   SMALL = 'small',
@@ -17,12 +19,6 @@ type InternalProps = {
   /**
    * @ignore
    * This prop is for internal use only.
-   * Toggles the hover state for the storybook docs
-   */
-  _isHovered?: boolean
-  /**
-   * @ignore
-   * This prop is for internal use only.
    * Toggles the focus state for the storybook docs
    */
   _isFocused?: boolean
@@ -34,11 +30,7 @@ type InternalProps = {
   _disablePointerEvents?: boolean
 }
 
-export type TextInputProps = Omit<
-  ComponentPropsWithoutRef<'input'>,
-  // Omitting required purely for storybook docs
-  'size' | 'required'
-> & {
+export type TextInputProps = RNTextInputProps & {
   /**
    * Input sizes. NOTE: small inputs will not show the label
    * @default default
@@ -80,11 +72,11 @@ export type TextInputProps = Omit<
   /**
    * Floating icon on the lefthand side of the input. Note: will float to the left of the label & content
    */
-  startIcon?: IconComponent
+  startIcon?: Icon
   /**
    * Floating icon on the righthand side of the input
    */
-  endIcon?: IconComponent
+  endIcon?: Icon
   /**
    * @hidden
    * Floating component on the righthand side of the input. Meant for internal use only.
@@ -104,4 +96,6 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
+
+  disabled?: boolean
 } & InternalProps
