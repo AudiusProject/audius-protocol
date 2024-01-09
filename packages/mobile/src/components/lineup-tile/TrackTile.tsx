@@ -150,8 +150,6 @@ export const TrackTileComponent = ({
     if (track_id === undefined) {
       return
     }
-    console.log('asdf track: ', track)
-
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const overflowActions = [

@@ -46,7 +46,7 @@ const messages = {
     'Setting a release date in the past will impact the order tracks appear on your profile.'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   todayPill: {
     flexDirection: 'row',
     borderRadius: 99,
@@ -89,6 +89,7 @@ const data: ListSelectionData[] = [
 
 export const ScheduledReleaseRadioField = (props) => {
   const { selected } = props
+  const isInitiallyUnlisted = props.route.params.isInitiallyUnlisted
   const { primary } = useThemeColors()
   const styles = useStyles()
   const theme = useThemeVariant()
@@ -96,7 +97,6 @@ export const ScheduledReleaseRadioField = (props) => {
   const [, , { setValue: setIsScheduledRelease }] = useField<boolean>(
     'is_scheduled_release'
   )
-
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
 
@@ -187,8 +187,9 @@ export const ScheduledReleaseRadioField = (props) => {
             />
           ) : null}
           {selected &&
-            releaseDateValue &&
-            moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
+          releaseDateValue &&
+          isInitiallyUnlisted &&
+          moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
             <TextField
               name={'release_date_time'}
               label={'Time'}
@@ -209,7 +210,7 @@ export const ScheduledReleaseRadioField = (props) => {
             mode='date'
             onConfirm={handleDateChange}
             onCancel={() => setIsDateOpen(false)}
-            maximumDate={oneYearFromNow}
+            maximumDate={isInitiallyUnlisted ? oneYearFromNow : new Date()}
             display='inline'
             accentColor={primary}
             themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
@@ -282,7 +283,7 @@ export const ReleaseNowRadioField = (props) => {
   )
 }
 
-export const ReleaseDateScreen = () => {
+export const ReleaseDateScreen = (props) => {
   const [{ value }] = useField<Nullable<string>>('release_date')
 
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
@@ -300,6 +301,7 @@ export const ReleaseDateScreen = () => {
     [ReleaseDateType.SCHEDULED_RELEASE]: (
       <ScheduledReleaseRadioField
         selected={releaseDateType === ReleaseDateType.SCHEDULED_RELEASE}
+        {...props}
       />
     )
   }

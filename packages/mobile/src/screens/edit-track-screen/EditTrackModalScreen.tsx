@@ -4,8 +4,7 @@ import type { ExtendedTrackMetadata } from '@audius/common'
 import {
   SquareSizes,
   cacheTracksActions,
-  cacheTracksSelectors,
-  publishTrackConfirmationModalUIActions
+  cacheTracksSelectors
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -20,8 +19,6 @@ import { EditTrackScreen } from './EditTrackScreen'
 
 const { getTrack } = cacheTracksSelectors
 const { editTrack } = cacheTracksActions
-const { requestOpen: openPublishTrackConfirmation } =
-  publishTrackConfirmationModalUIActions
 
 const messages = {
   title: 'Edit Track',

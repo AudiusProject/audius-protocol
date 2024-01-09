@@ -67,6 +67,10 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
+type IsInitiallyUnlistedProp = {
+  isInitiallyUnlisted: boolean
+}
+
 export const timeValidationSchema = z.object({
   release_date_hour: z
     .string()
@@ -188,7 +192,7 @@ export const mergeDateTimeValues = (
   return combinedDateTime
 }
 
-export const ReleaseDateRadioItems = () => {
+export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
 
   return (
@@ -207,11 +211,13 @@ export const ReleaseDateRadioItems = () => {
           label='Select a Release Date'
         />
       </RadioButtonGroup>
-      <SelectReleaseDate />
+      <SelectReleaseDate isInitiallyUnlisted={props.isInitiallyUnlisted} />
     </>
   )
 }
-export const SelectReleaseDate = () => {
+export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
+  const { isInitiallyUnlisted } = props
+
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
   const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
   const [, , { setValue: setTrackReleaseDate }] =
@@ -276,7 +282,7 @@ export const SelectReleaseDate = () => {
         >
           <div className={styles.datePicker}>
             <DatePickerField
-              isScheduledRelease={true}
+              isScheduledRelease={!isInitiallyUnlisted}
               name={RELEASE_DATE}
               label={messages.title}
             />

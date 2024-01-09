@@ -70,12 +70,14 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             onDateChange={(value) => {
               helpers.setValue(value?.toString())
             }}
-            isOutsideRange={(day) =>
-              isScheduledRelease
-                ? !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
-                : // @ts-ignore mismatched moment versions; shouldn't be relevant here
-                  !isInclusivelyBeforeDay(day, moment())
-            }
+            isOutsideRange={(day) => {
+              if (isScheduledRelease) {
+                return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
+              } else {
+                // @ts-ignore mismatched moment versions; shouldn't be relevant here
+                return !isInclusivelyBeforeDay(day, moment())
+              }
+            }}
             focused={isFocused}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}
