@@ -65,7 +65,6 @@ export const TextInput = forwardRef(
       ...other
     } = props
 
-    // const value = valueProp
     const [value, setValueState] = useControlled({
       componentName: 'TextInput',
       controlledProp: valueProp,
