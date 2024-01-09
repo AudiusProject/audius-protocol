@@ -1,12 +1,12 @@
 import type { ReactNode, Ref } from 'react'
-import { forwardRef, useCallback, useRef } from 'react'
+import { forwardRef, useCallback, useId, useRef } from 'react'
 
 import { css } from '@emotion/native'
 import type {
   NativeSyntheticEvent,
   TextInputFocusEventData
 } from 'react-native'
-import { Pressable, TextInput as RNTextInput } from 'react-native'
+import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import Animated, {
   interpolate,
@@ -99,8 +99,8 @@ export const TextInput = forwardRef(
     const isFocused = _isFocused ?? isFocusedState
 
     // For focus behavior and accessiblity, <label> needs to have a htmlFor={} provided to an id matching the input
-    // const backupId = useId()
-    const id = idProp // ?? backupId
+    const backupId = useId()
+    const id = idProp ?? backupId
 
     const characterCount = value !== undefined ? `${value}`.length : 0
     const hasValue = characterCount > 0
@@ -223,6 +223,7 @@ export const TextInput = forwardRef(
                     gap='s'
                   >
                     <AnimatedText
+                      nativeID={id}
                       variant='body'
                       color='subdued'
                       style={[
@@ -260,6 +261,12 @@ export const TextInput = forwardRef(
                   <RNTextInput
                     ref={mergeRefs([innerInputRef, ref])}
                     value={value}
+                    accessibilityLabel={
+                      Platform.OS === 'ios' ? labelProp : undefined
+                    }
+                    accessibilityLabelledBy={
+                      Platform.OS === 'android' ? id : undefined
+                    }
                     maxLength={maxLength}
                     placeholder={
                       shouldShowPlaceholder ? placeholderText : undefined
@@ -268,7 +275,6 @@ export const TextInput = forwardRef(
                       color.text[disabled ? 'subdued' : 'default']
                     }
                     aria-label={ariaLabel ?? labelText}
-                    id={id}
                     style={css({
                       flex: 1,
                       fontSize: typography.size[isSmall ? 's' : 'l'],
