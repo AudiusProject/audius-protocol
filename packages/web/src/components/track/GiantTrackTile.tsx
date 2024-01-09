@@ -26,6 +26,7 @@ import {
   IconHeart,
   IconKebabHorizontal
 } from '@audius/stems'
+import type { APlaylist } from '@audius/trpc-server'
 import cn from 'classnames'
 import moment from 'moment'
 

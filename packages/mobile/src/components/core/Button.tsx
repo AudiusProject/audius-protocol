@@ -339,7 +339,7 @@ export const Button = (props: ButtonProps) => {
     // darken the color by 10% for the press state
     if (customColor) {
       const c = new Color(customColor)
-      return c.darken(0.1).hex()
+      return c.light(0.1).hex()
     }
 
     // If no custom color is specified
