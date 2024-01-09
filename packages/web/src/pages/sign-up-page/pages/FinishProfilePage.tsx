@@ -48,7 +48,7 @@ export type FinishProfileValues = {
 const formSchema = toFormikValidationSchema(finishProfileSchema)
 
 const ImageUploadErrorText = () => {
-  const { errors } = useFormikContext()
+  const { errors } = useFormikContext<FinishProfileValues>()
   let errorText
   if (errors.coverPhoto === messages.coverPhotoUploadError) {
     errorText = errors.coverPhoto
