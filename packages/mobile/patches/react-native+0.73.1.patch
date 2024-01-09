@@ -1,5 +1,17 @@
+diff --git a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+index 7279c2a..c3519b2 100644
+--- a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
++++ b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+@@ -251,6 +251,6 @@ export class AnimatedEvent {
+   }
+ 
+   _callListeners = (...args: any) => {
+-    this._listeners.forEach(listener => listener(...args));
++    this._listeners.forEach(listener => listener?.(...args));
+   };
+ }
 diff --git a/node_modules/react-native/third-party-podspecs/boost.podspec b/node_modules/react-native/third-party-podspecs/boost.podspec
-index 3950fce..1c95cd6 100644
+index 3950fce..8cd4a8a 100644
 --- a/node_modules/react-native/third-party-podspecs/boost.podspec
 +++ b/node_modules/react-native/third-party-podspecs/boost.podspec
 @@ -10,7 +10,8 @@ Pod::Spec.new do |spec|
