@@ -12,11 +12,8 @@ const slice = createSlice({
     name: 'applications/ui/publishTrackConfirmation',
     initialState,
     reducers: {
-        requestOpen: (_state, _action: OpenPayload) => {
-            console.log('asdf request open')
-        },
+        requestOpen: (_state, _action: OpenPayload) => { },
         open: (state, action: OpenPayload) => {
-            console.log('asdf open: ', action)
             const { confirmCallback } = action.payload
             state.confirmCallback = confirmCallback
         }

@@ -12,7 +12,6 @@ function* handleRequestOpen(action: OpenPayload) {
 }
 
 function* watchHandleRequestOpen() {
-  console.log('asdf watch upload handle')
   yield takeEvery(requestOpen, handleRequestOpen)
 }
 
