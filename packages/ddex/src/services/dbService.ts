@@ -31,7 +31,7 @@ export const createDbService = async (dbUrl: string): Promise<Sql> => {
       `CREATE TABLE IF NOT EXISTS xml_files (
         id SERIAL PRIMARY KEY,
         uploaded_by TEXT,
-        uploaded_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+        uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         from_zip_file UUID,
         xml_contents TEXT NOT NULL,
         status TEXT NOT NULL
@@ -40,7 +40,7 @@ export const createDbService = async (dbUrl: string): Promise<Sql> => {
       `CREATE TABLE IF NOT EXISTS releases (
         id SERIAL PRIMARY KEY,
         from_xml_file INTEGER NOT NULL,
-        release_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+        release_date TIMESTAMP WITH TIME ZONE NOT NULL,
         data JSON NOT NULL,
         status TEXT NOT NULL,
         FOREIGN KEY (from_xml_file) REFERENCES xml_files(id)
