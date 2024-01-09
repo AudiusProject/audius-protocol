@@ -138,6 +138,9 @@ export type DesktopTrackTileProps = {
   /** If the track is unlisted/hidden */
   isUnlisted?: boolean
 
+  /** If the track is a scheduled release */
+  isScheduledRelease?: boolean
+
   /** Premium conditions if track is premium */
   premiumConditions?: Nullable<PremiumConditions>
 

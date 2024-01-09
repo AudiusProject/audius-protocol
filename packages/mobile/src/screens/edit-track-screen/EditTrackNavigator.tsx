@@ -6,6 +6,8 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
+import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
+
 import { EditTrackForm } from './EditTrackForm'
 import { accessAndSaleScreenName } from './fields'
 import {
@@ -43,7 +45,16 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
         <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
         {isScheduledReleasesEnabled ? (
-          <Stack.Screen name='ReleaseDate' component={ReleaseDateScreen} />
+          <Stack.Screen
+            name='ReleaseDate'
+            component={ReleaseDateScreen}
+            initialParams={{
+              isInitiallyUnlisted:
+                props.doneText === completeMessages.done
+                  ? true
+                  : props.initialValues.is_unlisted
+            }}
+          />
         ) : null}
         <Stack.Screen
           name='AdvancedOptions'

@@ -73,7 +73,7 @@ export const LineupTile = ({
   const isArtistPick = artist_pick_track_id === id
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
   const isScheduledRelease = item.release_date
-    ? moment.utc(item.release_date).isAfter(moment())
+    ? moment(item.release_date).isAfter(moment())
     : false
   const dogEarType = getDogEarType({
     premiumConditions,

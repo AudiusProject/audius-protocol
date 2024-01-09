@@ -19,7 +19,10 @@
     "jsxImportSource": "@emotion/react",
     "downlevelIteration": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@audius/trpc-server": ["../trpc-server/src/index.ts"],
+    }
   },
   "include": ["src"]
 }

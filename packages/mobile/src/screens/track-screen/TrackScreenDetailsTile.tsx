@@ -264,7 +264,7 @@ export const TrackScreenDetailsTile = ({
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
   const isScheduledRelease = release_date
-    ? moment.utc(release_date).isAfter(moment.now())
+    ? moment(release_date).isAfter(moment.now())
     : false
 
   const filteredTags = (tags || '').split(',').filter(Boolean)
@@ -414,6 +414,9 @@ export const TrackScreenDetailsTile = ({
         : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner && track?.is_scheduled_release && track?.is_unlisted
+        ? OverflowAction.RELEASE_NOW
+        : null,
       isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 

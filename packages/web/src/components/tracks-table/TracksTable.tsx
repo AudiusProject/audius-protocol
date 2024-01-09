@@ -278,15 +278,12 @@ export const TracksTable = ({
     let suffix = ''
     if (
       track.release_date &&
-      moment.utc(track.release_date).local().isAfter(moment.now())
+      moment(track.release_date).isAfter(moment.now())
     ) {
       suffix = ' (Scheduled)'
     }
     return (
-      moment
-        .utc(track.release_date ?? track.created_at)
-        .local()
-        .format('M/D/YY') + suffix
+      moment(track.release_date ?? track.created_at).format('M/D/YY') + suffix
     )
   }, [])
 

@@ -191,6 +191,7 @@ export type TrackMetadata = {
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizes>
+  is_scheduled_release: boolean
   is_unlisted: boolean
   is_available: boolean
   is_premium: boolean
