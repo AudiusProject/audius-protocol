@@ -159,10 +159,11 @@ export const ReleaseDateField = () => {
         validateOnChange={false}
         validateOnBlur={false}
         onSubmit={onSubmit}
+        // upload case is initially unlisted
         menuFields={
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <ReleaseDateRadioItems />
+            <ReleaseDateRadioItems isInitiallyUnlisted={true} />
           </Flex>
         }
         renderValue={renderValue}
@@ -282,7 +283,7 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
         >
           <div className={styles.datePicker}>
             <DatePickerField
-              isScheduledRelease={!isInitiallyUnlisted}
+              isInitiallyUnlisted={isInitiallyUnlisted}
               name={RELEASE_DATE}
               label={messages.title}
             />

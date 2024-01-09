@@ -145,13 +145,13 @@ export const TrackTileComponent = ({
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
-
   const handlePressOverflow = useCallback(() => {
     if (track_id === undefined) {
       return
     }
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+
     const overflowActions = [
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
