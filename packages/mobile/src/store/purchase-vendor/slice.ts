@@ -1,13 +1,13 @@
-import { PurchaseVendor } from '@audius/common'
+import type { PurchaseVendor } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
 export type PurchaseVendorState = {
-  card: PurchaseVendor
+  card?: PurchaseVendor
 }
 
 const initialState: PurchaseVendorState = {
-  card: PurchaseVendor.COINFLOW
+  card: undefined
 }
 
 const slice = createSlice({

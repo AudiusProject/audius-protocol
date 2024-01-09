@@ -36,3 +36,10 @@ test('search tracks', async () => {
     expect(trackIds).toEqual(['201'])
   }
 })
+
+// test('you can query for playlists that contain a track id', async () => {
+//   const caller = await testRouter()
+
+//   const playlistIds = await caller.tracks.getAlbumBacklink({ trackId: 101 })
+//   expect(playlistIds?.playlist_id).toEqual(['301'])
+// })

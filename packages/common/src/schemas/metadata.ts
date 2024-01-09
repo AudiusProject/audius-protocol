@@ -26,6 +26,7 @@ const trackMetadataSchema = {
   followee_reposts: null,
   followee_saves: null,
   is_current: true,
+  is_scheduled_release: false,
   is_unlisted: false,
   is_premium: false,
   premium_conditions: null,

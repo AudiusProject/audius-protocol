@@ -50,6 +50,7 @@ const rowMessageMap = {
   [OverflowAction.FOLLOW]: 'Follow',
   [OverflowAction.UNFOLLOW]: 'Unfollow',
   [OverflowAction.EDIT_TRACK]: 'Edit Track',
+  [OverflowAction.RELEASE_NOW]: 'Release Now',
   [OverflowAction.DELETE_TRACK]: 'Delete Track',
   [OverflowAction.MARK_AS_PLAYED]: 'Mark as Played',
   [OverflowAction.MARK_AS_UNPLAYED]: 'Mark as Unplayed'
@@ -105,6 +106,7 @@ const MobileOverflowModal = ({
     // but not mobile web
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {},
     [OverflowAction.EDIT_TRACK]: () => {},
+    [OverflowAction.RELEASE_NOW]: () => {},
     [OverflowAction.DELETE_TRACK]: () => {},
     [OverflowAction.MARK_AS_PLAYED]: () => {},
     [OverflowAction.MARK_AS_UNPLAYED]: () => {}

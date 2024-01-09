@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import { selectArtstsPageMessages as messages } from '@audius/common'
-import { followArtists } from 'common/store/pages/signon/actions'
 import { getFollowIds, getGenres } from 'common/store/pages/signon/selectors'
 import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
 import { useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
+import { useToast } from 'app/hooks/useToast'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
 import { Heading, PageFooter } from '../../components/layout'
@@ -23,7 +23,10 @@ export const SelectArtistsScreen = () => {
     'Featured',
     ...(getGenres(state) ?? [])
   ])
+
   const selectedArtists = useSelector(getFollowIds)
+  const { toast } = useToast()
+
   const renderHeader = useCallback(
     () => (
       <Flex pointerEvents='none' backgroundColor='white'>
@@ -42,8 +45,8 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    // TODO
-  }, [])
+    toast({ content: 'TODO: Create Account' })
+  }, [toast])
 
   return (
     <SelectArtistsPreviewContextProvider>
@@ -66,7 +69,7 @@ export const SelectArtistsScreen = () => {
         </Tab.Navigator>
         <PageFooter
           onSubmit={handleSubmit}
-          buttonProps={{ disabled: followArtists.length < 3 }}
+          buttonProps={{ disabled: selectedArtists.length < 3 }}
           postfix={
             <Text variant='body'>
               {messages.selected} {selectedArtists.length || 0}/3

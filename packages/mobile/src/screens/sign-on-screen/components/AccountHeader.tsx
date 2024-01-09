@@ -6,6 +6,7 @@ import {
   getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
+import { isEmpty } from 'lodash'
 import type { ImageURISource } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -13,12 +14,18 @@ import {
   Avatar,
   Flex,
   CoverPhoto as HarmonyCoverPhoto,
+  IconButton,
   IconCamera,
   IconImage,
   IconVerified,
   Text,
   useTheme
 } from '@audius/harmony-native'
+
+const messages = {
+  selectCoverPhoto: 'Select Cover Photo',
+  selectProfilePicture: 'Select Profile Picture'
+}
 
 type AccountHeaderProps = {
   onSelectCoverPhoto?: () => void
@@ -86,9 +93,13 @@ export const ReadOnlyAccountHeader = () => {
   return (
     <AccountHeader
       handle={handle}
-      coverPhoto={coverPhoto as ImageURISource}
+      coverPhoto={
+        isEmpty(coverPhoto) ? undefined : (coverPhoto as ImageURISource)
+      }
       displayName={displayName}
-      profilePicture={profileImage as ImageURISource}
+      profilePicture={
+        isEmpty(profileImage) ? undefined : (profileImage as ImageURISource)
+      }
       isVerified={isVerified}
     />
   )
@@ -111,10 +122,13 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
       {onSelectCoverPhoto ? (
-        <IconImage
+        <IconButton
+          accessibilityLabel={messages.selectCoverPhoto}
           style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
           color='staticWhite'
+          shadow='near'
           onPress={onSelectCoverPhoto}
+          icon={IconImage}
         />
       ) : null}
     </HarmonyCoverPhoto>
@@ -148,9 +162,12 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       source={profilePicture ?? { uri: undefined }}
     >
       {onSelectProfilePicture ? (
-        <IconCamera
+        <IconButton
+          accessibilityLabel={messages.selectProfilePicture}
+          icon={IconCamera}
           size='2xl'
           color='staticWhite'
+          shadow='near'
           onPress={onSelectProfilePicture}
         />
       ) : null}

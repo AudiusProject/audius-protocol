@@ -36,7 +36,7 @@ export async function selectUsersCamel(p: SelectUserProps) {
     select *
     from users
     left join aggregate_user agg using (user_id)
-    where
+    where 1 = 1
     ${p.ids ? sql`and user_id in ${sql(p.ids)}` : sql``}
     ${p.handle ? sql`and handle_lc = lower(${p.handle})` : sql``}
   `

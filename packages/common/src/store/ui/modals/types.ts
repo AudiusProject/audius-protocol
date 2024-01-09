@@ -60,6 +60,7 @@ export type Modals =
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
+  | 'PublishTrackConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
