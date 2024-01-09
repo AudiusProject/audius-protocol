@@ -130,7 +130,9 @@ export const NavHeader = () => {
               <Box css={{ width: iconSizes.m }} />
             </>
           ) : (
-            audiusLogo
+            <Flex w='100%' justifyContent='center'>
+              {audiusLogo}
+            </Flex>
           )}
         </HeaderRoot>
       </Route>

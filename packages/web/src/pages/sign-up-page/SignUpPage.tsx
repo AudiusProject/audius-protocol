@@ -12,6 +12,7 @@ import {
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_LOADING_PAGE,
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE
@@ -21,6 +22,7 @@ import { CreateEmailPage } from './pages/CreateEmailPage'
 import { CreateLoginDetailsPage } from './pages/CreateLoginDetails'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
+import { LoadingAccountPage } from './pages/LoadingAccountPage'
 import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
@@ -94,6 +96,9 @@ export const SignUpPage = () => {
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_APP_CTA_PAGE}>
           <MobileAppCtaPage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_LOADING_PAGE}>
+          <LoadingAccountPage />
         </SignUpRoute>
       </Switch>
     </RouteContextProvider>

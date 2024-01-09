@@ -20,11 +20,16 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
-import { getGenres } from 'common/store/pages/signon/selectors'
+import { getGenres, getStatus } from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
+import {
+  SIGN_UP_APP_CTA_PAGE,
+  SIGN_UP_LOADING_PAGE,
+  TRENDING_PAGE
+} from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -64,18 +69,24 @@ export const SelectArtistsPage = () => {
     setCurrentGenre(e.target.value)
   }, [])
 
+  const accountCreationStatus = useSelector(getStatus)
+
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
       dispatch(addFollowArtists([...selectedArtists]))
       if (isMobile) {
-        navigate(TRENDING_PAGE)
-        setIsWelcomeModalOpen(true)
+        if (accountCreationStatus === EditingStatus.SUCCESS) {
+          navigate(TRENDING_PAGE)
+          setIsWelcomeModalOpen(true)
+        } else {
+          navigate(SIGN_UP_LOADING_PAGE)
+        }
       } else {
         navigate(SIGN_UP_APP_CTA_PAGE)
       }
     },
-    [dispatch, isMobile, navigate, setIsWelcomeModalOpen]
+    [accountCreationStatus, dispatch, isMobile, navigate, setIsWelcomeModalOpen]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

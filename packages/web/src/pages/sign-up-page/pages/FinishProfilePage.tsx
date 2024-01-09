@@ -19,7 +19,8 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import {
   setField,
   setValueField,
-  setFinishedPhase1
+  setFinishedPhase1,
+  signUp
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -75,6 +76,7 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
+      dispatch(signUp())
     },
     [navigate, dispatch]
   )

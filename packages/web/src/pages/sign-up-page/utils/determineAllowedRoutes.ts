@@ -49,8 +49,9 @@ export const determineAllowedRoute = (
             allowedRoutes.push(SignUpPath.selectArtists)
 
             if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
-              // Already have 3 artists followed
+              // Already have 3 artists followed, ready to finish sign up
               allowedRoutes.push(SignUpPath.appCta)
+              allowedRoutes.push(SignUpPath.loading)
             }
           }
         }

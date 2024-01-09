@@ -96,6 +96,7 @@ export enum SignUpPath {
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
   selectArtists = 'select-artists',
+  loading = 'loading',
   appCta = 'app-cta'
 }
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
@@ -108,6 +109,7 @@ export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
 export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
 export const SIGN_UP_APP_CTA_PAGE = `/signup/${SignUpPath.appCta}`
+export const SIGN_UP_LOADING_PAGE = `/signup/${SignUpPath.loading}`
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
