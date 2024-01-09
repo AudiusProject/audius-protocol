@@ -63,6 +63,7 @@ const createSdkSchema = () =>
     genre: GenreSchema,
     is_premium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
+    is_scheduled_release: z.optional(z.boolean()),
     is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
     license: z.optional(z.string().nullable()),

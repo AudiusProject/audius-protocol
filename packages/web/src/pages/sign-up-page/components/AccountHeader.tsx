@@ -50,6 +50,7 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'pointer',
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >

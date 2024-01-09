@@ -41,9 +41,9 @@ export const useSetProfileFromTwitter = () => {
       restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(
-      profile.screen_name
-    )
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.screen_name
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
     dispatch(setTwitterProfile(uuid, profile, profileImage, profileBanner))
@@ -80,9 +80,12 @@ export const useSetProfileFromInstagram = () => {
       restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(profile.username)
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.username
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
+
     dispatch(setInstagramProfile(uuid, profile, profileImage))
     dispatch(
       make(Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM, {
@@ -113,7 +116,9 @@ export const useSetProfileFromTikTok = () => {
       restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(profile.username)
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.username
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
     dispatch(setTikTokProfile(uuid, profile, profileImage))
