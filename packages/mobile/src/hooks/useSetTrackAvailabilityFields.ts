@@ -33,18 +33,22 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.remixes'
   )
 
-  const defaultTrackAvailabilityFields = {
-    is_premium: false,
-    premium_conditions: null as Nullable<PremiumConditions>,
-    is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
-    preview_start_seconds: null as Nullable<Number>,
-    'field_visibility.genre': true,
-    'field_visibility.mood': true,
-    'field_visibility.tags': true,
-    'field_visibility.share': true,
-    'field_visibility.play_count': true,
-    'field_visibility.remixes': true
-  }
+  const defaultTrackAvailabilityFields = useMemo(
+    () => ({
+      is_premium: false,
+      premium_conditions: null as Nullable<PremiumConditions>,
+      is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
+      preview_start_seconds: null as Nullable<Number>,
+      'field_visibility.genre': true,
+      'field_visibility.mood': true,
+      'field_visibility.tags': true,
+      'field_visibility.share': true,
+      'field_visibility.play_count': true,
+      'field_visibility.remixes': true
+    }),
+    [isScheduledRelease, isUnlisted]
+  )
+
   type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
   const fieldSetters = useMemo(() => {
@@ -88,7 +92,7 @@ export const useSetTrackAvailabilityFields = () => {
         })
       }
     },
-    [fieldSetters]
+    [defaultTrackAvailabilityFields, fieldSetters]
   )
 
   const reset = useCallback(() => {
@@ -97,7 +101,7 @@ export const useSetTrackAvailabilityFields = () => {
       const setter = fieldSetters[key]
       setter(value)
     })
-  }, [fieldSetters])
+  }, [defaultTrackAvailabilityFields, fieldSetters])
 
   return { set, reset }
 }
