@@ -12,6 +12,10 @@ This entire suite is in jail.
 
 The upload flow seems to generally take too long in CI and results in timeouts and consistent failures.
 
+#### [Sign Up](./signUp.cy.ts)
+
+"should create an account" tests are skipped until they can be updated
+
 <!-- Template
 
 #### [Test Name](./link-to-test-file.cy.ts) - [ticket-number](ticket-link)
