@@ -1,12 +1,13 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
 import type { LoggerService } from '../services/Logger'
-import { isOAuthScopeValid } from '../utils/oauthScope'
+import { isOAuthScopeValid, isWriteOnceParams } from '../utils/oauthScope'
 import { parseParams } from '../utils/parseParams'
 
 import {
   OAuthScope,
   IsWriteAccessGrantedSchema,
-  IsWriteAccessGrantedRequest
+  IsWriteAccessGrantedRequest,
+  WriteOnceParams
 } from './types'
 
 export type LoginSuccessCallback = (profile: DecodedUserToken) => void
@@ -188,13 +189,19 @@ export class OAuth {
     return foundIndex !== undefined && foundIndex > -1
   }
 
-  login({ scope = 'read' }: { scope?: OAuthScope }) {
+  login({
+    scope = 'read',
+    params
+  }: {
+    scope?: OAuthScope
+    params?: WriteOnceParams
+  }) {
     const scopeFormatted = typeof scope === 'string' ? [scope] : scope
     if (!this.config.appName && !this.apiKey) {
       this._surfaceError('App name not set (set with `init` method).')
       return
     }
-    if (scope.includes('write') && !this.apiKey) {
+    if (scopeFormatted.includes('write') && !this.apiKey) {
       this._surfaceError(
         "The 'write' scope requires Audius SDK to be initialized with an API key"
       )
@@ -210,6 +217,16 @@ export class OAuth {
       return
     }
 
+    const effectiveScope = scopeFormatted.includes('write')
+      ? 'write'
+      : scopeFormatted.includes('write_once')
+      ? 'write_once'
+      : 'read'
+    if (effectiveScope === 'write_once' && !isWriteOnceParams(params)) {
+      this._surfaceError('Missing correct params for `oauth.login`.')
+      return
+    }
+
     const csrfToken = generateId()
     window.localStorage.setItem(CSRF_TOKEN_KEY, csrfToken)
     const windowOptions =
@@ -218,13 +235,20 @@ export class OAuth {
     const appIdURISafe = encodeURIComponent(
       (this.apiKey || this.config.appName)!
     )
+
+    const writeOnceParams =
+      effectiveScope !== 'write_once'
+        ? ''
+        : `&tx=${encodeURIComponent(params!.tx)}&wallet=${encodeURIComponent(
+            params!.wallet
+          )}`
     const appIdURIParam = `${
       this.apiKey ? 'api_key' : 'app_name'
     }=${appIdURISafe}`
-    const scopeUriParam = scope.includes('write') ? 'write' : 'read'
+
     const fullOauthUrl = `${
       OAUTH_URL[this.env]
-    }?scope=${scopeUriParam}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
+    }?scope=${effectiveScope}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}${writeOnceParams}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
     this.popupCheckInterval = setInterval(() => {
