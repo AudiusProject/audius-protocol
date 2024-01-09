@@ -132,7 +132,7 @@ export const TextInput = forwardRef(
     }
 
     const isSmall = size === TextInputSize.SMALL
-    const stateColor = disabled
+    const statusColor = disabled
       ? 'subdued'
       : error
       ? 'danger'
@@ -159,8 +159,8 @@ export const TextInput = forwardRef(
     const animatedRootStyles = useAnimatedStyle(() => {
       const staticBorderColor = _isFocused
         ? color.secondary.s400
-        : stateColor
-        ? color.text[stateColor]
+        : statusColor
+        ? color.text[statusColor]
         : undefined
 
       return {
@@ -306,7 +306,7 @@ export const TextInput = forwardRef(
             variant='body'
             size={helperTextSize}
             strength='default'
-            color={stateColor ?? 'default'}
+            color={statusColor ?? 'default'}
           >
             {helperText}
           </Text>
