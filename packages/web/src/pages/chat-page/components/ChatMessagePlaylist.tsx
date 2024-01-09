@@ -8,18 +8,17 @@ import {
   QueueSource,
   playerSelectors,
   getPathFromPlaylistUrl,
-  useGetPlaylistById,
   accountSelectors,
   useGetTracksByIds,
   usePlayTrack,
   usePauseTrack,
   ChatMessageTileProps,
-  parsePlaylistIdFromPermalink,
   SquareSizes,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   CommonState,
-  Name
+  Name,
+  useGetPlaylistByPermalink
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -41,15 +40,13 @@ export const ChatMessagePlaylist = ({
   const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
-  const playlistId = parsePlaylistIdFromPermalink(
-    getPathFromPlaylistUrl(link) ?? ''
-  )
-  const { data: playlist, status } = useGetPlaylistById(
+  const permalink = getPathFromPlaylistUrl(link) ?? ''
+  const { data: playlist, status } = useGetPlaylistByPermalink(
     {
-      playlistId,
+      permalink,
       currentUserId: currentUserId!
     },
-    { disabled: !playlistId || !currentUserId }
+    { disabled: !permalink || !currentUserId }
   )
 
   const collectionId = playlist?.playlist_id
