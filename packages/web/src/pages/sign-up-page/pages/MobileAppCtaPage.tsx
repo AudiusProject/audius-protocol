@@ -9,7 +9,11 @@ import { useModalState } from 'common/hooks/useModalState'
 import { getStatus } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_LOADING_PAGE, TRENDING_PAGE } from 'utils/route'
+import {
+  SIGN_UP_COMPLETED_REDIRECT,
+  SIGN_UP_LOADING_PAGE,
+  TRENDING_PAGE
+} from 'utils/route'
 
 import { Heading, Page, PageFooter } from '../components/layout'
 
@@ -36,20 +40,11 @@ const messages = {
 }
 
 export const MobileAppCtaPage = () => {
-  const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const navigate = useNavigateToPage()
 
-  const accountCreationStatus = useSelector(getStatus)
-
   const handleContinue = useCallback(() => {
-    // Account creation starts after "finish profile" page. If it's done by now we carry on, otherwise show an interim loading page
-    if (accountCreationStatus === EditingStatus.LOADING) {
-      navigate(SIGN_UP_LOADING_PAGE)
-    } else {
-      navigate(TRENDING_PAGE)
-      setIsWelcomeModalOpen(true)
-    }
-  }, [accountCreationStatus, navigate, setIsWelcomeModalOpen])
+    navigate(SIGN_UP_COMPLETED_REDIRECT)
+  }, [navigate])
 
   return (
     <Page gap='3xl'>
