@@ -6,6 +6,7 @@ import Button from 'components/Button'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import DisplayAudio from 'components/DisplayAudio'
 import { Position } from 'components/Tooltip'
+import { useQueryClient } from '@tanstack/react-query'
 import UserImage from 'components/UserImage'
 import useOpenLink from 'hooks/useOpenLink'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -29,6 +30,10 @@ import {
 } from 'utils/switchNetwork'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
+import {
+  getDashboardWalletUserQueryKey,
+  useDashboardWalletUser
+} from 'hooks/useDashboardWalletUsers'
 
 const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
@@ -133,6 +138,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
 
 const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
   const { user } = useUser({ wallet })
+  const queryClient = useQueryClient()
 
   const handleSuccess = async profile => {
     const sdk = await audiusSdk()
@@ -144,6 +150,14 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
         userId: profile.userId,
         userSignature: profile.txSignature
       })
+      // Optimistically set user
+      await queryClient.cancelQueries({ queryKey: ['todos'] })
+      const audiusUser = await sdk.users.getUser({ id: profile.userId })
+      queryClient.setQueryData(getDashboardWalletUserQueryKey(wallet), {
+        wallet,
+        user: audiusUser
+      })
+
       const switchedBack = await switchNetwork(ETH_NETWORK_ID)
       if (switchedBack) {
         window.ethereum.on('chainChanged', () => {
@@ -152,6 +166,8 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
       } else {
         disableRefreshAfterNetworkChange.value = false
       }
+    } else {
+      disableRefreshAfterNetworkChange.value = false
     }
   }
 
@@ -160,7 +176,7 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
     sdk.oauth.init({
       env: env === 'production' ? 'production' : 'staging',
       successCallback: handleSuccess,
-      errorCallback: errorMessage => {
+      errorCallback: (errorMessage: string) => {
         // Error calllback
         console.error(errorMessage)
       }
@@ -197,26 +213,12 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
   )
 }
 
-type LaunchTheAppButtonProps = {}
-const LaunchTheAppButton = (props: LaunchTheAppButtonProps) => {
-  const goToApp = useOpenLink(AUDIUS_DAPP_URL)
-  return (
-    <Button
-      text={messages.launchApp}
-      className={styles.launchAppBtn}
-      textClassName={styles.launchAppBtnText}
-      onClick={goToApp}
-    />
-  )
-}
-
 type AppBarProps = {}
-const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
+const AppBar: React.FC<AppBarProps> = (_props: AppBarProps) => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
-  // TODO(nkang): Get from API
-  const hasConnectedAudiusAccount = false
-
+  const { data: audiusProfileData } = useDashboardWalletUser(wallet)
+  const hasConnectedAudiusAccount = audiusProfileData != null
   const ethBlock = useEthBlockNumber()
   const { pathname } = useLocation()
   const showBlock = isCryptoPage(pathname) && ethBlock
