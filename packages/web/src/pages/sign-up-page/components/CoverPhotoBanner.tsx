@@ -1,5 +1,4 @@
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
-import { CSSObject } from '@emotion/styled'
 
 import {
   getCoverPhotoField,

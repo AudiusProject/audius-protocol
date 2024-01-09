@@ -12,7 +12,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { Formik, Form, useField, FormikErrors } from 'formik'
+import { Formik, Form, useField, FormikErrors, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -47,11 +47,8 @@ export type FinishProfileValues = {
 
 const formSchema = toFormikValidationSchema(finishProfileSchema)
 
-const ImageUploadErrorText = ({
-  errors
-}: {
-  errors: FormikErrors<FinishProfileValues>
-}) => {
+const ImageUploadErrorText = () => {
+  const { errors } = useFormikContext()
   let errorText
   if (errors.coverPhoto === messages.coverPhotoUploadError) {
     errorText = errors.coverPhoto
@@ -118,7 +115,7 @@ export const FinishProfilePage = () => {
       validateOnMount
       validateOnChange
     >
-      {({ isValid, values, errors }) => (
+      {({ isValid, values }) => (
         <Page
           as={Form}
           centered
@@ -142,7 +139,7 @@ export const FinishProfilePage = () => {
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
             />
-            <ImageUploadErrorText errors={errors} />
+            <ImageUploadErrorText />
             <HarmonyTextField
               ref={displayNameInputRef}
               name='displayName'
