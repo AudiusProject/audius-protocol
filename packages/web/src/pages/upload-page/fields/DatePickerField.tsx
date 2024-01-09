@@ -21,11 +21,11 @@ type DatePickerFieldProps = {
   label: string
   style?: string
   shouldFocus?: boolean
-  isScheduledRelease?: boolean
+  isInitiallyUnlisted?: boolean
 }
 
 export const DatePickerField = (props: DatePickerFieldProps) => {
-  const { name, label, style, shouldFocus, isScheduledRelease } = props
+  const { name, label, style, shouldFocus, isInitiallyUnlisted } = props
   const [field, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
@@ -70,12 +70,14 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             onDateChange={(value) => {
               helpers.setValue(value?.toString())
             }}
-            isOutsideRange={(day) =>
-              isScheduledRelease
-                ? !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
-                : // @ts-ignore mismatched moment versions; shouldn't be relevant here
-                  !isInclusivelyBeforeDay(day, moment())
-            }
+            isOutsideRange={(day) => {
+              if (isInitiallyUnlisted) {
+                return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
+              } else {
+                // @ts-ignore mismatched moment versions; shouldn't be relevant here
+                return !isInclusivelyBeforeDay(day, moment())
+              }
+            }}
             focused={isFocused}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}

@@ -112,7 +112,9 @@ export const ReleaseDateTriggerLegacy = (
         <>
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <ReleaseDateRadioItems />
+            <ReleaseDateRadioItems
+              isInitiallyUnlisted={props.initialForm.is_unlisted}
+            />
           </Flex>
         </>
       }
