@@ -47,11 +47,7 @@ export const DeleteChatConfirmationModal = ({
   return (
     <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle
-          title={messages.title}
-          icon={<IconTrash />}
-          iconClassName={styles.icon}
-        />
+        <ModalTitle title={messages.title} icon={<IconTrash />} />
       </ModalHeader>
       <ModalContent className={styles.content}>{messages.content}</ModalContent>
       <ModalFooter className={styles.footer}>

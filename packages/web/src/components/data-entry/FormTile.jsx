@@ -36,6 +36,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
+import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
 
 const {
   ALL_RIGHTS_RESERVED_TYPE,
@@ -339,6 +340,9 @@ const AdvancedForm = (props) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
 
   const {
     remixSettingsModalVisible,
@@ -354,10 +358,18 @@ const AdvancedForm = (props) => {
     premium_conditions: props.defaultFields.premium_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
+
+  const releaseDateState = {
+    is_unlisted: props.defaultFields.is_unlisted,
+    is_scheduled_release: props.defaultFields.is_scheduled_release,
+    release_date: props.defaultFields.release_date
+  }
+
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
   if (showAvailability) {
     availabilityState = {
       ...availabilityState,
+      scheduled_release: props.defaultFields.is_scheduled_release,
       unlisted: props.defaultFields.is_unlisted,
       genre: props.defaultFields.field_visibility.genre,
       mood: props.defaultFields.field_visibility.mood,
@@ -396,6 +408,11 @@ const AdvancedForm = (props) => {
       isInvalidNFTCollection
     )
     props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
+  }
+
+  const didUpdateReleaseDate = (newState) => {
+    props.onChangeField('release_date', newState.release_date)
+    props.onChangeField('is_unlisted', newState.is_unlisted)
   }
 
   const didToggleHideRemixesState = () => {
@@ -510,6 +527,13 @@ const AdvancedForm = (props) => {
             <AiAttributionButton
               className={styles.releaseButton}
               onClick={() => setAiAttributionModalVisible(true)}
+            />
+          )}
+          {isScheduledReleasesEnabled && (
+            <ReleaseDateTriggerLegacy
+              didUpdateState={didUpdateReleaseDate}
+              metadataState={releaseDateState}
+              initialForm={props.initialForm}
             />
           )}
           {props.type !== 'track' && (

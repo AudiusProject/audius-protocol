@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react'
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -9,7 +9,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="flex">
       <main className="flex-grow p-4">{children}</main>
     </div>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

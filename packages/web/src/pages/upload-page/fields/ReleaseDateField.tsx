@@ -24,6 +24,7 @@ import { formatCalendarTime } from 'utils/dateUtils'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
+import { IS_UNLISTED } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
 
@@ -37,13 +38,14 @@ const messages = {
     `Your scheduled track will become live on Audius on the date and time you've chosen above in your time zone (${timezone}).`
 }
 
-const RELEASE_DATE = 'release_date'
-const RELEASE_DATE_HOUR = 'release_date_hour'
-const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
-const RELEASE_DATE_TYPE = 'release_date_type'
+export const RELEASE_DATE = 'release_date'
+export const RELEASE_DATE_HOUR = 'release_date_hour'
+export const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
+export const RELEASE_DATE_TYPE = 'release_date_type'
+export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 
 export type ReleaseDateFormValues = {
-  [RELEASE_DATE]: string | undefined
+  [RELEASE_DATE]: string
   [RELEASE_DATE_HOUR]: string
   [RELEASE_DATE_MERIDIAN]: string
   [RELEASE_DATE_TYPE]: string
@@ -65,7 +67,11 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
-const timeValidationSchema = z.object({
+type IsInitiallyUnlistedProp = {
+  isInitiallyUnlisted: boolean
+}
+
+export const timeValidationSchema = z.object({
   release_date_hour: z
     .string()
     .refine((value) => /^([0-9]|0[1-9]|1[0-2]):([0-5][0-9])$/.test(value), {
@@ -74,15 +80,22 @@ const timeValidationSchema = z.object({
 })
 
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
+type IsScheduledReleaseValue =
+  SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]
 
 export const ReleaseDateField = () => {
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [, , { setValue: setIsScheduledRelease }] =
+    useTrackField<IsScheduledReleaseValue>(IS_SCHEDULED_RELEASE)
+  const [, , { setValue: setIsUnlisted }] =
+    useTrackField<IsScheduledReleaseValue>(IS_UNLISTED)
+
   const trackReleaseDate = trackReleaseDateField.value
 
   const initialValues = useMemo(() => {
     return {
-      [RELEASE_DATE]: trackReleaseDate ?? undefined,
+      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day').toString(),
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
         : moment().format('h:mm'),
@@ -94,32 +107,29 @@ export const ReleaseDateField = () => {
         : ReleaseDateType.RELEASE_NOW
     }
   }, [trackReleaseDate])
-
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
         setTrackReleaseDate(null)
+        setIsScheduledRelease(false)
+        setIsUnlisted(false)
         return
       }
-      const releaseDateValue = values[RELEASE_DATE]
-      const releaseDateHour = parseInt(values[RELEASE_DATE_HOUR].split(':')[0])
-      const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
-
-      const truncatedReleaseDate = moment(releaseDateValue).startOf('day')
-
-      let adjustedHours = releaseDateHour
-      if (releaseDateMeridian === 'PM' && releaseDateHour < 12) {
-        adjustedHours += 12
-      } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
-        adjustedHours = 0
+      const mergedReleaseDate = mergeDateTimeValues(
+        values[RELEASE_DATE],
+        values[RELEASE_DATE_HOUR],
+        values[RELEASE_DATE_MERIDIAN]
+      )
+      if (mergedReleaseDate.isAfter(moment())) {
+        // set is scheduled release
+        setIsScheduledRelease(true)
+        setIsUnlisted(true)
+      } else {
+        setIsScheduledRelease(false)
       }
-      const combinedDateTime = truncatedReleaseDate
-        .add(adjustedHours, 'hours')
-        .add(values[RELEASE_DATE_HOUR].split(':')[1], 'minutes')
-
-      setTrackReleaseDate(combinedDateTime.toString() ?? null)
+      setTrackReleaseDate(mergedReleaseDate.toString())
     },
-    [setTrackReleaseDate]
+    [setTrackReleaseDate, setIsScheduledRelease, setIsUnlisted]
   )
 
   const renderValue = useCallback(() => {
@@ -149,10 +159,11 @@ export const ReleaseDateField = () => {
         validateOnChange={false}
         validateOnBlur={false}
         onSubmit={onSubmit}
+        // upload case is initially unlisted
         menuFields={
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <RadioItems />
+            <ReleaseDateRadioItems isInitiallyUnlisted={true} />
           </Flex>
         }
         renderValue={renderValue}
@@ -161,36 +172,29 @@ export const ReleaseDateField = () => {
   )
 }
 
-const RadioItems = (props: any) => {
+export const mergeDateTimeValues = (
+  day: string,
+  time: string,
+  meridian: string
+) => {
+  const truncatedReleaseDate = moment(day).startOf('day')
+  const hour = parseInt(time.split(':')[0])
+  let adjustedHours = hour
+
+  if (meridian === 'PM' && hour < 12) {
+    adjustedHours += 12
+  } else if (meridian === 'AM' && hour === 12) {
+    adjustedHours = 0
+  }
+  const combinedDateTime = truncatedReleaseDate
+    .add(adjustedHours, 'hours')
+    .add(time.split(':')[1], 'minutes')
+
+  return combinedDateTime
+}
+
+export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
-  const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
-
-  const [, , { setValue: setReleaseDateMeridian }] = useField(
-    RELEASE_DATE_MERIDIAN
-  )
-
-  const [releaseDateField, ,] = useField(RELEASE_DATE)
-
-  const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
-
-  useEffect(() => {
-    if (releaseDateField.value === undefined) {
-      return
-    }
-    const truncatedReleaseDate = moment(releaseDateField.value)
-
-    const today = moment().startOf('day')
-
-    if (moment(truncatedReleaseDate).isBefore(today)) {
-      setTimePeriod(TimePeriodType.PAST)
-    } else if (moment(truncatedReleaseDate).isAfter(today)) {
-      setTimePeriod(TimePeriodType.FUTURE)
-      setReleaseDateHour('12:00')
-      setReleaseDateMeridian(ReleaseDateMeridian.AM)
-    } else {
-      setTimePeriod(TimePeriodType.PRESENT)
-    }
-  }, [releaseDateField.value, setReleaseDateHour, setReleaseDateMeridian])
 
   return (
     <>
@@ -208,6 +212,66 @@ const RadioItems = (props: any) => {
           label='Select a Release Date'
         />
       </RadioButtonGroup>
+      <SelectReleaseDate isInitiallyUnlisted={props.isInitiallyUnlisted} />
+    </>
+  )
+}
+export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
+  const { isInitiallyUnlisted } = props
+
+  const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
+  const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
+  const [, , { setValue: setTrackReleaseDate }] =
+    useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
+    useField(RELEASE_DATE_MERIDIAN)
+
+  const [releaseDateField, ,] = useField(RELEASE_DATE)
+
+  const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
+  const onTimeChange = useCallback(
+    (e: { target: { value: string } }) => {
+      const mergedReleaseDate = mergeDateTimeValues(
+        releaseDateField.value,
+        e.target.value,
+        releaseDateMeridianField.value
+      ).toString()
+      const today = moment().startOf('day')
+
+      if (moment(mergedReleaseDate).isBefore(today)) {
+        setTimePeriod(TimePeriodType.PAST)
+      } else {
+        setTimePeriod(TimePeriodType.FUTURE)
+      }
+    },
+    [releaseDateField.value, releaseDateMeridianField.value]
+  )
+  useEffect(() => {
+    if (releaseDateField.value === undefined) {
+      return
+    }
+    const truncatedReleaseDate = moment(releaseDateField.value)
+
+    const today = moment().startOf('day')
+
+    if (moment(truncatedReleaseDate).isBefore(today)) {
+      setTimePeriod(TimePeriodType.PAST)
+    } else if (moment(truncatedReleaseDate).isAfter(today)) {
+      setTimePeriod(TimePeriodType.FUTURE)
+      setReleaseDateHour('12:00')
+      setReleaseDateMeridian('AM')
+    } else {
+      setTimePeriod(TimePeriodType.PRESENT)
+    }
+  }, [
+    releaseDateField.value,
+    setReleaseDateHour,
+    setReleaseDateMeridian,
+    setTrackReleaseDate
+  ])
+
+  return (
+    <>
       {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
         <div
           className={cn(
@@ -219,12 +283,9 @@ const RadioItems = (props: any) => {
         >
           <div className={styles.datePicker}>
             <DatePickerField
-              isScheduledRelease={true}
+              isInitiallyUnlisted={isInitiallyUnlisted}
               name={RELEASE_DATE}
               label={messages.title}
-              shouldFocus={
-                releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE
-              }
             />
           </div>
           {timePeriod !== TimePeriodType.PAST && (
@@ -246,6 +307,7 @@ const RadioItems = (props: any) => {
                   }
                   return value
                 }}
+                onBlur={onTimeChange}
               />
               <SelectMeridianField />
             </>

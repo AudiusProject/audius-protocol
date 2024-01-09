@@ -433,7 +433,7 @@ export const useOAuthSetup = () => {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
       const message = `Connecting Audius protocol dashboard wallet ${
         txParams!.wallet
-      } at ${Date.now()}`
+      } at ${Math.round(new Date().getTime() / 1000)}`
       // Make signature and return
       const { signature } =
         await audiusBackendInstance.signDiscoveryNodeRequest(message)

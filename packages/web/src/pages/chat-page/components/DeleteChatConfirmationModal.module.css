@@ -2,10 +2,6 @@
   max-width: 488px;
 }
 
-.icon path {
-  fill: var(--neutral-light-2);
-}
-
 .button {
   flex: 1;
 }

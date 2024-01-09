@@ -27,6 +27,7 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   repostCount: heroTrack?.repost_count ?? 0,
   saveCount: heroTrack?.save_count ?? 0,
   isUnlisted: heroTrack?.is_unlisted ?? false,
+  isScheduledRelease: heroTrack?.is_scheduled_release ?? false,
   isPremium: heroTrack?.is_premium ?? false,
   premiumConditions: heroTrack?.premium_conditions ?? null,
   isPublishing: heroTrack?._is_publishing ?? false,

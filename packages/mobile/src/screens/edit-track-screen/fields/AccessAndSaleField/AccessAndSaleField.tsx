@@ -48,6 +48,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
+
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')
 
@@ -69,11 +73,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isPremiumContentTipGated(premiumConditions)) {
       return [messages.specialAccess, messages.supportersOnly]
     }
-    if (isUnlisted) {
+    if (isUnlisted && !isScheduledRelease) {
       return [messages.hidden, ...fieldVisibilityLabels]
     }
     return [messages.public]
-  }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
+  }, [premiumConditions, isUnlisted, fieldVisibilityLabels, isScheduledRelease])
 
   return (
     <ContextualMenu

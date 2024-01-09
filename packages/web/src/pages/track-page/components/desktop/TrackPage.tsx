@@ -161,6 +161,7 @@ const TrackPage = ({
       isSaved={isSaved}
       badge={badge}
       isUnlisted={defaults.isUnlisted}
+      isScheduledRelease={defaults.isScheduledRelease}
       isPremium={defaults.isPremium}
       premiumConditions={defaults.premiumConditions}
       doesUserHaveAccess={doesUserHaveAccess}

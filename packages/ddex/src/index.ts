@@ -1,35 +1,30 @@
-import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
-import path from "path";
+import dotenv from 'dotenv'
+import path from 'path'
 
-dotenv.config();
+// Load env vars based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'stage' ? '.env.stage' : '.env'
+dotenv.config({ path: path.resolve(process.cwd(), envFile) })
 
-const app: Express = express();
-const port = process.env.PORT || 8926;
+import createApp from './app'
+import { initServices } from './initServices'
+;(async () => {
+  try {
+    const { sql, audiusSdk, xmlProcessorService, scheduledReleaseService } =
+      await initServices()
 
-// TODO: Add /api/* routes here.
-// We can add middleware to init SDK with secrets and whatnot, and persist it on `app` for future requests. This runs on a node, so it can just access the environment directly.
-app.get('/api/health_check', (req: Request, res: Response) => {
-  res.status(200).send('DDEX is alive!');
-});
+    const app = createApp(
+      sql,
+      audiusSdk,
+      xmlProcessorService,
+      scheduledReleaseService
+    )
 
-// Serve static files from the React frontend
-const isProduction = process.env.NODE_ENV === 'production';
-const buildPath = isProduction
-  ? path.join(__dirname, '..', 'public') // In prod (Docker), serve from 'public'
-  : path.join(__dirname, '..', '..', 'ddex-frontend', 'dist'); // In dev, serve from '../ddex-frontend/dist'
-app.use(express.static(buildPath));
-
-app.get("/", (req: Request, res: Response) => {
-  // Send the React app for the root route
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
-
-// Fallback route for handling client-side routing
-app.get('*', (req: Request, res: Response) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
-
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+    const port = process.env.DDEX_PORT || 8926
+    app.listen(port, () => {
+      console.log(`[server]: Server is running at http://localhost:${port}`)
+    })
+  } catch (error) {
+    console.error('Failed to initialize services:', error)
+    process.exit(1)
+  }
+})()
