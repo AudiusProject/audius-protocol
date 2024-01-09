@@ -20,6 +20,7 @@ type CreateCard = { _create: boolean }
 
 // Props to show and setup tile for creating new playlists
 type CreateCollectionTileProps = {
+  collectionType?: 'album' | 'playlist'
   showCreatePlaylistTile?: boolean
   createPlaylistSource?: CreatePlaylistSource | null
   createPlaylistTrackId?: ID | null
@@ -44,6 +45,7 @@ type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 const FullCollectionList = (props: FullCollectionListProps) => {
   const {
     collection,
+    collectionType = 'playlist',
     collectionIdsToNumTracks,
     showCreatePlaylistTile = false,
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
@@ -61,7 +63,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
           // TODO: support album type (we don't have use case currently)
-          collectionType='playlist'
+          collectionType={collectionType}
         />
       ) : (
         <CollectionCard
@@ -71,6 +73,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
       ),
     [
       collectionIdsToNumTracks,
+      collectionType,
       createPlaylistCallback,
       createPlaylistSource,
       createPlaylistTrackId
@@ -100,6 +103,7 @@ function isIdListProps(
 const CollectionIDList = (props: CollectionIdListProps) => {
   const {
     collectionIds,
+    collectionType = 'playlist',
     showCreatePlaylistTile = false,
     createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
@@ -115,12 +119,17 @@ const CollectionIDList = (props: CollectionIdListProps) => {
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
           // TODO: support album type (we don't have use case currently)
-          collectionType='playlist'
+          collectionType={collectionType}
         />
       ) : (
         <CollectionCard collectionId={item.id} />
       ),
-    [createPlaylistCallback, createPlaylistSource, createPlaylistTrackId]
+    [
+      collectionType,
+      createPlaylistCallback,
+      createPlaylistSource,
+      createPlaylistTrackId
+    ]
   )
 
   const idList: IDCardListItem[] = useMemo(
