@@ -28,8 +28,8 @@ import {
   TrackTileSize,
   TileProps
 } from 'components/track/types'
+import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
@@ -232,6 +232,7 @@ type CombinedProps = LineupProviderProps &
  * is controlled by injecting tiles conforming to `Track/Playlist/SkeletonProps interfaces.
  */
 class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
+  static contextType = SsrContext
   scrollContainer = createRef<HTMLDivElement>()
 
   constructor(props: any) {
@@ -478,7 +479,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       extraPrecedingElement,
       endOfLineup,
       lineupContainerStyles,
-      isMobile,
       showLeadingElementArtistPick = true,
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
@@ -486,6 +486,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       showFeedTipTile = false,
       rankIconCount = 0
     } = this.props
+    const isMobile = this.context.isMobile
     const status = lineup.status
     const {
       loadMoreThreshold,
@@ -793,7 +794,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile(),
     showTip: getShowTip(state),
     playing: getPlaying(state),
     playingUid: getUid(state)

@@ -16,7 +16,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
 import rootSaga from 'store/sagas'
 
-import { storeContext } from './storeContext'
+import { buildStoreContext } from './storeContext'
 import { AppState } from './types'
 
 declare global {
@@ -94,6 +94,7 @@ const sentryMiddleware = createSentryMiddleware(
 
 export const configureStore = (
   history: History,
+  isMobile: boolean,
   ssrPageProps?: SsrPageProps
 ) => {
   const onSagaError = (
@@ -127,7 +128,7 @@ export const configureStore = (
 
   const sagaMiddleware = createSagaMiddleware({
     onError: onSagaError,
-    context: storeContext
+    context: buildStoreContext({ isMobile })
   })
 
   const middlewares = applyMiddleware(

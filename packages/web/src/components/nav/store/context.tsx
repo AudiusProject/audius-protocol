@@ -65,7 +65,8 @@ export const useNavContext = () => {
 
 export const NavProvider = memo((props: { children: JSX.Element }) => {
   const contextValue = useNavContext()
-  if (useIsMobile()) {
+  const isMobile = useIsMobile()
+  if (isMobile) {
     return (
       <NavContext.Provider value={contextValue}>
         {props.children}

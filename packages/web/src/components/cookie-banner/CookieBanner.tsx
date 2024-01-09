@@ -8,7 +8,7 @@ import { Dispatch } from 'redux'
 import IconRemove from 'assets/img/iconRemove.svg'
 import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { COOKIE_POLICY } from 'utils/route'
 
 import styles from './CookieBanner.module.css'
@@ -24,11 +24,8 @@ const messages = {
 export type CookieBannerProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-export const CookieBanner = ({
-  isMobile,
-  isPlaying,
-  dismiss
-}: CookieBannerProps) => {
+export const CookieBanner = ({ isPlaying, dismiss }: CookieBannerProps) => {
+  const isMobile = useIsMobile()
   const goToCookiePolicy = () => {
     const win = window.open(COOKIE_POLICY, '_blank')
     if (win) win.focus()
@@ -56,7 +53,6 @@ export const CookieBanner = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile(),
     isPlaying: !!getUid(state)
   }
 }

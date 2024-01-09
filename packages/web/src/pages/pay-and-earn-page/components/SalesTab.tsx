@@ -20,7 +20,7 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { MainContentContext } from 'pages/MainContentContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
@@ -178,9 +178,10 @@ export const SalesTab = ({
   isEmpty,
   isLoading
 }: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+  const isMobile = useIsMobile()
   const { mainContentRef } = useContext(MainContentContext)
 
-  const columns = isMobile()
+  const columns = isMobile
     ? (['contentName', 'date', 'value'] as SalesTableColumn[])
     : undefined
 

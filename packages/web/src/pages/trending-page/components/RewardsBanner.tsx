@@ -9,7 +9,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './RewardsBanner.module.css'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
@@ -52,8 +52,8 @@ const useHandleBannerClick = () => {
 }
 
 const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
-  const mobile = isMobile()
-  const mobileStyle = { [styles.mobile]: mobile }
+  const isMobile = useIsMobile()
+  const mobileStyle = { [styles.mobile]: isMobile }
   const onClick = useHandleBannerClick()
 
   return (
@@ -70,7 +70,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
       <span className={styles.descriptionText}>
         {messageMap[bannerType].description}
       </span>
-      {!mobile && (
+      {!isMobile && (
         <div className={styles.learnMore}>
           {messages.learnMore}
           <IconArrow />

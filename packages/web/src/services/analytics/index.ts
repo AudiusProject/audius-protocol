@@ -1,16 +1,10 @@
-import {
-  AnalyticsEvent,
-  Nullable,
-  BooleanKeys,
-  AllTrackingEvents
-} from '@audius/common'
+import { AnalyticsEvent, Nullable, AllTrackingEvents } from '@audius/common'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import packageInfo from '../../../package.json'
 
 import * as amplitude from './amplitude'
-import * as segment from './segment'
 const { version } = packageInfo
 
 const IS_PRODUCTION_BUILD = process.env.VITE_ENVIRONMENT === 'production'
@@ -22,17 +16,10 @@ const didInit = new Promise((resolve, reject) => {
   rejectCallback = reject
 })
 
-export const init = async () => {
+export const init = async (isMobile: boolean) => {
   try {
     await remoteConfigInstance.waitForRemoteConfig()
-    const useAmplitude = remoteConfigInstance.getRemoteVar(
-      BooleanKeys.USE_AMPLITUDE
-    )
-    if (useAmplitude) {
-      await amplitude.init()
-    } else {
-      await segment.init()
-    }
+    await amplitude.init(isMobile)
     if (resolveCallback) {
       resolveCallback()
     }
@@ -53,16 +40,8 @@ export const track = async (
   callback?: () => void
 ) => {
   try {
-    const useAmplitude = remoteConfigInstance.getRemoteVar(
-      BooleanKeys.USE_AMPLITUDE
-    )
-
     if (!IS_PRODUCTION_BUILD) {
-      console.info(
-        `${useAmplitude ? 'Amplitude' : 'Segment'} | track`,
-        eventName,
-        properties
-      )
+      console.info(`Amplitude | track`, eventName, properties)
     }
     // stop tracking analytics after we reach session limit
     if (trackCounter++ >= TRACK_LIMIT) return
@@ -75,9 +54,7 @@ export const track = async (
 
     // TODO: This can be removed when the the web layer is removed from mobile
     await didInit
-    if (useAmplitude)
-      return amplitude.track(eventName, propertiesWithContext, callback)
-    return segment.track(eventName, propertiesWithContext, {}, callback)
+    return amplitude.track(eventName, propertiesWithContext, callback)
   } catch (err) {
     console.error(err)
   }
@@ -90,22 +67,12 @@ export const identify = async (
   callback?: () => void
 ) => {
   try {
-    const useAmplitude = remoteConfigInstance.getRemoteVar(
-      BooleanKeys.USE_AMPLITUDE
-    )
-
     if (!IS_PRODUCTION_BUILD) {
-      console.info(
-        `${useAmplitude ? 'Amplitude' : 'Segment'} | identify`,
-        handle,
-        traits,
-        options
-      )
+      console.info('Amplitude | identify', handle, traits, options)
     }
 
     await didInit
-    if (useAmplitude) return amplitude.identify(handle, traits, callback)
-    return segment.identify(handle, traits, options, callback)
+    return amplitude.identify(handle, traits, callback)
   } catch (err) {
     console.error(err)
   }

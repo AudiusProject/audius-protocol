@@ -249,7 +249,6 @@ type AudiusBackendParams = {
   identityServiceUrl: Maybe<string>
   generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
-  isMobile: Maybe<boolean>
   localStorage?: LocalStorage
   monitoringCallbacks: MonitoringCallbacks
   nativeMobile: Maybe<boolean>
@@ -294,7 +293,6 @@ export const audiusBackend = ({
   identityServiceUrl,
   generalAdmissionUrl,
   isElectron,
-  isMobile,
   localStorage,
   monitoringCallbacks,
   nativeMobile,
@@ -3166,7 +3164,8 @@ export const audiusBackend = ({
     endpoints,
     AAOEndpoint,
     parallelization,
-    feePayerOverride
+    feePayerOverride,
+    source
   }: {
     challenges: {
       challenge_id: ChallengeRewardID
@@ -3183,12 +3182,12 @@ export const audiusBackend = ({
     parallelization: number
     feePayerOverride: Nullable<string>
     isFinalAttempt: boolean
+    source: 'mobile' | 'electron' | 'web'
   }) {
     await waitForLibsInit()
     try {
       if (!challenges.length) return
 
-      const source = isMobile ? 'mobile' : isElectron ? 'electron' : 'web'
       const reporter = new ClientRewardsReporter({
         libs: audiusLibs,
         recordAnalytics,

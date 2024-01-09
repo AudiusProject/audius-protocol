@@ -4,6 +4,8 @@ import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import { PageContextServer } from 'vike/types'
 
+import { isMobileUserAgent } from 'utils/clientUtil'
+
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
@@ -12,9 +14,14 @@ import { getIndexHtml } from './getIndexHtml'
 export const passToClient = ['pageProps', 'urlPathname']
 
 export default function render(
-  pageContext: PageContextServer & { pageProps: SsrPageProps }
+  pageContext: PageContextServer & {
+    pageProps: SsrPageProps
+    userAgent: string
+  }
 ) {
   const { pageProps, urlPathname } = pageContext
+
+  const isMobile = isMobileUserAgent(pageContext.userAgent)
 
   const history = createMemoryHistory({
     initialEntries: [urlPathname]
@@ -22,7 +29,13 @@ export default function render(
 
   const pageHtml = ReactDOMServer.renderToString(
     <SsrContextProvider
-      value={{ path: urlPathname, isServerSide: true, pageProps, history }}
+      value={{
+        path: urlPathname,
+        isServerSide: true,
+        pageProps,
+        history,
+        isMobile
+      }}
     >
       <Root />
     </SsrContextProvider>

@@ -14,7 +14,7 @@ import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import Page from 'components/page/Page'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 
@@ -102,13 +102,13 @@ const useLineupReset = () => {
 }
 
 const TrendingPlaylistPage = (props: TrendingPlaylistPageProps) => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   useLineupReset()
 
   return (
     <>
-      {mobile ? (
+      {isMobile ? (
         <MobileTrendingPlaylistPage {...props} />
       ) : (
         <DesktopTrendingPlaylistPage {...props} />

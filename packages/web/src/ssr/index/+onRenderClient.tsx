@@ -16,6 +16,7 @@ window.global ||= window
 window.Buffer = Buffer
 window.process = { ...processBrowser, env: process.env }
 
+// TODO: does this need to have SsrContextProvider?
 export function render() {
   const container = document.getElementById('root')
   if (container) {

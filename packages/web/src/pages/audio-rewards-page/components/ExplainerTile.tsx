@@ -5,7 +5,7 @@ import cn from 'classnames'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 
 import styles from './ExplainerTile.module.css'
@@ -43,6 +43,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
   const [mouseOver, setMouseOver] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [initialPlaysRemaining, setInitialPlays] = useState(1)
+  const isMobile = useIsMobile()
 
   const handleOnEnded = useCallback(() => {
     setInitialPlays((p) => p - 1)
@@ -59,7 +60,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
 
   const isDarkMode = getIsDarkMode()
   const isMatrixMode = getTheme() === Theme.MATRIX
-  const showSvgToken = isDarkMode || isMatrixMode || isMobile()
+  const showSvgToken = isDarkMode || isMatrixMode || isMobile
 
   const wm = useWithMobileStyle(styles.mobile)
   return (

@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './DeactivateAccountPage.module.css'
 import { DeactivateAccountPageDesktop } from './components/desktop/DeactivateAccountPage'
@@ -110,7 +110,8 @@ export const DeactivateAcccountPageContents = ({
 }
 
 export const DeactivateAccountPage = () => {
-  const Page = isMobile()
+  const isMobile = useIsMobile()
+  const Page = isMobile
     ? DeactivateAccountPageMobile
     : DeactivateAccountPageDesktop
 
@@ -170,7 +171,7 @@ export const DeactivateAccountPage = () => {
       <DeactivateAcccountPageContents
         isError={deactivateAccountStatus === Status.ERROR}
         isLoading={isDeactivating}
-        isMobile={isMobile()}
+        isMobile={isMobile}
         openConfirmation={openConfirmation}
       />
     </Page>

@@ -11,6 +11,7 @@ import { Root } from '../Root'
 import { SsrContextProvider } from './SsrContext'
 
 import '../index.css'
+import { isMobile as getIsMobile } from 'utils/clientUtil'
 
 window.global ||= window
 window.Buffer = Buffer
@@ -25,11 +26,13 @@ export default async function render(
 ) {
   const { pageProps, urlPathname } = pageContext
 
+  const isMobile = getIsMobile()
+
   if (HYDRATE_CLIENT) {
     hydrateRoot(
       document.getElementById('root'),
       <SsrContextProvider
-        value={{ path: urlPathname, isServerSide: false, pageProps }}
+        value={{ path: urlPathname, isServerSide: false, pageProps, isMobile }}
       >
         <Root />
       </SsrContextProvider>

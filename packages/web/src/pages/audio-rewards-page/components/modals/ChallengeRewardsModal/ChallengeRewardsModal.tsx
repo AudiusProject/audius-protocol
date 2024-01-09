@@ -38,7 +38,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
@@ -226,7 +226,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
-  const displayMobileContent = isMobile()
+  const isMobile = useIsMobile()
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
@@ -388,7 +388,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     />
   ) : (
     <div className={wm(styles.container)}>
-      {displayMobileContent ? (
+      {isMobile ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>

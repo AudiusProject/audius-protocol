@@ -98,13 +98,14 @@ import Visualizer from 'pages/visualizer/Visualizer'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
+import { SsrContext } from 'ssr/SsrContext'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
 import {
   incrementScrollCount as incrementScrollCountAction,
   decrementScrollCount as decrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
-import { isMobile, getClient } from 'utils/clientUtil'
+import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
 import {
   FEED_PAGE,
@@ -203,6 +204,8 @@ const includeSearch = (search) => {
 initializeSentry()
 
 class WebPlayer extends Component {
+  static contextType = SsrContext
+
   state = {
     mainContent: null,
 
@@ -424,8 +427,8 @@ class WebPlayer extends Component {
       showRequiresWebUpdate,
       initialPage
     } = this.state
-    const client = getClient()
-    const isMobileClient = client === Client.MOBILE
+
+    const isMobile = this.context.isMobile
 
     if (showRequiresUpdate)
       return (
@@ -445,7 +448,7 @@ class WebPlayer extends Component {
         />
       )
 
-    const SwitchComponent = isMobile() ? AnimatedSwitch : Switch
+    const SwitchComponent = this.context.isMobile ? AnimatedSwitch : Switch
     const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
 
     return (
@@ -470,7 +473,7 @@ class WebPlayer extends Component {
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
         <USDCBalanceFetcher />
-        <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
+        <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
           <Navigator />
@@ -479,12 +482,12 @@ class WebPlayer extends Component {
             id={MAIN_CONTENT_ID}
             role='main'
             className={cn(styles.mainContentWrapper, {
-              [styles.mainContentWrapperMobile]: isMobileClient,
+              [styles.mainContentWrapperMobile]: isMobile,
               [styles.noScroll]: noScroll
             })}
           >
-            {isMobileClient && <TopLevelPage />}
-            {isMobileClient && <HeaderContextConsumer />}
+            {isMobile && <TopLevelPage />}
+            {isMobile && <HeaderContextConsumer />}
 
             <Suspense fallback={null}>
               <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
@@ -507,7 +510,7 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={FEED_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => (
                     <FeedPage
                       containerRef={this.props.mainContentRef.current}
@@ -517,19 +520,19 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={NOTIFICATION_USERS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={NotificationUsersPage}
                 />
                 <Route
                   exact
                   path={NOTIFICATION_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={NotificationPage}
                 />
                 <MobileRoute
                   exact
                   path={TRENDING_GENRES}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={TrendingGenreSelectionPage}
                 />
                 <Route
@@ -687,17 +690,17 @@ class WebPlayer extends Component {
 
                 <DesktopRoute
                   path={UPLOAD_ALBUM_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => <UploadPage uploadType={UploadType.ALBUM} />}
                 />
                 <DesktopRoute
                   path={UPLOAD_PLAYLIST_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => <UploadPage uploadType={UploadType.PLAYLIST} />}
                 />
                 <DesktopRoute
                   path={UPLOAD_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={(props) => (
                     <UploadPage {...props} scrollToTop={this.scrollToTop} />
                   )}
@@ -712,13 +715,13 @@ class WebPlayer extends Component {
                 <DesktopRoute
                   exact
                   path={DASHBOARD_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={DashboardPage}
                 />
                 <Route
                   exact
                   path={WITHDRAWALS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={(props) => (
                     <PayAndEarnPage
                       {...props}
@@ -729,7 +732,7 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={PURCHASES_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={(props) => (
                     <PayAndEarnPage
                       {...props}
@@ -740,7 +743,7 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={SALES_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={(props) => (
                     <PayAndEarnPage {...props} tableView={TableType.SALES} />
                   )}
@@ -748,56 +751,56 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={PAYMENTS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={PayAndEarnPage}
                 />
                 <Route
                   exact
                   path={AUDIO_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={AudioRewardsPage}
                 />
                 <Route
                   exact
                   path={AUDIO_TRANSACTIONS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={AudioTransactionsPage}
                 />
                 <Route
                   exact
                   path={CHAT_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={ChatPageProvider}
                 />
                 <Route
                   exact
                   path={DEACTIVATE_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={DeactivateAccountPage}
                 />
                 <Route
                   exact
                   path={SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={SettingsPage}
                 />
                 <Route exact path={CHECK_PAGE} component={CheckPage} />
                 <MobileRoute
                   exact
                   path={ACCOUNT_SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => <SettingsPage subPage={SubPage.ACCOUNT} />}
                 />
                 <MobileRoute
                   exact
                   path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
                 />
                 <MobileRoute
                   exact
                   path={CHANGE_PASSWORD_SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => (
                     <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
                   )}
@@ -805,7 +808,7 @@ class WebPlayer extends Component {
                 <MobileRoute
                   exact
                   path={NOTIFICATION_SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => (
                     <SettingsPage subPage={SubPage.NOTIFICATIONS} />
                   )}
@@ -813,7 +816,7 @@ class WebPlayer extends Component {
                 <MobileRoute
                   exact
                   path={ABOUT_SETTINGS_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   render={() => <SettingsPage subPage={SubPage.ABOUT} />}
                 />
 
@@ -899,43 +902,43 @@ class WebPlayer extends Component {
                 <MobileRoute
                   exact
                   path={REPOSTING_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={RepostsPage}
                 />
                 <MobileRoute
                   exact
                   path={FAVORITING_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={FavoritesPage}
                 />
                 <MobileRoute
                   exact
                   path={FOLLOWING_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={FollowingPage}
                 />
                 <MobileRoute
                   exact
                   path={FOLLOWERS_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={FollowersPage}
                 />
                 <MobileRoute
                   exact
                   path={SUPPORTING_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={SupportingPage}
                 />
                 <MobileRoute
                   exact
                   path={TOP_SUPPORTERS_USERS_ROUTE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={TopSupportersPage}
                 />
                 <MobileRoute
                   exact
                   path={EMPTY_PAGE}
-                  isMobile={isMobileClient}
+                  isMobile={isMobile}
                   component={EmptyPage}
                 />
                 <Route
@@ -977,12 +980,12 @@ class WebPlayer extends Component {
 
           <RewardClaimedToast />
           {/* Non-mobile */}
-          {!isMobileClient ? <Konami /> : null}
-          {!isMobileClient ? <Visualizer /> : null}
-          {!isMobileClient ? <PinnedTrackConfirmation /> : null}
-          {!isMobileClient ? <DevModeMananger /> : null}
+          {!isMobile ? <Konami /> : null}
+          {!isMobile ? <Visualizer /> : null}
+          {!isMobile ? <PinnedTrackConfirmation /> : null}
+          {!isMobile ? <DevModeMananger /> : null}
           {/* Mobile-only */}
-          {isMobileClient ? (
+          {isMobile ? (
             <AppRedirectPopover
               incrementScroll={incrementScroll}
               decrementScroll={decrementScroll}

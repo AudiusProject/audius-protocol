@@ -20,7 +20,7 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { MainContentContext } from 'pages/MainContentContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { FEED_PAGE } from 'utils/route'
@@ -187,8 +187,9 @@ export const PurchasesTab = ({
   fetchMore
 }: Omit<ReturnType<typeof usePurchases>, 'downloadCSV'>) => {
   const { mainContentRef } = useContext(MainContentContext)
+  const isMobile = useIsMobile()
 
-  const columns = isMobile()
+  const columns = isMobile
     ? (['contentName', 'date', 'value'] as PurchasesTableColumn[])
     : undefined
 

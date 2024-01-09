@@ -5,6 +5,7 @@ import { Persistor, persistStore } from 'redux-persist'
 import { PersistGate } from 'redux-persist/integration/react'
 
 import { configureStore } from 'store/configureStore'
+import { useIsMobile } from 'utils/clientUtil'
 import logger from 'utils/logger'
 
 import { useSsrContext } from '../ssr/SsrContext'
@@ -14,12 +15,13 @@ import { useHistoryContext } from './HistoryProvider'
 export const ReduxProvider = ({ children }: { children: ReactNode }) => {
   const { pageProps } = useSsrContext()
   const { history } = useHistoryContext()
+  const isMobile = useIsMobile()
 
   const [store, setStore] = useState<ReturnType<typeof configureStore>>()
   const [persistor, setPersistor] = useState<Persistor>()
 
   if (!store) {
-    const store = configureStore(history, pageProps)
+    const store = configureStore(history, isMobile, pageProps)
     setStore(store)
     const persistor = persistStore(store)
     setPersistor(persistor)

@@ -18,11 +18,11 @@ import {
 } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath, withRouter } from 'react-router-dom'
-import { HistoryContext } from 'app/HistoryProvider'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { makeGetCurrent } = queueSelectors
@@ -241,8 +241,7 @@ const makeMapStateToProps = () => {
     buffering: getBuffering(state),
     trendingTimeRange: getTrendingTimeRange(state),
     trendingGenre: getTrendingGenre(state),
-    lastFetchedTrendingGenre: getLastFetchedTrendingGenre(state),
-    isMobile: isMobile()
+    lastFetchedTrendingGenre: getLastFetchedTrendingGenre(state)
   })
   return mapStateToProps
 }
@@ -307,6 +306,11 @@ const mapDispatchToProps = (dispatch) => ({
   }
 })
 
-export default withRouter(
+const InnerTrendingPageProvider = withRouter(
   connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProvider)
 )
+
+export default () => {
+  const isMobile = useIsMobile()
+  return <InnerTrendingPageProvider isMobile={isMobile} />
+}

@@ -6,6 +6,7 @@ import { History } from 'history'
 export type SsrContextType = {
   path: Nullable<string>
   isServerSide: boolean
+  isMobile: boolean
   /**
    * The page props for the current request. This is available on both the server and the client.
    */
@@ -24,6 +25,7 @@ export const useSsrContext = () => {
 export const SsrContext = createContext<SsrContextType>({
   path: null,
   isServerSide: false,
+  isMobile: false,
   pageProps: {},
   history: null
 })

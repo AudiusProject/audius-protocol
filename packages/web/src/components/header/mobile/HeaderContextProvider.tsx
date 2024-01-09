@@ -25,8 +25,9 @@ export const HeaderContext = createContext<HeaderContextProps>({
 export const HeaderContextProvider = memo(
   (props: { children: JSX.Element }) => {
     const [header, setHeader] = useState<ReactNode>(null)
+    const isMobile = useIsMobile()
 
-    if (useIsMobile()) {
+    if (isMobile) {
       return (
         <HeaderContext.Provider
           value={{

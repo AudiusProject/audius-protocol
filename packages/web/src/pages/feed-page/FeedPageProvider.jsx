@@ -16,11 +16,11 @@ import {
 } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
-import { HistoryContext } from 'app/HistoryProvider'
 
+import { HistoryContext, useHistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -128,8 +128,7 @@ const makeMapStateToProps = () => {
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
-    feedFilter: getFeedFilter(state),
-    isMobile: isMobile()
+    feedFilter: getFeedFilter(state)
   })
   return mapStateToProps
 }
@@ -158,6 +157,11 @@ const mapDispatchToProps = (dispatch) => ({
   pauseFeedTrack: () => dispatch(feedActions.pause())
 })
 
-export default withRouter(
+const InnerFeedPageProvider = withRouter(
   connect(makeMapStateToProps, mapDispatchToProps)(FeedPageProvider)
 )
+
+export default () => {
+  const isMobile = useIsMobile()
+  return <InnerFeedPageProvider isMobile={isMobile} />
+}

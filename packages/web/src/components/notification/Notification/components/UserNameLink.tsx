@@ -9,7 +9,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameLink.module.css'
@@ -27,6 +27,7 @@ type UserNameLinkProps = {
 export const UserNameLink = (props: UserNameLinkProps) => {
   const { className, notification, user } = props
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   const record = useRecord()
   const { type } = notification
@@ -79,7 +80,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
     </span>
   )
 
-  if (!isMobile()) {
+  if (!isMobile) {
     userNameElement = (
       <ArtistPopover
         handle={handle}

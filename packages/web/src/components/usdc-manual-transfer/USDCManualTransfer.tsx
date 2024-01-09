@@ -24,7 +24,7 @@ import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { track as trackAnalytics, make } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './USDCManualTransfer.module.css'
@@ -67,7 +67,7 @@ export const USDCManualTransfer = ({
     mint: 'usdc'
   })
   const { toast } = useContext(ToastContext)
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
@@ -87,13 +87,13 @@ export const USDCManualTransfer = ({
 
   return (
     <Flex direction='column' gap='xl' p='xl'>
-      <Flex gap='l' alignItems='center' direction={mobile ? 'column' : 'row'}>
-        {mobile ? <Text>{messages.explainer}</Text> : null}
+      <Flex gap='l' alignItems='center' direction={isMobile ? 'column' : 'row'}>
+        {isMobile ? <Text>{messages.explainer}</Text> : null}
         <div className={styles.qr}>
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
         </div>
         <Flex direction='column' gap='xl'>
-          {!mobile ? <Text>{messages.explainer}</Text> : null}
+          {!isMobile ? <Text>{messages.explainer}</Text> : null}
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
@@ -105,7 +105,7 @@ export const USDCManualTransfer = ({
       <AddressTile address={USDCUserBank ?? ''} iconLeft={IconLogoCircleUSDC} />
       <div
         className={cn(styles.buttonContainer, {
-          [styles.mobile]: mobile
+          [styles.mobile]: isMobile
         })}
       >
         {amountInCents === undefined ? (
@@ -113,7 +113,7 @@ export const USDCManualTransfer = ({
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            {mobile ? null : (
+            {isMobile ? null : (
               <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
                 {messages.goBack}
               </Button>
@@ -121,7 +121,7 @@ export const USDCManualTransfer = ({
           </>
         ) : (
           <>
-            {mobile ? null : (
+            {isMobile ? null : (
               <Button
                 variant={ButtonType.SECONDARY}
                 fullWidth

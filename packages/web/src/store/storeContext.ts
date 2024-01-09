@@ -21,12 +21,16 @@ import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
 import { isElectron } from 'utils/clientUtil'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
-import { share } from 'utils/share'
+import { getShare } from 'utils/share'
 
 import { reportToSentry } from './errors/reportToSentry'
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
 
-export const storeContext: CommonStoreContext = {
+export const buildStoreContext = ({
+  isMobile
+}: {
+  isMobile: boolean
+}): CommonStoreContext => ({
   getLocalStorageItem: async (key: string) =>
     window?.localStorage?.getItem(key),
   setLocalStorageItem: async (key: string, value: string) =>
@@ -61,10 +65,11 @@ export const storeContext: CommonStoreContext = {
   trackDownload,
   instagramAppId: process.env.VITE_INSTAGRAM_APP_ID,
   instagramRedirectUrl: process.env.VITE_INSTAGRAM_REDIRECT_URL,
-  share,
+  share: getShare(isMobile),
   openSeaClient: new OpenSeaClient(process.env.VITE_OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork
-  }
-}
+  },
+  isMobile
+})

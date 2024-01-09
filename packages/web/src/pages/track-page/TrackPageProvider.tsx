@@ -41,6 +41,7 @@ import { TrackEvent, make } from 'common/store/analytics/actions'
 import { TRENDING_BADGE_LIMIT } from 'common/store/pages/track/sagas'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
+import { SsrContext } from 'ssr/SsrContext'
 import {
   setUsers,
   setVisibility
@@ -51,7 +52,6 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 import {
   profilePage,
   NOT_FOUND_PAGE,
@@ -113,6 +113,8 @@ class TrackPageProvider extends Component<
   TrackPageProviderProps,
   TrackPageProviderState
 > {
+  static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
   state: TrackPageProviderState = {
     pathname: this.props.pathname,
     ownerHandle: null,
@@ -148,7 +150,7 @@ class TrackPageProvider extends Component<
     if (user && user.is_deactivated) {
       this.goToProfilePage(user.handle)
     }
-    if (!isMobile()) {
+    if (!this.context.isMobile) {
       // On componentDidUpdate we try to reparse the URL because if you’re on a track page
       // and go to another track page, the component doesn’t remount but we need to
       // trigger a re-fetch based on the URL. On mobile, separate page provider components are
@@ -211,7 +213,7 @@ class TrackPageProvider extends Component<
   }
 
   componentWillUnmount() {
-    if (!isMobile()) {
+    if (!this.context.isMobile) {
       // Don't reset on mobile because there are two
       // track pages mounted at a time due to animations.
       this.props.resetTrackPage()
@@ -333,7 +335,7 @@ class TrackPageProvider extends Component<
   onUnfollow = () => {
     const { onUnfollow, onConfirmUnfollow, track } = this.props
     if (track) {
-      if (this.props.isMobile) {
+      if (this.context.isMobile) {
         onConfirmUnfollow(track.owner_id)
       } else {
         onUnfollow(track.owner_id)
@@ -526,7 +528,6 @@ function makeMapStateToProps() {
       previewing: getPreviewing(state),
       buffering: getBuffering(state),
       trackRank: getTrackRank(state),
-      isMobile: isMobile(),
       pathname: getLocationPathname(state)
     }
   }

@@ -5,7 +5,7 @@ import cn from 'classnames'
 // eslint-disable-next-line
 import { ClassValue } from 'classnames/types'
 
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 /**
  * Wraps classnames and applies a mobile class as needed.
@@ -17,12 +17,12 @@ import { isMobile } from 'utils/clientUtil'
  * ```
  */
 export const useWithMobileStyle = (mobileClassName: string) => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const withMobile = useMemo(() => {
-    const mobileStyle = { [mobileClassName]: mobile }
+    const mobileStyle = { [mobileClassName]: isMobile }
     return (...classnames: ClassValue[]) => cn(...classnames, mobileStyle)
-  }, [mobile, mobileClassName])
+  }, [isMobile, mobileClassName])
 
   return withMobile
 }

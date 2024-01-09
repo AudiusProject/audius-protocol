@@ -20,7 +20,7 @@ import cn from 'classnames'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './AddFunds.module.css'
 
@@ -41,7 +41,7 @@ export const AddFunds = ({
   })
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
 
@@ -49,7 +49,7 @@ export const AddFunds = ({
     <div className={styles.root}>
       <div
         className={cn(styles.buttonContainer, {
-          [styles.mobile]: mobile
+          [styles.mobile]: isMobile
         })}
       >
         <Flex direction='column' w='100%' gap='xl' p='xl'>

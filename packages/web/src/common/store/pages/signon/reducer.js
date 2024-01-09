@@ -1,4 +1,3 @@
-import { isMobile } from 'utils/clientUtil'
 import { FEED_PAGE } from 'utils/route'
 
 import {
@@ -112,7 +111,7 @@ const actionsMap = {
       page: action.page || state.page
     }
   },
-  [NEXT_PAGE](state) {
+  [NEXT_PAGE](state, action) {
     let newPage
     switch (state.page) {
       case Pages.EMAIL:
@@ -125,7 +124,7 @@ const actionsMap = {
         newPage = Pages.FOLLOW
         break
       case Pages.FOLLOW: {
-        if (!isMobile()) {
+        if (!action.isMobile) {
           newPage = Pages.APP_CTA
         } else {
           newPage = Pages.LOADING

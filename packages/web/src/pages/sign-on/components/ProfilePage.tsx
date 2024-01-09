@@ -17,13 +17,12 @@ import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileW
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
-import { isMobile as getIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
 const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
-const isMobile = getIsMobile()
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You',
@@ -95,6 +94,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const setLoading = useCallback(() => setIsLoading(true), [setIsLoading])
   const { toast } = useContext(ToastContext)
+  const isMobile = useIsMobile()
 
   const onToggleCompleteProfileWithSocial = useCallback(() => {
     setShowCompleteProfileWithSocial((show) => !show)

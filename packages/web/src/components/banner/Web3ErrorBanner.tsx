@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { getWeb3Error } from 'common/store/backend/selectors'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import { CallToActionBanner } from './CallToActionBanner'
@@ -23,6 +23,7 @@ const META_MASK_SETUP_URL =
 export const Web3ErrorBanner = () => {
   const web3Error = useSelector(getWeb3Error)
   const [isVisible, setIsVisible] = useState(web3Error)
+  const isMobile = useIsMobile()
 
   const handleAccept = useCallback(() => {
     const win = window.open(META_MASK_SETUP_URL, '_blank')
@@ -42,8 +43,8 @@ export const Web3ErrorBanner = () => {
   return isVisible ? (
     <CallToActionBanner
       className={styles.root}
-      text={isMobile() ? messages.mobileText : messages.text}
-      pill={isMobile() ? messages.mobilePill : messages.pill}
+      text={isMobile ? messages.mobileText : messages.text}
+      pill={isMobile ? messages.mobilePill : messages.pill}
       onAccept={handleAccept}
       onClose={handleClose}
     />

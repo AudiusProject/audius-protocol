@@ -43,7 +43,7 @@ import { ComponentPlacement } from 'components/types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
-import { isMobile, isElectron, getOS } from 'utils/clientUtil'
+import { isElectron, getOS, useIsMobile } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
@@ -283,7 +283,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.DEVELOPER_APPS_PAGE
   )
 
-  const isDownloadDesktopEnabled = !isMobile() && !isElectron()
+  const isMobile = useIsMobile()
+  const isDownloadDesktopEnabled = !isMobile && !isElectron()
 
   const hasOddCardCount = Boolean(
     [isChatEnabled, isAiAttributionEnabled, areDeveloperAppsEnabled].filter(

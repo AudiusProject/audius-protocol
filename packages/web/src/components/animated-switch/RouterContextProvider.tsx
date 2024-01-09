@@ -34,7 +34,9 @@ export const RouterContextProvider = memo(
       SlideDirection.FROM_LEFT
     )
 
-    if (useIsMobile()) {
+    const isMobile = useIsMobile()
+
+    if (isMobile) {
       return (
         <RouterContext.Provider
           value={{

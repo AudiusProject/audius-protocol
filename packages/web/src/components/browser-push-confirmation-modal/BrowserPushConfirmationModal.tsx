@@ -20,7 +20,7 @@ import {
   subscribeSafariPushBrowser,
   Permission
 } from 'utils/browserNotifications'
-import { isElectron, isMobile } from 'utils/clientUtil'
+import { isElectron, useIsMobile } from 'utils/clientUtil'
 
 import styles from './BrowserPushConfirmationModal.module.css'
 const { setVisibility } = modalsActions
@@ -61,6 +61,7 @@ const ConnectedBrowserPushConfirmationModal = ({
 }: BrowserPushConfirmationModal) => {
   const { permission } = browserNotificationSettings
   const [pushPermission] = useState(permission)
+  const isMobile = useIsMobile()
 
   const onEnabled = useCallback(() => {
     let cancelled = false
@@ -123,7 +124,7 @@ const ConnectedBrowserPushConfirmationModal = ({
       title={messages.title}
       titleClassName={styles.title}
       wrapperClassName={cn(styles.wrapperClassName, {
-        [styles.mobile]: isMobile()
+        [styles.mobile]: isMobile
       })}
       headerContainerClassName={styles.headerContainerClassName}
       bodyClassName={styles.modalBody}

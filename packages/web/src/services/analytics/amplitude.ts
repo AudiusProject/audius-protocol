@@ -1,8 +1,8 @@
 // Amplitude Analytics
-import { Name, Nullable } from '@audius/common'
+import { Name, Nullable, MobileOS } from '@audius/common'
 import amplitude from 'amplitude-js'
 
-import { getSource } from './segment'
+import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
 
 const AMP_API_KEY = process.env.VITE_AMPLITUDE_API_KEY
 const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
@@ -15,7 +15,7 @@ const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
  * Link for more info: https://amplitude.github.io/Amplitude-JavaScript/
  */
 let amp: Nullable<any> = null
-export const init = async () => {
+export const init = async (isMobile: boolean) => {
   try {
     if (!amp && AMP_API_KEY) {
       amplitude
@@ -23,7 +23,7 @@ export const init = async () => {
         // Note: https is prepended to the apiEndpoint url specified
         .init(AMP_API_KEY, undefined, { apiEndpoint: AMPLITUDE_PROXY })
       amp = amplitude
-      const source = getSource()
+      const source = getSource(isMobile)
       amp.getInstance().logEvent(Name.SESSION_START, { source })
     }
   } catch (err) {
@@ -63,5 +63,32 @@ export const track = (
   amp.getInstance().logEvent(event, properties)
   if (callback) {
     callback()
+  }
+}
+
+export const getSource = (isMobile: boolean) => {
+  const mobileOS = getMobileOS()
+  const isElectron = getIsElectron()
+  if (isMobile) {
+    if (mobileOS === MobileOS.ANDROID) {
+      return 'Android Web'
+    } else if (mobileOS === MobileOS.IOS) {
+      return 'iOS Web'
+    } else if (mobileOS === MobileOS.WINDOWS_PHONE) {
+      return 'iOS Web'
+    }
+    return 'Unknown Mobile Web'
+  } else if (isElectron) {
+    const platform = window.navigator.platform
+    const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K']
+    const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE']
+    if (macosPlatforms.indexOf(platform) !== -1) {
+      return 'MacOS'
+    } else if (windowsPlatforms.indexOf(platform) !== -1) {
+      return 'Windows'
+    } else if (/Linux/.test(platform)) {
+      return 'Linux'
+    }
+    return 'Unknown Desktop'
   }
 }

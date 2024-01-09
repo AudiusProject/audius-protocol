@@ -8,7 +8,7 @@ import { useSessionStorage } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import AppIcon from 'assets/img/appIcon240.png'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
@@ -94,6 +94,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     onBeforeClickDismissed = () => {}
   } = props
   const { history } = useHistoryContext()
+  const isMobile = useIsMobile()
   const [isDismissed, setIsDismissed] = useSessionStorage(
     'app-redirect-popover',
     false
@@ -108,7 +109,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     !matchPath(window.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
-    isMobile() &&
+    isMobile &&
     !(navigator.userAgent === 'probers')
 
   useEffect(() => {

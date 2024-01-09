@@ -32,7 +32,7 @@ export type CommonStoreContext = {
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean>
   analytics: {
-    init: () => Promise<void>
+    init: (isMobile: boolean) => Promise<void>
     track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
     identify: (
       handle: string,
@@ -80,4 +80,5 @@ export type CommonStoreContext = {
       urls: string[]
     ) => Promise<{ file: File; url: string }>
   }
+  isMobile: boolean
 }

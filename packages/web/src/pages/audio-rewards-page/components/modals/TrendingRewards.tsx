@@ -17,7 +17,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import {
   TRENDING_PAGE,
@@ -132,15 +132,15 @@ const TrendingRewardsBody = ({
     window.open(TOS_URL, '_blank')
   }, [])
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const tabOptions = [
     {
       key: 'tracks',
-      text: mobile ? messages.tracks : messages.topTracks
+      text: isMobile ? messages.tracks : messages.topTracks
     },
     {
       key: 'playlists',
-      text: mobile ? messages.playlists : messages.topPlaylists
+      text: isMobile ? messages.playlists : messages.topPlaylists
     },
     {
       key: 'underground',
@@ -207,7 +207,7 @@ const TrendingRewardsBody = ({
         </div>
         <Button
           type={ButtonType.PRIMARY_ALT}
-          text={textMap[modalType][mobile ? 'buttonMobile' : 'button']}
+          text={textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
           rightIcon={<IconArrow />}

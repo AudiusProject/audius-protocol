@@ -12,7 +12,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton, TwitterButton } from 'components/social-button'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import ModalDrawer from './ModalDrawer'
@@ -50,6 +50,7 @@ const Divider = () => <div className={styles.divider} />
 
 const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
   const navigate = useNavigateToPage()
+  const isMobile = useIsMobile()
 
   const onClickUpload = useCallback(() => {
     navigate(UPLOAD_PAGE)
@@ -57,10 +58,10 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
   }, [navigate, dismissModal])
 
   const onClickVerify = useCallback(() => {
-    const destination = isMobile() ? ACCOUNT_SETTINGS_PAGE : SETTINGS_PAGE
+    const destination = isMobile ? ACCOUNT_SETTINGS_PAGE : SETTINGS_PAGE
     navigate(destination)
     dismissModal()
-  }, [navigate, dismissModal])
+  }, [navigate, dismissModal, isMobile])
 
   const wm = useWithMobileStyle(styles.mobile)
   return (
@@ -82,7 +83,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>
       <span className={styles.subtitle}>
-        {isMobile()
+        {isMobile
           ? messages.step2SubtitleMobile
           : messages.step2SubtitleDesktop}
       </span>

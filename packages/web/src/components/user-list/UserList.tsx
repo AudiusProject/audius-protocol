@@ -18,7 +18,7 @@ import { Dispatch } from 'redux'
 
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import UserList from './components/UserList'
@@ -53,13 +53,14 @@ type ConnectedUserListProps = ConnectedUserListOwnProps &
   ReturnType<typeof mapDispatchToProps>
 
 const ConnectedUserList = (props: ConnectedUserListProps) => {
+  const isMobile = useIsMobile()
   const onFollow = (userId: ID) => {
     props.onFollow(userId)
     if (!props.loggedIn && props.afterFollow) props.afterFollow()
   }
 
   const onUnfollow = (userId: ID) => {
-    props.onUnfollow(userId)
+    props.onUnfollow(userId, isMobile)
     if (!props.loggedIn && props.afterUnfollow) props.afterUnfollow()
   }
 
@@ -104,7 +105,7 @@ const ConnectedUserList = (props: ConnectedUserListProps) => {
       userId={props.userId}
       onClickArtistName={onClickArtistName}
       loadMore={props.loadMore}
-      isMobile={props.isMobile}
+      isMobile={isMobile}
       getScrollParent={props.getScrollParent}
       tag={props.tag}
       otherUserId={props.otherUserId}
@@ -135,7 +136,6 @@ function mapStateToProps(state: AppState, ownProps: ConnectedUserListOwnProps) {
     users,
     hasMore,
     loading,
-    isMobile: isMobile(),
     otherUserId
   }
 }
@@ -144,12 +144,11 @@ function mapDispatchToProps(
   dispatch: Dispatch,
   ownProps: ConnectedUserListOwnProps
 ) {
-  const mobile = isMobile()
   return {
     onFollow: (userId: ID) =>
       dispatch(socialActions.followUser(userId, FollowSource.USER_LIST)),
-    onUnfollow: (userId: ID) => {
-      if (mobile) {
+    onUnfollow: (userId: ID, isMobile: boolean) => {
+      if (isMobile) {
         dispatch(unfollowConfirmationActions.setOpen(userId))
       } else {
         dispatch(socialActions.unfollowUser(userId, FollowSource.USER_LIST))

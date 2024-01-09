@@ -21,6 +21,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconReceive from 'assets/img/iconReceive.svg'
 import IconSend from 'assets/img/iconSend.svg'
 import IconSettings from 'assets/img/iconSettings.svg'
@@ -36,7 +37,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
-import { isMobile, getClient } from 'utils/clientUtil'
+import { getClient, useIsMobile } from 'utils/clientUtil'
 import {
   AUDIO_TRANSACTIONS_PAGE,
   pushUniqueRoute,
@@ -45,8 +46,6 @@ import {
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-import { useHistory } from 'react-router-dom'
-import { useHistoryContext } from 'app/HistoryProvider'
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
@@ -88,25 +87,25 @@ const AdvancedWalletActions = () => {
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const { isEnabled: isTransactionsEnabled } = useFlag(
     FeatureFlags.AUDIO_TRANSACTIONS_HISTORY
   )
   const onClickReceive = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressReceive())
     }
-  }, [dispatch, mobile, openTransferDrawer])
+  }, [dispatch, isMobile, openTransferDrawer])
 
   const onClickSend = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressSend())
     }
-  }, [mobile, dispatch, openTransferDrawer])
+  }, [isMobile, dispatch, openTransferDrawer])
   const [, setOpen] = useModalState('MobileConnectWalletsDrawer')
 
   const onClickTransactions = useCallback(() => {
@@ -114,12 +113,12 @@ const AdvancedWalletActions = () => {
   }, [dispatch])
 
   const onClickConnectWallets = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       setOpen(true)
     } else {
       dispatch(pressConnectWallets())
     }
-  }, [mobile, setOpen, dispatch])
+  }, [isMobile, setOpen, dispatch])
 
   const onCloseConnectWalletsDrawer = useCallback(() => {
     setOpen(false)
@@ -151,7 +150,7 @@ const AdvancedWalletActions = () => {
           type={ButtonType.GLASS}
           minWidth={200}
         />
-        {!mobile && isTransactionsEnabled && (
+        {!isMobile && isTransactionsEnabled && (
           <Button
             className={cn(styles.advancedButton)}
             text={messages.transactionsLabel}
@@ -172,7 +171,7 @@ const AdvancedWalletActions = () => {
           leftIcon={<IconSettings className={styles.iconStyle} />}
           minWidth={200}
         />
-        {mobile && (
+        {isMobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
       </div>

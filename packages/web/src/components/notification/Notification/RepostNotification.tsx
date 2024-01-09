@@ -13,7 +13,7 @@ import {
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
@@ -56,6 +56,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
       : entityType
 
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   const handleGoToEntity = useGoToEntity(entity, entityType)
 
@@ -69,7 +70,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
             id: id as unknown as number
           })
         )
-        if (isMobile()) {
+        if (isMobile) {
           dispatch(push(`notification/${id}/users`))
         } else {
           dispatch(openUserListModal(true))
@@ -78,7 +79,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity]
+    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
   )
 
   if (!users || !firstUser || !entity) return null

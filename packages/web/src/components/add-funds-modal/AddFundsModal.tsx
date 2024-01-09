@@ -15,7 +15,7 @@ import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
@@ -30,7 +30,7 @@ type Page = 'add-funds' | 'crypto-transfer'
 export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
   const dispatch = useDispatch()
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
 
@@ -69,9 +69,9 @@ export const AddFundsModal = () => {
       isFullscreen={false}
     >
       <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
         onClose={onClose}
-        showDismissButton={!mobile}
+        showDismissButton={!isMobile}
       >
         <Text
           variant='label'

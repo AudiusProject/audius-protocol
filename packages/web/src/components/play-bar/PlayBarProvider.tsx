@@ -4,8 +4,9 @@ import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
+import { useSsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './PlayBarProvider.module.css'
 import DesktopPlayBar from './desktop/PlayBar'
@@ -21,11 +22,11 @@ type PlayBarProviderProps = OwnProps &
   RouteComponentProps
 
 const PlayBarProvider = ({
-  isMobile,
   playingUid,
   collectible,
   addToPlaylistOpen
 }: PlayBarProviderProps) => {
+  const isMobile = useIsMobile()
   return (
     <div
       className={cn(styles.playBarWrapper, {
@@ -51,7 +52,6 @@ function mapStateToProps(state: AppState) {
   return {
     playingUid: getPlayingUid(state),
     collectible: getCollectible(state),
-    isMobile: isMobile(),
     addToPlaylistOpen: getModalVisibility(state, 'AddToPlaylist')
   }
 }

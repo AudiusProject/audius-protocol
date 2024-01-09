@@ -28,13 +28,14 @@ import { Formik, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
@@ -43,7 +44,6 @@ import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
@@ -75,6 +75,7 @@ const RenderForm = ({
   track: PurchasableTrackMetadata
 }) => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const {
     permalink,
     premium_conditions: {
@@ -102,14 +103,12 @@ const RenderForm = ({
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
 
-  const mobile = isMobile()
-
   return (
     <ModalForm>
       <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
         onClose={onClose}
-        showDismissButton={!mobile}
+        showDismissButton={!isMobile}
       >
         <Text
           variant='label'
@@ -135,7 +134,7 @@ const RenderForm = ({
                 .toShorthand()}
             />
           ) : null}
-          <Flex p={mobile ? 'l' : 'xl'}>
+          <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
               <LockedTrackDetailsTile
                 track={track as unknown as Track}
@@ -170,6 +169,7 @@ const RenderForm = ({
 
 export const PremiumContentPurchaseModal = () => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const {
     isOpen,
     onClose,
@@ -218,7 +218,6 @@ export const PremiumContentPurchaseModal = () => {
   if (track && !isValidTrack) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
   }
-  const mobile = isMobile()
 
   return (
     <ModalDrawer
@@ -230,7 +229,7 @@ export const PremiumContentPurchaseModal = () => {
       useGradientTitle={false}
       dismissOnClickOutside
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
-      wrapperClassName={mobile ? styles.mobileWrapper : undefined}
+      wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
       {isValidTrack ? (
         <Formik

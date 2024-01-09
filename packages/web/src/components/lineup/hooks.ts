@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux'
 
 import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 const { makeGetCurrent } = queueSelectors
@@ -46,6 +46,7 @@ export const useLineupProps = ({
   isOrdered
 }: useLineupPropsProps) => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   // Create memoized selectors
   const getLineup = useMemo(
@@ -83,7 +84,7 @@ export const useLineupProps = ({
     loadMore,
     numPlaylistSkeletonRows,
     scrollParent,
-    isMobile: isMobile(),
+    isMobile,
     rankIconCount,
     isTrending,
     ordered: isOrdered
