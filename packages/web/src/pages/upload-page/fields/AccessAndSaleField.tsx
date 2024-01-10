@@ -625,7 +625,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           description={messages.hiddenSubtitle}
           disabled={noHidden}
           hintContent={
-            isScheduledRelease && isInitiallyUnlisted ? messages.hiddenHint : ''
+            isScheduledRelease && isInitiallyUnlisted !== false
+              ? messages.hiddenHint
+              : ''
           }
           checkedContent={<HiddenAvailabilityFields />}
         />
