@@ -94,6 +94,8 @@ export const RootScreen = () => {
     setIsSplashScreenDismissed(true)
   }, [])
 
+  console.log({ showHomeStack })
+
   return (
     <>
       <SplashScreen
@@ -117,13 +119,16 @@ export const RootScreen = () => {
                   : UpdateRequiredScreen
               }
             />
-          ) : showHomeStack ? (
-            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
-          ) : isSignUpRedesignEnabled ? (
+          ) : null}
+
+          {isSignUpRedesignEnabled ? (
             <Stack.Screen name='SignOnStackNew' component={SignOnStack} />
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
+          {true ? (
+            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
+          ) : null}
           <Stack.Screen
             name='ResetPassword'
             component={ResetPasswordModalScreen}

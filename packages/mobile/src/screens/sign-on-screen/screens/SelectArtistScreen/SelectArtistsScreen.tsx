@@ -1,15 +1,22 @@
 import { useCallback } from 'react'
 
 import { selectArtstsPageMessages as messages } from '@audius/common'
-import { getFollowIds, getGenres } from 'common/store/pages/signon/selectors'
+import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
+import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
+import {
+  getFollowIds,
+  getGenres,
+  getStatus
+} from 'common/store/pages/signon/selectors'
 import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
-import { useToast } from 'app/hooks/useToast'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
 import { Heading, PageFooter } from '../../components/layout'
+import type { SignUpScreenParamList } from '../../types'
 
 import { SelectedGenresTabBar } from './SelectedGenresTabBar'
 import { TopArtistsCardList } from './TopArtistsCardList'
@@ -25,7 +32,10 @@ export const SelectArtistsScreen = () => {
   ])
 
   const selectedArtists = useSelector(getFollowIds)
-  const { toast } = useToast()
+  const dispatch = useDispatch()
+  const navigation = useNavigation<SignUpScreenParamList>()
+
+  const accountCreationStatus = useSelector(getStatus)
 
   const renderHeader = useCallback(
     () => (
@@ -45,8 +55,13 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    toast({ content: 'TODO: Create Account' })
-  }, [toast])
+    if (accountCreationStatus === EditingStatus.LOADING) {
+      navigation.navigate('AccountLoading')
+    } else {
+      dispatch(finishSignUp())
+      navigation.navigate('HomeStack', { screen: 'Trending' })
+    }
+  }, [accountCreationStatus, dispatch, navigation])
 
   return (
     <SelectArtistsPreviewContextProvider>

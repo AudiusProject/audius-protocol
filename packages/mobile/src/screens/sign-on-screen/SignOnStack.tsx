@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useScreenOptions } from 'app/app/navigation'
 
+import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
 import { CreateLoginDetailsScreen } from './screens/CreateLoginDetailsScreen'
 import { CreatePasswordScreen } from './screens/CreatePasswordScreen'
 import { FinishProfileScreen } from './screens/FinishProfileScreen'
@@ -34,6 +35,11 @@ export const SignOnStack = () => {
       <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
       <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
       <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
+      <Stack.Screen
+        name='AccountLoading'
+        component={AccountLoadingScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   )
 }
