@@ -55,6 +55,7 @@ export const HarmonyTextField = forwardRef(
         error={hasError}
         helperText={helperText ?? (hasError ? error : undefined)}
         onChange={(e) => {
+          console.log('asdf onchange')
           if (clearErrorOnChange) {
             setError(undefined)
           }
@@ -64,10 +65,12 @@ export const HarmonyTextField = forwardRef(
           field.onChange(e)
         }}
         onBlur={(e) => {
+          console.log('asdf blur')
           if (clearErrorOnChange) {
             setError(undefined)
           }
           if (transformValueOnBlur) {
+            console.log('asdf transform')
             e.target.value = transformValueOnBlur(e.target.value)
           }
           field.onChange(e)

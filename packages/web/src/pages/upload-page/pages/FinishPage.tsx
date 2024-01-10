@@ -189,10 +189,12 @@ export const FinishPage = (props: FinishPageProps) => {
   const dispatchVisitEvent = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
   }, [dispatch, uploadType])
-
+  console.log('asdf uploadType: ', uploadType, upload)
   return (
     <div className={styles.page}>
-      {uploadComplete ? <ShareBanner user={accountUser!} /> : null}
+      {uploadComplete ? (
+        <ShareBanner user={accountUser!} uploadTracks={upload.tracks} />
+      ) : null}
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>

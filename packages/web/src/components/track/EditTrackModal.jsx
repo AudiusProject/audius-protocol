@@ -47,6 +47,7 @@ const EditTrackModal = ({
   }, [visible, metadata])
 
   const onClickSave = () => {
+    console.log('asdf formFields: ', formFields)
     if (validateFormFields(formFields)) {
       onSave(formFields)
     }

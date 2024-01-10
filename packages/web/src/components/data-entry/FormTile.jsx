@@ -358,6 +358,7 @@ const AdvancedForm = (props) => {
     premium_conditions: props.defaultFields.premium_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
+  console.log('asdf availabilityStatE: ', availabilityState)
 
   const releaseDateState = {
     is_unlisted: props.defaultFields.is_unlisted,
@@ -407,12 +408,18 @@ const AdvancedForm = (props) => {
       newState.premium_conditions,
       isInvalidNFTCollection
     )
+    console.log(
+      'asdf newState.premium_conditions: ',
+      newState.premium_conditions,
+      isInvalidNFTCollection
+    )
     props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
   }
 
   const didUpdateReleaseDate = (newState) => {
     props.onChangeField('release_date', newState.release_date)
     props.onChangeField('is_unlisted', newState.is_unlisted)
+    props.onChangeField('is_scheduled_release', newState.is_unlisted)
   }
 
   const didToggleHideRemixesState = () => {

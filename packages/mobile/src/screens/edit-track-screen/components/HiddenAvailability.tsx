@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Text } from 'app/components/core'
+import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -17,6 +18,7 @@ const messages = {
   hidden: 'Hidden',
   hiddenSubtitle:
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
+  noHiddenHint: 'Scheduled tracks are hidden by default until release.',
   hideTrack: 'Hide Track',
   showGenre: 'Show Genre',
   showMood: 'Show Mood',
@@ -70,12 +72,16 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   switch: {
     marginTop: spacing(2)
+  },
+  noHidden: {
+    marginTop: spacing(4)
   }
 }))
 
 export const HiddenAvailability = ({
   selected,
-  disabled = false
+  disabled = false,
+  isScheduledRelease = false
 }: TrackAvailabilitySelectionProps) => {
   const styles = useStyles()
   const secondary = useColor('secondary')
@@ -121,6 +127,10 @@ export const HiddenAvailability = ({
           {messages.hidden}
         </Text>
       </View>
+      {disabled ? (
+        <HelpCallout style={styles.noHidden} content={messages.noHiddenHint} />
+      ) : null}
+
       {selected ? (
         <>
           <View style={styles.subtitleContainer}>

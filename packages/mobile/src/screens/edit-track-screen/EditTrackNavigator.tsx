@@ -34,7 +34,10 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
   const { isEnabled: isScheduledReleasesEnabled } = useFeatureFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
-
+  console.log(
+    'asdf is props.initialValues.is_unlisted: ',
+    props.initialValues.is_unlisted
+  )
   return (
     <>
       <Stack.Navigator screenOptions={screenOptions}>

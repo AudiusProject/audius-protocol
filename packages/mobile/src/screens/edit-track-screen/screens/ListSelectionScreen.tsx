@@ -100,6 +100,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
 
   const renderItem: ListRenderItem<ListSelectionData> = useCallback(
     (info) => {
+      console.log('asdf info: ', info)
       const { value: itemValue, disabled } = info.item
       const isSelected = value === itemValue
 
