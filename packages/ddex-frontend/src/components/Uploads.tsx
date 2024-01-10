@@ -8,15 +8,15 @@ const Uploads = () => {
   const { data, error, isPending } = useUploads(statusFilter, nextId, prevId)
 
   const handleNext = () => {
-    if (data && data.length) {
-      setNextId(data[data.length - 1].id)
+    if (data?.hasMoreNext) {
+      setNextId(data.uploads[0].id)
       setPrevId(undefined)
     }
   }
 
   const handlePrev = () => {
-    if (data && data.length) {
-      setPrevId(data[0].id)
+    if (data?.hasMorePrev) {
+      setPrevId(data.uploads[data.uploads.length - 1].id)
       setNextId(undefined)
     }
   }
@@ -76,8 +76,8 @@ const Uploads = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((upload, index) => (
-              <tr key={index}>
+            {data.uploads.map((upload) => (
+              <tr key={upload.id}>
                 <td>{upload.id}</td>
                 <td>{upload.from_zip_file}</td>
                 <td>{upload.uploaded_by}</td>
@@ -92,17 +92,17 @@ const Uploads = () => {
       <div>
         <button
           type="button"
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 mx-1"
+          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:text-gray-400 disabled:cursor-not-allowed mx-1"
           onClick={handlePrev}
-          disabled={!prevId}
+          disabled={!data?.hasMorePrev}
         >
           Previous
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 float-right"
+          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:text-gray-400 disabled:cursor-not-allowed float-right"
           onClick={handleNext}
-          disabled={!nextId && (!data || data.length === 0)}
+          disabled={!data?.hasMoreNext}
         >
           Next
         </button>

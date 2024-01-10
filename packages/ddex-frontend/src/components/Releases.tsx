@@ -12,17 +12,17 @@ const Releases = () => {
   )
 
   const handleNext = () => {
-    if (data && data.length) {
-      const lastItem = data[data.length - 1]
-      setNextCursor(`${lastItem.release_date},${lastItem.id}`)
+    if (data?.hasMoreNext) {
+      const maxRelease = data.releases[0]
+      setNextCursor(`${maxRelease.release_date},${maxRelease.id}`)
       setPrevCursor(undefined)
     }
   }
 
   const handlePrev = () => {
-    if (data && data.length) {
-      const firstItem = data[0]
-      setPrevCursor(`${firstItem.release_date},${firstItem.id}`)
+    if (data?.hasMorePrev) {
+      const minRelease = data.releases[data.releases.length - 1]
+      setPrevCursor(`${minRelease.release_date},${minRelease.id}`)
       setNextCursor(undefined)
     }
   }
@@ -85,7 +85,7 @@ const Releases = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((release) => (
+            {data.releases.map((release) => (
               <tr key={release.id}>
                 <td>{release.id}</td>
                 <td>{release.data.title}</td>
@@ -102,17 +102,17 @@ const Releases = () => {
       <div>
         <button
           type="button"
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 mx-1"
+          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:text-gray-400 disabled:cursor-not-allowed mx-1"
           onClick={handlePrev}
-          disabled={!prevCursor}
+          disabled={!data?.hasMorePrev}
         >
           Previous
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 float-right"
+          className="inline-flex items-center gap-x-1.5 rounded-md bg-purple-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:text-gray-400 disabled:cursor-not-allowed float-right"
           onClick={handleNext}
-          disabled={!nextCursor && (!data || data.length === 0)}
+          disabled={!data?.hasMoreNext}
         >
           Next
         </button>

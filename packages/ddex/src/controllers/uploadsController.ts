@@ -20,9 +20,9 @@ export const postUploadXml = (xmlProcessorService: XmlProcessorService) => {
       }
 
       try {
-        const uploadedBy = '' // TODO: Auth should tell us who's uploading this
+        const uploadedBy = req.body.uploadedBy
         const fileBuffer = req.file.buffer
-        const fileType = req.file.mimetype // Adjust based on how your file type is determined
+        const fileType = req.file.mimetype
 
         // Save XML file to db, or unzip a ZIP file and save multiple XML files to db
         if (fileType === 'text/xml') {
@@ -63,27 +63,42 @@ export const getUploads = (sql: Sql) => async (req: Request, res: Response) => {
   }
 
   try {
+    let statusCondition = sql`true`
+    if (
+      status &&
+      (status === 'success' || status === 'pending' || status === 'error')
+    ) {
+      statusCondition = sql`status = ${status}`
+    }
+
+    let cursorCondition = sql`true`
+    if (numericNextId) cursorCondition = sql`id > ${numericNextId}`
+    else if (numericPrevId) cursorCondition = sql`id < ${numericPrevId}`
+
     const uploads = await sql<XmlFileRow[]>`
-        SELECT * FROM xml_files
-        ${
-          status &&
-          (status === 'success' || status === 'pending' || status === 'error')
-            ? sql` WHERE status = ${status}`
-            : sql``
-        }
-        ${
-          numericNextId
-            ? sql` AND id < ${numericNextId} ORDER BY id DESC`
-            : sql``
-        }
-        ${
-          numericPrevId
-            ? sql` AND id > ${numericPrevId} ORDER BY id ASC`
-            : sql``
-        }
-        LIMIT ${numericLimit}
-      `
-    res.json(uploads)
+      SELECT * FROM xml_files
+      WHERE ${statusCondition}
+      AND ${cursorCondition}
+      ORDER BY id DESC
+      LIMIT ${numericLimit}
+    `
+
+    let hasMoreNext = false
+    let hasMorePrev = false
+    if (uploads.length > 0) {
+      const maxId = uploads[0].id
+      const minId = uploads[uploads.length - 1].id
+
+      const nextSet =
+        await sql`SELECT id FROM xml_files WHERE id > ${maxId} LIMIT 1`
+      hasMoreNext = nextSet.length > 0
+
+      const prevSet =
+        await sql`SELECT id FROM xml_files WHERE id < ${minId} LIMIT 1`
+      hasMorePrev = prevSet.length > 0
+    }
+
+    res.json({ uploads, hasMoreNext, hasMorePrev })
   } catch (error) {
     console.error('Query error:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -94,44 +109,56 @@ export const getReleases =
   (sql: Sql) => async (req: Request, res: Response) => {
     const { status, nextCursor, prevCursor, limit = 10 } = req.query
 
-    // Convert limit to a number and validate
     const numericLimit = Number(limit)
     if (!Number.isInteger(numericLimit)) {
       return res.status(400).json({ error: 'Invalid limit.' })
     }
 
-    let whereConditions = sql``
-
+    let statusCondition = sql`true`
     if (
       status &&
       (status === 'success' || status === 'processing' || status === 'error')
     ) {
-      whereConditions = sql` WHERE status = ${status}`
+      statusCondition = sql`status = ${status}`
     }
 
+    let cursorCondition = sql`true`
+    let orderBy = sql`ORDER BY release_date DESC, id DESC`
     if (nextCursor && typeof nextCursor === 'string') {
       const [nextDate, nextId] = nextCursor.split(',')
-      whereConditions = sql`${whereConditions} AND (release_date, id) < (${nextDate}, ${nextId})`
+      cursorCondition = sql`(release_date, id) > (${nextDate}, ${nextId})`
+      orderBy = sql`ORDER BY release_date ASC, id ASC`
     } else if (prevCursor && typeof prevCursor === 'string') {
       const [prevDate, prevId] = prevCursor.split(',')
-      whereConditions = sql`${whereConditions} AND (release_date, id) > (${prevDate}, ${prevId})`
+      cursorCondition = sql`(release_date, id) < (${prevDate}, ${prevId})`
     }
-
-    const orderBy =
-      nextCursor || prevCursor
-        ? sql` ORDER BY release_date ${nextCursor ? 'DESC' : 'ASC'}, id ${
-            nextCursor ? 'DESC' : 'ASC'
-          }`
-        : sql` ORDER BY release_date DESC, id DESC`
 
     try {
       const releases = await sql<ReleaseRow[]>`
-      SELECT * FROM releases
-      ${whereConditions}
-      ${orderBy}
-      LIMIT ${numericLimit}
-    `
-      res.json(releases)
+        SELECT * FROM releases
+        WHERE ${statusCondition}
+        AND ${cursorCondition}
+        ${orderBy}
+        LIMIT ${numericLimit}
+      `
+
+      let hasMoreNext = false
+      let hasMorePrev = false
+      if (releases.length > 0) {
+        if (nextCursor && typeof nextCursor === 'string') releases.reverse()
+        const maxRelease = releases[0]
+        const minRelease = releases[releases.length - 1]
+
+        const nextSet =
+          await sql`SELECT id FROM releases WHERE (release_date, id) > (${maxRelease.release_date}, ${maxRelease.id}) LIMIT 1`
+        hasMoreNext = nextSet.length > 0
+
+        const prevSet =
+          await sql`SELECT id FROM releases WHERE (release_date, id) < (${minRelease.release_date}, ${minRelease.id}) LIMIT 1`
+        hasMorePrev = prevSet.length > 0
+      }
+
+      res.json({ releases, hasMoreNext, hasMorePrev })
     } catch (error) {
       console.error('Query error:', error)
       res.status(500).json({ error: 'Internal server error' })

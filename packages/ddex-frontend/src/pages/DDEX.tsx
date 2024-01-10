@@ -43,8 +43,10 @@ const ManageAudiusAccount = ({
 
 const XmlImporter = ({
   audiusSdk,
+  uploader,
 }: {
   audiusSdk: AudiusSdk | undefined | null
+  uploader: DecodedUserToken | null
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -114,6 +116,7 @@ const XmlImporter = ({
 
     const formData = new FormData()
     formData.append('file', selectedFile)
+    formData.append('uploadedBy', uploader?.userId || '')
 
     try {
       const response = await fetch('/api/upload', {
@@ -250,7 +253,7 @@ const Ddex = () => {
               onChangeUser={handleOauth}
               oauthError={oauthError}
             />
-            <XmlImporter audiusSdk={audiusSdk} />
+            <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
           </>
         )}
       </div>
@@ -260,7 +263,7 @@ const Ddex = () => {
         onChangeUser={handleOauth}
         oauthError={oauthError}
       />
-      <XmlImporter audiusSdk={audiusSdk} /> */}
+      <XmlImporter audiusSdk={audiusSdk} uploader={fakeUser} /> */}
 
       <br />
 
