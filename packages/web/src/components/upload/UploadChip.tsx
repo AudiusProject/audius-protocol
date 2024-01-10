@@ -137,7 +137,7 @@ const UploadChip = ({
       {...props}
     >
       <span>{icon}</span>
-      <Box w={variant === 'card' ? 100 : 'auto'}>
+      <Box w={100}>
         <Text variant='title' size='m' color='subdued' strength='default'>
           {text}
         </Text>
