@@ -205,6 +205,7 @@ export const GiantTrackTile = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+  // TODO: also check has_stems when that is added PAY-2347
   const hasDownloadableAssets = track?.is_downloadable // || track?.has_stems
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
