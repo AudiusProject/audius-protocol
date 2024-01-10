@@ -1674,7 +1674,7 @@ SPEC CHECKSUMS:
   amplitude-react-native: 6e5b9e38c53e11a86f62f874a42cf176e2b82c86
   AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
-  boost: 69c3d61aee7f5f7facabe24312f0302003b5af29
+  boost: 26fad476bfa736552bbfa698a06cc530475c1505
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: c3fdecab0dba1f760a1c6d1a562b9b88ce311fe1
