@@ -16,7 +16,7 @@ type UserNameProps = {
 
 const UserName = ({ className, wallet, hasLoaded }: UserNameProps) => {
   const { name } = useUserProfile({ wallet })
-  const { data } = useDashboardWalletUser(wallet)
+  const { data: audiusProfileData } = useDashboardWalletUser(wallet)
   useEffect(() => {
     if (name && hasLoaded) hasLoaded()
   }, [name, hasLoaded])
@@ -29,8 +29,12 @@ const UserName = ({ className, wallet, hasLoaded }: UserNameProps) => {
         })}
       />
       {!!name && (nonWalletName ? name : formatShortWallet(wallet))}
-      {!!data && (
-        <UserBadges inline audiusProfile={data?.user} badgeSize={14} />
+      {audiusProfileData == null ? null : (
+        <UserBadges
+          inline
+          audiusProfile={audiusProfileData?.user}
+          badgeSize={14}
+        />
       )}
     </div>
   )

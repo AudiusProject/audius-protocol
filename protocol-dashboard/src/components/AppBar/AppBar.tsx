@@ -214,7 +214,7 @@ const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
 }
 
 type AppBarProps = {}
-const AppBar: React.FC<AppBarProps> = (_props: AppBarProps) => {
+const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
   const { data: audiusProfileData } = useDashboardWalletUser(wallet)
