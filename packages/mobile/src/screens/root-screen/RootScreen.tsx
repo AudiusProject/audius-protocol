@@ -94,7 +94,9 @@ export const RootScreen = () => {
     setIsSplashScreenDismissed(true)
   }, [])
 
-  console.log({ showHomeStack })
+  useEffect(() => {
+    console.log({ showHomeStack })
+  }, [showHomeStack])
 
   return (
     <>
@@ -122,11 +124,11 @@ export const RootScreen = () => {
           ) : null}
 
           {isSignUpRedesignEnabled ? (
-            <Stack.Screen name='SignOnStackNew' component={SignOnStack} />
+            <Stack.Screen name='SignOnStackNew' component={SignOnScreen} />
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
-          {true ? (
+          {showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : null}
           <Stack.Screen

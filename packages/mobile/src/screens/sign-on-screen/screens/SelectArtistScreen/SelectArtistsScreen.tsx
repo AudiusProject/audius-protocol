@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { selectArtstsPageMessages as messages } from '@audius/common'
-import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
+import {
+  finishSignUp,
+  signUpSucceeded
+} from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {
   getFollowIds,
@@ -59,6 +62,8 @@ export const SelectArtistsScreen = () => {
       navigation.navigate('AccountLoading')
     } else {
       dispatch(finishSignUp())
+      dispatch(signUpSucceeded())
+      // TODO: how to navigate here?????
       navigation.navigate('HomeStack', { screen: 'Trending' })
     }
   }, [accountCreationStatus, dispatch, navigation])

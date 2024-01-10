@@ -52,6 +52,7 @@ export const getHasCompletedAccount = createSelector(
     // If a user has started the sign up flow,
     // only return true if they finish the flow
     // (including selecting followees)
+    console.log({ hasAccount, startedSignUpProcess, finishedSignUpProcess })
     return hasAccount && (!startedSignUpProcess || finishedSignUpProcess)
   }
 )
