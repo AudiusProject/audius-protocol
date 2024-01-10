@@ -67,8 +67,9 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
-type IsInitiallyUnlistedProp = {
+type ReleaseDateRadioProps = {
   isInitiallyUnlisted: boolean
+  initialReleaseDate: string | null
 }
 
 export const timeValidationSchema = z.object({
@@ -107,7 +108,6 @@ export const ReleaseDateField = () => {
         : ReleaseDateType.RELEASE_NOW
     }
   }, [trackReleaseDate])
-  console.log('asdf initialValues: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
@@ -197,7 +197,7 @@ export const mergeDateTimeValues = (
   return combinedDateTime
 }
 
-export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
+export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
 
   return (
@@ -221,7 +221,7 @@ export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
     </>
   )
 }
-export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
+export const SelectReleaseDate = (props: ReleaseDateRadioProps) => {
   const { isInitiallyUnlisted, initialReleaseDate } = props
 
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
@@ -241,12 +241,6 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
     }
     const truncatedReleaseDate = moment(releaseDateField.value)
     const today = moment().startOf('day')
-
-    console.log(
-      'asdf releaseDateField: ',
-      moment(truncatedReleaseDate).toString(),
-      initialReleaseDate
-    )
 
     if (moment(truncatedReleaseDate).isBefore(today)) {
       setTimePeriod(TimePeriodType.PAST)
@@ -295,7 +289,6 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
                 transformValueOnBlur={(value) => {
-                  console.log('asdf transform')
                   if (value.includes(':')) {
                     return value
                   }

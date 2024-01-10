@@ -121,7 +121,6 @@ export const AccessAndSaleTriggerLegacy = (
     preview_start_seconds: preview,
     ...fieldVisibility
   } = metadataState
-  console.log('asdf metadataState: ', metadataState)
   /**
    * Premium conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
@@ -259,7 +258,7 @@ export const AccessAndSaleTriggerLegacy = (
         break
       }
     }
-    console.log('asdf submit newState: ', newState)
+
     didUpdateState(newState)
   }
 

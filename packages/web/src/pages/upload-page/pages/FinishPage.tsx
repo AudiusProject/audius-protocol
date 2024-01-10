@@ -189,11 +189,20 @@ export const FinishPage = (props: FinishPageProps) => {
   const dispatchVisitEvent = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
   }, [dispatch, uploadType])
-  console.log('asdf uploadType: ', uploadType, upload)
+
+  const isScheduledRelease =
+    (upload.tracks &&
+      upload.tracks.length === 1 &&
+      upload.tracks[0].metadata.is_scheduled_release) ??
+    false
+
   return (
     <div className={styles.page}>
       {uploadComplete ? (
-        <ShareBanner user={accountUser!} uploadTracks={upload.tracks} />
+        <ShareBanner
+          user={accountUser!}
+          isScheduledRelease={isScheduledRelease}
+        />
       ) : null}
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>

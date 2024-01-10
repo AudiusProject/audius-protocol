@@ -26,10 +26,11 @@ const messages = {
 
 type ShareBannerProps = {
   user: User
+  isScheduledRelease: boolean
 }
 
 export const ShareBanner = (props: ShareBannerProps) => {
-  const { user, uploadTracks } = props
+  const { user, isScheduledRelease } = props
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const record = useRecord()
@@ -52,9 +53,6 @@ export const ShareBanner = (props: ShareBannerProps) => {
     dispatch(shareUser(user.user_id, ShareSource.UPLOAD))
     toast(messages.copyProfileToast, SHARE_TOAST_TIMEOUT_MILLIS)
   }, [dispatch, toast, user.user_id])
-
-  const isScheduledRelease =
-    uploadTracks.length === 1 && uploadTracks[0].metadata.is_scheduled_release
 
   return (
     <div

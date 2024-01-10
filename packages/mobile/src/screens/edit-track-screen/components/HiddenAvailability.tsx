@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
@@ -80,8 +80,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const HiddenAvailability = ({
   selected,
-  disabled = false,
-  isScheduledRelease = false
+  disabled = false
 }: TrackAvailabilitySelectionProps) => {
   const styles = useStyles()
   const secondary = useColor('secondary')
@@ -130,7 +129,6 @@ export const HiddenAvailability = ({
       {disabled ? (
         <HelpCallout style={styles.noHidden} content={messages.noHiddenHint} />
       ) : null}
-
       {selected ? (
         <>
           <View style={styles.subtitleContainer}>

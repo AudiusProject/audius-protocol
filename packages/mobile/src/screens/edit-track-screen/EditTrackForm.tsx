@@ -69,7 +69,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     doneText
   } = props
   const errorsKeys = Object.keys(errors)
-  console.log('asdf errorKeys: ', errorsKeys)
   const hasErrors =
     errorsKeys.length > 0 && errorsKeys.every((errorKey) => touched[errorKey])
   const styles = useStyles()

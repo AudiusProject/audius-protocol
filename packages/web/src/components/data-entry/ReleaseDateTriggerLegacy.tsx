@@ -67,7 +67,6 @@ export const ReleaseDateTriggerLegacy = (
     }
   }, [trackReleaseDateState])
   const onSubmit = (values: ReleaseDateFormValues) => {
-    console.log('asdf onSubmit: ', values)
     const mergedReleaseDate = mergeDateTimeValues(
       values[RELEASE_DATE],
       values[RELEASE_DATE_HOUR],
@@ -98,14 +97,8 @@ export const ReleaseDateTriggerLegacy = (
       newState.is_scheduled_release = true
     }
     props.initialForm.release_date = newState.release_date
-    console.log(
-      'asdf props release_date: ',
-      props.initialForm.release_date,
-      newState.release_date
-    )
 
     setTrackReleaseDateState(newState.release_date)
-
     setTrackReleaseDateState(newState.release_date)
     didUpdateState(newState)
   }

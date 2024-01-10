@@ -251,7 +251,7 @@ export const ReleaseNowRadioField = (props) => {
     setIsScheduledRelease,
     setIsUnlisted
   ])
-  console.log('asdf isInitiallyUnlisteD: ', isInitiallyUnlisted)
+
   return (
     <View style={styles.releaseNowContainer}>
       <Text
@@ -276,7 +276,6 @@ export const ReleaseNowRadioField = (props) => {
 
 export const ReleaseDateScreen = (props) => {
   const isInitiallyUnlisted = props.route.params.isInitiallyUnlisted
-  console.log('asdf isInitiallyUnlisted: ', isInitiallyUnlisted)
   const [{ value }] = useField<Nullable<string>>('release_date')
 
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
@@ -306,7 +305,6 @@ export const ReleaseDateScreen = (props) => {
     navigation.goBack()
     dispatch(reset())
   }, [navigation, dispatch])
-  console.log('asdf props: ', props)
   const data: ListSelectionData[] = [
     {
       label: ReleaseDateType.RELEASE_NOW,

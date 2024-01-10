@@ -358,7 +358,6 @@ const AdvancedForm = (props) => {
     premium_conditions: props.defaultFields.premium_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
-  console.log('asdf availabilityStatE: ', availabilityState)
 
   const releaseDateState = {
     is_unlisted: props.defaultFields.is_unlisted,
@@ -405,11 +404,6 @@ const AdvancedForm = (props) => {
       !newState.premium_conditions?.nft_collection
     props.onChangeField(
       'premium_conditions',
-      newState.premium_conditions,
-      isInvalidNFTCollection
-    )
-    console.log(
-      'asdf newState.premium_conditions: ',
       newState.premium_conditions,
       isInvalidNFTCollection
     )
