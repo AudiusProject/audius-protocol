@@ -1,13 +1,5 @@
 import { imageBlank } from '@audius/common'
-import {
-  Genre,
-  HashId,
-  Mood,
-  FollowGatedConditions,
-  CollectibleGatedConditions,
-  TipGatedConditions,
-  USDCPurchaseConditions
-} from '@audius/sdk'
+import { Genre, HashId, Mood, CollectibleGatedConditions } from '@audius/sdk'
 import { z } from 'zod'
 
 const messages = {
@@ -24,6 +16,27 @@ const messages = {
     nameRequiredError: 'Your album must have a name.'
   }
 }
+
+const FollowGatedConditionsSchema = z
+  .object({
+    follow_user_id: z.number()
+  })
+  .strict()
+
+const TipGatedConditionsSchema = z
+  .object({
+    tip_user_id: z.number()
+  })
+  .strict()
+
+const USDCPurchaseConditionsSchema = z
+  .object({
+    usdc_purchase: z.object({
+      price: z.number().positive(),
+      splits: z.any()
+    })
+  })
+  .strict()
 
 const GenreSchema = z
   .enum(Object.values(Genre) as [Genre, ...Genre[]])
@@ -73,9 +86,9 @@ const createSdkSchema = () =>
       .optional(
         z.union([
           CollectibleGatedConditions,
-          FollowGatedConditions,
-          TipGatedConditions,
-          USDCPurchaseConditions
+          FollowGatedConditionsSchema,
+          TipGatedConditionsSchema,
+          USDCPurchaseConditionsSchema
         ])
       )
       .nullable(),
@@ -84,9 +97,9 @@ const createSdkSchema = () =>
       .optional(
         z.union([
           CollectibleGatedConditions,
-          FollowGatedConditions,
-          TipGatedConditions,
-          USDCPurchaseConditions
+          FollowGatedConditionsSchema,
+          TipGatedConditionsSchema,
+          USDCPurchaseConditionsSchema
         ])
       )
       .nullable(),

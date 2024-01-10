@@ -203,8 +203,9 @@ const TrackTile = ({
         return (
           <div className={styles.progressTextContainer}>
             <p className={styles.progressText}>
-              {`${formatLineupTileDuration(remainingTime, true)} ${messages.timeLeft
-                }`}
+              {`${formatLineupTileDuration(remainingTime, true)} ${
+                messages.timeLeft
+              }`}
             </p>
             <ProgressBar
               value={(trackPositionInfo.playbackPosition / duration) * 100}
@@ -228,14 +229,14 @@ const TrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      hasStreamAccess,
-      isArtistPick,
-      isOwner,
-      isUnlisted:
-        isUnlisted &&
-        (!releaseDate || moment(releaseDate).isBefore(moment())),
-      streamConditions
-    })
+        hasStreamAccess,
+        isArtistPick,
+        isOwner,
+        isUnlisted:
+          isUnlisted &&
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
+        streamConditions
+      })
 
   let specialContentLabel = null
   let scheduledReleaseLabel = null
@@ -391,13 +392,13 @@ const TrackTile = ({
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                hasStreamAccess,
-                fieldVisibility,
-                isOwner,
-                isStreamGated,
-                listenCount,
-                variant: isPurchase ? 'premium' : 'gated'
-              })
+                  hasStreamAccess,
+                  fieldVisibility,
+                  isOwner,
+                  isStreamGated,
+                  listenCount,
+                  variant: isPurchase ? 'premium' : 'gated'
+                })
               : null}
           </div>
         </div>

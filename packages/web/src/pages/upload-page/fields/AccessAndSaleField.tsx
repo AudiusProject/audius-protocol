@@ -571,7 +571,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       isUpload: !!isUpload,
       isRemix,
       initialStreamConditions: initialStreamConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted
+      isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease
     })
 

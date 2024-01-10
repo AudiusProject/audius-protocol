@@ -189,8 +189,8 @@ export const makeUserlessTrack = (
     remix_of:
       remixes.length > 0
         ? {
-          tracks: remixes
-        }
+            tracks: remixes
+          }
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
@@ -266,8 +266,8 @@ export const makeTrack = (
     remix_of:
       remixes.length > 0
         ? {
-          tracks: remixes
-        }
+            tracks: remixes
+          }
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
@@ -317,7 +317,7 @@ export const makePlaylist = (
   const saves =
     'followee_favorites' in playlist
       ? playlist.followee_favorites?.map(makeFavorite).filter(removeNullable) ??
-      []
+        []
       : []
 
   const reposts =
@@ -357,8 +357,8 @@ export const makePlaylist = (
   const tracks =
     'tracks' in playlist
       ? playlist.tracks
-        ?.map((track) => makeTrack(track))
-        .filter(removeNullable) ?? []
+          ?.map((track) => makeTrack(track))
+          .filter(removeNullable) ?? []
       : []
 
   const marshalled = {

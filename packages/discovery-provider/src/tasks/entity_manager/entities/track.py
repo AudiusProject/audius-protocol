@@ -590,7 +590,10 @@ def validate_access_conditions(params: ManageEntityParameters):
     stream_conditions = track_metadata.get("stream_conditions", {}) or {}
 
     download = track_metadata.get("download")
-    is_downloadable = download.get("is_downloadable") if download else False
+    new_is_downloadable = track_metadata.get("is_downloadable")
+    is_downloadable = new_is_downloadable or (
+        download.get("is_downloadable") if download else False
+    )
     is_download_gated = track_metadata.get("is_download_gated")
     download_conditions = track_metadata.get("download_conditions", {}) or {}
 
@@ -642,12 +645,6 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of download conditions"
             )
-    else:
-        # if not download gated, must not be stream gated
-        if is_stream_gated:
-            raise IndexingValidationError(
-                f"Track {params.entity_id} is not download gated but is stream gated"
-            )
 
 
 # Make sure that access conditions do not incorrectly change during track update.
@@ -657,18 +654,37 @@ def validate_update_access_conditions(params: ManageEntityParameters):
     if track_id not in params.existing_records["Track"]:
         raise IndexingValidationError(f"Track {track_id} is not in existing records")
 
-    existing_track = params.existing_records["Track"][track_id]
+    existing_track = helpers.model_to_dictionary(
+        params.existing_records["Track"][track_id]
+    )
     updated_track = params.metadata
 
-    # validate changes to conditions
-    def validate_update(existing_conditions, updated_conditions):
-        # currently non gated track cannot be updated to be gated
-        if not existing_conditions and updated_conditions:
-            raise IndexingValidationError(
-                f"Track {track_id} cannot increase strictness of access conditions"
-            )
-
-        if existing_conditions:
+    # validate changes to conditions for stream/download access
+    def validate_update(existing_conditions, updated_conditions, for_download=False):
+        if not existing_conditions:
+            # non stream gated track cannot be updated to be stream gated
+            if updated_conditions and not for_download:
+                raise IndexingValidationError(
+                    f"Track {track_id} cannot increase strictness of stream access conditions"
+                )
+            # only previously non downloadable track may be updated to be downloadable
+            if for_download:
+                existing_track_download = existing_track.get("download") or {}
+                is_existing_track_downloadable = existing_track.get(
+                    "is_downloadable"
+                ) or existing_track_download.get("is_downloadable")
+                updated_track_download = updated_track.get("download") or {}
+                is_updated_track_downloadable = updated_track.get(
+                    "is_downloadable"
+                ) or updated_track_download.get("is_downloadable")
+                is_newly_downloadable = (
+                    not is_existing_track_downloadable and is_updated_track_downloadable
+                )
+                if not is_newly_downloadable and updated_conditions:
+                    raise IndexingValidationError(
+                        f"Track {track_id} cannot increase strictness of download access conditions"
+                    )
+        else:
             # note that usdc purchase may be edited to change price (and maybe splits?)
             is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
             is_updated_usdc_purchase = (
@@ -691,8 +707,10 @@ def validate_update_access_conditions(params: ManageEntityParameters):
                 )
 
     validate_update(
-        existing_track.stream_conditions, updated_track.get("stream_conditions")
+        existing_track.get("stream_conditions"), updated_track.get("stream_conditions")
     )
     validate_update(
-        existing_track.download_conditions, updated_track.get("download_conditions")
+        existing_track.get("download_conditions"),
+        updated_track.get("download_conditions"),
+        for_download=True,
     )

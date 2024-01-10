@@ -19,6 +19,10 @@ const TRACK_PROPS = [
   'file_type',
   'is_stream_gated',
   'stream_conditions',
+  'is_download_gated',
+  'download_conditions',
+  'is_original_available',
+  'is_downloadable',
   'ai_attribution_user_id'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']

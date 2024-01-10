@@ -35,6 +35,7 @@ export const createStemMetadata = ({
 }): StemTrack => {
   return {
     ...track,
+    is_downloadable: true,
     download: {
       cid: null,
       is_downloadable: true,

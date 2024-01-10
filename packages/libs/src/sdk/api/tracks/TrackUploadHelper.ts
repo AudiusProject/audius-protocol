@@ -68,17 +68,17 @@ export class TrackUploadHelper extends BaseAPI {
       trackCid: audioResponse.results['320'],
       previewCid: trackMetadata.previewStartSeconds
         ? audioResponse.results[
-        `320_preview|${trackMetadata.previewStartSeconds}`
-        ]
+            `320_preview|${trackMetadata.previewStartSeconds}`
+          ]
         : trackMetadata.previewCid,
       origFileCid: trackMetadata.origFileCid,
       origFilename: trackMetadata.origFilename,
       audioUploadId: audioResponse.id,
       download: trackMetadata.download?.isDownloadable
         ? {
-          ...trackMetadata.download,
-          cid: audioResponse.results['320']
-        }
+            ...trackMetadata.download,
+            cid: audioResponse.results['320']
+          }
         : trackMetadata.download,
       coverArtSizes: coverArtResponse.id,
       duration: parseInt(audioResponse.probe.format.duration, 10)
