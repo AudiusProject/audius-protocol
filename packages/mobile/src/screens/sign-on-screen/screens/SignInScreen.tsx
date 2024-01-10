@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { signInPageMessages as messages, signInSchema } from '@audius/common'
-import { getStatus } from 'audius-client/src/common/store/pages/signon/selectors'
+import {
+  getEmailField,
+  getStatus
+} from 'audius-client/src/common/store/pages/signon/selectors'
 import { signIn } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
@@ -26,12 +29,12 @@ type SignInValues = {
 }
 
 export const SignInScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail } = props
   const dispatch = useDispatch()
+  const { value: existingEmailValue } = useSelector(getEmailField)
   const signInStatus = useSelector(getStatus)
 
   const initialValues = {
-    email,
+    email: existingEmailValue ?? '',
     password: ''
   }
 
@@ -53,11 +56,7 @@ export const SignInScreen = (props: SignOnScreenProps) => {
         <>
           <Heading heading={messages.title} centered />
           <View>
-            <EmailField
-              name='email'
-              label={messages.emailLabel}
-              onChangeText={onChangeEmail}
-            />
+            <EmailField name='email' label={messages.emailLabel} />
             <PasswordField name='password' label={messages.passwordLabel} />
           </View>
           <Flex gap='l'>

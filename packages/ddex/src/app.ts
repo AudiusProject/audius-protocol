@@ -5,7 +5,7 @@ import type { ScheduledReleaseService } from './services/scheduledReleaseService
 import type { XmlProcessorService } from './services/xmlProcessorService'
 import express, { Express, Request, Response } from 'express'
 import path from 'path'
-import * as uploadController from './controllers/uploadController'
+import * as uploadController from './controllers/uploadsController'
 // import cors from 'cors'
 
 export default function createApp(
@@ -19,18 +19,12 @@ export default function createApp(
    */
   const app: Express = express()
 
-  // Uncomment when developing locally as this is required for uploads to work
-  // when running the frontend and backend apps separately.
-  // TODO make the dev flow more seamless
-  // const corsOptions = {
-  //   origin: 'http://localhost:5173'
-  // }
-  // app.use(cors(corsOptions));
-
   /*
    * Define API routes
    */
 
+  app.get('/api/releases', uploadController.getReleases(sql))
+  app.get('/api/uploads', uploadController.getUploads(sql))
   app.post('/api/upload', uploadController.postUploadXml(xmlProcessorService))
   app.get('/api/health_check', (req: Request, res: Response) => {
     res.status(200).send('DDEX is alive!')
@@ -49,8 +43,13 @@ export default function createApp(
   app.get('/', (req: Request, res: Response) => {
     res.sendFile(path.join(buildPath, 'index.html'))
   })
-  app.get('*', (req: Request, res: Response) => {
-    res.sendFile(path.join(buildPath, 'index.html')) // Fallback for handling client-side routing
+
+  // Fallback to handle client-side routing, excluding /api routes
+  app.get('*', (req: Request, res: Response, next) => {
+    if (req.url.startsWith('/api')) {
+      return next()
+    }
+    res.sendFile(path.join(buildPath, 'index.html'))
   })
 
   return app
