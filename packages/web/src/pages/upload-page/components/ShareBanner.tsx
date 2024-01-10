@@ -182,34 +182,36 @@ export const ShareBanner = (props: ShareBannerProps) => {
       <Text variant='display' as='h3' size='small' color='darkmodeStaticWhite'>
         {messages.uploadComplete}
       </Text>
-      <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
-        {messages.shareText(uploadType)}
-      </Text>
       {!isUnlistedTrack ? (
-        <div className={styles.buttonContainer}>
-          <Button
-            fullWidth
-            leftIcon={<IconTwitterBird />}
-            onClick={handleTwitterShare}
-            text={
-              <Text variant='title' size='large' color='secondary'>
-                {messages.twitterButtonText}
-              </Text>
-            }
-            type={ButtonType.WHITE}
-          />
-          <Button
-            fullWidth
-            leftIcon={<IconLink />}
-            onClick={handleCopyLink}
-            text={
-              <Text variant='title' size='large' color='secondary'>
-                {messages.copyLinkButtonText}
-              </Text>
-            }
-            type={ButtonType.WHITE}
-          />
-        </div>
+        <>
+          <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
+            {messages.shareText(uploadType)}
+          </Text>
+          <div className={styles.buttonContainer}>
+            <Button
+              fullWidth
+              leftIcon={<IconTwitterBird />}
+              onClick={handleTwitterShare}
+              text={
+                <Text variant='title' size='large' color='secondary'>
+                  {messages.twitterButtonText}
+                </Text>
+              }
+              type={ButtonType.WHITE}
+            />
+            <Button
+              fullWidth
+              leftIcon={<IconLink />}
+              onClick={handleCopyLink}
+              text={
+                <Text variant='title' size='large' color='secondary'>
+                  {messages.copyLinkButtonText}
+                </Text>
+              }
+              type={ButtonType.WHITE}
+            />
+          </div>
+        </>
       ) : null}
     </div>
   )

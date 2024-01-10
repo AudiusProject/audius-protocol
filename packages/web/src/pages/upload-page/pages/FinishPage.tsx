@@ -197,13 +197,12 @@ export const FinishPage = (props: FinishPageProps) => {
 
   return (
     <div className={styles.page}>
-<<<<<<< HEAD
       {uploadComplete ? (
-        <ShareBanner user={accountUser!} isUnlistedTrack={isUnlistedTrack} />
+        <ShareBanner
+          uploadType={uploadType}
+          isUnlistedTrack={isUnlistedTrack}
+        />
       ) : null}
-=======
-      {uploadComplete ? <ShareBanner uploadType={uploadType} /> : null}
->>>>>>> main
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
