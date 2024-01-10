@@ -118,7 +118,6 @@ type FinishPageProps = {
 export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
-  const accountUser = useSelector(getAccountUser)
   const upload = useSelector((state: CommonState) => state.upload)
   const user = useSelector(getAccountUser)
   const fullUploadPercent = useSelector(getCombinedUploadPercentage)
@@ -192,7 +191,7 @@ export const FinishPage = (props: FinishPageProps) => {
 
   return (
     <div className={styles.page}>
-      {uploadComplete ? <ShareBanner user={accountUser!} /> : null}
+      {uploadComplete ? <ShareBanner uploadType={uploadType} /> : null}
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
