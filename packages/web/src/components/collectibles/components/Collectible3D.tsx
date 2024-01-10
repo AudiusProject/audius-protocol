@@ -70,6 +70,6 @@ export const Collectible3D = ({
       ar-status='not-presenting'
       ref={ref}
       src={src}
-    ></model-viewer>
+    />
   )
 }
