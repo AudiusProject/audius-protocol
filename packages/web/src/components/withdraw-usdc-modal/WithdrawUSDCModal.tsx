@@ -34,6 +34,7 @@ import { EnterTransferDetails } from './components/EnterTransferDetails'
 import { ErrorPage } from './components/ErrorPage'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
+import { PrepareTransfer } from './components/PrepareTransfer'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
@@ -179,6 +180,9 @@ export const WithdrawUSDCModal = () => {
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
       formPage = <ConfirmTransferDetails />
+      break
+    case WithdrawUSDCModalPages.PREPARE_TRANSFER:
+      formPage = <PrepareTransfer />
       break
     case WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS:
       formPage = <TransferInProgress />

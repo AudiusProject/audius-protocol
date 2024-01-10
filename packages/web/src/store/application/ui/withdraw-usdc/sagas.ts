@@ -15,9 +15,8 @@ import {
   WithdrawUSDCTransferEventFields,
   withdrawUSDCModalActions,
   WithdrawUSDCModalPages,
-  findAssociatedTokenAddress,
   WithdrawalMethod,
-  pollForTokenBalanceChange
+  buyUSDCActions
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -31,7 +30,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { getLibs } from 'services/audius-libs'
 import {
@@ -50,6 +49,8 @@ const {
   beginWithdrawUSDC,
   beginCoinflowWithdrawal,
   coinflowWithdrawalReady,
+  coinflowWithdrawalCanceled,
+  coinflowWithdrawalSucceeded,
   withdrawUSDCFailed,
   withdrawUSDCSucceeded
 } = withdrawUSDCActions
@@ -341,21 +342,26 @@ function* doWithdrawUSDCCoinflow({
       'finalized'
     )
     yield* put(coinflowWithdrawalReady())
-    // yield* put(withdrawUSDCSucceeded({ transaction: transactionSignature }))
-    // yield* put(
-    //   setWithdrawUSDCModalData({
-    //     page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL
-    //   })
-    // )
-    yield* call(
-      track,
-      make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
-    )
+    const result = yield* race({
+      succeeded: take(coinflowWithdrawalSucceeded),
+      canceled: take(coinflowWithdrawalCanceled)
+    })
+
+    if (result.succeeded) {
+      yield* put(withdrawUSDCSucceeded({}))
+      yield* put(
+        setWithdrawUSDCModalData({
+          page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL
+        })
+      )
+      yield* call(
+        track,
+        make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
+      )
+    } else {
+      yield* put(buyUSDCActions.startRecoveryIfNecessary())
+    }
   } catch (e: unknown) {
-    // TODO: Do we want to transfer the funds back here? User may try
-    // again.
-    // Do we want logic above to check if combined amount is all in the
-    // root wallet before attempting the coinflow part?
     const error = e as Error
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')

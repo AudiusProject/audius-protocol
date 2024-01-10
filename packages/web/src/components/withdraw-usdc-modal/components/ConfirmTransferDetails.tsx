@@ -74,7 +74,7 @@ export const ConfirmTransferDetails = () => {
       setData({
         page:
           methodValue === WithdrawalMethod.COINFLOW
-            ? WithdrawUSDCModalPages.COINFLOW_TRANSFER
+            ? WithdrawUSDCModalPages.PREPARE_TRANSFER
             : WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
       })
       submitForm()

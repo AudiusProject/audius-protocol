@@ -1,37 +1,53 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
-import {
-  CoinflowWithdrawalState,
-  useCoinflowAdapter,
-  withdrawUSDCSelectors,
-  withdrawUSDCActions
-} from '@audius/common'
+import { useCoinflowAdapter, withdrawUSDCActions } from '@audius/common'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Flex, Text } from '@audius/harmony'
+import { useUnmount } from 'react-use'
 
-import styles from './CoinflowWithdrawPage.module.css'
-
-const { getCoinflowState } = withdrawUSDCSelectors
-const { coinflowWithdrawalSucceeded } = withdrawUSDCActions
+const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
+  withdrawUSDCActions
 
 const messages = {
   preparing: 'Preparing transfer...'
 }
 
+const parseTransactionFromSuccessParams = (params: string) => {
+  try {
+    const parsed = JSON.parse(params)
+    return parsed.data as string
+  } catch (e) {
+    console.error(
+      `Failed to parse transaction from params: ${params}, received error: ${e}`
+    )
+    return ''
+  }
+}
+
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
-const RenderCoinflowWithdrawPage = () => {
+export const CoinflowWithdrawPage = () => {
   const adapter = useCoinflowAdapter()
   const dispatch = useDispatch()
 
+  const [completed, setCompleted] = useState(false)
+
+  useUnmount(() => {
+    // There is no cancelation callback for coinflow, but we want
+    // to make sure any waiting saga finishes.
+    if (!completed) {
+      dispatch(coinflowWithdrawalCanceled())
+    }
+  })
+
   const handleSuccess = useCallback(
     (params: string) => {
+      const transaction = parseTransactionFromSuccessParams(params)
       console.log(`Coinflow withdrawal succeeded: ${params}`)
-      dispatch(coinflowWithdrawalSucceeded())
+      setCompleted(true)
+      dispatch(coinflowWithdrawalSucceeded({ transaction }))
     },
     [dispatch]
   )
@@ -46,18 +62,4 @@ const RenderCoinflowWithdrawPage = () => {
       blockchain='solana'
     />
   ) : null
-}
-
-export const CoinflowWithdrawPage = () => {
-  const coinflowState = useSelector(getCoinflowState)
-  return coinflowState === CoinflowWithdrawalState.FUNDING_ROOT_WALLET ? (
-    <Flex justifyContent='center' alignItems='center' gap='m' p='4xl'>
-      <LoadingSpinner className={styles.spinner} />
-      <Text variant='heading' size='m'>
-        {messages.preparing}
-      </Text>
-    </Flex>
-  ) : (
-    <RenderCoinflowWithdrawPage />
-  )
 }

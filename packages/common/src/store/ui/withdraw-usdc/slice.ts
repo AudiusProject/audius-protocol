@@ -45,16 +45,18 @@ const slice = createSlice({
     coinflowWithdrawalReady: (state) => {
       state.coinflowState = CoinflowWithdrawalState.READY_FOR_WITHDRAWAL
     },
-    coinflowWithdrawalSucceeded: (state) => {
+    coinflowWithdrawalSucceeded: (
+      state,
+      _action: PayloadAction<{ transaction: string }>
+    ) => {
       state.coinflowState = CoinflowWithdrawalState.SUCCESS
     },
     coinflowWithdrawalCanceled: (state) => {
       state.coinflowState = CoinflowWithdrawalState.CANCELED
     },
-
     withdrawUSDCSucceeded: (
       state,
-      action: PayloadAction<{ transaction: string }>
+      action: PayloadAction<{ transaction?: string }>
     ) => {
       state.withdrawTransaction = action.payload.transaction
       state.withdrawError = undefined
