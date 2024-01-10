@@ -14,7 +14,8 @@ import {
   ButtonType,
   PlainButton,
   IconQuestionCircle,
-  PlainButtonType
+  PlainButtonType,
+  Flex
 } from '@audius/harmony'
 import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
@@ -24,6 +25,7 @@ import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import styles from './USDCCard.module.css'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 const LEARN_MORE_LINK =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -39,7 +41,13 @@ const messages = {
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
+export const USDCCard = ({
+  balance,
+  refreshing = false
+}: {
+  balance: BNUSDC
+  refreshing?: boolean
+}) => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
 
@@ -90,14 +98,18 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
               </Text>
             </div>
           </div>
-          <Text
-            variant='heading'
-            color='staticWhite'
-            strength='strong'
-            size='xxLarge'
-          >
-            ${balanceFormatted}
-          </Text>
+
+          <Flex gap='m'>
+            {refreshing && <LoadingSpinner className={styles.spinner} />}
+            <Text
+              variant='heading'
+              color='staticWhite'
+              strength='strong'
+              size='xxLarge'
+            >
+              ${balanceFormatted}
+            </Text>
+          </Flex>
         </div>
         <div className={styles.usdcInfo}>
           <Text color='staticWhite'>{messages.buyAndSell}</Text>

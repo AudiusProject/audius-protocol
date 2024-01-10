@@ -9,10 +9,6 @@ import { useUnmount } from 'react-use'
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
   withdrawUSDCActions
 
-const messages = {
-  preparing: 'Preparing transfer...'
-}
-
 const parseTransactionFromSuccessParams = (params: string) => {
   try {
     const parsed = JSON.parse(params)
