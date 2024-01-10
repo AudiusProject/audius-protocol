@@ -52,10 +52,10 @@ const UserBadges = ({
   inline = false
 }: UserBadgesProps) => {
   const { isVerified, totalAudioBalance } = audiusProfile
-  const { tier } = getTierForBalance(totalAudioBalance)
+  const { tier } = getTierForBalance(totalAudioBalance ?? 0)
 
   const tierMap = audioTierMapSVG
-  const audioBadge = tierMap[tier as BadgeTier] ?? tierMap['bronze']
+  const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = isVerified || audioBadge
 
   if (inline) {
