@@ -22,8 +22,7 @@ export const isMobileUserAgent = (userAgent: string) => {
 }
 /**
  * Client side utility to determine if the user is on a mobile device
- *
- * For SSR support, use the `useIsMobile` hook
+ * This is not SSR compatible, use the `useIsMobile` hook instead
  */
 export const isMobile = () => {
   if (typeof navigator === 'undefined' || typeof window === 'undefined') {
@@ -90,6 +89,10 @@ export const getMobileOS = () => {
   return null
 }
 
+/**
+ * Client side utility to determining the client type
+ * This is not SSR compatible, use the `useIsMobile` hook instead
+ */
 export const getClient = () => {
   return isElectron()
     ? Client.ELECTRON

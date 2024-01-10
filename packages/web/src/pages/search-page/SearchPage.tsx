@@ -1,13 +1,12 @@
 import { ReactNode } from 'react'
 
-import { Client } from '@audius/common'
 import { connect } from 'react-redux'
 
 import SearchPageProvider from 'pages/search-page/SearchPageProvider'
 import DesktopSearchPageContent from 'pages/search-page/components/desktop/SearchPageContent'
 import MobileSearchPageContent from 'pages/search-page/components/mobile/SearchPageContent'
 import { AppState } from 'store/types'
-import { getClient } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 type ownProps = {
   scrollToTop: () => void
@@ -17,8 +16,7 @@ type ownProps = {
 type SearchPageProps = ownProps & ReturnType<typeof mapStateToProps>
 
 const SearchPage = ({ scrollToTop, containerRef }: SearchPageProps) => {
-  const client = getClient()
-  const isMobile = client === Client.MOBILE
+  const isMobile = useIsMobile()
   const content = isMobile ? MobileSearchPageContent : DesktopSearchPageContent
 
   return (

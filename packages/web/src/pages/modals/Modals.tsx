@@ -1,6 +1,5 @@
 import { ComponentType, lazy } from 'react'
 
-import { Client } from '@audius/common'
 import type { Modals as ModalTypes } from '@audius/common'
 
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
@@ -42,7 +41,7 @@ import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modal
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { getClient } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
@@ -114,8 +113,7 @@ const commonModals = Object.entries(commonModalsMap) as [
 ][]
 
 const Modals = () => {
-  const client = getClient()
-  const isMobileClient = client === Client.MOBILE
+  const isMobile = useIsMobile()
 
   return (
     <>
@@ -127,7 +125,7 @@ const Modals = () => {
       <UnloadDialog />
       <CollectibleDetailsModal />
 
-      {!isMobileClient && (
+      {!isMobile && (
         <>
           <EmbedModal />
           <ConnectedUserListModal />
@@ -139,7 +137,7 @@ const Modals = () => {
         </>
       )}
 
-      {isMobileClient && (
+      {isMobile && (
         <>
           <ConnectedMobileOverflowModal />
           <UnfollowConfirmationModal />
