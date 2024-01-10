@@ -413,6 +413,7 @@ const AdvancedForm = (props) => {
   const didUpdateReleaseDate = (newState) => {
     props.onChangeField('release_date', newState.release_date)
     props.onChangeField('is_unlisted', newState.is_unlisted)
+    props.onChangeField('is_scheduled_release', newState.is_unlisted)
   }
 
   const didToggleHideRemixesState = () => {

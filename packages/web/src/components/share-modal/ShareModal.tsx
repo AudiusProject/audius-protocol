@@ -155,8 +155,7 @@ export const ShareModal = () => {
     ),
     shareType: content?.type ?? 'track',
     isPrivate:
-      content?.type === 'playlist' ? content.playlist.is_private : false,
-    isUnlisted: content?.type === 'track' ? content.track.is_unlisted : false
+      content?.type === 'playlist' ? content.playlist.is_private : false
   }
 
   if (isMobile()) return <ShareDrawer {...shareProps} />

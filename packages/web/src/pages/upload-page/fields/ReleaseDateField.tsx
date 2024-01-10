@@ -67,8 +67,9 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
-type IsInitiallyUnlistedProp = {
+type ReleaseDateRadioProps = {
   isInitiallyUnlisted: boolean
+  initialReleaseDate: string | null
 }
 
 export const timeValidationSchema = z.object({
@@ -163,7 +164,10 @@ export const ReleaseDateField = () => {
         menuFields={
           <Flex direction='column' gap='l'>
             <Text>{messages.description}</Text>
-            <ReleaseDateRadioItems isInitiallyUnlisted={true} />
+            <ReleaseDateRadioItems
+              isInitiallyUnlisted={true}
+              initialReleaseDate={trackReleaseDate}
+            />
           </Flex>
         }
         renderValue={renderValue}
@@ -193,7 +197,7 @@ export const mergeDateTimeValues = (
   return combinedDateTime
 }
 
-export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
+export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
 
   return (
@@ -206,57 +210,44 @@ export const ReleaseDateRadioItems = (props: IsInitiallyUnlistedProp) => {
         <ModalRadioItem
           value={ReleaseDateType.RELEASE_NOW}
           label='Release Immediately'
+          disabled={!props.isInitiallyUnlisted}
         />
         <ModalRadioItem
           value={ReleaseDateType.SCHEDULED_RELEASE}
           label='Select a Release Date'
         />
       </RadioButtonGroup>
-      <SelectReleaseDate isInitiallyUnlisted={props.isInitiallyUnlisted} />
+      <SelectReleaseDate {...props} />
     </>
   )
 }
-export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
-  const { isInitiallyUnlisted } = props
+export const SelectReleaseDate = (props: ReleaseDateRadioProps) => {
+  const { isInitiallyUnlisted, initialReleaseDate } = props
 
   const [releaseDateTypeField] = useField(RELEASE_DATE_TYPE)
   const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
   const [, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  const [releaseDateMeridianField, , { setValue: setReleaseDateMeridian }] =
-    useField(RELEASE_DATE_MERIDIAN)
+  const [, , { setValue: setReleaseDateMeridian }] = useField(
+    RELEASE_DATE_MERIDIAN
+  )
 
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
-  const onTimeChange = useCallback(
-    (e: { target: { value: string } }) => {
-      const mergedReleaseDate = mergeDateTimeValues(
-        releaseDateField.value,
-        e.target.value,
-        releaseDateMeridianField.value
-      ).toString()
-      const today = moment().startOf('day')
-
-      if (moment(mergedReleaseDate).isBefore(today)) {
-        setTimePeriod(TimePeriodType.PAST)
-      } else {
-        setTimePeriod(TimePeriodType.FUTURE)
-      }
-    },
-    [releaseDateField.value, releaseDateMeridianField.value]
-  )
   useEffect(() => {
     if (releaseDateField.value === undefined) {
       return
     }
     const truncatedReleaseDate = moment(releaseDateField.value)
-
     const today = moment().startOf('day')
 
     if (moment(truncatedReleaseDate).isBefore(today)) {
       setTimePeriod(TimePeriodType.PAST)
-    } else if (moment(truncatedReleaseDate).isAfter(today)) {
+    } else if (
+      moment(truncatedReleaseDate).isAfter(today) &&
+      initialReleaseDate !== releaseDateField.value
+    ) {
       setTimePeriod(TimePeriodType.FUTURE)
       setReleaseDateHour('12:00')
       setReleaseDateMeridian('AM')
@@ -264,6 +255,7 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
       setTimePeriod(TimePeriodType.PRESENT)
     }
   }, [
+    initialReleaseDate,
     releaseDateField.value,
     setReleaseDateHour,
     setReleaseDateMeridian,
@@ -288,7 +280,7 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
               label={messages.title}
             />
           </div>
-          {timePeriod !== TimePeriodType.PAST && (
+          {timePeriod !== TimePeriodType.PAST && isInitiallyUnlisted && (
             <>
               <HarmonyTextField
                 name={RELEASE_DATE_HOUR}
@@ -307,7 +299,6 @@ export const SelectReleaseDate = (props: IsInitiallyUnlistedProp) => {
                   }
                   return value
                 }}
-                onBlur={onTimeChange}
               />
               <SelectMeridianField />
             </>
