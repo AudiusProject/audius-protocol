@@ -69,7 +69,7 @@ export const Draggable = (props: DraggableProps) => {
         wrapper.setAttribute('id', 'ghost')
 
         const content = document.createElement('div')
-        content.innerHTML = text
+        content.innerText = text
 
         wrapper.append(content)
         document.body.append(wrapper)

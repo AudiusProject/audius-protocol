@@ -18,13 +18,12 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -52,7 +51,6 @@ const initialValues: SelectArtistsValues = {
 
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -69,13 +67,12 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       dispatch(addFollowArtists([...selectedArtists]))
       if (isMobile) {
-        navigate(TRENDING_PAGE)
-        setIsWelcomeModalOpen(true)
+        navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
         navigate(SIGN_UP_APP_CTA_PAGE)
       }
     },
-    [dispatch, isMobile, navigate, setIsWelcomeModalOpen]
+    [dispatch, isMobile, navigate]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

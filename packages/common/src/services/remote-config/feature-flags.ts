@@ -56,7 +56,8 @@ export enum FeatureFlags {
   IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled',
   SCHEDULED_RELEASES = 'scheduled_releases',
   BUY_WITH_COINFLOW = 'buy_with_coinflow',
-  EDIT_ALBUMS = 'edit_albums'
+  EDIT_ALBUMS = 'edit_albums',
+  LOSSLESS_DOWNLOADS_ENABLED = 'lossless_downloads_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -128,5 +129,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
   [FeatureFlags.SCHEDULED_RELEASES]: false,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,
-  [FeatureFlags.EDIT_ALBUMS]: false
+  [FeatureFlags.EDIT_ALBUMS]: false,
+  [FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED]: false
 }

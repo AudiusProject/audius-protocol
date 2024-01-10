@@ -17,6 +17,7 @@ import { TextInputSize, type TextInputProps } from './types'
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props, ref) => {
     const {
+      'aria-label': ariaLabel,
       required,
       className,
       inputRootClassName,
@@ -139,7 +140,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={props['aria-label'] ?? labelText}
+          aria-label={ariaLabel ?? labelText}
           aria-required={required}
           id={id}
           {...other}

@@ -11,6 +11,11 @@ services:
       - 35764:5432
     volumes:
       - ../discovery-provider/ddl:/ddl
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2

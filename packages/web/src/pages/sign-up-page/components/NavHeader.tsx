@@ -14,9 +14,7 @@ import {
 } from '@audius/harmony'
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
 
-import { getSignOn } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useSelector } from 'utils/reducer'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_ARTISTS_PAGE,
@@ -28,18 +26,15 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
-import { determineAllowedRoute } from '../utils/determineAllowedRoutes'
+import { useDetermineAllowedRoute } from '../utils/useDetermineAllowedRoutes'
 
 import { ProgressHeader } from './ProgressHeader'
 
 export const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
-  const signUpState = useSelector(getSignOn)
+  const determineAllowedRoute = useDetermineAllowedRoute()
   if (match?.params.currentPath) {
-    const { allowedRoutes } = determineAllowedRoute(
-      signUpState,
-      match?.params.currentPath
-    )
+    const { allowedRoutes } = determineAllowedRoute(match?.params.currentPath)
     const currentRouteIndex = allowedRoutes.indexOf(match.params.currentPath)
     const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
     return isBackAllowed
@@ -130,7 +125,9 @@ export const NavHeader = () => {
               <Box css={{ width: iconSizes.m }} />
             </>
           ) : (
-            audiusLogo
+            <Flex w='100%' justifyContent='center'>
+              {audiusLogo}
+            </Flex>
           )}
         </HeaderRoot>
       </Route>

@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
-import { Nullable } from '@audius/common'
+import { Nullable, finishProfilePageMessages as messages } from '@audius/common'
 import cn from 'classnames'
 import { useField } from 'formik'
 import ReactDropzone, { DropFilesEventHandler } from 'react-dropzone'
@@ -31,25 +31,29 @@ type ImageFieldProps = {
 export const ImageField = (props: ImageFieldProps) => {
   const { name, className, children, onChange, imageResizeOptions } = props
 
-  const [field, , { setValue }] = useField<ImageFieldValue>(name)
+  const [field, , { setValue, setError }] = useField<ImageFieldValue>(name)
   const { value } = field
 
   const handleChange: DropFilesEventHandler = useCallback(
     async (files) => {
-      const [file] = files
-      const resizedFile = await resizeImage(
-        file,
-        imageResizeOptions?.maxWidth,
-        imageResizeOptions?.square
-      )
-      const url = URL.createObjectURL(resizedFile)
-      const image = { file: resizedFile, url }
-      setValue(image)
-      if (onChange) {
-        onChange(image)
+      try {
+        const [file] = files
+        const resizedFile = await resizeImage(
+          file,
+          imageResizeOptions?.maxWidth,
+          imageResizeOptions?.square
+        )
+        const url = URL.createObjectURL(resizedFile)
+        const image = { file: resizedFile, url }
+        setValue(image)
+        if (onChange) {
+          onChange(image)
+        }
+      } catch (e) {
+        setError(messages[`${name}UploadError` as keyof typeof messages])
       }
     },
-    [setValue, onChange, imageResizeOptions]
+    [setValue, onChange, setError, name, imageResizeOptions]
   )
 
   return (

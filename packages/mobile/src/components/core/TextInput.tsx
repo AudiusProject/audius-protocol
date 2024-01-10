@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback } from 'react'
+import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -157,10 +157,11 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const styles = useStyles()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
-    const isLabelActive = isFocused || value || startAdornment
+    const isLabelActive = isFocused || !!value || !!startAdornment
     const labelY = useRef(
       new Animated.Value(isLabelActive ? activeLabelY : inactiveLabelY)
     )
+
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
     const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
     const iconProps = { ...styles.icon, ...iconProp }
@@ -168,6 +169,24 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const hideInputAccessory =
       (hideInputAccessoryProp ?? returnKeyType === 'search') ||
       Platform.OS === 'android'
+
+    // Trigger label animation on mount if value is prefilled
+    useEffect(() => {
+      if (isLabelActive) {
+        const labelYAnimation = Animated.spring(labelY.current, {
+          toValue: activeLabelY,
+          useNativeDriver: true
+        })
+
+        const labelFontSizeAnimation = Animated.spring(labelAnimation.current, {
+          toValue: 16,
+          useNativeDriver: false
+        })
+
+        const animations = [labelYAnimation, labelFontSizeAnimation]
+        Animated.parallel(animations).start()
+      }
+    }, [isLabelActive])
 
     const handleFocus = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
