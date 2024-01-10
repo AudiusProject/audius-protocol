@@ -1,5 +1,7 @@
 import { AudiusClient } from './AudiusClient'
 import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
+import { initAudiusSdk } from './sdk'
+import { disableRefreshAfterNetworkChange } from 'utils/switchNetwork'
 
 declare global {
   interface Window {
@@ -52,7 +54,7 @@ export const IS_PRODUCTION =
 
 const IS_STAGING =
   import.meta.env.VITE_ETH_NETWORK_ID &&
-  import.meta.env.VITE_ETH_NETWORK_ID === '3'
+  import.meta.env.VITE_ETH_NETWORK_ID === '5'
 
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
@@ -111,7 +113,7 @@ export async function setup(this: AudiusClient): Promise<void> {
           // Reload anytime the network changes
           window.ethereum.on('chainChanged', () => {
             console.log('Chain change')
-            if (!willReload) {
+            if (!willReload && !disableRefreshAfterNetworkChange.value) {
               willReload = true
               window.location.reload()
             }
@@ -132,6 +134,11 @@ export async function setup(this: AudiusClient): Promise<void> {
           this.libs = await configureReadOnlyLibs()
           this.isAccountMisconfigured = true
           this.hasValidAccount = false
+        } else {
+          initAudiusSdk({
+            getAddress: () => this.libs.web3Manager.getWalletAddress(),
+            signTransaction: data => this.libs.web3Manager.signTypedData(data)
+          })
         }
       }
     } catch (err) {
