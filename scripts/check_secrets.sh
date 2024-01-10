@@ -16,7 +16,7 @@ git secrets --add '.*[a-z0-9]*.rds.amazonaws.com:[0-9]*\/.*'
 
 # match any postgres db with an IP hostname
 git secrets --add 'postgres:\/\/.*\:.*@([0-9]*\.?)*:[0-9]{4}\/.*'
-git secrets --add --allowed 'postgres:postgres@\.{3}*:[0-9]{4}\/.*'
+git secrets --add --allowed 'postgres:postgres@\.{3}:[0-9]{4}\/.*'
 
 # scan the staged files
 git secrets --scan --cached $(git diff --cached --name-only)
