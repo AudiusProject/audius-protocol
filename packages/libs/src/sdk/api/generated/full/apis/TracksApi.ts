@@ -16,6 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  FullTopListener,
   FullTrackResponse,
   FullTracksResponse,
   RemixesResponseFull,
@@ -26,6 +27,8 @@ import type {
   TrendingIdsResponse,
 } from '../models';
 import {
+    FullTopListenerFromJSON,
+    FullTopListenerToJSON,
     FullTrackResponseFromJSON,
     FullTrackResponseToJSON,
     FullTracksResponseFromJSON,
@@ -116,6 +119,13 @@ export interface GetTrackRemixesRequest {
 
 export interface GetTrackStemsRequest {
     trackId: string;
+}
+
+export interface GetTrackTopListenersRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetTrendingTrackIDsRequest {
@@ -686,6 +696,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
         const response = await this.getTrackStemsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListenersRaw(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTopListener>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackTopListeners.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/top_listeners`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTopListenerFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTopListener> {
+        const response = await this.getTrackTopListenersRaw(params, initOverrides);
         return await response.value();
     }
 
