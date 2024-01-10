@@ -10,7 +10,6 @@ import ActionDrawer from 'app/components/action-drawer'
 import type { ActionDrawerRow } from '../action-drawer/ActionDrawer'
 
 import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
-import CreateCollectionOverflowMenuDrawer from './CreateCollectionOverflowMenuDrawer'
 import ProfileOverflowMenuDrawer from './ProfileOverflowMenuDrawer'
 import TrackOverflowMenuDrawer from './TrackOverflowMenuDrawer'
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -27,10 +26,6 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
     text: 'Remove From This Playlist',
     isDestructive: true
   },
-  [OverflowAction.CREATE_PLAYLIST]: { text: 'Create Playlist' },
-  [OverflowAction.CREATE_ALBUM]: { text: 'Create Album' },
-  [OverflowAction.UPLOAD_PLAYLIST]: { text: 'Add To Playlist' },
-  [OverflowAction.UPLOAD_ALBUM]: { text: 'Add To Album' },
   [OverflowAction.EDIT_PLAYLIST]: { text: 'Edit Playlist' },
   [OverflowAction.DELETE_PLAYLIST]: {
     text: 'Delete Playlist',
@@ -68,9 +63,7 @@ export const OverflowMenuDrawer = () => {
       [OverflowSource.TRACKS]: TrackOverflowMenuDrawer,
       [OverflowSource.COLLECTIONS]: CollectionOverflowMenuDrawer,
       // No case for NOTIFICATIONS because there currently isn't an overflow menu on notifications
-      [OverflowSource.PROFILE]: ProfileOverflowMenuDrawer,
-      [OverflowSource.CREATE_ALBUM]: CreateCollectionOverflowMenuDrawer,
-      [OverflowSource.CREATE_PLAYLIST]: CreateCollectionOverflowMenuDrawer
+      [OverflowSource.PROFILE]: ProfileOverflowMenuDrawer
     }[source] ?? TrackOverflowMenuDrawer
 
   return (
