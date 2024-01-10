@@ -3,15 +3,14 @@ import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 import Button from 'components/Button'
+import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import DisplayAudio from 'components/DisplayAudio'
 import { Position } from 'components/Tooltip'
-import { useQueryClient } from '@tanstack/react-query'
 import UserImage from 'components/UserImage'
-import useOpenLink from 'hooks/useOpenLink'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import React, { useCallback, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { audiusSdk } from 'services/Audius/sdk'
 import { useAccount } from 'store/account/hooks'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser } from 'store/cache/user/hooks'
@@ -19,21 +18,11 @@ import { Address } from 'types'
 import getActiveStake from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
-import { useIsMobile } from 'utils/hooks'
+import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
-import { AUDIUS_DAPP_URL, accountPage, isCryptoPage } from 'utils/routes'
-import {
-  AUDIUS_NETWORK_ID,
-  ETH_NETWORK_ID,
-  disableRefreshAfterNetworkChange,
-  switchNetwork
-} from 'utils/switchNetwork'
+import { accountPage, isCryptoPage } from 'utils/routes'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
-import {
-  getDashboardWalletUserQueryKey,
-  useDashboardWalletUser
-} from 'hooks/useDashboardWalletUsers'
 
 const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
@@ -136,80 +125,24 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   )
 }
 
-const ConnectProfileButton = ({ wallet }: { wallet: string }) => {
-  const { user } = useUser({ wallet })
-  const queryClient = useQueryClient()
-
-  const handleSuccess = async profile => {
-    const sdk = await audiusSdk()
-    disableRefreshAfterNetworkChange.value = true
-    const switched = await switchNetwork(AUDIUS_NETWORK_ID)
-    if (switched) {
-      await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
-        wallet: user?.wallet ?? wallet,
-        userId: profile.userId,
-        userSignature: profile.txSignature
-      })
-      // Optimistically set user
-      await queryClient.cancelQueries({ queryKey: ['todos'] })
-      const audiusUser = await sdk.users.getUser({ id: profile.userId })
-      queryClient.setQueryData(getDashboardWalletUserQueryKey(wallet), {
-        wallet,
-        user: audiusUser
-      })
-
-      const switchedBack = await switchNetwork(ETH_NETWORK_ID)
-      if (switchedBack) {
-        window.ethereum.on('chainChanged', () => {
-          disableRefreshAfterNetworkChange.value = false
-        })
-      } else {
-        disableRefreshAfterNetworkChange.value = false
-      }
-    } else {
-      disableRefreshAfterNetworkChange.value = false
-    }
-  }
-
-  const loadOauth = async () => {
-    const sdk = await audiusSdk()
-    sdk.oauth.init({
-      env: env === 'production' ? 'production' : 'staging',
-      successCallback: handleSuccess,
-      errorCallback: (errorMessage: string) => {
-        // Error calllback
-        console.error(errorMessage)
-      }
-    })
-  }
-
-  const loginWithAudius = async () => {
-    const sdk = await audiusSdk()
-    sdk.oauth.login({
-      scope: 'write_once',
-      params: {
-        tx: 'connect_dashboard_wallet',
-        wallet
-      }
-    })
-  }
-  useEffect(() => {
-    loadOauth()
-  }, [])
-
-  if (!user || !user?.wallet) {
-    return null
-  }
-
+const ConnectAudiusProfileButton = ({ wallet }: { wallet: string }) => {
+  const { isOpen, onClick, onClose } = useModalControls()
   return (
-    <Button
-      onClick={loginWithAudius}
-      className={styles.launchAppBtn}
-      textClassName={styles.launchAppBtnText}
-      text={messages.connectProfile}
-      leftIcon={<IconLink width={16} height={16} />}
-      iconClassName={styles.launchAppBtnIcon}
-    />
+    <>
+      <Button
+        onClick={onClick}
+        className={styles.launchAppBtn}
+        textClassName={styles.launchAppBtnText}
+        text={messages.connectProfile}
+        leftIcon={<IconLink width={16} height={16} />}
+        iconClassName={styles.launchAppBtnIcon}
+      />
+      <ConnectAudiusProfileModal
+        wallet={wallet}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+    </>
   )
 }
 
@@ -252,7 +185,7 @@ const AppBar: React.FC<AppBarProps> = () => {
             )}
           </div>
           {hasConnectedAudiusAccount || !wallet || !isLoggedIn ? null : (
-            <ConnectProfileButton wallet={wallet} />
+            <ConnectAudiusProfileButton wallet={wallet} />
           )}
         </div>
       )}
