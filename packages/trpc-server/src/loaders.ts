@@ -71,6 +71,31 @@ export const prepareLoaders = (myId: number | undefined) => ({
     }
   ),
 
+  trackRelationLoader: new DataLoader<number, TrackRelationResult>(
+    async (ids) => {
+      const saved = new Set()
+      const reposted = new Set()
+
+      if (myId) {
+        const history = await sql`
+          select 'save' as verb, save_item_id as id from saves where user_id = ${myId}
+            and save_item_id in ${sql(ids)}
+          union
+          select 'repost', repost_item_id from reposts where user_id = ${myId}
+            and repost_item_id in ${sql(ids)}
+        `
+        for (const { verb, id } of history) {
+          verb == 'save' ? saved.add(id) : reposted.add(id)
+        }
+      }
+
+      return ids.map((id) => ({
+        saved: saved.has(id),
+        reposted: reposted.has(id),
+      }))
+    }
+  ),
+
   actionLoaderForKind: function (kind: string) {
     return new DataLoader<number, TrackRelationResult>(async (ids) => {
       // so much save / repost + playlist / album pain
