@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useId, useRef } from 'react'
 import { css } from '@emotion/native'
 import type {
   NativeSyntheticEvent,
+  TextInputChangeEventData,
   TextInputFocusEventData
 } from 'react-native'
 import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
@@ -18,6 +19,7 @@ import Animated, {
 
 import { useTheme } from '@audius/harmony-native'
 
+import { useControlled } from '../../../hooks/useControlled'
 import { useFocusState } from '../../../hooks/useFocusState'
 import { mergeRefs } from '../../../utils/mergeRefs'
 import type { TextColors, TextSize } from '../../Text/Text'
@@ -29,8 +31,10 @@ import { TextInputSize, type TextInputProps } from './types'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
+export type TextInputRef = Ref<RNTextInput>
+
 export const TextInput = forwardRef(
-  (props: TextInputProps, ref: Ref<RNTextInput>) => {
+  (props: TextInputProps, ref: TextInputRef) => {
     const {
       'aria-label': ariaLabel,
       required,
@@ -40,11 +44,12 @@ export const TextInput = forwardRef(
       size = TextInputSize.DEFAULT,
       hideLabel,
       label: labelProp,
-      value,
+      value: valueProp,
       id: idProp,
       warning,
       error,
       disabled,
+      onChange,
       onFocus: onFocusProp,
       onBlur: onBlurProp,
       placeholder,
@@ -59,6 +64,13 @@ export const TextInput = forwardRef(
       _disablePointerEvents,
       ...other
     } = props
+
+    const [value, setValueState] = useControlled({
+      componentName: 'TextInput',
+      controlledProp: valueProp,
+      defaultValue: undefined,
+      stateName: 'value'
+    })
 
     const innerInputRef = useRef<RNTextInput>(null)
 
@@ -146,12 +158,22 @@ export const TextInput = forwardRef(
       }
     }, [isFocused])
 
+    const handleChange = useCallback(
+      (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
+        onChange?.(e)
+        setValueState(e.nativeEvent.text)
+      },
+      [onChange, setValueState]
+    )
+
     const tap = Gesture.Tap()
       .onBegin(() => {
-        focused.value = withTiming(1, motion.press)
+        if (!isFocused) {
+          focused.value = withTiming(1, motion.press)
+        }
       })
       .onFinalize((event) => {
-        if (event.state !== State.END) {
+        if (event.state !== State.END && !isFocused) {
           focused.value = withTiming(0, motion.press)
         }
       })
@@ -213,7 +235,7 @@ export const TextInput = forwardRef(
                 direction='column'
                 gap='xs'
                 justifyContent='center'
-                w='100%'
+                flex={1}
               >
                 {shouldShowLabel ? (
                   <Flex
@@ -246,7 +268,6 @@ export const TextInput = forwardRef(
                   direction='row'
                   alignItems='center'
                   justifyContent='space-between'
-                  w='100%'
                 >
                   {startAdornmentText && shouldShowAdornments ? (
                     <Text
@@ -274,12 +295,14 @@ export const TextInput = forwardRef(
                     placeholderTextColor={
                       color.text[disabled ? 'subdued' : 'default']
                     }
+                    underlineColorAndroid='transparent'
                     aria-label={ariaLabel ?? labelText}
                     style={css({
                       flex: 1,
                       fontSize: typography.size[isSmall ? 's' : 'l'],
                       color: color.text[disabled ? 'subdued' : 'default']
                     })}
+                    onChange={handleChange}
                     onFocus={onFocus}
                     onBlur={onBlur}
                     selectionColor={color.secondary.secondary}

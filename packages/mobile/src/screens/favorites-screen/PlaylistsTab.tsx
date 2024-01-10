@@ -87,6 +87,7 @@ export const PlaylistsTab = () => {
           />
           <Animated.View layout={Layout}>
             <CollectionList
+              collectionType='playlist'
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.5}
               scrollEnabled={false}

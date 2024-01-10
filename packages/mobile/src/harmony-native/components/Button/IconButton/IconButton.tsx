@@ -14,10 +14,15 @@ import type { BaseButtonProps } from '../types'
 export type IconButtonProps = {
   icon: Icon
   ripple?: boolean
-  accessibilityLabel: string
   style?: StyleProp<ViewStyle>
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
-  Pick<BaseButtonProps, 'onPress' | 'disabled' | 'style'>
+  Pick<BaseButtonProps, 'onPress' | 'disabled' | 'style'> &
+  (
+    | {
+        accessibilityLabel: string
+      }
+    | { 'aria-label': string }
+  )
 
 export const IconButton = (props: IconButtonProps) => {
   const {

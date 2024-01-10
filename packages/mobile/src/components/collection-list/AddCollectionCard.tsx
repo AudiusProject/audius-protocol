@@ -11,10 +11,10 @@ import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const { createPlaylist, createAlbum } = cacheCollectionsActions
+const { createAlbum, createPlaylist } = cacheCollectionsActions
 
 const messages = {
-  createPlaylist: (collectionType: 'album' | 'playlist') =>
+  create: (collectionType: 'album' | 'playlist') =>
     `Create ${capitalize(collectionType)}`
 }
 
@@ -35,7 +35,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     alignSelf: 'center',
     lineHeight: 20,
     textAlign: 'center',
-    width: '60%'
+    width: '50%'
   },
   textContainer: {
     gap: spacing(1)
@@ -57,10 +57,10 @@ export const AddCollectionCard = ({
 
     dispatch(
       (collectionType === 'album' ? createAlbum : createPlaylist)(
-        { playlist_name: 'New Playlist' },
+        { playlist_name: `New ${capitalize(collectionType)}` },
         source,
         sourceTrackId,
-        source === CreatePlaylistSource.FROM_TRACK ? 'toast' : 'route'
+        'route'
       )
     )
   }, [onCreate, dispatch, collectionType, source, sourceTrackId])
@@ -81,7 +81,7 @@ export const AddCollectionCard = ({
           fontSize='medium'
           weight='bold'
         >
-          {messages.createPlaylist(collectionType)}
+          {messages.create(collectionType)}
         </Text>
       </View>
     </Tile>
