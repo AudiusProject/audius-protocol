@@ -38,7 +38,6 @@ import { ChatListener } from 'components/chat-listener/ChatListener'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
-import Konami from 'components/konami/Konami'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
@@ -971,7 +970,6 @@ class WebPlayer extends Component {
             <RewardClaimedToast />
           </Suspense>
           {/* Non-mobile */}
-          {!isMobileClient ? <Konami /> : null}
           {!isMobileClient ? <Visualizer /> : null}
           {!isMobileClient ? <PinnedTrackConfirmation /> : null}
           {!isMobileClient ? <DevModeMananger /> : null}
