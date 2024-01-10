@@ -106,7 +106,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
   }, [])
 
   const shouldShow =
-    !matchPath(window.location.pathname, { path: '/', exact: true }) &&
+    !matchPath(history.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
     isMobile &&

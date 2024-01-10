@@ -32,7 +32,8 @@ async function handleEvent(event) {
     // If the request is not for an asset, then it's a request for a page
 
     const pageContextInit = {
-      urlOriginal: event.request.url
+      urlOriginal: event.request.url,
+      userAgent: event.request.headers.get('User-Agent')
     }
 
     const pageContext = await renderPage(pageContextInit)
