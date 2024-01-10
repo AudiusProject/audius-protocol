@@ -39,7 +39,7 @@ type ShareAudioNftPlaylistContent = {
   user: User
 }
 
-export type ShareModalContent =
+export type ShareContent =
   | ShareTrackContent
   | ShareProfileContent
   | ShareAlbumContent
@@ -48,7 +48,7 @@ export type ShareModalContent =
 
 export type ShareModalState = {
   source: Nullable<ShareSource>
-  content: Nullable<ShareModalContent>
+  content: Nullable<ShareContent>
 }
 
 type RequestOpenPayload = { source: ShareSource } & (
