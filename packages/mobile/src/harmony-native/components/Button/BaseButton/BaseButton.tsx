@@ -9,9 +9,8 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import LoadingSpinner from 'app/components/loading-spinner'
-
 import { useTheme } from '../../../foundations/theme'
+import { LoadingSpinner } from '../../LoadingSpinner/LoadingSpinner'
 import { Text } from '../../Text/Text'
 import type { BaseButtonProps } from '../types'
 
