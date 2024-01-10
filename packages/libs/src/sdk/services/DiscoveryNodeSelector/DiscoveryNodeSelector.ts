@@ -33,6 +33,7 @@ import {
   ServiceSelectionEvents,
   DiscoveryNode
 } from './types'
+import sample from 'lodash/sample'
 
 const getPathFromUrl = (url: string) => {
   const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/
@@ -339,8 +340,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     const selectedNodes: string[] = []
     while (ownersToTry.size > 0 && selectedNodes.length < nodeCount) {
       // Get an unattempted owner
-      const [sampledOwner] = sampleSize(Object.keys(endpointsByOwner), 1)
-      ownersToTry.delete(sampledOwner!) // always defined
+      const sampledOwner = sample([...ownersToTry])
+      ownersToTry.delete(sampledOwner!)
 
       // Get the owner's services
       const servicesToTry = new Set(endpointsByOwner[sampledOwner!])
