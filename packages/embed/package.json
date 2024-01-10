@@ -1,6 +1,7 @@
 {
   "name": "embed",
-  "version": "1.5.54",
+  "version": "1.5.59",
+  "private": true,
   "scripts": {
     "start": "vite",
     "start:dev": "env-cmd -f .env.dev npm run -s start",
@@ -36,6 +37,7 @@
     "@audius/stems": "*",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
+    "@google/model-viewer": "3.3.0",
     "@radix-ui/react-slot": "1.0.2",
     "@react-spring/web": "9.7.3",
     "amplitude-js": "8.11.1",

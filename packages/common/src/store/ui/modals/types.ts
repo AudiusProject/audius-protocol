@@ -1,6 +1,7 @@
 import { ModalSource } from 'models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
+import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -38,7 +39,7 @@ export type Modals =
   | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
-  | 'AddToPlaylist'
+  | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
@@ -46,6 +47,7 @@ export type Modals =
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
+  | 'CoinflowOnramp'
   | 'InboxSettings'
   | 'LockedContent'
   | 'PlaybackRate'
@@ -58,6 +60,7 @@ export type Modals =
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
+  | 'PublishTrackConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
@@ -70,6 +73,7 @@ export type BasicModalsState = {
 }
 
 export type StatefulModalsState = {
+  CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
   EditPlaylist: EditPlaylistModalState
   EditTrack: EditTrackModalState

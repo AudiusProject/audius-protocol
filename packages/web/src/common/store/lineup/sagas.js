@@ -59,8 +59,9 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
-  const allowedHandles = remoteConfig
-    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS)
+
+  const deniedHandles = remoteConfig
+    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_DENIED_USERS)
     ?.split(',')
 
   return tracksMetadata
@@ -88,7 +89,7 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
         lineupPrefix === premiumTracksPageLineupActions.prefix &&
         metadata.is_premium &&
         isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
-        !allowedHandles.includes(users[metadata.owner_id].handle)
+        deniedHandles.includes(users[metadata.owner_id].handle)
       ) {
         return null
       }
@@ -525,16 +526,16 @@ function* updateLineupOrder(lineupPrefix, sourceSelector, action) {
 
 function* refreshInView(lineupActions, lineupSelector, action) {
   const lineup = yield select(lineupSelector)
-  if (lineup.inView) {
-    yield put(
-      lineupActions.fetchLineupMetadatas(
-        0,
-        action.limit || lineup.total,
-        false,
-        action.payload
-      )
+  const { type: _ignoredType, limit, overwrite, payload, ...other } = action
+  yield put(
+    lineupActions.fetchLineupMetadatas(
+      0,
+      limit || lineup.total,
+      overwrite,
+      payload,
+      other
     )
-  }
+  )
 }
 
 const keepUidAndKind = (entry) => ({

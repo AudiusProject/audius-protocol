@@ -29,11 +29,6 @@ export const getDogEarType = ({
   isUnlisted,
   premiumConditions
 }: GetDogEarTypeArgs) => {
-  // Unlisted is mutually exclusive from other dog ear types
-  if (isUnlisted) {
-    return DogEarType.HIDDEN
-  }
-
   // Show premium variants for track owners or if user does not yet have access
   if (
     (isOwner || !doesUserHaveAccess) &&
@@ -55,6 +50,10 @@ export const getDogEarType = ({
   // If no premium variant, optionally show artist pick if applicable
   if (isArtistPick) {
     return DogEarType.STAR
+  }
+
+  if (isUnlisted) {
+    return DogEarType.HIDDEN
   }
 
   return undefined

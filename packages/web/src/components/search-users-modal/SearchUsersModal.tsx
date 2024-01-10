@@ -144,7 +144,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
       <ModalHeader onClose={handleCancel}>
-        <ModalTitle iconClassName={styles.icon} {...titleProps}></ModalTitle>
+        <ModalTitle {...titleProps}></ModalTitle>
       </ModalHeader>
       <div className={styles.modalContent}>
         <div className={styles.search}>

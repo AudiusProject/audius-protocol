@@ -8,6 +8,7 @@ import {
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
@@ -23,7 +24,7 @@ import {
   stripeModalUISagas,
   modalsSagas
 } from '@audius/common'
-import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
+import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -45,9 +46,9 @@ import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import trendingPageSagas from 'common/store/pages/trending/sagas'
 import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
-import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
@@ -177,7 +178,7 @@ export default function* rootSaga() {
     ...remixesSagas(),
 
     // Application
-    ...addToPlaylistSagas(),
+    ...addToCollectionSagas(),
     ...relatedArtistsSagas(),
     ...changePasswordSagas(),
     ...smartCollectionPageSagas(),
@@ -196,6 +197,7 @@ export default function* rootSaga() {
     ...reachabilitySagas(),
     ...searchSagas(),
     ...publishPlaylistConfirmationModalSagas(),
+    ...publishTrackConfirmationModalSagas(),
     ...toastSagas(),
 
     initKeyboardEvents,

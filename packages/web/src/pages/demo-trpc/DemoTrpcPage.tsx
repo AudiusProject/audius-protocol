@@ -1,9 +1,11 @@
 import { CSSProperties, Suspense, useMemo, useState } from 'react'
 
-import { accountSelectors, trpc } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { RouterInput } from '@audius/trpc-server'
 import { useSelector } from 'react-redux'
 import { create } from 'zustand'
+
+import { trpc } from 'utils/trpcClientWeb'
 
 // ==================== Store ====================
 
@@ -485,7 +487,7 @@ function RepostIndicator({ kind, id, suspense = true }: SaveRepostParams) {
 
 // ==================== Image stuff ====================
 
-function CidImage({
+export function CidImage({
   cid,
   size
 }: {

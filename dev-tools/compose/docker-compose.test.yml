@@ -239,7 +239,6 @@ services:
       audius_redis_url: 'redis://discovery-provider-redis:6379/00'
 
       audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
-      audius_elasticsearch_run_indexer: 'true'
     volumes:
       - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
     depends_on:
@@ -293,7 +292,7 @@ services:
     build:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
-    command: discovery-migrations
+    command: comms discovery-migrations
     environment:
       audius_db_url: 'postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable'
     depends_on:

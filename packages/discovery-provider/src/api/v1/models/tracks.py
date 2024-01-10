@@ -126,6 +126,7 @@ track_full = ns.clone(
         "field_visibility": fields.Nested(field_visibility),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),
         "has_current_user_reposted": fields.Boolean(required=True),
+        "is_scheduled_release": fields.Boolean,
         "is_unlisted": fields.Boolean(required=True),
         "has_current_user_saved": fields.Boolean(required=True),
         "followee_favorites": fields.List(fields.Nested(favorite), required=True),

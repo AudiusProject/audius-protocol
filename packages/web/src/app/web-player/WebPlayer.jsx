@@ -39,7 +39,6 @@ import { ClientOnly } from 'components/client-only/ClientOnly'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
-import Konami from 'components/konami/Konami'
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
 import Notice from 'components/notice/Notice'
@@ -980,7 +979,6 @@ class WebPlayer extends Component {
 
           <RewardClaimedToast />
           {/* Non-mobile */}
-          {!isMobile ? <Konami /> : null}
           {!isMobile ? <Visualizer /> : null}
           {!isMobile ? <PinnedTrackConfirmation /> : null}
           {!isMobile ? <DevModeMananger /> : null}

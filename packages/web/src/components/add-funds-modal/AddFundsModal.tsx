@@ -1,15 +1,17 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useAddFundsModal,
   buyUSDCActions,
-  USDCOnRampProvider,
   PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS
+  DEFAULT_PURCHASE_AMOUNT_CENTS,
+  PurchaseVendor,
+  buyUSDCSelectors,
+  BuyUSDCStage
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
@@ -19,6 +21,8 @@ import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
+
+const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
 const messages = {
   addFunds: 'Add Funds',
@@ -30,6 +34,7 @@ type Page = 'add-funds' | 'crypto-transfer'
 export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
   const dispatch = useDispatch()
+  const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const isMobile = useIsMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
@@ -38,19 +43,32 @@ export const AddFundsModal = () => {
     setPage('add-funds')
   }, [setPage])
 
+  useEffect(() => {
+    // Close modal if the buy USDC stage flips to finish
+    if (buyUSDCStage === BuyUSDCStage.FINISH) {
+      onClose()
+    }
+  }, [buyUSDCStage, onClose])
+
   const handleContinue = useCallback(
-    (purchaseMethod: PurchaseMethod) => {
-      if (purchaseMethod === PurchaseMethod.CRYPTO) {
-        setPage('crypto-transfer')
-      } else {
-        dispatch(
-          buyUSDCActions.onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-            }
-          })
-        )
+    (purchaseMethod: PurchaseMethod, purchaseVendor?: PurchaseVendor) => {
+      switch (purchaseMethod) {
+        case PurchaseMethod.CRYPTO:
+          setPage('crypto-transfer')
+          break
+        case PurchaseMethod.CARD: {
+          dispatch(
+            buyUSDCActions.onrampOpened({
+              vendor: purchaseVendor || PurchaseVendor.STRIPE,
+              purchaseInfo: {
+                desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
+              }
+            })
+          )
+          break
+        }
+        case PurchaseMethod.BALANCE:
+          throw new Error('Add funds not supported with existing balance')
       }
     },
     [setPage, dispatch]

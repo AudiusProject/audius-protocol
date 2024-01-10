@@ -1,3 +1,4 @@
+apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
 apis/PlaylistsApi.ts
 apis/ResolveApi.ts
@@ -12,6 +13,8 @@ models/AuthorizedApps.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
+models/DashboardWalletUser.ts
+models/DashboardWalletUsersResponse.ts
 models/DecodedUserToken.ts
 models/DeveloperApp.ts
 models/DeveloperAppResponse.ts
@@ -46,6 +49,7 @@ models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
+models/TxSignature.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts

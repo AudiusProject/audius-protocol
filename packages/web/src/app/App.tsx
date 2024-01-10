@@ -3,24 +3,28 @@
 import { useEffect, Suspense, lazy } from 'react'
 
 import { FeatureFlags, useFeatureFlag } from '@audius/common'
-import { Route, Switch } from 'react-router-dom'
+import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
+import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { initWebVitals } from 'services/webVitals'
+import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
-import WebPlayer from './web-player/WebPlayer'
 import { useHistoryContext } from './HistoryProvider'
-import { initWebVitals } from 'services/webVitals'
+import WebPlayer from './web-player/WebPlayer'
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
+const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
+
+const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 export const AppInner = () => {
   const { history } = useHistoryContext()
@@ -37,7 +41,14 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Suspense fallback={null}>
+        <CoinflowPurchaseProtection
+          merchantId={MERCHANT_ID || ''}
+          coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
+        />
         <Switch>
+          {SIGN_ON_ALIASES.map((a) => (
+            <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
+          ))}
           <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
             {({ location }) => {
               if (!isLoaded) return null
@@ -47,6 +58,9 @@ export const AppInner = () => {
           </Route>
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
+          </Route>
+          <Route path='/demo/trpc/history'>
+            <TrpcHistoryPage />
           </Route>
           <Route path='/demo/trpc'>
             <DemoTrpcPage />

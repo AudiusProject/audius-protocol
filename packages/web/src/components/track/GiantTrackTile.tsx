@@ -13,8 +13,11 @@ import {
   PremiumConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
+import { Flex } from '@audius/harmony'
+import { Mood } from '@audius/sdk'
 import {
   Button,
   ButtonType,
@@ -25,15 +28,18 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
+import { useDispatch } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { UserLink } from 'components/link'
+import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -43,6 +49,7 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
@@ -53,6 +60,9 @@ import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
+
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -65,6 +75,7 @@ const SAVED_TIMEOUT = 1000
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
+  releaseNow: 'RELEASE NOW',
   isPublishing: 'PUBLISHING',
   repostButtonText: 'repost',
   repostedButtonText: 'reposted',
@@ -97,6 +108,7 @@ export type GiantTrackTileProps = {
   isReposted: boolean
   isSaved: boolean
   isUnlisted: boolean
+  isScheduledRelease: boolean
   listenCount: number
   loading: boolean
   mood: string
@@ -143,6 +155,7 @@ export const GiantTrackTile = ({
   isReposted,
   isPublishing,
   isSaved,
+  isScheduledRelease,
   isUnlisted,
   listenCount,
   loading,
@@ -169,7 +182,8 @@ export const GiantTrackTile = ({
   trackTitle,
   userId
 }: GiantTrackTileProps) => {
-  const [artworkLoading, setArtworkLoading] = useState(false)
+  const dispatch = useDispatch()
+  const [artworkLoading, setArtworkLoading] = useState(true)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -182,17 +196,23 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
+  )
 
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
         className={className}
         isUnlisted={isUnlisted}
+        isScheduledRelease={isScheduledRelease}
         isRemix={isRemix}
         isPremium={isPremium}
         isPodcast={genre === Genre.PODCASTS}
@@ -218,12 +238,16 @@ export const GiantTrackTile = ({
   }
 
   const renderMakePublicButton = () => {
+    let text = messages.isPublishing
+    if (isUnlisted && !isPublishing) {
+      text = isScheduledRelease ? messages.releaseNow : messages.makePublic
+    }
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
         <EntityActionButton
           type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
-          text={isPublishing ? messages.isPublishing : messages.makePublic}
+          text={text}
           leftIcon={
             isPublishing ? (
               <LoadingSpinner className={styles.spinner} />
@@ -232,7 +256,19 @@ export const GiantTrackTile = ({
             )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={isPublishing ? undefined : () => onMakePublic(trackId)}
+          onClick={
+            isPublishing
+              ? undefined
+              : () => {
+                  dispatch(
+                    openPublishTrackConfirmationModal({
+                      confirmCallback: () => {
+                        onMakePublic(trackId)
+                      }
+                    })
+                  )
+                }
+          }
         />
       )
     )
@@ -325,7 +361,7 @@ export const GiantTrackTile = ({
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood] : mood}
+          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
         />
       )
     )
@@ -394,6 +430,29 @@ export const GiantTrackTile = ({
     )
   }
 
+  const renderAlbum = () => {
+    if (!isEditAlbumsEnabled || !albumInfo) return null
+    return (
+      <InfoLabel
+        className={styles.infoLabelPlacement}
+        labelName='album'
+        labelValue={
+          <Link
+            to={albumInfo.permalink}
+            color='accentPurple'
+            size='small'
+            css={({ spacing }) => ({
+              // the link is too tall
+              marginTop: spacing.negativeUnit
+            })}
+          >
+            {albumInfo.playlist_name}
+          </Link>
+        }
+      />
+    )
+  }
+
   const renderReleased = () => {
     return (
       !isUnlisted &&
@@ -430,6 +489,11 @@ export const GiantTrackTile = ({
       </>
     )
   }
+  const renderScheduledReleaseRow = () => {
+    return (
+      <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    )
+  }
 
   const renderDownloadButtons = () => {
     return (
@@ -450,7 +514,8 @@ export const GiantTrackTile = ({
     ? undefined
     : getDogEarType({
         premiumConditions,
-        isUnlisted
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
       })
 
   const overflowMenuExtraItems = []
@@ -509,7 +574,7 @@ export const GiantTrackTile = ({
               {isLoading && <Skeleton className={styles.skeleton} />}
             </div>
             <div className={styles.artistWrapper}>
-              <div className={cn(fadeIn)}>
+              <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
                   color='secondary'
@@ -520,7 +585,7 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-              </div>
+              </Flex>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
@@ -558,6 +623,7 @@ export const GiantTrackTile = ({
 
           <div className={cn(styles.statsSection, fadeIn)}>
             {renderStatsRow()}
+            {renderScheduledReleaseRow()}
           </div>
 
           <ClientOnly>
@@ -635,6 +701,7 @@ export const GiantTrackTile = ({
             labelValue={`${formatSeconds(duration)}`}
           />
           {renderReleased()}
+          {renderAlbum()}
           {renderGenre()}
           {renderMood()}
           {credits ? (

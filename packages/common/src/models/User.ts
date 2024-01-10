@@ -47,7 +47,6 @@ export type UserMetadata = {
   solanaCollectibleList?: Collectible[]
 
   // Only present on the "current" account
-  does_follow_current_user?: boolean
   track_save_count?: number
   user_id: number
   twitter_handle?: string

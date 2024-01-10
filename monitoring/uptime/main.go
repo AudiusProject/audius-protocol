@@ -47,9 +47,12 @@ type Config struct {
 	ClaimableTokenPda                string
 	SolanaFeePayerAddress            string
 	ClaimableTokenProgramAddress     string
+	PaymentRouterProgramAddress      string
 	RewardsManagerProgramId          string
 	RewardsManagerProgramPda         string
 	RewardsManagerTokenPda           string
+	OptimizelySdkKey                 string
+	DDEXKey                          string
 }
 
 func main() {
@@ -118,9 +121,12 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 	claimableTokenPda := ""
 	solanaFeePayerAddress := ""
 	claimableTokenProgramAddress := ""
+	paymentRouterProgramAddress := ""
 	rewardsManagerProgramId := ""
 	rewardsManagerProgramPda := ""
 	rewardsManagerTokenPda := ""
+	optimizelySdkKey := ""
+	ddexKey := ""
 
 	if nodeType == "content" {
 		myEndpoint = mustGetenv("creatorNodeEndpoint")
@@ -179,9 +185,12 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		claimableTokenPda = mustGetenv("audius_solana_claimable_token_pda")
 		solanaFeePayerAddress = mustGetenv("audius_solana_fee_payer_address")
 		claimableTokenProgramAddress = mustGetenv("audius_solana_user_bank_program_address")
+		paymentRouterProgramAddress = mustGetenv("audius_solana_payment_router_program_address")
 		rewardsManagerProgramId = mustGetenv("audius_solana_rewards_manager_program_address")
 		rewardsManagerProgramPda = mustGetenv("audius_solana_rewards_manager_account")
 		rewardsManagerTokenPda = mustGetenv("audius_solana_rewards_manager_token_pda")
+		optimizelySdkKey = os.Getenv("OPTIMIZELY_SDK_KEY")
+		ddexKey = os.Getenv("DDEX_KEY")
 	}
 
 	logger := slog.With("endpoint", myEndpoint)
@@ -240,9 +249,12 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		ClaimableTokenPda:                claimableTokenPda,
 		SolanaFeePayerAddress:            solanaFeePayerAddress,
 		ClaimableTokenProgramAddress:     claimableTokenProgramAddress,
+		PaymentRouterProgramAddress:      paymentRouterProgramAddress,
 		RewardsManagerProgramId:          rewardsManagerProgramId,
 		RewardsManagerProgramPda:         rewardsManagerProgramPda,
 		RewardsManagerTokenPda:           rewardsManagerTokenPda,
+		OptimizelySdkKey:                 optimizelySdkKey,
+		DDEXKey:                          ddexKey,
 	}
 
 	ph, err := New(config)

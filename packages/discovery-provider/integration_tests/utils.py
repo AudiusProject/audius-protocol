@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
@@ -29,6 +30,7 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
@@ -119,6 +121,7 @@ def populate_mock_db(db, entities, block_offset=None):
         users = entities.get("users", [])
         developer_apps = entities.get("developer_apps", [])
         grants = entities.get("grants", [])
+        dashboard_wallet_users = entities.get("dashboard_wallet_users", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -153,6 +156,7 @@ def populate_mock_db(db, entities, block_offset=None):
         usdc_purchases = entities.get("usdc_purchases", [])
         cid_datas = entities.get("cid_datas", [])
         usdc_transactions_history = entities.get("usdc_transactions_history", [])
+        track_price_history = entities.get("track_price_history", [])
 
         num_blocks = max(
             len(tracks),
@@ -160,6 +164,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(users),
             len(developer_apps),
             len(grants),
+            len(dashboard_wallet_users),
             len(follows),
             len(saves),
             len(reposts),
@@ -224,6 +229,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
             )
             session.add(track)
+        for i, track_price_history_meta in enumerate(track_price_history):
+            track_price_history = TrackPriceHistory(
+                blocknumber=i + block_offset,
+                track_id=track_price_history_meta.get("track_id", i),
+                splits=track_price_history_meta.get("splits", {}),
+                block_timestamp=track_price_history_meta.get(
+                    "block_timestamp", datetime.now()
+                ),
+                total_price_cents=track_price_history_meta.get("total_price_cents", 0),
+            )
+            session.add(track_price_history)
         for i, playlist_meta in enumerate(playlists):
             playlist_created_at = datetime.now()
             playlist = Playlist(
@@ -325,6 +341,19 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=grant_meta.get("created_at", datetime.now()),
             )
             session.add(grant)
+
+        for i, dashboard_wallet_user_meta in enumerate(dashboard_wallet_users):
+            dashboard_wallet_user = DashboardWalletUser(
+                user_id=dashboard_wallet_user_meta.get("user_id", i),
+                wallet=dashboard_wallet_user_meta.get("wallet", str(i)),
+                is_delete=dashboard_wallet_user_meta.get("is_delete", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                txhash=dashboard_wallet_user_meta.get("txhash", str(i + block_offset)),
+                updated_at=dashboard_wallet_user_meta.get("updated_at", datetime.now()),
+                created_at=dashboard_wallet_user_meta.get("created_at", datetime.now()),
+            )
+            session.add(dashboard_wallet_user)
 
         for i, follow_meta in enumerate(follows):
             follow = Follow(

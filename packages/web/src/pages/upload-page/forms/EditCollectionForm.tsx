@@ -16,7 +16,7 @@ import { Text } from 'components/typography'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
-import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
@@ -112,7 +112,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
-          <ReleaseDateField />
+          <ReleaseDateFieldLegacy />
+
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text>{messages.trackDetails.description}</Text>

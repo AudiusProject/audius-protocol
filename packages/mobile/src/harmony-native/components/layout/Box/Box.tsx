@@ -1,8 +1,43 @@
 import styled from '@emotion/native'
+import { View } from 'react-native'
 
 import type { BoxProps } from './types'
 
-export const Box = styled.View<BoxProps>(
+const invalidProps = [
+  'h',
+  'w',
+  'p',
+  'ph',
+  'pv',
+  'pt',
+  'pl',
+  'pr',
+  'pb',
+  'm',
+  'mh',
+  'mv',
+  'mt',
+  'ml',
+  'mr',
+  'mb',
+  'border',
+  'borderTop',
+  'borderRight',
+  'borderBottom',
+  'borderLeft',
+  'borderRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+  'borderTopLeftRadius',
+  'shadow',
+  'alignSelf',
+  'flex'
+]
+
+export const Box = styled(View, {
+  shouldForwardProp: (prop) => !invalidProps.includes(prop)
+})<BoxProps>(
   ({
     h,
     w,
@@ -20,6 +55,7 @@ export const Box = styled.View<BoxProps>(
     ml,
     mr,
     mb,
+    backgroundColor,
     border,
     borderTop,
     borderRight,
@@ -49,8 +85,8 @@ export const Box = styled.View<BoxProps>(
     return {
       position: 'relative',
       boxSizing: 'border-box',
-      height: h,
-      width: w,
+      height: h ? spacing[h] ?? h : h,
+      width: w ? spacing[w] ?? w : w,
       ...(shadow && {
         ...shadows[shadow],
         // In order for shadows to work on iOS they need a background color
@@ -65,6 +101,9 @@ export const Box = styled.View<BoxProps>(
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],
+      backgroundColor:
+        (backgroundColor && theme.color.background[backgroundColor]) ??
+        backgroundColor,
       // Native doesn't have a border:"" shorthand
       ...(border && {
         borderStyle: 'solid',

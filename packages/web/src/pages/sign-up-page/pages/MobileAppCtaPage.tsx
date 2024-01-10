@@ -4,9 +4,8 @@ import { Flex, Hint, IconInfo } from '@audius/harmony'
 import { keyframes } from '@emotion/css'
 
 import QRCode from 'assets/img/imageQR.png'
-import { useModalState } from 'common/hooks/useModalState'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { Heading, Page, PageFooter } from '../components/layout'
 
@@ -33,13 +32,11 @@ const messages = {
 }
 
 export const MobileAppCtaPage = () => {
-  const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const navigate = useNavigateToPage()
 
   const handleContinue = useCallback(() => {
-    navigate(TRENDING_PAGE)
-    setIsWelcomeModalOpen(true)
-  }, [navigate, setIsWelcomeModalOpen])
+    navigate(SIGN_UP_COMPLETED_REDIRECT)
+  }, [navigate])
 
   return (
     <Page gap='3xl'>

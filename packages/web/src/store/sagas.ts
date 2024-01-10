@@ -10,6 +10,7 @@ import {
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   uploadConfirmationModalUISagas as uploadConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
@@ -26,7 +27,7 @@ import {
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
-import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
+import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/webSagas'
@@ -50,9 +51,9 @@ import savedSagas from 'common/store/pages/saved/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import trendingPageSagas from 'common/store/pages/trending/sagas'
 import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
-import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import playlistUpdatesSagas from 'common/store/playlist-updates/sagas'
@@ -173,7 +174,7 @@ export default function* rootSaga() {
     castSagas(),
 
     // Application
-    addToPlaylistSagas(),
+    addToCollectionSagas(),
     relatedArtistsSagas(),
     buyAudioSagas(),
     changePasswordSagas(),
@@ -206,6 +207,7 @@ export default function* rootSaga() {
     themeSagas(),
     tokenDashboardSagas(),
     uploadConfirmationModalSagas(),
+    publishTrackConfirmationModalSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),

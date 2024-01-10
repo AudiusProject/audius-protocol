@@ -27,6 +27,7 @@ export const getTrackWithFallback = (track: Track | null) => {
       play_count: 0,
       is_delete: false,
       is_unlisted: false,
+      is_scheduled_release: false,
       is_premium: false,
       premium_conditions: null,
       premium_content_signature: null,
@@ -38,7 +39,8 @@ export const getTrackWithFallback = (track: Track | null) => {
         '480x480': '',
         '1000x1000': '',
         OVERRIDE: ''
-      }
+      },
+      release_date: ''
     }
   )
 }

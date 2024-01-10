@@ -33,26 +33,40 @@ const messages = {
 }
 
 type PaymentMethodProps = {
-  selectedType: Nullable<PurchaseMethod>
-  setSelectedType: (method: PurchaseMethod) => void
+  selectedMethod: Nullable<PurchaseMethod>
+  setSelectedMethod: (method: PurchaseMethod) => void
+  setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
+  isCoinflowEnabled?: boolean
   showExistingBalance?: boolean
 }
 
 export const PaymentMethod = ({
-  selectedType,
-  setSelectedType,
+  selectedMethod,
+  setSelectedMethod,
+  setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance
+  showExistingBalance,
+  isCoinflowEnabled
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
-  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
+  const vendorOptions = [
+    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
+    { label: PurchaseVendor.STRIPE }
+  ]
+
+  const handleSelectVendor = useCallback(
+    (label: string) => {
+      setSelectedVendor(label as PurchaseVendor)
+    },
+    [setSelectedVendor]
+  )
 
   const options = [
     showExistingBalance
@@ -66,7 +80,7 @@ export const PaymentMethod = ({
               as='span' // Needed to avoid <p> inside <p> warning
               variant='title'
               color={
-                selectedType === PurchaseMethod.BALANCE
+                selectedMethod === PurchaseMethod.BALANCE
                   ? 'secondary'
                   : undefined
               }
@@ -84,13 +98,14 @@ export const PaymentMethod = ({
         vendorOptions.length > 1 ? (
           isMobile ? (
             <MobileFilterButton
-              onSelect={() => {}}
+              onSelect={handleSelectVendor}
+              initialSelectionIndex={0}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
             <FilterButton
-              onSelect={() => {}}
+              onSelect={handleSelectVendor}
               initialSelectionIndex={0}
               variant={FilterButtonType.REPLACE_LABEL}
               options={vendorOptions}
@@ -108,9 +123,9 @@ export const PaymentMethod = ({
 
   const handleRadioChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedType(e.target.value as PurchaseMethod)
+      setSelectedMethod(e.target.value as PurchaseMethod)
     },
-    [setSelectedType]
+    [setSelectedMethod]
   )
 
   const renderBody = () => {
@@ -133,7 +148,7 @@ export const PaymentMethod = ({
     return (
       <RadioButtonGroup
         name={`summaryTable-label-${messages.paymentMethod}`}
-        value={selectedType}
+        value={selectedMethod}
         onChange={handleRadioChange}
         style={{ width: '100%' }}
       >
@@ -147,7 +162,7 @@ export const PaymentMethod = ({
             borderTop='default'
           >
             <Flex
-              onClick={() => setSelectedType(id as PurchaseMethod)}
+              onClick={() => setSelectedMethod(id as PurchaseMethod)}
               css={{ cursor: 'pointer' }}
               alignItems='center'
               justifyContent='space-between'

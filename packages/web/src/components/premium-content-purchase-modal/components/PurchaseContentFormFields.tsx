@@ -1,9 +1,18 @@
+import { useCallback, useEffect } from 'react'
+
 import {
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
   PURCHASE_METHOD,
-  usePurchaseMethod
+  PurchaseVendor,
+  PURCHASE_VENDOR,
+  usePurchaseMethod,
+  PurchaseMethod,
+  useFeatureFlag,
+  FeatureFlags,
+  useRemoteVar,
+  IntKeys
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -37,8 +46,14 @@ export const PurchaseContentFormFields = ({
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets()
+  const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+  const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
+    useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -52,6 +67,29 @@ export const PurchaseContentFormFields = ({
     method: purchaseMethod,
     setMethod: setPurchaseMethod
   })
+
+  const handleChangeMethod = useCallback(
+    (method: string) => {
+      setPurchaseMethod(method as PurchaseMethod)
+    },
+    [setPurchaseMethod]
+  )
+
+  const handleChangeVendor = useCallback(
+    (vendor: string) => {
+      setPurchaseVendor(vendor as PurchaseVendor)
+    },
+    [setPurchaseVendor]
+  )
+
+  const showCoinflow =
+    isCoinflowEnabled && totalPriceInCents <= coinflowMaximumCents
+
+  useEffect(() => {
+    if (purchaseVendor === PurchaseVendor.COINFLOW && !showCoinflow) {
+      handleChangeVendor(PurchaseVendor.STRIPE)
+    }
+  }, [handleChangeVendor, showCoinflow, purchaseVendor])
 
   if (isPurchased) {
     return (
@@ -80,11 +118,13 @@ export const PurchaseContentFormFields = ({
       />
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
-          selectedType={purchaseMethod}
-          setSelectedType={setPurchaseMethod}
+          selectedMethod={purchaseMethod}
+          setSelectedMethod={handleChangeMethod}
+          setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance
+          showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
+          isCoinflowEnabled={showCoinflow}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

@@ -1347,9 +1347,6 @@ export const audiusBackend = ({
     trackIds: ID[] = [],
     isPrivate = true
   ) {
-    // Creating an album is automatically public.
-    if (isAlbum) isPrivate = false
-
     try {
       const web3 = await audiusLibs.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()

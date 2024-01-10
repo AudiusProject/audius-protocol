@@ -1,6 +1,10 @@
-import { useCallback, useContext } from 'react'
+import { Ref, forwardRef, useCallback, useContext } from 'react'
 
-import { MAX_HANDLE_LENGTH, socialMediaMessages } from '@audius/common'
+import {
+  MAX_HANDLE_LENGTH,
+  socialMediaMessages,
+  pickHandleErrorMessages
+} from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -9,8 +13,6 @@ import {
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
-
-import { errorMessages } from '../utils/handleSchema'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
@@ -22,9 +24,9 @@ const messages = {
 }
 
 const handleAuthMap = {
-  [errorMessages.twitterReservedError]: SignupFlowTwitterAuth,
-  [errorMessages.instagramReservedError]: SignupFlowInstagramAuth,
-  [errorMessages.tiktokReservedError]: SignupFlowTikTokAuth
+  [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
+  [pickHandleErrorMessages.instagramReservedError]: SignupFlowInstagramAuth,
+  [pickHandleErrorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }
 
 type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
@@ -37,77 +39,79 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
   onErrorSocialMediaLogin?: () => void
 }
 
-export const HandleField = (props: HandleFieldProps) => {
-  const {
-    onCompleteSocialMediaLogin,
-    onErrorSocialMediaLogin,
-    onStartSocialMediaLogin,
-    ...other
-  } = props
-  const [{ value: handle }, { error }] = useField('handle')
+export const HandleField = forwardRef(
+  (props: HandleFieldProps, ref: Ref<HTMLInputElement>) => {
+    const {
+      onCompleteSocialMediaLogin,
+      onErrorSocialMediaLogin,
+      onStartSocialMediaLogin,
+      ...other
+    } = props
+    const [{ value: handle }, { error }] = useField('handle')
 
-  const { toast } = useContext(ToastContext)
+    const { toast } = useContext(ToastContext)
 
-  const handleVerifyHandleError = useCallback(() => {
-    toast(socialMediaMessages.verificationError)
-    onErrorSocialMediaLogin?.()
-  }, [onErrorSocialMediaLogin, toast])
+    const handleVerifyHandleError = useCallback(() => {
+      toast(socialMediaMessages.verificationError)
+      onErrorSocialMediaLogin?.()
+    }, [onErrorSocialMediaLogin, toast])
 
-  const handleLoginSuccess = useCallback(
-    ({
-      handle,
-      requiresReview,
-      platform
-    }: {
-      requiresReview: boolean
-      handle: string
-      platform: 'twitter' | 'instagram' | 'tiktok'
-    }) => {
-      toast(socialMediaMessages.socialMediaLoginSucess(platform))
-      onCompleteSocialMediaLogin?.({
+    const handleLoginSuccess = useCallback(
+      ({
         handle,
         requiresReview,
         platform
-      })
-    },
-    [onCompleteSocialMediaLogin, toast]
-  )
+      }: {
+        requiresReview: boolean
+        handle: string
+        platform: 'twitter' | 'instagram' | 'tiktok'
+      }) => {
+        toast(socialMediaMessages.socialMediaLoginSucess(platform))
+        onCompleteSocialMediaLogin?.({
+          handle,
+          requiresReview,
+          platform
+        })
+      },
+      [onCompleteSocialMediaLogin, toast]
+    )
 
-  const AuthComponent = error ? handleAuthMap[error] : undefined
+    const AuthComponent = error ? handleAuthMap[error] : undefined
 
-  const helperText =
-    handle && error ? (
-      <>
-        {error}{' '}
-        {onCompleteSocialMediaLogin &&
-        onStartSocialMediaLogin &&
-        onErrorSocialMediaLogin &&
-        AuthComponent ? (
-          <TextLink variant='visible' asChild>
-            <AuthComponent
-              onStart={onStartSocialMediaLogin}
-              onFailure={handleVerifyHandleError}
-              onSuccess={handleLoginSuccess}
-            >
-              <span>{messages.linkToClaim}</span>
-            </AuthComponent>
-          </TextLink>
-        ) : null}
-      </>
-    ) : null
+    const helperText =
+      handle && error ? (
+        <>
+          {error}{' '}
+          {onCompleteSocialMediaLogin &&
+          onStartSocialMediaLogin &&
+          onErrorSocialMediaLogin &&
+          AuthComponent ? (
+            <TextLink variant='visible' asChild>
+              <AuthComponent
+                onStart={onStartSocialMediaLogin}
+                onFailure={handleVerifyHandleError}
+                onSuccess={handleLoginSuccess}
+              >
+                <span>{messages.linkToClaim}</span>
+              </AuthComponent>
+            </TextLink>
+          ) : null}
+        </>
+      ) : null
 
-  return (
-    <HarmonyTextField
-      name='handle'
-      label={messages.handle}
-      error={error && handle}
-      helperText={helperText}
-      maxLength={MAX_HANDLE_LENGTH}
-      startAdornmentText='@'
-      placeholder={messages.handle}
-      transformValue={(value) => value.replace(/\s/g, '')}
-      debouncedValidationMs={1000}
-      {...other}
-    />
-  )
-}
+    return (
+      <HarmonyTextField
+        ref={ref}
+        name='handle'
+        label={messages.handle}
+        helperText={helperText}
+        maxLength={MAX_HANDLE_LENGTH}
+        startAdornmentText='@'
+        placeholder={messages.handle}
+        transformValueOnChange={(value) => value.replace(/\s/g, '')}
+        debouncedValidationMs={1000}
+        {...other}
+      />
+    )
+  }
+)

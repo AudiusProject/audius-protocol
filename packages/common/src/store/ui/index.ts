@@ -1,6 +1,6 @@
-export * as addToPlaylistUISelectors from './add-to-playlist/selectors'
-export * as addToPlaylistUIActions from './add-to-playlist/actions'
-export { default as addToPlaylistUIReducer } from './add-to-playlist/reducer'
+export * as addToCollectionUISelectors from './add-to-collection/selectors'
+export * as addToCollectionUIActions from './add-to-collection/actions'
+export { default as addToCollectionUIReducer } from './add-to-collection/reducer'
 
 export * as relatedArtistsUISelectors from './related-artists/selectors'
 export {
@@ -80,6 +80,11 @@ export * as stripeModalUISelectors from './stripe-modal/selectors'
 export { default as stripeModalUISagas } from './stripe-modal/sagas'
 
 export {
+  default as coinflowModalUIReducer,
+  actions as coinflowModalUIActions
+} from './coinflow-modal/slice'
+
+export {
   default as vipDiscordModalReducer,
   actions as vipDiscordModalActions
 } from './vip-discord-modal/slice'
@@ -122,6 +127,13 @@ export {
 } from './upload-confirmation-modal/slice'
 export { default as uploadConfirmationModalUISagas } from './upload-confirmation-modal/sagas'
 export * from './upload-confirmation-modal/types'
+
+export * as publishTrackConfirmationModalUISelectors from './publish-track-confirmation-modal/selectors'
+export {
+  default as publishTrackConfirmationModalUIReducer,
+  actions as publishTrackConfirmationModalUIActions
+} from './publish-track-confirmation-modal/slice'
+export { default as publishTrackConfirmationModalUISagas } from './publish-track-confirmation-modal/sagas'
 
 export {
   default as withdrawUSDCReducer,

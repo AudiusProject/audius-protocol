@@ -3,12 +3,13 @@ import { ComponentType, lazy } from 'react'
 import type { Modals as ModalTypes } from '@audius/common'
 
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
-import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
+import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
+import CoinflowOnrampModal from 'components/coinflow-onramp-modal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
@@ -23,6 +24,7 @@ import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiu
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
+import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
@@ -76,12 +78,13 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   EditFolder: EditFolderModal,
   EditPlaylist: EditPlaylistModal,
   EditTrack: EditTrackModal,
-  AddToPlaylist: AddToPlaylistModal,
+  AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
+  PublishTrackConfirmation: PublishTrackConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
@@ -101,6 +104,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   CreateChatModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
+  CoinflowOnramp: CoinflowOnrampModal,
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,

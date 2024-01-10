@@ -34,7 +34,6 @@ import {
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
-import moment from 'moment'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -87,6 +86,7 @@ const messages = {
   hidden: 'Hidden',
   hiddenSubtitle:
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
+  hiddenHint: 'Scheduled tracks are hidden by default until release.',
   learnMore: 'Learn More',
   fieldVisibility: {
     genre: 'Show Genre',
@@ -119,7 +119,7 @@ const messages = {
   },
   required: 'Required'
 }
-
+export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 export const IS_UNLISTED = 'is_unlisted'
 export const IS_PREMIUM = 'is_premium'
 export const PREMIUM_CONDITIONS = 'premium_conditions'
@@ -249,18 +249,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     index,
     'preview.duration'
   )
-  const [{ value: release_date }] = useIndexedField<number>(
-    'trackMetadatas',
-    index,
-    'release_date'
-  )
-  const isScheduledRelease = moment(release_date).isAfter(moment())
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
+  const [{ value: isScheduledRelease }, ,] =
+    useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
+      IS_SCHEDULED_RELEASE
+    )
   const [{ value: isPremium }, , { setValue: setIsPremiumValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
   const [
@@ -329,7 +327,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isUnlisted || isScheduledRelease) {
+    if (isUnlisted && !isScheduledRelease) {
       availabilityType = TrackAvailabilityType.HIDDEN
     }
     set(initialValues, AVAILABILITY_TYPE, availabilityType)
@@ -340,19 +338,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
-    if (isScheduledRelease) {
-      setIsUnlistedValue(true)
-    }
     return initialValues as AccessAndSaleFormValues
   }, [
     savedPremiumConditions,
     isUnlisted,
     isPremium,
     tempPremiumConditions,
-    isScheduledRelease,
     fieldVisibility,
     preview,
-    setIsUnlistedValue
+    isScheduledRelease
   ])
 
   const handleSubmit = useCallback(
@@ -362,12 +356,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const premiumConditions = get(values, PREMIUM_CONDITIONS)
-
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
         remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
       })
-      setIsUnlistedValue(false)
+      setIsUnlistedValue(isUnlisted)
       setIsPremiumValue(false)
       setPremiumConditionsValue(null)
       setPreviewValue(undefined)
@@ -415,6 +408,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           break
         }
         case TrackAvailabilityType.PUBLIC: {
+          setIsUnlistedValue(false)
           break
         }
       }
@@ -424,7 +418,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsPremiumValue,
       setIsUnlistedValue,
       setPremiumConditionsValue,
-      setPreviewValue
+      setPreviewValue,
+      isUnlisted
     ]
   )
 
@@ -486,7 +481,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isPremiumContentTipGated(savedPremiumConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if ((isUnlisted || isScheduledRelease) && fieldVisibility) {
+    } else if (isUnlisted && !isScheduledRelease && fieldVisibility) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
@@ -547,8 +542,8 @@ type AccesAndSaleMenuFieldsProps = {
   isRemix: boolean
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
-  initialPremiumConditions?: PremiumConditions
   isScheduledRelease?: boolean
+  initialPremiumConditions?: PremiumConditions
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -593,7 +588,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           label={messages.public}
           description={messages.publicSubtitle}
           value={TrackAvailabilityType.PUBLIC}
-          disabled={isScheduledRelease}
         />
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
@@ -601,7 +595,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isUpload={isUpload}
             initialPremiumConditions={initialPremiumConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
-            isScheduledRelease={isScheduledRelease}
           />
         ) : null}
 
@@ -611,7 +604,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={TrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccessGate || isScheduledRelease}
+            disabled={noSpecialAccessGate}
             checkedContent={
               <SpecialAccessFields disabled={noSpecialAccessGateFields} />
             }
@@ -623,7 +616,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isUpload={isUpload}
             initialPremiumConditions={initialPremiumConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
-            isScheduledRelease={isScheduledRelease}
           />
         ) : null}
         <ModalRadioItem
@@ -632,6 +624,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           value={TrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
           disabled={noHidden}
+          hintContent={
+            isScheduledRelease && isInitiallyUnlisted ? messages.hiddenHint : ''
+          }
           checkedContent={<HiddenAvailabilityFields />}
         />
       </RadioButtonGroup>

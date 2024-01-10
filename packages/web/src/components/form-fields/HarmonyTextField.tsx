@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Ref, forwardRef, useEffect } from 'react'
 
 import { useDebouncedCallback } from '@audius/common'
 import { TextInput, TextInputProps } from '@audius/harmony'
@@ -13,52 +13,70 @@ export type HarmonyTextFieldProps = TextInputProps & {
   clearErrorOnChange?: boolean
   /** Function to transform the input value upon `onChange`.
    * E.g. a function to trim whitespace */
-  transformValue?: (value: string) => string
+  transformValueOnChange?: (value: string) => string
+  transformValueOnBlur?: (value: string) => string
   debouncedValidationMs?: number
 }
 
 // TODO: rename to TextField and replace old usages
-export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
-  const {
-    name,
-    clearErrorOnChange = true,
-    transformValue,
-    debouncedValidationMs,
-    ...other
-  } = props
-  const [field, { touched, error }, { setError }] = useField(name)
-  const { value } = field
-  const { validateField } = useFormikContext()
+export const HarmonyTextField = forwardRef(
+  (props: HarmonyTextFieldProps, ref: Ref<HTMLInputElement>) => {
+    const {
+      name,
+      clearErrorOnChange = true,
+      transformValueOnChange,
+      transformValueOnBlur,
+      debouncedValidationMs = 0,
+      helperText,
+      onChange: propsOnChange,
+      ...other
+    } = props
+    const [field, { touched, error }, { setError }] = useField(name)
+    const { value } = field
+    const { validateField, submitCount } = useFormikContext()
 
-  const debouncedValidateField = useDebouncedCallback(
-    (field: string) => validateField(field),
-    [validateField],
-    500
-  )
+    const debouncedValidateField = useDebouncedCallback(
+      (field: string) => validateField(field),
+      [validateField],
+      debouncedValidationMs
+    )
 
-  useEffect(() => {
-    if (debouncedValidationMs) {
-      debouncedValidateField(name)
-    }
-  }, [debouncedValidationMs, debouncedValidateField, name, value])
+    useEffect(() => {
+      if (debouncedValidationMs) {
+        debouncedValidateField(name)
+      }
+    }, [debouncedValidationMs, debouncedValidateField, name, value])
 
-  const hasError = Boolean(touched && error)
+    const hasError = Boolean(touched && error && submitCount > 0)
 
-  return (
-    <TextInput
-      {...field}
-      error={hasError}
-      helperText={hasError ? error : undefined}
-      onChange={(e) => {
-        if (clearErrorOnChange) {
-          setError(undefined)
-        }
-        if (transformValue) {
-          e.target.value = transformValue(e.target.value)
-        }
-        field.onChange(e)
-      }}
-      {...other}
-    />
-  )
-}
+    return (
+      <TextInput
+        ref={ref}
+        {...field}
+        error={hasError}
+        helperText={helperText ?? (hasError ? error : undefined)}
+        onChange={(e) => {
+          if (clearErrorOnChange) {
+            setError(undefined)
+          }
+          if (transformValueOnChange) {
+            e.target.value = transformValueOnChange(e.target.value)
+          }
+          field.onChange(e)
+        }}
+        onBlur={(e) => {
+          if (clearErrorOnChange) {
+            setError(undefined)
+          }
+          if (transformValueOnBlur) {
+            e.target.value = transformValueOnBlur(e.target.value)
+          }
+          field.onChange(e)
+          propsOnChange?.(e)
+          field.onBlur(e)
+        }}
+        {...other}
+      />
+    )
+  }
+)

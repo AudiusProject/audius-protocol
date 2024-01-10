@@ -2,6 +2,7 @@ import {
   Avatar,
   Box,
   Flex,
+  IconButton,
   IconCamera,
   IconVerified,
   Text
@@ -49,11 +50,18 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'pointer',
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >
       {isEditing && !imageUrl ? (
-        <IconCamera size='l' color='staticWhite' />
+        <IconButton
+          aria-label='test'
+          size='l'
+          color='staticWhite'
+          shadow='drop'
+          icon={IconCamera}
+        />
       ) : null}
     </Avatar>
   )
@@ -148,8 +156,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
           </Text>
           <Flex gap='s' alignItems='center'>
             <Text
-              variant='body'
-              size={isSmallSize ? 's' : 'm'}
+              variant='title'
+              size={isSmallSize ? 'm' : 'l'}
               color='staticWhite'
               shadow='emphasis'
             >

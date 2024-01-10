@@ -110,6 +110,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
+
+  const isOwner = track?.owner_id === accountUser?.user_id
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
@@ -137,25 +142,25 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     if (track) {
       if (track.has_current_user_saved) {
         dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      } else if (track.owner_id === accountUser?.user_id) {
+      } else if (isOwner) {
         toast({ content: messages.favoriteProhibited })
       } else {
         dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleRepost = useCallback(() => {
     if (track) {
       if (track.has_current_user_reposted) {
         dispatch(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
-      } else if (track.owner_id === accountUser?.user_id) {
+      } else if (isOwner) {
         toast({ content: messages.repostProhibited })
       } else {
         dispatch(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleShare = useCallback(() => {
     if (track) {
@@ -180,6 +185,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
+        isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
         !track.is_premium ? OverflowAction.ADD_TO_PLAYLIST : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
@@ -202,6 +208,8 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
+    isEditAlbumsEnabled,
+    isOwner,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
     dispatch

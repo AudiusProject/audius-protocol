@@ -1,4 +1,4 @@
-import TrackerChart from 'components/TrackerChart'
+import { TrackerChart } from 'components/TrackerChart'
 import React from 'react'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'

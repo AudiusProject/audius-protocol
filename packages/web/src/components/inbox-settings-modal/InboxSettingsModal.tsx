@@ -102,10 +102,7 @@ export const InboxSettingsModal = () => {
       isOpen={isVisible}
     >
       <ModalHeader onClose={handleClose}>
-        <ModalTitle
-          title={messages.title}
-          icon={<IconMessage className={styles.icon} />}
-        />
+        <ModalTitle title={messages.title} icon={<IconMessage />} />
       </ModalHeader>
       <ModalContent className={styles.modalContent}>
         <RadioButtonGroup

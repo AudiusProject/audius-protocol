@@ -10,11 +10,14 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  dayjs
 } from '@audius/common'
+import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
 import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
@@ -139,6 +142,14 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   link: {
     color: palette.primary
+  },
+  releaseContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing(1)
+  },
+  releasesLabel: {
+    paddingTop: 2
   }
 }))
 
@@ -217,7 +228,8 @@ export const DetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-
+  const isUnpublishedScheduledRelease =
+    track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
     isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
 
@@ -241,12 +253,11 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
-
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
       premiumConditions,
-      isUnlisted
+      isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -401,6 +412,22 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
+                {isUnpublishedScheduledRelease && track?.release_date ? (
+                  <View style={styles.releaseContainer}>
+                    <IconCalendarMonth color='accent' size='m' />
+                    <HarmonyText
+                      color='accent'
+                      strength='strong'
+                      size='m'
+                      style={styles.releasesLabel}
+                    >
+                      Releases
+                      {' ' +
+                        moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                        dayjs().format('z')}
+                    </HarmonyText>
+                  </View>
+                ) : null}
                 <DetailsTileActionButtons
                   hasReposted={!!hasReposted}
                   hasSaved={!!hasSaved}

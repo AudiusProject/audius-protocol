@@ -6,8 +6,8 @@ declare module 'fxa-common-password-list'
 declare module 'react-native-static-server'
 
 declare module '*.svg' {
-  import type { Icon } from '@audius/harmony-native'
-  const content: Icon
+  import type { IconProps } from '@audius/harmony-native'
+  const content: ComponentType<IconProps>
   export default content
 }
 

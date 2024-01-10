@@ -117,6 +117,7 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted: isUnlisted,
+    is_scheduled_release: isScheduledRelease,
     is_premium: isPremium,
     premium_conditions: premiumConditions,
     track_id: trackId,
@@ -133,7 +134,8 @@ const ConnectedTrackTile = ({
     has_current_user_saved: isFavorited,
     _cover_art_sizes,
     play_count,
-    duration
+    duration,
+    release_date: releaseDate
   } = trackWithFallback
 
   const {
@@ -361,6 +363,7 @@ const ConnectedTrackTile = ({
       isReposted={isReposted}
       isOwner={isOwner}
       isUnlisted={isUnlisted}
+      isScheduledRelease={isScheduledRelease}
       isPremium={isPremium}
       premiumConditions={premiumConditions}
       doesUserHaveAccess={doesUserHaveAccess}
@@ -394,6 +397,7 @@ const ConnectedTrackTile = ({
       permalink={permalink}
       trackId={trackId}
       isTrack
+      releaseDate={releaseDate}
     />
   )
 

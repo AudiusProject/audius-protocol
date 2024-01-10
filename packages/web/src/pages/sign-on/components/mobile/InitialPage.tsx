@@ -7,6 +7,7 @@ import {
   KeyboardEvent
 } from 'react'
 
+import { Flex } from '@audius/harmony'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -137,11 +138,13 @@ const SignUpEmail = ({
 
   return (
     <div className={styles.topContainer}>
-      <PreloadImage
-        src={audiusLogoHorizontal}
-        className={styles.logo}
-        alt='Audius Colored Logo'
-      />
+      <Flex>
+        <PreloadImage
+          src={audiusLogoHorizontal}
+          className={styles.logo}
+          alt='Audius Colored Logo'
+        />
+      </Flex>
       <h1 className={cn(styles.title)}>{messages.title}</h1>
       <div className={cn(styles.header)}>
         <h2 className={styles.text}>{messages.header1}</h2>
@@ -182,22 +185,24 @@ const SignUpEmail = ({
           )}
         </Spring>
       ) : null}
-      <Button
-        text={messages.signUp}
-        name='continue'
-        rightIcon={
-          isSubmitting && shouldShowLoadingSpinner ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : (
-            <IconArrow />
-          )
-        }
-        type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-        onClick={onSubmitEmail}
-        className={styles.signUpButton}
-        textClassName={styles.signUpButtonText}
-        isDisabled={isSubmitting}
-      />
+      <Flex justifyContent='center'>
+        <Button
+          text={messages.signUp}
+          name='continue'
+          rightIcon={
+            isSubmitting && shouldShowLoadingSpinner ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <IconArrow />
+            )
+          }
+          type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
+          onClick={onSubmitEmail}
+          className={styles.signUpButton}
+          textClassName={styles.signUpButtonText}
+          isDisabled={isSubmitting}
+        />
+      </Flex>
     </div>
   )
 }
@@ -228,11 +233,13 @@ const SignIn = ({
 
   return (
     <div className={styles.topContainer}>
-      <PreloadImage
-        src={audiusLogoHorizontal}
-        className={styles.logo}
-        alt='Audius Colored Logo'
-      />
+      <Flex>
+        <PreloadImage
+          src={audiusLogoHorizontal}
+          className={styles.logo}
+          alt='Audius Colored Logo'
+        />
+      </Flex>
       <select style={{ display: 'none' }} />
       <h1 className={styles.signInDescription}>{messages.signinDescription}</h1>
       <Input
@@ -273,20 +280,22 @@ const SignIn = ({
           )}
         </Spring>
       )}
-      <Button
-        text='Sign In'
-        rightIcon={
-          isLoading || (didSucceed && !hasAccount) ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : (
-            <IconArrow />
-          )
-        }
-        type={ButtonType.PRIMARY_ALT}
-        onClick={onSignIn}
-        className={styles.signInButton}
-        textClassName={styles.signInButtonText}
-      />
+      <Flex justifyContent='center'>
+        <Button
+          text='Sign In'
+          rightIcon={
+            isLoading || (didSucceed && !hasAccount) ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <IconArrow />
+            )
+          }
+          type={ButtonType.PRIMARY_ALT}
+          onClick={onSignIn}
+          className={styles.signInButton}
+          textClassName={styles.signInButtonText}
+        />
+      </Flex>
     </div>
   )
 }
@@ -353,7 +362,7 @@ export const InitialPage = ({
           <div style={{ backgroundImage: `url(${signupCtaImage})` }} />
         </div>
         <div className={styles.switchView}>
-          <div ref={bottomLinkRef}>
+          <Flex ref={bottomLinkRef} justifyContent='center'>
             {isSignIn ? (
               <div className={styles.hasAccount}>
                 New to Audius?{' '}
@@ -369,7 +378,7 @@ export const InitialPage = ({
                 </span>
               </div>
             )}
-          </div>
+          </Flex>
         </div>
       </div>
     </div>

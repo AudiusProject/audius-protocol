@@ -1,17 +1,27 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
-import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common'
-import { Paper, PlainButton, PlainButtonType } from '@audius/harmony'
-import { Formik, Form } from 'formik'
+import {
+  finishProfileSchema,
+  finishProfilePageMessages as messages
+} from '@audius/common'
+import {
+  Flex,
+  Paper,
+  PlainButton,
+  PlainButtonType,
+  Text,
+  useTheme
+} from '@audius/harmony'
+import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
   setField,
   setValueField,
-  setFinishedPhase1
+  setFinishedPhase1,
+  signUp
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -30,40 +40,47 @@ import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
 
-const messages = {
-  header: 'Finish Your Profile',
-  description:
-    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  displayName: 'Display Name',
-  inputPlaceholder: 'express yourself 💫',
-  goBack: 'Go back'
-}
-
 export type FinishProfileValues = {
   profileImage: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string
 }
 
-const formSchema = toFormikValidationSchema(
-  z.object({
-    displayName: z.string().max(MAX_DISPLAY_NAME_LENGTH, ''),
-    profileImage: z.object({
-      url: z.string()
-    }),
-    coverPhoto: z
-      .object({
-        url: z.string().optional()
-      })
-      .optional()
-  })
-)
+const formSchema = toFormikValidationSchema(finishProfileSchema)
+
+const ImageUploadErrorText = () => {
+  const { errors } = useFormikContext<FinishProfileValues>()
+  let errorText
+  if (errors.coverPhoto === messages.coverPhotoUploadError) {
+    errorText = errors.coverPhoto
+  }
+  // Profile image error takes priority
+  if (errors.profileImage === messages.profileImageUploadError) {
+    // If both images have errors, we show a combined error message
+    if (errorText !== undefined) {
+      errorText = messages.bothImageUploadError
+    } else {
+      errorText = errors.profileImage
+    }
+  }
+
+  return (
+    <Flex ph='l' pt='2xl'>
+      {errorText ? (
+        <Text variant='body' size='m' strength='default' color='danger'>
+          {errorText}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+}
 
 export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
   const history = useHistory()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
@@ -87,6 +104,7 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
+      dispatch(signUp())
     },
     [navigate, dispatch]
   )
@@ -105,6 +123,7 @@ export const FinishProfilePage = () => {
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
           transitionBack='horizontal'
+          autoFocusInputRef={displayNameInputRef}
         >
           <Heading
             prefix={
@@ -114,7 +133,7 @@ export const FinishProfilePage = () => {
             }
             heading={messages.header}
             description={messages.description}
-            alignItems={!isMobile ? 'center' : undefined}
+            centered={!isMobile}
           />
           <Paper direction='column'>
             <AccountHeader
@@ -122,22 +141,24 @@ export const FinishProfilePage = () => {
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
             />
+            <ImageUploadErrorText />
             <HarmonyTextField
+              ref={displayNameInputRef}
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
               required
-              autoFocus
               maxLength={32}
               css={(theme) => ({
-                padding: theme.spacing.l,
-                paddingTop: theme.spacing.unit10
+                padding: theme.spacing.l
               })}
             />
           </Paper>
+          {isMobile ? null : <UploadProfilePhotoHelperText />}
           <PageFooter
             centered
             buttonProps={{ disabled: !isValid }}
+            prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
                 <PlainButton
@@ -152,5 +173,25 @@ export const FinishProfilePage = () => {
         </Page>
       )}
     </Formik>
+  )
+}
+
+const UploadProfilePhotoHelperText = () => {
+  const [{ value: displayName }, { touched }] = useField('displayName')
+  const [{ value: profileImage }] = useField('profileImage')
+  const isVisible = displayName && touched && !profileImage
+  const { motion } = useTheme()
+
+  return (
+    <Text
+      variant='body'
+      textAlign='center'
+      css={{
+        opacity: isVisible ? 1 : 0,
+        transition: `opacity ${motion.calm}`
+      }}
+    >
+      {messages.uploadProfilePhoto}
+    </Text>
   )
 }

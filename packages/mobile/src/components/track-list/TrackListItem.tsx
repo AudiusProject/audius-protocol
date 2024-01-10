@@ -231,6 +231,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     owner_id,
     is_premium: isPremium
   } = track
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
+
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
@@ -305,6 +309,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
+      isEditAlbumsEnabled && isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
@@ -328,17 +333,18 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       })
     )
   }, [
-    contextPlaylistId,
-    isContextPlaylistOwner,
     isTrackOwner,
-    has_current_user_reposted,
     has_current_user_saved,
+    has_current_user_reposted,
+    isEditAlbumsEnabled,
     isPremium,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     playbackPositionInfo?.status,
+    isContextPlaylistOwner,
     dispatch,
-    track_id
+    track_id,
+    contextPlaylistId
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

@@ -3,7 +3,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import AddToPlaylistPage from 'components/add-to-playlist/mobile/AddToPlaylist'
+import AddToCollectionPage from 'components/add-to-collection/mobile/AddToCollection'
 import EditPlaylistPage from 'components/edit-playlist/mobile/EditPlaylistPage'
 import useScrollLock from 'hooks/useScrollLock'
 import { AppState } from 'store/types'
@@ -17,24 +17,24 @@ type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
 const rootElement =
   typeof document !== 'undefined' ? document.querySelector('#root') : null
 
-const TopLevelPage = ({ showAddToPlaylist }: TopLevelPageProps) => {
+const TopLevelPage = ({ showAddToCollection }: TopLevelPageProps) => {
   const { isOpen } = useEditPlaylistModal()
-  const showPage = isOpen || showAddToPlaylist
+  const showPage = isOpen || showAddToCollection
   const isLocked = !!(showPage && rootElement)
   useScrollLock(isLocked)
 
   let page = null
   if (isOpen) {
     page = <EditPlaylistPage />
-  } else if (showAddToPlaylist) {
-    page = <AddToPlaylistPage />
+  } else if (showAddToCollection) {
+    page = <AddToCollectionPage />
   }
 
   return (
     <div
       className={cn(styles.topLevelPage, {
         [styles.show]: showPage,
-        [styles.darkerBackground]: showAddToPlaylist
+        [styles.darkerBackground]: showAddToCollection
       })}
     >
       {page}
@@ -44,7 +44,7 @@ const TopLevelPage = ({ showAddToPlaylist }: TopLevelPageProps) => {
 
 function mapStateToProps(state: AppState) {
   return {
-    showAddToPlaylist: getModalVisibility(state, 'AddToPlaylist')
+    showAddToCollection: getModalVisibility(state, 'AddToCollection')
   }
 }
 

@@ -118,6 +118,7 @@
 }
 
 .permissionTextContainer {
+  overflow: auto;
   margin-left: var(--unit-4);
 }
 

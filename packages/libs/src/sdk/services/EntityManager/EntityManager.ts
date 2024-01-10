@@ -68,7 +68,7 @@ export class EntityManager implements EntityManagerService {
     Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
   > {
     const nonce = await signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = Number(await this.web3.eth.getChainId())
     const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       this.config.contractAddress,
@@ -93,7 +93,9 @@ export class EntityManager implements EntityManagerService {
       signature
     )
 
-    const response = await fetch(`${await this.getRelayEndpoint()}/relay`, {
+    const url = `${await this.getRelayEndpoint()}/relay`
+    this.logger.info(`Making relay request to ${url}`)
+    const response = await fetch(url, {
       method: 'POST',
       headers: new Headers({
         'Content-Type': 'application/json'
@@ -152,6 +154,7 @@ export class EntityManager implements EntityManagerService {
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) {
+    this.logger.info('Confirming write')
     const confirmBlock = async () => {
       const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
       const {
@@ -182,6 +185,7 @@ export class EntityManager implements EntityManagerService {
       confirmation = await confirmBlock()
     }
 
+    this.logger.info('Write confirmed')
     return true
   }
 

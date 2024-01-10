@@ -33,7 +33,6 @@ user_model = ns.model(
         "cover_photo": fields.Nested(cover_photo, allow_null=True),
         "followee_count": fields.Integer(required=True),
         "follower_count": fields.Integer(required=True),
-        "does_follow_current_user": fields.Boolean,
         "handle": fields.String(required=True),
         "id": fields.String(required=True),
         "is_verified": fields.Boolean(required=True),
@@ -134,6 +133,14 @@ user_token_profile_picture = ns.model(
     },
 )
 
+tx_signature = ns.model(
+    "tx_signature",
+    {
+        "message": fields.String(required=True),
+        "signature": fields.String(required=True),
+    },
+)
+
 decoded_user_token = ns.model(
     "decoded_user_token",
     {
@@ -147,6 +154,9 @@ decoded_user_token = ns.model(
         ),
         "sub": fields.String(required=True),
         "iat": fields.String(required=True),
+        "txSignature": fields.Nested(
+            tx_signature, required=False, allow_null=True, skip_none=True
+        ),
     },
 )
 

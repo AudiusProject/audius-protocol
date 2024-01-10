@@ -2044,11 +2044,6 @@ class GetReplicaSet(FullGetReplicaSet):
         return super()._get(id)
 
 
-verify_token_response = make_response(
-    "verify_token", ns, fields.Nested(decoded_user_token)
-)
-
-
 @ns.route("/unclaimed_id", doc=False)
 class GetUnclaimedUserId(Resource):
     @ns.doc(

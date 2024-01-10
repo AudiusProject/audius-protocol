@@ -42,11 +42,7 @@ export const LeavingAudiusModal = () => {
       size={'small'}
     >
       <ModalHeader>
-        <ModalTitle
-          iconClassName={styles.icon}
-          icon={<Icon icon={IconInfo} />}
-          title={messages.title}
-        />
+        <ModalTitle icon={<Icon icon={IconInfo} />} title={messages.title} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>

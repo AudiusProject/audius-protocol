@@ -1,9 +1,9 @@
 import {
+  Suspense,
+  lazy,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
   useState
 } from 'react'
 
@@ -42,20 +42,22 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useScript } from 'hooks/useScript'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
-import { getScrollParent } from 'utils/scrollParent'
 import zIndex from 'utils/zIndex'
 
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
+
+const Collectible3D = lazy(() =>
+  import('./Collectible3D').then((module) => ({
+    default: module.Collectible3D
+  }))
+)
+
 const { setCollectible } = collectibleDetailsUIActions
 const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
 const getAccountUser = accountSelectors.getAccountUser
-
-const MODEL_VIEWER_SCRIPT_URL =
-  'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'
 
 type CollectibleMediaProps = {
   collectible: Collectible
@@ -66,9 +68,6 @@ type CollectibleMediaProps = {
 
 const CollectibleMedia = (props: CollectibleMediaProps) => {
   const { collectible, isMuted, toggleMute, isMobile } = props
-  // if it becomes possible to render more than 1 collectible detail (model or mobile drawer), then
-  // update useScript hook to handle multiple in-flight requests
-  const scriptLoaded = useScript(MODEL_VIEWER_SCRIPT_URL, true)
 
   const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
 
@@ -89,49 +88,14 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
     [mediaType, imageUrl, setIsSvg]
   )
 
-  const ref3D = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (threeDUrl && ref3D?.current && scriptLoaded) {
-      ref3D.current.innerHTML = `<model-viewer src=${threeDUrl} auto-rotate camera-controls />`
-      const modelViewer = ref3D.current.children[0] as HTMLElement
-      modelViewer.style.minWidth = '50vw'
-      modelViewer.style.minHeight = '50vh'
-
-      if (isMobile) {
-        modelViewer.style.width = '100%'
-
-        // for 3d objects, disable parent nft drawer element scrollability if user is on 3d object
-        const scrollableAncestor = getScrollParent(modelViewer)
-        let foundDrawerAncestor = false
-        for (const item of (scrollableAncestor?.classList ?? []).values()) {
-          if (item.includes('nftDrawer')) {
-            foundDrawerAncestor = true
-            break
-          }
-        }
-        if (foundDrawerAncestor) {
-          const scrollableAncestorElement = scrollableAncestor as HTMLElement
-          const mouseEnterListener = () => {
-            scrollableAncestorElement.style.overflowY = 'hidden'
-          }
-          const mouseLeaveListener = () => {
-            scrollableAncestorElement.style.overflowY = 'scroll'
-          }
-          modelViewer.addEventListener('mouseenter', mouseEnterListener)
-          modelViewer.addEventListener('mouseleave', mouseLeaveListener)
-
-          return () => {
-            modelViewer.removeEventListener('mouseenter', mouseEnterListener)
-            modelViewer.removeEventListener('mouseleave', mouseLeaveListener)
-          }
-        }
-      }
-    }
-  }, [threeDUrl, ref3D, isMobile, scriptLoaded])
-
   return mediaType === CollectibleMediaType.THREE_D ? (
-    <div className={styles.detailsMediaWrapper} ref={ref3D} />
+    <div className={styles.detailsMediaWrapper}>
+      {threeDUrl ? (
+        <Suspense>
+          <Collectible3D isMobile={isMobile} src={threeDUrl} />
+        </Suspense>
+      ) : null}
+    </div>
   ) : mediaType === CollectibleMediaType.GIF ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={gifUrl!} alt='Collectible' />

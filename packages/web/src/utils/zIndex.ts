@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 /**
  * Standardize the use of zIndex across the application
  *
@@ -38,6 +40,7 @@ export enum zIndex {
   ADD_FUNDS_VENDOR_SELECTION_DRAWER = 10004,
   USDC_MANUAL_TRANSFER_MODAL = 10004,
   USDC_ADD_FUNDS_FILTER_BUTTON_POPUP = 10005,
+  COINFLOW_ONRAMP_MODAL = 10006,
   ARTIST_POPOVER_POPUP = 20000,
   PLAY_BAR_POPUP_MENU = 20001,
   FEATURE_FLAG_OVERRIDE_MODAL = 30000,

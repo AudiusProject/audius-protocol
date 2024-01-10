@@ -1,0 +1,30 @@
+FROM node:18.17-slim as builder
+RUN apt update && \
+    apt install -y \
+    python3 \
+    make \
+    gcc \
+    g++ \
+    libusb-1.0-0-dev \
+    libudev-dev \
+    libsecret-1-dev \
+    pkg-config && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package*.json ./
+ENV DASHBOARD_BASE_URL="/dashboard/"
+RUN npm install --legacy-peer-deps
+COPY .env* index.html tsconfig.json tsconfig.node.json vite.config.ts ./
+COPY src ./src
+COPY scripts ./scripts
+COPY public ./public
+COPY types ./types
+RUN npm run build:stage
+
+FROM alpine:latest
+WORKDIR /app
+RUN apk add --no-cache findutils coreutils
+COPY --from=builder /app/dist /tmp/dist
+COPY ./scripts/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

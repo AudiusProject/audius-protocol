@@ -11,7 +11,9 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { BN_USDC_CENT_WEI } from 'utils/wallet'
+
+import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -349,11 +351,12 @@ export const pollForBalanceChange = async (
 }
 
 export type PurchaseContentArgs = {
-  id: number
+  id: ID
   blocknumber: number
   extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
+  purchaserUserId: ID
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
@@ -362,6 +365,44 @@ export const purchaseContent = async (
   return (
     await audiusBackendInstance.getAudiusLibs()
   ).solanaWeb3Manager!.purchaseContent(config)
+}
+
+export type PurchaseContentWithPaymentRouterArgs = {
+  id: number
+  type: 'track'
+  splits: Record<string, number>
+  extraAmount?: number
+  blocknumber: number
+  recentBlockhash?: string
+  purchaserUserId: ID
+  wallet: Keypair
+}
+
+export const purchaseContentWithPaymentRouter = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    purchaserUserId,
+    splits,
+    wallet
+  }: PurchaseContentWithPaymentRouterArgs
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
+    .solanaWeb3Manager!
+  const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
+    id,
+    type,
+    blocknumber,
+    extraAmount: new BN(extraAmount).mul(BN_USDC_CENT_WEI),
+    splits,
+    purchaserUserId,
+    senderKeypair: wallet,
+    skipSendAndReturnTransaction: true
+  })
+  return tx
 }
 
 export const findAssociatedTokenAddress = async (
@@ -426,6 +467,39 @@ export const createTransferToUserBankTransaction = async (
   tx.add(memoInstruction)
   tx.add(transferInstruction)
   return tx
+}
+
+/**
+ * A pared down version of {@link purchaseContentWithPaymentRouter}
+ * that doesn't add the purchase memo.
+ */
+export const createPaymentRouterRouteTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    sender,
+    splits
+  }: {
+    sender: PublicKey
+    splits: Record<string, number | BN>
+  }
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
+    .solanaWeb3Manager!
+  const { blockhash } = await solanaWeb3Manager.connection.getLatestBlockhash()
+  const [transfer, route] =
+    // All the memo related parameters are ignored
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+      id: 0, // ignored
+      type: 'track', // ignored
+      blocknumber: 0, // ignored
+      splits,
+      purchaserUserId: 0, // ignored
+      senderAccount: sender
+    })
+  return new Transaction({
+    recentBlockhash: blockhash,
+    feePayer: sender
+  }).add(transfer, route)
 }
 
 /**

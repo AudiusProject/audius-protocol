@@ -4,9 +4,18 @@ import {
   CommonState,
   chatActions,
   chatSelectors,
+  makeSolanaTransactionLink,
   useInboxUnavailableModal
 } from '@audius/common'
-import { Button, ButtonType, IconCart, IconMessage } from '@audius/harmony'
+import {
+  Button,
+  ButtonType,
+  Flex,
+  IconCart,
+  IconExternalLink,
+  IconMessage,
+  TextLink
+} from '@audius/harmony'
 import {
   ModalContent,
   ModalFooter,
@@ -36,7 +45,8 @@ const messages = {
   messageBuyer: 'Message Buyer',
   purchasedBy: 'Purchased By',
   saleDetails: 'Sale Details',
-  trackPurchased: 'Track Purchased'
+  trackPurchased: 'Track Purchased',
+  transaction: 'Explore Transaction'
 }
 
 export const SaleModalContent = ({
@@ -93,6 +103,21 @@ export const SaleModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
+        <DetailSection
+          label={
+            <TextLink
+              variant='subdued'
+              href={makeSolanaTransactionLink(purchaseDetails.signature)}
+              isExternal
+              applyHoverStylesToInnerSvg
+            >
+              <Flex gap='xs'>
+                {messages.transaction}
+                <IconExternalLink size='s' color='subdued' />
+              </Flex>
+            </TextLink>
+          }
+        />
         <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>

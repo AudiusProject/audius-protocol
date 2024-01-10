@@ -10,6 +10,8 @@ import { ModalContent } from './ModalContent'
 import styles from './ModalContentPages.module.css'
 import { ModalContentProps } from './types'
 
+const INNER_HEIGHT_PADDING = 100
+
 const defaultTransitions = {
   initial: { opacity: 1, transform: 'translate3d(0%, 0, 0)' },
   enter: { opacity: 1, transform: 'translate3d(0%, 0 ,0)' }
@@ -53,6 +55,14 @@ export const ModalContentPages = ({
     polyfill: ResizeObserver
   })
 
+  // A bit of a hack, but instead of resizing the height to the result from
+  // useMeasure, clamp it to the window height minus a padding.
+  // This makes it so that when inside a "Drawer," safe areas are respected.
+  const computedHeight = Math.min(
+    height,
+    window.innerHeight - INNER_HEIGHT_PADDING
+  )
+
   if (lastPage !== currentPage) {
     setTransitions(
       getSwipeTransitions(currentPage > lastPage ? 'forward' : 'back')
@@ -68,7 +78,7 @@ export const ModalContentPages = ({
       className={styles.transitionContainer}
       style={{
         width: width ? `${width}px` : '100%',
-        height: height ? `${height}px` : '100%'
+        height: computedHeight ? `${computedHeight}px` : '100%'
       }}
     >
       <Transition

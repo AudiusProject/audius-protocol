@@ -32,7 +32,7 @@ export const initialState: BasicModalsState = {
   EditTrack: { isOpen: false },
   SignOutConfirmation: { isOpen: false },
   Overflow: { isOpen: false },
-  AddToPlaylist: { isOpen: false },
+  AddToCollection: { isOpen: false },
   DeletePlaylistConfirmation: { isOpen: false },
   DuplicateAddConfirmation: { isOpen: false },
   FeatureFlagOverride: { isOpen: false },
@@ -52,10 +52,12 @@ export const initialState: BasicModalsState = {
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
+  PublishTrackConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
+  CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false }
 }

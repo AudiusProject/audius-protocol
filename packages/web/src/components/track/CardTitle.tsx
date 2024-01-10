@@ -28,6 +28,7 @@ const messages = {
 type CardTitleProps = {
   className?: string
   isUnlisted: boolean
+  isScheduledRelease: boolean
   isRemix: boolean
   isPremium: boolean
   isPodcast: boolean
@@ -36,6 +37,7 @@ type CardTitleProps = {
 
 export const CardTitle = ({
   className,
+  isScheduledRelease,
   isUnlisted,
   isRemix,
   isPremium,
@@ -70,25 +72,26 @@ export const CardTitle = ({
       </div>
     )
   } else {
-    content = isUnlisted ? (
-      <Tooltip
-        text={messages.hiddenTrackTooltip}
-        mouseEnterDelay={0}
-        shouldWrapContent={false}
-      >
-        <div>
-          <HiddenTrackHeader />
+    content =
+      isUnlisted && !isScheduledRelease ? (
+        <Tooltip
+          text={messages.hiddenTrackTooltip}
+          mouseEnterDelay={0}
+          shouldWrapContent={false}
+        >
+          <div>
+            <HiddenTrackHeader />
+          </div>
+        </Tooltip>
+      ) : (
+        <div className={styles.typeLabel}>
+          {isRemix
+            ? messages.remixTitle
+            : isPodcast && isNewPodcastControlsEnabled
+            ? messages.podcastTitle
+            : messages.trackTitle}
         </div>
-      </Tooltip>
-    ) : (
-      <div className={styles.typeLabel}>
-        {isRemix
-          ? messages.remixTitle
-          : isPodcast && isNewPodcastControlsEnabled
-          ? messages.podcastTitle
-          : messages.trackTitle}
-      </div>
-    )
+      )
   }
 
   return (

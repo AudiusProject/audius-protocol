@@ -25,8 +25,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
 import { ResetPasswordModalScreen } from '../reset-password-screen'
-import { SignInScreen } from '../sign-in-screen'
-import { SignUpRootScreen } from '../sign-up-screen'
+import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
 
@@ -121,10 +120,7 @@ export const RootScreen = () => {
           ) : showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : isSignUpRedesignEnabled ? (
-            <Stack.Group>
-              <Stack.Screen name='SignUp' component={SignUpRootScreen} />
-              <Stack.Screen name='SignIn' component={SignInScreen} />
-            </Stack.Group>
+            <Stack.Screen name='SignOnStackNew' component={SignOnStack} />
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}

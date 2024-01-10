@@ -15,12 +15,14 @@ import {
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
 import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -114,6 +116,7 @@ const TrackTile = ({
   isReposted,
   isOwner,
   isUnlisted,
+  isScheduledRelease,
   isPremium,
   premiumConditions,
   doesUserHaveAccess,
@@ -146,12 +149,17 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
-  trackId
+  trackId,
+  releaseDate
 }: TrackTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -224,11 +232,14 @@ const TrackTile = ({
         doesUserHaveAccess,
         isArtistPick,
         isOwner,
-        isUnlisted,
+        isUnlisted:
+          isUnlisted &&
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
         premiumConditions
       })
 
   let specialContentLabel = null
+  let scheduledReleaseLabel = null
   if (!isLoading) {
     if (isPremium) {
       specialContentLabel = (
@@ -244,6 +255,11 @@ const TrackTile = ({
           <IconStar className={styles.artistPickIcon} />
           {messages.artistPick}
         </div>
+      )
+    }
+    if (isScheduledReleasesEnabled) {
+      scheduledReleaseLabel = (
+        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )
     }
   }
@@ -337,10 +353,7 @@ const TrackTile = ({
             className={cn(
               typeStyles.body,
               typeStyles.bodyXSmall,
-              styles.socialsRow,
-              {
-                [styles.isHidden]: isUnlisted
-              }
+              styles.socialsRow
             )}
           >
             {isLoading ? (
@@ -348,7 +361,8 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {stats}
+                {scheduledReleaseLabel}
+                {isUnlisted ? null : stats}
               </>
             )}
           </div>
@@ -359,7 +373,7 @@ const TrackTile = ({
               styles.topRight
             )}
           >
-            {isUnlisted ? (
+            {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}

@@ -23,7 +23,6 @@ global.STORIES = [
 import '@storybook/addon-ondevice-controls/register'
 import '@storybook/addon-ondevice-actions/register'
 
-// @ts-expect-error
 import { argsEnhancers } from '@storybook/addon-actions/dist/modern/preset/addArgs'
 
 import { decorators, parameters } from './preview'
@@ -54,10 +53,22 @@ const getStories = () => {
     '../src/harmony-native/Shadows.stories.tsx': require('../src/harmony-native/foundations/shadows/Shadows.stories.tsx'),
     '../src/harmony-native/Typography.stories.tsx': require('../src/harmony-native/foundations/typography/Typography.stories.tsx'),
     '../src/harmony-native/Link.stories.tsx': require('../src/harmony-native/components/Link/Link.stories.tsx'),
+    '../src/harmony-native/TextLink.stories.tsx': require('../src/harmony-native/components/TextLink/TextLink.stories.tsx'),
     '../src/harmony-native/Box.stories.tsx': require('../src/harmony-native/components/layout/Box/Box.stories.tsx'),
     '../src/harmony-native/Flex.stories.tsx': require('../src/harmony-native/components/layout/Flex/Flex.stories.tsx'),
     '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx'),
-    '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx')
+    '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx'),
+    '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx'),
+    '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
+    '../src/harmony-native/TextInput.stories.tsx': require('../src/harmony-native/components/input/TextInput/TextInput.stories.tsx'),
+    '../src/harmony-native/PasswordInput.stories.tsx': require('../src/harmony-native/components/input/PasswordInput/PasswordInput.stories.tsx'),
+    '../src/harmony-native/FollowButton.stories.tsx': require('../src/harmony-native/components/Button/FollowButton/FollowButton.stories.tsx'),
+    '../src/harmony-native/IconButton.stories.tsx': require('../src/harmony-native/components/Button/IconButton/IconButton.stories.tsx'),
+    '../src/harmony-native/Button.stories.tsx': require('../src/harmony-native/components/Button/Button/Button.stories.tsx'),
+    '../src/harmony-native/SocialButton.stories.tsx': require('../src/harmony-native/components/Button/SocialButton/SocialButton.stories.tsx'),
+    '../src/harmony-native/PlainButton.stories.tsx': require('../src/harmony-native/components/Button/PlainButton/PlainButton.stories.tsx'),
+    '../src/harmony-native/CompletionCheck.stories.tsx': require('../src/harmony-native/components/CompletionCheck/CompletionCheck.stories.tsx'),
+    '../src/harmony-native/Divider.stories.tsx': require('../src/harmony-native/components/layout/Divider/Divider.stories.tsx')
   }
 }
 

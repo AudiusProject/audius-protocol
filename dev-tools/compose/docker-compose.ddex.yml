@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  ddex:
+    container_name: ddex
+    build:
+      context: ${PROJECT_ROOT}/packages
+      dockerfile: Dockerfile.ddex
+      args:
+        app_name: ddex
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    profiles:
+      - ddex

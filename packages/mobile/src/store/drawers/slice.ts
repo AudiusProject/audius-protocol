@@ -11,6 +11,7 @@ export type Drawer =
   | 'ForgotPassword'
   | 'NowPlaying'
   | 'CancelEditTrack'
+  | 'ReleaseNowConfirmation'
   | 'DeleteTrackConfirmation'
   | 'ConnectWallets'
   | 'ConfirmRemoveWallet'
@@ -29,6 +30,7 @@ export type Drawer =
   | 'DeleteChat'
   | 'SupportersInfo'
   | 'OfflineListening'
+  | 'Welcome'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -39,6 +41,10 @@ export type DrawerData = {
   CancelEditTrack: undefined
   RateCallToAction: undefined
   PlaybackRate: undefined
+  ReleaseNowConfirmation: {
+    trackId: number
+    handleConfirm: () => void
+  }
   DeleteTrackConfirmation: {
     trackId: number
   }
@@ -68,6 +74,7 @@ export type DrawerData = {
   DeleteChat: { chatId: string }
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
+  Welcome: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -81,6 +88,7 @@ const initialState: DrawersState = {
   ForgotPassword: false,
   NowPlaying: false,
   CancelEditTrack: false,
+  ReleaseNowConfirmation: false,
   DeleteTrackConfirmation: false,
   ConnectWallets: false,
   ConfirmRemoveWallet: false,
@@ -99,6 +107,7 @@ const initialState: DrawersState = {
   BlockMessages: false,
   DeleteChat: false,
   SupportersInfo: false,
+  Welcome: false,
   data: {}
 }
 

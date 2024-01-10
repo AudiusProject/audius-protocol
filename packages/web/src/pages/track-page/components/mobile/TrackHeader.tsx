@@ -15,7 +15,8 @@ import {
   Nullable,
   getDogEarType,
   isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  FeatureFlags
 } from '@audius/common'
 import {
   Button,
@@ -42,6 +43,7 @@ import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
@@ -180,6 +182,8 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   const showSocials = !isUnlisted && doesUserHaveAccess
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
@@ -233,6 +237,7 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
+      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST

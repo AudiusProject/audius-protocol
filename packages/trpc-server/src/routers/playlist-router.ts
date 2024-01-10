@@ -9,5 +9,5 @@ export const playlistRouter = router({
       throw new TRPCError({ code: 'NOT_FOUND' })
     }
     return row
-  })
+  }),
 })

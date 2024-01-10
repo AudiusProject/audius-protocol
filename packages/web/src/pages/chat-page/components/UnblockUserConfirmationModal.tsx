@@ -51,11 +51,7 @@ export const UnblockUserConfirmationModal = ({
   return (
     <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle
-          title={messages.title}
-          icon={<IconUnblockMessages />}
-          iconClassName={styles.icon}
-        />
+        <ModalTitle title={messages.title} icon={<IconUnblockMessages />} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         {messages.content(user)}

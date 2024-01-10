@@ -56,10 +56,10 @@ import smartCollection from './pages/smart-collection/slice'
 import tokenDashboardSlice from './pages/token-dashboard/slice'
 import track from './pages/track/reducer'
 import TrackPageState from './pages/track/types'
-import trendingPlaylists from './pages/trending-playlists/slice'
-import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
+import trendingPlaylists from './pages/trending-playlists/slice'
+import trendingUnderground from './pages/trending-underground/slice'
 import { PlaybackPositionState } from './playback-position'
 import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
@@ -88,10 +88,11 @@ import {
   TransactionDetailsState,
   withdrawUSDCReducer
 } from './ui'
-import addToPlaylistReducer, {
-  AddToPlaylistState
-} from './ui/add-to-playlist/reducer'
+import addToCollectionReducer, {
+  AddToCollectionState
+} from './ui/add-to-collection/reducer'
 import buyAudioReducer from './ui/buy-audio/slice'
+import coinflowModalReducer from './ui/coinflow-modal/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from './ui/collectible-details/slice'
@@ -105,6 +106,8 @@ import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import publishPlaylistConfirmationReducer from './ui/publish-playlist-confirmation-modal/slice'
 import { PublishPlaylistConfirmationModalState } from './ui/publish-playlist-confirmation-modal/types'
+import publishTrackConfirmationReducer from './ui/publish-track-confirmation-modal/slice'
+import { PublishTrackConfirmationModalState } from './ui/publish-track-confirmation-modal/types'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import relatedArtistsReducer from './ui/related-artists/slice'
 import { RelatedArtistsState } from './ui/related-artists/types'
@@ -183,7 +186,7 @@ export const reducers = (storage: Storage, ssrPageProps?: SsrPageProps) => ({
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
-    addToPlaylist: addToPlaylistReducer,
+    addToCollection: addToCollectionReducer,
     buyAudio: buyAudioReducer,
 
     relatedArtists: relatedArtistsReducer,
@@ -201,10 +204,12 @@ export const reducers = (storage: Storage, ssrPageProps?: SsrPageProps) => ({
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
+    coinflowModal: coinflowModalReducer,
     searchUsersModal: searchUsersModalReducer,
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     uploadConfirmationModal: uploadConfirmationReducer,
+    publishTrackConfirmationModal: publishTrackConfirmationReducer,
     userList: combineReducers({
       followers: followersUserListReducer,
       following: followingUserListReducer,
@@ -312,7 +317,7 @@ export type CommonState = {
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
-    addToPlaylist: AddToPlaylistState
+    addToCollection: AddToCollectionState
     changePassword: ChangePasswordState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
@@ -332,6 +337,7 @@ export type CommonState = {
     toast: ToastState
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
+    publishTrackConfirmationModal: PublishTrackConfirmationModalState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>

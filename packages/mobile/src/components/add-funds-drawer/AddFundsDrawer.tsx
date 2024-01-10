@@ -1,12 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import {
+  PurchaseVendor,
   useAddFundsModal,
   useUSDCManualTransferModal,
   buyUSDCActions,
-  USDCOnRampProvider,
   PurchaseMethod,
-  PurchaseVendor,
   DEFAULT_PURCHASE_AMOUNT_CENTS
 } from '@audius/common'
 import { View } from 'react-native'
@@ -52,18 +51,14 @@ export const AddFundsDrawer = () => {
     useState<PurchaseMethod>(PurchaseMethod.CARD)
 
   const openCardFlow = useCallback(() => {
-    switch (purchaseVendorState) {
-      case PurchaseVendor.STRIPE:
-        dispatch(
-          buyUSDCActions.onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-            }
-          })
-        )
-        break
-    }
+    dispatch(
+      buyUSDCActions.onrampOpened({
+        vendor: purchaseVendorState ?? PurchaseVendor.STRIPE,
+        purchaseInfo: {
+          desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
+        }
+      })
+    )
   }, [dispatch, purchaseVendorState])
 
   const onContinuePress = useCallback(() => {
@@ -95,8 +90,8 @@ export const AddFundsDrawer = () => {
         </View>
         <USDCBalanceRow />
         <PaymentMethod
-          selectedType={selectedPurchaseMethod}
-          setSelectedType={setSelectedPurchaseMethod}
+          selectedMethod={selectedPurchaseMethod}
+          setSelectedMethod={setSelectedPurchaseMethod}
         />
         <Button
           title={messages.continue}

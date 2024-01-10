@@ -13,6 +13,7 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
       rewardsManagerProgramId: process.env.rewardsManagerProgramId,
       rewardsManagerProgramPDA: process.env.rewardsManagerProgramPDA,
       rewardsManagerTokenPDA: process.env.rewardsManagerTokenPDA,
+      usdcMintAddress: process.env.usdcMintAddress,
       useRelay: process.env.useRelay,
     },
     ethWeb3Config: {

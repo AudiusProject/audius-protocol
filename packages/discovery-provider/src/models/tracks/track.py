@@ -61,6 +61,7 @@ class Track(Base, RepresentableMixin):
     updated_at = Column(DateTime, nullable=False)
     cover_art_sizes = Column(String)
     download = Column(JSONB())
+    is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
     field_visibility = Column(JSONB(True))
     route_id = Column(String)

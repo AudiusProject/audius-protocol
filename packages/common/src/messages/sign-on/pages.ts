@@ -1,3 +1,15 @@
+export const signInPageMessages = {
+  metaTitle: 'Sign In • Audius',
+  metaDescription: 'Sign into your Audius account',
+  title: 'Sign Into Audius',
+  emailLabel: 'Email',
+  passwordLabel: 'Password',
+  signIn: 'Sign In',
+  newToAudius: 'New to Audius?',
+  createAccount: 'Create an Account',
+  forgotPassword: 'Forgot password?'
+}
+
 export const createEmailPageMessages = {
   title: 'Sign Up For Audius',
   emailLabel: 'Email',
@@ -35,4 +47,71 @@ export const createPasswordPageMessages = {
     matches: 'Passwords match',
     notCommon: 'Hard to guess'
   }
+}
+
+export const pickHandlePageMessages = {
+  title: 'Pick Your Handle',
+  description:
+    'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
+  handle: 'Handle',
+  or: 'or',
+  claimHandleHeaderPrefix: 'Claim Your Verified',
+  claimHandleDescription:
+    'Verify your Audius account by linking a verified social media account.',
+  claimHandleHeadsUp:
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
+}
+
+export const finishProfilePageMessages = {
+  header: 'Finish Your Profile',
+  description:
+    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
+  displayName: 'Display Name',
+  inputPlaceholder: 'express yourself 💫',
+  uploadProfilePhoto: 'Upload a profile photo to continue',
+  goBack: 'Go back',
+  profileImageUploadError: 'There was an issue uploading your profile image.',
+  coverPhotoUploadError: 'There was an issue uploading your cover photo image.',
+  bothImageUploadError:
+    'There was an issue uploading your profile and cover photo image.'
+}
+
+export const selectGenresPageMessages = {
+  header: 'Select Your Genres',
+  description: 'Start by picking some of your favorite genres.',
+  continue: 'Continue'
+}
+
+export const reviewHandlePageMessages = {
+  heading: 'Review Your Handle',
+  handle: 'Handle',
+  description:
+    "We've connected your social account but need your help with an issue we encountered. "
+}
+
+export const createLoginDetailsPageMessages = {
+  title: 'Create Login Details',
+  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  emailLabel: 'Email',
+  handleLabel: 'Handle',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  signIn: 'Sign In'
+}
+
+export const selectArtstsPageMessages = {
+  header: 'Follow At Least 3 Artists',
+  description:
+    'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
+  genresLabel: 'Genre',
+  pickArtists: (genre: string) => `Pick ${genre} Artists`,
+  selected: 'Selected'
+}
+
+export const welcomeModalMessages = {
+  welcome: 'Welcome to Audius! 🎉',
+  startListening: 'Start Listening',
+  upload: 'Upload',
+  youreIn:
+    'You’re in! Discover music from our talented DJs, producers, and artists.'
 }

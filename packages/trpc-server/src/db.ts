@@ -1,12 +1,5 @@
 import postgres from 'postgres'
-import {
-  AggregatePlaylistRow,
-  AggregateTrackRow,
-  AggregateUserRow,
-  PlaylistRow,
-  TrackRow,
-  UserRow
-} from './db-tables'
+import { APlaylist, ATrack, AUser } from './types'
 
 const connectionString = process.env.audius_db_url || ''
 
@@ -25,14 +18,10 @@ export const sql = postgres(connectionString, {
       to: 20,
       from: [20],
       serialize: (x: any) => x.toString(),
-      parse: (x: any) => +x
-    }
-  }
+      parse: (x: any) => +x,
+    },
+  },
 })
-
-export type AUser = UserRow & AggregateUserRow
-export type ATrack = TrackRow & AggregateTrackRow
-export type APlaylist = PlaylistRow & AggregatePlaylistRow
 
 //
 // USERS
@@ -47,7 +36,7 @@ export async function selectUsersCamel(p: SelectUserProps) {
     select *
     from users
     left join aggregate_user agg using (user_id)
-    where is_current = true
+    where 1 = 1
     ${p.ids ? sql`and user_id in ${sql(p.ids)}` : sql``}
     ${p.handle ? sql`and handle_lc = lower(${p.handle})` : sql``}
   `

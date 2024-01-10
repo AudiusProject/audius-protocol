@@ -20,6 +20,7 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.FAVORITE]: { text: 'Favorite' },
   [OverflowAction.UNFAVORITE]: { text: 'Unfavorite' },
   [OverflowAction.SHARE]: { text: 'Share' },
+  [OverflowAction.ADD_TO_ALBUM]: { text: 'Add To Album' },
   [OverflowAction.ADD_TO_PLAYLIST]: { text: 'Add To Playlist' },
   [OverflowAction.REMOVE_FROM_PLAYLIST]: {
     text: 'Remove From This Playlist',
@@ -40,6 +41,7 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.FOLLOW]: { text: 'Follow' },
   [OverflowAction.UNFOLLOW]: { text: 'Unfollow' },
   [OverflowAction.EDIT_TRACK]: { text: 'Edit Track' },
+  [OverflowAction.RELEASE_NOW]: { text: 'Release Now' },
   [OverflowAction.DELETE_TRACK]: { text: 'Delete Track', isDestructive: true },
   [OverflowAction.VIEW_COLLECTIBLE_PAGE]: { text: 'View Collectible Page' },
   [OverflowAction.VIEW_EPISODE_PAGE]: { text: 'View Episode Page' },

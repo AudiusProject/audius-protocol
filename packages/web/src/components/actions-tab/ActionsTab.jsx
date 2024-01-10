@@ -212,7 +212,7 @@ export class ActionsTab extends PureComponent {
       overflowMenu.menu.type = variant === 'playlist' ? 'playlist' : 'album'
       overflowMenu.menu.playlistId = playlistId
       overflowMenu.menu.playlistName = playlistName
-      overflowMenu.menu.includeAddToPlaylist = false
+      overflowMenu.menu.includeAddToCollection = false
       overflowMenu.menu.isPublic = isPublic
       overflowMenu.menu.includeEdit = includeEdit
       overflowMenu.menu.permalink = permalink

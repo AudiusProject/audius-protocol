@@ -129,7 +129,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 	ss.crud.DB.Where("status in ?", []string{newStatus, busyStatus, errorStatus}).Find(&uploads)
 
 	for _, upload := range uploads {
-		if upload.ErrorCount > 10 {
+		if upload.ErrorCount > 5 {
 			continue
 		}
 
@@ -355,7 +355,8 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		"-f", "mp3", // force output to mp3
 		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
 		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
-		"-vn", // no video
+		"-vn",           // no video
+		"-threads", "2", // limit to 2 threads per worker to avoid CPU spikes
 		"-progress", "pipe:2",
 		destPath)
 
@@ -457,6 +458,28 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 	return nil
 }
 
+func filterErrorLines(input string, errorTypes []string, maxCount int) string {
+	lines := strings.Split(input, "\\n")
+	var builder strings.Builder
+	errorCounts := make(map[string]int)
+
+outerLoop:
+	for _, line := range lines {
+		for _, errorType := range errorTypes {
+			if strings.Contains(line, errorType) {
+				if errorCounts[errorType] < maxCount {
+					errorCounts[errorType]++
+					builder.WriteString(line + "\\n")
+				}
+				continue outerLoop
+			}
+		}
+		builder.WriteString(line + "\\n")
+	}
+
+	return builder.String()
+}
+
 func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
@@ -477,7 +500,20 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
 	onError := func(err error, uploadStatus string, info ...string) error {
-		errMsg := fmt.Errorf("%s %s", err, strings.Join(info, " "))
+		// limit repetitive lines
+		errorTypes := []string{
+			"Header missing",
+			"Error while decoding",
+			"Invalid data",
+			"Application provided invalid",
+			"out_time_ms=",
+			"out_time_us",
+			"bitrate=",
+			"progress=",
+		}
+		filteredError := filterErrorLines(err.Error(), errorTypes, 10)
+		errMsg := fmt.Errorf("%s %s", filteredError, strings.Join(info, " "))
+
 		upload.Error = errMsg.Error()
 		if uploadStatus == JobStatusRetranscode || uploadStatus == JobStatusBusyRetranscode {
 			upload.Status = JobStatusErrorRetranscode
@@ -486,7 +522,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		}
 		upload.ErrorCount = upload.ErrorCount + 1
 		ss.crud.Update(upload)
-		logger.Error("transcode error", "err", errMsg.Error())
 		return errMsg
 	}
 

@@ -9,9 +9,9 @@ import {
   initialPlayerState
 } from '@audius/common'
 import { combineReducers } from 'redux'
+import { all } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { all } from 'redux-saga/effects'
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'

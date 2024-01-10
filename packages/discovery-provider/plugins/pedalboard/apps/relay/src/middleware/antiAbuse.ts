@@ -27,22 +27,33 @@ export const antiAbuseMiddleware = async (
 ) => {
   const aaoConfig = config.aao
   const { ip, recoveredSigner: user } = response.locals.ctx
-  const decodedAbi = decodeAbi(response.locals.ctx.validatedRelayRequest.encodedABI)
-  const isUserCreate = (decodedAbi.action === "Create" && decodedAbi.entityType === "User")
-  await detectAbuse(aaoConfig, user, ip, isUserCreate, false, next)
+  const decodedAbi = decodeAbi(
+    response.locals.ctx.validatedRelayRequest.encodedABI
+  )
+  const isUserCreate =
+    decodedAbi.action === 'Create' && decodedAbi.entityType === 'User'
+  const isUserDeactivate =
+    user.is_deactivated === false &&
+    decodedAbi.action === 'Update' &&
+    decodedAbi.entityType === 'User' &&
+    JSON.parse(decodedAbi.metadata).data.is_deactivated === true
+  // User creations must be allowed as AAO won't have the user yet,
+  // and deactivations must be allowed even for abuse.
+  if (isUserCreate || isUserDeactivate) {
+    next()
+    return
+  }
+  await detectAbuse(aaoConfig, user, ip, next)
 }
 
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
   user: Users,
   reqIp: string,
-  isUserCreate: boolean,
-  abbreviated: boolean,
   next: NextFunction
 ) => {
-  // if aao turned off, never detect abuse
-  // on user create a user will not be in AAO yet
-  if (!aaoConfig.useAao || !user.handle || isUserCreate) {
+  // if AAO is off or we don't yet have a handle, skip detecting abuse
+  if (!aaoConfig.useAao || !user.handle) {
     next()
     return
   }

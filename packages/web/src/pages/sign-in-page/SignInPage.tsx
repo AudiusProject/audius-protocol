@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { signInPageMessages as messages } from '@audius/common'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -16,45 +17,33 @@ import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { signIn } from 'common/store/pages/signon/actions'
-import { getStatus } from 'common/store/pages/signon/selectors'
+import { getEmailField, getStatus } from 'common/store/pages/signon/selectors'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { ForgotPasswordHelper } from 'pages/sign-on/components/desktop/ForgotPasswordHelper'
-import { Heading } from 'pages/sign-up-page/components/layout'
+import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
-
-const messages = {
-  metaTitle: 'Sign In • Audius',
-  metaDescription: 'Sign into your Audius account',
-
-  title: 'Sign Into Audius',
-  emailLabel: 'Email',
-  passwordLabel: 'Password',
-  signIn: 'Sign In',
-  newToAudius: 'New to Audius?',
-  createAccount: 'Create an Account',
-  forgotPassword: 'Forgot password?'
-}
 
 type SignInValues = {
   email: string
   password: string
 }
 
-const initialValues = {
-  email: '',
-  password: ''
-}
-
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const existingEmailValue = useSelector(getEmailField)
+
+  const initialValues = {
+    email: existingEmailValue.value ?? '',
+    password: ''
+  }
 
   const signInStatus = useSelector(getStatus)
 
@@ -73,13 +62,13 @@ export const SignInPage = () => {
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        <Flex
-          flex={1}
+        <ScrollView
           direction='column'
           justifyContent='space-between'
-          h='100%'
           p='2xl'
+          pt='unit20'
           pb={!isMobile ? 'unit14' : undefined}
+          gap='l'
         >
           <Flex as={Form} direction='column' gap='2xl'>
             <Box alignSelf='center'>
@@ -131,7 +120,7 @@ export const SignInPage = () => {
               <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
             </Button>
           ) : null}
-        </Flex>
+        </ScrollView>
       </Formik>
       <ForgotPasswordHelper
         isOpen={showForgotPassword}

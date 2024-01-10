@@ -7,6 +7,7 @@ import {
   formatTwitterProfile,
   InstagramProfile,
   Name,
+  pickHandleSchema,
   TikTokProfile,
   TwitterProfile
 } from '@audius/common'
@@ -19,14 +20,13 @@ import {
   setTwitterProfile
 } from 'common/store/pages/signon/actions'
 import { resizeImage } from 'utils/imageProcessingUtil'
-
-import { generateHandleSchema } from '../utils/handleSchema'
+import { restrictedHandles } from 'utils/restrictedHandles'
 
 const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,
@@ -38,14 +38,16 @@ export const useSetProfileFromTwitter = () => {
     const profileData = await formatTwitterProfile(twitterProfile, resizeImage)
 
     const { profile, profileImage, profileBanner, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
-      audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.verified
+
+    const handleSchema = pickHandleSchema({
+      audiusQueryContext: audiusQueryContext!,
+      skipReservedHandleCheck: profile.verified,
+      restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(
-      profile.screen_name
-    )
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.screen_name
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
     dispatch(setTwitterProfile(uuid, profile, profileImage, profileBanner))
@@ -60,8 +62,8 @@ export const useSetProfileFromTwitter = () => {
 }
 
 export const useSetProfileFromInstagram = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,
@@ -77,14 +79,18 @@ export const useSetProfileFromInstagram = () => {
     )
 
     const { profile, profileImage, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
-      audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.is_verified
+    const handleSchema = pickHandleSchema({
+      audiusQueryContext: audiusQueryContext!,
+      skipReservedHandleCheck: profile.is_verified,
+      restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(profile.username)
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.username
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
+
     dispatch(setInstagramProfile(uuid, profile, profileImage))
     dispatch(
       make(Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM, {
@@ -97,8 +103,8 @@ export const useSetProfileFromInstagram = () => {
 }
 
 export const useSetProfileFromTikTok = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,
@@ -110,12 +116,15 @@ export const useSetProfileFromTikTok = () => {
     const profileData = await formatTikTokProfile(tikTokProfile, resizeImage)
 
     const { profile, profileImage, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
-      audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.is_verified
+    const handleSchema = pickHandleSchema({
+      audiusQueryContext: audiusQueryContext!,
+      skipReservedHandleCheck: profile.is_verified,
+      restrictedHandles
     })
 
-    const validationResult = await handleSchema.safeParseAsync(profile.username)
+    const validationResult = await handleSchema.safeParseAsync({
+      handle: profile.username
+    })
 
     const requiresReview = !handleTooLong && !validationResult.success
     dispatch(setTikTokProfile(uuid, profile, profileImage))

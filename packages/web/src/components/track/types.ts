@@ -74,6 +74,7 @@ export type TrackTileProps = TileProps & {
   isArtistPick?: boolean
   isUnlisted?: boolean
   coSign?: Remix | null
+  releaseDate?: string | null
   onClickOverflow?: (trackId: ID) => void
 }
 
@@ -137,6 +138,9 @@ export type DesktopTrackTileProps = {
   /** If the track is unlisted/hidden */
   isUnlisted?: boolean
 
+  /** If the track is a scheduled release */
+  isScheduledRelease?: boolean
+
   /** Premium conditions if track is premium */
   premiumConditions?: Nullable<PremiumConditions>
 
@@ -151,6 +155,9 @@ export type DesktopTrackTileProps = {
 
   /** If the artist selected this track as featured, displays a star and artst pick label */
   isArtistPick?: boolean
+
+  /** Release date for track */
+  releaseDate?: Nullable<string>
 
   /** If in dark mode for the bottom buttons to be colored */
   isDarkMode?: boolean

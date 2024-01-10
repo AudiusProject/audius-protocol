@@ -14,6 +14,7 @@ export interface AggregateDailyTotalUsersMetricRow {
   'count': number;
   'createdAt'?: Date;
   'id'?: number;
+  'personalCount'?: number | null;
   'timestamp': Date;
   'updatedAt'?: Date;
 }
@@ -21,6 +22,7 @@ export interface AggregateDailyUniqueUsersMetricRow {
   'count': number;
   'createdAt'?: Date;
   'id'?: number;
+  'personalCount'?: number | null;
   'summedCount'?: number | null;
   'timestamp': Date;
   'updatedAt'?: Date;
@@ -49,6 +51,7 @@ export interface AggregateMonthlyTotalUsersMetricRow {
   'count': number;
   'createdAt'?: Date;
   'id'?: number;
+  'personalCount'?: number | null;
   'timestamp': Date;
   'updatedAt'?: Date;
 }
@@ -56,6 +59,7 @@ export interface AggregateMonthlyUniqueUsersMetricRow {
   'count': number;
   'createdAt'?: Date;
   'id'?: number;
+  'personalCount'?: number | null;
   'summedCount'?: number | null;
   'timestamp': Date;
   'updatedAt'?: Date;
@@ -91,9 +95,6 @@ export interface AggregateUserTipRow {
   'amount': string;
   'receiverUserId': number;
   'senderUserId': number;
-}
-export interface AlembicVersionRow {
-  'versionNum': string;
 }
 export interface AppNameMetricRow {
   'applicationName': string;
@@ -152,6 +153,7 @@ export interface BlockRow {
 export interface ChallengeDisbursementRow {
   'amount': string;
   'challengeId': string;
+  'createdAt'?: Date | null;
   'signature': string;
   'slot': number;
   'specifier': string;
@@ -175,10 +177,12 @@ export interface ChallengeProfileCompletionRow {
 export interface ChallengeRow {
   'active': boolean;
   'amount': string;
+  'cooldownDays'?: number | null;
   'id': string;
   'startingBlock'?: number | null;
   'stepCount'?: number | null;
   'type': challengetype;
+  'weeklyPool'?: number | null;
 }
 export interface ChatRow {
   'chatId': string;
@@ -229,6 +233,16 @@ export interface CidDataRow {
   'cid': string;
   'data'?: any | null;
   'type'?: string | null;
+}
+export interface DashboardWalletUserRow {
+  'blockhash'?: string | null;
+  'blocknumber'?: number | null;
+  'createdAt': Date;
+  'isDelete'?: boolean;
+  'txhash': string;
+  'updatedAt': Date;
+  'userId': number;
+  'wallet': string;
 }
 export interface DelistStatusCursorRow {
   'createdAt': Date;
@@ -313,18 +327,35 @@ export interface NotificationSeenRow {
   'txhash'?: string | null;
   'userId': number;
 }
+export interface PaymentRouterTxRow {
+  'createdAt': Date;
+  'signature': string;
+  'slot': number;
+}
 export interface PgStatStatementRow {
   'blkReadTime'?: number | null;
   'blkWriteTime'?: number | null;
   'calls'?: string | null;
   'dbid'?: any | null;
+  'jitEmissionCount'?: string | null;
+  'jitEmissionTime'?: number | null;
+  'jitFunctions'?: string | null;
+  'jitGenerationTime'?: number | null;
+  'jitInliningCount'?: string | null;
+  'jitInliningTime'?: number | null;
+  'jitOptimizationCount'?: string | null;
+  'jitOptimizationTime'?: number | null;
   'localBlksDirtied'?: string | null;
   'localBlksHit'?: string | null;
   'localBlksRead'?: string | null;
   'localBlksWritten'?: string | null;
-  'maxTime'?: number | null;
-  'meanTime'?: number | null;
-  'minTime'?: number | null;
+  'maxExecTime'?: number | null;
+  'maxPlanTime'?: number | null;
+  'meanExecTime'?: number | null;
+  'meanPlanTime'?: number | null;
+  'minExecTime'?: number | null;
+  'minPlanTime'?: number | null;
+  'plans'?: string | null;
   'query'?: string | null;
   'queryid'?: string | null;
   'rows'?: string | null;
@@ -332,11 +363,23 @@ export interface PgStatStatementRow {
   'sharedBlksHit'?: string | null;
   'sharedBlksRead'?: string | null;
   'sharedBlksWritten'?: string | null;
-  'stddevTime'?: number | null;
+  'stddevExecTime'?: number | null;
+  'stddevPlanTime'?: number | null;
+  'tempBlkReadTime'?: number | null;
+  'tempBlkWriteTime'?: number | null;
   'tempBlksRead'?: string | null;
   'tempBlksWritten'?: string | null;
-  'totalTime'?: number | null;
+  'toplevel'?: boolean | null;
+  'totalExecTime'?: number | null;
+  'totalPlanTime'?: number | null;
   'userid'?: any | null;
+  'walBytes'?: string | null;
+  'walFpi'?: string | null;
+  'walRecords'?: string | null;
+}
+export interface PgStatStatementsInfoRow {
+  'dealloc'?: string | null;
+  'statsReset'?: Date | null;
 }
 export interface PlaylistRouteRow {
   'blockhash': string;
@@ -393,6 +436,10 @@ export interface PlayRow {
   'source'?: string | null;
   'updatedAt'?: Date;
   'userId'?: number | null;
+}
+export interface PubkeyRow {
+  'pubkey'?: string | null;
+  'wallet': string;
 }
 export interface ReactionRow {
   'id'?: number;
@@ -493,6 +540,13 @@ export interface RpcLogRow {
   'rpc': Object;
   'sig': string;
 }
+export interface RpclogRow {
+  'cuid': string;
+  'jetstreamSeq'?: number | null;
+  'method'?: string | null;
+  'params'?: any | null;
+  'wallet'?: string | null;
+}
 export interface SaveRow {
   'blockhash'?: string | null;
   'blocknumber'?: number | null;
@@ -514,12 +568,15 @@ export interface SchemaVersionRow {
   'fileName': string;
   'md5'?: string | null;
 }
+export interface SequelizeMetaRow {
+  'name': string;
+}
 export interface SkippedTransactionRow {
   'blockhash': string;
   'blocknumber': number;
   'createdAt'?: Date;
   'id'?: number;
-  'level'?: skippedtransactionlevel;
+  'level'?: skippedtransactionlevel | null;
   'txhash': string;
   'updatedAt'?: Date;
 }
@@ -617,6 +674,7 @@ export interface TrackRow {
   'isDelete': boolean;
   'isPlaylistUpload'?: boolean;
   'isPremium'?: boolean;
+  'isScheduledRelease'?: boolean;
   'isUnlisted'?: boolean;
   'isrc'?: string | null;
   'iswc'?: string | null;
@@ -627,7 +685,7 @@ export interface TrackRow {
   'premiumConditions'?: any | null;
   'previewCid'?: string | null;
   'previewStartSeconds'?: number | null;
-  'releaseDate'?: string | null;
+  'releaseDate'?: Date | null;
   'remixOf'?: any | null;
   'routeId'?: string | null;
   'slot'?: number | null;
@@ -636,7 +694,7 @@ export interface TrackRow {
   'title'?: string | null;
   'trackCid'?: string | null;
   'trackId': number;
-  'trackSegments': any;
+  'trackSegments'?: any;
   'txhash'?: string;
   'updatedAt': Date;
 }
@@ -729,8 +787,10 @@ export interface UserBankTxRow {
   'slot': number;
 }
 export interface UserChallengeRow {
+  'amount'?: number;
   'challengeId': string;
   'completedBlocknumber'?: number | null;
+  'createdAt'?: Date;
   'currentStepCount'?: number | null;
   'isComplete': boolean;
   'specifier': string;
