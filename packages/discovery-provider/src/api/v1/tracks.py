@@ -1004,7 +1004,7 @@ class FullTrackReposts(Resource):
         return success_response(users)
 
 
-top_listener_response_full = ns.model(
+top_listener_response_full = full_ns.model(
     "full_top_listener",
     {
         "count": fields.Integer(required=True),
