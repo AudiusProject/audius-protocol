@@ -2,6 +2,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  gap: var(--unit-1);
 }
 
 .skeleton {

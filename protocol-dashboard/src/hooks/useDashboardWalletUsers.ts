@@ -17,12 +17,17 @@ const dashboardWalletUsersBatcher = create({
   scheduler: windowScheduler(10)
 })
 
+export const getDashboardWalletUserQueryKey = (wallet: string) => {
+  return ['dashboardWalletUsers', wallet]
+}
+
 export const useDashboardWalletUser = (wallet: string) => {
   return useQuery({
-    queryKey: ['dashboardWalletUsers', wallet],
+    queryKey: getDashboardWalletUserQueryKey(wallet),
     queryFn: async () => {
       const res = await dashboardWalletUsersBatcher.fetch(wallet)
-      return res
-    }
+      return res ?? null
+    },
+    enabled: !!wallet
   })
 }

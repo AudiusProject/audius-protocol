@@ -1,33 +1,36 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { User as AudiusUser } from '@audius/sdk'
+import IconSquareArrow from 'assets/img/iconSquareArrow.svg?react'
 import clsx from 'clsx'
-
-import Button from 'components/Button'
-import Paper from 'components/Paper'
+import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { ButtonType } from '@audius/stems'
-import DelegateStakeModal from 'components/DelegateStakeModal'
-import { usePendingClaim } from 'store/cache/claims/hooks'
+import BN from 'bn.js'
+import Button from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { useMakeClaim } from 'store/actions/makeClaim'
-import { useAccount } from 'store/account/hooks'
-import { User, Operator, Status } from 'types'
-import BN from 'bn.js'
-import useUndelegateStake from 'store/actions/undelegateStake'
-import { useModalControls } from 'utils/hooks'
-import { TICKER } from 'utils/consts'
-import { formatAud } from 'utils/format'
+import DelegateStakeModal from 'components/DelegateStakeModal'
 import Loading from 'components/Loading'
 import MyEstimatedRewards from 'components/MyEstimatedRewards'
+import Paper from 'components/Paper'
+import { useAccount } from 'store/account/hooks'
+import { useMakeClaim } from 'store/actions/makeClaim'
+import useUndelegateStake from 'store/actions/undelegateStake'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import { Operator, Status, User } from 'types'
+import { TICKER } from 'utils/consts'
+import { formatAud } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
 
-import desktopStyles from './UserInfo.module.css'
-import mobileStyles from './UserInfoMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import UserImage from 'components/UserImage'
 import Bounds from 'components/Bounds'
 import Tooltip, { Position } from 'components/Tooltip'
+import UserImage from 'components/UserImage'
 import { getDelegatorInfo } from 'store/cache/protocol/hooks'
+import { createStyles } from 'utils/mobile'
+import desktopStyles from './UserInfo.module.css'
+import mobileStyles from './UserInfoMobile.module.css'
+import { AUDIUS_DAPP_URL } from 'utils/routes'
+import UserBadges from './AudiusProfileBadges'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -43,6 +46,7 @@ const messages = {
 type UserInfoProps = {
   className?: string
   user: User | Operator
+  audiusProfile?: AudiusUser | null
   rank?: number
   isOwner: boolean
   delegates: BN
@@ -57,10 +61,12 @@ const UserInfo = ({
   isOwner,
   services,
   delegates,
-  delegatesStatus
+  delegatesStatus,
+  audiusProfile
 }: UserInfoProps) => {
   // TODO: Get Rank
   const { name, wallet } = user
+  const audiusProfileName = audiusProfile?.name
   const { isLoggedIn } = useAccount()
   const [isOpen, setIsOpen] = useState(false)
   const { maxDelegators } = useSelector(getDelegatorInfo)
@@ -209,12 +215,29 @@ const UserInfo = ({
           <div className={styles.rankValue}>{rank}</div>
         </div>
       )}
-      <UserImage
-        className={styles.userImg}
-        wallet={wallet}
-        alt={'User Profile'}
-      />
-      <div className={styles.userName}>{name !== wallet && name}</div>
+      <div className={styles.imageContainer}>
+        <UserImage
+          className={styles.userImg}
+          wallet={wallet}
+          alt={'User Profile'}
+        />
+        {audiusProfile == null ? null : (
+          <a
+            aria-label="Go to user's Audius profile"
+            target="_blank"
+            rel="noreferrer"
+            href={`${AUDIUS_DAPP_URL}/${audiusProfile?.handle}`}
+          >
+            <IconSquareArrow className={styles.externalLinkIcon} />
+          </a>
+        )}
+      </div>
+      <div className={styles.userName}>
+        {audiusProfileName ?? (name !== wallet && name)}
+        {audiusProfile ? (
+          <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
+        ) : null}
+      </div>
       <div className={styles.userWallet}>{wallet}</div>
       {isOperator && <Bounds wallet={wallet} />}
       <MyEstimatedRewards wallet={wallet} />
