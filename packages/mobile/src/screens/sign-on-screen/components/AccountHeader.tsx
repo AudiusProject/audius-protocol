@@ -161,7 +161,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       variant='strong'
       source={profilePicture ?? { uri: undefined }}
     >
-      {onSelectProfilePicture ? (
+      {onSelectProfilePicture && !profilePicture ? (
         <IconButton
           accessibilityLabel={messages.selectProfilePicture}
           icon={IconCamera}
