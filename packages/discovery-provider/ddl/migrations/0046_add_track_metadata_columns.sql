@@ -1,5 +1,9 @@
 begin;
 
+-- disable triggers
+alter table tracks disable trigger on_track;
+alter table tracks disable trigger trg_tracks;
+
 
 -- add new columns
 alter table tracks add column if not exists is_downloadable boolean not null default false;
@@ -45,6 +49,11 @@ from (
 ) as download_requires_follow
 where t.is_current is true
 and t.track_id = download_requires_follow.track_id;
+
+
+-- re-enable triggers
+alter table tracks enable trigger on_track;
+alter table tracks enable trigger trg_tracks;
 
 
 commit;
