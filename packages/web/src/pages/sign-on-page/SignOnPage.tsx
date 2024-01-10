@@ -10,6 +10,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useEffectOnce, useMeasure } from 'react-use'
 

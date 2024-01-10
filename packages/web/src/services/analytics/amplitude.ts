@@ -1,11 +1,43 @@
 // Amplitude Analytics
-import { Name, Nullable } from '@audius/common'
+import { MobileOS, Name, Nullable } from '@audius/common'
 import amplitude from 'amplitude-js'
 
-import { getSource } from './segment'
+import {
+  isMobile as getIsMobile,
+  isElectron as getIsElectron,
+  getMobileOS
+} from 'utils/clientUtil'
 
 const AMP_API_KEY = process.env.VITE_AMPLITUDE_API_KEY
 const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
+
+const getSource = () => {
+  const mobileOS = getMobileOS()
+  const isMobile = getIsMobile()
+  const isElectron = getIsElectron()
+  if (isMobile) {
+    if (mobileOS === MobileOS.ANDROID) {
+      return 'Android Web'
+    } else if (mobileOS === MobileOS.IOS) {
+      return 'iOS Web'
+    } else if (mobileOS === MobileOS.WINDOWS_PHONE) {
+      return 'iOS Web'
+    }
+    return 'Unknown Mobile Web'
+  } else if (isElectron) {
+    const platform = window.navigator.platform
+    const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K']
+    const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE']
+    if (macosPlatforms.indexOf(platform) !== -1) {
+      return 'MacOS'
+    } else if (windowsPlatforms.indexOf(platform) !== -1) {
+      return 'Windows'
+    } else if (/Linux/.test(platform)) {
+      return 'Linux'
+    }
+    return 'Unknown Desktop'
+  }
+}
 
 /**
  * ========================= Amplitude Analytics =========================

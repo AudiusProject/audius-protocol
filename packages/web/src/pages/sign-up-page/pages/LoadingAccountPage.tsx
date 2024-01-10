@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { Flex, useTheme } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { getStatus } from 'common/store/pages/signon/selectors'
@@ -20,7 +20,6 @@ const messages = {
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const LoadingAccountPage = () => {
   const navigate = useNavigateToPage()
-  const { color } = useTheme()
 
   const accountCreationStatus = useSelector(getStatus)
 
@@ -33,7 +32,7 @@ export const LoadingAccountPage = () => {
 
   return (
     <Page gap='3xl' justifyContent='center' alignItems='center' pb='3xl'>
-      <LoadingSpinner css={{ height: '72px', '& stroke': color.icon.accent }} />
+      <LoadingSpinner css={{ height: '72px' }} />
       <Flex justifyContent='center' css={{ textAlign: 'center' }}>
         <Heading
           heading={messages.heading}

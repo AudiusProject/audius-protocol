@@ -13,7 +13,8 @@ import {
   PremiumConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
@@ -28,6 +29,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
+import { useDispatch } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
@@ -57,6 +59,9 @@ import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
+
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -176,6 +181,7 @@ export const GiantTrackTile = ({
   trackTitle,
   userId
 }: GiantTrackTileProps) => {
+  const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(true)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -249,7 +255,19 @@ export const GiantTrackTile = ({
             )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={isPublishing ? undefined : () => onMakePublic(trackId)}
+          onClick={
+            isPublishing
+              ? undefined
+              : () => {
+                  dispatch(
+                    openPublishTrackConfirmationModal({
+                      confirmCallback: () => {
+                        onMakePublic(trackId)
+                      }
+                    })
+                  )
+                }
+          }
         />
       )
     )

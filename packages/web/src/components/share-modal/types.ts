@@ -12,5 +12,4 @@ export type ShareProps = {
   showTikTokShareAction?: boolean
   shareType: ShareType
   isPrivate: boolean
-  isUnlisted: boolean
 }
