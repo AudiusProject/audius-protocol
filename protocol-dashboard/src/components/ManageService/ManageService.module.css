@@ -23,8 +23,6 @@
   margin: 0px;
 
   color: var(--neutral);
-
-  margin-bottom: 20px;
 }
 
 .manageBtns {
@@ -164,4 +162,22 @@
 
 .minDelgationAmount {
   margin-left: 4px;
+}
+
+.connectProfileContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--neutral-light-8);
+  padding-top: var(--unit-4);
+}
+
+.connectProfileTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+}
+
+.manageAccountContainer {
+  margin-bottom: var(--unit-5);
 }

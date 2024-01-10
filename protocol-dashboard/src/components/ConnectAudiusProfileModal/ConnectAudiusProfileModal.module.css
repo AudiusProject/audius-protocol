@@ -1,0 +1,26 @@
+.content {
+  padding-top: var(--unit-6);
+  padding-bottom: var(--unit-6);
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  font-weight: var(--font-medium);
+}
+
+.boldDescription {
+  font-weight: var(--font-bold);
+}
+
+.button {
+  margin: 0 auto;
+}
+
+.innerModalWrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
