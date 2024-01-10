@@ -5,7 +5,7 @@ import cn from 'classnames'
 // eslint-disable-next-line
 import { ClassValue } from 'classnames/types'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 /**
  * Wraps classnames and applies a mobile class as needed.

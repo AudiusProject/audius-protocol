@@ -10,7 +10,7 @@ import cn from 'classnames'
 import Rectangle from 'assets/img/dogEarRectangle.svg'
 import IconHidden from 'assets/img/iconHidden.svg'
 import IconStar from 'assets/img/iconStar.svg'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './DogEar.module.css'

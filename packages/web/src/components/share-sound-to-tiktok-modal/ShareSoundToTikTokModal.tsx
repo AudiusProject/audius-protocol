@@ -19,8 +19,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
-import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './ShareSoundToTikTokModal.module.css'
 const { getStatus, getTrack } = shareSoundToTiktokModalSelectors

@@ -1,7 +1,7 @@
 import { remoteConfigSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ExplorePageProvider from './ExplorePageProvider'
 import DesktopExplorePage from './components/desktop/ExplorePage'

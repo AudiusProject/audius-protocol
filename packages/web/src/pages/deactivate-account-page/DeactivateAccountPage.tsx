@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DeactivateAccountPage.module.css'
 import { DeactivateAccountPageDesktop } from './components/desktop/DeactivateAccountPage'

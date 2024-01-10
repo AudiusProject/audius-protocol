@@ -21,7 +21,7 @@ import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'

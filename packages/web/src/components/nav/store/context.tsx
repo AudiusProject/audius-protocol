@@ -9,7 +9,7 @@ import {
   useCallback
 } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 type NavContextProps = {
   setLeft: (el: LeftElement) => void

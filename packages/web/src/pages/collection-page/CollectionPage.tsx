@@ -1,6 +1,6 @@
 import { SmartCollection, CollectionsPageType } from '@audius/common'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import CollectionPageProvider from './CollectionPageProvider'
 import DesktopCollectionPage from './components/desktop/CollectionPage'

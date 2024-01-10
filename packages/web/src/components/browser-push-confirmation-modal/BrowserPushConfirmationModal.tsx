@@ -12,6 +12,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
 import {
@@ -20,7 +21,7 @@ import {
   subscribeSafariPushBrowser,
   Permission
 } from 'utils/browserNotifications'
-import { isElectron, useIsMobile } from 'utils/clientUtil'
+import { isElectron } from 'utils/clientUtil'
 
 import styles from './BrowserPushConfirmationModal.module.css'
 const { setVisibility } = modalsActions

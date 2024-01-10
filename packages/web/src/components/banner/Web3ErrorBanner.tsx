@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { getWeb3Error } from 'common/store/backend/selectors'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
 
 import { CallToActionBanner } from './CallToActionBanner'

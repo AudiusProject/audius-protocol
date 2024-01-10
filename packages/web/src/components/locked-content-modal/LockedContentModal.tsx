@@ -12,9 +12,9 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
+import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { useSsrContext } from 'ssr/SsrContext'
-import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './LockedContentModal.module.css'
 

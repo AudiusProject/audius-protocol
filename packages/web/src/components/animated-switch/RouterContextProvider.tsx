@@ -1,6 +1,6 @@
 import { createContext, memo, useState } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 export enum SlideDirection {
   FROM_LEFT = 'left',

@@ -1,6 +1,6 @@
 import { Playable, User } from '@audius/common'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import DeletedPageProvider from './DeletedPageProvider'
 import DeletedPageDesktopContent from './components/desktop/DeletedPage'

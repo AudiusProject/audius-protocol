@@ -14,7 +14,7 @@ import {
 import { BN } from 'bn.js'
 
 import { ToastContext } from 'components/toast/ToastContext'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const messages = {

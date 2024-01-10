@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import FeedPageProvider from './FeedPageProvider'
 import FeedPageContent from './components/desktop/FeedPageContent'

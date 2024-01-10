@@ -17,7 +17,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
 import {
   TRENDING_PAGE,

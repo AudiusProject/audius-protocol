@@ -1,4 +1,4 @@
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import HistoryPageProvider from './HistoryPageProvider'
 import DesktopHistoryPage from './components/desktop/HistoryPage'

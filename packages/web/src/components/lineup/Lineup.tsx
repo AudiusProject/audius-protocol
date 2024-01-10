@@ -4,7 +4,7 @@ import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
 import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import LineupProvider, { LineupProviderProps } from './LineupProvider'
 import { LineupVariant } from './types'

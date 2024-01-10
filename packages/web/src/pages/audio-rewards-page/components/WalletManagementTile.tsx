@@ -35,9 +35,10 @@ import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer
 import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
-import { getClient, useIsMobile } from 'utils/clientUtil'
+import { getClient } from 'utils/clientUtil'
 import {
   AUDIO_TRANSACTIONS_PAGE,
   pushUniqueRoute,

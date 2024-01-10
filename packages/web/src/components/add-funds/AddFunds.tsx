@@ -18,9 +18,9 @@ import { BN } from 'bn.js'
 import cn from 'classnames'
 
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './AddFunds.module.css'
 

@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make } from 'common/store/analytics/actions'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { CHATS_PAGE } from 'utils/route'
 
 import { CallToActionBanner } from './CallToActionBanner'

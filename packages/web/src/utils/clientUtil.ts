@@ -100,8 +100,3 @@ export const getClient = () => {
     ? Client.MOBILE
     : Client.DESKTOP
 }
-
-export const useIsMobile = () => {
-  const { isMobile } = useSsrContext()
-  return isMobile
-}

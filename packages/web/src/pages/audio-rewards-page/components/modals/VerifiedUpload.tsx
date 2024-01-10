@@ -12,7 +12,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton, TwitterButton } from 'components/social-button'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import ModalDrawer from './ModalDrawer'

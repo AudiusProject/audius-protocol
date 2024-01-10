@@ -2,7 +2,7 @@ import { Modal, ModalProps } from '@audius/stems'
 import cn from 'classnames'
 
 import Drawer, { DrawerProps } from 'components/drawer/Drawer'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './ModalDrawer.module.css'
 

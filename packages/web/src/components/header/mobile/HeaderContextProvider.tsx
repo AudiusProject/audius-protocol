@@ -10,7 +10,7 @@ import {
 import { useInstanceVar } from '@audius/common'
 import { useHistory } from 'react-router-dom'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 type HeaderContextProps = {
   header: ReactNode

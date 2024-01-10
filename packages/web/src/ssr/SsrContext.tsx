@@ -9,11 +9,12 @@ export type SsrContextType = {
   isMobile: boolean
   /**
    * The page props for the current request. This is available on both the server and the client.
+   * For example, this can contain track data for rendering the track page
    */
   pageProps: SsrPageProps
   /**
    * The history object for the current request. This is only available on the server.
-   * On the client, use useHistoryContext instead.
+   * Use useHistoryContext to access the history object on the client.
    */
   history: Nullable<History>
 }
@@ -22,6 +23,9 @@ export const useSsrContext = () => {
   return useContext(SsrContext)
 }
 
+/**
+ * Context provider for the SSR data
+ */
 export const SsrContext = createContext<SsrContextType>({
   path: null,
   isServerSide: false,

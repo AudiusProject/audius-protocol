@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import SettingsPageProvider from './SettingsPageProvider'
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'

@@ -2,7 +2,8 @@ import { Client } from '@audius/common'
 import cn from 'classnames'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import { getClient, useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
 import LeftNav from './desktop/LeftNav'

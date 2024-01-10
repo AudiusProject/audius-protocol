@@ -1,4 +1,4 @@
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import SavedPageProvider from './SavedPageProvider'
 import DesktopSavedPage from './components/desktop/SavedPage'

@@ -22,7 +22,7 @@ import { matchPath, withRouter } from 'react-router-dom'
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { makeGetCurrent } = queueSelectors

@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import IconNotification from 'assets/img/iconNotification.svg'
 import IconNotificationOff from 'assets/img/iconNotificationOff.svg'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './SubscribeButton.module.css'

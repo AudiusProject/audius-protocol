@@ -1,4 +1,4 @@
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import TrackPageProvider from './TrackPageProvider'
 import TrackPageDesktopContent from './components/desktop/TrackPage'

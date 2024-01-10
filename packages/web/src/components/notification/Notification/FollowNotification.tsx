@@ -7,6 +7,7 @@ import {
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -15,7 +16,6 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 

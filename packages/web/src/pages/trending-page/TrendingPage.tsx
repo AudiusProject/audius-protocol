@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import TrendingPageProvider from './TrendingPageProvider'
 import TrendingPageContent from './components/desktop/TrendingPageContent'

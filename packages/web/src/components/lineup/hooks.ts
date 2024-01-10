@@ -9,8 +9,8 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { LineupVariant } from 'components/lineup/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 const { makeGetCurrent } = queueSelectors

@@ -9,7 +9,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './RewardsBanner.module.css'
 const { setTrendingRewardsModalType } = audioRewardsPageActions

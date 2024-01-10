@@ -1,4 +1,4 @@
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import DesktopCollectionPage from '../collection-page/components/desktop/CollectionPage'
 import MobileCollectionPage from '../collection-page/components/mobile/CollectionPage'

@@ -5,7 +5,7 @@ import cn from 'classnames'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 
 import styles from './ExplainerTile.module.css'

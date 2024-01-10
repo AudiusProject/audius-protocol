@@ -5,8 +5,8 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './PlayBarProvider.module.css'
 import DesktopPlayBar from './desktop/PlayBar'

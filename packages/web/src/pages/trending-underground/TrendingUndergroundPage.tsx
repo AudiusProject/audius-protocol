@@ -14,7 +14,7 @@ import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import Page from 'components/page/Page'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 

@@ -6,8 +6,9 @@ import { Suspense, useState, useEffect, lazy } from 'react'
 import { Location } from 'history'
 import { useAsync } from 'react-use'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { localStorage } from 'services/local-storage'
-import { isElectron, useIsMobile } from 'utils/clientUtil'
+import { isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
 import App from './app'

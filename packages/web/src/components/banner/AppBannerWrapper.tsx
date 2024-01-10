@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './AppBannerWrapper.module.css'
 

@@ -1,6 +1,6 @@
 import { ExploreCollectionsVariant } from '@audius/common'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ExploreCollectionsPageProvider from './ExploreCollectionsPageProvider'
 import DesktopCollectionsPage from './components/desktop/CollectionsPage'

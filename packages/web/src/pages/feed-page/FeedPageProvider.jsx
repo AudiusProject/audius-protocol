@@ -20,7 +20,7 @@ import { withRouter, matchPath } from 'react-router-dom'
 import { HistoryContext, useHistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors

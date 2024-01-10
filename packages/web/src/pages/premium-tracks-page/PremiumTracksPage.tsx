@@ -10,7 +10,7 @@ import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
 import { useLineupProps } from 'components/lineup/hooks'
 import { LineupVariant } from 'components/lineup/types'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { PremiumTracksPageContent as DesktopPremiumTracksPageContent } from './desktop/PremiumTracksPageContent'
 import { PremiumTracksPageContent as MobilePremiumTracksPageContent } from './mobile/PremiumTracksPageContent'

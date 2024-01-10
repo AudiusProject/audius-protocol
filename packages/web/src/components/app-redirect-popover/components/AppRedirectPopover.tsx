@@ -8,7 +8,7 @@ import { useSessionStorage } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import AppIcon from 'assets/img/appIcon240.png'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'

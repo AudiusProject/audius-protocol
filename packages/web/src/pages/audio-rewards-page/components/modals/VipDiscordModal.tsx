@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { TitleWrapper } from 'pages/audio-rewards-page/WalletModal'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AUDIUS_DISCORD_LINK } from 'utils/route'
 
 import ClickableAddress from '../ClickableAddress'
