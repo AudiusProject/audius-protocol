@@ -13,9 +13,11 @@ import {
   AccessConditions,
   FieldVisibility,
   getDogEarType,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  CommonState,
+  cacheTracksSelectors
 } from '@audius/common'
-import { Flex } from '@audius/harmony'
+import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
   Button,
@@ -28,9 +30,9 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -51,12 +53,15 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
+import { DownloadSection } from './DownloadSection'
 import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -98,6 +103,7 @@ export type GiantTrackTileProps = {
   isArtistPick: boolean
   isOwner: boolean
   isStreamGated: boolean
+  isDownloadGated: boolean
   isPublishing: boolean
   isRemix: boolean
   isReposted: boolean
@@ -121,6 +127,7 @@ export type GiantTrackTileProps = {
   playing: boolean
   previewing: boolean
   streamConditions: Nullable<AccessConditions>
+  downloadConditions: Nullable<AccessConditions>
   released: string
   repostCount: number
   saveCount: number
@@ -191,6 +198,14 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const track = useSelector(
+    (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
+  const hasDownloadableAssets = track?.is_downloadable // || track?.has_stems
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
@@ -477,19 +492,6 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={styles.downloadButtonsContainer}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={following}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
-    )
-  }
-
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
@@ -649,7 +651,10 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isStreamGated && streamConditions ? (
+      {isStreamGated &&
+      streamConditions &&
+      isLosslessDownloadsEnabled &&
+      !hasDownloadableAssets ? (
         <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
@@ -693,7 +698,9 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         {renderTags()}
-        {renderDownloadButtons()}
+        <Box pt='l' w='100%'>
+          <DownloadSection trackId={trackId} onDownload={onDownload} />
+        </Box>
       </div>
     </Tile>
   )

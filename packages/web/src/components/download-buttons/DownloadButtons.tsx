@@ -168,8 +168,7 @@ const DownloadButtons = ({
     isOwner,
     onDownload,
     onNotLoggedInClick,
-    trackId,
-    useSelector
+    trackId
   })
   const shouldHide = buttons.length === 0
   if (shouldHide) {
