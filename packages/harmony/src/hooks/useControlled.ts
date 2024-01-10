@@ -36,7 +36,7 @@ const switchControlledError = ({
   componentName: string
 }) => {
   return [
-    `Audius Stems: A component is changing an ${
+    `Audius Harmony: A component is changing an ${
       isControlled ? '' : 'un'
     }controlled ${stateName} state of ${componentName} to be ${
       isControlled ? 'un' : ''
@@ -56,7 +56,7 @@ const defaultChangedError = ({
   componentName: string
 }) => {
   return (
-    `Audius Stems: A component is changing the default ${stateName} state of an uncontrolled ${componentName} after being initialized. ` +
+    `Audius Harmony: A component is changing the default ${stateName} state of an uncontrolled ${componentName} after being initialized. ` +
     `To suppress this warning opt to use a controlled ${componentName}.`
   )
 }
