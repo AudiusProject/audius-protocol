@@ -6,7 +6,7 @@ export type ServicesConfig = {
   storageNodes: StorageNode[]
   antiAbuseOracleNodes: {
     endpoints: string[]
-    addresses: string[]
+    registeredAddresses: string[]
   }
   entityManagerContractAddress: string
   web3ProviderUrl: string

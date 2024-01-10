@@ -246,6 +246,10 @@ export const servicesConfig: ServicesConfig = {
     {
       "endpoint": "https://audius.w3coins.io",
       "delegateOwnerWallet": "0x1cBC80a8A4A6fd5793e535B758A71f332DEc1551"
+    },
+    {
+      "endpoint": "https://audius-nodes.com",
+      "delegateOwnerWallet": "0xE83699015c8eb793A0678eA7dC398ac58f7928c4"
     }
   ],
   "storageNodes": [
@@ -532,7 +536,7 @@ export const servicesConfig: ServicesConfig = {
       "https://audius-oracle.creatorseed.com",
       "https://oracle.audius.endl.net"
     ],
-    "addresses": [
+    "registeredAddresses": [
       "0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6",
       "0xe60d50356cd891f56B744165fcc1D8B352201A76",
       "0x7A03cFAE79266683D9706731D6E187868E939c9C"

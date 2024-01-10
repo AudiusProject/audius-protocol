@@ -25,7 +25,7 @@ export const servicesConfig: ServicesConfig = {
     "endpoints": [
       "http://audius-protocol-anti-abuse-oracle-1:8000"
     ],
-    "addresses": [
+    "registeredAddresses": [
       "0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3"
     ]
   }

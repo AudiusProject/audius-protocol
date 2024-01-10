@@ -62,7 +62,7 @@ export const servicesConfig: ServicesConfig = {
     "endpoints": [
       "https://antiabuseoracle.staging.audius.co"
     ],
-    "addresses": [
+    "registeredAddresses": [
       "0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf",
       "0x57B57efFA54ba37DBF8A06B9c42E7611e84BDe6F",
       "0xF617bbc0913bAE0a13f6D4A19eCDE5Aa07B0fF0A"

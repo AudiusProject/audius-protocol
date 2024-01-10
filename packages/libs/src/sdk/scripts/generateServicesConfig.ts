@@ -76,7 +76,7 @@ const devConfig: ServicesConfig = {
   identityServiceUrl: 'http://audius-protocol-identity-service-1',
   antiAbuseOracleNodes: {
     endpoints: ['http://audius-protocol-anti-abuse-oracle-1:8000'],
-    addresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
+    registeredAddresses: ['0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3']
   }
 }
 
@@ -128,7 +128,7 @@ const generateServicesConfig = async (
   }
   const antiAbuseOracleNodes = {
     endpoints: config.AAO_ENDPOINTS,
-    addresses: antiAbuseAddresses
+    registeredAddresses: antiAbuseAddresses
   }
 
   const minVersion = await contracts.getCurrentVersion('discovery-node')
