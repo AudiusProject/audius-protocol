@@ -71,21 +71,29 @@ export const getUploads = (sql: Sql) => async (req: Request, res: Response) => {
       statusCondition = sql`status = ${status}`
     }
 
+    let reverseResults = false
     let cursorCondition = sql`true`
-    if (numericNextId) cursorCondition = sql`id > ${numericNextId}`
-    else if (numericPrevId) cursorCondition = sql`id < ${numericPrevId}`
+    let orderBy = sql`ORDER BY id DESC`
+    if (numericNextId) {
+      cursorCondition = sql`id > ${numericNextId}`
+      orderBy = sql`ORDER BY id ASC`
+      reverseResults = true
+    } else if (numericPrevId) {
+      cursorCondition = sql`id < ${numericPrevId}`
+    }
 
     const uploads = await sql<XmlFileRow[]>`
       SELECT * FROM xml_files
       WHERE ${statusCondition}
       AND ${cursorCondition}
-      ORDER BY id DESC
+      ${orderBy}
       LIMIT ${numericLimit}
     `
 
     let hasMoreNext = false
     let hasMorePrev = false
     if (uploads.length > 0) {
+      if (reverseResults) uploads.reverse()
       const maxId = uploads[0].id
       const minId = uploads[uploads.length - 1].id
 
@@ -122,12 +130,14 @@ export const getReleases =
       statusCondition = sql`status = ${status}`
     }
 
+    let reverseResults = false
     let cursorCondition = sql`true`
     let orderBy = sql`ORDER BY release_date DESC, id DESC`
     if (nextCursor && typeof nextCursor === 'string') {
       const [nextDate, nextId] = nextCursor.split(',')
       cursorCondition = sql`(release_date, id) > (${nextDate}, ${nextId})`
       orderBy = sql`ORDER BY release_date ASC, id ASC`
+      reverseResults = true
     } else if (prevCursor && typeof prevCursor === 'string') {
       const [prevDate, prevId] = prevCursor.split(',')
       cursorCondition = sql`(release_date, id) < (${prevDate}, ${prevId})`
@@ -145,7 +155,7 @@ export const getReleases =
       let hasMoreNext = false
       let hasMorePrev = false
       if (releases.length > 0) {
-        if (nextCursor && typeof nextCursor === 'string') releases.reverse()
+        if (reverseResults) releases.reverse()
         const maxRelease = releases[0]
         const minRelease = releases[releases.length - 1]
 
