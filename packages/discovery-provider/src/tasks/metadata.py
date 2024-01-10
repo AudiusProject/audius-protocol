@@ -68,6 +68,7 @@ class TrackMetadata(TypedDict):
     is_scheduled_release: bool
     is_unlisted: bool
     field_visibility: Optional[TrackFieldVisibility]
+    has_stems: Optional[bool]
     stem_of: Optional[TrackStem]
     is_stream_gated: Optional[bool]
     stream_conditions: Optional[Any]
@@ -113,6 +114,7 @@ track_metadata_format: TrackMetadata = {
     "is_scheduled_release": False,
     "is_unlisted": False,
     "field_visibility": None,
+    "has_stems": False,
     "stem_of": None,
     "is_stream_gated": False,
     "stream_conditions": None,

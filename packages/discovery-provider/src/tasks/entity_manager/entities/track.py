@@ -584,24 +584,24 @@ def get_remix_parent_track_ids(track_metadata):
 def validate_access_conditions(params: ManageEntityParameters):
     track_metadata = params.metadata
 
-    stem_of = track_metadata.get("stem_of")
-
     is_stream_gated = track_metadata.get("is_stream_gated")
     stream_conditions = track_metadata.get("stream_conditions", {}) or {}
-
+    is_download_gated = track_metadata.get("is_download_gated")
+    download_conditions = track_metadata.get("download_conditions", {}) or {}
     download = track_metadata.get("download")
     new_is_downloadable = track_metadata.get("is_downloadable")
     is_downloadable = new_is_downloadable or (
         download.get("is_downloadable") if download else False
     )
-    is_download_gated = track_metadata.get("is_download_gated")
-    download_conditions = track_metadata.get("download_conditions", {}) or {}
+    has_stems = track_metadata.get("has_stems")
+    has_downloadable_assets = is_downloadable or has_stems
+    is_stem = track_metadata.get("stem_of")
 
     # if stem track, must not be have stream/download conditions
     # stem tracks must rely on their parent track's access conditions
     # otherwise the access checker may e.g. look for a purchase
     # on the stem track instead of the parent track
-    if stem_of and (is_stream_gated or is_download_gated):
+    if is_stem and (is_stream_gated or is_download_gated):
         raise IndexingValidationError(
             f"Track {params.entity_id} is a stem track but has stream/download conditions"
         )
@@ -617,8 +617,8 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of stream conditions"
             )
-        if is_downloadable:
-            # if stream gated and downloadable, must be download gated
+        if has_downloadable_assets:
+            # if stream gated and has downloadable assets, must be download gated
             if not is_download_gated:
                 raise IndexingValidationError(
                     f"Track {params.entity_id} is stream gated but not download gated"
@@ -630,10 +630,10 @@ def validate_access_conditions(params: ManageEntityParameters):
                 )
 
     if is_download_gated:
-        # if download gated, must be downloadable
-        if not is_downloadable:
+        # if download gated, must have downloadable assets
+        if not has_downloadable_assets:
             raise IndexingValidationError(
-                f"Track {params.entity_id} is download gated but not downloadable"
+                f"Track {params.entity_id} is download gated but has no downloadable assets"
             )
         # if download gated, must have download conditions
         if not download_conditions:

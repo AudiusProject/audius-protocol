@@ -191,6 +191,10 @@
             "requires_follow": false
           }
         },
+        "has_stems": {
+          "type": "boolean",
+          "default": false
+        },
         "stem_of": {
           "type": [
             "object",
