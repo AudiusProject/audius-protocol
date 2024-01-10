@@ -63,8 +63,6 @@ export const SelectArtistsScreen = () => {
     } else {
       dispatch(finishSignUp())
       dispatch(signUpSucceeded())
-      // TODO: how to navigate here?????
-      navigation.navigate('HomeStack', { screen: 'Trending' })
     }
   }, [accountCreationStatus, dispatch, navigation])
 

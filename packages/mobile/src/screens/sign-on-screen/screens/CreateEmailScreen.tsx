@@ -95,7 +95,9 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     >
       {({ handleSubmit }) => (
         <>
-          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={
