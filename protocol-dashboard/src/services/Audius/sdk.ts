@@ -7,9 +7,12 @@ import {
   stagingConfig
 } from '@audius/sdk'
 
-const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 let instance = null
 let isReady = false
+let sdkResolve = null
+const sdkPromise = new Promise(resolve => {
+  sdkResolve = resolve
+})
 
 const initAudiusSdk = ({
   signTransaction,
@@ -32,8 +35,8 @@ const initAudiusSdk = ({
     identityServiceUrl
   } = bootstrapConfig
   const dnSelector = new DiscoveryNodeSelector({
-    bootstrapServices: discoveryNodes,
-    initialSelectedNode: 'https://discoveryprovider.staging.audius.co'
+    bootstrapServices: discoveryNodes
+    // initialSelectedNode: 'https://discoveryprovider.staging.audius.co'
   })
   instance = sdk({
     appName: 'Audius Protocol Dashboard',
@@ -48,15 +51,13 @@ const initAudiusSdk = ({
       })
     }
   })
-  window.dispatchEvent(new CustomEvent(SDK_LOADED_EVENT_NAME))
+  sdkResolve()
   isReady = true
 }
 
 const audiusSdk = async () => {
   if (!isReady) {
-    await new Promise(resolve => {
-      window.addEventListener(SDK_LOADED_EVENT_NAME, resolve)
-    })
+    await sdkPromise
   }
   return instance
 }
