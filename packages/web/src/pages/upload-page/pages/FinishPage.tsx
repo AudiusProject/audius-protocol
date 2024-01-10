@@ -190,19 +190,16 @@ export const FinishPage = (props: FinishPageProps) => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
   }, [dispatch, uploadType])
 
-  const isScheduledRelease =
+  const isUnlistedTrack =
     (upload.tracks &&
       upload.tracks.length === 1 &&
-      upload.tracks[0].metadata.is_scheduled_release) ??
+      upload.tracks[0].metadata.is_unlisted) ??
     false
 
   return (
     <div className={styles.page}>
       {uploadComplete ? (
-        <ShareBanner
-          user={accountUser!}
-          isScheduledRelease={isScheduledRelease}
-        />
+        <ShareBanner user={accountUser!} isUnlistedTrack={isUnlistedTrack} />
       ) : null}
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>

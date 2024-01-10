@@ -80,7 +80,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const HiddenAvailability = ({
   selected,
-  disabled = false
+  disabled = false,
+  isScheduledRelease
 }: TrackAvailabilitySelectionProps) => {
   const styles = useStyles()
   const secondary = useColor('secondary')
@@ -126,7 +127,7 @@ export const HiddenAvailability = ({
           {messages.hidden}
         </Text>
       </View>
-      {disabled ? (
+      {isUnlisted && isScheduledRelease ? (
         <HelpCallout style={styles.noHidden} content={messages.noHiddenHint} />
       ) : null}
       {selected ? (

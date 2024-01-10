@@ -219,6 +219,7 @@ export const AccessAndSaleScreen = () => {
       selected={availability === TrackAvailabilityType.HIDDEN}
       disabled={noHidden}
       isScheduledRelease={isScheduledRelease}
+      isUnlisted={isUnlisted}
     />
   )
 

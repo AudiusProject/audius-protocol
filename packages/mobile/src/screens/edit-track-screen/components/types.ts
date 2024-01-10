@@ -6,4 +6,5 @@ export type TrackAvailabilitySelectionProps = {
   disabledContent?: boolean
   previousPremiumConditions?: Nullable<PremiumConditions>
   isScheduledRelease?: boolean
+  isUnlisted?: boolean
 }

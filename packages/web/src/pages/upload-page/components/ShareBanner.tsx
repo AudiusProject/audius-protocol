@@ -26,11 +26,11 @@ const messages = {
 
 type ShareBannerProps = {
   user: User
-  isScheduledRelease: boolean
+  isUnlistedTrack: boolean
 }
 
 export const ShareBanner = (props: ShareBannerProps) => {
-  const { user, isScheduledRelease } = props
+  const { user, isUnlistedTrack } = props
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const record = useRecord()
@@ -67,7 +67,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
       <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
         {messages.shareText}
       </Text>
-      {!isScheduledRelease ? (
+      {!isUnlistedTrack ? (
         <div className={styles.buttonContainer}>
           <Button
             fullWidth

@@ -624,7 +624,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           value={TrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
           disabled={noHidden}
-          hintContent={isScheduledRelease ? messages.hiddenHint : ''}
+          hintContent={
+            isScheduledRelease && isInitiallyUnlisted ? messages.hiddenHint : ''
+          }
           checkedContent={<HiddenAvailabilityFields />}
         />
       </RadioButtonGroup>
