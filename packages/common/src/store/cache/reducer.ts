@@ -89,7 +89,8 @@ const forceUpdateKeys = new Set([
   'followee_reposts',
   'followee_saves',
   'associated_wallets',
-  'associated_sol_wallets'
+  'associated_sol_wallets',
+  'premium_conditions'
 ])
 
 // Customize lodash recursive merge to never merge

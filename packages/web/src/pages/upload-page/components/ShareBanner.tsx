@@ -26,10 +26,11 @@ const messages = {
 
 type ShareBannerProps = {
   user: User
+  isUnlistedTrack: boolean
 }
 
 export const ShareBanner = (props: ShareBannerProps) => {
-  const { user } = props
+  const { user, isUnlistedTrack } = props
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const record = useRecord()
@@ -63,33 +64,37 @@ export const ShareBanner = (props: ShareBannerProps) => {
       <Text variant='display' as='h3' size='small' color='darkmodeStaticWhite'>
         {messages.uploadComplete}
       </Text>
-      <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
-        {messages.shareText}
-      </Text>
-      <div className={styles.buttonContainer}>
-        <Button
-          fullWidth
-          leftIcon={<IconTwitterBird />}
-          onClick={handleTwitterShare}
-          text={
-            <Text variant='title' size='large' color='secondary'>
-              {messages.twitterButtonText}
-            </Text>
-          }
-          type={ButtonType.WHITE}
-        />
-        <Button
-          fullWidth
-          leftIcon={<IconLink />}
-          onClick={handleCopyTrackLink}
-          text={
-            <Text variant='title' size='large' color='secondary'>
-              {messages.copyLinkButtonText}
-            </Text>
-          }
-          type={ButtonType.WHITE}
-        />
-      </div>
+      {!isUnlistedTrack ? (
+        <>
+          <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
+            {messages.shareText}
+          </Text>
+          <div className={styles.buttonContainer}>
+            <Button
+              fullWidth
+              leftIcon={<IconTwitterBird />}
+              onClick={handleTwitterShare}
+              text={
+                <Text variant='title' size='large' color='secondary'>
+                  {messages.twitterButtonText}
+                </Text>
+              }
+              type={ButtonType.WHITE}
+            />
+            <Button
+              fullWidth
+              leftIcon={<IconLink />}
+              onClick={handleCopyTrackLink}
+              text={
+                <Text variant='title' size='large' color='secondary'>
+                  {messages.copyLinkButtonText}
+                </Text>
+              }
+              type={ButtonType.WHITE}
+            />
+          </div>
+        </>
+      ) : null}
     </div>
   )
 }
