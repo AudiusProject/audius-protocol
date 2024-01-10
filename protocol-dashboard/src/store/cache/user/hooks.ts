@@ -1,39 +1,40 @@
-import { useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
+import { DashboardWalletUser } from '@audius/sdk'
+import { AnyAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+import Audius from 'services/Audius'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
+import { getUserProfile } from 'services/SelfId'
+import { useAccountUser } from 'store/account/hooks'
+import { AppState } from 'store/types'
 import {
   Address,
-  Status,
-  User,
-  SortUser,
-  ServiceType,
-  Operator,
   Delegate,
-  ServiceProvider
+  Operator,
+  ServiceProvider,
+  ServiceType,
+  SortUser,
+  Status,
+  User
 } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { setLoading, setUsers, setUserProfile } from './slice'
-import { useEffect } from 'react'
-import {
-  getFilteredNodes as getDPNodes,
-  fetchDiscoveryProviders
-} from '../discoveryProvider/hooks'
-import {
-  getFilteredNodes as getCNNodes,
-  fetchContentNodes
-} from '../contentNode/hooks'
-import { useAccountUser } from 'store/account/hooks'
-import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
+import {
+  fetchContentNodes,
+  getFilteredNodes as getCNNodes
+} from '../contentNode/hooks'
+import {
+  fetchDiscoveryProviders,
+  getFilteredNodes as getDPNodes
+} from '../discoveryProvider/hooks'
 import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
 } from './graph/hooks'
-import { getUserProfile } from 'services/SelfId'
-import { AnyAction } from '@reduxjs/toolkit'
+import { setLoading, setUserProfile, setUsers } from './slice'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -344,37 +345,52 @@ type UseUserProps = { wallet: Address }
 type UseUserResponse =
   | {
       user: User | Operator
-      status: Status.Success
+      audiusProfile?: DashboardWalletUser | null
+      status: Status.Success | Status.Loading
     }
   | {
       user: undefined
+      audiusProfile?: DashboardWalletUser | null
       status: Status.Failure | Status.Loading
     }
 export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
-  const [status, setStatus] = useState(Status.Loading)
+  const [userStatus, setUserStatus] = useState(Status.Loading)
   const user = useSelector(getUser(wallet))
-
+  const {
+    data: connectedAudiusUserData,
+    status: connectedAudiusUserStatus
+  } = useDashboardWalletUser(wallet)
+  const connectedAudiusUser = connectedAudiusUserData?.user
   useEffect(() => {
-    if (status !== Status.Loading && !user) setStatus(Status.Loading)
-  }, [wallet, user, status])
+    if (userStatus !== Status.Loading) {
+      setUserStatus(Status.Loading)
+    }
+  }, [wallet, user, userStatus, connectedAudiusUserStatus])
 
-  const { error } = useGraphUser(wallet, setStatus, !!user)
+  const { error } = useGraphUser(wallet, setUserStatus, !!user)
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
-    if (error && !user && status !== Status.Failure) {
-      dispatch(fetchUser(wallet, setStatus))
+    if (error && !user && userStatus !== Status.Failure) {
+      dispatch(fetchUser(wallet, setUserStatus))
     }
-  }, [error, wallet, user, setStatus, status, dispatch])
-  if (user) {
-    if (status !== Status.Success) setStatus(Status.Success)
-    return { user, status: Status.Success }
-  } else if (!user && status === Status.Success) {
-    return { user: undefined, status: Status.Loading }
+  }, [error, wallet, user, setUserStatus, userStatus, dispatch])
+  if (user && connectedAudiusUserStatus !== 'pending') {
+    if (userStatus !== Status.Success) setUserStatus(Status.Success)
+    return { user, audiusProfile: connectedAudiusUser, status: Status.Success }
+  } else if (user && connectedAudiusUserStatus === 'pending') {
+    return { user, audiusProfile: connectedAudiusUser, status: Status.Loading }
+  } else if (!user && userStatus === Status.Success) {
+    return {
+      user: undefined,
+      audiusProfile: connectedAudiusUser,
+      status: userStatus as Status.Loading | Status.Failure
+    }
   } else {
     return {
       user: undefined,
-      status: status as Status.Loading | Status.Failure
+      audiusProfile: connectedAudiusUser,
+      status: userStatus as Status.Loading | Status.Failure
     }
   }
 }
@@ -446,7 +462,12 @@ export const useUserDelegates = ({ wallet }: UseUserDelegates) => {
 const inFlight = new Set<Address>([])
 type UseUserProfile = { wallet: Address }
 export const useUserProfile = ({ wallet }: UseUserProfile) => {
-  const { user } = useUser({ wallet })
+  const { user, audiusProfile, status } = useUser({ wallet })
+
+  const image =
+    status !== Status.Loading
+      ? audiusProfile?.profilePicture['_480x480'] ?? user.image
+      : undefined
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
@@ -457,7 +478,7 @@ export const useUserProfile = ({ wallet }: UseUserProfile) => {
   }, [dispatch, user, wallet])
 
   if (user) {
-    return { image: user.image, name: user.name }
+    return { image, name: audiusProfile?.name ?? user.name, status }
   }
   return {}
 }
