@@ -624,8 +624,12 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           value={TrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
           disabled={noHidden}
+          // isInitiallyUnlisted is undefined on create
+          // show hint on scheduled releases that are in create or already unlisted
           hintContent={
-            isScheduledRelease && isInitiallyUnlisted ? messages.hiddenHint : ''
+            isScheduledRelease && isInitiallyUnlisted !== false
+              ? messages.hiddenHint
+              : ''
           }
           checkedContent={<HiddenAvailabilityFields />}
         />
