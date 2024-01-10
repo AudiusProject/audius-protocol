@@ -116,7 +116,9 @@ export function* retrieveTrackByHandleAndSlug({
         if (isLegacyPermalink) {
           yield* put(setPermalink(permalink, track.track_id))
         }
-        yield* put(setIsInitialFetchAfterSsr(false))
+        if (isInitialFetchAfterSsr) {
+          yield* put(setIsInitialFetchAfterSsr(false))
+        }
         return tracks.map((track) => reformat(track, audiusBackendInstance))
       }
     }
