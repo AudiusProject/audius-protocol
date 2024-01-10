@@ -95,9 +95,11 @@ function* editTrackAsync(action) {
 
   const currentTrack = yield select(getTrack, { id: action.trackId })
   const wasDownloadable =
-    currentTrack.download && currentTrack.download.is_downloadable
+    currentTrack.is_downloadable ||
+    (currentTrack.download && currentTrack.download.is_downloadable)
   const isNowDownloadable =
-    action.formFields.download && action.formFields.download.is_downloadable
+    action.formFields.is_downloadable ||
+    (action.formFields.download && action.formFields.download.is_downloadable)
 
   const isPublishing = currentTrack._is_publishing
   const wasUnlisted = currentTrack.is_unlisted

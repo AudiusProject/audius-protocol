@@ -75,8 +75,11 @@ const EditTrackModal = ({
 
     const confirmEdit = (metadata: Track, formFields: Track) => {
       const isDownloadable = !!formFields.download?.is_downloadable
-      const isDownloadGated = isDownloadable && formFields.is_stream_gated
-      const downloadConditions = isDownloadGated
+      const hasStems = pendingUploads.length > 0
+      const hasDownloadableAssets = isDownloadable || hasStems
+      const isDownloadGated =
+        hasDownloadableAssets && formFields.is_stream_gated
+      const downloadConditions = hasDownloadableAssets
         ? formFields.stream_conditions
         : null
       const formFieldsToUpdate = {
@@ -156,7 +159,7 @@ const EditTrackModal = ({
   }
 
   const onAddStems = async (selectedStems: File[]) => {
-    const processed = (await Promise.all(processFiles(selectedStems, () => { })))
+    const processed = (await Promise.all(processFiles(selectedStems, () => {})))
       .filter(removeNullable)
       .map((p) => ({
         ...p,
