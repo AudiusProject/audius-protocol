@@ -35,10 +35,7 @@ const ManageAudiusAccount = ({
   oauthError: string | null
 }) => {
   return (
-    <Flex
-      justifyContent="space-between"
-      alignItems="center"
-    >
+    <Flex justifyContent="space-between" alignItems="center">
       <div>{`Logged in as @${currentUser.handle}`}</div>
       <Button variant="secondary" onClick={onChangeUser}>
         Switch users
@@ -149,11 +146,11 @@ const XmlImporter = ({
     return (
       <>
         <label
-         className={cn(
-           styles.fileDrop,
-           { [styles.fileDropBorderDragging]: isDragging },
-           { [styles.fileDropBorder]: !isDragging }
-         )}
+          className={cn(
+            styles.fileDrop,
+            { [styles.fileDropBorderDragging]: isDragging },
+            { [styles.fileDropBorder]: !isDragging }
+          )}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
           onDragOver={handleDragOver}
@@ -200,10 +197,7 @@ const XmlImporter = ({
                 x
               </Button>
             </Flex>
-            <Button
-              onClick={handleUpload}
-              disabled={isUploading}
-            >
+            <Button onClick={handleUpload} disabled={isUploading}>
               {isUploading ? 'Uploading...' : 'Upload'}
             </Button>
             {uploadError && (
@@ -242,10 +236,7 @@ const Ddex = () => {
 
   return (
     <Box m="xl">
-      <Flex
-        gap="xs"
-        direction="column"
-      >
+      <Flex gap="xs" direction="column">
         {!audiusSdk ? (
           'loading...'
         ) : !currentUser ? (
@@ -259,35 +250,31 @@ const Ddex = () => {
             {oauthError && <div className={styles.errorText}>{oauthError}</div>}
           </Flex>
         ) : (
-          <Flex
-            gap="m"
-            direction="column"
-          >
+          <Flex gap="m" direction="column">
             <ManageAudiusAccount
               currentUser={currentUser}
               onChangeUser={handleOauth}
               oauthError={oauthError}
             />
             <XmlImporter audiusSdk={audiusSdk} />
+            {/* <ManageAudiusAccount
+              currentUser={currentUser || fakeUser}
+              onChangeUser={handleOauth}
+              oauthError={oauthError}
+            />
+            <XmlImporter audiusSdk={audiusSdk} /> */}
+
+            <Flex justifyContent="space-between">
+              <Flex direction="column" gap="xs">
+                <Uploads />
+              </Flex>
+              <Flex direction="column" gap="xs">
+                <Releases />
+              </Flex>
+            </Flex>
           </Flex>
         )}
       </Flex>
-
-      {/* <ManageAudiusAccount
-        currentUser={currentUser || fakeUser}
-        onChangeUser={handleOauth}
-        oauthError={oauthError}
-      />
-      <XmlImporter audiusSdk={audiusSdk} /> */}
-
-      <div className="flex">
-        <div className="flex flex-col space-y-4 w-1/2">
-          <Uploads />
-        </div>
-        <div className="flex flex-col space-y-4 w-1/2">
-          <Releases />
-        </div>
-      </div>
     </Box>
   )
 }
