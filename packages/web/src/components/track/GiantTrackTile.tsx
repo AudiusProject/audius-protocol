@@ -698,9 +698,11 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         {renderTags()}
-        <Box pt='l' w='100%'>
-          <DownloadSection trackId={trackId} onDownload={onDownload} />
-        </Box>
+        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+          <Box pt='l' w='100%'>
+            <DownloadSection trackId={trackId} onDownload={onDownload} />
+          </Box>
+        ) : null}
       </div>
     </Tile>
   )

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentStems, ID, cacheTracksSelectors } from '@audius/common'
+import { useCurrentStems, ID } from '@audius/common'
 import {
   Flex,
   Box,
@@ -17,8 +17,6 @@ import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 
 import { DownloadRow } from './DownloadRow'
-
-const { getTrack } = cacheTracksSelectors
 
 const messages = {
   title: 'Stems & Downloads',
@@ -42,10 +40,6 @@ export const DownloadSection = ({
   trackId,
   onDownload
 }: DownloadSectionProps) => {
-  // const track = useSelector(
-  //   (state: CommonState) => getTrack(state, { id: trackId }),
-  //   shallowEqual
-  // )
   const { stemTracks } = useCurrentStems({ trackId })
   const shouldDisplayDownloadAll = stemTracks.length > 1
   const [quality, setQuality] = useState(Quality.MP3)
