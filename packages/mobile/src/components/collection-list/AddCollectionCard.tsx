@@ -1,12 +1,7 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common'
-import {
-  CreatePlaylistSource,
-  mobileOverflowMenuUIActions,
-  OverflowAction,
-  OverflowSource
-} from '@audius/common'
+import { cacheCollectionsActions, CreatePlaylistSource } from '@audius/common'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -16,7 +11,7 @@ import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const { createAlbum, createPlaylist } = cacheCollectionsActions
 
 const messages = {
   create: (collectionType: 'album' | 'playlist') =>
@@ -60,19 +55,15 @@ export const AddCollectionCard = ({
   const handlePress = useCallback(() => {
     if (onCreate) return onCreate()
 
-    const overflowActions =
-      collectionType === 'album'
-        ? [OverflowAction.CREATE_ALBUM, OverflowAction.ADD_TO_ALBUM]
-        : [OverflowAction.CREATE_PLAYLIST, OverflowAction.ADD_TO_PLAYLIST]
-
     dispatch(
-      openOverflowMenu({
-        source: OverflowSource.PROFILE,
-        id: collectionType,
-        overflowActions
-      })
+      (collectionType === 'album' ? createAlbum : createPlaylist)(
+        { playlist_name: `New ${capitalize(collectionType)}` },
+        source,
+        sourceTrackId,
+        'route'
+      )
     )
-  }, [onCreate, dispatch, collectionType])
+  }, [onCreate, dispatch, collectionType, source, sourceTrackId])
 
   return (
     <Tile onPress={handlePress} styles={{ content: styles.cardContent }}>
