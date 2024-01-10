@@ -5,7 +5,7 @@ import type {
   LoggerService
 } from '../../services'
 import type {
-  AntiAbuseOracle,
+  AntiAbuseOracleNode,
   AntiAbuseOracleSelectorService
 } from '../../services/AntiAbuseOracleSelector/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
@@ -24,7 +24,7 @@ import {
   GenerateSpecifierSchema
 } from './types'
 import type { PublicKey } from '@solana/web3.js'
-import { AntiAbuseOracleApi } from '../antiAbuseOracle/AntiAbuseOracleApi'
+import { AntiAbuseOracle } from '../../services/AntiAbuseOracle/AntiAbuseOracle'
 import { toChecksumAddress } from 'ethereumjs-util'
 
 export class ChallengesApi extends BaseAPI {
@@ -189,14 +189,14 @@ export class ChallengesApi extends BaseAPI {
     recipientEthAddress,
     handle
   }: {
-    antiAbuseOracle: AntiAbuseOracle
+    antiAbuseOracle: AntiAbuseOracleNode
     challengeId: ChallengeId
     specifier: string
     amount: bigint
     recipientEthAddress: string
     handle: string
   }) {
-    const antiAbuseOracleAttestation = await new AntiAbuseOracleApi(
+    const antiAbuseOracleAttestation = await new AntiAbuseOracle(
       new Configuration({ basePath: antiAbuseOracle.endpoint })
     ).getChallengeAttestation({
       handle,

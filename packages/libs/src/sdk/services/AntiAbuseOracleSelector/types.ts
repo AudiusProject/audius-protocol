@@ -1,6 +1,6 @@
 import type { LoggerService } from '../Logger'
 
-export type AntiAbuseOracle = {
+export type AntiAbuseOracleNode = {
   /** The wallet address of the Anti Abuse Oracle. */
   wallet: string
   /** The URL of the Anti Abuse Oracle. */
@@ -14,7 +14,7 @@ export type AntiAbuseOracleSelectorService = {
   /**
    * Gets a registered, healthy Anti Abuse Oracle endpoint and wallet.
    */
-  getSelectedService(): Promise<AntiAbuseOracle>
+  getSelectedService(): Promise<AntiAbuseOracleNode>
 }
 
 /**

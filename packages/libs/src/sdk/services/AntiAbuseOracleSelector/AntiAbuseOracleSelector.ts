@@ -4,7 +4,7 @@ import type { LoggerService } from '../Logger'
 import { defaultAntiAbuseOracleSelectorConfig } from './constants'
 import type {
   AntiAbuseOracleSelectorService,
-  AntiAbuseOracle,
+  AntiAbuseOracleNode,
   AntiAbuseOracleSelectorConfig
 } from './types'
 
@@ -12,8 +12,8 @@ export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
   private readonly endpoints: string[]
   private readonly registeredAddresses: string[]
   private readonly logger: LoggerService
-  private selectedNode: AntiAbuseOracle | null = null
-  private services: AntiAbuseOracle[] | null = null
+  private selectedNode: AntiAbuseOracleNode | null = null
+  private services: AntiAbuseOracleNode[] | null = null
 
   constructor(config?: AntiAbuseOracleSelectorConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
