@@ -657,6 +657,10 @@ def validate_update_access_conditions(params: ManageEntityParameters):
     existing_track = helpers.model_to_dictionary(
         params.existing_records["Track"][track_id]
     )
+    # scheduled release tracks are not restricted on how they can be updated
+    if existing_track.get("is_scheduled_release"):
+        return
+
     updated_track = params.metadata
 
     # validate changes to conditions for stream/download access
@@ -667,7 +671,8 @@ def validate_update_access_conditions(params: ManageEntityParameters):
                 raise IndexingValidationError(
                     f"Track {track_id} cannot increase strictness of stream access conditions"
                 )
-            # only previously non downloadable track may be updated to be downloadable
+            # if track was previously downloadable yet not download gated,
+            # then it cannot be updated to be download gated
             if for_download:
                 existing_track_download = existing_track.get("download") or {}
                 is_existing_track_downloadable = existing_track.get(
