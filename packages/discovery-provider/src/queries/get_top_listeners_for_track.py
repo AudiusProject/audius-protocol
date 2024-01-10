@@ -1,14 +1,9 @@
-from sqlalchemy import desc, func, text
+from sqlalchemy import text
 
 from src import exceptions
-from src.models.social.repost import Repost, RepostType
 from src.models.tracks.track import Track
-from src.models.users.aggregate_user import AggregateUser
-from src.models.users.user import User
-from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.query_helpers import add_query_pagination, populate_user_metadata
-from src.utils import helpers
+from src.queries.query_helpers import populate_user_metadata
 from src.utils.db_session import get_db_read_replica
 
 
