@@ -198,7 +198,10 @@ export const WithdrawUSDCModal = () => {
       break
     case WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL:
       formPage = (
-        <TransferSuccessful priorBalanceCents={priorBalanceCents || 0} />
+        <TransferSuccessful
+          onClickDone={onClose}
+          priorBalanceCents={priorBalanceCents || 0}
+        />
       )
       break
     case WithdrawUSDCModalPages.ERROR:

@@ -11,6 +11,7 @@ import {
   Name,
   WithdrawalMethod
 } from '@audius/common'
+import { Button, Flex } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
@@ -40,7 +41,8 @@ const messages = {
   amountWithdrawn: 'Amount Withdrawn',
   destinationAddress: 'Destination Address',
   viewOn: 'View On Solana Block Explorer',
-  success: 'Your Withdrawal Was Successful!'
+  success: 'Your Withdrawal Was Successful!',
+  done: 'Done'
 }
 
 const openExplorer = (signature: string) => {
@@ -52,9 +54,11 @@ const openExplorer = (signature: string) => {
 }
 
 export const TransferSuccessful = ({
-  priorBalanceCents
+  priorBalanceCents,
+  onClickDone
 }: {
   priorBalanceCents: number
+  onClickDone: () => void
 }) => {
   const { data: balance, balanceStatus } = useUSDCBalance()
   const signature = useSelector(getWithdrawTransaction)
@@ -127,6 +131,11 @@ export const TransferSuccessful = ({
           {messages.success}
         </Text>
       </div>
+      <Flex alignItems='center' justifyContent='center' gap='m'>
+        <Button fullWidth variant='primary' onClick={onClickDone}>
+          {messages.done}
+        </Button>
+      </Flex>
     </div>
   )
 }
