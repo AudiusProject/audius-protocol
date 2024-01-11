@@ -41,16 +41,16 @@ const meta: Meta<ButtonProps> = {
   },
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} variant={'primary'}>
+      <Button {...props} variant='primary'>
         Primary
       </Button>
-      <Button {...props} variant={'secondary'}>
+      <Button {...props} variant='secondary'>
         Secondary
       </Button>
-      <Button {...props} variant={'tertiary'}>
+      <Button {...props} variant='tertiary'>
         Tertiary
       </Button>
-      <Button {...props} variant={'destructive'}>
+      <Button {...props} variant='destructive'>
         Destructive
       </Button>
     </Flex>
@@ -78,10 +78,10 @@ export const Disabled: Story = {
 export const OverrideColor: Story = {
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} color='blue' variant={'primary'}>
+      <Button {...props} color='blue' variant='primary'>
         Color
       </Button>
-      <Button {...props} hexColor='#AA8866' variant={'primary'}>
+      <Button {...props} hexColor='#AA8866' variant='primary'>
         Hex Color
       </Button>
     </Flex>
@@ -91,13 +91,13 @@ export const OverrideColor: Story = {
 export const Sizes: Story = {
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} size={'small'}>
+      <Button {...props} size='small'>
         Small
       </Button>
-      <Button {...props} size={'default'}>
+      <Button {...props} size='default'>
         Default
       </Button>
-      <Button {...props} size={'large'}>
+      <Button {...props} size='large'>
         Large
       </Button>
     </Flex>

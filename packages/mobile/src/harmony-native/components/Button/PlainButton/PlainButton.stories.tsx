@@ -24,17 +24,17 @@ export const Variants: Story = {
   render: (props) => (
     <Flex>
       <Box p='xl'>
-        <PlainButton {...props} variant={'default'}>
+        <PlainButton {...props} variant='default'>
           Button
         </PlainButton>
       </Box>
       <Box p='xl'>
-        <PlainButton {...props} variant={'subdued'}>
+        <PlainButton {...props} variant='subdued'>
           Button
         </PlainButton>
       </Box>
       <Box p='xl' style={{ backgroundColor: '#32334d' }}>
-        <PlainButton {...props} variant={'inverted'}>
+        <PlainButton {...props} variant='inverted'>
           Button
         </PlainButton>
       </Box>
@@ -46,12 +46,12 @@ export const Sizes: Story = {
   render: (props) => (
     <Flex>
       <Box p='xl'>
-        <PlainButton {...props} size={'default'}>
+        <PlainButton {...props} size='default'>
           Button
         </PlainButton>
       </Box>
       <Box p='xl'>
-        <PlainButton {...props} size={'large'}>
+        <PlainButton {...props} size='large'>
           Button
         </PlainButton>
       </Box>
