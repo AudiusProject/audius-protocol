@@ -88,6 +88,27 @@ export const FinishProfilePage = () => {
     displayName: savedDisplayName || ''
   }
 
+  const setCoverPhoto = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('coverPhoto', { value }))
+    },
+    [dispatch]
+  )
+
+  const setProfileImage = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('profileImage', { value }))
+    },
+    [dispatch]
+  )
+
+  const setDisplayName = useCallback(
+    (value: string) => {
+      dispatch(setValueField('name', value))
+    },
+    [dispatch]
+  )
+
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       dispatch(setValueField('name', displayName))
@@ -133,6 +154,8 @@ export const FinishProfilePage = () => {
               mode='editing'
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
+              onProfileImageChange={setProfileImage}
+              onCoverPhotoChange={setCoverPhoto}
             />
             <ImageUploadErrorText />
             <HarmonyTextField
@@ -142,6 +165,7 @@ export const FinishProfilePage = () => {
               placeholder={messages.inputPlaceholder}
               required
               maxLength={32}
+              onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l
               })}
