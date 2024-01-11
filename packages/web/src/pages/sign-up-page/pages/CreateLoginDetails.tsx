@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   emailSchema,
@@ -55,11 +55,10 @@ const EmailField = () => {
   return <NewEmailField />
 }
 
-const loginDetailsFormikSchema = toFormikValidationSchema(loginDetailsSchema)
-
 export const CreateLoginDetailsPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const audiusQueryContext = useAudiusQueryContext()
   const handleField = useSelector(getHandleField)
 
   const { spacing } = useTheme()
@@ -71,6 +70,11 @@ export const CreateLoginDetailsPage = () => {
     password: '',
     confirmPassword: ''
   }
+
+  const loginDetailsFormikSchema = useMemo(
+    () => toFormikValidationSchema(loginDetailsSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   const handleSubmit = useCallback(
     (values: CreateLoginDetailsValues) => {

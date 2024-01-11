@@ -6,14 +6,17 @@ import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import { PageContextClient } from 'vike/types'
 
+import { isMobile as getIsMobile } from 'utils/clientUtil'
+
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
 
 import '../index.css'
-import { isMobile as getIsMobile } from 'utils/clientUtil'
 
+// @ts-ignore
 window.global ||= window
+// @ts-ignore
 window.Buffer = Buffer
 window.process = { ...processBrowser, env: process.env }
 
@@ -30,9 +33,15 @@ export default async function render(
 
   if (HYDRATE_CLIENT) {
     hydrateRoot(
-      document.getElementById('root'),
+      document.getElementById('root') as HTMLElement,
       <SsrContextProvider
-        value={{ path: urlPathname, isServerSide: false, pageProps, isMobile }}
+        value={{
+          path: urlPathname,
+          isServerSide: false,
+          pageProps,
+          isMobile,
+          history: null
+        }}
       >
         <Root />
       </SsrContextProvider>

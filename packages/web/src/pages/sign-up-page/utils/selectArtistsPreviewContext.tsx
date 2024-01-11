@@ -52,6 +52,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
   }, [artistTracks])
 
   const togglePlayback = useCallback(() => {
+    if (!audioPlayer) {
+      return
+    }
     if (audioPlayer.isPlaying()) {
       audioPlayer.pause()
       setIsPlaying(false)
@@ -62,6 +65,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
   }, [])
 
   const stopPreview = useCallback(() => {
+    if (!audioPlayer) {
+      return
+    }
     audioPlayer.stop()
     setNowPlayingArtistId(-1)
     setTrackId(null)
@@ -69,6 +75,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
   }, [])
 
   const playPreview = useCallback((artistId: ID) => {
+    if (!audioPlayer) {
+      return
+    }
     if (audioPlayer.isPlaying()) {
       audioPlayer.stop()
     }
@@ -78,6 +87,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
   const togglePreview = useCallback(
     (artistId: ID) => {
+      if (!audioPlayer) {
+        return
+      }
       if (artistId === nowPlayingArtistId) {
         togglePlayback()
       } else {
@@ -91,6 +103,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
   useEffect(() => {
     if (!trackId) return
+    if (!audioPlayer) {
+      return
+    }
     audioPlayer.load(
       0,
       stopPreview,

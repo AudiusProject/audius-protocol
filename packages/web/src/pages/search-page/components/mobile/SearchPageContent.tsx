@@ -13,6 +13,7 @@ import {
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import IconNote from 'assets/img/iconNote.svg'
@@ -43,7 +44,6 @@ import {
 } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 export type SearchPageContentProps = {
   tracks: LineupState<{}>
@@ -171,7 +171,7 @@ const TracksSearchPage = ({
             loadMore={(offset: number, limit: number) =>
               dispatch(
                 tracksActions.fetchLineupMetadatas(offset, limit, false, {
-                  category: getCategory(history.location.pathname),
+                  category: getCategory(history.location),
                   query: trimToAlphaNumeric(searchText),
                   isTagSearch
                 })

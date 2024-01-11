@@ -55,7 +55,7 @@ export const buildStoreContext = ({
   explore,
   // @ts-ignore js file
   getLineupSelectorForRoute,
-  audioPlayer,
+  audioPlayer: audioPlayer!,
   solanaClient: new SolanaClient({
     solanaClusterEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: process.env.VITE_METADATA_PROGRAM_ID

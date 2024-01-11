@@ -1,5 +1,5 @@
 import {
-  AudiusQueryContext,
+  AudiusQueryContextType,
   emailSchema,
   isNotCommonPassword
 } from '@audius/common'
@@ -7,7 +7,9 @@ import { z } from 'zod'
 
 // Due to issue with zod merge, manually rewriting
 // https://github.com/colinhacks/zod/issues/454
-export const loginDetailsSchema = (audiusQueryContext: AudiusQueryContext) =>
+export const loginDetailsSchema = (
+  audiusQueryContext: AudiusQueryContextType
+) =>
   z
     .object({
       password: z

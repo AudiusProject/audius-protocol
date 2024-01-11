@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { describe, it, vitest } from 'vitest'
 
-import { store } from 'store/configureStore'
+import { configureStore } from 'store/configureStore'
 import { createHistory } from 'utils/history'
 
 import WebPlayer from './WebPlayer'
@@ -30,6 +30,7 @@ describe('smoke test', () => {
   it('renders without crashing', () => {
     const history = createHistory()
     const rootNode = document.createElement('div')
+    const store = configureStore(history, false, {}, false)
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>

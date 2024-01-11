@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Location } from 'history'
 import {
   ID,
   FavoriteSource,
@@ -33,9 +32,11 @@ import {
 } from '@audius/common'
 import { ButtonSize } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
+import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
@@ -65,7 +66,6 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
-import { useHistoryContext } from 'app/HistoryProvider'
 const { makeGetCurrent } = queueSelectors
 const { getBuffering, getCounter, getPlaying, getPlaybackRate } =
   playerSelectors
@@ -140,7 +140,7 @@ const NowPlaying = g(
     const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
     const { uid, track, user, collectible } = currentQueueItem
-    const { history } = useHistoryContext
+    const { history } = useHistoryContext()
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).

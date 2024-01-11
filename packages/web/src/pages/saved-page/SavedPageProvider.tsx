@@ -96,6 +96,7 @@ type SavedPageState = {
 
 class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
   state: SavedPageState = {
     filterText: '',
     sortMethod: '',

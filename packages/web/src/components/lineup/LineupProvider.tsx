@@ -233,6 +233,7 @@ type CombinedProps = LineupProviderProps &
  */
 class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
   static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
   scrollContainer = createRef<HTMLDivElement>()
 
   constructor(props: any) {

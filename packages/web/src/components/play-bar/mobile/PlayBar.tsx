@@ -66,6 +66,9 @@ const PlayBar = ({
 
   useEffect(() => {
     const seekInterval = setInterval(async () => {
+      if (!audioPlayer) {
+        return
+      }
       const duration = await audioPlayer.getDuration()
       const pos = await audioPlayer.getPosition()
       if (duration === undefined || pos === undefined) return

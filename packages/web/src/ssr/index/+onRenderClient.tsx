@@ -12,7 +12,9 @@ import { Root } from '../../Root'
 
 import '../../index.css'
 
+// @ts-ignore
 window.global ||= window
+// @ts-ignore
 window.Buffer = Buffer
 window.process = { ...processBrowser, env: process.env }
 
