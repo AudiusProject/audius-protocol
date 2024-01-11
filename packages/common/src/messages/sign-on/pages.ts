@@ -59,7 +59,9 @@ export const pickHandlePageMessages = {
   claimHandleDescription:
     'Verify your Audius account by linking a verified social media account.',
   claimHandleHeadsUp:
-    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.',
+  handleAvailable: 'Handle available!',
+  linkToClaim: 'Link to claim.'
 }
 
 export const finishProfilePageMessages = {
