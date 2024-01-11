@@ -1137,6 +1137,45 @@ class FullTrackReposts(Resource):
         return success_response(users)
 
 
+top_listener_response_full = full_ns.model(
+    "full_top_listener",
+    {
+        "count": fields.Integer(required=True),
+        "user": fields.Nested(user_model_full, required=True),
+    },
+)
+
+
+@full_ns.route("/<string:track_id>/top_listeners")
+class FullTrackTopListeners(Resource):
+    @full_ns.doc(
+        id="""Get Track Top Listeners""",
+        description="""Get the users that have listened to a track the most""",
+        params={"track_id": "A Track ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(top_listener_response_full)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = pagination_with_current_user_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+
+        args = {
+            "track_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        top_listeners = get_top_listeners_for_track(args)
+        for row in top_listeners:
+            row["user"] = extend_user(row["user"])
+        return success_response(top_listeners)
+
+
 track_stems_response = make_full_response(
     "stems_response", full_ns, fields.List(fields.Nested(stem_full))
 )
