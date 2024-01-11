@@ -2,8 +2,11 @@ import { useCallback, useState } from 'react'
 
 import { useCoinflowAdapter, withdrawUSDCActions } from '@audius/common'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
+import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
+
+import { AMOUNT, WithdrawFormValues } from '../types'
 
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
   withdrawUSDCActions
@@ -26,7 +29,8 @@ const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 export const CoinflowWithdrawPage = () => {
   const adapter = useCoinflowAdapter()
   const dispatch = useDispatch()
-
+  const [{ value: amountCents }] =
+    useField<WithdrawFormValues[typeof AMOUNT]>(AMOUNT)
   const [completed, setCompleted] = useState(false)
 
   useUnmount(() => {
@@ -48,6 +52,7 @@ export const CoinflowWithdrawPage = () => {
 
   return adapter ? (
     <CoinflowWithdraw
+      amount={amountCents / 100}
       wallet={adapter.wallet}
       connection={adapter.connection}
       onSuccess={handleSuccess}

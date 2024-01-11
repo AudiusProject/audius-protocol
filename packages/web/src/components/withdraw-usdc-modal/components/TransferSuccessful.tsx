@@ -8,7 +8,8 @@ import {
   decimalIntegerToHumanReadable,
   Status,
   withdrawUSDCSelectors,
-  Name
+  Name,
+  WithdrawalMethod
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -26,7 +27,7 @@ import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
-import { ADDRESS, AMOUNT } from '../types'
+import { ADDRESS, AMOUNT, METHOD } from '../types'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
@@ -62,6 +63,7 @@ export const TransferSuccessful = ({
   )
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
+  const [{ value: methodValue }] = useField<string>(METHOD)
   const [{ value: amountValue }] = useField<number>(AMOUNT)
   const [{ value: addressValue }] = useField<string>(ADDRESS)
 
@@ -98,21 +100,25 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
-          {addressValue}
-        </Text>
-        <HarmonyPlainButton
-          style={{ padding: 0 }}
-          onClick={handleClickTransactionLink}
-          iconRight={IconExternalLink}
-          variant={HarmonyPlainButtonType.SUBDUED}
-          size={HarmonyPlainButtonSize.DEFAULT}
-          text={messages.viewOn}
-        />
-      </div>
+      {methodValue !== WithdrawalMethod.MANUAL_TRANSFER ? (
+        <>
+          <Divider style={{ margin: 0 }} />
+          <div className={styles.destination}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {addressValue}
+            </Text>
+            <HarmonyPlainButton
+              style={{ padding: 0 }}
+              onClick={handleClickTransactionLink}
+              iconRight={IconExternalLink}
+              variant={HarmonyPlainButtonType.SUBDUED}
+              size={HarmonyPlainButtonSize.DEFAULT}
+              text={messages.viewOn}
+            />
+          </div>
+        </>
+      ) : null}
       <div className={styles.success}>
         <div className={styles.completionCheck}>
           <Icon icon={IconCheck} size='xxSmall' color='white' />
