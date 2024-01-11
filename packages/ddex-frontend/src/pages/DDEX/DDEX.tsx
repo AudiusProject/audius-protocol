@@ -54,9 +54,11 @@ const ManageAudiusAccount = ({
           variant='body'
           color='default'
         >{`Logged in as @${currentUser.handle}`}</Text>
-        <Text variant='label' color='subdued' className={styles.adminBadge}>
-          {isAdmin ? 'ADMIN' : ''}
-        </Text>
+        {isAdmin && (
+          <Text variant='label' color='subdued' className={styles.adminBadge}>
+            ADMIN
+          </Text>
+        )}
       </Flex>
       <Button variant={ButtonType.SECONDARY} onClick={onChangeUser}>
         Switch users
