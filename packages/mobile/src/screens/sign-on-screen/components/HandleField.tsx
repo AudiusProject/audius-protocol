@@ -33,6 +33,7 @@ export const HandleField = ({
         onChangeText={() => {
           handleChange()
         }}
+        debouncedValidationMs={1000}
         Icon={
           !isWaitingForValidation && handle && !error ? IconCheck : undefined
         }

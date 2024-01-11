@@ -66,6 +66,7 @@ export const ReviewHandleScreen = () => {
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
       validateOnMount
+      validateOnChange={false}
       initialTouched={{ handle: true }}
     >
       {({ isValid }) => (

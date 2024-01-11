@@ -143,6 +143,7 @@ export const PickHandleScreen = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
+      validateOnChange={false}
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <Page>
