@@ -14,7 +14,8 @@ import {
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
   useSelectTierInfo,
-  CreatePlaylistSource
+  CreatePlaylistSource,
+  FeatureFlags
 } from '@audius/common'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
@@ -46,6 +47,7 @@ import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 export type ProfilePageProps = {
   // State
@@ -238,6 +240,7 @@ const ProfilePage = ({
   setNotificationSubscription,
   didChangeTabsFrom
 }: ProfilePageProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const renderProfileCompletionCard = () => {
     return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
   }
@@ -307,7 +310,7 @@ const ProfilePage = ({
         }}
       />
     ))
-    if (isOwner) {
+    if (isOwner && isEditAlbumsEnabled) {
       albumCards.unshift(
         <UploadChip
           key='upload-chip'
