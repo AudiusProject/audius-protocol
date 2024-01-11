@@ -1,20 +1,15 @@
-import {
-  Ref,
-  forwardRef,
-  useCallback,
-  useContext,
-  useEffect,
-  useState
-} from 'react'
+import { Ref, forwardRef, useCallback, useContext } from 'react'
 
 import {
   MAX_HANDLE_LENGTH,
   socialMediaMessages,
-  pickHandleErrorMessages
+  pickHandleErrorMessages,
+  useIsWaitingForValidation
 } from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
 import { useField, useFormikContext } from 'formik'
+import { usePrevious } from 'react-use'
 
 import {
   HarmonyTextField,
@@ -48,36 +43,6 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
   onErrorSocialMediaLogin?: () => void
 }
 
-/**
- * This is a workaround because Formik's isValidating only returns true DURING the validation.
- * However for this scenario we want to wait for the results of the validation before showing any messaging.
- * To do this we wait for Formik isValidating to change to true, then wait for it to change
- * back to false before saying we're "not waiting" for validation anymore
- * @returns {isWaitingOnValidation, setIsWaitingOnValidation}
- */
-const useIsWaitingOnValidation = () => {
-  const { isValidating } = useFormikContext()
-  const [isWaitingOnValidation, setIsWaitingOnValidation] = useState(false)
-  const [previousIsValidating, setPreviousIsValidating] = useState(false)
-
-  // Wait for formik to start validating
-  useEffect(() => {
-    if (isValidating && isWaitingOnValidation) {
-      setPreviousIsValidating(true)
-    }
-  }, [isValidating, isWaitingOnValidation])
-
-  // We know formik has stopped validating when it differs from our previous value
-  useEffect(() => {
-    if (previousIsValidating && !isValidating) {
-      setIsWaitingOnValidation(false)
-      setPreviousIsValidating(false) // reset the value
-    }
-  }, [isValidating, previousIsValidating])
-
-  return { isWaitingOnValidation, setIsWaitingOnValidation }
-}
-
 export const HandleField = forwardRef(
   (props: HandleFieldProps, ref: Ref<HTMLInputElement>) => {
     const {
@@ -92,8 +57,7 @@ export const HandleField = forwardRef(
 
     const { toast } = useContext(ToastContext)
 
-    const { isWaitingOnValidation, setIsWaitingOnValidation } =
-      useIsWaitingOnValidation()
+    const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
     const handleVerifyHandleError = useCallback(() => {
       toast(socialMediaMessages.verificationError)
@@ -141,7 +105,7 @@ export const HandleField = forwardRef(
             </TextLink>
           ) : null}
         </>
-      ) : !isWaitingOnValidation && handle ? (
+      ) : !isWaitingForValidation && handle ? (
         messages.handleAvailable
       ) : null
 
@@ -157,11 +121,11 @@ export const HandleField = forwardRef(
         transformValueOnChange={(value) => value.replace(/\s/g, '')}
         debouncedValidationMs={1000}
         endIcon={
-          !isWaitingOnValidation && !error && handle ? IconCheck : undefined
+          !isWaitingForValidation && !error && handle ? IconCheck : undefined
         }
         onChange={(e) => {
           onChange?.(e)
-          setIsWaitingOnValidation(true)
+          handleChange()
         }}
         {...other}
       />
