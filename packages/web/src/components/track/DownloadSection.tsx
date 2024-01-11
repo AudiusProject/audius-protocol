@@ -13,8 +13,6 @@ import {
   Text,
   IconReceive,
   Button,
-  ButtonType,
-  ButtonSize,
   IconCaretDown
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
@@ -26,6 +24,10 @@ import { Expandable } from 'components/expandable/Expandable'
 import { DownloadRow } from './DownloadRow'
 
 const { getTrack } = cacheTracksSelectors
+
+const ORIGINAL_TRACK_INDEX = 1
+const STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK = 1
+const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
@@ -128,7 +130,7 @@ export const DownloadSection = ({
                 trackId={trackId}
                 onDownload={onDownload}
                 quality={quality}
-                index={1}
+                index={ORIGINAL_TRACK_INDEX}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -137,7 +139,12 @@ export const DownloadSection = ({
                 key={s.id}
                 onDownload={onDownload}
                 quality={quality}
-                index={i + (track?.is_downloadable ? 2 : 1)}
+                index={
+                  i +
+                  (track?.is_downloadable
+                    ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                    : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+                }
               />
             ))}
             {/* Only display this row if original quality is not available,
