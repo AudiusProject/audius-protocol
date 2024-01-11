@@ -1517,9 +1517,7 @@ def test_update_access_conditions(app, mocker):
 
     create_track1_json = json.dumps(metadatas["CreateTrack1NotGated"])
     create_track2_json = json.dumps(metadatas["CreateTrack2Gated"])
-    create_track3_json = json.dumps(
-        metadatas["CreateTrack3PurchaseGated"]
-    )
+    create_track3_json = json.dumps(metadatas["CreateTrack3PurchaseGated"])
     invalid_update_track1_json_1 = json.dumps(
         metadatas["InvalidUpdateTrack1StreamGated"]
     )
@@ -1532,9 +1530,7 @@ def test_update_access_conditions(app, mocker):
     invalid_update_track2_json_2 = json.dumps(
         metadatas["InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated"]
     )
-    valid_update_track2_json = json.dumps(
-        metadatas["ValidUpdateTrack2NotGated"]
-    )
+    valid_update_track2_json = json.dumps(metadatas["ValidUpdateTrack2NotGated"])
     valid_update_track3_json = json.dumps(
         metadatas["ValidUpdateTrack3DifferentConditionsPurchaseGated"]
     )
