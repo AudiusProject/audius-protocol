@@ -30,7 +30,6 @@ import {
   ModalSource,
   FeatureFlags
 } from '@audius/common'
-import { ButtonSize } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -549,7 +548,7 @@ const NowPlaying = g(
               unlocking={gatedTrackStatus === 'UNLOCKING'}
               onClick={onClickPill}
               className={styles.premiumPill}
-              buttonSize={ButtonSize.LARGE}
+              buttonSize='large'
             />
           ) : null}
           <ActionsBar

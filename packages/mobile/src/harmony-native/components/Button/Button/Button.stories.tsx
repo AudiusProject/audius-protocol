@@ -3,10 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react-native'
 import { IconHeart } from '@audius/harmony-native'
 
 import { Flex } from '../../layout/Flex/Flex'
-import type { ButtonProps } from '../types'
-import { ButtonSize, ButtonType } from '../types'
 
 import { Button } from './Button'
+import type { ButtonProps } from './types'
 
 const meta: Meta<ButtonProps> = {
   title: 'Components/Button/Button',
@@ -42,16 +41,16 @@ const meta: Meta<ButtonProps> = {
   },
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} variant={ButtonType.PRIMARY}>
+      <Button {...props} variant='primary'>
         Primary
       </Button>
-      <Button {...props} variant={ButtonType.SECONDARY}>
+      <Button {...props} variant='secondary'>
         Secondary
       </Button>
-      <Button {...props} variant={ButtonType.TERTIARY}>
+      <Button {...props} variant='tertiary'>
         Tertiary
       </Button>
-      <Button {...props} variant={ButtonType.DESTRUCTIVE}>
+      <Button {...props} variant='destructive'>
         Destructive
       </Button>
     </Flex>
@@ -79,10 +78,10 @@ export const Disabled: Story = {
 export const OverrideColor: Story = {
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} color='blue' variant={ButtonType.PRIMARY}>
+      <Button {...props} color='blue' variant='primary'>
         Color
       </Button>
-      <Button {...props} hexColor='#AA8866' variant={ButtonType.PRIMARY}>
+      <Button {...props} hexColor='#AA8866' variant='primary'>
         Hex Color
       </Button>
     </Flex>
@@ -92,13 +91,13 @@ export const OverrideColor: Story = {
 export const Sizes: Story = {
   render: (props) => (
     <Flex p='l' gap='l'>
-      <Button {...props} size={ButtonSize.SMALL}>
+      <Button {...props} size='small'>
         Small
       </Button>
-      <Button {...props} size={ButtonSize.DEFAULT}>
+      <Button {...props} size='default'>
         Default
       </Button>
-      <Button {...props} size={ButtonSize.LARGE}>
+      <Button {...props} size='large'>
         Large
       </Button>
     </Flex>

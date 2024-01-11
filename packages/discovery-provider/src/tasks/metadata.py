@@ -194,7 +194,6 @@ immutable_track_fields = immutable_fields | {
     "is_original_available",
     "duration",
     "is_available",
-    "is_scheduled_release",
 }
 
 immutable_user_fields = immutable_fields | {

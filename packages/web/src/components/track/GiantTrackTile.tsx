@@ -13,7 +13,8 @@ import {
   AccessConditions,
   FieldVisibility,
   getDogEarType,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
@@ -28,6 +29,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
+import { useDispatch } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
@@ -57,6 +59,9 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -178,6 +183,7 @@ export const GiantTrackTile = ({
   trackTitle,
   userId
 }: GiantTrackTileProps) => {
+  const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(true)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -250,7 +256,19 @@ export const GiantTrackTile = ({
             )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={isPublishing ? undefined : () => onMakePublic(trackId)}
+          onClick={
+            isPublishing
+              ? undefined
+              : () => {
+                dispatch(
+                  openPublishTrackConfirmationModal({
+                    confirmCallback: () => {
+                      onMakePublic(trackId)
+                    }
+                  })
+                )
+              }
+          }
         />
       )
     )
@@ -279,8 +297,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isReposted
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
+                      ? ButtonType.SECONDARY
+                      : ButtonType.COMMON
                 }
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
                 text={
@@ -289,7 +307,7 @@ export const GiantTrackTile = ({
                     : messages.repostButtonText
                 }
                 leftIcon={<IconRepost />}
-                onClick={isOwner ? () => {} : onRepost}
+                onClick={isOwner ? () => { } : onRepost}
               />
             </div>
           </Tooltip>
@@ -320,8 +338,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isSaved
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
+                      ? ButtonType.SECONDARY
+                      : ButtonType.COMMON
                 }
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
@@ -495,10 +513,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        streamConditions,
-        isUnlisted:
-          isUnlisted && (!released || moment(released).isBefore(moment()))
-      })
+      streamConditions,
+      isUnlisted:
+        isUnlisted && (!released || moment(released).isBefore(moment()))
+    })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
