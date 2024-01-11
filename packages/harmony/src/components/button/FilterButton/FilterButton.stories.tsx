@@ -5,9 +5,8 @@ import { within } from '@storybook/testing-library'
 import { Box, Flex } from 'components/layout'
 import { IconAlbum, IconCampfire, IconFilter, IconRadar } from 'icons'
 
-import { FilterButtonProps } from '../types'
-
 import { FilterButton } from './FilterButton'
+import { FilterButtonProps } from './types'
 
 const meta: Meta<typeof FilterButton> = {
   title: 'Buttons/FilterButton [beta]',

@@ -3,7 +3,7 @@ import type { CSSObject } from '@emotion/react'
 import { IconInstagram, IconTikTok, IconTwitter } from 'icons'
 
 import { Button } from '../Button/Button'
-import type { ButtonProps } from '../types'
+import type { ButtonProps } from '../Button/types'
 
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
 

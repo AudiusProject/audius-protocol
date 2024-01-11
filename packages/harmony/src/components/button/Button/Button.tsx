@@ -4,7 +4,8 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import { toCSSVariableName } from '../../../utils/styles'
 import { BaseButton } from '../BaseButton/BaseButton'
-import { ButtonProps } from '../types'
+
+import { ButtonProps } from './types'
 
 type CSSCustomProperties = CSSProperties & {
   [index: `--${string}`]: any

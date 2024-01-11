@@ -6,9 +6,8 @@ import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 import { IconArrowLeft, IconArrowRight } from 'icons'
 
-import { ButtonProps } from '../types'
-
 import { Button } from './Button'
+import { ButtonProps } from './types'
 
 const meta: Meta<typeof Button> = {
   title: 'Buttons/Button',

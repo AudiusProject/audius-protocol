@@ -3,7 +3,8 @@ import { forwardRef } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import { PlainButtonProps } from '../types'
+
+import { PlainButtonProps } from './types'
 
 /**
  * A plain Button component (no border/background). Includes a few variants and options to

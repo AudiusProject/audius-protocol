@@ -13,7 +13,7 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { Box, Flex, Paper, Popup } from 'components/layout'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 
-import { FilterButtonOption, FilterButtonProps } from '../types'
+import { FilterButtonOption, FilterButtonProps } from './types'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {
