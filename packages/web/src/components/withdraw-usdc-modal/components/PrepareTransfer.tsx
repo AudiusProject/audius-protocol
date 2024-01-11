@@ -16,7 +16,8 @@ import styles from './PrepareTransfer.module.css'
 const { getCoinflowState } = withdrawUSDCSelectors
 
 const messages = {
-  preparing: 'Preparing transfer...'
+  preparing: 'Preparing Transfer',
+  subtext: 'This will take a few moments...'
 }
 
 export const PrepareTransfer = () => {
@@ -30,10 +31,17 @@ export const PrepareTransfer = () => {
   }, [coinflowState])
   return (
     <Flex justifyContent='center' alignItems='center' gap='m' p='4xl'>
-      <LoadingSpinner className={styles.spinner} />
-      <Text variant='heading' size='m'>
-        {messages.preparing}
-      </Text>
+      <Flex alignItems='center' justifyContent='center'>
+        <LoadingSpinner className={styles.spinner} />
+      </Flex>
+      <Flex alignItems='start' justifyContent='center' direction='column'>
+        <Text variant='heading' size='m'>
+          {messages.preparing}
+        </Text>
+        <Text variant='body' size='m'>
+          {messages.subtext}
+        </Text>
+      </Flex>
     </Flex>
   )
 }

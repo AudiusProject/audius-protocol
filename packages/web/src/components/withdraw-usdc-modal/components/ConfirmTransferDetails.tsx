@@ -83,6 +83,14 @@ export const ConfirmTransferDetails = () => {
 
   return (
     <div className={styles.root}>
+      {methodValue === WithdrawalMethod.MANUAL_TRANSFER ? (
+        <Hint
+          text={messages.notSure}
+          link={LEARN_MORE_LINK}
+          icon={IconQuestionCircle}
+          linkText={messages.guide}
+        />
+      ) : null}
       <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
@@ -135,12 +143,6 @@ export const ConfirmTransferDetails = () => {
           {messages.confirm}
         </Button>
       </div>
-      <Hint
-        text={messages.notSure}
-        link={LEARN_MORE_LINK}
-        icon={IconQuestionCircle}
-        linkText={messages.guide}
-      />
     </div>
   )
 }

@@ -17,9 +17,9 @@ import {
   Name,
   WithdrawalMethod
 } from '@audius/common'
-import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/harmony'
 import BN from 'bn.js'
-import { useField, useFormikContext } from 'formik'
+import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
@@ -32,12 +32,8 @@ import {
 import { make, track } from 'services/analytics'
 
 import styles from './EnterTransferDetails.module.css'
-import { Hint } from './Hint'
 import { TextRow } from './TextRow'
 import { SegmentedControl } from '@audius/stems'
-
-const LEARN_MORE_LINK =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   currentBalance: 'Current Balance',
@@ -48,11 +44,9 @@ const messages = {
   solanaWallet: 'USDC Wallet (Solana)',
   amountInputLabel: 'Amount of USDC to withdraw',
   continue: 'Continue',
-  notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
-  guide: 'Guide to USDC Transfers on Audius',
   dollars: '$',
   transferMethod: 'Transfer Method',
-  withdrawWithCoinflow: 'Withdraw with Coinflow',
+  sendToBank: 'Send To Bank',
   manualTransfer: 'Manual Transfer',
   coinflowDescription:
     'Your funds will be sent to Coinflow for withdrawal to a bank account or debit card. Additional payment provider fees may apply.',
@@ -60,7 +54,7 @@ const messages = {
 }
 
 const withdrawalMethodOptions = [
-  { key: WithdrawalMethod.COINFLOW, text: messages.withdrawWithCoinflow },
+  { key: WithdrawalMethod.COINFLOW, text: messages.sendToBank },
   { key: WithdrawalMethod.MANUAL_TRANSFER, text: messages.manualTransfer }
 ]
 
@@ -136,13 +130,6 @@ export const EnterTransferDetails = () => {
 
   return (
     <div className={styles.root}>
-      <Hint
-        onClick={handleClickHelpGuide}
-        text={messages.notSure}
-        link={LEARN_MORE_LINK}
-        icon={IconQuestionCircle}
-        linkText={messages.guide}
-      />
       <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
