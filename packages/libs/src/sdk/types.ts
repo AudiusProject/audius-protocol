@@ -13,6 +13,7 @@ import type {
   SolanaWalletAdapter
 } from './services/Solana'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
+import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
 
 export type ServicesContainer = {
   /**
@@ -69,6 +70,11 @@ export type ServicesContainer = {
    * Service used to choose a healthy Anti Abuse Oracle
    */
   antiAbuseOracleSelector: AntiAbuseOracleSelectorService
+
+  /**
+   * Service used to interact with Anti Abuse Oracle
+   */
+  antiAbuseOracle: AntiAbuseOracleService
 }
 
 const DevAppSchema = z.object({

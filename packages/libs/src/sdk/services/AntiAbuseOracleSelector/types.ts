@@ -1,3 +1,4 @@
+import { Middleware } from '../../api/generated/default'
 import type { LoggerService } from '../Logger'
 
 export type AntiAbuseOracleNode = {
@@ -11,6 +12,11 @@ export type AntiAbuseOracleNode = {
  * Service used to choose an Anti Abuse Oracle service.
  */
 export type AntiAbuseOracleSelectorService = {
+  /**
+   * Returns a middleware that prepends the Anti Abuse Oracle endpoint to each
+   * request and can reselect on certain responses or errors.
+   */
+  createMiddleware: () => Middleware
   /**
    * Gets a registered, healthy Anti Abuse Oracle endpoint and wallet.
    */

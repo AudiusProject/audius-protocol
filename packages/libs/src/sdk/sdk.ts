@@ -42,6 +42,7 @@ import { defaultClaimableTokensConfig } from './services/Solana/programs/Claimab
 import { defaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/constants'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { ChallengesApi } from './api/challenges/ChallengesApi'
+import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 
 /**
  * The Audius SDK
@@ -90,32 +91,31 @@ const initializeServices = (config: SdkConfig) => {
     ? new AppAuth(config.apiKey, config.apiSecret)
     : new Auth()
 
-  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector({ logger })
+  const discoveryNodeSelector =
+    config.services?.discoveryNodeSelector ??
+    new DiscoveryNodeSelector({ logger })
 
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       auth: config.services?.auth ?? defaultAuthService,
-      discoveryNodeSelector:
-        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector,
+      discoveryNodeSelector,
       logger
     })
 
   const defaultEntityManager = new EntityManager({
     ...defaultEntityManagerConfig,
-    discoveryNodeSelector:
-      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+    discoveryNodeSelector
   })
 
   const defaultStorage = new Storage({ storageNodeSelector, logger })
 
-  const defaultAntiAbuseOracleSelector = new AntiAbuseOracleSelector({ logger })
+  const antiAbuseOracleSelector =
+    config.services?.antiAbuseOracleSelector ??
+    new AntiAbuseOracleSelector({ logger })
 
   const defaultSolanaRelay = new SolanaRelay({
-    middleware: [
-      config.services?.discoveryNodeSelector?.createMiddleware() ??
-        defaultDiscoveryNodeSelector.createMiddleware()
-    ]
+    discoveryNodeSelector
   })
 
   const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter({
@@ -134,9 +134,14 @@ const initializeServices = (config: SdkConfig) => {
       config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
   })
 
+  const defaultAntiAbuseOracle = new AntiAbuseOracle({
+    antiAbuseOracleSelector
+  })
+
   const defaultServices: ServicesContainer = {
     storageNodeSelector,
-    discoveryNodeSelector: defaultDiscoveryNodeSelector,
+    discoveryNodeSelector,
+    antiAbuseOracleSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,
     auth: defaultAuthService,
@@ -144,7 +149,7 @@ const initializeServices = (config: SdkConfig) => {
     rewardManagerProgram: defaultRewardManagerProgram,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
     solanaRelay: defaultSolanaRelay,
-    antiAbuseOracleSelector: defaultAntiAbuseOracleSelector,
+    antiAbuseOracle: defaultAntiAbuseOracle,
     logger
   }
   return { ...defaultServices, ...config.services }
@@ -233,7 +238,7 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.rewardManagerProgram,
     services.claimableTokensProgram,
-    services.antiAbuseOracleSelector,
+    services.antiAbuseOracle,
     services.logger
   )
 

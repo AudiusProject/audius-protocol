@@ -34,19 +34,7 @@ import {
   DiscoveryNode
 } from './types'
 import sample from 'lodash/sample'
-
-const getPathFromUrl = (url: string) => {
-  const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/
-
-  const match = url.match(pathRegex)
-
-  if (match?.[3]) {
-    const path = match[3]
-    return path
-  } else {
-    throw new Error(`Invalid URL, couldn't get path.`)
-  }
-}
+import { getPathFromUrl } from '../../utils/getPathFromUrl'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**

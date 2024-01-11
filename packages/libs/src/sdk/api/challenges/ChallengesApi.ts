@@ -4,10 +4,6 @@ import type {
   DiscoveryNodeSelectorService,
   LoggerService
 } from '../../services'
-import type {
-  AntiAbuseOracleNode,
-  AntiAbuseOracleSelectorService
-} from '../../services/AntiAbuseOracleSelector/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
@@ -24,7 +20,7 @@ import {
   GenerateSpecifierSchema
 } from './types'
 import type { PublicKey } from '@solana/web3.js'
-import { AntiAbuseOracle } from '../../services/AntiAbuseOracle/AntiAbuseOracle'
+import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import { toChecksumAddress } from 'ethereumjs-util'
 
 export class ChallengesApi extends BaseAPI {
@@ -35,7 +31,7 @@ export class ChallengesApi extends BaseAPI {
     private readonly discoveryNodeSelector: DiscoveryNodeSelectorService,
     private readonly rewardManager: RewardManagerClient,
     private readonly claimableTokens: ClaimableTokensClient,
-    private readonly antiAbuseOracleSelector: AntiAbuseOracleSelectorService,
+    private readonly antiAbuseOracle: AntiAbuseOracleService,
     logger: LoggerService
   ) {
     super(config)
@@ -118,24 +114,16 @@ export class ChallengesApi extends BaseAPI {
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
     if (!antiAbuseOracleEthAddress) {
-      this.logger.debug('Selecting anti abuse oracle for attestation...')
-      const antiAbuseOracle =
-        await this.antiAbuseOracleSelector.getSelectedService()
-      if (!antiAbuseOracle) {
-        throw new Error('Could not find a healthy anti abuse oracle.')
-      }
-      antiAbuseOracleEthAddress = antiAbuseOracle.wallet
-
       this.logger.debug('Submitting anti abuse oracle attestation...')
-      const signature = await this.submitAntiAbuseOracleAttestation({
-        antiAbuseOracle,
+      const response = await this.submitAntiAbuseOracleAttestation({
         challengeId,
         specifier,
         amount,
         recipientEthAddress,
         handle
       })
-      attestationTransactionSignatures.push(signature)
+      antiAbuseOracleEthAddress = response.antiAbuseOracleEthAddress
+      attestationTransactionSignatures.push(response.transactionSignature)
     } else {
       // Need to convert to checksum address as the attestation is lowercased
       antiAbuseOracleEthAddress = toChecksumAddress(antiAbuseOracleEthAddress)
@@ -182,29 +170,28 @@ export class ChallengesApi extends BaseAPI {
   }
 
   private async submitAntiAbuseOracleAttestation({
-    antiAbuseOracle,
     challengeId,
     specifier,
     amount,
     recipientEthAddress,
     handle
   }: {
-    antiAbuseOracle: AntiAbuseOracleNode
     challengeId: ChallengeId
     specifier: string
     amount: bigint
     recipientEthAddress: string
     handle: string
   }) {
-    const antiAbuseOracleAttestation = await new AntiAbuseOracle(
-      new Configuration({ basePath: antiAbuseOracle.endpoint })
-    ).getChallengeAttestation({
-      handle,
-      challengeId,
-      specifier,
-      amount: Number(wAUDIO(amount).toString())
-    })
-    if (!antiAbuseOracleAttestation.signature) {
+    const antiAbuseOracleAttestation =
+      await this.antiAbuseOracle.getChallengeAttestation({
+        handle,
+        challengeId,
+        specifier,
+        amount: Number(wAUDIO(amount).toString())
+      })
+    const antiAbuseOracleEthAddress =
+      await this.antiAbuseOracle.getWalletAddress()
+    if (!antiAbuseOracleAttestation.result) {
       throw new Error('Failed to get AAO attestation')
     }
     const aaoSubmitSecpInstruction =
@@ -213,19 +200,24 @@ export class ChallengesApi extends BaseAPI {
         specifier,
         amount,
         recipientEthAddress,
-        senderEthAddress: antiAbuseOracle.wallet,
-        senderSignature: antiAbuseOracleAttestation.signature
+        senderEthAddress: antiAbuseOracleEthAddress,
+        senderSignature: antiAbuseOracleAttestation.result
       })
     const aaoSubmitInstruction =
       await this.rewardManager.createSubmitAttestationInstruction({
         challengeId,
         specifier,
-        senderEthAddress: antiAbuseOracle.wallet
+        senderEthAddress: antiAbuseOracleEthAddress
       })
     const submitAAOTransaction = await this.rewardManager.buildTransaction({
       instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
     })
-    return await this.rewardManager.sendTransaction(submitAAOTransaction)
+    return {
+      transactionSignature: await this.rewardManager.sendTransaction(
+        submitAAOTransaction
+      ),
+      antiAbuseOracleEthAddress
+    }
   }
 
   private async submitDiscoveryAttestations({

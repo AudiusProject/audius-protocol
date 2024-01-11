@@ -5,21 +5,19 @@ import {
   Transaction
 } from '@solana/web3.js'
 import type { WalletAdapterProps } from '@solana/wallet-adapter-base'
-import type * as runtime from '../../api/generated/default/runtime'
 import { z } from 'zod'
 import type { Prettify } from '../../utils/prettify'
 import type { SolanaRelay } from './SolanaRelay'
-
-export type SolanaConfigInternal = {
-  /**
-   * Middleware for HTTP requests to the Solana relay service.
-   */
-  middleware?: runtime.Middleware[]
-}
+import { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 
 export type SolanaWalletAdapter = WalletAdapterProps
 
-export type SolanaConfig = Partial<SolanaConfigInternal>
+export type SolanaConfig = {
+  /**
+   * Selector that finds a healthy discovery node.
+   */
+  discoveryNodeSelector: DiscoveryNodeSelectorService
+}
 
 export type SolanaRelayService = SolanaRelay
 

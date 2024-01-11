@@ -51,7 +51,9 @@ const mswHandlers = [
       version: '1.2.3',
       block_difference: 0,
       network: {
-        discovery_nodes: [{ endpoint: discoveryNode, delegateOwnerWallet: '' }],
+        discovery_nodes_with_owner: [
+          { endpoint: discoveryNode, delegateOwnerWallet: '' }
+        ],
         content_nodes: [storageNodeA, storageNodeB]
       }
     }

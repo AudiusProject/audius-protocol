@@ -7,13 +7,21 @@ import type {
   AntiAbuseOracleNode,
   AntiAbuseOracleSelectorConfig
 } from './types'
+import {
+  ErrorContext,
+  Middleware,
+  RequestContext
+} from '../../api/generated/default'
+import { getPathFromUrl } from '../../utils/getPathFromUrl'
+import { AntiAbuseOracleHealthCheckResponse } from '../AntiAbuseOracle/types'
+import fetch from 'cross-fetch'
+import { promiseAny } from '../../utils/promiseAny'
 
 export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
   private readonly endpoints: string[]
   private readonly registeredAddresses: string[]
   private readonly logger: LoggerService
   private selectedNode: AntiAbuseOracleNode | null = null
-  private services: AntiAbuseOracleNode[] | null = null
 
   constructor(config?: AntiAbuseOracleSelectorConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -25,42 +33,68 @@ export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
     this.logger = configWithDefaults.logger
   }
 
+  public createMiddleware(): Middleware {
+    return {
+      pre: async (context: RequestContext) => {
+        let url = context.url
+        if (!url.startsWith('http')) {
+          const service = await this.getSelectedService()
+          url = `${service.endpoint}${context.url}`
+        }
+        return { url, init: context.init }
+      },
+      onError: async (context: ErrorContext) => {
+        // Reselect and retry on new healthy AAO
+        const path = getPathFromUrl(context.url)
+        this.selectedNode = null
+        const newService = await this.getSelectedService()
+        // Use context.fetch to retry just once.
+        return context.fetch(`${newService.endpoint}${path}`, context.init)
+      }
+    }
+  }
+
   /**
-   * Finds a healthy, registered Anti Abuse Oracle.
+   * Gets the currently selected Anti Abuse Oracle.
+   * @throws if no service is available.
    */
   public async getSelectedService() {
     if (!this.selectedNode) {
-      const services = await this.getServices()
-      const service = sample(services)
-      if (!service) {
-        throw new Error('All Anti Abuse Oracles are unhealthy')
-      }
-      this.selectedNode = service
+      this.selectedNode = await this.select()
     }
     return this.selectedNode
   }
 
-  private async getServices() {
-    if (this.services === null) {
-      this.services = []
-      await Promise.all(
+  /**
+   * Races the configured endpoints for the fastest healthy registered service.
+   * @throws if no services available.
+   */
+  private async select() {
+    try {
+      return await promiseAny(
         this.endpoints.map(async (endpoint) => {
           try {
-            const service = await this.checkHealth(endpoint)
-            this.services?.push(service)
+            return await this.getNode(endpoint)
           } catch (e) {
             this.logger.warn(`Anti Abuse Oracle ${endpoint} is unhealthy: ${e}`)
+            throw e
           }
         })
       )
+    } catch (e) {
+      throw new Error('All Anti Abuse Oracles are unhealthy')
     }
-    return this.services
   }
 
-  private async checkHealth(endpoint: string) {
+  /**
+   * Fetches the healthcheck for the given endpoint, and checks that the wallet
+   * is a registered Anti Abuse Oracle wallet.
+   * @returns the node wallet and endpoint if healthy
+   */
+  private async getNode(endpoint: string) {
     const response = await fetch(`${endpoint}/health_check`)
     if (response.ok) {
-      const json = await response.json()
+      const json: AntiAbuseOracleHealthCheckResponse = await response.json()
       const wallet = json.walletPubkey
       if (!this.registeredAddresses.includes(wallet)) {
         throw new Error(`Not registered: ${wallet}`)

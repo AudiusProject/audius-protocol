@@ -20,13 +20,12 @@ export class SolanaRelay extends BaseAPI {
    */
   private feePayer: PublicKey | null = null
 
-  constructor(config?: SolanaConfig) {
+  constructor(config: SolanaConfig) {
     super(
       new runtime.Configuration({
         fetchApi: fetch,
         basePath: '/solana',
-        headers: { 'Content-Type': 'application/json' },
-        middleware: config?.middleware
+        middleware: [config.discoveryNodeSelector.createMiddleware()]
       })
     )
   }
