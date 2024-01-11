@@ -22,7 +22,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { HandleField } from '../components/HandleField'
