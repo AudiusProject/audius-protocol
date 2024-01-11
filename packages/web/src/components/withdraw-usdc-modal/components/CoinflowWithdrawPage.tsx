@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react'
 import { useCoinflowAdapter, withdrawUSDCActions } from '@audius/common'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
 import { useDispatch } from 'react-redux'
-
 import { useUnmount } from 'react-use'
 
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =

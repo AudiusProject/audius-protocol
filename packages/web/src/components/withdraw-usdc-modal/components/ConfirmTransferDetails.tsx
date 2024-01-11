@@ -18,6 +18,7 @@ import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
+
 import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
 
 import styles from './ConfirmTransferDetails.module.css'

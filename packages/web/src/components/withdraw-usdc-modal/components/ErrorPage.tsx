@@ -14,6 +14,7 @@ import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
+
 import { ADDRESS, AMOUNT } from '../types'
 
 import styles from './ErrorPage.module.css'

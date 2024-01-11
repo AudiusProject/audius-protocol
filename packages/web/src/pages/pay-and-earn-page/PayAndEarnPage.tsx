@@ -1,11 +1,13 @@
+import { useEffect } from 'react'
+
+import { Status, buyUSDCActions, useUSDCBalance } from '@audius/common'
+import { useDispatch } from 'react-redux'
+
 import { useIsMobile } from 'utils/clientUtil'
 
 import { PayAndEarnPage as DesktopPayAndEarn } from './desktop/PayAndEarnPage'
 import { PayAndEarnPage as MobilePayAndEarn } from './mobile/PayAndEarnPage'
 import { PayAndEarnPageProps } from './types'
-import { useDispatch } from 'react-redux'
-import { useEffect } from 'react'
-import { Status, buyUSDCActions, useUSDCBalance } from '@audius/common'
 
 export const PayAndEarnPage = (props: PayAndEarnPageProps) => {
   const isMobile = useIsMobile()

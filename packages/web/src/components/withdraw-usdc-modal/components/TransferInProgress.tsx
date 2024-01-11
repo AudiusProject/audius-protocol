@@ -10,6 +10,7 @@ import { useField } from 'formik'
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Text } from 'components/typography'
+
 import { ADDRESS, AMOUNT } from '../types'
 
 import { TextRow } from './TextRow'

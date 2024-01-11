@@ -36,9 +36,9 @@ import { CoinflowWithdrawPage } from './components/CoinflowWithdrawPage'
 import { ConfirmTransferDetails } from './components/ConfirmTransferDetails'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
 import { ErrorPage } from './components/ErrorPage'
+import { PrepareTransfer } from './components/PrepareTransfer'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
-import { PrepareTransfer } from './components/PrepareTransfer'
 import { ADDRESS, AMOUNT, CONFIRM, METHOD, WithdrawFormValues } from './types'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
@@ -61,7 +61,7 @@ const WithdrawUSDCFormSchema = (
   userBalanceCents: number,
   minWithdrawBalanceCents: number
 ) => {
-  let amount = z
+  const amount = z
     .number()
     .lte(userBalanceCents, messages.errors.insufficientBalance)
 

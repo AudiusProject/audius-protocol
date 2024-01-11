@@ -6,10 +6,10 @@ import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal
 } from '@audius/common'
+import { Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Flex, Text } from '@audius/harmony'
 
 import styles from './PrepareTransfer.module.css'
 

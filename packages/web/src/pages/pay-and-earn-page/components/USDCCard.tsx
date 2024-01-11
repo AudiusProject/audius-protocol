@@ -21,11 +21,11 @@ import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 
 import { Icon } from 'components/Icon'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import styles from './USDCCard.module.css'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 const LEARN_MORE_LINK =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'

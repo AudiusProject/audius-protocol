@@ -24,8 +24,9 @@ import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import { ADDRESS, AMOUNT } from '../types'
 import { make, track } from 'services/analytics'
+
+import { ADDRESS, AMOUNT } from '../types'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'

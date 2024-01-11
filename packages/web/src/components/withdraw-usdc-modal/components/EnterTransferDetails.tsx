@@ -20,18 +20,19 @@ import {
   useFeatureFlag
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
+import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { Text } from 'components/typography'
-import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 import { make, track } from 'services/analytics'
+
+import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 
 import styles from './EnterTransferDetails.module.css'
 import { TextRow } from './TextRow'
-import { SegmentedControl } from '@audius/stems'
 
 const messages = {
   currentBalance: 'Current Balance',

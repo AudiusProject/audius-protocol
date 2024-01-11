@@ -62,7 +62,7 @@ const {
   getUserName
 } = accountSelectors
 
-const isStaging = true || process.env.VITE_ENVIRONMENT === 'staging'
+const isStaging = process.env.VITE_ENVIRONMENT === 'staging'
 
 const messages = {
   title: 'Settings',
