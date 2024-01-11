@@ -57,7 +57,6 @@ const { getTrack } = cacheTracksSelectors
 const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
-  editingToast: 'Saving changes...',
   editToast: 'Changes saved!'
 }
 
@@ -84,8 +83,6 @@ function* editPlaylistAsync(action) {
 
   const audiusBackend = yield getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield getContext('imageUtils')
-
-  yield put(toast({ content: messages.editingToast }))
 
   formFields.description = squashNewLines(formFields.description)
 

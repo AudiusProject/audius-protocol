@@ -146,7 +146,7 @@ const UploadChip = ({
   )
 
   return !isEditAlbumsEnabled || type === 'track' ? (
-    renderTile({ onClick: handleClickUpload })
+    renderTile({ onClick: handleCreateCollection })
   ) : (
     <PopupMenu
       items={items}
