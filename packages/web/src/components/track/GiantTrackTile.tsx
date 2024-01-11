@@ -15,7 +15,7 @@ import {
   getDogEarType,
   isContentUSDCPurchaseGated,
   CommonState,
-  cacheTracksSelectors
+  cacheTracksSelectors,
   publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { Box, Flex } from '@audius/harmony'
@@ -31,8 +31,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
-import { shallowEqual, useSelector } from 'react-redux'
-import { useDispatch } from 'react-redux'
+import { shallowEqual, useSelector, useDispatch } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
@@ -274,14 +273,14 @@ export const GiantTrackTile = ({
             isPublishing
               ? undefined
               : () => {
-                dispatch(
-                  openPublishTrackConfirmationModal({
-                    confirmCallback: () => {
-                      onMakePublic(trackId)
-                    }
-                  })
-                )
-              }
+                  dispatch(
+                    openPublishTrackConfirmationModal({
+                      confirmCallback: () => {
+                        onMakePublic(trackId)
+                      }
+                    })
+                  )
+                }
           }
         />
       )
@@ -311,8 +310,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isReposted
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
                 text={
@@ -321,7 +320,7 @@ export const GiantTrackTile = ({
                     : messages.repostButtonText
                 }
                 leftIcon={<IconRepost />}
-                onClick={isOwner ? () => { } : onRepost}
+                onClick={isOwner ? () => {} : onRepost}
               />
             </div>
           </Tooltip>
@@ -352,8 +351,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isSaved
-                      ? ButtonType.SECONDARY
-                      : ButtonType.COMMON
+                    ? ButtonType.SECONDARY
+                    : ButtonType.COMMON
                 }
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
@@ -514,10 +513,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      streamConditions,
-      isUnlisted:
-        isUnlisted && (!released || moment(released).isBefore(moment()))
-    })
+        streamConditions,
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
+      })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
