@@ -29,6 +29,7 @@ export const HarmonyTextField = forwardRef(
       debouncedValidationMs = 0,
       helperText,
       onChange: propsOnChange,
+      onBlur: propsOnBlur,
       ...other
     } = props
     const [field, { touched, error }, { setError }] = useField(name)
@@ -62,6 +63,7 @@ export const HarmonyTextField = forwardRef(
           if (transformValueOnChange) {
             e.target.value = transformValueOnChange(e.target.value)
           }
+          propsOnChange?.(e)
           field.onChange(e)
         }}
         onBlur={(e) => {
@@ -72,7 +74,7 @@ export const HarmonyTextField = forwardRef(
             e.target.value = transformValueOnBlur(e.target.value)
           }
           field.onChange(e)
-          propsOnChange?.(e)
+          propsOnBlur?.(e)
           field.onBlur(e)
         }}
         {...other}
