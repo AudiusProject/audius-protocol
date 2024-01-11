@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-RUN CI=true npm i
+RUN npm install
 
 # Build the project and its dependencies
 COPY turbo.json turbo.json
@@ -52,7 +52,7 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-RUN CI=true npm i
+RUN npm install
 
 # Build the project and its dependencies
 COPY turbo.json turbo.json
