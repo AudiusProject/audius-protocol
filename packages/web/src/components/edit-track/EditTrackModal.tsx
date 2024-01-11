@@ -75,13 +75,8 @@ const EditTrackModal = ({
 
     const confirmEdit = (metadata: Track, formFields: Track) => {
       const isDownloadable = !!formFields.download?.is_downloadable
-      const hasStems = pendingUploads.length > 0
-      const hasDownloadableAssets = isDownloadable || hasStems
-      const isDownloadGated =
-        hasDownloadableAssets && formFields.is_stream_gated
-      const downloadConditions = hasDownloadableAssets
-        ? formFields.stream_conditions
-        : null
+      const isDownloadGated = formFields.is_stream_gated
+      const downloadConditions = formFields.stream_conditions
       const formFieldsToUpdate = {
         ...formFields,
         is_downloadable: isDownloadable,

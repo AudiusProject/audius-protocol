@@ -21,7 +21,7 @@ export const GatedConditionsPill = ({
   unlocking,
   onClick,
   showIcon = true,
-  buttonSize = ButtonSize.SMALL
+  buttonSize = 'small'
 }: {
   streamConditions: AccessConditions
   unlocking: boolean

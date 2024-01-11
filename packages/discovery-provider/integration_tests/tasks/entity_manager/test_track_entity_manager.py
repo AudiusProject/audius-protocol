@@ -1135,7 +1135,7 @@ def test_access_conditions(app, mocker):
                 "requires_follow": False,
             },
         },
-        "InvalidStreamGatedDownloadableNotDownloadGated": {
+        "InvalidStreamGatedNotDownloadGated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 2,
             "owner_id": 1,
@@ -1152,7 +1152,7 @@ def test_access_conditions(app, mocker):
                 "requires_follow": False,
             },
         },
-        "InvalidStreamGatedDownloadableDifferentDownloadConditions": {
+        "InvalidStreamGatedDifferentDownloadConditions": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 3,
             "owner_id": 1,
@@ -1166,23 +1166,6 @@ def test_access_conditions(app, mocker):
             "download": {
                 "cid": "some-track-cid",
                 "is_downloadable": True,
-                "requires_follow": False,
-            },
-        },
-        "InvalidDownloadGatedNotDownloadable": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 4,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 5",
-            "is_stream_gated": False,
-            "stream_conditions": None,
-            "is_download_gated": True,
-            "download_conditions": {"tip_user_id": 1},
-            "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
                 "requires_follow": False,
             },
         },
@@ -1238,7 +1221,7 @@ def test_access_conditions(app, mocker):
             },
             "stem_of": {"parent_track_id": 1},
         },
-        "ValidDownloadableAndGated": {
+        "ValidGated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 8,
             "owner_id": 1,
@@ -1369,7 +1352,7 @@ def test_update_access_conditions(app, mocker):
     }
 
     metadatas = {
-        "CreateTrack1DownloadableNotGated": {
+        "CreateTrack1NotGated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET,
             "owner_id": 1,
@@ -1386,7 +1369,7 @@ def test_update_access_conditions(app, mocker):
                 "requires_follow": False,
             },
         },
-        "CreateTrack2DownloadableAndGated": {
+        "CreateTrack2Gated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
@@ -1403,7 +1386,7 @@ def test_update_access_conditions(app, mocker):
                 "requires_follow": False,
             },
         },
-        "CreateTrack3DownloadableAndPurchaseGated": {
+        "CreateTrack3PurchaseGated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 2,
             "owner_id": 1,
@@ -1492,7 +1475,7 @@ def test_update_access_conditions(app, mocker):
                 "requires_follow": False,
             },
         },
-        "ValidUpdateTrack2NotGatedNotDownloadable": {
+        "ValidUpdateTrack2NotGated": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
@@ -1532,10 +1515,10 @@ def test_update_access_conditions(app, mocker):
         },
     }
 
-    create_track1_json = json.dumps(metadatas["CreateTrack1DownloadableNotGated"])
-    create_track2_json = json.dumps(metadatas["CreateTrack2DownloadableAndGated"])
+    create_track1_json = json.dumps(metadatas["CreateTrack1NotGated"])
+    create_track2_json = json.dumps(metadatas["CreateTrack2Gated"])
     create_track3_json = json.dumps(
-        metadatas["CreateTrack3DownloadableAndPurchaseGated"]
+        metadatas["CreateTrack3PurchaseGated"]
     )
     invalid_update_track1_json_1 = json.dumps(
         metadatas["InvalidUpdateTrack1StreamGated"]
@@ -1550,7 +1533,7 @@ def test_update_access_conditions(app, mocker):
         metadatas["InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated"]
     )
     valid_update_track2_json = json.dumps(
-        metadatas["ValidUpdateTrack2NotGatedNotDownloadable"]
+        metadatas["ValidUpdateTrack2NotGated"]
     )
     valid_update_track3_json = json.dumps(
         metadatas["ValidUpdateTrack3DifferentConditionsPurchaseGated"]

@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import type { Color, Nullable, ShareModalContent } from '@audius/common'
+import type { Color, Nullable, ShareContent } from '@audius/common'
 import {
   encodeHashId,
   ErrorLevel,
@@ -120,7 +120,7 @@ export const useShareToStory = ({
   content,
   viewShotRef
 }: {
-  content: Nullable<ShareModalContent>
+  content: Nullable<ShareContent>
   viewShotRef: React.RefObject<ViewShot>
 }) => {
   const { toast } = useToast()

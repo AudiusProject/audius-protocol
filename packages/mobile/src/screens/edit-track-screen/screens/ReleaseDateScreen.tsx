@@ -74,22 +74,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-const data: ListSelectionData[] = [
-  {
-    label: ReleaseDateType.RELEASE_NOW,
-    value: ReleaseDateType.RELEASE_NOW,
-    disabled: false
-  },
-  {
-    label: ReleaseDateType.SCHEDULED_RELEASE,
-    value: ReleaseDateType.SCHEDULED_RELEASE,
-    disabled: false
-  }
-].filter(removeNullable)
-
 export const ScheduledReleaseRadioField = (props) => {
-  const { selected } = props
-  const isInitiallyUnlisted = props.route.params.isInitiallyUnlisted
+  const { selected, isInitiallyUnlisted } = props
   const { primary } = useThemeColors()
   const styles = useStyles()
   const theme = useThemeVariant()
@@ -243,7 +229,7 @@ export const ScheduledReleaseRadioField = (props) => {
 }
 
 export const ReleaseNowRadioField = (props) => {
-  const { selected } = props
+  const { selected, isInitiallyUnlisted } = props
   const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
     useField<Nullable<string>>('release_date')
   const styles = useStyles()
@@ -268,7 +254,12 @@ export const ReleaseNowRadioField = (props) => {
 
   return (
     <View style={styles.releaseNowContainer}>
-      <Text size='l' strength='strong' variant='body'>
+      <Text
+        size='l'
+        strength='strong'
+        variant='body'
+        color={!isInitiallyUnlisted ? 'subdued' : undefined}
+      >
         {messages.releaseNowRadio}
       </Text>
       {selected ? (
@@ -284,6 +275,7 @@ export const ReleaseNowRadioField = (props) => {
 }
 
 export const ReleaseDateScreen = (props) => {
+  const isInitiallyUnlisted = props.route.params.isInitiallyUnlisted
   const [{ value }] = useField<Nullable<string>>('release_date')
 
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
@@ -296,12 +288,13 @@ export const ReleaseDateScreen = (props) => {
     [ReleaseDateType.RELEASE_NOW]: (
       <ReleaseNowRadioField
         selected={releaseDateType === ReleaseDateType.RELEASE_NOW}
+        isInitiallyUnlisted={isInitiallyUnlisted}
       />
     ),
     [ReleaseDateType.SCHEDULED_RELEASE]: (
       <ScheduledReleaseRadioField
         selected={releaseDateType === ReleaseDateType.SCHEDULED_RELEASE}
-        {...props}
+        isInitiallyUnlisted={isInitiallyUnlisted}
       />
     )
   }
@@ -312,6 +305,18 @@ export const ReleaseDateScreen = (props) => {
     navigation.goBack()
     dispatch(reset())
   }, [navigation, dispatch])
+  const data: ListSelectionData[] = [
+    {
+      label: ReleaseDateType.RELEASE_NOW,
+      value: ReleaseDateType.RELEASE_NOW,
+      disabled: !isInitiallyUnlisted
+    },
+    {
+      label: ReleaseDateType.SCHEDULED_RELEASE,
+      value: ReleaseDateType.SCHEDULED_RELEASE,
+      disabled: false
+    }
+  ].filter(removeNullable)
 
   return (
     <ListSelectionScreen

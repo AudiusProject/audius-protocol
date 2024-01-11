@@ -13,7 +13,7 @@ import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 
-import { PlainButton, PlainButtonType } from 'components/button'
+import { PlainButton } from 'components/button'
 import { IconClose } from 'icons'
 
 import { useClickOutside } from '../../../hooks/useClickOutside'
@@ -395,7 +395,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
                   >
                     {hideCloseButton ? null : (
                       <PlainButton
-                        variant={PlainButtonType.SUBDUED}
+                        variant='subdued'
                         aria-label={messages.close}
                         onClick={handleClose}
                         iconLeft={IconClose}

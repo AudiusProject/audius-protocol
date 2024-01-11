@@ -1,11 +1,4 @@
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCart,
-  Flex,
-  Text
-} from '@audius/harmony'
+import { Button, IconCart, Flex, Text } from '@audius/harmony'
 
 import { Icon } from 'components/Icon'
 
@@ -44,11 +37,7 @@ export const NoTransactionsContent = ({
           {bodyText}
         </Text>
       </Flex>
-      <Button
-        variant={ButtonType.SECONDARY}
-        size={ButtonSize.SMALL}
-        onClick={onCTAClicked}
-      >
+      <Button variant='secondary' size='small' onClick={onCTAClicked}>
         {ctaText}
       </Button>
     </Flex>

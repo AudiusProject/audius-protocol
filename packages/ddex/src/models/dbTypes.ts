@@ -13,7 +13,7 @@ export type ReleaseRowData = {
   genre: string
   releaseDate: Date
   isUnlisted: boolean
-  isPremium: boolean
+  isStreamGated: boolean
   description: string
   license: string
   userId: string

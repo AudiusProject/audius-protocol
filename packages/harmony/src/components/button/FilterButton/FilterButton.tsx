@@ -13,12 +13,7 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { Box, Flex, Paper, Popup } from 'components/layout'
 import { IconCaretDown, IconCloseAlt } from 'icons'
 
-import {
-  FilterButtonOption,
-  FilterButtonProps,
-  FilterButtonSize,
-  FilterButtonType
-} from '../types'
+import { FilterButtonOption, FilterButtonProps } from './types'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
   function FilterButton(props, ref) {
@@ -27,8 +22,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label,
       options,
       onSelect,
-      variant = FilterButtonType.FILL_CONTAINER,
-      size = FilterButtonSize.DEFAULT,
+      variant = 'fillContainer',
+      size = 'default',
       iconRight = IconCaretDown,
       popupAnchorOrigin,
       popupTransformOrigin,
@@ -83,7 +78,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }
 
     const activeStyle =
-      variant !== FilterButtonType.FILL_CONTAINER || selection === null
+      variant !== 'fillContainer' || selection === null
         ? {
             border: `1px solid ${color.border.strong}`,
             background: color.background.surface2
@@ -96,7 +91,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       border: `1px solid ${color.border.strong}`,
       borderRadius: cornerRadius.s,
       color:
-        variant === FilterButtonType.FILL_CONTAINER && selection !== null
+        variant === 'fillContainer' && selection !== null
           ? color.special.white
           : color.text.default,
       gap: spacing.xs,
@@ -114,15 +109,14 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         transform: 'none'
       },
 
-      ...(size === FilterButtonSize.SMALL ? smallStyles : defaultStyles),
+      ...(size === 'small' ? smallStyles : defaultStyles),
       ...(isOpen ? activeStyle : {}),
-      ...(variant === FilterButtonType.FILL_CONTAINER && selection !== null
+      ...(variant === 'fillContainer' && selection !== null
         ? fillContainerStyles
         : {})
     }
 
-    const iconCss =
-      size === FilterButtonSize.SMALL ? smallIconStyles : defaultIconStyles
+    const iconCss = size === 'small' ? smallIconStyles : defaultIconStyles
 
     // Popup Styles
     const optionCss: CSSObject = {
@@ -155,7 +149,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     }
 
     const handleButtonClick = useCallback(() => {
-      if (variant === FilterButtonType.FILL_CONTAINER && selection !== null) {
+      if (variant === 'fillContainer' && selection !== null) {
         setSelection(null)
       } else {
         setIsOpen((isOpen: boolean) => !isOpen)
@@ -177,7 +171,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         }}
         onClick={handleButtonClick}
         iconRight={
-          variant === FilterButtonType.FILL_CONTAINER && selection !== null
+          variant === 'fillContainer' && selection !== null
             ? IconCloseAlt
             : iconRight
         }

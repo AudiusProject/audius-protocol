@@ -16,7 +16,7 @@ import {
   decimalIntegerToHumanReadable,
   Name
 } from '@audius/common'
-import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Button, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
@@ -162,7 +162,7 @@ export const EnterTransferDetails = () => {
         />
       </div>
       <Button
-        variant={ButtonType.SECONDARY}
+        variant='secondary'
         fullWidth
         disabled={
           !!(amountError || addressError || !address || balance?.isZero())

@@ -53,6 +53,7 @@ const getStories = () => {
     '../src/harmony-native/Shadows.stories.tsx': require('../src/harmony-native/foundations/shadows/Shadows.stories.tsx'),
     '../src/harmony-native/Typography.stories.tsx': require('../src/harmony-native/foundations/typography/Typography.stories.tsx'),
     '../src/harmony-native/Link.stories.tsx': require('../src/harmony-native/components/Link/Link.stories.tsx'),
+    '../src/harmony-native/TextLink.stories.tsx': require('../src/harmony-native/components/TextLink/TextLink.stories.tsx'),
     '../src/harmony-native/Box.stories.tsx': require('../src/harmony-native/components/layout/Box/Box.stories.tsx'),
     '../src/harmony-native/Flex.stories.tsx': require('../src/harmony-native/components/layout/Flex/Flex.stories.tsx'),
     '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx'),
