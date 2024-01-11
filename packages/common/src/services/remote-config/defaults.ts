@@ -48,7 +48,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.CACHE_ENTRY_TTL]: DEFAULT_ENTRY_TTL,
   [IntKeys.HANDLE_VERIFICATION_TIMEOUT_MILLIS]:
     DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS,
-  [IntKeys.COINFLOW_MAXIMUM_CENTS]: 1000
+  [IntKeys.COINFLOW_MAXIMUM_CENTS]: 1000,
+  [IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS]: 500
 }
 
 export const remoteConfigStringDefaults: {

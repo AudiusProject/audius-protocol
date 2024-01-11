@@ -16,8 +16,9 @@ import styles from './PrepareTransfer.module.css'
 const { getCoinflowState } = withdrawUSDCSelectors
 
 const messages = {
-  preparing: 'Preparing Transfer',
-  subtext: 'This will take a few moments...'
+  holdOn: 'Hold on!',
+  preparingTransfer:
+    "We're preparing your transfer. This could take a few moments."
 }
 
 export const PrepareTransfer = () => {
@@ -30,18 +31,25 @@ export const PrepareTransfer = () => {
     }
   }, [coinflowState])
   return (
-    <Flex justifyContent='center' alignItems='center' gap='m' p='4xl'>
+    <Flex
+      direction='column'
+      justifyContent='center'
+      alignItems='center'
+      gap='m'
+      p='m'
+    >
       <Flex alignItems='center' justifyContent='center'>
         <LoadingSpinner className={styles.spinner} />
       </Flex>
-      <Flex alignItems='start' justifyContent='center' direction='column'>
-        <Text variant='heading' size='m'>
-          {messages.preparing}
-        </Text>
-        <Text variant='body' size='m'>
-          {messages.subtext}
+      <Flex alignItems='center' justifyContent='center' gap='m'>
+        <i className='emoji xl raised-hand' />
+        <Text variant='heading' size='xl'>
+          {messages.holdOn}
         </Text>
       </Flex>
+      <Text variant='body' size='m'>
+        {messages.preparingTransfer}
+      </Text>
     </Flex>
   )
 }

@@ -18,12 +18,7 @@ import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import {
-  ADDRESS,
-  AMOUNT,
-  CONFIRM,
-  METHOD
-} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -44,8 +39,8 @@ const messages = {
   goBack: 'Go Back',
   confirm: 'Confirm Transfer',
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
-  coinflowDescription:
-    'Your funds will be sent to Coinflow for withdrawal to a bank account or debit card. Additional payment provider fees may apply.',
+  cashTransferDescription:
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
   guide: 'Guide to USDC Transfers on Audius'
 }
 
@@ -102,7 +97,7 @@ export const ConfirmTransferDetails = () => {
       <Divider style={{ margin: 0 }} />
       {methodValue === WithdrawalMethod.COINFLOW ? (
         <Text variant='body' size='medium'>
-          {messages.coinflowDescription}
+          {messages.cashTransferDescription}
         </Text>
       ) : (
         <>

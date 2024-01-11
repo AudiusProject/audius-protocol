@@ -21,16 +21,12 @@ import {
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import BN from 'bn.js'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { Text } from 'components/typography'
-import {
-  ADDRESS,
-  AMOUNT,
-  METHOD
-} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 import { make, track } from 'services/analytics'
 
 import styles from './EnterTransferDetails.module.css'
@@ -48,19 +44,20 @@ const messages = {
   continue: 'Continue',
   dollars: '$',
   transferMethod: 'Transfer Method',
-  sendToBank: 'Send To Bank',
-  manualTransfer: 'Manual Transfer',
-  coinflowDescription:
-    'Your funds will be sent to Coinflow for withdrawal to a bank account or debit card. Additional payment provider fees may apply.',
+  cash: 'Cash',
+  crypto: 'Crypto',
+  cashTransferDescription:
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
   usdc: '(USDC)'
 }
 
 const withdrawalMethodOptions = [
-  { key: WithdrawalMethod.COINFLOW, text: messages.sendToBank },
-  { key: WithdrawalMethod.MANUAL_TRANSFER, text: messages.manualTransfer }
+  { key: WithdrawalMethod.COINFLOW, text: messages.cash },
+  { key: WithdrawalMethod.MANUAL_TRANSFER, text: messages.crypto }
 ]
 
 export const EnterTransferDetails = () => {
+  const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
 
@@ -76,10 +73,10 @@ export const EnterTransferDetails = () => {
 
   const [
     { value },
-    { error: amountError },
+    _amountMeta,
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
-  const [{ value: methodValue }, _, { setValue: setMethod }] =
+  const [{ value: methodValue }, _methodMeta, { setValue: setMethod }] =
     useField<WithdrawalMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(value || balanceNumber)
@@ -95,17 +92,17 @@ export const EnterTransferDetails = () => {
   const handleAmountBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       setHumanizedValue(padDecimalValue(e.target.value))
-      setAmountTouched(true)
     },
-    [setHumanizedValue, setAmountTouched]
+    [setHumanizedValue]
   )
 
-  const [{ value: address }, { error: addressError }] = useField(ADDRESS)
+  const [{ value: address }, _addressMeta, { setTouched: setAddressTouched }] =
+    useField(ADDRESS)
 
   const disableContinue =
     methodValue === WithdrawalMethod.COINFLOW
-      ? !!(amountError || balance?.isZero())
-      : !!(amountError || addressError || !address || balance?.isZero())
+      ? !!balance?.isZero()
+      : !!(!address || balance?.isZero())
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -121,9 +118,17 @@ export const EnterTransferDetails = () => {
     [analyticsBalance]
   )
 
-  const handleContinue = useCallback(() => {
-    setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
-  }, [setData])
+  const handleContinue = useCallback(async () => {
+    try {
+      setAmountTouched(true)
+      if (methodValue === WithdrawalMethod.MANUAL_TRANSFER) {
+        setAddressTouched(true)
+      }
+      const errors = await validateForm()
+      if (errors[AMOUNT] || errors[ADDRESS]) return
+      setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
+    } catch {}
+  }, [setData, methodValue, validateForm, setAmountTouched, setAddressTouched])
 
   return (
     <div className={styles.root}>
@@ -160,7 +165,7 @@ export const EnterTransferDetails = () => {
       ) : null}
       {methodValue === WithdrawalMethod.COINFLOW ? (
         <Text variant='body' size='medium'>
-          {messages.coinflowDescription}
+          {messages.cashTransferDescription}
         </Text>
       ) : (
         <div className={styles.destination}>
