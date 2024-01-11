@@ -6,9 +6,13 @@ import {
   Track,
   cacheUsersSelectors,
   toastActions,
-  useGetSuggestedTracks,
-  useGetPlaylistById
+  useGetSuggestedPlaylistTracks,
+  useGetPlaylistById,
+  useGetTracksByIds,
+  accountSelectors,
+  useGetCurrentUserId
 } from '@audius/common'
+import type { SuggestedTrack } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -34,6 +38,7 @@ import { useSelector } from 'utils/reducer'
 import styles from './SuggestedTracks.module.css'
 
 const { getUser } = cacheUsersSelectors
+const { getUserId } = accountSelectors
 const { toast } = toastActions
 
 const contentHeight = 423
@@ -50,7 +55,7 @@ const messages = {
 type SuggestedTrackProps = {
   collectionId: ID
   track: Track
-  onAddTrack: (trackId: ID, collectionId: ID) => void
+  onAddTrack: (trackId: ID) => void
 }
 
 const SuggestedTrack = (props: SuggestedTrackProps) => {
@@ -66,14 +71,14 @@ const SuggestedTrack = (props: SuggestedTrackProps) => {
   const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
 
   const handleAddTrack = useCallback(() => {
-    onAddTrack(track_id, collectionId)
+    onAddTrack(track_id)
     dispatch(
       toast({
         content: messages.trackAdded(collection.is_album),
         timeout: 1500
       })
     )
-  }, [onAddTrack, track_id, collectionId, dispatch, collection.is_album])
+  }, [onAddTrack, track_id, dispatch, collection.is_album])
 
   return (
     <div className={styles.suggestedTrack}>
@@ -115,13 +120,15 @@ const SuggestedTrackSkeleton = () => {
 
 type SuggestedTracksProps = {
   collectionId: ID
+  suggestedTracks: SuggestedTrack[]
+  onRefresh: () => void
+  onAddTrack: (trackId: ID) => void
+  isRefreshing: boolean
 }
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { collectionId } = props
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedTracks(collectionId)
-
+  const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
+    props
   const [isExpanded, toggleIsExpanded] = useToggle(false)
 
   const divider = <Divider className={styles.trackDivider} />

@@ -1,11 +1,8 @@
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
 import type { ID, Track } from '@audius/common'
-import {
-  SquareSizes,
-  cacheUsersSelectors,
-  useGetSuggestedPlaylistTracks
-} from '@audius/common'
+import { SquareSizes, cacheUsersSelectors } from '@audius/common'
+import type { SuggestedTrack } from '@audius/common'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
@@ -22,9 +19,9 @@ import {
 } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { TrackImage } from '../image/TrackImage'
-import { Skeleton } from '../skeleton'
-import { UserBadges } from '../user-badges'
+import { TrackImage } from '../../image/TrackImage'
+import { Skeleton } from '../../skeleton'
+import { UserBadges } from '../../user-badges'
 
 const { getUser } = cacheUsersSelectors
 
@@ -142,15 +139,16 @@ const SuggestedTrackSkeleton = () => {
 }
 
 type SuggestedTracksProps = {
-  collectionId: ID
+  suggestedTracks: SuggestedTrack[]
+  onRefresh: () => void
+  onAddTrack: (trackId: ID) => void
+  isRefreshing: boolean
 }
 
 // TODO: add files for SuggestedAlbumTracks and SuggestedPlaylistTracks
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { collectionId } = props
+  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } = props
   const styles = useStyles()
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedPlaylistTracks(collectionId) // TODO: bind the collectionId within the hook
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)
 

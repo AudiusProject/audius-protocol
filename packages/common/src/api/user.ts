@@ -90,6 +90,7 @@ const userApi = createApi({
           id: userId.toString(),
           userId: currentUserId?.toString()
         })
+        console.log('tracksByUser', tracks)
         return tracks
       },
       options: {
