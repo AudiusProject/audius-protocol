@@ -1,25 +1,55 @@
 # Build stage for DDEX frontend
 FROM node:18.17-slim AS frontend-dist
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ 
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
 COPY ddex-frontend/package*.json ddex-frontend/*config*.js ddex-frontend/tsconfig*.json ddex-frontend/vite.config.ts ./
-RUN npm install
 COPY ddex-frontend/src ./src
 COPY ddex-frontend/public ./public
 COPY ddex-frontend/index.html .
-RUN npm run build
+
+RUN npm install turbo --global
+RUN turbo prune --scope=@audius/ddex-frontend --docker
+
+RUN CI=true npm i
+
+# Build the project and its dependencies
+# COPY turbo.json turbo.json
+RUN npx turbo run build --filter=@audius/ddex-frontend
 
 # Build stage for DDEX backend
 FROM node:18.17-slim AS backend-dist
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ 
 WORKDIR /backend
 COPY ddex/package*.json ddex/tsconfig.json ./
-RUN npm install
 COPY ddex/src ./src
-RUN npm run build
+
+RUN npm install turbo --global
+RUN turbo prune --scope=@audius/ddex --docker
+
+RUN CI=true npm i
+
+# Build the project and its dependencies
+# COPY turbo.json turbo.json
+RUN npx turbo run build --filter=@audius/ddex
 
 # Final stage
 FROM node:18.17-slim
