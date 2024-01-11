@@ -1,12 +1,16 @@
 import { useState, DragEvent } from 'react'
+
+import { Button, ButtonType, ButtonSize, Box, Flex } from '@audius/harmony'
+import type {
+  DecodedUserToken,
+  AudiusSdk
+} from '@audius/sdk/dist/sdk/index.d.ts'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAudiusSdk } from 'providers/AudiusSdkProvider'
-import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
-import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
-import Uploads from 'components/Uploads'
-import Releases from 'components/Releases'
-import { Button, Box, Flex } from '@audius/harmony'
 import cn from 'classnames'
+
+import Releases from 'components/Releases'
+import Uploads from 'components/Uploads'
+import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 
 import styles from './DDEX.module.css'
 
@@ -28,25 +32,25 @@ const validXmlFile = (file: File) => {
 const ManageAudiusAccount = ({
   currentUser,
   onChangeUser,
-  oauthError,
+  oauthError
 }: {
   currentUser: DecodedUserToken
   onChangeUser: () => void
   oauthError: string | null
 }) => {
   return (
-    <Flex justifyContent="space-between" alignItems="center">
+    <Flex justifyContent='space-between' alignItems='center'>
       <div>{`Logged in as @${currentUser.handle}`}</div>
       <Button variant="secondary" onClick={onChangeUser}>
         Switch users
       </Button>
-      {oauthError && <div className="text-red-600">{oauthError}</div>}
+      {oauthError && <div className='text-red-600'>{oauthError}</div>}
     </Flex>
   )
 }
 
 const XmlImporter = ({
-  audiusSdk,
+  audiusSdk
 }: {
   audiusSdk: AudiusSdk | undefined | null
 }) => {
@@ -122,7 +126,7 @@ const XmlImporter = ({
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: formData
       })
 
       if (!response.ok) {
@@ -130,6 +134,7 @@ const XmlImporter = ({
       }
 
       const result = await response.json()
+      // eslint-disable-next-line no-console
       console.log(JSON.stringify(result))
       setUploadSucceeded(true)
       queryClient.invalidateQueries({ queryKey: ['uploads'] })
@@ -141,7 +146,7 @@ const XmlImporter = ({
   }
 
   if (!audiusSdk) {
-    return <div className="text-red-500">{'Error loading XML importer'}</div>
+    return <div className='text-red-500'>{'Error loading XML importer'}</div>
   } else {
     return (
       <>
@@ -158,17 +163,17 @@ const XmlImporter = ({
         >
           <span className={styles.fileDropTextContainer}>
             <svg
-              xmlns="http://www.w3.org/2000/svg"
+              xmlns='http://www.w3.org/2000/svg'
               className={styles.fileDropIcon}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+              strokeWidth='2'
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
               />
             </svg>
             <span>
@@ -177,9 +182,9 @@ const XmlImporter = ({
             </span>
           </span>
           <input
-            type="file"
-            name="file_upload"
-            accept="text/xml,application/xml"
+            type='file'
+            name='file_upload'
+            accept='text/xml,application/xml'
             className={styles.fileDropChooseFile}
             onChange={(e) => handleFileChange(e.target.files![0])}
           />
@@ -187,7 +192,7 @@ const XmlImporter = ({
         {selectedFile && (
           <>
             <div>Selected file:</div>
-            <Flex gap="xs">
+            <Flex gap='xs'>
               <div>{selectedFile.name}</div>
               <Button
                 variant="destructive"
@@ -235,22 +240,22 @@ const Ddex = () => {
   // }
 
   return (
-    <Box m="xl">
-      <Flex gap="xs" direction="column">
+    <Box m='xl'>
+      <Flex gap='xs' direction='column'>
         {!audiusSdk ? (
           'loading...'
         ) : !currentUser ? (
           <Flex
-            gap="m"
-            direction="column"
-            justifyContent="center"
-            alignItems="center"
+            gap='m'
+            direction='column'
+            justifyContent='center'
+            alignItems='center'
           >
             <Button onClick={handleOauth}>Login with Audius</Button>
             {oauthError && <div className={styles.errorText}>{oauthError}</div>}
           </Flex>
         ) : (
-          <Flex gap="xl" direction="column">
+          <Flex gap='xl' direction='column'>
             <ManageAudiusAccount
               currentUser={currentUser}
               onChangeUser={handleOauth}
@@ -267,10 +272,10 @@ const Ddex = () => {
 
             {isAdmin && (
               <>
-                <Flex direction="column" gap="s">
+                <Flex direction='column' gap='s'>
                   <Uploads />
                 </Flex>
-                <Flex direction="column" gap="s">
+                <Flex direction='column' gap='s'>
                   <Releases />
                 </Flex>
               </>

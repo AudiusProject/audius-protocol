@@ -1,17 +1,11 @@
-import Hashids from 'hashids'
-import type {
-  AudiusSdk as AudiusSdkType,
-  ServicesConfig,
-  DecodedUserToken,
-} from '@audius/sdk/dist/sdk/index.d.ts'
 import {
   ReactNode,
   createContext,
   useContext,
   useState,
-  useEffect,
+  useEffect
 } from 'react'
-import { useEnvVars } from './EnvVarsProvider'
+
 import {
   AppAuth,
   DiscoveryNodeSelector,
@@ -21,9 +15,18 @@ import {
   developmentConfig,
   stagingConfig,
   productionConfig,
-  sdk,
+  sdk
 } from '@audius/sdk'
+import type {
+  AudiusSdk as AudiusSdkType,
+  ServicesConfig,
+  DecodedUserToken
+} from '@audius/sdk/dist/sdk/index.d.ts'
+import Hashids from 'hashids'
+
 import { FeatureFlags } from '../utils/constants'
+
+import { useEnvVars } from './EnvVarsProvider'
 import { useRemoteConfig } from './RemoteConfigProvider'
 
 const HASH_SALT = 'azowernasdfoia'
@@ -45,7 +48,7 @@ const AudiusSdkContext = createContext<AudiusSdkContextType>({
   currentUser: null,
   isAdmin: false,
   oauthError: '',
-  isLoading: true,
+  isLoading: true
 })
 
 export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
@@ -80,11 +83,11 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     if (decodedUserId) {
       const uploadsAllowed = getFeatureEnabled({
         flag: FeatureFlags.DDEX_UPLOADS,
-        userId: decodedUserId,
+        userId: decodedUserId
       })
       const ddexAdmin = getFeatureEnabled({
         flag: FeatureFlags.DDEX_ADMIN,
-        userId: decodedUserId,
+        userId: decodedUserId
       })
       if (!uploadsAllowed && !ddexAdmin) {
         alert('401: User not authorized for DDEX')
@@ -122,13 +125,13 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
 
       // Init SDK
       const discoveryNodeSelector = new DiscoveryNodeSelector({
-        initialSelectedNode,
+        initialSelectedNode
       })
       const storageNodeSelector = new StorageNodeSelector({
         auth: new AppAuth(envVars.ddexKey),
-        discoveryNodeSelector: discoveryNodeSelector,
+        discoveryNodeSelector,
         bootstrapNodes: config.storageNodes,
-        logger,
+        logger
       })
       const sdkInst = sdk({
         services: {
@@ -139,13 +142,13 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
             contractAddress: config.entityManagerContractAddress,
             identityServiceUrl: config.identityServiceUrl,
             useDiscoveryRelay: true,
-            logger,
+            logger
           }),
           storageNodeSelector,
-          logger,
+          logger
         },
         apiKey: envVars.ddexKey,
-        appName: 'DDEX Demo',
+        appName: 'DDEX Demo'
       })
 
       let env: OAuthEnv = 'production'
@@ -160,7 +163,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         },
         errorCallback: (error) => {
           setOauthError(error)
-        },
+        }
       })
       setAudiusSdk(sdkInst as AudiusSdkType)
     }
@@ -169,7 +172,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    void initSdk()
+    initSdk()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [didInit])
 
@@ -178,7 +181,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     currentUser,
     isAdmin,
     oauthError,
-    isLoading,
+    isLoading
   }
   return (
     <AudiusSdkContext.Provider value={contextValue}>
@@ -187,5 +190,4 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAudiusSdk = () => useContext(AudiusSdkContext)

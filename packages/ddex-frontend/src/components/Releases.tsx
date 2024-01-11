@@ -1,6 +1,8 @@
 import { useState } from 'react'
+
+import { Button, ButtonType, ButtonSize, Box, Flex } from '@audius/harmony'
+
 import useReleases from 'providers/useReleases'
-import { Button, Box, Flex } from '@audius/harmony'
 
 const Releases = () => {
   const [statusFilter, setStatusFilter] = useState('')
@@ -30,13 +32,13 @@ const Releases = () => {
 
   return (
     <Box>
-      <Flex direction="column" gap="s">
+      <Flex direction='column' gap='s'>
         <h1>Releases</h1>
-        <Flex alignItems="center" gap="m">
+        <Flex alignItems='center' gap='m'>
           <div>
             <input
-              type="checkbox"
-              id="successFilter"
+              type='checkbox'
+              id='successFilter'
               checked={statusFilter === 'success'}
               onChange={() =>
                 setStatusFilter((curFilter) =>
@@ -44,12 +46,12 @@ const Releases = () => {
                 )
               }
             />
-            <label htmlFor="successFilter">Success</label>
+            <label htmlFor='successFilter'>Success</label>
           </div>
           <div>
             <input
-              type="checkbox"
-              id="pendingFilter"
+              type='checkbox'
+              id='pendingFilter'
               checked={statusFilter === 'pending'}
               onChange={() =>
                 setStatusFilter((curFilter) =>
@@ -57,12 +59,12 @@ const Releases = () => {
                 )
               }
             />
-            <label htmlFor="pendingFilter">Pending</label>
+            <label htmlFor='pendingFilter'>Pending</label>
           </div>
           <div>
             <input
-              type="checkbox"
-              id="errorFilter"
+              type='checkbox'
+              id='errorFilter'
               checked={statusFilter === 'error'}
               onChange={() =>
                 setStatusFilter((curFilter) =>
@@ -70,7 +72,7 @@ const Releases = () => {
                 )
               }
             />
-            <label htmlFor="errorFilter">Error</label>
+            <label htmlFor='errorFilter'>Error</label>
           </div>
         </Flex>
         {isPending && <div>Loading...</div>}
@@ -102,7 +104,7 @@ const Releases = () => {
           </table>
         )}
 
-        <Flex justifyContent="space-between">
+        <Flex justifyContent='space-between'>
           <Button
             variant="tertiary"
             size="small"
