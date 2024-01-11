@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import type { ID, ButtonType as DownloadButtonType } from '@audius/common'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Button } from 'app/components/core'
@@ -122,8 +122,7 @@ export const TrackScreenDownloadButtons = ({
     trackId,
     onDownload: handleDownload,
     isOwner,
-    following,
-    useSelector
+    following
   })
 
   const shouldHide = buttons.length === 0

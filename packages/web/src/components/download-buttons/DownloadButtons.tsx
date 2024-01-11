@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
 import {
@@ -168,8 +168,7 @@ const DownloadButtons = ({
     isOwner,
     onDownload,
     onNotLoggedInClick,
-    trackId,
-    useSelector
+    trackId
   })
   const shouldHide = buttons.length === 0
   if (shouldHide) {
