@@ -7,7 +7,8 @@ import {
 } from '@audius/common'
 import {
   setLinkedSocialOnFirstPage,
-  setValueField
+  setValueField,
+  startSignUp
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -54,6 +55,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
+      dispatch(startSignUp())
       navigation.navigate('CreatePassword', { email })
     },
     [dispatch, navigation]
@@ -93,7 +95,9 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     >
       {({ handleSubmit }) => (
         <>
-          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={

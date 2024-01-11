@@ -145,7 +145,9 @@ export const PickHandleScreen = () => {
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <Page>
-          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={messages.description}
