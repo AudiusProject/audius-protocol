@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import useUploads from 'providers/useUploads'
-import { Button, ButtonType, ButtonSize, Box, Flex } from '@audius/harmony'
+import { Button, Box, Flex } from '@audius/harmony'
 
 const Uploads = () => {
   const [statusFilter, setStatusFilter] = useState('')
@@ -90,16 +90,16 @@ const Uploads = () => {
 
         <Flex justifyContent="space-between">
           <Button
-            variant={ButtonType.TERTIARY}
-            size={ButtonSize.SMALL}
+            variant="tertiary"
+            size="small"
             onClick={handlePrev}
             disabled={!prevId}
           >
             Previous
           </Button>
           <Button
-            variant={ButtonType.TERTIARY}
-            size={ButtonSize.SMALL}
+            variant="tertiary"
+            size="small"
             onClick={handleNext}
             disabled={!nextId && (!data || data.length === 0)}
           >

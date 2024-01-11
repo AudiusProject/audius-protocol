@@ -6,7 +6,8 @@ import { Slot, Slottable } from '@radix-ui/react-slot'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
-import type { BaseButtonProps } from '../types'
+
+import type { BaseButtonProps } from './types'
 
 /**
  * Base component for Harmony buttons. Not intended to be used directly. Use

@@ -3,7 +3,7 @@ import { useTheme, type CSSObject } from '@emotion/react'
 import type { IconComponent, IconProps } from 'components/icon'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { BaseButtonProps } from '../types'
+import type { BaseButtonProps } from '../BaseButton/types'
 
 export type IconButtonProps = {
   icon: IconComponent

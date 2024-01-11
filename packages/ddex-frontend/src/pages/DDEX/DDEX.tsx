@@ -5,7 +5,7 @@ import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
 import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
 import Uploads from 'components/Uploads'
 import Releases from 'components/Releases'
-import { Button, ButtonType, ButtonSize, Box, Flex } from '@audius/harmony'
+import { Button, Box, Flex } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './DDEX.module.css'
@@ -37,7 +37,7 @@ const ManageAudiusAccount = ({
   return (
     <Flex justifyContent="space-between" alignItems="center">
       <div>{`Logged in as @${currentUser.handle}`}</div>
-      <Button variant={ButtonType.SECONDARY} onClick={onChangeUser}>
+      <Button variant="secondary" onClick={onChangeUser}>
         Switch users
       </Button>
       {oauthError && <div className="text-red-600">{oauthError}</div>}
@@ -190,8 +190,8 @@ const XmlImporter = ({
             <Flex gap="xs">
               <div>{selectedFile.name}</div>
               <Button
-                variant={ButtonType.DESTRUCTIVE}
-                size={ButtonSize.SMALL}
+                variant="destructive"
+                size="small"
                 onClick={clearSelection}
               >
                 x

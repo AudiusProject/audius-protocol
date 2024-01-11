@@ -4,14 +4,7 @@ import {
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
-import {
-  Flex,
-  Paper,
-  PlainButton,
-  PlainButtonType,
-  Text,
-  useTheme
-} from '@audius/harmony'
+import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -161,10 +154,7 @@ export const FinishProfilePage = () => {
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
-                <PlainButton
-                  variant={PlainButtonType.SUBDUED}
-                  onClick={history.goBack}
-                >
+                <PlainButton variant='subdued' onClick={history.goBack}>
                   {messages.goBack}
                 </PlainButton>
               )

@@ -7,7 +7,6 @@ import {
 import {
   Box,
   Button,
-  ButtonType,
   Divider,
   Flex,
   IconArrowRight,
@@ -155,7 +154,7 @@ export const CreateEmailPage = () => {
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
-              variant={ButtonType.PRIMARY}
+              variant='primary'
               type='submit'
               fullWidth
               iconRight={IconArrowRight}
