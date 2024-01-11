@@ -32,6 +32,7 @@ models/FullSubscribersResponse.ts
 models/FullSupporter.ts
 models/FullSupporting.ts
 models/FullTip.ts
+models/FullTopListener.ts
 models/FullTrackResponse.ts
 models/FullTracks.ts
 models/FullTracksResponse.ts

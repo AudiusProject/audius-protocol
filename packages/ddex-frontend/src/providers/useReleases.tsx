@@ -49,10 +49,10 @@ const useReleases = (statusFilter = '', nextCursor = '', prevCursor = '') => {
         release_date: new Date(release.release_date),
         data: {
           ...JSON.parse(release.data as unknown as string),
-          releaseDate: new Date(release.data.releaseDate),
-        },
+          releaseDate: new Date(release.data.releaseDate)
+        }
       }))
-    },
+    }
   })
 }
 
