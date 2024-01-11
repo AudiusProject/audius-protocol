@@ -142,7 +142,6 @@ export type SignOnScreenParams = {
  */
 export const SignOnScreen = ({ route }) => {
   const { params } = route
-  const [email, setEmail] = useState('')
   const [screen, setScreen] = useState<SignOnScreenType>(params.screen)
   const previousScreen = usePrevious(screen)
 
@@ -151,8 +150,6 @@ export const SignOnScreen = ({ route }) => {
   }, [params])
 
   const screenProps = {
-    email,
-    onChangeEmail: setEmail,
     onChangeScreen: setScreen
   }
 

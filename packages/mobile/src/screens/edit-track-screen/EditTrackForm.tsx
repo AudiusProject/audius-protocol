@@ -144,8 +144,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <TagField />
               <DescriptionField />
               <SubmenuList removeBottomDivider>
-                <AccessAndSaleField />
                 {isScheduledReleasesEnabled ? <ReleaseDateField /> : <></>}
+                <AccessAndSaleField />
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>

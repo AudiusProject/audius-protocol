@@ -3,8 +3,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useUSDCBalance, accountSelectors, Status } from '@audius/common'
 import {
   Button,
-  ButtonSize,
-  ButtonType,
   Flex,
   IconCloudDownload,
   Paper,
@@ -169,8 +167,8 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
                 </Flex>
                 <Button
                   onClick={tables[selectedTable].downloadCSV}
-                  variant={ButtonType.SECONDARY}
-                  size={ButtonSize.SMALL}
+                  variant='secondary'
+                  size='small'
                   iconLeft={IconCloudDownload}
                   disabled={tables[selectedTable].isDownloadCSVButtonDisabled}
                 >

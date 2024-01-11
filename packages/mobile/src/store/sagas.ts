@@ -8,6 +8,7 @@ import {
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
@@ -196,6 +197,7 @@ export default function* rootSaga() {
     ...reachabilitySagas(),
     ...searchSagas(),
     ...publishPlaylistConfirmationModalSagas(),
+    ...publishTrackConfirmationModalSagas(),
     ...toastSagas(),
 
     initKeyboardEvents,

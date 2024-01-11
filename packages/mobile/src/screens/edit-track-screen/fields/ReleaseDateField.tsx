@@ -1,4 +1,4 @@
-import { getLocalTimezone, type Nullable } from '@audius/common'
+import { dayjs, type Nullable } from '@audius/common'
 import { useField } from 'formik'
 import moment from 'moment'
 
@@ -15,7 +15,7 @@ export const ReleaseDateField = (props) => {
   if (value) {
     if (moment(value).isAfter(moment())) {
       formattedValue =
-        moment(value).format('M/D/YY @ h:mm A') + ' ' + getLocalTimezone()
+        moment(value).format('M/D/YY @ h:mm A') + ' ' + dayjs().format('z')
     } else {
       formattedValue = moment(value).format('M/D/YY')
     }

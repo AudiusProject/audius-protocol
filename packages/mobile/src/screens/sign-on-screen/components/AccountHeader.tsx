@@ -7,7 +7,7 @@ import {
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import { isEmpty } from 'lodash'
-import type { ImageURISource } from 'react-native'
+import { Pressable, type ImageURISource } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -155,23 +155,25 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const { profilePicture, onSelectProfilePicture } = props
 
   return (
-    <Avatar
-      accessibilityLabel='Profile Picture'
-      size='xl'
-      variant='strong'
-      source={profilePicture ?? { uri: undefined }}
-    >
-      {onSelectProfilePicture ? (
-        <IconButton
-          accessibilityLabel={messages.selectProfilePicture}
-          icon={IconCamera}
-          size='2xl'
-          color='staticWhite'
-          shadow='near'
-          onPress={onSelectProfilePicture}
-        />
-      ) : null}
-    </Avatar>
+    <Pressable onPress={onSelectProfilePicture}>
+      <Avatar
+        accessibilityLabel='Profile Picture'
+        size='xl'
+        variant='strong'
+        source={profilePicture ?? { uri: undefined }}
+      >
+        {onSelectProfilePicture && !profilePicture ? (
+          <IconButton
+            accessibilityLabel={messages.selectProfilePicture}
+            icon={IconCamera}
+            size='2xl'
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectProfilePicture}
+          />
+        ) : null}
+      </Avatar>
+    </Pressable>
   )
 }
 

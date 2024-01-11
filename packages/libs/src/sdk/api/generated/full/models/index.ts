@@ -24,6 +24,7 @@ export * from './FullSubscribersResponse';
 export * from './FullSupporter';
 export * from './FullSupporting';
 export * from './FullTip';
+export * from './FullTopListener';
 export * from './FullTrackResponse';
 export * from './FullTracks';
 export * from './FullTracksResponse';

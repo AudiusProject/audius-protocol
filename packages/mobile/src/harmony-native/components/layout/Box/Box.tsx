@@ -55,6 +55,7 @@ export const Box = styled(View, {
     ml,
     mr,
     mb,
+    backgroundColor,
     border,
     borderTop,
     borderRight,
@@ -100,6 +101,9 @@ export const Box = styled(View, {
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],
+      backgroundColor:
+        (backgroundColor && theme.color.background[backgroundColor]) ??
+        backgroundColor,
       // Native doesn't have a border:"" shorthand
       ...(border && {
         borderStyle: 'solid',

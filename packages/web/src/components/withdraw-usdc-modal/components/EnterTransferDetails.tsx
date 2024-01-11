@@ -19,7 +19,7 @@ import {
   FeatureFlags,
   useFeatureFlag
 } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
@@ -191,7 +191,7 @@ export const EnterTransferDetails = () => {
       )}
 
       <Button
-        variant={ButtonType.SECONDARY}
+        variant='secondary'
         fullWidth
         disabled={disableContinue}
         onClick={handleContinue}

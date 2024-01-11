@@ -7,7 +7,8 @@ import {
 } from '@audius/common'
 import {
   setLinkedSocialOnFirstPage,
-  setValueField
+  setValueField,
+  startSignUp
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -37,10 +38,10 @@ type SignUpEmailValues = {
 }
 
 export const CreateEmailScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail, onChangeScreen } = props
+  const { onChangeScreen } = props
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
-  const existingEmailValue = useSelector(getEmailField) || email
+  const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
   const initialValues = {
@@ -54,6 +55,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
+      dispatch(startSignUp())
       navigation.navigate('CreatePassword', { email })
     },
     [dispatch, navigation]
@@ -93,7 +95,9 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     >
       {({ handleSubmit }) => (
         <>
-          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={
@@ -110,7 +114,6 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               name='email'
               label={messages.emailLabel}
               noGutter
-              onChangeText={onChangeEmail}
               onChangeScreen={onChangeScreen}
             />
             <Divider>

@@ -1,3 +1,4 @@
+import { getLocalTimezone } from '@audius/common'
 import moment from 'moment'
 import { Nullable } from 'vitest'
 
@@ -29,12 +30,14 @@ export const formatCalendarTime = (
     return 'Today'
   }
 
-  return moment(time).calendar(undefined, {
-    sameDay: formatReleaseMessage(time, '[Today]', prefixMessage),
-    nextDay: formatReleaseMessage(time, '[Tomorrow]', prefixMessage),
-    nextWeek: formatReleaseMessage(time, 'dddd', prefixMessage),
-    lastDay: '[Yesterday]',
-    lastWeek: '[Last] dddd',
-    sameElse: formatReleaseMessage(time, 'M/D/YYYY', prefixMessage)
-  })
+  return (
+    moment(time).calendar(undefined, {
+      sameDay: formatReleaseMessage(time, '[Today]', prefixMessage),
+      nextDay: formatReleaseMessage(time, '[Tomorrow]', prefixMessage),
+      nextWeek: formatReleaseMessage(time, 'dddd', prefixMessage),
+      lastDay: '[Yesterday]',
+      lastWeek: '[Last] dddd',
+      sameElse: formatReleaseMessage(time, 'M/D/YYYY', prefixMessage)
+    }) + (moment(time).isAfter(moment()) ? ' ' + getLocalTimezone() : '')
+  )
 }

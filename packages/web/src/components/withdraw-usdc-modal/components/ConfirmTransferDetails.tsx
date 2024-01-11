@@ -9,7 +9,7 @@ import {
   BNUSDC,
   WithdrawalMethod
 } from '@audius/common'
-import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Button, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
@@ -130,12 +130,12 @@ export const ConfirmTransferDetails = () => {
       <div className={styles.buttons}>
         <Button
           iconLeft={IconCaretLeft}
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           onClick={handleGoBack}
         >
           {messages.goBack}
         </Button>
-        <Button variant={ButtonType.SECONDARY} onClick={handleContinue}>
+        <Button variant='secondary' onClick={handleContinue}>
           {messages.confirm}
         </Button>
       </div>

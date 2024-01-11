@@ -42,6 +42,7 @@ export * from './TrackResponse';
 export * from './TrackSearch';
 export * from './TracksResponse';
 export * from './TrendingPlaylistsResponse';
+export * from './TxSignature';
 export * from './User';
 export * from './UserAssociatedWalletResponse';
 export * from './UserResponse';

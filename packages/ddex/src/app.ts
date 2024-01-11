@@ -1,56 +1,56 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Sql } from 'postgres'
+import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
+import type { ScheduledReleaseService } from './services/scheduledReleaseService'
+import type { XmlProcessorService } from './services/xmlProcessorService'
 import express, { Express, Request, Response } from 'express'
 import path from 'path'
-import * as uploadController from './controllers/uploadController'
-import { createSdkService } from './services/sdkService'
-import { createScheduledReleaseService } from './services/scheduledReleaseService'
-import { createDbService } from './services/dbService'
+import * as uploadController from './controllers/uploadsController'
+// import cors from 'cors'
 
-/*
- * Initialize services
- */
+export default function createApp(
+  sql: Sql,
+  audiusSdk: AudiusSdk,
+  xmlProcessorService: XmlProcessorService,
+  scheduledReleaseService: ScheduledReleaseService
+) {
+  /*
+   * Setup app
+   */
+  const app: Express = express()
 
-const dbUrl =
-  process.env.audius_db_url ||
-  'postgres://postgres:postgres@localhost:5432/audius_discovery'
-const dbService = createDbService(dbUrl)
-const sdkService = createSdkService()
-const scheduledReleaseService = createScheduledReleaseService(
-  sdkService.getSdk()
-)
+  /*
+   * Define API routes
+   */
 
-/*
- * Setup app
- */
+  app.get('/api/releases', uploadController.getReleases(sql))
+  app.get('/api/uploads', uploadController.getUploads(sql))
+  app.post('/api/upload', uploadController.postUploadXml(xmlProcessorService))
+  app.get('/api/health_check', (req: Request, res: Response) => {
+    res.status(200).send('DDEX is alive!')
+  })
 
-const app: Express = express()
+  /*
+   * Serve the React app as static assets at the root path
+   */
 
-/*
- * Define API routes
- */
+  const isDev = process.env.IS_DEV === 'true'
+  const buildPath = isDev
+    ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+    : path.join(__dirname, '..', 'public')
+  app.use(express.static(buildPath))
+  app.use(express.static(buildPath))
+  app.get('/', (req: Request, res: Response) => {
+    res.sendFile(path.join(buildPath, 'index.html'))
+  })
 
-app.post(
-  '/api/upload',
-  uploadController.postUploadXml(dbService, sdkService.getSdk())
-)
-app.get('/api/health_check', (req: Request, res: Response) => {
-  res.status(200).send('DDEX is alive!')
-})
+  // Fallback to handle client-side routing, excluding /api routes
+  app.get('*', (req: Request, res: Response, next) => {
+    if (req.url.startsWith('/api')) {
+      return next()
+    }
+    res.sendFile(path.join(buildPath, 'index.html'))
+  })
 
-/*
- * Serve the React app as static assets at the root path
- */
-
-const isDev = process.env.IS_DEV === 'true'
-const buildPath = isDev
-  ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
-  : path.join(__dirname, '..', 'public')
-app.use(express.static(buildPath))
-app.get('/', (req: Request, res: Response) => {
-  res.sendFile(path.join(buildPath, 'index.html'))
-})
-app.get('*', (req: Request, res: Response) => {
-  res.sendFile(path.join(buildPath, 'index.html')) // Fallback for handling client-side routing
-})
-
-export default app
+  return app
+}

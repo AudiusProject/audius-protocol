@@ -128,6 +128,13 @@ export {
 export { default as uploadConfirmationModalUISagas } from './upload-confirmation-modal/sagas'
 export * from './upload-confirmation-modal/types'
 
+export * as publishTrackConfirmationModalUISelectors from './publish-track-confirmation-modal/selectors'
+export {
+  default as publishTrackConfirmationModalUIReducer,
+  actions as publishTrackConfirmationModalUIActions
+} from './publish-track-confirmation-modal/slice'
+export { default as publishTrackConfirmationModalUISagas } from './publish-track-confirmation-modal/sagas'
+
 export {
   default as withdrawUSDCReducer,
   actions as withdrawUSDCActions

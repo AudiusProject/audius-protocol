@@ -23,6 +23,7 @@ import {
 } from '@audius/harmony'
 import styled, { CSSObject } from '@emotion/styled'
 import { animated, useSpring } from '@react-spring/web'
+import { useFormikContext } from 'formik'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -192,6 +193,8 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
+  // On the MobileCTAPage we use this footer outside a formik context
+  const { isSubmitting } = useFormikContext() ?? { isSubmitting: false }
 
   return (
     <Paper
@@ -219,6 +222,7 @@ export const PageFooter = (props: PageFooterProps) => {
         type='submit'
         iconRight={IconArrowRight}
         fullWidth
+        isLoading={isSubmitting}
         css={!isMobile && centered && { width: 343 }}
         {...buttonProps}
       >

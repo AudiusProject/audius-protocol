@@ -15,7 +15,11 @@ export type IsWriteAccessGrantedRequest = z.input<
   typeof IsWriteAccessGrantedSchema
 >
 
-export const OAUTH_SCOPE_OPTIONS = ['read', 'write'] as const
+export const OAUTH_SCOPE_OPTIONS = ['read', 'write', 'write_once'] as const
 type OAuthScopesTuple = typeof OAUTH_SCOPE_OPTIONS
 export type OAuthScopeOption = OAuthScopesTuple[number]
 export type OAuthScope = OAuthScopeOption | OAuthScopeOption[]
+export type WriteOnceParams = {
+  tx: 'connect_dashboard_wallet'
+  wallet: string
+} // | ...
