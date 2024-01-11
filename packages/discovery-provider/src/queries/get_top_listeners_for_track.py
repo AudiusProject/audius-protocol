@@ -45,9 +45,8 @@ def _get_top_listeners_for_track(session, args):
         )
         select *
         from counted
-        join users u using (user_id)
-        left join aggregate_user au on u.user_id = au.user_id
-        order by play_count, follower_count, u.user_id desc
+        left join aggregate_user using (user_id)
+        order by play_count, follower_count, counted.user_id desc
         limit :limit
         offset :offset
         """
