@@ -12,7 +12,9 @@ import {
   withdrawUSDCSelectors,
   Status,
   Name,
-  WithdrawalMethod
+  WithdrawalMethod,
+  useFeatureFlag,
+  FeatureFlags
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
@@ -124,6 +126,9 @@ const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
 export const WithdrawUSDCModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, onClosed, data, setData } = useWithdrawUSDCModal()
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.COINFLOW_OFFRAMP_ENABLED
+  )
   const { page } = data
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
@@ -239,7 +244,9 @@ export const WithdrawUSDCModal = () => {
             [AMOUNT]: balanceNumberCents,
             [ADDRESS]: '',
             [CONFIRM]: false,
-            [METHOD]: WithdrawalMethod.COINFLOW
+            [METHOD]: isCoinflowEnabled
+              ? WithdrawalMethod.COINFLOW
+              : WithdrawalMethod.MANUAL_TRANSFER
           }}
           validationSchema={toFormikValidationSchema(
             WithdrawUSDCFormSchema(balanceNumberCents)

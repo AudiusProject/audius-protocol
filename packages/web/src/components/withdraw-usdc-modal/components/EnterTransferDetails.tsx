@@ -15,7 +15,9 @@ import {
   padDecimalValue,
   decimalIntegerToHumanReadable,
   Name,
-  WithdrawalMethod
+  WithdrawalMethod,
+  FeatureFlags,
+  useFeatureFlag
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import BN from 'bn.js'
@@ -62,6 +64,10 @@ export const EnterTransferDetails = () => {
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
 
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.COINFLOW_OFFRAMP_ENABLED
+  )
+
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -100,15 +106,6 @@ export const EnterTransferDetails = () => {
     methodValue === WithdrawalMethod.COINFLOW
       ? !!(amountError || balance?.isZero())
       : !!(amountError || addressError || !address || balance?.isZero())
-
-  const handleClickHelpGuide = useCallback(() => {
-    track(
-      make({
-        eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED,
-        currentBalance: analyticsBalance
-      })
-    )
-  }, [analyticsBalance])
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -152,13 +149,15 @@ export const EnterTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      <SegmentedControl
-        fullWidth
-        label={messages.transferMethod}
-        options={withdrawalMethodOptions}
-        onSelectOption={setMethod}
-        selected={methodValue}
-      />
+      {isCoinflowEnabled ? (
+        <SegmentedControl
+          fullWidth
+          label={messages.transferMethod}
+          options={withdrawalMethodOptions}
+          onSelectOption={setMethod}
+          selected={methodValue}
+        />
+      ) : null}
       {methodValue === WithdrawalMethod.COINFLOW ? (
         <Text variant='body' size='medium'>
           {messages.coinflowDescription}
