@@ -74,10 +74,10 @@ export const EnterTransferDetails = () => {
 
   const [
     { value },
-    _amountMeta,
+    _ignoredAmountMeta,
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
-  const [{ value: methodValue }, _methodMeta, { setValue: setMethod }] =
+  const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawalMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(value || balanceNumber)
@@ -97,8 +97,11 @@ export const EnterTransferDetails = () => {
     [setHumanizedValue]
   )
 
-  const [{ value: address }, _addressMeta, { setTouched: setAddressTouched }] =
-    useField(ADDRESS)
+  const [
+    { value: address },
+    _ignoredAddressMeta,
+    { setTouched: setAddressTouched }
+  ] = useField(ADDRESS)
 
   const disableContinue =
     methodValue === WithdrawalMethod.COINFLOW

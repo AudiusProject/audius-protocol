@@ -29,7 +29,7 @@ export const PrepareTransfer = () => {
     if (coinflowState === CoinflowWithdrawalState.READY_FOR_WITHDRAWAL) {
       setData({ page: WithdrawUSDCModalPages.COINFLOW_TRANSFER })
     }
-  }, [coinflowState])
+  }, [coinflowState, setData])
   return (
     <Flex
       direction='column'

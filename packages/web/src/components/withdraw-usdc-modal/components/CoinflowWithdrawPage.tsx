@@ -40,7 +40,6 @@ export const CoinflowWithdrawPage = () => {
   const handleSuccess = useCallback(
     (params: string) => {
       const transaction = parseTransactionFromSuccessParams(params)
-      console.log(`Coinflow withdrawal succeeded: ${params}`)
       setCompleted(true)
       dispatch(coinflowWithdrawalSucceeded({ transaction }))
     },

@@ -75,7 +75,7 @@ export const ConfirmTransferDetails = () => {
       })
       submitForm()
     }
-  }, [setData, submitForm, confirmError])
+  }, [methodValue, setData, submitForm, confirmError])
 
   return (
     <div className={styles.root}>
