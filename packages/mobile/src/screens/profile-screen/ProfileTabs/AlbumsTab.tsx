@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import {
+  FeatureFlags,
   profilePageActions,
   profilePageSelectors,
   reachabilitySelectors,
@@ -10,6 +11,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
@@ -22,6 +24,9 @@ const { getIsReachable } = reachabilitySelectors
 const emptyAlbums = []
 
 export const AlbumsTab = () => {
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
   const { handle, album_count } = useSelectProfile(['handle', 'album_count'])
   const isReachable = useSelector(getIsReachable)
   const albums = useSelector((state) => getProfileAlbums(state, handle))
@@ -52,7 +57,7 @@ export const AlbumsTab = () => {
         <EmptyProfileTile tab='albums' style={{ marginTop: 0 }} />
       }
       disableTopTabScroll
-      showCreatePlaylistTile={!!isReachable}
+      showCreatePlaylistTile={!!isReachable && isOwner && isEditAlbumsEnabled}
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
     />

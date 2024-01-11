@@ -35,6 +35,7 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
+import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
@@ -47,7 +48,6 @@ import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 export type ProfilePageProps = {
   // State
