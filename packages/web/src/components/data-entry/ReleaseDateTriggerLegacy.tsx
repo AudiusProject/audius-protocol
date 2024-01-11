@@ -94,8 +94,11 @@ export const ReleaseDateTriggerLegacy = (
       newState.is_unlisted = false
     } else {
       newState.is_unlisted = true
+      newState.is_scheduled_release = true
     }
+    props.initialForm.release_date = newState.release_date
 
+    setTrackReleaseDateState(newState.release_date)
     setTrackReleaseDateState(newState.release_date)
     didUpdateState(newState)
   }
@@ -114,6 +117,7 @@ export const ReleaseDateTriggerLegacy = (
             <Text>{messages.description}</Text>
             <ReleaseDateRadioItems
               isInitiallyUnlisted={props.initialForm.is_unlisted}
+              initialReleaseDate={trackReleaseDateState}
             />
           </Flex>
         </>

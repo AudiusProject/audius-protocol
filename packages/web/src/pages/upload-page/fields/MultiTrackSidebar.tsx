@@ -1,7 +1,7 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { IconError, IconUpload } from '@audius/stems'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
@@ -43,7 +43,7 @@ export const MultiTrackSidebar = () => {
           <div className={styles.completeButton}>
             <Button
               onClick={scrollToTop}
-              variant={ButtonType.PRIMARY}
+              variant='primary'
               iconRight={IconUpload}
               type='submit'
               fullWidth

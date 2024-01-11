@@ -1,4 +1,4 @@
-import type { ButtonProps } from '../types'
+import type { ButtonProps } from '../Button/types'
 
 export type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
 

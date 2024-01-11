@@ -193,7 +193,8 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
-  const { isSubmitting } = useFormikContext()
+  // On the MobileCTAPage we use this footer outside a formik context
+  const { isSubmitting } = useFormikContext() ?? { isSubmitting: false }
 
   return (
     <Paper
@@ -221,8 +222,8 @@ export const PageFooter = (props: PageFooterProps) => {
         type='submit'
         iconRight={IconArrowRight}
         fullWidth
-        css={!isMobile && centered && { width: 343 }}
         isLoading={isSubmitting}
+        css={!isMobile && centered && { width: 343 }}
         {...buttonProps}
       >
         {messages.continue}

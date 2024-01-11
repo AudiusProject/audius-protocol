@@ -14,15 +14,15 @@ import type { IconProps } from 'app/harmony-native/icons'
 
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { ButtonProps } from '../types'
-import { ButtonSize, ButtonType } from '../types'
+
+import type { ButtonProps } from './types'
 
 export const Button = (props: ButtonProps) => {
   const {
     color,
     hexColor,
-    variant = ButtonType.PRIMARY,
-    size = ButtonSize.DEFAULT,
+    variant = 'primary',
+    size = 'default',
     disabled,
     ...baseProps
   } = props
@@ -189,11 +189,11 @@ export const Button = (props: ButtonProps) => {
   }
 
   const dynamicStyles =
-    variant === ButtonType.SECONDARY
+    variant === 'secondary'
       ? secondaryDynamicStyles
-      : variant === ButtonType.TERTIARY
+      : variant === 'tertiary'
       ? tertiaryDynamicStyles
-      : variant === ButtonType.DESTRUCTIVE
+      : variant === 'destructive'
       ? destructiveDynamicStyles
       : primaryDynamicStyles
 
@@ -217,17 +217,17 @@ export const Button = (props: ButtonProps) => {
       )
     }),
 
-    ...(variant === ButtonType.SECONDARY
+    ...(variant === 'secondary'
       ? secondaryStyles
-      : variant === ButtonType.TERTIARY
+      : variant === 'tertiary'
       ? tertiaryStyles
-      : variant === ButtonType.DESTRUCTIVE
+      : variant === 'destructive'
       ? destructiveStyles
       : primaryStyles),
 
-    ...(size === ButtonSize.SMALL
+    ...(size === 'small'
       ? smallStyles
-      : size === ButtonSize.LARGE
+      : size === 'large'
       ? largeStyles
       : defaultStyles),
 
@@ -243,26 +243,24 @@ export const Button = (props: ButtonProps) => {
       )
     }),
 
-    ...(size === ButtonSize.SMALL
+    ...(size === 'small'
       ? smallTextStyles
-      : size === ButtonSize.LARGE
+      : size === 'large'
       ? largeTextStyles
       : defaultTextStyles)
   }))
 
   const textColor =
-    (variant === ButtonType.SECONDARY && !isDisabled) ||
-    variant === ButtonType.TERTIARY
+    (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
-      : variant === ButtonType.DESTRUCTIVE
+      : variant === 'destructive'
       ? 'danger'
       : 'staticWhite'
 
   const iconSize: IconProps['size'] =
-    size === ButtonSize.SMALL ? 's' : size === ButtonSize.LARGE ? 'l' : 'm'
+    size === 'small' ? 's' : size === 'large' ? 'l' : 'm'
 
-  const loaderSize =
-    size === ButtonSize.SMALL ? 16 : size === ButtonSize.LARGE ? 24 : 20
+  const loaderSize = size === 'small' ? 16 : size === 'large' ? 24 : 20
 
   const [isPressing, setIsPressing] = useState(false)
 
@@ -274,7 +272,7 @@ export const Button = (props: ButtonProps) => {
   }
 
   const iconColor = useMemo(() => {
-    if (isDisabled && variant === ButtonType.SECONDARY) {
+    if (isDisabled && variant === 'secondary') {
       return 'staticWhite'
     }
 

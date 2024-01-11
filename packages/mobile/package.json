@@ -204,7 +204,7 @@
     "@types/lodash.samplesize": "4.2.6",
     "@types/node": "12.20.27",
     "@types/numeral": "2.0.2",
-    "@types/react": "18.2.6",
+    "@types/react": "18.2.0",
     "@types/react-native-video": "5.0.19",
     "babel-jest": "29.6.3",
     "babel-loader": "8.3.0",

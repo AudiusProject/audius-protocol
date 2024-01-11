@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactElement, useState } from 'react'
 
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import {
   IconCaretRight,
   Modal,
@@ -48,7 +48,7 @@ export const ModalField = (props: ModalFieldProps) => {
       <ModalContent>{children}</ModalContent>
       <ModalFooter>
         <Button
-          variant={ButtonType.PRIMARY}
+          variant='primary'
           onClick={() => {
             submitForm()
             isEmpty(errors) && close()

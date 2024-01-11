@@ -4,7 +4,8 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import { toCSSVariableName } from '../../../utils/styles'
 import { BaseButton } from '../BaseButton/BaseButton'
-import { ButtonProps, ButtonSize, ButtonType } from '../types'
+
+import { ButtonProps } from './types'
 
 type CSSCustomProperties = CSSProperties & {
   [index: `--${string}`]: any
@@ -21,8 +22,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const {
       color,
       hexColor,
-      variant = ButtonType.PRIMARY,
-      size = ButtonSize.DEFAULT,
+      variant = 'primary',
+      size = 'default',
       disabled,
       ...baseProps
     } = props
@@ -182,17 +183,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       borderRadius: cornerRadius.s,
       boxShadow: shadows.near,
 
-      ...(size === ButtonSize.SMALL
+      ...(size === 'small'
         ? smallStyles
-        : size === ButtonSize.LARGE
+        : size === 'large'
         ? largeStyles
         : defaultStyles),
 
-      ...(variant === ButtonType.SECONDARY
+      ...(variant === 'secondary'
         ? secondaryStyles
-        : variant === ButtonType.TERTIARY
+        : variant === 'tertiary'
         ? tertiaryStyles
-        : variant === ButtonType.DESTRUCTIVE
+        : variant === 'destructive'
         ? destructiveStyles
         : primaryStyles),
 
@@ -207,7 +208,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         backgroundColor: 'rgba(0, 0, 0, 0)'
       },
 
-      ...(variant !== ButtonType.TERTIARY && {
+      ...(variant !== 'tertiary' && {
         ':hover': hoverStyles,
         ':active': activeStyles,
         ...(_isHovered && hoverStyles),
@@ -216,14 +217,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const iconCss =
-      size === ButtonSize.SMALL
+      size === 'small'
         ? smallIconStyles
-        : size === ButtonSize.LARGE
+        : size === 'large'
         ? largeIconStyles
         : defaultIconStyles
 
     const style: CSSCustomProperties =
-      variant === ButtonType.PRIMARY && !isDisabled
+      variant === 'primary' && !isDisabled
         ? {
             backgroundColor:
               hexColor ||

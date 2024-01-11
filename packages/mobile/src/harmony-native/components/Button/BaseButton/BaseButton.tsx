@@ -12,7 +12,8 @@ import Animated, {
 import { useTheme } from '../../../foundations/theme'
 import { LoadingSpinner } from '../../LoadingSpinner/LoadingSpinner'
 import { Text } from '../../Text/Text'
-import type { BaseButtonProps } from '../types'
+
+import type { BaseButtonProps } from './types'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const AnimatedText = Animated.createAnimatedComponent(Text)

@@ -21,7 +21,7 @@ export const PremiumConditionsPill = ({
   unlocking,
   onClick,
   showIcon = true,
-  buttonSize = ButtonSize.SMALL
+  buttonSize = 'small'
 }: {
   premiumConditions: PremiumConditions
   unlocking: boolean

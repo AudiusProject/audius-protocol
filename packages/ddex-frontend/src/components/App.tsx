@@ -1,6 +1,6 @@
 import Layout from './Layout'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import Ddex from 'pages/DDEX'
+import Ddex from '../pages/DDEX/DDEX'
 
 const App = () => {
   return (

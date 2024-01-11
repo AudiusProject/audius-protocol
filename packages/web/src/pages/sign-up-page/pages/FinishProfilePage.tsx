@@ -4,14 +4,7 @@ import {
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
-import {
-  Flex,
-  Paper,
-  PlainButton,
-  PlainButtonType,
-  Text,
-  useTheme
-} from '@audius/harmony'
+import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -20,7 +13,8 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import {
   setField,
   setValueField,
-  setFinishedPhase1
+  setFinishedPhase1,
+  signUp
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -103,6 +97,7 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
+      dispatch(signUp())
     },
     [navigate, dispatch]
   )
@@ -159,10 +154,7 @@ export const FinishProfilePage = () => {
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
-                <PlainButton
-                  variant={PlainButtonType.SUBDUED}
-                  onClick={history.goBack}
-                >
+                <PlainButton variant='subdued' onClick={history.goBack}>
                   {messages.goBack}
                 </PlainButton>
               )
