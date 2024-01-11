@@ -105,7 +105,8 @@ export const selectArtstsPageMessages = {
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
   genresLabel: 'Genre',
   pickArtists: (genre: string) => `Pick ${genre} Artists`,
-  selected: 'Selected'
+  selected: 'Selected',
+  backToGenres: 'Back To Genres'
 }
 
 export const welcomeModalMessages = {
