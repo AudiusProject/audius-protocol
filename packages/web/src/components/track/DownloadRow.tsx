@@ -13,6 +13,10 @@ import { Icon } from 'components/Icon'
 
 const { getTrack } = cacheTracksSelectors
 
+const messages = {
+  fullTrack: 'Full Track'
+}
+
 type DownloadRowProps = {
   trackId: ID
   quality: DownloadQuality
@@ -23,13 +27,13 @@ type DownloadRowProps = {
 export const DownloadRow = ({
   trackId,
   onDownload,
-  quality,
   index
 }: DownloadRowProps) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+
   const handleClick = useCallback(() => {
     if (track) {
       onDownload(trackId, track.stem_of?.category, trackId)
@@ -48,10 +52,10 @@ export const DownloadRow = ({
         <Text>{index}</Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
-            {track?.stem_of?.category}
+            {track?.stem_of?.category ?? messages.fullTrack}
           </Text>
           <Text color='subdued' size='xs'>
-            {track?.stem_of?.category}
+            {track?.orig_filename}
           </Text>
         </Flex>
       </Flex>

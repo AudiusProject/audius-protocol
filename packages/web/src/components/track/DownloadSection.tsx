@@ -114,8 +114,8 @@ export const DownloadSection = ({
                 <Text>size</Text>
                 {shouldDisplayDownloadAll ? (
                   <Button
-                    variant={ButtonType.SECONDARY}
-                    size={ButtonSize.SMALL}
+                    variant='secondary'
+                    size='small'
                     iconLeft={IconReceive}
                   >
                     {messages.downloadAll}
@@ -144,11 +144,7 @@ export const DownloadSection = ({
             because the download all button will not be displayed at the top right. */}
             {!track?.is_original_available ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
-                <Button
-                  variant={ButtonType.SECONDARY}
-                  size={ButtonSize.SMALL}
-                  iconLeft={IconReceive}
-                >
+                <Button variant='secondary' size='small' iconLeft={IconReceive}>
                   {messages.downloadAll}
                 </Button>
               </Flex>
