@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react'
 
-import type { SpecialColors } from '@audius/harmony'
 import type { PressableProps, TextStyle, ViewProps } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 
 import type { LoadingSpinnerProps } from 'app/components/loading-spinner/LoadingSpinner'
 import type { Icon, IconProps } from 'app/harmony-native/icons'
 
-import type { TextProps } from '../Text/Text'
+import type { TextProps } from '../../Text/Text'
 
 type BaseButtonStyles = {
   text?: TextStyle
@@ -19,19 +18,6 @@ type BaseButtonInnerProps = {
   text?: TextProps
   icon?: IconProps
   loader?: LoadingSpinnerProps
-}
-
-export enum ButtonType {
-  PRIMARY = 'primary',
-  SECONDARY = 'secondary',
-  TERTIARY = 'tertiary',
-  DESTRUCTIVE = 'destructive'
-}
-
-export enum ButtonSize {
-  SMALL = 'small',
-  DEFAULT = 'default',
-  LARGE = 'large'
 }
 
 export type BaseButtonProps = {
@@ -89,48 +75,3 @@ export type BaseButtonProps = {
 
   children?: ReactNode
 } & PressableProps
-
-export type ButtonProps = {
-  /**
-   * Override the color of the button, only valid for the `PRIMARY` variant
-   */
-  color?: Exclude<SpecialColors, 'gradient'>
-
-  /**
-   * Override the color of the button using any hex color, only valid for the `PRIMARY` variant
-   */
-  hexColor?: `#${string}`
-
-  /**
-   * The type of the button
-   */
-  variant?: ButtonType
-
-  /**
-   * The button size
-   */
-  size?: ButtonSize
-} & Omit<BaseButtonProps, 'styles'>
-
-export enum PlainButtonType {
-  DEFAULT = 'default',
-  SUBDUED = 'subdued',
-  INVERTED = 'inverted'
-}
-
-export enum PlainButtonSize {
-  DEFAULT = 'default',
-  LARGE = 'large'
-}
-
-export type PlainButtonProps = {
-  /**
-   * The type of the button
-   */
-  variant?: PlainButtonType
-
-  /**
-   * The button size
-   */
-  size?: PlainButtonSize
-} & Omit<BaseButtonProps, 'styles'>

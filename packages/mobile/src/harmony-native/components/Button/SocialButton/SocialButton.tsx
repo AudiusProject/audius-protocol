@@ -11,8 +11,7 @@ import {
 import { useTheme } from '../../../foundations/theme'
 import { Box } from '../../layout'
 import { Button } from '../Button/Button'
-import type { ButtonProps } from '../types'
-import { ButtonSize } from '../types'
+import type { ButtonProps } from '../Button/types'
 
 import type { SocialButtonProps, SocialMedia } from './types'
 
@@ -64,11 +63,11 @@ export const SocialButton = (props: SocialButtonProps) => {
     ? ['#DFB600', '#D2501F', '#C33137', '#AA005E', '#5000DF']
     : ['#FFD600', '#F2703F', '#E35157', '#CA1D7E', '#7017FF']
 
-  const radiusMod = rest.size === ButtonSize.LARGE ? 1.2 : 1.1
+  const radiusMod = rest.size === 'large' ? 1.2 : 1.1
   const gradientCenter =
-    rest.size === ButtonSize.SMALL
+    rest.size === 'small'
       ? [12, 36]
-      : rest.size === ButtonSize.LARGE
+      : rest.size === 'large'
       ? [20, 68]
       : [16, 52]
 
