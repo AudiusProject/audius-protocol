@@ -8,8 +8,7 @@ import {
 } from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
-import { useField, useFormikContext } from 'formik'
-import { usePrevious } from 'react-use'
+import { useField } from 'formik'
 
 import {
   HarmonyTextField,
