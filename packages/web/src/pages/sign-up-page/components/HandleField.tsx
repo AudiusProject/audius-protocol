@@ -3,9 +3,11 @@ import { Ref, forwardRef, useCallback, useContext } from 'react'
 import {
   MAX_HANDLE_LENGTH,
   socialMediaMessages,
-  pickHandleErrorMessages
+  pickHandleErrorMessages,
+  useIsWaitingForValidation
 } from '@audius/common'
 import { TextLink } from '@audius/harmony'
+import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'
 
 import {
@@ -20,7 +22,8 @@ import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
 
 const messages = {
   handle: 'Handle',
-  linkToClaim: 'Link to claim.'
+  linkToClaim: 'Link to claim.',
+  handleAvailable: 'Handle available!'
 }
 
 const handleAuthMap = {
@@ -45,11 +48,15 @@ export const HandleField = forwardRef(
       onCompleteSocialMediaLogin,
       onErrorSocialMediaLogin,
       onStartSocialMediaLogin,
+      onChange,
       ...other
     } = props
+
     const [{ value: handle }, { error }] = useField('handle')
 
     const { toast } = useContext(ToastContext)
+
+    const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
     const handleVerifyHandleError = useCallback(() => {
       toast(socialMediaMessages.verificationError)
@@ -79,7 +86,7 @@ export const HandleField = forwardRef(
     const AuthComponent = error ? handleAuthMap[error] : undefined
 
     const helperText =
-      handle && error ? (
+      handle && !!error ? (
         <>
           {error}{' '}
           {onCompleteSocialMediaLogin &&
@@ -97,6 +104,8 @@ export const HandleField = forwardRef(
             </TextLink>
           ) : null}
         </>
+      ) : !isWaitingForValidation && handle ? (
+        messages.handleAvailable
       ) : null
 
     return (
@@ -110,6 +119,13 @@ export const HandleField = forwardRef(
         placeholder={messages.handle}
         transformValueOnChange={(value) => value.replace(/\s/g, '')}
         debouncedValidationMs={1000}
+        endIcon={
+          !isWaitingForValidation && !error && handle ? IconCheck : undefined
+        }
+        onChange={(e) => {
+          onChange?.(e)
+          handleChange()
+        }}
         {...other}
       />
     )

@@ -10,7 +10,11 @@ import {
   getHandleField,
   getIsVerified
 } from 'audius-client/src/common/store/pages/signon/selectors'
-import { setField, setValueField } from 'common/store/pages/signon/actions'
+import {
+  setField,
+  setValueField,
+  signUp
+} from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { isEmpty } from 'lodash'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -55,6 +59,7 @@ export const FinishProfileScreen = () => {
       if (coverPhoto) {
         dispatch(setField('coverPhoto', { value: coverPhoto }))
       }
+      dispatch(signUp())
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]
