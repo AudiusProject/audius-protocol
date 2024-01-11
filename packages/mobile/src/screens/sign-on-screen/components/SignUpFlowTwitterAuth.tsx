@@ -65,7 +65,7 @@ const getOauthToken = async (
   }
 }
 
-const authenticationUrl = (oauthToken: string) =>
+const authenticationUrl = (oauthToken: string | undefined) =>
   `https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}&force_login=${twitterApi.forceLogin}`
 
 type CredentialsType = 'omit' | 'same-origin' | 'include'
@@ -121,7 +121,9 @@ const useSetProfileFromTwitter = () => {
 }
 
 const useTwitterAuthToken = () => {
-  const { value: authToken } = useAsync(async () => {
+  const [authToken, setAuthToken] = useState<string | undefined>()
+  useAsync(async () => {
+    // only refresh token if we don't have one already (avoid extra API calls)
     if (!authToken) {
       const tokenResp = await fetch(twitterApi.requestTokenUrl, {
         method: 'POST',
@@ -129,7 +131,9 @@ const useTwitterAuthToken = () => {
         headers: twitterApi.headers
       })
       const tokenRespJson = await tokenResp.json()
-      return tokenRespJson.oauth_token
+      if (tokenRespJson.oauth_token) {
+        setAuthToken(tokenRespJson.oauth_token)
+      }
     }
   }, [])
 
