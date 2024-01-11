@@ -15,6 +15,7 @@ import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsib
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
@@ -61,7 +62,9 @@ export const SelectArtistsScreen = () => {
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
     } else {
+      // This call is what triggers the RootScreen to redirect to the home page (via conditional rendering)
       dispatch(finishSignUp())
+      // This call is just for analytics event tracking purposes
       dispatch(signUpSucceeded())
     }
   }, [accountCreationStatus, dispatch, navigation])

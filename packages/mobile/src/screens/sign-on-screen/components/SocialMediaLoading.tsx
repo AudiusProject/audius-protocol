@@ -1,6 +1,13 @@
 import { css } from '@emotion/native'
 
-import { Box, Flex, IconClose, Text, useTheme } from '@audius/harmony-native'
+import {
+  Box,
+  Flex,
+  IconButton,
+  IconClose,
+  Text,
+  useTheme
+} from '@audius/harmony-native'
 import { LoadingMoreSpinner } from 'app/screens/favorites-screen/LoadingMoreSpinner'
 
 const messages = {
@@ -29,8 +36,9 @@ export const SocialMediaLoading = ({ onClose }: { onClose: () => void }) => {
         backgroundColor: color.background.white
       })}
     >
-      <IconClose
-        fill={color.icon.subdued}
+      <IconButton
+        icon={IconClose}
+        aria-label='Return to email screen'
         style={css({
           position: 'absolute',
           top: spacing['2xl'],

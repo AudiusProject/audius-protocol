@@ -8,10 +8,14 @@ import {
   Status
 } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import {
+  getHasCompletedAccount,
+  getStartedSignUpProcess
+} from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
@@ -55,11 +59,14 @@ export const RootScreen = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
   const showHomeStack = useSelector(getHasCompletedAccount)
+  const startedSignUp = useSelector(getStartedSignUpProcess)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
+
+  const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
   useAppState(
     () => dispatch(enterForeground()),
@@ -93,6 +100,14 @@ export const RootScreen = () => {
   const handleSplashScreenDismissed = useCallback(() => {
     setIsSplashScreenDismissed(true)
   }, [])
+
+  useEffect(() => {
+    if (isSignUpRedesignEnabled) {
+      if (showHomeStack && startedSignUp) {
+        openWelcomeDrawer()
+      }
+    }
+  }, [isSignUpRedesignEnabled, openWelcomeDrawer, showHomeStack, startedSignUp])
 
   return (
     <>
