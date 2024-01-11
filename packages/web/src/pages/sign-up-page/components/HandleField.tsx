@@ -4,6 +4,7 @@ import {
   MAX_HANDLE_LENGTH,
   socialMediaMessages,
   pickHandleErrorMessages,
+  pickHandlePageMessages as messages,
   useIsWaitingForValidation
 } from '@audius/common'
 import { TextLink } from '@audius/harmony'
@@ -19,12 +20,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-
-const messages = {
-  handle: 'Handle',
-  linkToClaim: 'Link to claim.',
-  handleAvailable: 'Handle available!'
-}
 
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,

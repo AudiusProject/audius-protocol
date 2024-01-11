@@ -17,10 +17,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Paper } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
+import { HandleField } from '../components/HandleField'
 import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
@@ -77,10 +77,10 @@ export const ReviewHandleScreen = () => {
           {hasImages ? (
             <Paper gap='xl' direction='column'>
               <ReadOnlyAccountHeader />
-              <TextField name='handle' label={messages.handle} noGutter />
+              <HandleField />
             </Paper>
           ) : (
-            <TextField name='handle' label={messages.handle} noGutter />
+            <HandleField />
           )}
           <PageFooter buttonProps={{ disabled: !isValid }} />
         </Page>
