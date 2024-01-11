@@ -126,8 +126,8 @@ const createSdkSchema = () =>
     previewCid: z.optional(z.string()),
     orig_file_cid: z.optional(z.string()),
     orig_filename: z.optional(z.string()),
-    is_downloadable: z.optional(z.string()),
-    is_original_available: z.optional(z.string())
+    is_downloadable: z.optional(z.boolean()),
+    is_original_available: z.optional(z.boolean())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(
