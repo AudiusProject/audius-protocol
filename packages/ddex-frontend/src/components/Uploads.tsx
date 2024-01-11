@@ -26,40 +26,46 @@ const Uploads = () => {
     <Box>
       <Flex direction="column" gap="s">
         <h1>Uploads</h1>
-        <Flex justifyContent="space-between" alignItems="center">
-          <input
-            type="checkbox"
-            id="successFilter"
-            checked={statusFilter === 'success'}
-            onChange={() =>
-              setStatusFilter((curFilter) =>
-                curFilter === 'success' ? '' : 'success'
-              )
-            }
-          />
-          <label htmlFor="successFilter">Success</label>
-          <input
-            type="checkbox"
-            id="pendingFilter"
-            checked={statusFilter === 'pending'}
-            onChange={() =>
-              setStatusFilter((curFilter) =>
-                curFilter === 'pending' ? '' : 'pending'
-              )
-            }
-          />
-          <label htmlFor="pendingFilter">Pending</label>
-          <input
-            type="checkbox"
-            id="errorFilter"
-            checked={statusFilter === 'error'}
-            onChange={() =>
-              setStatusFilter((curFilter) =>
-                curFilter === 'error' ? '' : 'error'
-              )
-            }
-          />
-          <label htmlFor="errorFilter">Error</label>
+        <Flex alignItems="center" gap="m">
+          <div>
+            <input
+              type="checkbox"
+              id="successFilter"
+              checked={statusFilter === 'success'}
+              onChange={() =>
+                setStatusFilter((curFilter) =>
+                  curFilter === 'success' ? '' : 'success'
+                )
+              }
+            />
+            <label htmlFor="successFilter">Success</label>
+          </div>
+          <div>
+            <input
+              type="checkbox"
+              id="pendingFilter"
+              checked={statusFilter === 'pending'}
+              onChange={() =>
+                setStatusFilter((curFilter) =>
+                  curFilter === 'pending' ? '' : 'pending'
+                )
+              }
+            />
+            <label htmlFor="pendingFilter">Pending</label>
+          </div>
+          <div>
+            <input
+              type="checkbox"
+              id="errorFilter"
+              checked={statusFilter === 'error'}
+              onChange={() =>
+                setStatusFilter((curFilter) =>
+                  curFilter === 'error' ? '' : 'error'
+                )
+              }
+            />
+            <label htmlFor="errorFilter">Error</label>
+          </div>
         </Flex>
         {isPending && <div>Loading...</div>}
         {error && <div>Error: {error.message}</div>}

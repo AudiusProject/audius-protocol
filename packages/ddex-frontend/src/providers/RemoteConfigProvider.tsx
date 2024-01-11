@@ -12,6 +12,7 @@ import { FeatureFlags } from '../utils/constants'
 type FlagDefaults = Record<FeatureFlags, boolean>
 const flagDefaults: FlagDefaults = {
   [FeatureFlags.DDEX_UPLOADS]: false,
+  [FeatureFlags.DDEX_ADMIN]: false,
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'

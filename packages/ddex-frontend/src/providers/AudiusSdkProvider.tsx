@@ -35,6 +35,7 @@ type OAuthEnv = 'production' | 'staging'
 type AudiusSdkContextType = {
   audiusSdk: AudiusSdkType | null
   currentUser: DecodedUserToken | null
+  isAdmin: boolean
   oauthError: string
   isLoading: boolean
 }
@@ -42,6 +43,7 @@ type AudiusSdkContextType = {
 const AudiusSdkContext = createContext<AudiusSdkContextType>({
   audiusSdk: null,
   currentUser: null,
+  isAdmin: false,
   oauthError: '',
   isLoading: true,
 })
@@ -49,6 +51,7 @@ const AudiusSdkContext = createContext<AudiusSdkContextType>({
 export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   const [audiusSdk, setAudiusSdk] = useState<AudiusSdkType | null>(null)
   const [currentUser, setCurrentUser] = useState<DecodedUserToken | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [oauthError, setOauthError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const envVars = useEnvVars()
@@ -79,10 +82,15 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         flag: FeatureFlags.DDEX_UPLOADS,
         userId: decodedUserId,
       })
-      if (!uploadsAllowed) {
+      const ddexAdmin = getFeatureEnabled({
+        flag: FeatureFlags.DDEX_ADMIN,
+        userId: decodedUserId,
+      })
+      if (!uploadsAllowed && !ddexAdmin) {
         alert('401: User not authorized for DDEX')
       } else {
         setCurrentUser(user)
+        setIsAdmin(ddexAdmin)
       }
     }
   }
@@ -168,6 +176,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   const contextValue = {
     audiusSdk,
     currentUser,
+    isAdmin,
     oauthError,
     isLoading,
   }

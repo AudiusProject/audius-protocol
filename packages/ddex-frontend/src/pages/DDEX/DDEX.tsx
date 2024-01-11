@@ -216,7 +216,7 @@ const XmlImporter = ({
 }
 
 const Ddex = () => {
-  const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
+  const { audiusSdk, currentUser, isAdmin, oauthError } = useAudiusSdk()
 
   const handleOauth = () => {
     audiusSdk!.oauth!.login({ scope: 'read' })
@@ -250,7 +250,7 @@ const Ddex = () => {
             {oauthError && <div className={styles.errorText}>{oauthError}</div>}
           </Flex>
         ) : (
-          <Flex gap="m" direction="column">
+          <Flex gap="xl" direction="column">
             <ManageAudiusAccount
               currentUser={currentUser}
               onChangeUser={handleOauth}
@@ -259,19 +259,22 @@ const Ddex = () => {
             <XmlImporter audiusSdk={audiusSdk} />
             {/* <ManageAudiusAccount
               currentUser={currentUser || fakeUser}
+              isAdmin={true}
               onChangeUser={handleOauth}
               oauthError={oauthError}
             />
             <XmlImporter audiusSdk={audiusSdk} /> */}
 
-            <Flex justifyContent="space-between">
-              <Flex direction="column" gap="xs">
-                <Uploads />
-              </Flex>
-              <Flex direction="column" gap="xs">
-                <Releases />
-              </Flex>
-            </Flex>
+            {isAdmin && (
+              <>
+                <Flex direction="column" gap="s">
+                  <Uploads />
+                </Flex>
+                <Flex direction="column" gap="s">
+                  <Releases />
+                </Flex>
+              </>
+            )}
           </Flex>
         )}
       </Flex>
