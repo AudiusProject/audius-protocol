@@ -1,6 +1,12 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentStems, ID } from '@audius/common'
+import {
+  useCurrentStems,
+  ID,
+  CommonState,
+  cacheTracksSelectors,
+  DownloadQuality
+} from '@audius/common'
 import {
   Flex,
   Box,
@@ -12,11 +18,14 @@ import {
   IconCaretDown
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 
 import { DownloadRow } from './DownloadRow'
+
+const { getTrack } = cacheTracksSelectors
 
 const messages = {
   title: 'Stems & Downloads',
@@ -24,11 +33,6 @@ const messages = {
   mp3: 'MP3',
   original: 'Original',
   downloadAll: 'Download All'
-}
-
-enum Quality {
-  MP3 = 'MP3',
-  ORIGINAL = 'ORIGINAL'
 }
 
 type DownloadSectionProps = {
@@ -40,19 +44,23 @@ export const DownloadSection = ({
   trackId,
   onDownload
 }: DownloadSectionProps) => {
+  const track = useSelector(
+    (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
   const { stemTracks } = useCurrentStems({ trackId })
   const shouldDisplayDownloadAll = stemTracks.length > 1
-  const [quality, setQuality] = useState(Quality.MP3)
+  const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [expanded, setExpanded] = useState(false)
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
   const options = [
     {
-      key: Quality.MP3,
+      key: DownloadQuality.MP3,
       text: messages.mp3
     },
     {
-      key: Quality.ORIGINAL,
+      key: DownloadQuality.ORIGINAL,
       text: messages.original
     }
   ]
@@ -115,10 +123,26 @@ export const DownloadSection = ({
                 ) : null}
               </Flex>
             </Flex>
-            {stemTracks.map((s) => (
-              <DownloadRow trackId={s.id} key={s.id} onDownload={onDownload} />
+            {track?.is_downloadable ? (
+              <DownloadRow
+                trackId={trackId}
+                onDownload={onDownload}
+                quality={quality}
+                index={1}
+              />
+            ) : null}
+            {stemTracks.map((s, i) => (
+              <DownloadRow
+                trackId={s.id}
+                key={s.id}
+                onDownload={onDownload}
+                quality={quality}
+                index={i + (track?.is_downloadable ? 2 : 1)}
+              />
             ))}
-            {shouldDisplayDownloadAll ? (
+            {/* Only display this row if original quality is not available,
+            because the download all button will not be displayed at the top right. */}
+            {!track?.is_original_available ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
                 <Button
                   variant={ButtonType.SECONDARY}

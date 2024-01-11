@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { CommonState, ID, cacheTracksSelectors } from '@audius/common'
+import {
+  CommonState,
+  ID,
+  cacheTracksSelectors,
+  DownloadQuality
+} from '@audius/common'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -10,18 +15,24 @@ const { getTrack } = cacheTracksSelectors
 
 type DownloadRowProps = {
   trackId: ID
+  quality: DownloadQuality
   onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  index: number
 }
 
-export const DownloadRow = ({ trackId, onDownload }: DownloadRowProps) => {
+export const DownloadRow = ({
+  trackId,
+  onDownload,
+  quality,
+  index
+}: DownloadRowProps) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
-
   const handleClick = useCallback(() => {
-    if (track !== undefined && track?.track_id !== undefined) {
-      onDownload(track.track_id, track.stem_of?.category, trackId)
+    if (track) {
+      onDownload(trackId, track.stem_of?.category, trackId)
     }
   }, [onDownload, track, trackId])
 
@@ -34,7 +45,7 @@ export const DownloadRow = ({ trackId, onDownload }: DownloadRowProps) => {
       justifyContent='space-between'
     >
       <Flex gap='xl' alignItems='center'>
-        <Text>2</Text>
+        <Text>{index}</Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
             {track?.stem_of?.category}
