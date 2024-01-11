@@ -223,20 +223,20 @@ const Ddex = () => {
   }
 
   // Use this if you want to skip the oauth flow but still show the UI for a user
-  // const fakeUser = {
-  //   userId: '1',
-  //   email: '1',
-  //   name: 'theo',
-  //   handle: 'theo',
-  //   verified: false,
-  //   profilePicture: undefined,
-  //   sub: '1',
-  //   iat: '',
-  // }
+  const fakeUser = {
+    userId: '1',
+    email: '1',
+    name: 'theo',
+    handle: 'theo',
+    verified: false,
+    profilePicture: undefined,
+    sub: '1',
+    iat: '',
+  }
 
   return (
     <>
-      <div className="flex flex-col space-y-4">
+      {/* <div className="flex flex-col space-y-4">
         {!audiusSdk ? (
           'loading...'
         ) : !currentUser ? (
@@ -256,14 +256,14 @@ const Ddex = () => {
             <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
           </>
         )}
-      </div>
+      </div> */}
 
-      {/* <ManageAudiusAccount
+      <ManageAudiusAccount
         currentUser={currentUser || fakeUser}
         onChangeUser={handleOauth}
         oauthError={oauthError}
       />
-      <XmlImporter audiusSdk={audiusSdk} uploader={fakeUser} /> */}
+      <XmlImporter audiusSdk={audiusSdk} uploader={fakeUser} />
 
       <br />
 

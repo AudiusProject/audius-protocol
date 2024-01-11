@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import useUploads from 'providers/useUploads'
+import { trpc } from 'utils/trpc'
 
 const Uploads = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [nextId, setNextId] = useState<number | undefined>(undefined)
   const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  const { data, error, isPending } = useUploads(statusFilter, nextId, prevId)
+  const { data, error, isPending } = trpc.delivery.getUploads.useQuery({status: statusFilter, nextId, prevId})
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -76,7 +76,7 @@ const Uploads = () => {
             </tr>
           </thead>
           <tbody>
-            {data.uploads.map((upload) => (
+            {data.uploads.map((upload: any) => (
               <tr key={upload.id}>
                 <td>{upload.id}</td>
                 <td>{upload.from_zip_file}</td>

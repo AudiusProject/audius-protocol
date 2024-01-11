@@ -1,0 +1,33 @@
+# Build stage for DDEX backend
+FROM node:18.17-slim AS backend-dist
+WORKDIR /backend
+COPY server/package*.json server/tsconfig.json ./
+RUN npm install
+COPY server/src ./src
+RUN npm run build
+
+# Build stage for DDEX frontend
+FROM node:18.17-slim AS frontend-dist
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /frontend
+COPY server ./server
+COPY client/package*.json client/*config*.js client/tsconfig*.json client/vite.config.ts ./
+RUN npm install
+COPY client/src ./src
+COPY client/public ./public
+COPY client/index.html .
+RUN npm run build
+
+# Final stage
+FROM node:18.17-slim
+WORKDIR /usr/src/app
+COPY --from=frontend-dist /frontend/dist ./public
+COPY --from=backend-dist /backend/dist ./dist
+COPY --from=backend-dist /backend/node_modules ./node_modules
+
+EXPOSE 8926
+CMD [ "node", "dist/index.js" ]

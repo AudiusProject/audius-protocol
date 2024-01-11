@@ -46,7 +46,11 @@ export default function createApp(
 
   // Fallback to handle client-side routing, excluding /api routes
   app.get('*', (req: Request, res: Response, next) => {
-    if (req.url.startsWith('/api')) {
+    if (
+      req.url.startsWith('/api') ||
+      req.url.startsWith('/trpc') ||
+      req.url.startsWith('/panel')
+    ) {
       return next()
     }
     res.sendFile(path.join(buildPath, 'index.html'))

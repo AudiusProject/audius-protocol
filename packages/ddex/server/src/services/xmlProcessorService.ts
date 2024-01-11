@@ -30,8 +30,8 @@ export const createXmlProcessorService = (
       const utcReleaseDate = release.release_date.toISOString()
       await sql`INSERT INTO releases (from_xml_file, release_date, data, status) VALUES (
         ${row.id}, ${utcReleaseDate}, ${JSON.stringify(
-          release.data
-        )}, 'pending')`
+        release.data
+      )}, 'pending')`
     }
     await sql`UPDATE xml_files SET status = 'success' WHERE id = ${row.id}`
     // TODO: Handle error state

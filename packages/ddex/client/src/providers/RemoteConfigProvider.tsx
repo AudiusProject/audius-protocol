@@ -6,7 +6,7 @@ import {
   useEffect,
 } from 'react'
 import optimizely, { Client } from '@optimizely/optimizely-sdk'
-import { useEnvVars } from '../providers/EnvVarsProvider'
+import { useEnvVars } from './EnvVarsProvider'
 import { FeatureFlags } from '../utils/constants'
 
 type FlagDefaults = Record<FeatureFlags, boolean>

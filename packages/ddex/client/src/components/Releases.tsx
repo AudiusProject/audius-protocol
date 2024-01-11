@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import useReleases from 'providers/useReleases'
+import { trpc } from 'utils/trpc'
 
 const Releases = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [prevCursor, setPrevCursor] = useState<string | undefined>(undefined)
-  const { data, error, isPending } = useReleases(
-    statusFilter,
-    nextCursor,
-    prevCursor
-  )
+  // const { data, error, isPending } = useReleases(
+  //   statusFilter,
+  //   nextCursor,
+  //   prevCursor
+  // )
+  const { data, error, isPending } = trpc.release.getReleases.useQuery({status: statusFilter, nextCursor, prevCursor})
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -85,7 +86,7 @@ const Releases = () => {
             </tr>
           </thead>
           <tbody>
-            {data.releases.map((release) => (
+            {data.releases.map((release: any) => (
               <tr key={release.id}>
                 <td>{release.id}</td>
                 <td>{release.data.title}</td>

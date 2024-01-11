@@ -8,13 +8,14 @@ const isDevelopment = process.env.IS_DEV === 'true';
 export default defineConfig({
   server: {
     proxy: isDevelopment ? {
-      '/api': 'http://localhost:8926' // Assuming port for ../backend Express server is unchanged
+      '/api': 'http://localhost:8926', // Assuming port for ../server Express server is unchanged
+      '/trpc': 'http://localhost:8926'
     } : {}
   },
   plugins: [
     react(),
     tsconfigPaths({
-      root: './packages/ddex'
+      root: './packages/ddex/client'
     }),
     nodePolyfills({
       globals: {
