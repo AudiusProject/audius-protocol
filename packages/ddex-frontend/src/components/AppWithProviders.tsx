@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AudiusLibsProvider } from '../providers/AudiusLibsProvider'
-import { AudiusSdkProvider } from '../providers/AudiusSdkProvider'
-import { RemoteConfigProvider } from '../providers/RemoteConfigProvider'
-import { ThemeProvider } from '../providers/ThemeProvider'
-import App from './App'
 import Web3 from 'web3'
+
+import { AudiusLibsProvider } from 'providers/AudiusLibsProvider'
+import { AudiusSdkProvider } from 'providers/AudiusSdkProvider'
+import { RemoteConfigProvider } from 'providers/RemoteConfigProvider'
+import { ThemeProvider } from 'providers/ThemeProvider'
+
+import App from './App'
 
 declare global {
   interface Window {

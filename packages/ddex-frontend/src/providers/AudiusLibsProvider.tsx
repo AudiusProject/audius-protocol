@@ -1,11 +1,13 @@
-import type { AudiusLibs as AudiusLibsType } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
 import {
   ReactNode,
   createContext,
   useContext,
   useState,
-  useEffect,
+  useEffect
 } from 'react'
+
+import type { AudiusLibs as AudiusLibsType } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
+
 import { useEnvVars } from './EnvVarsProvider'
 
 type AudiusLibsContextType = {
@@ -16,7 +18,7 @@ type AudiusLibsContextType = {
 const AudiusLibsContext = createContext<AudiusLibsContextType>({
   audiusLibs: null,
   isLoading: true,
-  isReadOnly: true,
+  isReadOnly: true
 })
 
 export const AudiusLibsProvider = ({ children }: { children: ReactNode }) => {
@@ -37,7 +39,7 @@ export const AudiusLibsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (envVars.ethProviderUrl) {
-      void initLibraries()
+      initLibraries()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [envVars])
@@ -45,7 +47,7 @@ export const AudiusLibsProvider = ({ children }: { children: ReactNode }) => {
   const contextValue = {
     audiusLibs,
     isLoading,
-    isReadOnly,
+    isReadOnly
   }
   return (
     <AudiusLibsContext.Provider value={contextValue}>
@@ -54,7 +56,6 @@ export const AudiusLibsProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAudiusLibs = () => useContext(AudiusLibsContext)
 
 // Returns an Audius libs instance that isn't connected to any wallet, so it can't approve transactions
@@ -74,8 +75,8 @@ const initLibsWithoutAccount = async (
     entityManagerAddress: envVars.entityManagerAddress,
     useExternalWeb3: false,
     internalWeb3Config: {
-      web3ProviderEndpoints,
-    },
+      web3ProviderEndpoints
+    }
   }
 
   const ethWeb3Config = AudiusLibs.configEthWeb3(
@@ -99,11 +100,11 @@ const initLibsWithoutAccount = async (
     rewardsManagerProgramId: envVars.rewardsManagerProgramId,
     rewardsManagerProgramPDA: envVars.rewardsManagerProgramPda,
     rewardsManagerTokenPDA: envVars.rewardsManagerTokenPda,
-    useRelay: true,
+    useRelay: true
   })
 
   const identityServiceConfig = {
-    url: envVars.identityServiceEndpoint,
+    url: envVars.identityServiceEndpoint
   }
 
   const audiusLibsConfig = {
@@ -113,7 +114,7 @@ const initLibsWithoutAccount = async (
     identityServiceConfig,
     discoveryProviderConfig: {},
     isServer: false,
-    isDebug: envVars.env === 'staging' || envVars.env === 'development',
+    isDebug: envVars.env === 'staging' || envVars.env === 'development'
   }
 
   // @ts-expect-error (TS2345). It's complaining about not passing all the config args, but they're optional so we can ignore
