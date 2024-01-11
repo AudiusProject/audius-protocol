@@ -3,8 +3,6 @@ import { useState, DragEvent } from 'react'
 import {
   Text,
   Button,
-  ButtonType,
-  ButtonSize,
   Box,
   Flex
 } from '@audius/harmony'
@@ -60,7 +58,7 @@ const ManageAudiusAccount = ({
           </Text>
         )}
       </Flex>
-      <Button variant={ButtonType.SECONDARY} onClick={onChangeUser}>
+      <Button variant='secondary' onClick={onChangeUser}>
         Switch users
       </Button>
       {oauthError && <div className='text-red-600'>{oauthError}</div>}
@@ -219,8 +217,8 @@ const XmlImporter = ({
               </Text>
               <Flex gap='s' alignItems='center'>
                 <Button
-                  variant={ButtonType.DESTRUCTIVE}
-                  size={ButtonSize.SMALL}
+                  variant='destructive'
+                  size='small'
                   onClick={clearSelection}
                 >
                   x
