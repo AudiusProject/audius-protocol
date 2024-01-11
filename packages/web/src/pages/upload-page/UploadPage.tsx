@@ -188,13 +188,8 @@ export const UploadPage = (props: UploadPageProps) => {
     // this will be updated once the UI for download gated tracks is implemented
     const tracksToUpload = tracks.map((track) => {
       const isDownloadable = !!track.metadata.download?.is_downloadable
-      const hasStems = trackStems.length > 0
-      const hasDownloadableAssets = isDownloadable || hasStems
-      const isDownloadGated =
-        hasDownloadableAssets && track.metadata.is_stream_gated
-      const downloadConditions = hasDownloadableAssets
-        ? track.metadata.stream_conditions
-        : null
+      const isDownloadGated = track.metadata.is_stream_gated
+      const downloadConditions = track.metadata.stream_conditions
       return {
         ...track,
         metadata: {
