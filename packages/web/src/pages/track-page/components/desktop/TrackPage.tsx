@@ -203,6 +203,7 @@ const TrackPage = ({
     <Page
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'

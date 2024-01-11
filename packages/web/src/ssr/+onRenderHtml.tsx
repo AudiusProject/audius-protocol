@@ -1,6 +1,7 @@
 import { SsrPageProps } from '@audius/common'
 import { createMemoryHistory } from 'history'
 import ReactDOMServer from 'react-dom/server'
+import { Helmet } from 'react-helmet'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import { PageContextServer } from 'vike/types'
 
@@ -38,11 +39,18 @@ export default function render(
       <Root />
     </SsrContextProvider>
   )
+  const helmet = Helmet.renderStatic()
 
-  const html = getIndexHtml().replace(
-    `<div id="root"></div>`,
-    `<div id="root">${pageHtml}</div>`
-  )
+  const html = getIndexHtml()
+    .replace(`<div id="root"></div>`, `<div id="root">${pageHtml}</div>`)
+    .replace(
+      `<meta property="helmet" />`,
+      `
+      ${helmet.title.toString()}
+      ${helmet.meta.toString()}
+      ${helmet.link.toString()}
+      `
+    )
 
   return escapeInject`${dangerouslySkipEscape(html)}`
 }

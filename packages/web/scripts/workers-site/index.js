@@ -206,9 +206,7 @@ class SEOHandlerHead {
         return
     }
     const tags = `<title>${clean(title)}</title>
-    <meta name="description" content="${clean(
-      description
-    )}" data-react-helmet="true">
+    <meta name="description" content="${clean(description)}">
 
     <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
     <meta property="og:title" content="${clean(title)}">

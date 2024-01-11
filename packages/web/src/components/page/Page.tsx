@@ -107,6 +107,8 @@ const HeaderContainer = (props: HeaderContainerProps) => {
 type PageProps = {
   title?: string
   description?: string
+  ogDescription?: string
+  image?: string
   canonicalUrl?: string
   structuredData?: object
   variant?: 'insert' | 'flush'
@@ -130,6 +132,9 @@ export const Page = (props: PageProps) => {
   const {
     title,
     description,
+    ogDescription,
+    image,
+    canonicalUrl,
     structuredData,
     variant = 'inset',
     size = 'medium',
@@ -152,82 +157,115 @@ export const Page = (props: PageProps) => {
     }
   }
 
+  const formattedTitle = title
+    ? `${title} ${messages.dotAudius}`
+    : messages.audius
+
   return (
-    <Spring
-      from={{ opacity: fromOpacity }}
-      to={{ opacity: 1 }}
-      config={{ duration: fadeDuration }}
-    >
-      {(animProps) => (
-        <div
-          ref={containerRef}
-          style={animProps}
-          className={cn(
-            styles.pageContainer,
-            props.containerClassName,
-            props.className
-          )}
-        >
-          <Helmet encodeSpecialCharacters={false}>
-            {title ? (
-              <title>{`${title} ${messages.dotAudius}`}</title>
-            ) : (
-              <title>{messages.audius}</title>
-            )}
-            {description ? (
-              <meta name='description' content={description} />
-            ) : null}
-            {/* TODO: re-enable once we fix redirects and casing of canonicalUrls */}
-            {/* {canonicalUrl && (
-              <link rel='canonical' href={canonicalUrl} />
-            )} */}
-            {structuredData && (
-              <script type='application/ld+json'>
-                {JSON.stringify(structuredData)}
-              </script>
-            )}
-          </Helmet>
-          {header && (
-            <HeaderContainer
-              header={header}
-              showSearch={showSearch}
-              containerRef={calculateHeaderHeight}
-            />
-          )}
-          <div
-            className={cn({
-              [styles.inset]: variant === 'inset',
-              [styles.flush]: variant === 'flush',
-              [styles.medium]: size === 'medium',
-              [styles.large]: size === 'large',
-              [containerClassName ?? '']: !!containerClassName
-            })}
-            style={
-              variant === 'inset'
-                ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
-                : undefined
-            }
-          >
-            {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
-            <div
-              id='page'
-              className={cn(styles.pageContent, {
-                [contentClassName ?? '']: !!contentClassName
-              })}
-            >
-              {children}
-            </div>
-          </div>
-          <ClientOnly>
-            {scrollableSearch && (
-              <div className={styles.searchWrapper}>
-                <SearchBar />
-              </div>
-            )}
-          </ClientOnly>
-        </div>
+    <>
+      {/* Title */}
+      <Helmet>
+        <title>{formattedTitle}</title>
+        <meta property='og:title' content={formattedTitle} />
+        <meta name='twitter:title' content={formattedTitle} />
+      </Helmet>
+
+      {/* Description */}
+      {description ? (
+        <Helmet encodeSpecialCharacters={false}>
+          <meta name='description' content={description} />
+        </Helmet>
+      ) : null}
+
+      {/* OG Description - This is the actual description of the content, for example a Track description */}
+      {ogDescription ? (
+        <Helmet encodeSpecialCharacters={false}>
+          <meta property='og:description' content={ogDescription} />
+          <meta name='twitter:description' content={ogDescription} />
+        </Helmet>
+      ) : null}
+
+      {/* Canonical URL */}
+      {canonicalUrl ? (
+        <Helmet encodeSpecialCharacters={false}>
+          <link rel='canonical' href={canonicalUrl} />
+          <meta property='og:url' content={canonicalUrl} />
+        </Helmet>
+      ) : null}
+
+      {/* Image */}
+      {image ? (
+        <Helmet encodeSpecialCharacters={false}>
+          <meta property='og:image' content={image} />
+          <meta name='twitter:image' content={image} />
+        </Helmet>
+      ) : null}
+
+      <meta property='og:type' content='website' />
+      <meta name='twitter:card' content='summary' />
+
+      {structuredData && (
+        <script type='application/ld+json'>
+          {JSON.stringify(structuredData)}
+        </script>
       )}
-    </Spring>
+      <Spring
+        from={{ opacity: fromOpacity }}
+        to={{ opacity: 1 }}
+        config={{ duration: fadeDuration }}
+      >
+        {(animProps) => (
+          <div
+            ref={containerRef}
+            style={animProps}
+            className={cn(
+              styles.pageContainer,
+              props.containerClassName,
+              props.className
+            )}
+          >
+            {header && (
+              <HeaderContainer
+                header={header}
+                showSearch={showSearch}
+                containerRef={calculateHeaderHeight}
+              />
+            )}
+            <div
+              className={cn({
+                [styles.inset]: variant === 'inset',
+                [styles.flush]: variant === 'flush',
+                [styles.medium]: size === 'medium',
+                [styles.large]: size === 'large',
+                [containerClassName ?? '']: !!containerClassName
+              })}
+              style={
+                variant === 'inset'
+                  ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
+                  : undefined
+              }
+            >
+              {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
+              <div
+                id='page'
+                className={cn(styles.pageContent, {
+                  [contentClassName ?? '']: !!contentClassName
+                })}
+              >
+                {children}
+              </div>
+            </div>
+            <ClientOnly>
+              {scrollableSearch && (
+                <div className={styles.searchWrapper}>
+                  <SearchBar />
+                </div>
+              )}
+            </ClientOnly>
+          </div>
+        )}
+      </Spring>
+    </>
   )
 }
 
