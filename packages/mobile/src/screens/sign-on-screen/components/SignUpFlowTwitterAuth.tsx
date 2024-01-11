@@ -65,7 +65,7 @@ const getOauthToken = async (
   }
 }
 
-const authenticationUrl = (oauthToken: string) =>
+const authenticationUrl = (oauthToken: string | undefined) =>
   `https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}&force_login=${twitterApi.forceLogin}`
 
 type CredentialsType = 'omit' | 'same-origin' | 'include'
@@ -121,7 +121,9 @@ const useSetProfileFromTwitter = () => {
 }
 
 const useTwitterAuthToken = () => {
-  const { value: authToken } = useAsync(async () => {
+  const [authToken, setAuthToken] = useState<string | undefined>()
+  useAsync(async () => {
+    // only refresh token if we don't have one already (avoid extra API calls)
     if (!authToken) {
       const tokenResp = await fetch(twitterApi.requestTokenUrl, {
         method: 'POST',
@@ -129,7 +131,9 @@ const useTwitterAuthToken = () => {
         headers: twitterApi.headers
       })
       const tokenRespJson = await tokenResp.json()
-      return tokenRespJson.oauth_token
+      if (tokenRespJson.oauth_token) {
+        setAuthToken(tokenRespJson.oauth_token)
+      }
     }
   }, [])
 
@@ -145,6 +149,7 @@ export const SignUpFlowTwitterAuth = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const setProfileFromTwitter = useSetProfileFromTwitter()
   const authToken = useTwitterAuthToken()
+  const authUrl = authenticationUrl(authToken)
 
   const handlePress = async () => {
     onStart?.()
@@ -180,15 +185,13 @@ export const SignUpFlowTwitterAuth = ({
 
   return (
     <>
-      {authToken && (
-        <OAuthWebView
-          isOpen={isModalOpen}
-          url={authenticationUrl(authToken)}
-          provider={Provider.TWITTER}
-          onClose={handleClose}
-          onResponse={handleResponse}
-        />
-      )}
+      <OAuthWebView
+        isOpen={isModalOpen}
+        url={authUrl}
+        provider={Provider.TWITTER}
+        onClose={handleClose}
+        onResponse={handleResponse}
+      />
       <SocialButton
         socialType='twitter'
         style={{ flex: 1, height: '100%' }}
