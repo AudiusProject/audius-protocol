@@ -1,11 +1,6 @@
 import { useState, DragEvent } from 'react'
 
-import {
-  Text,
-  Button,
-  Box,
-  Flex
-} from '@audius/harmony'
+import { Text, Button, Box, Flex } from '@audius/harmony'
 import type {
   DecodedUserToken,
   AudiusSdk

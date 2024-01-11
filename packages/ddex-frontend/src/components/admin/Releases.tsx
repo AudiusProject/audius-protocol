@@ -1,11 +1,6 @@
 import { useState } from 'react'
 
-import {
-  Text,
-  Button,
-  Box,
-  Flex
-} from '@audius/harmony'
+import { Text, Button, Box, Flex } from '@audius/harmony'
 
 import useReleases from 'providers/useReleases'
 
