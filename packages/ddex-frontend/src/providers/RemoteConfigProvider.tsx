@@ -8,8 +8,8 @@ import {
 
 import optimizely, { Client } from '@optimizely/optimizely-sdk'
 
-import { useEnvVars } from '../providers/EnvVarsProvider'
-import { FeatureFlags } from '../utils/constants'
+import { useEnvVars } from 'providers/EnvVarsProvider'
+import { FeatureFlags } from 'utils/constants'
 
 type FlagDefaults = Record<FeatureFlags, boolean>
 const flagDefaults: FlagDefaults = {
