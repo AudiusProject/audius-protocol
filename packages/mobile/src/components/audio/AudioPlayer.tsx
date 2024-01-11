@@ -451,14 +451,15 @@ export const AudioPlayer = () => {
       // Handle track end event
       if (
         isNewPodcastControlsEnabled &&
-        event?.position != null &&
-        event?.track != null
+        event?.lastPosition !== undefined &&
+        event?.index !== undefined
       ) {
-        const { track } = queueTracks[event.track] ?? {}
+        const { track } = queueTracks[event.index] ?? {}
         const isLongFormContent =
           track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
         const isAtEndOfTrack =
-          track?.duration && event.position >= track.duration - TRACK_END_BUFFER
+          track?.duration &&
+          event.lastPosition >= track.duration - TRACK_END_BUFFER
 
         if (isLongFormContent && isAtEndOfTrack) {
           dispatch(
