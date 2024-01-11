@@ -145,6 +145,7 @@ export const SignUpFlowTwitterAuth = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const setProfileFromTwitter = useSetProfileFromTwitter()
   const authToken = useTwitterAuthToken()
+  const authUrl = authenticationUrl(authToken)
 
   const handlePress = async () => {
     onStart?.()
@@ -180,15 +181,13 @@ export const SignUpFlowTwitterAuth = ({
 
   return (
     <>
-      {authToken && (
-        <OAuthWebView
-          isOpen={isModalOpen}
-          url={authenticationUrl(authToken)}
-          provider={Provider.TWITTER}
-          onClose={handleClose}
-          onResponse={handleResponse}
-        />
-      )}
+      <OAuthWebView
+        isOpen={isModalOpen}
+        url={authUrl}
+        provider={Provider.TWITTER}
+        onClose={handleClose}
+        onResponse={handleResponse}
+      />
       <SocialButton
         socialType='twitter'
         style={{ flex: 1, height: '100%' }}
