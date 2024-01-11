@@ -23,7 +23,7 @@ name = "audius"
 vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", EMBED = "https://embed.audius.workers.dev", DISCOVERY_NODES = "https://discoveryprovider.audius.co,https://discoveryprovider2.audius.co,https://discoveryprovider3.audius.co" }
 
 # Test environment, replace `test` with subdomain
-# Invoke with npx wrangler dev --watch --env test
+# Invoke with npx wrangler dev --env test
 [env.test]
 name = "test"
 services = [

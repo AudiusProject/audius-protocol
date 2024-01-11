@@ -32,9 +32,14 @@ import error from 'store/errors/reducers'
 
 const createRootReducer = (
   routeHistory: History,
-  ssrPageProps?: SsrPageProps
+  ssrPageProps?: SsrPageProps,
+  isServerSide?: boolean
 ) => {
-  const commonStoreReducers = clientStoreReducers(localForage, ssrPageProps)
+  const commonStoreReducers = clientStoreReducers(
+    localForage,
+    ssrPageProps,
+    isServerSide
+  )
 
   return combineReducers({
     // Common store

@@ -13,7 +13,7 @@ import { useSsrContext } from '../ssr/SsrContext'
 import { useHistoryContext } from './HistoryProvider'
 
 export const ReduxProvider = ({ children }: { children: ReactNode }) => {
-  const { pageProps } = useSsrContext()
+  const { pageProps, isServerSide } = useSsrContext()
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
 
@@ -21,7 +21,7 @@ export const ReduxProvider = ({ children }: { children: ReactNode }) => {
   const [persistor, setPersistor] = useState<Persistor>()
 
   if (!store) {
-    const store = configureStore(history, isMobile, pageProps)
+    const store = configureStore(history, isMobile, pageProps, isServerSide)
     setStore(store)
     const persistor = persistStore(store)
     setPersistor(persistor)
@@ -32,7 +32,9 @@ export const ReduxProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Set up logger on store
-    logger(store)
+    if (!isServerSide) {
+      logger(store)
+    }
   }
 
   return store && persistor ? (

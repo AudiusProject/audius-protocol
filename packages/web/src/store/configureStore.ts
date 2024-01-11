@@ -95,7 +95,8 @@ const sentryMiddleware = createSentryMiddleware(
 export const configureStore = (
   history: History,
   isMobile: boolean,
-  ssrPageProps?: SsrPageProps
+  ssrPageProps?: SsrPageProps,
+  isServerSide?: boolean
 ) => {
   const onSagaError = (
     error: Error,
@@ -147,7 +148,7 @@ export const configureStore = (
   })
 
   const store = createStore(
-    createRootReducer(history, ssrPageProps),
+    createRootReducer(history, ssrPageProps, isServerSide),
     composeEnhancers(middlewares)
   )
 

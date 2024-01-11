@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_PUBLIC_URL || '/',
     build: {
       outDir: ssr ? 'build-ssr' : 'build',
-      sourcemap: false,
+      sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true

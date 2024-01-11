@@ -11,8 +11,6 @@ import { Root } from '../Root'
 import { SsrContextProvider } from './SsrContext'
 import { getIndexHtml } from './getIndexHtml'
 
-export const passToClient = ['pageProps', 'urlPathname']
-
 export default function render(
   pageContext: PageContextServer & {
     pageProps: SsrPageProps
