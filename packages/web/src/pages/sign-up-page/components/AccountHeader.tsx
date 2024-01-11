@@ -30,6 +30,8 @@ type AccountHeaderProps = {
   size?: 'small' | 'large'
   formDisplayName?: string
   formProfileImage?: ImageFieldValue
+  onProfileImageChange?: (value: ImageFieldValue) => void
+  onCoverPhotoChange?: (value: ImageFieldValue) => void
 }
 
 const ProfileImageAvatar = ({
@@ -73,8 +75,15 @@ const ProfileImageAvatar = ({
 }
 
 export const AccountHeader = (props: AccountHeaderProps) => {
-  const { backButtonText, mode, formDisplayName, formProfileImage, size } =
-    props
+  const {
+    backButtonText,
+    mode,
+    formDisplayName,
+    formProfileImage,
+    onProfileImageChange,
+    onCoverPhotoChange,
+    size
+  } = props
   const { value: profileImage } = useSelector(getProfileImageField) ?? {}
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
@@ -110,7 +119,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
       ) : null}
       <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
-          <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
+          <ImageField
+            onChange={onCoverPhotoChange}
+            name='coverPhoto'
+            imageResizeOptions={{ square: false }}
+          >
             {(uploadedImage) => (
               <CoverPhotoBanner
                 coverPhotoUrl={uploadedImage?.url}
@@ -144,7 +157,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         gap={isSmallSize ? 's' : 'xl'}
       >
         {isEditing ? (
-          <ImageField name='profileImage' css={{ flex: 0 }}>
+          <ImageField
+            onChange={onProfileImageChange}
+            name='profileImage'
+            css={{ flex: 0 }}
+          >
             {(uploadedImage) => (
               <ProfileImageAvatar
                 imageUrl={uploadedImage?.url ?? profileImage?.url}
