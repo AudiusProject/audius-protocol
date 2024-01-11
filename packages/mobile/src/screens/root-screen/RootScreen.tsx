@@ -60,6 +60,7 @@ export const RootScreen = () => {
   const accountStatus = useSelector(getAccountStatus)
   const showHomeStack = useSelector(getHasCompletedAccount)
   const startedSignUp = useSelector(getStartedSignUpProcess)
+  const [welcomeModalShown, setWelcomeModalShown] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
@@ -103,11 +104,18 @@ export const RootScreen = () => {
 
   useEffect(() => {
     if (isSignUpRedesignEnabled) {
-      if (showHomeStack && startedSignUp) {
+      if (showHomeStack && startedSignUp && !welcomeModalShown) {
         openWelcomeDrawer()
+        setWelcomeModalShown(true)
       }
     }
-  }, [isSignUpRedesignEnabled, openWelcomeDrawer, showHomeStack, startedSignUp])
+  }, [
+    isSignUpRedesignEnabled,
+    openWelcomeDrawer,
+    showHomeStack,
+    startedSignUp,
+    welcomeModalShown
+  ])
 
   return (
     <>
