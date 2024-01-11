@@ -124,7 +124,19 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       {onSelectCoverPhoto ? (
         <IconButton
           accessibilityLabel={messages.selectCoverPhoto}
-          style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
+          style={{
+            // we want the pressable surface larger than just the icon
+            width: spacing.unit14,
+            height: spacing.unit14,
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            paddingTop: spacing.m,
+            paddingRight: spacing.m,
+            justifyContent: 'flex-end',
+            alignItems: 'flex-start',
+            borderRadius: 0
+          }}
           color='staticWhite'
           shadow='near'
           onPress={onSelectCoverPhoto}
