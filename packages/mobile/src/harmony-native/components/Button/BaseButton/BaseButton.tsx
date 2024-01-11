@@ -78,7 +78,9 @@ export const BaseButton = (props: BaseButtonProps) => {
   }
 
   const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+    ...(!fullWidth && {
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+    })
   }))
 
   const handleLayoutChange = useCallback((event: LayoutChangeEvent) => {
