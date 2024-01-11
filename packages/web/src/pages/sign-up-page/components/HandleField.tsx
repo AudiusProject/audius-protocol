@@ -156,7 +156,9 @@ export const HandleField = forwardRef(
         placeholder={messages.handle}
         transformValueOnChange={(value) => value.replace(/\s/g, '')}
         debouncedValidationMs={1000}
-        endIcon={!isWaitingOnValidation && !error ? IconCheck : undefined}
+        endIcon={
+          !isWaitingOnValidation && !error && handle ? IconCheck : undefined
+        }
         onChange={(e) => {
           onChange?.(e)
           setIsWaitingOnValidation(true)
