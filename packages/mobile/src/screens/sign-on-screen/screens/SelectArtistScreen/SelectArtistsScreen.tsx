@@ -15,7 +15,6 @@ import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsib
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'

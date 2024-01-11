@@ -37,12 +37,13 @@ export const SocialMediaLoading = ({ onClose }: { onClose: () => void }) => {
       })}
     >
       <IconButton
+        color='subdued'
         icon={IconClose}
         aria-label='Return to email screen'
         style={css({
           position: 'absolute',
-          top: spacing['2xl'],
-          left: spacing['2xl']
+          top: spacing.xl,
+          left: spacing.xl
         })}
         onPress={onClose}
       />
