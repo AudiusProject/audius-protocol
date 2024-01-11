@@ -30,7 +30,7 @@
     "@tanstack/query-core": "5.8.7",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
-    "classnames": "^2.5.1",
+    "classnames": "2.5.1",
     "hashids": "2.2.1",
     "linkedom": "0.15.6",
     "lodash": "4.17.21",

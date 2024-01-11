@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import useReleases from 'providers/useReleases'
-import { Button, Box, Flex } from '@audius/harmony'
+import { Button, ButtonType, ButtonSize, Box, Flex } from '@audius/harmony'
 
 const Releases = () => {
   const [statusFilter, setStatusFilter] = useState('')
@@ -98,16 +98,16 @@ const Releases = () => {
 
         <Flex justifyContent="space-between">
           <Button
-            variant="tertiary"
-            size="small"
+            variant={ButtonType.TERTIARY}
+            size={ButtonSize.SMALL}
             onClick={handlePrev}
             disabled={!prevCursor}
           >
             Previous
           </Button>
           <Button
-            variant="tertiary"
-            size="small"
+            variant={ButtonType.TERTIARY}
+            size={ButtonSize.SMALL}
             onClick={handleNext}
             disabled={!nextCursor && (!data || data.length === 0)}
           >
