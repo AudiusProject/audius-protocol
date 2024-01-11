@@ -8,8 +8,6 @@ import {
   IconCaretLeft,
   IconCloseAlt,
   PlainButton,
-  PlainButtonSize,
-  PlainButtonType,
   useTheme
 } from '@audius/harmony'
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
@@ -84,11 +82,11 @@ export const NavHeader = () => {
         {isMobile ? (
           <HeaderRoot pv='l'>
             <PlainButton
-              size={PlainButtonSize.LARGE}
+              size='large'
               css={{ padding: 0 }}
               onClick={handleClose}
               iconLeft={IconCloseAlt}
-              variant={PlainButtonType.SUBDUED}
+              variant='subdued'
             />
           </HeaderRoot>
         ) : null}
@@ -115,11 +113,11 @@ export const NavHeader = () => {
           {isBackAllowed ? (
             <>
               <PlainButton
-                size={PlainButtonSize.LARGE}
+                size='large'
                 css={{ padding: 0 }}
                 onClick={history.goBack}
                 iconLeft={IconCaretLeft}
-                variant={PlainButtonType.SUBDUED}
+                variant='subdued'
               />
               {audiusLogo}
               <Box css={{ width: iconSizes.m }} />

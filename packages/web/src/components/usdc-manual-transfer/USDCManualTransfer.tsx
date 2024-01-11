@@ -8,7 +8,7 @@ import {
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, ButtonType, Flex, IconLogoCircleUSDC } from '@audius/harmony'
+import { Button, Flex, IconLogoCircleUSDC } from '@audius/harmony'
 import { IconError } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -110,11 +110,11 @@ export const USDCManualTransfer = ({
       >
         {amountInCents === undefined ? (
           <>
-            <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
+            <Button variant='primary' fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
             {mobile ? null : (
-              <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+              <Button variant='tertiary' fullWidth onClick={onClose}>
                 {messages.goBack}
               </Button>
             )}
@@ -122,16 +122,12 @@ export const USDCManualTransfer = ({
         ) : (
           <>
             {mobile ? null : (
-              <Button
-                variant={ButtonType.SECONDARY}
-                fullWidth
-                onClick={onClose}
-              >
+              <Button variant='secondary' fullWidth onClick={onClose}>
                 {messages.goBack}
               </Button>
             )}
             <Button
-              variant={ButtonType.PRIMARY}
+              variant='primary'
               fullWidth
               color='lightGreen'
               disabled={isBuyButtonDisabled}

@@ -1,5 +1,5 @@
 import { Nullable } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { Modal, ModalHeader, ModalTitle, ModalContent } from '@audius/stems'
 
 import styles from './DeleteConfirmationModal.module.css'
@@ -38,12 +38,12 @@ const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
         <div className={styles.buttons}>
           <Button
             className={styles.deleteButton}
-            variant={ButtonType.DESTRUCTIVE}
+            variant='destructive'
             onClick={props.onDelete}
           >{`Delete ${props.entity}`}</Button>
           <Button
             className={styles.nevermindButton}
-            variant={ButtonType.SECONDARY}
+            variant='secondary'
             onClick={props.onCancel}
           >
             Nevermind

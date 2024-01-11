@@ -7,18 +7,9 @@ import type { SpecialColors } from 'foundations/color'
 
 import type { IconComponent } from '../icon'
 
-export enum ButtonType {
-  PRIMARY = 'primary',
-  SECONDARY = 'secondary',
-  TERTIARY = 'tertiary',
-  DESTRUCTIVE = 'destructive'
-}
+export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
 
-export enum ButtonSize {
-  SMALL = 'small',
-  DEFAULT = 'default',
-  LARGE = 'large'
-}
+export type ButtonSize = 'small' | 'default' | 'large'
 
 type BaseButtonStyles = {
   button: CSSObject
@@ -106,7 +97,7 @@ export type ButtonProps = {
   /**
    * The type of the button
    */
-  variant?: ButtonType
+  variant?: ButtonVariant
 
   /**
    * The button size
@@ -114,22 +105,15 @@ export type ButtonProps = {
   size?: ButtonSize
 } & Omit<BaseButtonProps, 'styles'>
 
-export enum PlainButtonType {
-  DEFAULT = 'default',
-  SUBDUED = 'subdued',
-  INVERTED = 'inverted'
-}
+export type PlainButtonVariant = 'default' | 'subdued' | 'inverted'
 
-export enum PlainButtonSize {
-  DEFAULT = 'default',
-  LARGE = 'large'
-}
+export type PlainButtonSize = 'default' | 'large'
 
 export type PlainButtonProps = {
   /**
    * The type of the button
    */
-  variant?: PlainButtonType
+  variant?: PlainButtonVariant
 
   /**
    * The button size
@@ -137,22 +121,9 @@ export type PlainButtonProps = {
   size?: PlainButtonSize
 } & Omit<BaseButtonProps, 'styles'>
 
-export enum FilterButtonSize {
-  DEFAULT = 'default',
-  SMALL = 'small'
-}
+export type FilterButtonSize = 'default' | 'small'
 
-export enum FilterButtonType {
-  /**
-   * The container is filled with solid color after selection
-   */
-  FILL_CONTAINER = 'fillContainer',
-
-  /**
-   * The label is used as the selected value
-   */
-  REPLACE_LABEL = 'replaceLabel'
-}
+export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
 
 export type FilterButtonOption = {
   label: string
@@ -193,7 +164,7 @@ export type FilterButtonProps = {
    * The type of filter button
    * @default FilterButtonType.FILL_CONTAINER
    */
-  variant?: FilterButtonType
+  variant?: FilterButtonVariant
 
   /**
    * Optional icon element to include on the left side of the button
