@@ -330,8 +330,8 @@ export const AudioPlayer = () => {
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
-    const duration = await TrackPlayer.getDuration()
-    const position = await TrackPlayer.getPosition()
+    const duration = (await TrackPlayer.getProgress()).duration
+    const position = (await TrackPlayer.getProgress()).position
 
     if (event.type === Event.PlaybackError) {
       console.error(`TrackPlayer Playback Error:`, event)
@@ -363,9 +363,9 @@ export const AudioPlayer = () => {
       // TODO: Queue ended, what should done here?
     }
 
-    if (event.type === Event.PlaybackTrackChanged) {
-      const playerIndex = await TrackPlayer.getCurrentTrack()
-      if (playerIndex === null) return
+    if (event.type === Event.PlaybackActiveTrackChanged) {
+      const playerIndex = await TrackPlayer.getActiveTrackIndex()
+      if (playerIndex === undefined) return
 
       // Manually increment player count if we are repeating
       if ((await TrackPlayer.getRepeatMode()) === TrackPlayerRepeatMode.Track) {
@@ -684,7 +684,7 @@ export const AudioPlayer = () => {
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
-    const playerIdx = await TrackPlayer.getCurrentTrack()
+    const playerIdx = await TrackPlayer.getActiveTrackIndex()
     const queue = await TrackPlayer.getQueue()
 
     if (
@@ -698,12 +698,12 @@ export const AudioPlayer = () => {
   }, [queueIndex])
 
   const handleTogglePlay = useCallback(async () => {
-    if (playbackState === State.Playing && !playing) {
+    if (playbackState.state === State.Playing && !playing) {
       await TrackPlayer.pause()
     } else if (
-      (playbackState === State.Paused ||
-        playbackState === State.Ready ||
-        playbackState === State.Stopped) &&
+      (playbackState.state === State.Paused ||
+        playbackState.state === State.Ready ||
+        playbackState.state === State.Stopped) &&
       playing
     ) {
       await TrackPlayer.play()
