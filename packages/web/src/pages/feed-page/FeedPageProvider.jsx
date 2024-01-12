@@ -157,11 +157,11 @@ const mapDispatchToProps = (dispatch) => ({
   pauseFeedTrack: () => dispatch(feedActions.pause())
 })
 
-const InnerFeedPageProvider = withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(FeedPageProvider)
-)
-
-export default () => {
+const FeedPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <InnerFeedPageProvider isMobile={isMobile} />
+  return <FeedPageProvider isMobile={isMobile} {...props} />
 }
+
+export default withRouter(
+  connect(makeMapStateToProps, mapDispatchToProps)(FeedPageProviderWrapper)
+)

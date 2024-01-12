@@ -306,11 +306,11 @@ const mapDispatchToProps = (dispatch) => ({
   }
 })
 
-const InnerTrendingPageProvider = withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProvider)
-)
-
-export default () => {
+const TrendingPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <InnerTrendingPageProvider isMobile={isMobile} />
+  return <TrendingPageProvider isMobile={isMobile} {...props} />
 }
+
+export default withRouter(
+  connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProviderWrapper)
+)
