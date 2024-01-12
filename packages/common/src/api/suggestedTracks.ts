@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { difference, isEqual, shuffle } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
+import { useCustomCompareEffect } from 'react-use'
 
 import { usePaginatedQuery } from 'audius-query'
 import { ID } from 'models/Identifiers'
@@ -73,21 +74,27 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     selectCollectionTrackIds(state, collectionId)
   )
 
-  const { data: ownTracks } = useGetTracksByUser(
+  const { data: ownTracks, status } = useGetTracksByUser(
     { userId: currentUserId!, currentUserId },
     { disabled: !currentUserId }
   )
 
-  useEffect(() => {
-    if (ownTracks?.length) {
-      const suggestedTrackIds = difference(
-        shuffle(ownTracks).map((track) => parseInt(track.track_id.toString())),
-        collectionTrackIds
-      )
-      setSuggestedTrackIds(suggestedTrackIds)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownTracks])
+  useCustomCompareEffect(
+    () => {
+      if (status === Status.SUCCESS && ownTracks) {
+        const suggestedTrackIds = difference(
+          shuffle(ownTracks).map((track) =>
+            parseInt(track.track_id.toString())
+          ),
+          collectionTrackIds
+        )
+        setSuggestedTrackIds(suggestedTrackIds)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [status, ownTracks?.length],
+    isEqual
+  )
 
   const suggestedTracks = useSelector(
     (state: CommonState) =>
