@@ -68,7 +68,6 @@ const userApi = createApi({
         return apiUser?.[0]
       },
       options: {
-        idArgKey: 'handle',
         kind: Kind.USERS,
         schemaKey: 'user'
       }
@@ -80,6 +79,28 @@ const userApi = createApi({
         return await audiusBackend.getCreators(ids)
       },
       options: { idListArgKey: 'ids', kind: Kind.USERS, schemaKey: 'users' }
+    },
+    getTracksByUser: {
+      fetch: async (
+        { userId, currentUserId }: { userId: ID; currentUserId: Nullable<ID> },
+        audiusQueryContext
+      ) => {
+        const { apiClient } = audiusQueryContext
+        const { handle } = await userApiFetch.getUserById(
+          { id: userId, currentUserId },
+          audiusQueryContext
+        )
+        const tracks = await apiClient.getUserTracksByHandle({
+          handle,
+          currentUserId,
+          getUnlisted: userId === currentUserId
+        })
+        return tracks
+      },
+      options: {
+        kind: Kind.TRACKS,
+        schemaKey: 'tracks'
+      }
     },
     getUSDCTransactions: {
       fetch: async (
@@ -142,6 +163,8 @@ const userApi = createApi({
 export const {
   useGetUserById,
   useGetUsersByIds,
+  useGetUserByHandle,
+  useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount
 } = userApi.hooks

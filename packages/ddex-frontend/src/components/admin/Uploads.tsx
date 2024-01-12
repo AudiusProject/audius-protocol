@@ -13,15 +13,15 @@ const Uploads = () => {
   const { data, error, isPending } = useUploads(statusFilter, nextId, prevId)
 
   const handleNext = () => {
-    if (data && data.length) {
-      setNextId(data[data.length - 1].id)
+    if (data?.hasMoreNext) {
+      setNextId(data.uploads[0].id)
       setPrevId(undefined)
     }
   }
 
   const handlePrev = () => {
-    if (data && data.length) {
-      setPrevId(data[0].id)
+    if (data?.hasMorePrev) {
+      setPrevId(data.uploads[data.uploads.length - 1].id)
       setNextId(undefined)
     }
   }
@@ -88,8 +88,8 @@ const Uploads = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.map((upload, index) => (
-                  <tr key={index}>
+                {data.uploads.map((upload) => (
+                  <tr key={upload.id}>
                     <td>{upload.id}</td>
                     <td>{upload.from_zip_file}</td>
                     <td>{upload.uploaded_by}</td>
@@ -106,7 +106,7 @@ const Uploads = () => {
               variant='tertiary'
               size='small'
               onClick={handlePrev}
-              disabled={!prevId}
+              disabled={!data?.hasMorePrev}
             >
               Previous
             </Button>
@@ -114,7 +114,7 @@ const Uploads = () => {
               variant='tertiary'
               size='small'
               onClick={handleNext}
-              disabled={!nextId && (!data || data.length === 0)}
+              disabled={!data?.hasMoreNext}
             >
               Next
             </Button>

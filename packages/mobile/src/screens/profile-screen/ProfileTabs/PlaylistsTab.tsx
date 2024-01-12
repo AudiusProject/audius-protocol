@@ -47,7 +47,6 @@ export const PlaylistsTab = () => {
   return (
     <CollectionList
       collection={playlist_count > 0 || isOwner ? playlists : emptyPlaylists}
-      collectionType='playlist'
       style={{ paddingTop: spacing(3) }}
       ListEmptyComponent={
         <EmptyProfileTile tab='playlists' style={{ marginTop: 0 }} />

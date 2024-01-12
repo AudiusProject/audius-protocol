@@ -17,17 +17,17 @@ const Releases = () => {
   )
 
   const handleNext = () => {
-    if (data && data.length) {
-      const lastItem = data[data.length - 1]
-      setNextCursor(`${lastItem.release_date},${lastItem.id}`)
+    if (data?.hasMoreNext) {
+      const maxRelease = data.releases[0]
+      setNextCursor(`${maxRelease.release_date},${maxRelease.id}`)
       setPrevCursor(undefined)
     }
   }
 
   const handlePrev = () => {
-    if (data && data.length) {
-      const firstItem = data[0]
-      setPrevCursor(`${firstItem.release_date},${firstItem.id}`)
+    if (data?.hasMorePrev) {
+      const minRelease = data.releases[data.releases.length - 1]
+      setPrevCursor(`${minRelease.release_date},${minRelease.id}`)
       setNextCursor(undefined)
     }
   }
@@ -95,7 +95,7 @@ const Releases = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.map((release) => (
+                {data.releases.map((release) => (
                   <tr key={release.id}>
                     <td>{release.id}</td>
                     <td>{release.data.title}</td>
@@ -114,7 +114,7 @@ const Releases = () => {
               variant='tertiary'
               size='small'
               onClick={handlePrev}
-              disabled={!prevCursor}
+              disabled={!data?.hasMorePrev}
             >
               Previous
             </Button>
@@ -122,7 +122,7 @@ const Releases = () => {
               variant='tertiary'
               size='small'
               onClick={handleNext}
-              disabled={!nextCursor && (!data || data.length === 0)}
+              disabled={!data?.hasMoreNext}
             >
               Next
             </Button>

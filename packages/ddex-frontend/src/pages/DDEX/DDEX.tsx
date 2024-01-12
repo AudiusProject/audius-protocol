@@ -62,9 +62,11 @@ const ManageAudiusAccount = ({
 }
 
 const XmlImporter = ({
-  audiusSdk
+  audiusSdk,
+  uploader
 }: {
   audiusSdk: AudiusSdk | undefined | null
+  uploader: DecodedUserToken | null
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -134,6 +136,7 @@ const XmlImporter = ({
 
     const formData = new FormData()
     formData.append('file', selectedFile)
+    formData.append('uploadedBy', uploader?.userId || '')
 
     try {
       const response = await fetch('/api/upload', {
@@ -295,31 +298,33 @@ const Ddex = () => {
               className={styles.page}
             >
               <Flex gap='xl' direction='column'>
-                <XmlImporter audiusSdk={audiusSdk} />
+                <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
                 {/* <ManageAudiusAccount
                   currentUser={currentUser || fakeUser}
                   isAdmin={true}
                   onChangeUser={handleOauth}
                   oauthError={oauthError}
                 />
-                <XmlImporter audiusSdk={audiusSdk} /> */}
+                <XmlImporter audiusSdk={audiusSdk}  uploader={fakeUser} /> */}
 
-                {isAdmin && (
-                  <>
-                    <Flex direction='column' gap='s'>
-                      <Uploads />
-                    </Flex>
-                    <Flex direction='column' gap='s'>
-                      <Releases />
-                    </Flex>
-                  </>
-                )}
-              </Flex>
-            </Box>
-          </Flex>
+                {
+                  isAdmin && (
+                    <>
+                      <Flex direction='column' gap='s'>
+                        <Uploads />
+                      </Flex>
+                      <Flex direction='column' gap='s'>
+                        <Releases />
+                      </Flex>
+                    </>
+                  )
+                }
+              </Flex >
+            </Box >
+          </Flex >
         )}
-      </Flex>
-    </Box>
+      </Flex >
+    </Box >
   )
 }
 

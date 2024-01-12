@@ -18,8 +18,9 @@ export const getReleasesFromXml = async (
 
     // TODO: This should really be mapping result.release, not result.release.tracks.track
     const releasePromises = trackNodes.map(async (trackNode: any) => {
-      const releaseDateValue =
+      const releaseDateValue = new Date(
         trackNode.OriginalReleaseDate || trackNode.originalReleaseDate
+      )
       const title = trackNode.TitleText || trackNode.trackTitle
       const tt = {
         title,
@@ -28,9 +29,7 @@ export const getReleasesFromXml = async (
         // genre: firstValue(trackNode, "Genre", "trackGenre"),
         genre: 'Metal' as Genre,
 
-        // todo: need to parse release date if present
-        releaseDate: new Date(releaseDateValue as string | number | Date),
-        // releaseDate: new Date(),
+        releaseDate: releaseDateValue,
 
         isUnlisted: false,
         isStreamGated: false,
@@ -55,7 +54,7 @@ export const getReleasesFromXml = async (
       const userId = users[0].id
 
       return {
-        release_date: new Date(releaseDateValue),
+        release_date: releaseDateValue,
         data: { ...tt, userId, artistName },
       }
     })

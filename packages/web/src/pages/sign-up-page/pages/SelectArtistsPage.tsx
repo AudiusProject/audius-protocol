@@ -116,7 +116,10 @@ export const SelectArtistsPage = () => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
-            <AccountHeader mode='viewing' />
+            <AccountHeader
+              backButtonText={messages.backToGenres}
+              mode='viewing'
+            />
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}

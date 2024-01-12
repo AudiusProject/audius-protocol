@@ -138,7 +138,7 @@ const playerEvents = [
   Event.PlaybackError,
   Event.PlaybackProgressUpdated,
   Event.PlaybackQueueEnded,
-  Event.PlaybackTrackChanged,
+  Event.PlaybackActiveTrackChanged,
   Event.RemotePlay,
   Event.RemotePause,
   Event.RemoteNext,
@@ -274,10 +274,6 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
-  const incrementCount = useCallback(
-    () => dispatch(playerActions.incrementCount()),
-    [dispatch]
-  )
 
   // Perform initial setup for the track player
   useAsync(async () => {
@@ -329,8 +325,8 @@ export const AudioPlayer = () => {
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
-    const duration = await TrackPlayer.getDuration()
-    const position = await TrackPlayer.getPosition()
+    const duration = (await TrackPlayer.getProgress()).duration
+    const position = (await TrackPlayer.getProgress()).position
 
     if (event.type === Event.PlaybackError) {
       console.error(`TrackPlayer Playback Error:`, event)
@@ -362,14 +358,9 @@ export const AudioPlayer = () => {
       // TODO: Queue ended, what should done here?
     }
 
-    if (event.type === Event.PlaybackTrackChanged) {
-      const playerIndex = await TrackPlayer.getCurrentTrack()
-      if (playerIndex === null) return
-
-      // Manually increment player count if we are repeating
-      if ((await TrackPlayer.getRepeatMode()) === TrackPlayerRepeatMode.Track) {
-        incrementCount()
-      }
+    if (event.type === Event.PlaybackActiveTrackChanged) {
+      const playerIndex = await TrackPlayer.getActiveTrackIndex()
+      if (playerIndex === undefined) return
 
       // Update queue and player state if the track player auto plays next track
       if (playerIndex !== queueIndex) {
@@ -434,14 +425,15 @@ export const AudioPlayer = () => {
       // Handle track end event
       if (
         isNewPodcastControlsEnabled &&
-        event?.position != null &&
-        event?.track != null
+        event?.lastPosition !== undefined &&
+        event?.index !== undefined
       ) {
-        const { track } = queueTracks[event.track] ?? {}
+        const { track } = queueTracks[event.index] ?? {}
         const isLongFormContent =
           track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
         const isAtEndOfTrack =
-          track?.duration && event.position >= track.duration - TRACK_END_BUFFER
+          track?.duration &&
+          event.lastPosition >= track.duration - TRACK_END_BUFFER
 
         if (isLongFormContent && isAtEndOfTrack) {
           dispatch(
@@ -667,7 +659,7 @@ export const AudioPlayer = () => {
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
-    const playerIdx = await TrackPlayer.getCurrentTrack()
+    const playerIdx = await TrackPlayer.getActiveTrackIndex()
     const queue = await TrackPlayer.getQueue()
 
     if (
@@ -681,12 +673,12 @@ export const AudioPlayer = () => {
   }, [queueIndex])
 
   const handleTogglePlay = useCallback(async () => {
-    if (playbackState === State.Playing && !playing) {
+    if (playbackState.state === State.Playing && !playing) {
       await TrackPlayer.pause()
     } else if (
-      (playbackState === State.Paused ||
-        playbackState === State.Ready ||
-        playbackState === State.Stopped) &&
+      (playbackState.state === State.Paused ||
+        playbackState.state === State.Ready ||
+        playbackState.state === State.Stopped) &&
       playing
     ) {
       await TrackPlayer.play()
