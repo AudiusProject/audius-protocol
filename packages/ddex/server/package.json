@@ -15,7 +15,7 @@
   "author": "Audius",
   "dependencies": {
     "@audius/sdk": "*",
-    "@trpc/server": "11.0.0-next-alpha.170",
+    "@trpc/server": "next",
     "@types/multer": "1.4.11",
     "cors": "2.8.5",
     "decompress": "4.2.1",
