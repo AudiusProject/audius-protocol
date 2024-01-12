@@ -1,5 +1,5 @@
 # Build stage for DDEX frontend
-FROM node:18.17-slim AS frontend-dist
+FROM node:18-alpine AS frontend-dist
 
 ARG TURBO_TEAM
 ENV TURBO_TEAM=$TURBO_TEAM
@@ -7,35 +7,35 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
  
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
 WORKDIR /app
 
 RUN npm install turbo --global
 COPY . .
 RUN turbo prune --scope=@audius/ddex-frontend --docker
 
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    make \
-    g++ \
-    curl \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
 
-RUN npm install
+RUN CI=true npm i
 
 # Build the project and its dependencies
 COPY turbo.json turbo.json
 RUN npx turbo run build --filter=@audius/ddex-frontend
 
 # Build stage for DDEX backend
-FROM node:18.17-slim AS backend-dist
+FROM node:18-alpine AS backend-dist
 
 ARG TURBO_TEAM
 ENV TURBO_TEAM=$TURBO_TEAM
 
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
  
 WORKDIR /backend
 
@@ -43,16 +43,10 @@ RUN npm install turbo --global
 COPY . .
 RUN turbo prune --scope=@audius/ddex --docker
 
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    make \
-    g++ \
-    curl \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
 
-RUN npm install
+RUN CI=true npm i
 
 # Build the project and its dependencies
 COPY turbo.json turbo.json
