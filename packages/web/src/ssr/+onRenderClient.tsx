@@ -38,6 +38,7 @@ export default async function render(
         value={{
           path: urlPathname,
           isServerSide: false,
+          isSsrEnabled: true,
           pageProps,
           isMobile,
           history: null

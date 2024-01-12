@@ -31,6 +31,7 @@ export default function render(
       value={{
         path: urlPathname,
         isServerSide: true,
+        isSsrEnabled: true,
         pageProps,
         history,
         isMobile
