@@ -5,10 +5,7 @@ export const decimalNetworkIdToHexNetworkId = (id: string | number) => {
 }
 
 const MISSING_CHAIN_ERROR_CODE = 4902
-export const AUDIUS_NETWORK_ID = import.meta.env.VITE_AUDIUS_NETWORK_ID
 export const ETH_NETWORK_ID = import.meta.env.VITE_ETH_NETWORK_ID
-
-export const disableRefreshAfterNetworkChange = { value: false }
 
 export const switchNetwork = async (to: string) => {
   const chainId = decimalNetworkIdToHexNetworkId(to)
