@@ -58,7 +58,13 @@ export const WelcomeModal = () => {
       >
         <Avatar variant='strong' src={profileImage?.url} />
       </Box>
-      <Flex direction='column' p='xl' pt='3xl' gap='xl'>
+      <Flex
+        direction='column'
+        p='xl'
+        pt='3xl'
+        gap='xl'
+        css={{ overflow: 'hidden' }}
+      >
         <Flex direction='column' css={{ textAlign: 'center' }} gap='l'>
           <Text variant='label' size='xl' strength='strong' id='welcome-title'>
             {fillString(messages.welcome, userName ? `, ${userName}` : '')}
