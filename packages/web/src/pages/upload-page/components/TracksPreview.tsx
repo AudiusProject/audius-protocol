@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { IconCaretRight, Scrollbar, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
@@ -92,7 +92,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           }`}
         </Text>
         <Button
-          variant={ButtonType.PRIMARY}
+          variant='primary'
           name='continue'
           iconRight={IconCaretRight}
           onClick={onContinue}

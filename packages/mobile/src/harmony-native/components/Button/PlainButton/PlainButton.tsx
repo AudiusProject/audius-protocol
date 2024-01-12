@@ -11,19 +11,15 @@ import {
 
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { PlainButtonProps } from '../types'
-import { PlainButtonSize, PlainButtonType } from '../types'
+
+import type { PlainButtonProps } from './types'
 
 /**
  * A plain Button component (no border/background). Includes a few variants and options to
  * include and position icons.
  */
 export const PlainButton = (props: PlainButtonProps) => {
-  const {
-    variant = PlainButtonType.DEFAULT,
-    size = PlainButtonSize.DEFAULT,
-    ...baseProps
-  } = props
+  const { variant = 'default', size = 'default', ...baseProps } = props
   const isDisabled = baseProps.disabled || baseProps.isLoading
   const { color, spacing, typography } = useTheme()
   const pressed = useSharedValue(0)
@@ -90,19 +86,19 @@ export const PlainButton = (props: PlainButtonProps) => {
   }
 
   const dynamicStyles =
-    variant === PlainButtonType.SUBDUED
+    variant === 'subdued'
       ? subduedStyles
-      : variant === PlainButtonType.INVERTED
+      : variant === 'inverted'
       ? invertedStyles
       : defaultVariantStyles
 
   const buttonCss: ReactNativeStyle = useAnimatedStyle(() => ({
     ...(!isDisabled &&
-      variant === PlainButtonType.INVERTED && {
+      variant === 'inverted' && {
         opacity: interpolate(pressed.value, [0, 1], [1, 0.5])
       }),
 
-    ...(size === PlainButtonSize.LARGE ? largeStyles : defaultStyles)
+    ...(size === 'large' ? largeStyles : defaultStyles)
   }))
 
   const textCss: TextStyle = useAnimatedStyle(() => ({
@@ -114,7 +110,7 @@ export const PlainButton = (props: PlainButtonProps) => {
       )
     }),
 
-    ...(size === PlainButtonSize.LARGE ? largeTextStyles : defaultTextStyles)
+    ...(size === 'large' ? largeTextStyles : defaultTextStyles)
   }))
 
   const iconColor =
@@ -130,7 +126,7 @@ export const PlainButton = (props: PlainButtonProps) => {
       innerProps={{
         icon: {
           fill: iconColor,
-          size: size === PlainButtonSize.LARGE ? 'l' : 'm'
+          size: size === 'large' ? 'l' : 'm'
         }
       }}
       onPressIn={handlePressIn}

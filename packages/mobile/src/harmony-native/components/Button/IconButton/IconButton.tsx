@@ -9,7 +9,7 @@ import { useTheme } from 'app/harmony-native/foundations/theme'
 import type { Icon, IconProps } from 'app/harmony-native/icons'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { BaseButtonProps } from '../types'
+import type { BaseButtonProps } from '../BaseButton/types'
 
 export type IconButtonProps = {
   icon: Icon

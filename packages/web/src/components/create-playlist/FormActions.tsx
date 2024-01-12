@@ -1,4 +1,4 @@
-import { Button, ButtonType, IconCheck } from '@audius/harmony'
+import { Button, IconCheck } from '@audius/harmony'
 
 import styles from './FormActions.module.css'
 
@@ -33,7 +33,7 @@ export const EditActions = ({
     <div className={styles.editActionsContainer}>
       <div>
         <Button
-          variant={ButtonType.DESTRUCTIVE}
+          variant='destructive'
           disabled={disabled}
           onClick={onDelete}
           className={styles.deleteButton}
@@ -44,7 +44,7 @@ export const EditActions = ({
       </div>
       <div className={styles.buttonsRight}>
         <Button
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           disabled={disabled}
           onClick={onCancel}
           type='button'
@@ -52,7 +52,7 @@ export const EditActions = ({
           {cancelText}
         </Button>
         <Button
-          variant={ButtonType.PRIMARY}
+          variant='primary'
           disabled={disabled}
           onClick={onSave}
           type={isForm ? 'submit' : 'button'}
@@ -80,7 +80,7 @@ export const CreateActions = ({
   return (
     <div className={styles.createActionsContainer}>
       <Button
-        variant={ButtonType.PRIMARY}
+        variant='primary'
         disabled={disabled}
         onClick={onSave}
         type={isForm ? 'submit' : 'button'}

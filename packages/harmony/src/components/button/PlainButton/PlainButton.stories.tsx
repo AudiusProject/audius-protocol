@@ -3,8 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Box, Flex } from 'components/layout'
 import { IconCaretDown, IconNote, IconUserFollowing } from 'icons'
 
-import { PlainButtonSize, PlainButtonType } from '../types'
-
 import { PlainButton } from './PlainButton'
 
 const meta: Meta<typeof PlainButton> = {
@@ -26,10 +24,10 @@ export const Primary: Story = {
       css={({ color }) => ({ backgroundColor: color.background.default })}
     >
       <PlainButton iconLeft={IconNote}>Button</PlainButton>
-      <PlainButton variant={PlainButtonType.SUBDUED} iconLeft={IconNote}>
+      <PlainButton variant='subdued' iconLeft={IconNote}>
         Button
       </PlainButton>
-      <PlainButton variant={PlainButtonType.INVERTED} iconLeft={IconNote}>
+      <PlainButton variant='inverted' iconLeft={IconNote}>
         Button
       </PlainButton>
     </Flex>
@@ -44,7 +42,7 @@ export const Default: Story = {
 // Subdued
 export const Subdued: Story = {
   render: () => (
-    <PlainButton variant={PlainButtonType.SUBDUED} iconLeft={IconNote}>
+    <PlainButton variant='subdued' iconLeft={IconNote}>
       Button
     </PlainButton>
   )
@@ -54,7 +52,7 @@ export const Subdued: Story = {
 export const Inverted = {
   render: () => (
     <Box pv='l' css={{ backgroundColor: '#888' }}>
-      <PlainButton variant={PlainButtonType.INVERTED} iconLeft={IconNote}>
+      <PlainButton variant='inverted' iconLeft={IconNote}>
         Button
       </PlainButton>
     </Box>
@@ -65,7 +63,7 @@ export const Inverted = {
 export const Sizes: Story = {
   render: () => (
     <Flex pv='2xl' alignItems='center' gap='xl'>
-      <PlainButton size={PlainButtonSize.LARGE} iconLeft={IconNote}>
+      <PlainButton size='large' iconLeft={IconNote}>
         Button
       </PlainButton>
       <PlainButton iconLeft={IconNote}>Button</PlainButton>
@@ -77,10 +75,7 @@ export const LeadingIcons: Story = {
   render: () => (
     <Flex pv='2xl' alignItems='center' gap='xl'>
       <PlainButton iconLeft={IconUserFollowing}>Mutuals</PlainButton>
-      <PlainButton
-        variant={PlainButtonType.SUBDUED}
-        iconLeft={IconUserFollowing}
-      >
+      <PlainButton variant='subdued' iconLeft={IconUserFollowing}>
         Mutuals
       </PlainButton>
     </Flex>
@@ -90,7 +85,7 @@ export const LeadingIcons: Story = {
 export const TrailingIcons: Story = {
   render: () => (
     <Flex pv='2xl' alignItems='center' gap='xl'>
-      <PlainButton size={PlainButtonSize.LARGE} iconRight={IconCaretDown}>
+      <PlainButton size='large' iconRight={IconCaretDown}>
         See More
       </PlainButton>
       <PlainButton iconRight={IconCaretDown}>See More</PlainButton>

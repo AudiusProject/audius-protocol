@@ -35,7 +35,6 @@ const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 const { toast } = toastActions
 
 const messages = {
-  addingTrack: 'Adding track to playlist...',
   addedTrack: 'Added track to playlist'
 }
 
@@ -59,8 +58,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
-
-  yield* put(toast({ content: messages.addingTrack }))
 
   let playlist = yield* select(getCollection, { id: playlistId })
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })

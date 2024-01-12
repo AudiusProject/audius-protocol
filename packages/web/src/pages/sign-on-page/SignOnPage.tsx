@@ -48,7 +48,6 @@ type RootProps = {
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion } = useTheme()
-
   const accountCreationStatus = useSelector(getStatus)
 
   const collapsedDesktopPageMatch = useRouteMatch({
