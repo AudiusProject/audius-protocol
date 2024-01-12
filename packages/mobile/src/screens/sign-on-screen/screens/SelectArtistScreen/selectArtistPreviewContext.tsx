@@ -80,7 +80,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   }, [nowPlayingArtistId, trackUrl])
 
   const togglePreview = useCallback(async () => {
-    const state = await TrackPlayer.getState()
+    const { state } = await TrackPlayer.getPlaybackState()
     if (state === State.Playing) {
       setIsPlaying(false)
       await TrackPlayer.pause()
