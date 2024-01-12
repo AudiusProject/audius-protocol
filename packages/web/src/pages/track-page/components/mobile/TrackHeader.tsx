@@ -47,6 +47,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
+import { trpc } from 'utils/trpcClientWeb'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
 
@@ -194,6 +195,10 @@ const TrackHeader = ({
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
   const showListenCount =
     isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
+  )
 
   const image = useTrackCoverArt(
     trackId,
@@ -239,6 +244,7 @@ const TrackHeader = ({
         : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
