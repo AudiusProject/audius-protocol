@@ -11,7 +11,7 @@ import TrackPlayer from 'react-native-track-player'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-const { getPlaybackRate, getSeek, getSeekCounter } = playerSelectors
+const { getPlaybackRate, getSeek, getSeekCounter, getCounter } = playerSelectors
 
 export const usePosition = (
   mediaKey: string,
@@ -24,6 +24,7 @@ export const usePosition = (
   const playbackRate = useSelector(getPlaybackRate)
   const seek = useSelector(getSeek)
   const seekCounter = useSelector(getSeekCounter)
+  const counter = useSelector(getCounter)
 
   const setPosition = useCallback((position: number) => {
     positionRef.current = position
@@ -58,7 +59,7 @@ export const usePosition = (
     return () => {
       clearTimeout(currentTimeout)
     }
-  }, [isPlaying, isInteracting, duration, playbackRate])
+  }, [isPlaying, isInteracting, duration, playbackRate, counter])
 
   // Android pauses timeouts when in background, so we use app state
   // to trigger a position coercion

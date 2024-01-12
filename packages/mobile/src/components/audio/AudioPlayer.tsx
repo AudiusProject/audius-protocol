@@ -138,7 +138,7 @@ const playerEvents = [
   Event.PlaybackError,
   Event.PlaybackProgressUpdated,
   Event.PlaybackQueueEnded,
-  Event.PlaybackTrackChanged,
+  Event.PlaybackActiveTrackChanged,
   Event.RemotePlay,
   Event.RemotePause,
   Event.RemoteNext,
@@ -274,10 +274,6 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
-  const incrementCount = useCallback(
-    () => dispatch(playerActions.incrementCount()),
-    [dispatch]
-  )
 
   // Perform initial setup for the track player
   useAsync(async () => {
@@ -366,11 +362,6 @@ export const AudioPlayer = () => {
     if (event.type === Event.PlaybackActiveTrackChanged) {
       const playerIndex = await TrackPlayer.getActiveTrackIndex()
       if (playerIndex === undefined) return
-
-      // Manually increment player count if we are repeating
-      if ((await TrackPlayer.getRepeatMode()) === TrackPlayerRepeatMode.Track) {
-        incrementCount()
-      }
 
       // Update queue and player state if the track player auto plays next track
       if (playerIndex !== queueIndex) {
