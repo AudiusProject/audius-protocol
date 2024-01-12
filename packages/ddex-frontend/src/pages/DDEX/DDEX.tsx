@@ -65,7 +65,7 @@ const XmlImporter = ({
   audiusSdk,
   uploader
 }: {
-  audiusSdk: AudiusSdk | undefined | null,
+  audiusSdk: AudiusSdk | undefined | null
   uploader: DecodedUserToken | null
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -298,7 +298,7 @@ const Ddex = () => {
               className={styles.page}
             >
               <Flex gap='xl' direction='column'>
-                <XmlImporter audiusSdk={audiusSdk}  uploader={currentUser} />
+                <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
                 {/* <ManageAudiusAccount
                   currentUser={currentUser || fakeUser}
                   isAdmin={true}

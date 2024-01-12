@@ -61,11 +61,11 @@ const useReleases = (statusFilter = '', nextCursor = '', prevCursor = '') => {
             ...JSON.parse(release.data as unknown as string),
             releaseDate: new Date(
               JSON.parse(release.data as unknown as string).releaseDate
-            ),
-          },
-        })),
+            )
+          }
+        }))
       }
-    },
+    }
   })
 }
 

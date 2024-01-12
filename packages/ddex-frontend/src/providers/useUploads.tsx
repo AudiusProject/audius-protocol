@@ -37,10 +37,10 @@ const useUploads = (statusFilter = '', nextId?: number, prevId?: number) => {
         ...data,
         uploads: data.uploads.map((upload) => ({
           ...upload,
-          uploaded_at: new Date(upload.uploaded_at),
-        })),
+          uploaded_at: new Date(upload.uploaded_at)
+        }))
       }
-    },
+    }
   })
 }
 
