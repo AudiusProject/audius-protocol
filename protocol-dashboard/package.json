@@ -110,7 +110,7 @@
     "@types/semver": "6.2.1",
     "@types/url-join": "4.0.0",
     "@vitejs/plugin-react-swc": "3.4.0",
-    "armada-cli": "0.2.4",
+    "armada-cli": "0.4.0",
     "assert": "2.0.0",
     "browserify-zlib": "0.2.0",
     "constants-browserify": "1.0.0",
