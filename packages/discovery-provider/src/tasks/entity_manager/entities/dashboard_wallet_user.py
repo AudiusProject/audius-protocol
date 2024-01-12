@@ -44,29 +44,42 @@ def is_within_5_minutes(timestamp_str):
 def matches_user_id(hash_or_int_id, int_id):
     return hash_or_int_id == str(int_id) or decode_string_id(hash_or_int_id) == int_id
 
+
 def has_valid_user_id_message(wallet_signature, user_id):
     wallet_signature_split = wallet_signature.get("message", "").split()
-    return wallet_signature.get("message", "").startswith(
-              "Connecting Audius user id"
-          ) and matches_user_id(
-              wallet_signature_split[-3], user_id
-          ) and len(wallet_signature_split) == 7
+    return (
+        wallet_signature.get("message", "").startswith("Connecting Audius user id")
+        and matches_user_id(wallet_signature_split[-3], user_id)
+        and len(wallet_signature_split) == 7
+    )
+
 
 def has_valid_user_handle_message(wallet_signature, user_handle):
     wallet_signature_split = wallet_signature.get("message", "").split()
-    return wallet_signature.get("message", "").startswith(
-              "Connecting Audius user @"
-          ) and wallet_signature_split[3].lower() == f"@{user_handle.lower()}" and len(wallet_signature_split) == 6
+    return (
+        wallet_signature.get("message", "").startswith("Connecting Audius user @")
+        and wallet_signature_split[3].lower() == f"@{user_handle.lower()}"
+        and len(wallet_signature_split) == 6
+    )
 
-def verify_dashboard_wallet_signature(dashboard_wallet, user_id, user_handle, wallet_signature):
+
+def verify_dashboard_wallet_signature(
+    dashboard_wallet, user_id, user_handle, wallet_signature
+):
     if not isinstance(wallet_signature, dict):
-        raise IndexingValidationError("Invalid Create Dashboard Wallet Transaction, wallet signature malformatted")
+        raise IndexingValidationError(
+            "Invalid Create Dashboard Wallet Transaction, wallet signature malformatted"
+        )
     wallet_signature_split = wallet_signature.get("message", "").split()
     if (
         # Expect wallet_signature message to be "Connecting Audius user id {user hash id} at {timestamp}"
+        # OR "Connecting Audius user @{handle} at {timestamp}"
         not isinstance(wallet_signature, dict)
-        or (not has_valid_user_id_message(wallet_signature, user_id) and not has_valid_user_handle_message(wallet_signature, user_handle))
-        or not wallet_signature_split[-2] == 'at'
+        or (
+            not has_valid_user_id_message(wallet_signature, user_id)
+            and not has_valid_user_handle_message(wallet_signature, user_handle)
+        )
+        or not wallet_signature_split[-2] == "at"
         or not is_within_5_minutes((wallet_signature_split)[-1])
     ):
         raise IndexingValidationError(
