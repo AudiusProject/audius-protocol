@@ -41,7 +41,7 @@ import {
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import type { ImageProps } from 'app/components/image/FastImage'
-import { SuggestedTracks } from 'app/components/suggested-tracks'
+import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -304,7 +304,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             {isOwner && (!is_album || isEditAlbumsEnabled) ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
-                <SuggestedTracks collectionId={playlist_id} />
+                <SuggestedCollectionTracks collectionId={playlist_id} />
               </>
             ) : null}
           </>

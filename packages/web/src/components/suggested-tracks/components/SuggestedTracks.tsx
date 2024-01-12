@@ -1,17 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  ID,
-  SquareSizes,
-  Track,
-  cacheUsersSelectors,
-  toastActions,
-  useGetSuggestedPlaylistTracks,
-  useGetPlaylistById,
-  useGetTracksByIds,
-  accountSelectors,
-  useGetCurrentUserId
-} from '@audius/common'
+import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
 import type { SuggestedTrack } from '@audius/common'
 import {
   Button,
@@ -22,7 +11,6 @@ import {
 } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
@@ -38,8 +26,6 @@ import { useSelector } from 'utils/reducer'
 import styles from './SuggestedTracks.module.css'
 
 const { getUser } = cacheUsersSelectors
-const { getUserId } = accountSelectors
-const { toast } = toastActions
 
 const contentHeight = 423
 
@@ -58,27 +44,15 @@ type SuggestedTrackProps = {
   onAddTrack: (trackId: ID) => void
 }
 
-const SuggestedTrack = (props: SuggestedTrackProps) => {
-  const { collectionId, track, onAddTrack } = props
+const SuggestedTrackRow = (props: SuggestedTrackProps) => {
+  const { track, onAddTrack } = props
   const { track_id, title, owner_id } = track
   const user = useSelector((state) => getUser(state, { id: owner_id }))
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId: null
-  })
-  const dispatch = useDispatch()
-
   const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
 
   const handleAddTrack = useCallback(() => {
     onAddTrack(track_id)
-    dispatch(
-      toast({
-        content: messages.trackAdded(collection.is_album),
-        timeout: 1500
-      })
-    )
-  }, [onAddTrack, track_id, dispatch, collection.is_album])
+  }, [onAddTrack, track_id])
 
   return (
     <div className={styles.suggestedTrack}>
@@ -165,7 +139,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
           {suggestedTracks?.map((suggestedTrack) => (
             <li key={suggestedTrack.key}>
               {!isRefreshing && 'track' in suggestedTrack ? (
-                <SuggestedTrack
+                <SuggestedTrackRow
                   track={suggestedTrack.track}
                   collectionId={collectionId}
                   onAddTrack={onAddTrack}

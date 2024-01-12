@@ -80,7 +80,6 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
 
   useEffect(() => {
     if (ownTracks?.length) {
-      console.log('ownTracks', ownTracks)
       const suggestedTrackIds = difference(
         shuffle(ownTracks).map((track) => parseInt(track.track_id.toString())),
         collectionTrackIds
@@ -104,6 +103,12 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     setIsRefreshing(true)
   }, [suggestedTrackIds])
 
+  useEffect(() => {
+    if (suggestedTracks.every((suggestedTrack) => !suggestedTrack.isLoading)) {
+      setIsRefreshing(false)
+    }
+  }, [suggestedTracks])
+
   const handleAddTrack = useCallback(
     (trackId: ID) => {
       dispatch(addTrackToPlaylist(trackId, collectionId))
@@ -111,7 +116,7 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
       suggestedTrackIds.splice(trackIndexToRemove, 1)
       setSuggestedTrackIds(suggestedTrackIds)
     },
-    [dispatch, suggestedTrackIds]
+    [collectionId, dispatch, suggestedTrackIds]
   )
 
   return {
@@ -214,7 +219,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       suggestedTrackIds.splice(trackIndexToRemove, 1)
       setSuggestedTrackIds(suggestedTrackIds)
     },
-    [dispatch, suggestedTrackIds]
+    [collectionId, dispatch, suggestedTrackIds]
   )
 
   const handleRefresh = useCallback(() => {

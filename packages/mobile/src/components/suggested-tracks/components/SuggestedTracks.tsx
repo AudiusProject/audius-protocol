@@ -1,9 +1,9 @@
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import type { ID, Track } from '@audius/common'
+import type { ID, Track, SuggestedTrack } from '@audius/common'
 import { SquareSizes, cacheUsersSelectors } from '@audius/common'
-import type { SuggestedTrack } from '@audius/common'
 import { Animated, LayoutAnimation, View } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -77,11 +77,12 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 }))
 
 type SuggestedTrackProps = {
+  collectionId: ID
   track: Track
   onAddTrack: (trackId: ID) => void
 }
 
-const SuggestedTrack = (props: SuggestedTrackProps) => {
+const SuggestedTrackRow = (props: SuggestedTrackProps) => {
   const { track, onAddTrack } = props
   const { track_id, title, owner_id } = track
 
@@ -139,15 +140,16 @@ const SuggestedTrackSkeleton = () => {
 }
 
 type SuggestedTracksProps = {
+  collectionId: ID
   suggestedTracks: SuggestedTrack[]
   onRefresh: () => void
   onAddTrack: (trackId: ID) => void
   isRefreshing: boolean
 }
 
-// TODO: add files for SuggestedAlbumTracks and SuggestedPlaylistTracks
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } = props
+  const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
+    props
   const styles = useStyles()
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)
@@ -178,16 +180,18 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
 
   return (
     <Tile style={styles.root}>
-      <View style={styles.heading}>
-        <View style={styles.headingText}>
-          <Text fontSize='large' weight='heavy' textTransform='uppercase'>
-            {messages.title}
-          </Text>
+      <TouchableOpacity onPress={handleExpanded}>
+        <View style={styles.heading}>
+          <View style={styles.headingText}>
+            <Text fontSize='large' weight='heavy' textTransform='uppercase'>
+              {messages.title}
+            </Text>
+          </View>
+          <Animated.View style={expandIconStyle}>
+            <IconButton icon={IconCaretDown} onPress={handleExpanded} />
+          </Animated.View>
         </View>
-        <Animated.View style={expandIconStyle}>
-          <IconButton icon={IconCaretDown} onPress={handleExpanded} />
-        </Animated.View>
-      </View>
+      </TouchableOpacity>
       {isExpanded ? (
         <>
           <View>
@@ -195,7 +199,8 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
             {suggestedTracks?.map((suggestedTrack) => (
               <Fragment key={suggestedTrack.key}>
                 {!isRefreshing && 'track' in suggestedTrack ? (
-                  <SuggestedTrack
+                  <SuggestedTrackRow
+                    collectionId={collectionId}
                     track={suggestedTrack.track}
                     onAddTrack={onAddTrack}
                   />
