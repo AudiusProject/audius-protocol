@@ -1,9 +1,13 @@
 import { wAUDIO } from '@audius/fixed-decimal'
+import type { PublicKey } from '@solana/web3.js'
+import { toChecksumAddress } from 'ethereumjs-util'
+
 import type {
   ClaimableTokensClient,
   DiscoveryNodeSelectorService,
   LoggerService
 } from '../../services'
+import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import { parseParams } from '../../utils/parseParams'
 import { BaseAPI, Configuration } from '../generated/default'
@@ -12,6 +16,7 @@ import {
   Configuration as ConfigurationFull
 } from '../generated/full'
 import type { UsersApi } from '../users/UsersApi'
+
 import {
   ChallengeId,
   ClaimRewardsRequest,
@@ -19,9 +24,6 @@ import {
   GenerateSpecifierRequest,
   GenerateSpecifierSchema
 } from './types'
-import type { PublicKey } from '@solana/web3.js'
-import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
-import { toChecksumAddress } from 'ethereumjs-util'
 
 export class ChallengesApi extends BaseAPI {
   private readonly logger: LoggerService
@@ -94,7 +96,7 @@ export class ChallengesApi extends BaseAPI {
       throw new Error(`Failed to find user ${args.userId}`)
     }
     const { ercWallet: recipientEthAddress, handle } = data
-    let attestationTransactionSignatures: string[] = []
+    const attestationTransactionSignatures: string[] = []
 
     this.logger.debug('Creating user bank if necessary...')
     const { userBank: destinationUserBank } =

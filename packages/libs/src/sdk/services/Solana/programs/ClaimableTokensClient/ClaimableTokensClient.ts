@@ -6,9 +6,13 @@ import {
   Secp256k1Program,
   PublicKey
 } from '@solana/web3.js'
+
+import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
 import type { Mint } from '../../types'
+import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
+import { defaultClaimableTokensConfig } from './constants'
 import {
   type GetOrCreateUserBankRequest,
   GetOrCreateUserBankSchema,
@@ -20,10 +24,13 @@ import {
   ClaimableTokensConfig
 } from './types'
 
-import { BaseSolanaProgram } from '../BaseSolanaProgram'
-import { defaultClaimableTokensConfig } from './constants'
-import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
-
+/**
+ * Connected client to the ClaimableTokens Solana program.
+ *
+ * The ClaimableTokens program is responsible for creation of program-owned
+ * associated token accounts that are permissioned to users by their Ethereum
+ * hedgehog wallet private keys.
+ */
 export class ClaimableTokensClient extends BaseSolanaProgram {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
