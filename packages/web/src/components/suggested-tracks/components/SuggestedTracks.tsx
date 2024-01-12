@@ -1,14 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  ID,
-  SquareSizes,
-  Track,
-  cacheUsersSelectors,
-  toastActions,
-  useGetSuggestedTracks,
-  useGetPlaylistById
-} from '@audius/common'
+import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
+import type { SuggestedTrack } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -18,7 +11,6 @@ import {
 } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
@@ -34,7 +26,6 @@ import { useSelector } from 'utils/reducer'
 import styles from './SuggestedTracks.module.css'
 
 const { getUser } = cacheUsersSelectors
-const { toast } = toastActions
 
 const contentHeight = 423
 
@@ -50,30 +41,18 @@ const messages = {
 type SuggestedTrackProps = {
   collectionId: ID
   track: Track
-  onAddTrack: (trackId: ID, collectionId: ID) => void
+  onAddTrack: (trackId: ID) => void
 }
 
-const SuggestedTrack = (props: SuggestedTrackProps) => {
-  const { collectionId, track, onAddTrack } = props
+const SuggestedTrackRow = (props: SuggestedTrackProps) => {
+  const { track, onAddTrack } = props
   const { track_id, title, owner_id } = track
   const user = useSelector((state) => getUser(state, { id: owner_id }))
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId: null
-  })
-  const dispatch = useDispatch()
-
   const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
 
   const handleAddTrack = useCallback(() => {
-    onAddTrack(track_id, collectionId)
-    dispatch(
-      toast({
-        content: messages.trackAdded(collection.is_album),
-        timeout: 1500
-      })
-    )
-  }, [onAddTrack, track_id, collectionId, dispatch, collection.is_album])
+    onAddTrack(track_id)
+  }, [onAddTrack, track_id])
 
   return (
     <div className={styles.suggestedTrack}>
@@ -115,13 +94,15 @@ const SuggestedTrackSkeleton = () => {
 
 type SuggestedTracksProps = {
   collectionId: ID
+  suggestedTracks: SuggestedTrack[]
+  onRefresh: () => void
+  onAddTrack: (trackId: ID) => void
+  isRefreshing: boolean
 }
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
-  const { collectionId } = props
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedTracks(collectionId)
-
+  const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
+    props
   const [isExpanded, toggleIsExpanded] = useToggle(false)
 
   const divider = <Divider className={styles.trackDivider} />
@@ -132,7 +113,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
 
   return (
     <Tile className={styles.root} elevation='mid'>
-      <div className={styles.heading}>
+      <div className={styles.heading} onClick={toggleIsExpanded}>
         <div className={styles.headingText}>
           <h4 className={styles.title}>{messages.title}</h4>
         </div>
@@ -147,7 +128,6 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
               })}
             />
           }
-          onClick={toggleIsExpanded}
         />
       </div>
       <animated.div className={styles.content} style={contentStyles}>
@@ -159,7 +139,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
           {suggestedTracks?.map((suggestedTrack) => (
             <li key={suggestedTrack.key}>
               {!isRefreshing && 'track' in suggestedTrack ? (
-                <SuggestedTrack
+                <SuggestedTrackRow
                   track={suggestedTrack.track}
                   collectionId={collectionId}
                   onAddTrack={onAddTrack}
