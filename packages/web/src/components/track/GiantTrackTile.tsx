@@ -689,7 +689,6 @@ export const GiantTrackTile = ({
             labelValue={`${formatSeconds(duration)}`}
           />
           {renderReleased()}
-          {renderAlbum()}
           {renderGenre()}
           {renderMood()}
           {credits ? (
@@ -699,6 +698,7 @@ export const GiantTrackTile = ({
               labelValue={credits}
             />
           ) : null}
+          {renderAlbum()}
         </div>
         {description ? (
           <UserGeneratedText
