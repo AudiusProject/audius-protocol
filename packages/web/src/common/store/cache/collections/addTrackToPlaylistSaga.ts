@@ -35,7 +35,8 @@ const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 const { toast } = toastActions
 
 const messages = {
-  addedTrack: 'Added track to playlist'
+  addedTrack: (collectionType: 'album' | 'playlist') =>
+    `Added track to ${collectionType}`
 }
 
 type AddTrackToPlaylistAction = ReturnType<
@@ -135,7 +136,11 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
 
   yield* put(event)
 
-  yield* put(toast({ content: messages.addedTrack }))
+  yield* put(
+    toast({
+      content: messages.addedTrack(playlist.is_album ? 'album' : 'playlist')
+    })
+  )
 }
 
 function* confirmAddTrackToPlaylist(
