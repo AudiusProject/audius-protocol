@@ -14,13 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { UserFull } from './UserFull';
-import {
-    UserFullFromJSON,
-    UserFullFromJSONTyped,
-    UserFullToJSON,
-} from './UserFull';
-
 /**
  * 
  * @export
@@ -29,16 +22,10 @@ import {
 export interface FullTopListener {
     /**
      * 
-     * @type {number}
+     * @type {Array<FullTopListener>}
      * @memberof FullTopListener
      */
-    count: number;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof FullTopListener
-     */
-    user: UserFull;
+    data?: Array<FullTopListener>;
 }
 
 /**
@@ -46,8 +33,6 @@ export interface FullTopListener {
  */
 export function instanceOfFullTopListener(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "count" in value;
-    isInstance = isInstance && "user" in value;
 
     return isInstance;
 }
@@ -62,8 +47,7 @@ export function FullTopListenerFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'count': json['count'],
-        'user': UserFullFromJSON(json['user']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(FullTopListenerFromJSON)),
     };
 }
 
@@ -76,8 +60,7 @@ export function FullTopListenerToJSON(value?: FullTopListener | null): any {
     }
     return {
         
-        'count': value.count,
-        'user': UserFullToJSON(value.user),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(FullTopListenerToJSON)),
     };
 }
 
