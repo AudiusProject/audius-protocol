@@ -9,20 +9,40 @@
 # Build DDEX backend
 FROM node:18.17-slim AS backend-dist
 WORKDIR /backend
-COPY ddex/package*.json ddex/tsconfig.json ./
-RUN npm install
-COPY shared ./shared
-COPY ddex/src ./src
-RUN npm run build
+# COPY ddex/package*.json ddex/tsconfig.json ./
+# RUN npm install
+# COPY shared ./shared
+# COPY ddex/src ./src
+# RUN npm run build
+
+# COPY packages/ddex/package*.json packages/ddex/tsconfig.json ./
+# COPY packages/ddex/src ./src
+
+RUN npm install turbo --global
+COPY . .
+RUN turbo prune --scope=@audius/ddex-server --docker
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    make \
+    g++ \
+    curl \
+    bash \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN CI=true npm i
+COPY turbo.json turbo.json
+RUN npx turbo run build --filter=@audius/ddex-server
 
 # Final stage
 FROM node:18.17-slim
 WORKDIR /usr/src/app
-COPY --from=backend-dist /backend/dist ./dist
-COPY --from=backend-dist /backend/node_modules ./node_modules
+COPY --from=backend-dist /backend/packages/ddex/dist ./dist
+COPY --from=backend-dist /backend/packages/ddex/node_modules ./node_modules
 
 # Copy the frontend dist from local filesystem instead of building it in Docker, which hangs
-COPY ddex-frontend/dist/ ./public
+COPY packages/ddex-frontend/dist/ ./public
 
 EXPOSE 8926
 CMD [ "node", "dist/index.js" ]

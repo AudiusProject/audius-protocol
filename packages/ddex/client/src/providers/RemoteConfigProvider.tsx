@@ -3,15 +3,18 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
+  useEffect
 } from 'react'
+
 import optimizely, { Client } from '@optimizely/optimizely-sdk'
-import { useEnvVars } from './EnvVarsProvider'
-import { FeatureFlags } from '../utils/constants'
+
+import { useEnvVars } from 'providers/EnvVarsProvider'
+import { FeatureFlags } from 'utils/constants'
 
 type FlagDefaults = Record<FeatureFlags, boolean>
 const flagDefaults: FlagDefaults = {
   [FeatureFlags.DDEX_UPLOADS]: false,
+  [FeatureFlags.DDEX_ADMIN]: false
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
@@ -20,7 +23,7 @@ type RemoteConfigContextType = {
   didInit: boolean
   getFeatureEnabled: ({
     flag,
-    userId,
+    userId
   }: {
     flag: FeatureFlags
     userId?: number | undefined
@@ -29,7 +32,7 @@ type RemoteConfigContextType = {
 
 const RemoteConfigContext = createContext<RemoteConfigContextType>({
   didInit: false,
-  getFeatureEnabled: () => false,
+  getFeatureEnabled: () => false
 })
 
 export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
@@ -44,13 +47,13 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
       sdkKey: optimizelySdkKey || 'MX4fYBgANQetvmBXGpuxzF',
       datafileOptions: {
         autoUpdate: true,
-        updateInterval: 5000, // Poll for updates every 5s
+        updateInterval: 5000 // Poll for updates every 5s
       },
       errorHandler: {
         handleError: (error: any) => {
           console.error(error)
-        },
-      },
+        }
+      }
     })
   }
 
@@ -106,7 +109,7 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
    */
   const getFeatureEnabled = ({
     flag,
-    userId,
+    userId
   }: {
     flag: FeatureFlags
     userId?: number
@@ -118,7 +121,7 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
 
     const isFeatureEnabled = ({
       flag,
-      userId,
+      userId
     }: {
       flag: FeatureFlags
       userId?: number
@@ -131,7 +134,7 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
         flag,
         userId ? userId.toString() : id!.toString(),
         {
-          userId: userId || id,
+          userId: userId || id
         }
       )
     }
@@ -147,13 +150,13 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    void init()
+    init()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const contextValue = {
     didInit,
-    getFeatureEnabled,
+    getFeatureEnabled
   }
   return (
     <RemoteConfigContext.Provider value={contextValue}>
@@ -162,5 +165,4 @@ export const RemoteConfigProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useRemoteConfig = () => useContext(RemoteConfigContext)

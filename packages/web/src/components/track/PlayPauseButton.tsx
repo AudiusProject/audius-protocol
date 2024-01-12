@@ -6,7 +6,7 @@ import {
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
-import { Button, ButtonSize, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
@@ -75,8 +75,8 @@ export const PlayPauseButton = ({
   return (
     <Button
       name={isPreview ? 'preview' : 'play'}
-      size={ButtonSize.LARGE}
-      variant={isPreview ? ButtonType.SECONDARY : ButtonType.PRIMARY}
+      size='large'
+      variant={isPreview ? 'secondary' : 'primary'}
       iconLeft={playing ? IconPause : PlayIconComponent}
       onClick={onPlay}
       minWidth={180}

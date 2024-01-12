@@ -67,6 +67,7 @@
     "@emotion/eslint-plugin": "11.11.0",
     "@tsconfig/strictest": "2.0.2",
     "@types/keyv": "4.2.0",
+    "@types/react": "18.2.0",
     "@typescript-eslint/eslint-plugin": "6.16.0",
     "@typescript-eslint/parser": "6.16.0",
     "concurrently": "7.4.0",
@@ -101,7 +102,7 @@
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
-    "@types/react": "18.0.26",
+    "@types/react": "18.2.0",
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
     "moment": "2.24.0",

@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { fillString, welcomeModalMessages as messages } from '@audius/common'
 import {
   Button,
-  ButtonType,
   Flex,
   IconArrowRight,
   Text,
@@ -73,7 +72,7 @@ export const WelcomeModal = () => {
             {messages.startListening}
           </Button>
           <Button
-            variant={ButtonType.SECONDARY}
+            variant='secondary'
             iconLeft={IconCloudUpload}
             onClick={onClose}
             asChild

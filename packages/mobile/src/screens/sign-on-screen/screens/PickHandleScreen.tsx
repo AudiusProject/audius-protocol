@@ -22,9 +22,9 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { HandleField } from '../components/HandleField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading, Page, PageFooter } from '../components/layout'
@@ -142,16 +142,19 @@ export const PickHandleScreen = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
+      validateOnChange={false}
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <Page>
-          {isWaitingForSocialLogin ? <SocialMediaLoading /> : null}
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={messages.description}
           />
           <Flex direction='column' gap='l'>
-            <TextField name='handle' label={messages.handle} noGutter />
+            <HandleField />
             <Divider>
               <Text
                 variant='body'

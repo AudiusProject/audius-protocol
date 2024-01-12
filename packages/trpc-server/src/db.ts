@@ -36,7 +36,7 @@ export async function selectUsersCamel(p: SelectUserProps) {
     select *
     from users
     left join aggregate_user agg using (user_id)
-    where is_current = true
+    where 1 = 1
     ${p.ids ? sql`and user_id in ${sql(p.ids)}` : sql``}
     ${p.handle ? sql`and handle_lc = lower(${p.handle})` : sql``}
   `
@@ -88,40 +88,15 @@ export type SelectPlaylistProps = {
   ownerId?: number
 }
 
-type AugmentedPlaylistRows = (APlaylist & {
-  artistHandle?: string
-})[]
-
 export async function selectPlaylistsCamel(p: SelectPlaylistProps) {
-  const rows = await sql<AugmentedPlaylistRows>`
-    select users.handle as artist_handle, ${
-      p.cols ? sql(p.cols) : sql`pl_with_slug.*`
-    }
-    from (
-      select *, (
-        select slug
-        from playlist_routes pr
-        where
-        pr.playlist_id = playlists.playlist_id and is_current = 'true'
-        )
-      from playlists
-    ) as pl_with_slug
-    left join users on playlist_owner_id = user_id
+  return sql<APlaylist[]>`
+    select ${p.cols ? sql(p.cols) : sql`*`}
+    from playlists
     left join aggregate_playlist using (playlist_id, is_album)
-    where pl_with_slug.is_current = true
+    where is_current = true
     ${p.isAlbum != undefined ? sql`and is_album = ${p.isAlbum}` : sql``}
     ${p.ids ? sql`and playlist_id in ${sql(p.ids)}` : sql``}
     ${p.ownerId ? sql`and playlist_owner_id = ${p.ownerId}` : sql``}
-    order by pl_with_slug.created_at desc
+    order by created_at desc
   `
-
-  if (p.cols && !p.cols?.includes('permalink')) return rows
-  rows.forEach((row) => {
-    row.permalink = `/${row.artistHandle}/${
-      row.isAlbum ? 'album' : 'playlist'
-    }/${row.slug}`
-    delete row.artistHandle
-  })
-
-  return rows
 }

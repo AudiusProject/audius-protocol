@@ -5,9 +5,8 @@ import { within } from '@storybook/testing-library'
 import { Box, Flex } from 'components/layout'
 import { IconAlbum, IconCampfire, IconFilter, IconRadar } from 'icons'
 
-import { FilterButtonProps, FilterButtonType } from '../types'
-
 import { FilterButton } from './FilterButton'
+import { FilterButtonProps } from './types'
 
 const meta: Meta<typeof FilterButton> = {
   title: 'Buttons/FilterButton [beta]',
@@ -79,7 +78,7 @@ export const ReplaceLabel: Story = {
     <Box h='200px'>
       <Flex pv='2xl' justifyContent='space-around'>
         <FilterButton
-          variant={FilterButtonType.REPLACE_LABEL}
+          variant='replaceLabel'
           label='Choice'
           options={[
             { label: 'Red Leader' },

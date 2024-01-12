@@ -6,8 +6,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex">
-      <main className="flex-grow p-4">{children}</main>
+    <div className='flex'>
+      <main className='flex-grow p-4'>{children}</main>
     </div>
   )
 }

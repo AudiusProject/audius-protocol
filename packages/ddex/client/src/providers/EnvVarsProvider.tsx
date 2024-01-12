@@ -3,7 +3,7 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
+  useEffect
 } from 'react'
 
 interface EnvVars {
@@ -94,7 +94,7 @@ const envVarOverrides = {
     .VITE_REWARDS_MANAGER_TOKEN_PDA_OVERRIDE ?? '') as string,
   optimizelySdkKey: (import.meta.env.VITE_OPTIMIZELY_SDK_KEY_OVERRIDE ??
     '') as string,
-  ddexKey: (import.meta.env.VITE_DDEX_KEY_OVERRIDE ?? '') as string,
+  ddexKey: (import.meta.env.VITE_DDEX_KEY_OVERRIDE ?? '') as string
 }
 const endpoint = (import.meta.env.VITE_NODE_URL_OVERRIDE ||
   window.location.origin) as string
@@ -102,7 +102,7 @@ const endpoint = (import.meta.env.VITE_NODE_URL_OVERRIDE ||
 type EnvVarsContextType = EnvVars & { endpoint: string }
 const EnvVarsContext = createContext<EnvVarsContextType>({
   ...envVarOverrides,
-  endpoint,
+  endpoint
 })
 
 export const EnvVarsProvider = ({ children }: { children: ReactNode }) => {
@@ -124,7 +124,7 @@ export const EnvVarsProvider = ({ children }: { children: ReactNode }) => {
 
     // Stage and prod nodes fetch env vars exposed in audius-docker-compose
     if (!envVars.env || !envVars.nodeType) {
-      void fetchEnvVars()
+      fetchEnvVars()
     }
   })
 
@@ -136,5 +136,4 @@ export const EnvVarsProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useEnvVars = () => useContext(EnvVarsContext)
