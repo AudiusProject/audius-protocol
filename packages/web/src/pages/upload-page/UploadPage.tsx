@@ -184,7 +184,7 @@ export const UploadPage = (props: UploadPageProps) => {
       return track.metadata.stems ?? []
     }, [])
 
-    // set download gate based on downloadability and stream gate
+    // set download gate based on stream gate
     // this will be updated once the UI for download gated tracks is implemented
     const tracksToUpload = tracks.map((track) => {
       const isDownloadable = !!track.metadata.download?.is_downloadable
