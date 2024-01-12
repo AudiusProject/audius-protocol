@@ -139,7 +139,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
 
   return (
     <Tile className={styles.root} elevation='mid'>
-      <div className={styles.heading}>
+      <div className={styles.heading} onClick={toggleIsExpanded}>
         <div className={styles.headingText}>
           <h4 className={styles.title}>{messages.title}</h4>
         </div>
@@ -154,7 +154,6 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
               })}
             />
           }
-          onClick={toggleIsExpanded}
         />
       </div>
       <animated.div className={styles.content} style={contentStyles}>

@@ -7,6 +7,7 @@
   padding: var(--unit-4);
   gap: var(--unit-3);
   align-self: stretch;
+  cursor: pointer;
 }
 
 .headingText {
