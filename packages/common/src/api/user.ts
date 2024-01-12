@@ -83,14 +83,18 @@ const userApi = createApi({
     getTracksByUser: {
       fetch: async (
         { userId, currentUserId }: { userId: ID; currentUserId: Nullable<ID> },
-        { audiusSdk }
+        audiusQueryContext
       ) => {
-        const sdk = await audiusSdk()
-        const { data: tracks } = await sdk.users.getTracksByUser({
-          id: userId.toString(),
-          userId: currentUserId?.toString()
+        const { apiClient } = audiusQueryContext
+        const { handle } = await userApiFetch.getUserById(
+          { id: userId, currentUserId },
+          audiusQueryContext
+        )
+        const tracks = await apiClient.getUserTracksByHandle({
+          handle,
+          currentUserId,
+          getUnlisted: userId === currentUserId
         })
-        console.log('tracksByUser', tracks)
         return tracks
       },
       options: {
