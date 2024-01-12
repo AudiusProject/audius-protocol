@@ -54,12 +54,7 @@
     <meta property="twitter:app:name:iphone" content="Audius Music" />
     <meta property="twitter:app:name:googleplay" content="Audius Music" />
 
-    <script type="module">
-      import { Buffer } from 'buffer'
-      import processBrowser from 'process/browser'
-      window.Buffer = Buffer
-      window.process = { ...processBrowser, env: process.env }
-    </script>
+    <script id="polyfills" type="module" src="/src/polyfills.ts"></script>
 
     <script
       defer
@@ -206,7 +201,7 @@
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
+    <script id="index" type="module" src="/src/index.tsx"></script>
     <div id="recaptcha-hidden" style="display: none"></div>
 
     <!-- start Meta Pixel -->
