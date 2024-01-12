@@ -85,9 +85,9 @@ export const HandleField = forwardRef(
         <>
           {error}{' '}
           {onCompleteSocialMediaLogin &&
-            onStartSocialMediaLogin &&
-            onErrorSocialMediaLogin &&
-            AuthComponent ? (
+          onStartSocialMediaLogin &&
+          onErrorSocialMediaLogin &&
+          AuthComponent ? (
             <TextLink variant='visible' asChild>
               <AuthComponent
                 onStart={onStartSocialMediaLogin}
