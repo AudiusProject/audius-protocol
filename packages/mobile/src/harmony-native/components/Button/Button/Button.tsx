@@ -4,7 +4,6 @@ import type { IconColors } from '@audius/harmony'
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle, ViewStyle } from 'react-native'
-import { StyleSheet } from 'react-native'
 import {
   interpolateColor,
   useAnimatedStyle,
