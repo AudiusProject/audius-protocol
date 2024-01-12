@@ -21,6 +21,7 @@ import {
   mobileOverflowMenuUISelectors
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -66,6 +67,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   )
   const playlistTrackInfo = playlist?.playlist_contents.track_ids.find(
     (t) => t.track === track?.track_id
+  )
+
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: id },
+    { enabled: !!id }
   )
 
   const user = useSelector((state: CommonState) =>
@@ -123,6 +129,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.VIEW_EPISODE_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation?.push('Track', { id })
+    },
+    [OverflowAction.VIEW_ALBUM_PAGE]: () => {
+      albumInfo && navigation?.push('Collection', { id: albumInfo.playlist_id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()

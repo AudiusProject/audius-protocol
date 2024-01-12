@@ -59,6 +59,7 @@ import {
   collectibleDetailsPage
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+import { trpc } from 'utils/trpcClientWeb'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
@@ -137,6 +138,11 @@ const NowPlaying = g(
     const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
     const { uid, track, user, collectible } = currentQueueItem
+
+    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+      { trackId: track?.track_id ?? 0 },
+      { enabled: !!track?.track_id }
+    )
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).
@@ -314,6 +320,10 @@ const NowPlaying = g(
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,
+        isEditAlbumsEnabled && albumInfo
+          ? OverflowAction.VIEW_ALBUM_PAGE
+          : null,
+
         collectible && OverflowAction.VIEW_COLLECTIBLE_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
       ].filter(Boolean) as OverflowAction[]
@@ -333,6 +343,7 @@ const NowPlaying = g(
       has_current_user_saved,
       isEditAlbumsEnabled,
       track,
+      albumInfo,
       onClose,
       clickOverflow,
       track_id

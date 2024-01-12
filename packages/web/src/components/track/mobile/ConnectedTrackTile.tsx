@@ -32,6 +32,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
@@ -142,7 +143,10 @@ const ConnectedTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
-
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
+  )
   const { isUserAccessTBD, doesUserHaveAccess } =
     usePremiumContentAccess(trackWithFallback)
   const loading = isLoading || isUserAccessTBD
@@ -209,6 +213,7 @@ const ConnectedTrackTile = ({
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 

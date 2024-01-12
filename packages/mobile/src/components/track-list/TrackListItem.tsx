@@ -24,6 +24,7 @@ import type {
 } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import IconDrag from 'app/assets/images/iconDrag.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -296,6 +297,11 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
+  )
+
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.SHARE,
@@ -314,6 +320,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -340,6 +347,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isPremium,
     isNewPodcastControlsEnabled,
     isLongFormContent,
+    albumInfo,
     playbackPositionInfo?.status,
     isContextPlaylistOwner,
     dispatch,
