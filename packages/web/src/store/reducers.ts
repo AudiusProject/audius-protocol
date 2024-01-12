@@ -68,7 +68,7 @@ const createRootReducer = (
     queue,
 
     // Error Page
-    error,
+    error: error(ssrPageProps),
 
     // Remote config/flags
     remoteConfig,
