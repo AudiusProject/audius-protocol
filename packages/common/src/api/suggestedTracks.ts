@@ -83,9 +83,7 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     () => {
       if (status === Status.SUCCESS && ownTracks) {
         const suggestedTrackIds = difference(
-          shuffle(ownTracks).map((track) =>
-            parseInt(track.track_id.toString())
-          ),
+          shuffle(ownTracks).map((track) => track.track_id),
           collectionTrackIds
         )
         setSuggestedTrackIds(suggestedTrackIds)

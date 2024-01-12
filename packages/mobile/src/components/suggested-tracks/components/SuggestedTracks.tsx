@@ -188,7 +188,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
             </Text>
           </View>
           <Animated.View style={expandIconStyle}>
-            <IconButton icon={IconCaretDown} onPress={handleExpanded} />
+            <IconButton icon={IconCaretDown} />
           </Animated.View>
         </View>
       </TouchableOpacity>
