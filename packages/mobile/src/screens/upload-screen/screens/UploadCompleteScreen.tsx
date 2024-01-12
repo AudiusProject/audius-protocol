@@ -147,25 +147,29 @@ export const UploadCompleteScreen = () => {
               {messages.complete}
             </Text>
           </View>
-          <Text variant='body' style={styles.description}>
-            {messages.share}
-          </Text>
-          <TwitterButton
-            type='static'
-            size='large'
-            fullWidth
-            url={getTrackRoute(track!, true)}
-            shareText={messages.twitterShareText(title)}
-          />
-          <TextButton
-            variant='neutralLight4'
-            icon={IconShare}
-            title={isLinkCopied ? messages.linkCopied : messages.copyLink}
-            style={styles.shareButton}
-            onPress={handleCopyLink}
-            TextProps={{ variant: 'h3', noGutter: true }}
-            IconProps={{ height: 14, width: 14 }}
-          />
+          {!track?.is_unlisted ? (
+            <>
+              <Text variant='body' style={styles.description}>
+                {messages.share}
+              </Text>
+              <TwitterButton
+                type='static'
+                size='large'
+                fullWidth
+                url={getTrackRoute(track!, true)}
+                shareText={messages.twitterShareText(title)}
+              />
+              <TextButton
+                variant='neutralLight4'
+                icon={IconShare}
+                title={isLinkCopied ? messages.linkCopied : messages.copyLink}
+                style={styles.shareButton}
+                onPress={handleCopyLink}
+                TextProps={{ variant: 'h3', noGutter: true }}
+                IconProps={{ height: 14, width: 14 }}
+              />
+            </>
+          ) : null}
         </Tile>
         {accountUser && uploadedTrack ? (
           <TrackTileComponent

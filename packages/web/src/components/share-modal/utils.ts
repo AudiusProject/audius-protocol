@@ -1,4 +1,4 @@
-import { ShareToTwitter, ShareModalContent } from '@audius/common'
+import { ShareToTwitter, ShareContent } from '@audius/common'
 
 import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {
@@ -17,9 +17,19 @@ const getShareHandle = async (handle: string) => {
   return twitterHandle ? `@${twitterHandle}` : handle
 }
 
+export type ShareMessageConfig = Pick<
+  typeof messages,
+  | 'profileShareText'
+  | 'trackShareText'
+  | 'playlistShareText'
+  | 'albumShareText'
+  | 'audioNftPlaylistShareText'
+>
+
 export const getTwitterShareText = async (
-  content: ShareModalContent,
-  isPlaylistOwner = false
+  content: ShareContent,
+  isPlaylistOwner = false,
+  messageConfig: ShareMessageConfig = messages
 ) => {
   let twitterText = ''
   let link = ''
@@ -30,7 +40,10 @@ export const getTwitterShareText = async (
         track: { title, permalink, track_id },
         artist: { handle }
       } = content
-      twitterText = messages.trackShareText(title, await getShareHandle(handle))
+      twitterText = messageConfig.trackShareText(
+        title,
+        await getShareHandle(handle)
+      )
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
       break
@@ -39,7 +52,7 @@ export const getTwitterShareText = async (
       const {
         profile: { handle, user_id }
       } = content
-      twitterText = messages.profileShareText(await getShareHandle(handle))
+      twitterText = messageConfig.profileShareText(await getShareHandle(handle))
       link = fullProfilePage(handle)
       analyticsEvent = { kind: 'profile', id: user_id, url: link }
       break
@@ -49,7 +62,7 @@ export const getTwitterShareText = async (
         album: { playlist_name, playlist_id, permalink },
         artist: { handle }
       } = content
-      twitterText = messages.albumShareText(
+      twitterText = messageConfig.albumShareText(
         playlist_name,
         await getShareHandle(handle)
       )
@@ -68,7 +81,7 @@ export const getTwitterShareText = async (
         playlist: { playlist_name, playlist_id, permalink, is_album },
         creator: { handle }
       } = content
-      twitterText = messages.playlistShareText(
+      twitterText = messageConfig.playlistShareText(
         playlist_name,
         await getShareHandle(handle)
       )
@@ -86,7 +99,7 @@ export const getTwitterShareText = async (
       const {
         user: { handle, name, user_id }
       } = content
-      twitterText = messages.audioNftPlaylistShareText(
+      twitterText = messageConfig.audioNftPlaylistShareText(
         isPlaylistOwner ? 'my' : name
       )
       link = fullAudioNftPlaylistPage(handle)

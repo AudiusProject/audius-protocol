@@ -1,16 +1,8 @@
 import { passwordSchema } from '@audius/common'
-import {
-  Button,
-  ButtonType,
-  Flex,
-  IconArrowRight,
-  IconComponent,
-  useTheme
-} from '@audius/harmony'
+import { Button, Flex, IconArrowRight, IconComponent } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { EnterPasswordSection } from 'pages/sign-up-page/components/EnterPasswordSection'
 
 const initialValues = {
@@ -34,7 +26,6 @@ const EnterPassword = ({
   onSubmit
 }: EnterPasswordProps) => {
   const Icon = continueIcon ?? IconArrowRight
-  const { color } = useTheme()
 
   return (
     <Formik
@@ -60,22 +51,12 @@ const EnterPassword = ({
             <Button
               name='continue'
               type='submit'
-              iconRight={isLoading ? undefined : Icon}
-              disabled={!isValid || isLoading}
-              variant={ButtonType.PRIMARY}
+              iconRight={Icon}
+              disabled={!isValid}
+              variant='primary'
+              isLoading={isLoading}
             >
-              <>
-                {continueLabel}
-                {isLoading ? (
-                  <LoadingSpinner
-                    css={{
-                      height: 20,
-                      width: 20,
-                      '&& g path': { stroke: color.special.white }
-                    }}
-                  />
-                ) : null}
-              </>
+              {continueLabel}
             </Button>
           </Flex>
         </Flex>

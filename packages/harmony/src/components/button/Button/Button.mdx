@@ -16,8 +16,6 @@ import {
   RelatedComponents
 } from 'storybook/components'
 
-import { ButtonSize, ButtonType } from '../types'
-
 import { Button } from './Button'
 import * as ButtonStories from './Button.stories'
 
@@ -121,16 +119,10 @@ A link that looks like a button. Useful for buttons that trigger navigation
         size: 'small',
         component: (
           <Flex gap='l' alignItems='center'>
-            <Button
-              size={ButtonSize.SMALL}
-              style={{ textTransform: 'uppercase' }}
-            >
+            <Button size='small' style={{ textTransform: 'uppercase' }}>
               Get Started
             </Button>
-            <Button
-              size={ButtonSize.DEFAULT}
-              style={{ textTransform: 'uppercase' }}
-            >
+            <Button size='default' style={{ textTransform: 'uppercase' }}>
               Get Started
             </Button>
           </Flex>
@@ -143,7 +135,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
         size: 'small',
         component: (
           <Flex gap='l'>
-            <Button variant={ButtonType.SECONDARY}>Go Back</Button>
+            <Button variant='secondary'>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
         )
@@ -153,7 +145,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
         size: 'small',
         component: (
           <Flex gap='l'>
-            <Button variant={ButtonType.TERTIARY}>Go Back</Button>
+            <Button variant='tertiary'>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
         )
@@ -179,7 +171,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
               backgroundPosition: 'center'
             }}
           >
-            <Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>
+            <Button variant='tertiary' iconLeft={IconCamera}>
               Change Cover Photo
             </Button>
           </Flex>

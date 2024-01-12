@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonProps, ButtonType, IconMetamask } from '@audius/harmony'
+import { Button, ButtonProps, IconMetamask } from '@audius/harmony'
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
@@ -27,7 +27,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
 
   return (
     <Button
-      variant={ButtonType.SECONDARY}
+      variant='secondary'
       iconRight={IconMetamask}
       isStaticIcon
       onClick={handleClick}
