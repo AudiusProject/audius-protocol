@@ -1004,12 +1004,16 @@ class FullTrackReposts(Resource):
         return success_response(users)
 
 
-top_listener_response_full = full_ns.model(
+top_listener_item = full_ns.model(
     "full_top_listener",
     {
         "count": fields.Integer(required=True),
         "user": fields.Nested(user_model_full, required=True),
     },
+)
+
+top_listener_response_full = make_response(
+    "full_top_listener", full_ns, fields.List(fields.Nested(top_listener_item))
 )
 
 
