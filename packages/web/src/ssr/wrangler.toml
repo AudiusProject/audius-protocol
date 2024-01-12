@@ -2,10 +2,21 @@ compatibility_date = "2023-10-25"
 account_id = "3811365464a8e56b2b27a5590e328e49"
 main = "./worker.js"
 node_compat = true
-name = "audius-web-ssr"
 
 [site]
 bucket = "../../build-ssr/client"
+
+[env.staging]
+name = "audius-web-ssr-staging"
+
+[env.staging-release]
+name = "audius-web-ssr-staging-release-candidate"
+
+[env.release]
+name = "audius-web-ssr-release-candidate"
+
+[env.production]
+name = "audius-web-ssr"
 
 # Test environment, replace `test` with subdomain
 # Invoke with npx wrangler dev --env test
