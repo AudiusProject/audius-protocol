@@ -51,11 +51,3 @@ export type TikTokProfile = {
   avatar_large_url?: string
   is_verified: boolean
 }
-
-export type AccountImage = { url: string; file: any } | undefined
-
-export type NativeAccountImage = {
-  uri: string
-  name: string
-  type?: string
-}
