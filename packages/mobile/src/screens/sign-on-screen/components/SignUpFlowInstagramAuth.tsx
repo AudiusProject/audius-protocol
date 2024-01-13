@@ -10,7 +10,7 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import Config from 'react-native-config'
 import { useDispatch } from 'react-redux'
 
-import { SocialButton } from 'app/screens/sign-on-screen/components/temp-harmony/SocialButton'
+import { SocialButton } from '@audius/harmony-native'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { make, track } from 'app/services/analytics'
 import { env } from 'app/services/env'
@@ -154,10 +154,8 @@ export const SignUpFlowInstagramAuth = ({
       />
       <SocialButton
         socialType='instagram'
-        style={{ flex: 1, height: '100%' }}
         onPress={handlePress}
-        title={socialMediaMessages.signUpInstagram}
-        noText
+        aria-label={socialMediaMessages.signUpInstagram}
       />
     </>
   )

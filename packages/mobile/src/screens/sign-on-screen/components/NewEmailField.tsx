@@ -22,7 +22,9 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
     <>
       <EmailField
         {...props}
-        error={Boolean(error && !emailInUse)}
+        error={emailInUse ? false : undefined}
+        helperText={emailInUse ? '' : undefined}
+        // helperText={hasError ? error : undefined}
         debouncedValidationMs={500}
       />
       {emailInUse || (hadError && isValidating) ? (
