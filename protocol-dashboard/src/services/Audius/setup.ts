@@ -1,7 +1,6 @@
 import { AudiusClient } from './AudiusClient'
 import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
 import { initAudiusSdk } from './sdk'
-import { disableRefreshAfterNetworkChange } from 'utils/switchNetwork'
 
 declare global {
   interface Window {
@@ -112,8 +111,8 @@ export async function setup(this: AudiusClient): Promise<void> {
           })
           // Reload anytime the network changes
           window.ethereum.on('chainChanged', () => {
-            console.log('Chain change')
-            if (!willReload && !disableRefreshAfterNetworkChange.value) {
+            if (!willReload) {
+              console.log('Chain change')
               willReload = true
               window.location.reload()
             }
