@@ -20,7 +20,8 @@ import {
   confirmTransaction,
   IntKeys,
   parseHandleReservedStatusFromSocial,
-  isValidEmailString
+  isValidEmailString,
+  waitForAccount
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -352,7 +353,6 @@ function* validateEmail(action) {
 function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  const isNativeMobile = yield getContext('isNativeMobile')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
   yield call(waitForWrite)
@@ -362,12 +362,8 @@ function* signUp() {
   const createUserMetadata = {
     name: signOn.name.value.trim(),
     handle: signOn.handle.value,
-    profilePicture: isNativeMobile
-      ? signOn.profileImage
-      : (signOn.profileImage && signOn.profileImage.file) || null,
-    coverPhoto: isNativeMobile
-      ? signOn.coverPhoto
-      : (signOn.coverPhoto && signOn.coverPhoto.file) || null,
+    profilePicture: (signOn.profileImage && signOn.profileImage.file) || null,
+    coverPhoto: (signOn.coverPhoto && signOn.coverPhoto.file) || null,
     isVerified: signOn.verified,
     location
   }
@@ -513,6 +509,57 @@ function* signUp() {
       function* ({ timeout }) {
         if (timeout) {
           console.debug('Timed out trying to register')
+          yield put(signOnActions.signUpTimeout())
+        }
+      },
+      () => {},
+      SIGN_UP_TIMEOUT_MILLIS
+    )
+  )
+}
+
+function* repairSignUp() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  yield call(waitForAccount)
+  const audiusLibs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+
+  const metadata = yield select(getAccountUser)
+  if (!metadata && metadata.name && metadata.handle && metadata.wallet) {
+    return
+  }
+
+  const User = audiusLibs.User
+  const dnUser = yield call(
+    [User, User.getUsers],
+    1, // limit
+    0, // offset
+    [metadata.user_id], // userIds
+    null, // walletAddress
+    null, // handle
+    null // minBlockNumber
+  )
+  if (dnUser && dnUser.length > 0) {
+    return
+  }
+  yield put(
+    confirmerActions.requestConfirmation(
+      metadata.handle,
+      function* () {
+        console.info('Repairing user')
+        yield call([User, User.repairEntityManagerUserV2], metadata)
+      },
+      function* () {
+        console.info('Successfully repaired user')
+        yield put(signOnActions.sendWelcomeEmail(metadata.name))
+        yield call(fetchAccountAsync, { isSignUp: true })
+      },
+      function* ({ timeout }) {
+        console.error('Failed to repair user')
+        if (timeout) {
+          console.debug('Timed out trying to fix registration')
           yield put(signOnActions.signUpTimeout())
         }
       },
@@ -797,7 +844,8 @@ export default function sagas() {
     watchShowToast,
     watchOpenSignOn,
     watchSignOnError,
-    watchSendWelcomeEmail
+    watchSendWelcomeEmail,
+    repairSignUp
   ]
   return sagas
 }

@@ -341,7 +341,7 @@ const RenderForm = ({
                     setSelectedMethod={setPurchaseMethod}
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance={!balance?.isZero()}
+                    showExistingBalance={!!(balance && !balance.isZero())}
                     isCoinflowEnabled={showCoinflow}
                   />
                 )}

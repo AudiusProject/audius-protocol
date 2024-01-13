@@ -76,6 +76,7 @@ type TracksTableProps = {
   isVirtualized?: boolean
   isPaginated?: boolean
   isReorderable?: boolean
+  isAlbumPage?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
   onClickRemove?: (
@@ -121,6 +122,7 @@ export const TracksTable = ({
   disabledTrackEdit = false,
   isPaginated = false,
   isReorderable = false,
+  isAlbumPage = false,
   fetchBatchSize,
   fetchMoreTracks,
   fetchPage,
@@ -381,6 +383,7 @@ export const TracksTable = ({
             className={styles.tableActionButton}
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
+            includeAlbumPage={!isAlbumPage}
             includeAddToPlaylist={!isLocked}
             includeFavorite={!isLocked}
             onRemove={onClickRemove}
@@ -400,7 +403,14 @@ export const TracksTable = ({
         </div>
       )
     },
-    [trackAccessMap, disabledTrackEdit, onClickRemove, removeText, userId]
+    [
+      trackAccessMap,
+      disabledTrackEdit,
+      isAlbumPage,
+      onClickRemove,
+      removeText,
+      userId
+    ]
   )
 
   const renderTrackActions = useCallback(

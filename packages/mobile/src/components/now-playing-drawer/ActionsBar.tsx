@@ -26,6 +26,7 @@ import {
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
@@ -118,6 +119,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track?.track_id ?? 0 },
+    { enabled: !!track?.track_id }
+  )
+
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
       openPremiumContentPurchaseModal(
@@ -190,6 +196,9 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
+        isEditAlbumsEnabled && albumInfo
+          ? OverflowAction.VIEW_ALBUM_PAGE
+          : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
@@ -211,6 +220,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     isEditAlbumsEnabled,
     isOwner,
     isNewPodcastControlsEnabled,
+    albumInfo,
     playbackPositionInfo?.status,
     dispatch
   ])

@@ -47,6 +47,15 @@ new_dashboard_wallet_users_data = [
             "message": "Connecting Audius protocol dashboard wallet 0x09439dc8d52396c29e4414664C84f36Cf9A8d500 at 1686252024",
         },
     },
+    {
+        "wallet": "0xe05aC1EfC30cE2F7615186802E2B14CC8759616F",
+        # 0634902d1af06d2da2ac9badd6718e210b028d753b89b93aaeba8e4438bad4ae
+        "user_id": 2,
+        "wallet_signature": {
+            "signature": "5e38c49b2a0d8157a672d5ccd10abb54758967833efd69c25fbe530e339b00d16d665e1d21688ab629db292d401d53e95cb5701420eaa5fb2cfffbe959cb72f51c",
+            "message": "Connecting Audius user @user_2 at 1686252024",
+        },
+    },
 ]
 
 
@@ -144,6 +153,20 @@ def test_index_dashboard_wallet_user(app, mocker):
                 )
             },
         ],
+        "CreateDashboardWalletUserTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": new_dashboard_wallet_users_data[4]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{"wallet": "{new_dashboard_wallet_users_data[4]["wallet"]}", "wallet_signature": {{"signature": "{new_dashboard_wallet_users_data[4]["wallet_signature"]["signature"]}", "message": "{new_dashboard_wallet_users_data[4]["wallet_signature"]["message"]}"}}}}""",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -165,6 +188,7 @@ def test_index_dashboard_wallet_user(app, mocker):
             {
                 "user_id": user_id,
                 "wallet": user_wallets.get(user_id, None) or f"user{user_id}wallet",
+                "handle": f"User_{user_id}",
             }
             for user_id in range(1, 6)
         ],
@@ -190,7 +214,7 @@ def test_index_dashboard_wallet_user(app, mocker):
 
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 6
         for expected_item in new_dashboard_wallet_users_data:
             found_matches = [
                 item
@@ -430,6 +454,51 @@ def test_index_dashboard_wallet_user(app, mocker):
                 )
             },
         ],
+        "CreateDashboardWalletUserInvalidTx16": [
+            {
+                # Handle in wallet signature incorrect
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 4,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "wallet_signature": {"signature": "d4421fbf7e0275fd9caa20cd65a347f2dcab339490918862463caf1bc68459984641640d76cde8ecae7b9fce045e3d975351176fca61b28450279a78ca1489961b", "message": "Connecting Audius user @beep at 1686252026"}}""",
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx17": [
+            {
+                # Wallet signature message has extra words (handle format)
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 4,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "wallet_signature": {"signature": "a1e77d57b020b5ba9d0025fe827e24ad271f52bca1d4c0a7640fc825bc651f8564cf72aae2d42f9e3688fd4686ff57671413d01b1c2d66e626ca62d0546c1ab81c", "message": "Connecting Audius user @User_4 Kangaroo at 1686252026"}}""",
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
+        "CreateDashboardWalletUserInvalidTx18": [
+            {
+                # Wallet signature message has extra words (user id format)
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DASHBOARD_WALLET_USER,
+                        "_userId": 4,
+                        "_action": Action.CREATE,
+                        "_metadata": """{"wallet": "0x5B905C04b15e3BD152224E9738dA726DF6d103B6", "wallet_signature": {"signature": "50d65bdc7f3c6b364258f5fac4f74d570b2b74a8e6547cc1495a339803b6decb13d7420789bc2c9679eda4aabb72d028c1f0857bfce755c1ace6213ea2f9add51c", "message": "Connecting Audius user id 4 Kangaroo at 1686252026"}}""",
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -451,7 +520,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
         # make sure no new rows were added
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 6
 
     # # Test invalid delete txs
     tx_receipts = {
@@ -521,7 +590,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
         # make sure no new rows were added or deleted
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 6
 
     expected_deleted_items = [
         new_dashboard_wallet_users_data[0],
@@ -579,7 +648,7 @@ def test_index_dashboard_wallet_user(app, mocker):
         )
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 6
 
         for expected_item in expected_deleted_items:
             found_matches = [
@@ -634,7 +703,7 @@ def test_index_dashboard_wallet_user(app, mocker):
 
         # validate db records
         all_dwus: List[DashboardWalletUser] = session.query(DashboardWalletUser).all()
-        assert len(all_dwus) == 5
+        assert len(all_dwus) == 6
         for expected_item in second_set_new_dashboard_wallet_users_data:
             found_matches = [
                 item

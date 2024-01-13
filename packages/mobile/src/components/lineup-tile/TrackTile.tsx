@@ -26,6 +26,7 @@ import {
 } from '@audius/common'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
@@ -130,6 +131,11 @@ export const TrackTileComponent = ({
     [track]
   )
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
+  )
+
   const handlePress = useCallback(() => {
     togglePlay({
       uid: lineupTileProps.uid,
@@ -158,6 +164,7 @@ export const TrackTileComponent = ({
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -185,6 +192,7 @@ export const TrackTileComponent = ({
     isOwner,
     isStreamGated,
     isNewPodcastControlsEnabled,
+    albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,
     track?.is_scheduled_release,

@@ -6,7 +6,7 @@ import {
   User,
   accountSelectors,
   InstagramProfile,
-  AccountImage,
+  Image,
   TwitterProfile,
   accountActions,
   TikTokProfile
@@ -338,8 +338,8 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setTwitterProfile = (
     twitterId: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -374,7 +374,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setInstagramProfile = (
     instagramId: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -395,7 +395,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setTikTokProfile = (
     tikTokId: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -517,8 +517,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setTwitterProfile: (
       twitterId: string,
       profile: TwitterProfile,
-      profileImage?: AccountImage,
-      coverPhoto?: AccountImage
+      profileImage?: Image,
+      coverPhoto?: Image
     ) =>
       dispatch(
         signOnAction.setTwitterProfile(
@@ -531,7 +531,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setInstagramProfile: (
       instagramId: string,
       profile: InstagramProfile,
-      profileImage?: AccountImage
+      profileImage?: Image
     ) =>
       dispatch(
         signOnAction.setInstagramProfile(instagramId, profile, profileImage)
@@ -539,7 +539,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setTikTokProfile: (
       tikTokId: string,
       profile: TikTokProfile,
-      profileImage?: AccountImage
+      profileImage?: Image
     ) =>
       dispatch(signOnAction.setTikTokProfile(tikTokId, profile, profileImage)),
     validateEmail: (email: string) =>
