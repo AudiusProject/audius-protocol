@@ -62,7 +62,7 @@ type SetTwitterInfoAction = {
   uuid: any
   profile: TwitterProfile
   profileImage: Image
-  profileBanner: Image
+  profileBanner: Image | undefined
   requiresUserReview: any
 }
 type SetTwitterErrorAction = {
@@ -86,7 +86,7 @@ type SetTikTokInfoAction = {
   type: typeof SET_TIKTOK_INFO
   uuid: any
   profile: TikTokProfile
-  profileImage: Image
+  profileImage: Image | undefined
   requiresUserReview: any
 }
 type SetTikTokErrorAction = {
@@ -164,7 +164,7 @@ export const setTwitterInfo = (
   uuid: string,
   profile: TwitterProfile,
   profileImage: Image,
-  profileBanner: Image,
+  profileBanner: Image | undefined,
   requiresUserReview: boolean
 ): SetTwitterInfoAction => ({
   type: SET_TWITTER_INFO,
@@ -199,7 +199,7 @@ export const setInstagramError = (error: any): SetInstagramErrorAction => ({
 export const setTikTokInfo = (
   uuid: string,
   profile: TikTokProfile,
-  profileImage: Image,
+  profileImage: Image | undefined,
   requiresUserReview: boolean
 ): SetTikTokInfoAction => ({
   type: SET_TIKTOK_INFO,
