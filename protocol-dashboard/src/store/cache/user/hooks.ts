@@ -466,7 +466,7 @@ export const useUserProfile = ({ wallet }: UseUserProfile) => {
 
   const image =
     status !== Status.Loading
-      ? audiusProfile?.profilePicture['_480x480'] ?? user.image
+      ? audiusProfile?.profilePicture?.['_480x480'] ?? user.image
       : undefined
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()

@@ -28,6 +28,8 @@ export const getAccountStatus = (state: AppState) => state.account.status
 export const getPendingTransactions = (state: AppState) =>
   state.account.pendingTransactions
 export const getPendingClaim = (state: AppState) => state.account.pendingClaim
+export const getIsAudiusProfileRefetchDisabled = (state: AppState) =>
+  state.account.isAudiusProfileRefetchDisabled
 
 // -------------------------------- Thunk Actions  --------------------------------
 
