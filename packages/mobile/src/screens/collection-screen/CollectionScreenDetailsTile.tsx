@@ -238,6 +238,7 @@ export const CollectionScreenDetailsTile = ({
         showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
+        isAlbumPage={isAlbum}
         uids={isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids}
         ListEmptyComponent={
           isLineupLoading ? null : (

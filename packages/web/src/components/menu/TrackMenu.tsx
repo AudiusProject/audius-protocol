@@ -54,6 +54,7 @@ const messages = {
   unreposted: 'Un-Reposted!',
   unsetArtistPick: 'Unset as Artist Pick',
   visitArtistPage: 'Visit Artist Page',
+  visitAlbumPage: 'Visit Album Page',
   visitTrackPage: 'Visit Track Page',
   visitEpisodePage: 'Visit Episode Page',
   markAsPlayed: 'Mark as Played',
@@ -74,6 +75,7 @@ export type OwnProps = {
   includeFavorite?: boolean
   includeRepost?: boolean
   includeShare?: boolean
+  includeAlbumPage?: boolean
   includeTrackPage?: boolean
   isArtistPick?: boolean
   isDeleted?: boolean
@@ -121,6 +123,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeFavorite,
       includeRepost,
       includeShare,
+      includeAlbumPage,
       includeTrackPage,
       isArtistPick,
       isDeleted,
@@ -235,7 +238,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
 
     const albumPageMenuItem = {
-      text: 'Visit Album Page',
+      text: messages.visitAlbumPage,
       onClick: () =>
         albumInfo &&
         goToRoute(
@@ -296,7 +299,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)
     }
-    if (albumInfo && includeAddToAlbum && isEditAlbumsEnabled) {
+    if (albumInfo && includeAlbumPage && isEditAlbumsEnabled) {
       menu.items.push(albumPageMenuItem)
     }
     if (handle && !isOwnerDeactivated) {
@@ -365,6 +368,7 @@ TrackMenu.defaultProps = {
   includeEdit: true,
   includeEmbed: true,
   includeFavorite: true,
+  includeAlbumPage: true,
   includeTrackPage: true,
   includeAddToAlbum: true,
   includeAddToPlaylist: true,
