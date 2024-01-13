@@ -206,20 +206,21 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
   const setOAuthInfo = useCallback(() => {
     if (twitterInfo) {
       // Replace twitter's returned image (which may vary) with the hd one
-      const hdTwitterImageUrl =
-        twitterInfo.profile.profile_image_url_https.replace(
-          /_(normal|bigger|mini)/g,
-          ''
-        )
+      const twitterProfileImageUrl = twitterInfo.profile.profile_image_url_https
+        ? twitterInfo.profile.profile_image_url_https.replace(
+            /_(normal|bigger|mini)/g,
+            ''
+          )
+        : null
       dispatch(
         signOnActions.setTwitterProfile(
           twitterInfo.uuid,
           twitterInfo.profile,
-          twitterInfo.profile.profile_image_url_https
+          twitterProfileImageUrl
             ? {
-                url: hdTwitterImageUrl,
+                url: twitterProfileImageUrl,
                 file: {
-                  uri: hdTwitterImageUrl,
+                  uri: twitterProfileImageUrl,
                   name: 'ProfileImage',
                   type: 'image/jpeg'
                 }
