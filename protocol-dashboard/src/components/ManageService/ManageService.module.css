@@ -27,6 +27,7 @@
 
 .manageAccountContainer {
   margin-top: var(--unit-5);
+  margin-bottom: var(--unit-4);
 }
 
 .manageBtns {
