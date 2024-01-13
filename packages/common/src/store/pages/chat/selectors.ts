@@ -172,7 +172,7 @@ export const getSingleOtherChatUser = (
  * Gets a list of the users the current user has chats with.
  * Note that this only takes the first user of each chat that doesn't match the current one,
  * so this will need to be adjusted when we do group chats.
- */
+ **/
 export const getUserList = createSelector(
   [getUserId, getChats, getHasMoreChats, getChatsStatus],
   (currentUserId, chats, hasMore, chatsStatus) => {

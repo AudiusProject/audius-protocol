@@ -10,4 +10,7 @@ export type SignUpScreenParamList = {
   SelectArtists: undefined
   ReviewHandle: undefined
   CreateLoginDetails: undefined
+  AccountLoading: undefined
+  // For leaving signup
+  HomeStack: { screen: 'Trending' }
 }

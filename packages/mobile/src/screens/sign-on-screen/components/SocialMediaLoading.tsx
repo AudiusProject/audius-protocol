@@ -1,6 +1,13 @@
 import { css } from '@emotion/native'
 
-import { Box, Flex, Text, useTheme } from '@audius/harmony-native'
+import {
+  Box,
+  Flex,
+  IconButton,
+  IconClose,
+  Text,
+  useTheme
+} from '@audius/harmony-native'
 import { LoadingMoreSpinner } from 'app/screens/favorites-screen/LoadingMoreSpinner'
 
 const messages = {
@@ -8,8 +15,8 @@ const messages = {
   connectingSocialMedia: 'We’re connecting your social account'
 }
 
-export const SocialMediaLoading = () => {
-  const { color } = useTheme()
+export const SocialMediaLoading = ({ onClose }: { onClose: () => void }) => {
+  const { color, spacing } = useTheme()
   return (
     <Flex
       direction='column'
@@ -29,6 +36,17 @@ export const SocialMediaLoading = () => {
         backgroundColor: color.background.white
       })}
     >
+      <IconButton
+        color='subdued'
+        icon={IconClose}
+        aria-label='Return to email screen'
+        style={css({
+          position: 'absolute',
+          top: spacing.xl,
+          left: spacing.xl
+        })}
+        onPress={onClose}
+      />
       <Text variant='heading' size='m' color='accent' textAlign='center'>
         {messages.hangTight}
         {'\n'}

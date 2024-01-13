@@ -7,7 +7,6 @@ import {
   Button,
   IconArrowRight,
   TextLink,
-  ButtonType,
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -116,7 +115,7 @@ export const SignInPage = () => {
             </Flex>
           </Flex>
           {!isMobile ? (
-            <Button variant={ButtonType.SECONDARY} asChild>
+            <Button variant='secondary' asChild>
               <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
             </Button>
           ) : null}

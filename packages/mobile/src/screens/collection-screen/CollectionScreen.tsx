@@ -20,7 +20,9 @@ import {
   shareModalUIActions,
   RepostType,
   repostsUserListActions,
-  favoritesUserListActions
+  favoritesUserListActions,
+  useFeatureFlag,
+  FeatureFlags
 } from '@audius/common'
 import type {
   Collection,
@@ -39,7 +41,7 @@ import {
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import type { ImageProps } from 'app/components/image/FastImage'
-import { SuggestedTracks } from 'app/components/suggested-tracks'
+import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -146,6 +148,9 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     updated_at
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
 
   const { neutralLight5 } = useThemePalette()
 
@@ -296,10 +301,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               user={user}
               isOwner={isOwner}
             />
-            {isOwner && !is_album ? (
+            {isOwner && (!is_album || isEditAlbumsEnabled) ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
-                <SuggestedTracks collectionId={playlist_id} />
+                <SuggestedCollectionTracks collectionId={playlist_id} />
               </>
             ) : null}
           </>

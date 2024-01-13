@@ -35,8 +35,8 @@ const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 const { toast } = toastActions
 
 const messages = {
-  addingTrack: 'Adding track to playlist...',
-  addedTrack: 'Added track to playlist'
+  addedTrack: (collectionType: 'album' | 'playlist') =>
+    `Added track to ${collectionType}`
 }
 
 type AddTrackToPlaylistAction = ReturnType<
@@ -59,8 +59,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
-
-  yield* put(toast({ content: messages.addingTrack }))
 
   let playlist = yield* select(getCollection, { id: playlistId })
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
@@ -138,7 +136,11 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
 
   yield* put(event)
 
-  yield* put(toast({ content: messages.addedTrack }))
+  yield* put(
+    toast({
+      content: messages.addedTrack(playlist.is_album ? 'album' : 'playlist')
+    })
+  )
 }
 
 function* confirmAddTrackToPlaylist(

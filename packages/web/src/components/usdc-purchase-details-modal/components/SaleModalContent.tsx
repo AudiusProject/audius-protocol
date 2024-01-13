@@ -9,7 +9,6 @@ import {
 } from '@audius/common'
 import {
   Button,
-  ButtonType,
   Flex,
   IconCart,
   IconExternalLink,
@@ -124,7 +123,7 @@ export const SaleModalContent = ({
         <Button
           className={styles.button}
           iconLeft={IconMessage}
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           onClick={handleClickMessageBuyer}
         >
           {messages.messageBuyer}

@@ -7,9 +7,8 @@ NodeJS server for managing Audius bulk ingestion (DDEX uploads). Serves a fronte
 2. `npm i && npm run dev:[stage|prod]`  
 
 If you want to run the frontend locally, you'll need to:
-1. Make sure you're running `npm run sdk` at `~/audius-protocol` root
-2. Start the frontend: `cd ../ddex-frontend && npm i && npm run start:[stage|prod]`
-3. If you want to test in a more prod-like manner, do `npm run [stage|prod]:preview` in the frontend directory.
+1. Start the frontend: `cd ../ddex-frontend && npm i && npm run start:[stage|prod]`
+2. If you want to test in a more prod-like manner, do `npm run [stage|prod]:preview` in the frontend directory.
   * Then you can either visit http://localhost:4173/ddex
   * OR visit the backend root path (i.e. `http://localhost:8926/ddex`) to see the frontend served as static assets from the backend. But to do this, you have to simulate the reverse proxy stripping the /ddex path prefix by commenting out `base` in the frontend `vite.config.js`. TODO: Growth area here to make it more seamless to have the backend serve the frontend locally
 

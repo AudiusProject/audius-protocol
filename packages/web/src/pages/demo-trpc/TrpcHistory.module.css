@@ -1,0 +1,47 @@
+.historyPage {
+  margin: 20px;
+  padding: 20px;
+}
+.history {
+  border: 10px solid white;
+}
+.history td,
+.history th {
+  padding: 10px;
+  background: white;
+}
+.history th {
+  text-align: left;
+  font-weight: 900;
+}
+
+.right {
+  text-align: right;
+}
+
+.history tr:hover td {
+  background: lightyellow;
+}
+
+.topListener {
+  position: relative;
+}
+.topListenerPopover {
+  position: absolute;
+  text-align: left;
+  left: 100%;
+  padding: 10px;
+  background: white;
+  border: 1px solid black;
+  box-shadow: 3px 3px 0px #555;
+  white-space: nowrap;
+}
+.topListenerRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.topListenerRow:hover {
+  background: lightyellow;
+}

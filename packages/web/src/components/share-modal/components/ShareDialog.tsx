@@ -53,8 +53,7 @@ export const ShareDialog = ({
   onClosed,
   showTikTokShareAction,
   shareType,
-  isPrivate,
-  isUnlisted
+  isPrivate
 }: ShareDialogProps) => {
   return (
     <Modal
@@ -86,15 +85,13 @@ export const ShareDialog = ({
               iconClassName={styles.shareIcon}
               textClassName={styles.shareActionLabel}
             />
-            {!isUnlisted ? (
-              <ShareActionListItem
-                leftIcon={<IconTwitterBird {...iconProps} />}
-                text={messages.twitter}
-                onClick={onShareToTwitter}
-                iconClassName={styles.shareIcon}
-                textClassName={styles.shareActionLabel}
-              />
-            ) : null}
+            <ShareActionListItem
+              leftIcon={<IconTwitterBird {...iconProps} />}
+              text={messages.twitter}
+              onClick={onShareToTwitter}
+              iconClassName={styles.shareIcon}
+              textClassName={styles.shareActionLabel}
+            />
             {showTikTokShareAction ? (
               <ShareActionListItem
                 leftIcon={<IconTikTok {...iconProps} />}

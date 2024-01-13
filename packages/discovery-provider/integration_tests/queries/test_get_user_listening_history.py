@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
 from src.queries import response_name_constants
+from src.queries.get_top_listeners_for_track import _get_top_listeners_for_track
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     _get_user_listening_history,
@@ -342,3 +343,24 @@ def assert_track_history(track_history, track_id, activity_timestamp):
     assert track_history[response_name_constants.activity_timestamp] == str(
         activity_timestamp
     )
+
+
+def test_track_top_listeners(app):
+    """Tests a listening history with no plays"""
+    with app.app_context():
+        db = get_db()
+
+    populate_mock_db(db, test_entities)
+
+    with db.scoped_session() as session:
+        top_listeners = _get_top_listeners_for_track(session, {"track_id": 2})
+        assert len(top_listeners) == 2
+        assert top_listeners[0]["user"]["user_id"] == 1
+        assert top_listeners[0]["count"] == 1
+        assert top_listeners[1]["user"]["user_id"] == 2
+        assert top_listeners[1]["count"] == 1
+
+        top_listeners = _get_top_listeners_for_track(session, {"track_id": 1})
+        assert len(top_listeners) == 1
+        assert top_listeners[0]["user"]["user_id"] == 1
+        assert top_listeners[0]["count"] == 2

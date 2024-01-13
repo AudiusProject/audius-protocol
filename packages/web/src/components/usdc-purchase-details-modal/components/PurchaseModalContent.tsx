@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { makeSolanaTransactionLink, useGetTrackById } from '@audius/common'
 import {
   Button,
-  ButtonType,
   Flex,
   IconArrowRight,
   IconExternalLink,
@@ -101,7 +100,7 @@ export const PurchaseModalContent = ({
       <ModalFooter className={styles.footer}>
         <Button
           className={styles.button}
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
         >

@@ -1,6 +1,5 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
-from src.models.users.user_bank import USDCUserBankAccount
 
 from user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
@@ -26,6 +25,7 @@ from src.models.users.usdc_transactions_history import (
     USDCTransactionsHistory,
     USDCTransactionType,
 )
+from src.models.users.user_bank import USDCUserBankAccount
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_user_bank import process_user_bank_tx_details
 from src.utils.db_session import get_db
