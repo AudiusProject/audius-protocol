@@ -160,7 +160,7 @@ export type TrackListItemProps = {
   contextPlaylistId?: ID
   index: number
   isReorderable?: boolean
-  isAlbumPage?: boolean
+  showViewAlbum?: boolean
   noDividerMargin?: boolean
   onRemove?: (index: number) => void
   prevUid?: UID
@@ -211,7 +211,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     hideArt,
     index,
     isReorderable = false,
-    isAlbumPage = false,
+    showViewAlbum = false,
     noDividerMargin,
     onRemove,
     prevUid,
@@ -322,7 +322,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isEditAlbumsEnabled && !isAlbumPage && albumInfo
+      isEditAlbumsEnabled && !showViewAlbum && albumInfo
         ? OverflowAction.VIEW_ALBUM_PAGE
         : null,
       isNewPodcastControlsEnabled && isLongFormContent

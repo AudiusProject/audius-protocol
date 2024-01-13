@@ -90,7 +90,7 @@ export const TrackList = ({
               onDrag={drag}
               hideArt={hideArt}
               isReorderable={isReorderable}
-              isAlbumPage={isAlbumPage}
+              showViewAlbum={isAlbumPage}
               uid={uids && (item as UID)}
               prevUid={uids && uids[index - 1]}
               key={item}
@@ -108,6 +108,7 @@ export const TrackList = ({
         contextPlaylistId,
         hideArt,
         ids,
+        isAlbumPage,
         isReorderable,
         noDividerMargin,
         onRemove,
