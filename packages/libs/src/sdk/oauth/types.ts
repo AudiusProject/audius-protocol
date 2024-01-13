@@ -28,5 +28,5 @@ export type OAuthEnv = 'production' | 'staging'
 
 export const OAUTH_URL = {
   production: 'https://audius.co/oauth/auth',
-  staging: 'http://localhost:3001/oauth/auth'
+  staging: 'https://staging.audius.co/oauth/auth'
 } as Record<OAuthEnv, string>

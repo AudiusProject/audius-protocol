@@ -1,8 +1,10 @@
-import { SquareSizes, User, encodeHashId } from '@audius/common'
 import {
-  CreateDashboardWalletUserRequest,
-  CreateGrantRequest
-} from '@audius/sdk'
+  SquareSizes,
+  User,
+  encodeHashId,
+  getErrorMessage
+} from '@audius/common'
+import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -206,19 +208,6 @@ export const getDeveloperApp = async (address: string) => {
   return developerApp.data
 }
 
-export const connectUserToDashboardWallet = async ({
-  userId,
-  wallet,
-  walletSignature
-}: CreateDashboardWalletUserRequest) => {
-  const sdk = await audiusSdk()
-  await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
-    userId,
-    wallet,
-    walletSignature
-  })
-}
-
 export const getIsAppAuthorized = async ({
   userId,
   apiKey
@@ -273,6 +262,8 @@ export const validateWriteOnceParams = ({
   return { error, txParams }
 }
 
+let walletSignatureListener: ((event: MessageEvent) => void) | null = null
+
 export const handleAuthorizeConnectDashboardWallet = async ({
   state,
   originUrl,
@@ -311,35 +302,32 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   }>((resolve) => {
     resolveWalletSignature = resolve
   })
-  window.addEventListener(
-    'message',
-    (event) => {
-      if (
-        event.origin !== originUrl.origin ||
-        event.source !== window.opener ||
-        !event.data.state
-      ) {
-        return
-      }
-      if (state !== event.data.state) {
-        console.error('State mismatch.')
-        return
-      }
-      if (event.data.walletSignature != null) {
-        if (resolveWalletSignature) {
-          if (
-            typeof event.data.walletSignature?.message === 'string' &&
-            typeof event.data.walletSignature?.signature === 'string'
-          ) {
-            resolveWalletSignature(event.data.walletSignature)
-          } else {
-            console.error('Wallet signature received from opener is invalid.')
-          }
+  walletSignatureListener = (event: MessageEvent) => {
+    if (
+      event.origin !== originUrl.origin ||
+      event.source !== window.opener ||
+      !event.data.state
+    ) {
+      return
+    }
+    if (state !== event.data.state) {
+      console.error('State mismatch.')
+      return
+    }
+    if (event.data.walletSignature != null) {
+      if (resolveWalletSignature) {
+        if (
+          typeof event.data.walletSignature?.message === 'string' &&
+          typeof event.data.walletSignature?.signature === 'string'
+        ) {
+          resolveWalletSignature(event.data.walletSignature)
+        } else {
+          console.error('Wallet signature received from opener is invalid.')
         }
       }
-    },
-    false
-  )
+    }
+  }
+  window.addEventListener('message', walletSignatureListener, false)
 
   // Send chosen logged in user info back to origin
   window.opener.postMessage(
@@ -353,20 +341,18 @@ export const handleAuthorizeConnectDashboardWallet = async ({
 
   // Listen for message from origin containing wallet signature
   const walletSignature = await receiveWalletSignaturePromise
+  window.removeEventListener('message', walletSignatureListener)
   // Send the transaction
   try {
-    await connectUserToDashboardWallet({
+    const sdk = await audiusSdk()
+    await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
       userId: encodeHashId(account.user_id),
       wallet: txParams!.wallet,
       walletSignature: walletSignature
     })
   } catch (e: unknown) {
-    let error = 'Connecting dashboard wallet failed'
-    if (typeof e === 'string') {
-      error = e
-    } else if (e instanceof Error) {
-      error = e.message
-    }
+    const error = getErrorMessage(e)
+
     onError({
       isUserError: false,
       errorMessage: messages.miscError,
