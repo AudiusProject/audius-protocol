@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import {
   ID,
   User,
-  AccountImage,
+  Image,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile
@@ -53,20 +53,20 @@ export type SignOnProps = {
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   setTikTokProfile: (
     uuid: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   recordInstagramStart: () => void
