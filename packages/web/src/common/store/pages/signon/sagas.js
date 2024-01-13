@@ -352,6 +352,7 @@ function* validateEmail(action) {
 function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
+  const isNativeMobile = yield getContext('isNativeMobile')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
   yield call(waitForWrite)
@@ -361,8 +362,12 @@ function* signUp() {
   const createUserMetadata = {
     name: signOn.name.value.trim(),
     handle: signOn.handle.value,
-    profilePicture: (signOn.profileImage && signOn.profileImage.file) || null,
-    coverPhoto: (signOn.coverPhoto && signOn.coverPhoto.file) || null,
+    profilePicture: isNativeMobile
+      ? signOn.profileImage
+      : (signOn.profileImage && signOn.profileImage.file) || null,
+    coverPhoto: isNativeMobile
+      ? signOn.coverPhoto
+      : (signOn.coverPhoto && signOn.coverPhoto.file) || null,
     isVerified: signOn.verified,
     location
   }
