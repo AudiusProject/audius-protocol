@@ -20,12 +20,12 @@ const getEmail = ({ otp }) => {
   return getOtpEmail({ title, otp: formattedOtp, expire, copyrightYear })
 }
 
-export const validateOtp = async ({ email, otp, redis }) => {
+const validateOtp = async ({ email, otp, redis }) => {
   const storedOtp = await redis.get(`${OTP_REDIS_PREFIX}:${email}`)
   return otp === storedOtp
 }
 
-export const sendOtp = async ({ email, redis, sendgrid }) => {
+const sendOtp = async ({ email, redis, sendgrid }) => {
   const otp = generateOtp()
   const html = getEmail({
     otp
@@ -49,4 +49,9 @@ export const sendOtp = async ({ email, redis, sendgrid }) => {
   if (sendgrid) {
     await sendgrid.send(emailParams)
   }
+}
+
+module.exports = {
+  validateOtp,
+  sendOtp
 }
