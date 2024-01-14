@@ -256,6 +256,10 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     this.props.setValueField('password', password)
   }
 
+  onOtpChange = (otp: string) => {
+    this.props.setValueField('otp', otp)
+  }
+
   onNameChange = (name: string) => this.props.setValueField('name', name)
   onSetProfileImage = (img: any) => this.props.setField('profileImage', img)
   onHandleChange = (handle: string) => {
@@ -459,6 +463,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onEmailChange: this.onEmailChange,
       onEmailSubmitted: this.props.onEmailSubmitted,
       onPasswordChange: this.onPasswordChange,
+      onOtpChange: this.onOtpChange,
       onNameChange: this.onNameChange,
       onAddFollows: this.props.addFollows,
       onRemoveFollows: this.props.removeFollows,
