@@ -96,7 +96,7 @@ module.exports = function (app) {
 
       if (existingUser) {
         if (!otp) {
-          await sendOtp({ email, redis })
+          await sendOtp({ email, redis, sendgrid })
           return errorResponseForbidden('Missing otp')
         }
 
