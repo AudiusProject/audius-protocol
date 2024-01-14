@@ -303,6 +303,7 @@ const SignIn = ({
           size='medium'
           name='otp'
           value={otp.value}
+          characterLimit={6}
           type='number'
           variant={'normal'}
           onChange={onOtpChange}

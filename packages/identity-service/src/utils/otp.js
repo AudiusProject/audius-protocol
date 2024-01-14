@@ -16,7 +16,8 @@ const getEmail = ({ otp }) => {
   const title = 'Your Audius Verification Code is:'
   const expire = 'This code will expire in 10 minutes.'
   const copyrightYear = new Date().getFullYear().toString()
-  return getOtpEmail({ title, otp, expire, copyrightYear })
+  const formattedOtp = `${otp.substring(0, 3)} ${otp.substring(3, 6)}`
+  return getOtpEmail({ title, otp: formattedOtp, expire, copyrightYear })
 }
 
 export const validateOtp = async ({ email, otp, redis }) => {

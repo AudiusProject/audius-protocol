@@ -195,6 +195,7 @@ export const SignInPage = ({
           name='otp'
           id='otp-input'
           value={otp.value}
+          characterLimit={6}
           type='number'
           variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
           onChange={onOtpChange}
