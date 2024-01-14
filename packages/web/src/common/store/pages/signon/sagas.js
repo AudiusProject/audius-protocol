@@ -554,15 +554,18 @@ function* repairSignUp() {
         metadata.handle,
         function* () {
           console.info('Repairing user')
+          yield put(make(Name.SIGN_UP_REPAIR_START))
           yield call([User, User.repairEntityManagerUserV2], metadata)
         },
         function* () {
           console.info('Successfully repaired user')
+          yield put(make(Name.SIGN_UP_REPAIR_SUCCESS))
           yield put(signOnActions.sendWelcomeEmail(metadata.name))
           yield call(fetchAccountAsync, { isSignUp: true })
         },
         function* ({ timeout }) {
           console.error('Failed to repair user')
+          yield put(Name.SIGN_UP_REPAIR_FAILURE)
           if (timeout) {
             console.debug('Timed out trying to fix registration')
             yield put(signOnActions.signUpTimeout())
