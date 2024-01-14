@@ -518,6 +518,9 @@ function* signUp() {
   )
 }
 
+/**
+ * Repairs broken signups from #flare-206
+ */
 function* repairSignUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForAccount)
@@ -526,11 +529,9 @@ function* repairSignUp() {
     audiusBackendInstance.getAudiusLibs
   ])
 
+  // Need at least a name, handle, and wallet to repair
   const metadata = yield select(getAccountUser)
-  if (!metadata) {
-    return
-  }
-  if (metadata && metadata.name && metadata.handle && metadata.wallet) {
+  if (!metadata || !(metadata.name && metadata.handle && metadata.wallet)) {
     return
   }
 
