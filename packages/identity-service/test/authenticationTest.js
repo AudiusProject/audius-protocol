@@ -64,14 +64,14 @@ describe('test authentication routes', function () {
       .expect(200)
 
     const redis = app.get('redis')
-    redis.set('otp:dheeraj@audius.co', '123456')
+    await redis.set('otp:dheeraj@audius.co', '123456')
     // old lookup key doesn't work
     await request(app)
       .get('/authentication')
       .query({
         lookupKey:
           '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
-        email: 'dheeraj@audius.co',
+        username: 'dheeraj@audius.co',
         otp: '123456'
       })
       .expect(400)
@@ -82,7 +82,7 @@ describe('test authentication routes', function () {
       .query({
         lookupKey:
           '1bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
-        email: 'dheeraj@audius.co',
+        username: 'dheeraj@audius.co',
         otp: '123456'
       })
       .expect(200)
@@ -107,7 +107,7 @@ describe('test authentication routes', function () {
       .query({
         lookupKey:
           '1bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
-        email: 'dheeraj@audius.co',
+        username: 'dheeraj@audius.co',
         otp: '123456'
       })
       .expect(400)
@@ -118,7 +118,7 @@ describe('test authentication routes', function () {
       .query({
         lookupKey:
           '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
-        email: 'dheeraj@audius.co',
+        username: 'dheeraj@audius.co',
         otp: '123456'
       })
       .expect(200)
@@ -130,7 +130,9 @@ describe('test authentication routes', function () {
       .get('/authentication')
       .query({
         lookupKey:
-          '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77'
+          '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+        username: 'dheeraj@audius.co',
+        otp: '123456'
       })
       .expect(400, done)
   })
@@ -151,12 +153,12 @@ describe('test authentication routes', function () {
     })
 
     const redis = app.get('redis')
-    redis.set('otp:dheeraj@audius.co', '123456')
+    await redis.set('otp:dheeraj@audius.co', '123456')
     // Try getting data with the right params
     const response = await request(app).get('/authentication').query({
       lookupKey:
         '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
-      email: 'dheeraj@audius.co',
+      username: 'dheeraj@audius.co',
       otp: '123456'
     })
 
