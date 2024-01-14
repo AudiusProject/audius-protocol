@@ -75,6 +75,7 @@ export type SignOnProps = {
   onViewSignIn: () => void
   onEmailChange: (email: string, validate?: boolean) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void

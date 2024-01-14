@@ -48,7 +48,7 @@
   -webkit-appearance: none;
   margin: 0;
 }
-.signInInput > input[type=number] {
+.signInInput > input[type='number'] {
   -moz-appearance: textfield;
 }
 

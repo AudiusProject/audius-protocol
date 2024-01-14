@@ -353,6 +353,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isLongFormContent,
     albumInfo,
     playbackPositionInfo?.status,
+    showViewAlbum,
     isContextPlaylistOwner,
     dispatch,
     track_id,
