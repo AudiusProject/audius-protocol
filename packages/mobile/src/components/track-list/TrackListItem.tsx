@@ -341,7 +341,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isNewPodcastControlsEnabled,
     isLongFormContent,
     playbackPositionInfo?.status,
-    showViewAlbum,
     isContextPlaylistOwner,
     dispatch,
     track_id,
