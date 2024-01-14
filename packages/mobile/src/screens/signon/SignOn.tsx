@@ -7,7 +7,8 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getPasswordField,
   getEmailField,
-  getStatus
+  getStatus,
+  getOtpField
 } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import querystring from 'query-string'
@@ -264,6 +265,7 @@ const messages = {
 const errorMessages = {
   invalidEmail: 'Please enter a valid email',
   emptyPassword: 'Please enter a password',
+  requiresOtp: 'Enter the verification code sent to your email',
   default: 'Invalid Credentials'
 }
 
@@ -317,20 +319,22 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const [isSignin, setisSignIn] = useState(false)
   const [emailBorderColor, setEmailBorderColor] = useState(defaultBorderColor)
   const [passBorderColor, setPassBorderColor] = useState(defaultBorderColor)
+  const [otpBorderColor, setOtpBorderColor] = useState(defaultBorderColor)
   const [formButtonMarginTop, setFormButtonMarginTop] = useState(28)
   const [attemptedEmail, setAttemptedEmail] = useState(false)
   const [attemptedPassword, setAttemptedPassword] = useState(false)
   const [showInvalidEmailError, setShowInvalidEmailError] = useState(false)
   const [showEmptyPasswordError, setShowEmptyPasswordError] = useState(false)
-  const [showDefaultError, setShowDefaultError] = useState(false)
 
   const signOnStatus = useSelector(getStatus)
   const passwordField: EditableField = useSelector(getPasswordField)
   const emailField: EditableField = useSelector(getEmailField)
+  const otpField: EditableField = useSelector(getOtpField)
   const accountUser = useSelector(getAccountUser)
 
   const signedIn = signOnStatus === 'success'
-  const isSigninError = passwordField.error
+  const signInError = passwordField.error
+  const requiresOtp = signInError.includes('403')
   const emailIsValid = emailField.error !== 'characters'
 
   const topDrawer = useRef(new Animated.Value(-800)).current
@@ -370,10 +374,10 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }, [attemptedPassword, password])
 
   useEffect(() => {
-    if (isSigninError && isWorking) {
+    if (signInError && isWorking) {
       setIsWorking(false)
     }
-  }, [isSigninError, isWorking])
+  }, [signInError, isWorking])
 
   useEffect(() => {
     if (signedIn && accountUser) {
@@ -398,7 +402,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   useEffect(() => {
     if (
-      (isSignin && isSigninError && showDefaultError) ||
+      (isSignin && signInError) ||
+      requiresOtp ||
       showInvalidEmailError ||
       showEmptyPasswordError
     ) {
@@ -413,8 +418,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
     }
   }, [
     isSignin,
-    isSigninError,
-    showDefaultError,
+    signInError,
+    requiresOtp,
     email,
     showInvalidEmailError,
     showEmptyPasswordError
@@ -447,7 +452,16 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const { staticWhite } = useThemeColors()
 
   const errorView = () => {
-    if (isSignin && isSigninError && showDefaultError) {
+    if (isSignin && requiresOtp) {
+      return (
+        <Animated.View
+          style={[styles.errorContainer, { opacity: errorOpacity }]}
+        >
+          <ValidationIconX style={styles.errorIcon} />
+          <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
+        </Animated.View>
+      )
+    } else if (isSignin && signInError) {
       return (
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
@@ -551,7 +565,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
           secureTextEntry={true}
           onChangeText={(newText) => {
             setAttemptedPassword(true)
-            setShowDefaultError(false)
             setPassword(newText)
             dispatch(signOnActions.setValueField('password', newText))
           }}
@@ -565,6 +578,33 @@ const SignOn = ({ navigation }: SignOnProps) => {
       )
     }
     return <></>
+  }
+
+  const otpInputField = () => {
+    return (
+      <TextInput
+        style={[styles.inputPass, { borderColor: otpBorderColor }]}
+        placeholderTextColor='#C2C0CC'
+        underlineColorAndroid='transparent'
+        placeholder='Verification Code'
+        autoComplete='off'
+        autoCorrect={false}
+        autoCapitalize='characters'
+        enablesReturnKeyAutomatically={true}
+        maxLength={6}
+        inputMode='numeric'
+        textContentType='oneTimeCode'
+        onChangeText={(newText) => {
+          dispatch(signOnActions.setValueField('otp', newText))
+        }}
+        onFocus={() => {
+          setOtpBorderColor('#7E1BCC')
+        }}
+        onBlur={() => {
+          setOtpBorderColor(defaultBorderColor)
+        }}
+      />
+    )
   }
 
   const MainButton = ({
@@ -604,8 +644,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
                   setShowEmptyPasswordError(true)
                 } else {
                   signIn()
-                  // in case email is what was wrong with the credentials
-                  setShowDefaultError(true)
+                  dispatch(signOnActions.setValueField('password', password))
+                  setIsWorking(true)
                 }
               } else {
                 setIsWorking(true)
@@ -663,7 +703,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   const signIn = () => {
     setIsWorking(true)
-    dispatch(signOnActions.signIn(email, password))
+    dispatch(signOnActions.signIn(email, password, otpField.value))
   }
 
   const insets = useSafeAreaInsets()
@@ -714,7 +754,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
                 maxLength={100}
                 textContentType='emailAddress'
                 onChangeText={(newText) => {
-                  setShowDefaultError(false)
                   const newEmail = newText.trim()
                   setEmail(newEmail)
                   if (newEmail !== '') {
@@ -735,6 +774,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               />
               {passwordInputField()}
               {errorView()}
+              {requiresOtp ? otpInputField() : null}
               <MainButton isWorking={isWorking} isSignin={isSignin} />
             </View>
           </Animated.View>

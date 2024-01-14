@@ -348,7 +348,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
     await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
       userId: encodeHashId(account.user_id),
       wallet: txParams!.wallet,
-      walletSignature: walletSignature
+      walletSignature
     })
   } catch (e: unknown) {
     const error = getErrorMessage(e)
