@@ -47,6 +47,7 @@ export type SignOnProps = {
   onEmailChange: (email: string, validate?: boolean) => void
   onEmailSubmitted: (email: string) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
@@ -111,6 +112,7 @@ const SignOnPage = ({
   onEmailChange,
   onEmailSubmitted,
   onPasswordChange,
+  onOtpChange,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -132,6 +134,7 @@ const SignOnPage = ({
     email,
     name,
     password,
+    otp,
     handle,
     twitterId,
     verified,
@@ -167,10 +170,12 @@ const SignOnPage = ({
           isSignIn={page === Pages.SIGNIN}
           email={email}
           password={password}
+          otp={otp}
           onViewSignIn={onViewSignIn}
           onSubmitSignIn={onSignIn}
           onViewSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
+          onOtpChange={onOtpChange}
           onEmailChange={onEmailChange}
           onEmailSubmitted={onEmailSubmitted}
         />

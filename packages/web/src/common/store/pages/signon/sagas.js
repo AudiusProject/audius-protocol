@@ -247,25 +247,25 @@ function* validateHandle(action) {
           FeatureFlags.VERIFY_HANDLE_WITH_TWITTER
         )
           ? race({
-              data: call(audiusBackendInstance.twitterHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.twitterHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null,
         remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM
         )
           ? race({
-              data: call(audiusBackendInstance.instagramHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.instagramHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null,
         remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK
         )
           ? race({
-              data: call(audiusBackendInstance.tiktokHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.tiktokHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null
       ])
 
@@ -516,14 +516,14 @@ function* signUp() {
           yield put(signOnActions.signUpTimeout())
         }
       },
-      () => {},
+      () => { },
       SIGN_UP_TIMEOUT_MILLIS
     )
   )
 }
 
 function* signIn(action) {
-  const { email, password } = action
+  const { email, password, otp } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForRead)
   try {
@@ -531,7 +531,8 @@ function* signIn(action) {
     const signInResponse = yield call(
       audiusBackendInstance.signIn,
       email ?? signOn.email.value,
-      password ?? signOn.password.value
+      password ?? signOn.password.value,
+      otp ?? signOn.otp.value
     )
     if (
       !signInResponse.error &&

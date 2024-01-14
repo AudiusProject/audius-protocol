@@ -75,6 +75,7 @@ export type SignOnProps = {
   onViewSignIn: () => void
   onEmailChange: (email: string, validate?: boolean) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
@@ -158,6 +159,7 @@ const SignOnPage = ({
   onViewSignIn,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -186,6 +188,7 @@ const SignOnPage = ({
     email,
     name,
     password,
+    otp,
     handle,
     twitterId,
     verified,
@@ -230,6 +233,8 @@ const SignOnPage = ({
           onMetaMaskSignIn={onMetaMaskSignIn}
           email={email}
           password={password}
+          otp={otp}
+          onOtpChange={onOtpChange}
           onSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
           onEmailChange={onEmailChange}
