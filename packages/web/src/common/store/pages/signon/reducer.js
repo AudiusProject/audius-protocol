@@ -402,7 +402,8 @@ const actionsMap = {
         ...state.password,
         status: 'failure',
         error: action.error
-      }
+      },
+      otp: createTextField()
     }
   },
   [SET_TOAST](state, action) {

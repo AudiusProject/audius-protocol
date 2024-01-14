@@ -527,7 +527,10 @@ function* repairSignUp() {
   ])
 
   const metadata = yield select(getAccountUser)
-  if (!metadata && metadata.name && metadata.handle && metadata.wallet) {
+  if (!metadata) {
+    return
+  }
+  if (metadata && metadata.name && metadata.handle && metadata.wallet) {
     return
   }
 
