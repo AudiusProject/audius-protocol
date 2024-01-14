@@ -522,55 +522,59 @@ function* signUp() {
  * Repairs broken signups from #flare-206
  */
 function* repairSignUp() {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield call(waitForAccount)
-  const audiusLibs = yield call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
+  try {
+    const audiusBackendInstance = yield getContext('audiusBackendInstance')
+    yield call(waitForAccount)
+    const audiusLibs = yield call([
+      audiusBackendInstance,
+      audiusBackendInstance.getAudiusLibs
+    ])
 
-  // Need at least a name, handle, and wallet to repair
-  const metadata = yield select(getAccountUser)
-  if (!metadata || !(metadata.name && metadata.handle && metadata.wallet)) {
-    return
-  }
+    // Need at least a name, handle, and wallet to repair
+    const metadata = yield select(getAccountUser)
+    if (!metadata || !(metadata.name && metadata.handle && metadata.wallet)) {
+      return
+    }
 
-  const User = audiusLibs.User
-  const dnUser = yield call(
-    [User, User.getUsers],
-    1, // limit
-    0, // offset
-    [metadata.user_id], // userIds
-    null, // walletAddress
-    null, // handle
-    null // minBlockNumber
-  )
-  if (dnUser && dnUser.length > 0) {
-    return
-  }
-  yield put(
-    confirmerActions.requestConfirmation(
-      metadata.handle,
-      function* () {
-        console.info('Repairing user')
-        yield call([User, User.repairEntityManagerUserV2], metadata)
-      },
-      function* () {
-        console.info('Successfully repaired user')
-        yield put(signOnActions.sendWelcomeEmail(metadata.name))
-        yield call(fetchAccountAsync, { isSignUp: true })
-      },
-      function* ({ timeout }) {
-        console.error('Failed to repair user')
-        if (timeout) {
-          console.debug('Timed out trying to fix registration')
-          yield put(signOnActions.signUpTimeout())
-        }
-      },
-      () => {},
-      SIGN_UP_TIMEOUT_MILLIS
+    const User = audiusLibs.User
+    const dnUser = yield call(
+      [User, User.getUsers],
+      1, // limit
+      0, // offset
+      [metadata.user_id], // userIds
+      null, // walletAddress
+      null, // handle
+      null // minBlockNumber
     )
-  )
+    if (dnUser && dnUser.length > 0) {
+      return
+    }
+    yield put(
+      confirmerActions.requestConfirmation(
+        metadata.handle,
+        function* () {
+          console.info('Repairing user')
+          yield call([User, User.repairEntityManagerUserV2], metadata)
+        },
+        function* () {
+          console.info('Successfully repaired user')
+          yield put(signOnActions.sendWelcomeEmail(metadata.name))
+          yield call(fetchAccountAsync, { isSignUp: true })
+        },
+        function* ({ timeout }) {
+          console.error('Failed to repair user')
+          if (timeout) {
+            console.debug('Timed out trying to fix registration')
+            yield put(signOnActions.signUpTimeout())
+          }
+        },
+        () => {},
+        SIGN_UP_TIMEOUT_MILLIS
+      )
+    )
+  } catch (e) {
+    console.error('Failed to repair account', e)
+  }
 }
 
 function* signIn(action) {
