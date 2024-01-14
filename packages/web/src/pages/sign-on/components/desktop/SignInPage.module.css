@@ -35,11 +35,21 @@
 }
 .signInInput > input {
   height: 100% !important;
+  min-height: 50px;
   width: 100% !important;
   font-size: 20px !important;
   color: var(--neutral);
   border: 1px solid #f2f2f4;
   border-radius: 4px;
+}
+/* Remove buttons on number input */
+.signInInput > input::-webkit-outer-spin-button,
+.signInInput > input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.signInInput > input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .signInInput :global(.placeholder) {

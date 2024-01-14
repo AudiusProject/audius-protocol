@@ -26,6 +26,7 @@ const messages = {
   title: 'Sign Into Your Audius Account',
   error: {
     inUse: 'Invalid password',
+    requiresOtp: 'Enter the verification code sent to your email',
     default: 'Invalid Credentials'
   },
   forgotPasswordText: 'Forgot your password?'
@@ -33,6 +34,7 @@ const messages = {
 
 type emailStatus = 'editing' | 'failure' | 'loading' | 'success'
 type passwordStatus = 'editing' | 'failure' | 'loading'
+type otpStatus = 'editing' | 'failure'
 
 type SignInProps = {
   isMobile: boolean
@@ -48,8 +50,14 @@ type SignInProps = {
     error: string
     status: passwordStatus
   }
+  otp: {
+    value: string
+    error: string
+    status: otpStatus
+  }
   onEmailChange: (email: string, validate?: boolean) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (password: string) => void
   onSignIn: (email: string, password: string) => void
   onSignUp: () => void
   onMetaMaskSignIn: () => void
@@ -61,8 +69,10 @@ export const SignInPage = ({
   hasMetaMask,
   email,
   password,
+  otp,
   onPasswordChange,
   onEmailChange,
+  onOtpChange,
   onSignIn,
   onSignUp,
   onMetaMaskSignIn
@@ -107,8 +117,16 @@ export const SignInPage = ({
   }
 
   const signInError = password.error
-  const errorMessage =
-    messages.error[email.error === 'inUse' ? 'inUse' : 'default']
+  const requiresOtp = signInError.includes('403')
+
+  let errorMessage: string
+  if (email.error === 'inUse') {
+    errorMessage = messages.error.inUse
+  } else if (requiresOtp) {
+    errorMessage = messages.error.requiresOtp
+  } else {
+    errorMessage = messages.error.default
+  }
 
   return (
     <div
@@ -170,6 +188,19 @@ export const SignInPage = ({
           )}
         </Spring>
       )}
+      {requiresOtp ? (
+        <Input
+          placeholder='Verification Code'
+          size='medium'
+          name='otp'
+          id='otp-input'
+          value={otp.value}
+          type='number'
+          variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
+          onChange={onOtpChange}
+          className={cn(styles.signInInput)}
+        />
+      ) : null}
       <div className={styles.buttonsContainer}>
         <Button
           name='sign-in'
@@ -186,7 +217,7 @@ export const SignInPage = ({
           textClassName={styles.signInButtonText}
           className={styles.signInButton}
         />
-        {hasMetaMask ? (
+        {hasMetaMask && !requiresOtp ? (
           <MetaMaskOption text='Sign In With' onClick={onSignInWithMetaMask} />
         ) : null}
         <div className={styles.createAccount}>

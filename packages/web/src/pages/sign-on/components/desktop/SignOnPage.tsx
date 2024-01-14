@@ -158,6 +158,7 @@ const SignOnPage = ({
   onViewSignIn,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -186,6 +187,7 @@ const SignOnPage = ({
     email,
     name,
     password,
+    otp,
     handle,
     twitterId,
     verified,
@@ -230,6 +232,8 @@ const SignOnPage = ({
           onMetaMaskSignIn={onMetaMaskSignIn}
           email={email}
           password={password}
+          otp={otp}
+          onOtpChange={onOtpChange}
           onSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
           onEmailChange={onEmailChange}

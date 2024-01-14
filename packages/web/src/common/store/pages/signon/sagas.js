@@ -570,7 +570,7 @@ function* repairSignUp() {
 }
 
 function* signIn(action) {
-  const { email, password } = action
+  const { email, password, otp } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForRead)
   try {
@@ -578,7 +578,8 @@ function* signIn(action) {
     const signInResponse = yield call(
       audiusBackendInstance.signIn,
       email ?? signOn.email.value,
-      password ?? signOn.password.value
+      password ?? signOn.password.value,
+      otp ?? signOn.otp.value
     )
     if (
       !signInResponse.error &&

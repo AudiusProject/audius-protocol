@@ -10,6 +10,7 @@ export const getSignOn = (state: AppState) => state.signOn
 export const getEmailField = (state: AppState) => state.signOn.email
 export const getNameField = (state: AppState) => state.signOn.name
 export const getPasswordField = (state: AppState) => state.signOn.password
+export const getOtpField = (state: AppState) => state.signOn.otp
 export const getHandleField = (state: AppState) => state.signOn.handle
 export const getIsVerified = (state: AppState) => state.signOn.verified
 export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto

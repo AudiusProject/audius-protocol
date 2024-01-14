@@ -56,6 +56,7 @@ const initialState = {
   email: createTextField(),
   name: createTextField(),
   password: createTextField(),
+  otp: createTextField(),
   handle: createTextField(),
   /** Whether the user linked their social media account on the first page (email page) of the sign up flow */
   linkedSocialOnFirstPage: false,
