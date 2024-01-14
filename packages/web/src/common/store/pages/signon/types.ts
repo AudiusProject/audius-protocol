@@ -46,6 +46,7 @@ export default interface SignOnPageState {
   email: EditableField
   name: EditableField
   password: EditableField
+  otp: EditableField
   handle: EditableField
   genres: string[]
   verified: boolean
