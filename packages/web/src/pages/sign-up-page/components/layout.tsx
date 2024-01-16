@@ -109,6 +109,7 @@ export const Page = (props: PageProps) => {
           {...other}
           alignSelf='center'
           style={styles}
+          flex={1}
         >
           {childrenArray}
         </AnimatedFlex>
