@@ -92,7 +92,6 @@ export const Page = (props: PageProps) => {
   })
 
   const childrenArray = Children.toArray(children)
-
   const footer = childrenArray.pop()
 
   const layoutProps: FlexProps = {
@@ -104,12 +103,12 @@ export const Page = (props: PageProps) => {
 
   if (centered) {
     return (
-      <Flex flex={1} direction='column' alignItems='center' as={as} e>
+      <Flex flex={1} direction='column' alignItems='center' as={as}>
         <AnimatedFlex
           {...layoutProps}
           {...other}
           alignSelf='center'
-          style={{ ...styles }}
+          style={styles}
         >
           {childrenArray}
         </AnimatedFlex>
