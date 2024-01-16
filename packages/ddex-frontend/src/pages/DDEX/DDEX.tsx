@@ -307,24 +307,22 @@ const Ddex = () => {
                 />
                 <XmlImporter audiusSdk={audiusSdk}  uploader={fakeUser} /> */}
 
-                {
-                  isAdmin && (
-                    <>
-                      <Flex direction='column' gap='s'>
-                        <Uploads />
-                      </Flex>
-                      <Flex direction='column' gap='s'>
-                        <Releases />
-                      </Flex>
-                    </>
-                  )
-                }
-              </Flex >
-            </Box >
-          </Flex >
+                {isAdmin && (
+                  <>
+                    <Flex direction='column' gap='s'>
+                      <Uploads />
+                    </Flex>
+                    <Flex direction='column' gap='s'>
+                      <Releases />
+                    </Flex>
+                  </>
+                )}
+              </Flex>
+            </Box>
+          </Flex>
         )}
-      </Flex >
-    </Box >
+      </Flex>
+    </Box>
   )
 }
 
