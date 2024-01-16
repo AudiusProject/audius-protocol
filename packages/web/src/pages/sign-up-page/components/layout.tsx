@@ -29,6 +29,8 @@ import { useMedia } from 'hooks/useMedia'
 
 import { RouteContext } from '../utils/RouteContext'
 
+import { AccountHeader } from './AccountHeader'
+
 const messages = {
   continue: 'Continue'
 }
@@ -92,6 +94,11 @@ export const Page = (props: PageProps) => {
   })
 
   const childrenArray = Children.toArray(children)
+
+  let accountHeader
+  if ((childrenArray[0] as JSX.Element).type.name === AccountHeader.name) {
+    accountHeader = childrenArray.shift()
+  }
   const footer = childrenArray.pop()
 
   const layoutProps: FlexProps = {
@@ -103,13 +110,20 @@ export const Page = (props: PageProps) => {
 
   if (centered) {
     return (
-      <Flex flex={1} direction='column' alignItems='center' as={as}>
+      <Flex
+        flex={1}
+        direction='column'
+        alignItems='center'
+        style={{ overflow: 'auto' }}
+        as={as}
+      >
+        {accountHeader}
         <AnimatedFlex
           {...layoutProps}
           {...other}
           alignSelf='center'
-          css={!isMobile && { maxWidth: 610 }}
-          style={styles}
+          // css={!isMobile && { maxWidth: 610 }}
+          style={{ ...styles }}
         >
           {childrenArray}
         </AnimatedFlex>
@@ -208,10 +222,9 @@ export const PageFooter = (props: PageFooterProps) => {
       backgroundColor='white'
       css={{
         overflow: 'unset',
-        position: sticky ? 'sticky' : 'absolute',
-        bottom: 0,
-        left: 0,
+        flexShrink: 0,
         zIndex: 1,
+        ...(sticky && { position: 'sticky', bottom: 0 }),
         borderBottomRightRadius: 0,
         borderBottomLeftRadius: 0
       }}
