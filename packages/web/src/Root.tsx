@@ -8,6 +8,7 @@ import { useAsync } from 'react-use'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 import { localStorage } from 'services/local-storage'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
@@ -37,6 +38,10 @@ const AppOrPublicSite = () => {
   const [renderPublicSite, setRenderPublicSite] = useState(
     isPublicSiteRoute(history.location)
   )
+
+  useEffect(() => {
+    remoteConfigInstance.init()
+  }, [])
 
   const { value: foundUser } = useAsync(() =>
     localStorage.getCurrentUserExists()

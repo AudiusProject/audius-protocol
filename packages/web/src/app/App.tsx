@@ -8,7 +8,6 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initWebVitals } from 'services/webVitals'
 import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
@@ -79,10 +78,6 @@ export const AppInner = () => {
 }
 
 export const App = () => {
-  useEffect(() => {
-    remoteConfigInstance.init()
-  }, [])
-
   return (
     <AppProviders>
       <AppInner />
