@@ -123,6 +123,7 @@ const CoverPhoto = (props: CoverPhotoProps) => {
     >
       {onSelectCoverPhoto ? (
         <Pressable
+          // we want the pressable surface larger than just the icon
           hitSlop={{
             bottom: spacing.unit10,
             left: spacing.unit7,
@@ -131,7 +132,6 @@ const CoverPhoto = (props: CoverPhotoProps) => {
           }}
           onPress={onSelectCoverPhoto}
           style={{
-            // we want the pressable surface larger than just the icon
             position: 'absolute',
             top: 0,
             right: 0,
