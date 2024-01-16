@@ -17,7 +17,6 @@ import {
   useHistoryContext
 } from './app/HistoryProvider'
 
-// const App = lazy(() => import('./app'))
 const PublicSite = lazy(() => import('./public-site'))
 
 const isPublicSiteRoute = (location: Location) => {
@@ -63,13 +62,7 @@ const AppOrPublicSite = () => {
     )
   }
 
-  return (
-    <>
-      {/* <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}> */}
-      <App />
-      {/* </Suspense> */}
-    </>
-  )
+  return <App />
 }
 
 export const Root = () => {
