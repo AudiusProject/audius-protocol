@@ -61,7 +61,7 @@ import { spacing } from 'app/styles/spacing'
 import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'
 
-import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
+import { DownloadSection } from './DownloadSection'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -114,7 +114,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingVertical: spacing(4)
+    paddingTop: spacing(4)
   },
 
   moodEmoji: {
@@ -129,6 +129,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginVertical: spacing(4)
   },
 
+  bottomContent: {
+    gap: spacing(4),
+    marginHorizontal: spacing(3)
+  },
   hiddenTrackLabel: {
     marginTop: spacing(1),
     marginLeft: spacing(2),
@@ -138,11 +142,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase',
     color: palette.neutralLight4
   },
-
-  bottomContent: {
-    marginHorizontal: spacing(3)
-  },
-
   headerContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -209,9 +208,7 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
-    track as Track
-  ) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -269,6 +266,11 @@ export const TrackScreenDetailsTile = ({
   const isScheduledRelease = release_date
     ? moment(release_date).isAfter(moment.now())
     : false
+  const isLosslessDownloadsEnabled = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const hasDownloadableAssets =
+    track.is_downloadable || (track?._stems?.length ?? 0) > 0
 
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
@@ -564,22 +566,13 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <TrackScreenDownloadButtons
-        following={user.does_current_user_follow}
-        hasDownloadAccess={hasDownloadAccess}
-        isOwner={isOwner}
-        trackId={track_id}
-      />
-    )
-  }
-
   const renderBottomContent = () => {
     return (
       <View style={styles.bottomContent}>
-        {renderDownloadButtons()}
         {renderTags()}
+        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+          <DownloadSection trackId={track_id} />
+        ) : null}
       </View>
     )
   }

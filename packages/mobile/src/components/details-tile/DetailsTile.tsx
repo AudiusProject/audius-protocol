@@ -230,6 +230,11 @@ export const DetailsTile = ({
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
     isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
+  const isLosslessDownloadsEnabled = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const hasDownloadableAssets =
+    track.is_downloadable || (track?._stems?.length ?? 0) > 0
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -378,7 +383,11 @@ export const DetailsTile = ({
                 <DetailsProgressInfo track={track} />
               ) : null}
               <View style={styles.buttonSection}>
-                {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
+                {!hasStreamAccess &&
+                !isOwner &&
+                streamConditions &&
+                trackId &&
+                !(isLosslessDownloadsEnabled && hasDownloadableAssets) ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
                     streamConditions={streamConditions}
@@ -399,7 +408,9 @@ export const DetailsTile = ({
                     fullWidth
                   />
                 ) : null}
-                {(hasStreamAccess || isOwner) && streamConditions ? (
+                {(hasStreamAccess || isOwner) &&
+                streamConditions &&
+                !(isLosslessDownloadsEnabled && hasDownloadableAssets) ? (
                   <DetailsTileHasAccess
                     streamConditions={streamConditions}
                     isOwner={isOwner}
