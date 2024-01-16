@@ -43,6 +43,7 @@ export const SelectGenresPage = () => {
 
   return (
     <ScrollView gap={isMobile ? '2xl' : '3xl'}>
+      <AccountHeader mode='viewing' />
       <Formik
         initialValues={initialValues}
         onSubmit={handleSubmit}
@@ -55,12 +56,11 @@ export const SelectGenresPage = () => {
             css={{ paddingTop: 0 }}
             transition='horizontal'
           >
-            <AccountHeader mode='viewing' />
             <Flex
               direction='column'
               gap='2xl'
               mt={isMobile ? '2xl' : '3xl'}
-              css={!isMobile ? { maxWidth: '641px' } : {}}
+              css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Heading
                 heading={messages.header}

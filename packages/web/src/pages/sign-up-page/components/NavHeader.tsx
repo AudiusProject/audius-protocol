@@ -56,7 +56,13 @@ const HeaderRoot = (props: HeaderRootProps) => {
       borderBottom={isBackAllowed ? 'default' : undefined}
       alignItems='center'
       backgroundColor='white'
-      css={{ minHeight: spacing['3xl'], zIndex: 1, flexShrink: 0 }}
+      css={{
+        minHeight: spacing['3xl'],
+        zIndex: 1,
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0
+      }}
       {...other}
     >
       {children}

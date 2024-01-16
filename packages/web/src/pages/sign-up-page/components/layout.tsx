@@ -29,8 +29,6 @@ import { useMedia } from 'hooks/useMedia'
 
 import { RouteContext } from '../utils/RouteContext'
 
-import { AccountHeader } from './AccountHeader'
-
 const messages = {
   continue: 'Continue'
 }
@@ -95,11 +93,6 @@ export const Page = (props: PageProps) => {
 
   const childrenArray = Children.toArray(children)
 
-  // When using the AccountHeader component, we move it above the children array to let it go full width
-  let accountHeader
-  if ((childrenArray[0] as JSX.Element).type.name === AccountHeader.name) {
-    accountHeader = childrenArray.shift()
-  }
   const footer = childrenArray.pop()
 
   const layoutProps: FlexProps = {
@@ -112,12 +105,10 @@ export const Page = (props: PageProps) => {
   if (centered) {
     return (
       <Flex flex={1} direction='column' alignItems='center' as={as} e>
-        {accountHeader}
         <AnimatedFlex
           {...layoutProps}
           {...other}
           alignSelf='center'
-          // css={!isMobile && { maxWidth: 610 }}
           style={{ ...styles }}
         >
           {childrenArray}
@@ -138,7 +129,6 @@ export const Page = (props: PageProps) => {
       }
       style={styles}
     >
-      {accountHeader}
       {children}
     </AnimatedFlex>
   )
