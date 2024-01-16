@@ -26,6 +26,8 @@ export const messages = {
     'Whoops, this is an invalid link (redirect URI missing or invalid).',
   missingAppNameError: 'Whoops, this is an invalid link (app name missing).',
   scopeError: `Whoops, this is an invalid link (scope missing or invalid).`,
+  connectWalletNoPostMessageError:
+    'Whoops, this is an invalid link (redirectUri must be `postMessage` if tx is `connectDashboardWallet`).',
   writeOnceParamsError:
     'Whoops, this is an invalid link (transaction params missing or invalid).',
   writeOnceTxError: `Whoops, this is an invalid link ('tx' missing or invalid).`,

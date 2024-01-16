@@ -273,6 +273,7 @@ const CollectionPage = ({
               removeText={`${messages.remove} ${
                 isAlbum ? messages.type.album : messages.type.playlist
               }`}
+              isAlbumPage={isAlbum}
             />
           </div>
         )}

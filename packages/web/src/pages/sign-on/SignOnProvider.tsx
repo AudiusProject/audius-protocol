@@ -6,7 +6,7 @@ import {
   User,
   accountSelectors,
   InstagramProfile,
-  AccountImage,
+  Image,
   TwitterProfile,
   accountActions,
   TikTokProfile
@@ -256,6 +256,10 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     this.props.setValueField('password', password)
   }
 
+  onOtpChange = (otp: string) => {
+    this.props.setValueField('otp', otp)
+  }
+
   onNameChange = (name: string) => this.props.setValueField('name', name)
   onSetProfileImage = (img: any) => this.props.setField('profileImage', img)
   onHandleChange = (handle: string) => {
@@ -338,8 +342,8 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setTwitterProfile = (
     twitterId: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -374,7 +378,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setInstagramProfile = (
     instagramId: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -395,7 +399,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setTikTokProfile = (
     tikTokId: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => {
     const {
@@ -459,6 +463,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onEmailChange: this.onEmailChange,
       onEmailSubmitted: this.props.onEmailSubmitted,
       onPasswordChange: this.onPasswordChange,
+      onOtpChange: this.onOtpChange,
       onNameChange: this.onNameChange,
       onAddFollows: this.props.addFollows,
       onRemoveFollows: this.props.removeFollows,
@@ -517,8 +522,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setTwitterProfile: (
       twitterId: string,
       profile: TwitterProfile,
-      profileImage?: AccountImage,
-      coverPhoto?: AccountImage
+      profileImage?: Image,
+      coverPhoto?: Image
     ) =>
       dispatch(
         signOnAction.setTwitterProfile(
@@ -531,7 +536,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setInstagramProfile: (
       instagramId: string,
       profile: InstagramProfile,
-      profileImage?: AccountImage
+      profileImage?: Image
     ) =>
       dispatch(
         signOnAction.setInstagramProfile(instagramId, profile, profileImage)
@@ -539,7 +544,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setTikTokProfile: (
       tikTokId: string,
       profile: TikTokProfile,
-      profileImage?: AccountImage
+      profileImage?: Image
     ) =>
       dispatch(signOnAction.setTikTokProfile(tikTokId, profile, profileImage)),
     validateEmail: (email: string) =>

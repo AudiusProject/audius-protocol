@@ -18,6 +18,7 @@ import { Dispatch } from 'redux'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
+import { trpc } from 'utils/trpcClientWeb'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
 
@@ -35,7 +36,10 @@ type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
-
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: props.trackId },
+    { enabled: !!props.trackId }
+  )
   const onClickOverflow = () => {
     const overflowActions = [
       props.isLocked
@@ -53,6 +57,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : null,
       !props.isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
     props.clickOverflow(props.trackId, overflowActions)
