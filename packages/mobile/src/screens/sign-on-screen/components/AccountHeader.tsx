@@ -135,7 +135,6 @@ const CoverPhoto = (props: CoverPhotoProps) => {
             position: 'absolute',
             top: 0,
             right: 0,
-            backgroundColor: 'red',
             display: 'flex'
           }}
         >
