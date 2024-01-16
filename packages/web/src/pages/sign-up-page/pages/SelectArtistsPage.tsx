@@ -115,101 +115,99 @@ export const SelectArtistsPage = () => {
       {({ values, isValid, isSubmitting, isValidating, dirty }) => {
         const { selectedArtists } = values
         return (
-          <ScrollView as={Form} gap={isMobile ? undefined : undefined}>
-            <ScrollView gap='3xl'>
-              <AccountHeader
-                backButtonText={messages.backToGenres}
-                mode='viewing'
-              />
-              <AnimatedFlex
+          <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
+            <AccountHeader
+              backButtonText={messages.backToGenres}
+              mode='viewing'
+            />
+            <AnimatedFlex
+              direction='column'
+              mh={isMobile ? undefined : '5xl'}
+              mb={isMobile ? undefined : 'xl'}
+              style={styles}
+            >
+              <Flex
                 direction='column'
-                mh={isMobile ? undefined : '5xl'}
-                mb={isMobile ? undefined : 'xl'}
-                style={styles}
+                gap='xl'
+                pt={isMobile ? '2xl' : undefined}
+                pb='xl'
+                shadow={isMobile ? 'mid' : undefined}
+                css={{
+                  ...(isMobile && {
+                    zIndex: 2,
+                    backgroundColor: color.background.white,
+                    position: 'sticky',
+                    top: headerContainerRef?.current
+                      ? -(32 + headerContainerRef.current.clientHeight)
+                      : undefined
+                  })
+                }}
               >
-                <Flex
-                  direction='column'
-                  gap='xl'
-                  pt={isMobile ? '2xl' : undefined}
-                  pb='xl'
-                  shadow={isMobile ? 'mid' : undefined}
-                  css={{
-                    ...(isMobile && {
-                      zIndex: 2,
-                      backgroundColor: color.background.white,
-                      position: 'sticky',
-                      top: headerContainerRef?.current
-                        ? -(32 + headerContainerRef.current.clientHeight)
-                        : undefined
-                    })
-                  }}
+                <Heading
+                  ref={headerContainerRef}
+                  ph={isMobile ? 'l' : undefined}
+                  heading={messages.header}
+                  description={messages.description}
+                  centered={!isMobile}
+                />
+                <ScrollView
+                  orientation='horizontal'
+                  w='100%'
+                  gap='s'
+                  ph={isMobile ? 'l' : undefined}
+                  justifyContent={isMobile ? 'flex-start' : 'center'}
+                  role='radiogroup'
+                  onChange={handleChangeGenre}
+                  aria-label={messages.genresLabel}
+                  disableScroll={!isMobile}
                 >
-                  <Heading
-                    ref={headerContainerRef}
-                    ph={isMobile ? 'l' : undefined}
-                    heading={messages.header}
-                    description={messages.description}
-                    centered={!isMobile}
-                  />
-                  <ScrollView
-                    orientation='horizontal'
-                    w='100%'
-                    gap='s'
-                    ph={isMobile ? 'l' : undefined}
-                    justifyContent={isMobile ? 'flex-start' : 'center'}
-                    role='radiogroup'
-                    onChange={handleChangeGenre}
-                    aria-label={messages.genresLabel}
-                    disableScroll={!isMobile}
-                  >
-                    {artistGenres.map((genre) => (
-                      // TODO: max of 6, kebab overflow
-                      <SelectablePill
-                        key={genre}
-                        type='radio'
-                        name='genre'
-                        label={convertGenreLabelToValue(genre as Genre)}
-                        size={isMobile ? 'small' : 'large'}
-                        value={genre}
-                        isSelected={currentGenre === genre}
-                      />
-                    ))}
-                  </ScrollView>
-                </Flex>
-                <SelectArtistsPreviewContextProvider>
-                  <ArtistsList
-                    as='fieldset'
-                    backgroundColor='default'
-                    pv='xl'
-                    ph={isMobile ? 'l' : 'xl'}
-                    css={{
-                      minHeight: 500,
-                      minWidth: !isMobile ? 530 : undefined
-                    }}
-                    direction='column'
-                  >
-                    <HiddenLegend>
-                      {messages.pickArtists(currentGenre)}
-                    </HiddenLegend>
+                  {artistGenres.map((genre) => (
+                    // TODO: max of 6, kebab overflow
+                    <SelectablePill
+                      key={genre}
+                      type='radio'
+                      name='genre'
+                      label={convertGenreLabelToValue(genre as Genre)}
+                      size={isMobile ? 'small' : 'large'}
+                      value={genre}
+                      isSelected={currentGenre === genre}
+                    />
+                  ))}
+                </ScrollView>
+              </Flex>
+              <SelectArtistsPreviewContextProvider>
+                <ArtistsList
+                  as='fieldset'
+                  backgroundColor='default'
+                  pv='xl'
+                  ph={isMobile ? 'l' : 'xl'}
+                  css={{
+                    minHeight: 500,
+                    minWidth: !isMobile ? 530 : undefined
+                  }}
+                  direction='column'
+                >
+                  <HiddenLegend>
+                    {messages.pickArtists(currentGenre)}
+                  </HiddenLegend>
 
-                    {isLoading || !isMobile ? null : <PreviewArtistHint />}
-                    <Flex
-                      gap={isMobile ? 's' : 'm'}
-                      wrap='wrap'
-                      justifyContent='center'
-                    >
-                      {isLoading
-                        ? range(9).map((index) => (
-                            <FollowArtistTileSkeleton key={index} />
-                          ))
-                        : artists?.map((user) => (
-                            <FollowArtistCard key={user.user_id} user={user} />
-                          ))}
-                    </Flex>
-                  </ArtistsList>
-                </SelectArtistsPreviewContextProvider>
-              </AnimatedFlex>
-            </ScrollView>
+                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
+                  <Flex
+                    gap={isMobile ? 's' : 'm'}
+                    wrap='wrap'
+                    justifyContent='center'
+                  >
+                    {isLoading
+                      ? range(9).map((index) => (
+                          <FollowArtistTileSkeleton key={index} />
+                        ))
+                      : artists?.map((user) => (
+                          <FollowArtistCard key={user.user_id} user={user} />
+                        ))}
+                  </Flex>
+                </ArtistsList>
+              </SelectArtistsPreviewContextProvider>
+            </AnimatedFlex>
             <PageFooter
               centered
               sticky
