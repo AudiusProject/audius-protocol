@@ -110,7 +110,7 @@ export function* retrieveTrackByHandleAndSlug({
       },
       onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
         const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-        yield* addUsersFromTracks(tracks)
+        yield* addUsersFromTracks(tracks, isInitialFetchAfterSsr)
         const [track] = tracks
         const isLegacyPermalink = track.permalink !== permalink
         if (isLegacyPermalink) {

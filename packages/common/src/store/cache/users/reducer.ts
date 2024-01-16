@@ -63,7 +63,6 @@ const actionsMap = {
   }
 }
 
-// TODO: Generalize this
 const buildInitialState = (ssrPageProps?: SsrPageProps) => {
   // TODO: support user profile page. Only track page supported for now.
 
@@ -77,7 +76,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
     const id = user.user_id
     const uid = makeUid(Kind.USERS, id)
 
-    return {
+    const initialCacheState = {
       ...initialState,
       entries: {
         [id]: {
@@ -92,6 +91,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
         [id]: 'SUCCESS'
       }
     }
+    return initialCacheState
   }
   return initialState
 }
