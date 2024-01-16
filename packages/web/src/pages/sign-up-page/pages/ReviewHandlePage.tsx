@@ -43,8 +43,8 @@ export const ReviewHandlePage = () => {
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const { value: handle } = useSelector(getHandleField)
 
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   const hasImages = coverPhoto || profileImage
 
   const audiusQueryContext = useAudiusQueryContext()
