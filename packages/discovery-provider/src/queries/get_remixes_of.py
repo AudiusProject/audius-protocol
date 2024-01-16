@@ -53,8 +53,8 @@ def get_remixes_of(args):
 
             # Return empty list of remixes if track is gated on conditions other than USDC purchase
             if (
-                parent_track["is_premium"]
-                and "usdc_purchase" not in parent_track["premium_conditions"]
+                parent_track["is_stream_gated"]
+                and "usdc_purchase" not in parent_track["stream_conditions"]
             ):
                 return ([], [], 0)
 

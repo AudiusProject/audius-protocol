@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { Collection, ID, Track, UID, User } from '@audius/common'
 import {
   cacheCollectionsSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   FeatureFlags,
   playbackPositionSelectors,
   Genre,
@@ -232,7 +232,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    is_premium: isPremium
+    is_stream_gated: isStreamGated
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
@@ -243,8 +243,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isDeleted = is_delete || !!is_deactivated
   const isUnlisted = is_unlisted
 
-  const { isUserAccessTBD, doesUserHaveAccess } = usePremiumContentAccess(track)
-  const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
+  const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
   const isActive = useSelector((state) => {
     const playingUid = getUid(state)
@@ -318,7 +318,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           : OverflowAction.REPOST
         : null,
       isEditAlbumsEnabled && isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -348,7 +348,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     isEditAlbumsEnabled,
-    isPremium,
+    isStreamGated,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     albumInfo,

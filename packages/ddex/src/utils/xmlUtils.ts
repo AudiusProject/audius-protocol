@@ -32,7 +32,7 @@ export const getReleasesFromXml = async (
         releaseDate: releaseDateValue,
 
         isUnlisted: false,
-        isPremium: false,
+        isStreamGated: false,
         fieldVisibility: {
           genre: true,
           mood: true,

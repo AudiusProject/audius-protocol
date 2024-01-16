@@ -29,7 +29,7 @@ import {
   APIStem,
   APITrack,
   APIUser,
-  GetPremiumContentSignaturesResponse,
+  GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID,
   SupporterResponse,
@@ -110,7 +110,7 @@ const FULL_ENDPOINT_MAP = {
   getSupporting: (userId: OpaqueID) => `/users/${userId}/supporting`,
   getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
   getTips: '/tips',
-  getPremiumContentSignatures: (userId: OpaqueID) =>
+  getNFTGatedTrackSignatures: (userId: OpaqueID) =>
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
 }
@@ -475,7 +475,7 @@ export type GetTipsArgs = {
   txSignatures?: string[]
 }
 
-export type GetPremiumContentSignaturesArgs = {
+export type GetNFTGatedTrackSignaturesArgs = {
   userId: ID
   trackMap: {
     [id: ID]: string[]
@@ -1786,10 +1786,10 @@ export class AudiusAPIClient {
     return null
   }
 
-  async getPremiumContentSignatures({
+  async getNFTGatedTrackSignatures({
     userId,
     trackMap
-  }: GetPremiumContentSignaturesArgs) {
+  }: GetNFTGatedTrackSignaturesArgs) {
     if (!Object.keys(trackMap).length) return null
 
     const encodedUserId = this._encodeOrThrow(userId)
@@ -1816,8 +1816,8 @@ export class AudiusAPIClient {
     }
 
     const response = await this._getResponse<
-      APIResponse<GetPremiumContentSignaturesResponse>
-    >(FULL_ENDPOINT_MAP.getPremiumContentSignatures(encodedUserId), params)
+      APIResponse<GetNFTGatedTrackSignaturesResponse>
+    >(FULL_ENDPOINT_MAP.getNFTGatedTrackSignatures(encodedUserId), params)
     return response ? response.data : null
   }
 

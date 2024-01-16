@@ -18,7 +18,7 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   formatPrice,
   usePremiumContentPurchaseModal,
   ModalSource
@@ -132,11 +132,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       )
     }
   }, [track?.track_id, openPremiumContentPurchaseModal])
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const shouldShowPurchasePill =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
+    !hasStreamAccess
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -192,7 +192,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        !track.is_premium ? OverflowAction.ADD_TO_PLAYLIST : null,
+        !track.is_stream_gated ? OverflowAction.ADD_TO_PLAYLIST : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
@@ -229,10 +229,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const renderPurchaseButton = () => {
     if (
-      track?.premium_conditions &&
-      'usdc_purchase' in track.premium_conditions
+      track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions
     ) {
-      const price = track.premium_conditions.usdc_purchase.price
+      const price = track.stream_conditions.usdc_purchase.price
       return (
         <Button
           style={styles.buyButton}

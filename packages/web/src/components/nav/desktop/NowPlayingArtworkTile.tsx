@@ -8,7 +8,7 @@ import {
   accountSelectors,
   averageColorSelectors,
   DogEarType,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
@@ -68,13 +68,13 @@ export const NowPlayingArtworkTile = () => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const isPremium = !!track?.is_premium
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isStreamGated = !!track?.is_stream_gated
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPurchaseDogEar =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
+    (!hasStreamAccess || isPreviewing)
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id
@@ -157,7 +157,7 @@ export const NowPlayingArtworkTile = () => {
     )
   }
 
-  if (isPremium) {
+  if (isStreamGated) {
     return (
       <div className={styles.root}>
         {renderDogEar()}

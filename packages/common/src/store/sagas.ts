@@ -9,10 +9,10 @@
 import { accountSagas } from 'store/account'
 import { buyUSDCSagas } from 'store/buy-usdc'
 import { sagas as castSagas } from 'store/cast/sagas'
+import { gatedContentSagas } from 'store/gated-content'
 import { chatSagas } from 'store/pages/chat'
 import { playbackPositionSagas } from 'store/playback-position'
 import { playerSagas } from 'store/player'
-import { premiumContentSagas } from 'store/premium-content'
 import { purchaseContentSagas } from 'store/purchase-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
 import {
@@ -51,7 +51,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
-  premiumContent: premiumContentSagas,
+  gatedContent: gatedContentSagas,
   purchaseContent: purchaseContentSagas,
   chat: chatSagas,
   searchUsers: searchUsersModalSagas,

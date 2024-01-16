@@ -271,7 +271,6 @@ export const makeTrack = (
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
-    premium_content_signature: track.premium_content_signature ?? null,
     release_date: dayjs
       .utc(track.release_date)
       .local()
@@ -471,9 +470,16 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     updated_at: '',
     permalink: '',
     is_available: true,
-    is_premium: false,
-    premium_conditions: null,
-    premium_content_signature: null,
+    is_stream_gated: false,
+    stream_conditions: null,
+    is_download_gated: false,
+    download_conditions: null,
+    access: { stream: true, download: true },
+    track_cid: '',
+    orig_file_cid: '',
+    orig_filename: '',
+    is_downloadable: false,
+    is_original_available: false,
     is_playlist_upload: false
   }
 }

@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react'
 
 import {
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   type ID,
   type Nullable,
-  type PremiumConditions
+  type AccessConditions
 } from '@audius/common'
 import { View } from 'react-native'
 
@@ -29,8 +29,8 @@ type Props = {
   isShareHidden?: boolean
   isUnlisted?: boolean
   trackId?: ID
-  premiumConditions?: Nullable<PremiumConditions>
-  doesUserHaveAccess?: boolean
+  streamConditions?: Nullable<AccessConditions>
+  hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
@@ -67,9 +67,9 @@ export const LineupTileActionButtons = ({
   isShareHidden,
   isUnlisted,
   trackId,
-  doesUserHaveAccess = false,
+  hasStreamAccess = false,
   readonly = false,
-  premiumConditions,
+  streamConditions,
   onPressOverflow,
   onPressRepost,
   onPressSave,
@@ -79,7 +79,7 @@ export const LineupTileActionButtons = ({
   const styles = useStyles()
   const isUSDCEnabled = useIsUSDCEnabled()
   const isUSDCPurchase =
-    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
+    isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
 
   const repostButton = (
     <View style={[styles.button, styles.buttonMargin]}>
@@ -121,17 +121,17 @@ export const LineupTileActionButtons = ({
     />
   )
 
-  const showPremiumAccessStatus = trackId && !doesUserHaveAccess
-  const showLeftButtons = !showPremiumAccessStatus && !isUnlisted
+  const showGatedAccessStatus = trackId && !hasStreamAccess
+  const showLeftButtons = !showGatedAccessStatus && !isUnlisted
 
   let content: ReactElement | null = null
   if (readonly) {
-    if (isUSDCPurchase && showPremiumAccessStatus) {
+    if (isUSDCPurchase && showGatedAccessStatus) {
       content = (
         <View style={styles.leftButtons}>
           <LineupTileAccessStatus
             trackId={trackId}
-            premiumConditions={premiumConditions}
+            streamConditions={streamConditions}
           />
         </View>
       )
@@ -140,10 +140,10 @@ export const LineupTileActionButtons = ({
     content = (
       <>
         <View style={styles.leftButtons}>
-          {showPremiumAccessStatus && premiumConditions != null ? (
+          {showGatedAccessStatus && streamConditions != null ? (
             <LineupTileAccessStatus
               trackId={trackId}
-              premiumConditions={premiumConditions}
+              streamConditions={streamConditions}
             />
           ) : null}
           {showLeftButtons && (

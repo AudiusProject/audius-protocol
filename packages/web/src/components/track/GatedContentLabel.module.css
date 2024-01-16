@@ -10,6 +10,7 @@
   height: var(--unit-4);
   width: var(--unit-4);
 }
+
 .icon path {
   fill: var(--neutral-light-4);
 }

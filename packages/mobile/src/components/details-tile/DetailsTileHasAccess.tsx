@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
-import type { PremiumConditions, User } from '@audius/common'
+import type { AccessConditions, User } from '@audius/common'
 import {
   formatPrice,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
-  usePremiumConditionsEntity
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated,
+  useStreamConditionsEntity
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
@@ -85,19 +85,19 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 type HasAccessProps = {
-  premiumConditions: PremiumConditions
+  streamConditions: AccessConditions
   handlePressCollection: () => void
   style?: ViewStyle
 }
 
 const DetailsTileOwnerSection = ({
-  premiumConditions,
+  streamConditions,
   handlePressCollection
 }: HasAccessProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
 
-  if (isPremiumContentCollectibleGated(premiumConditions)) {
+  if (isContentCollectibleGated(streamConditions)) {
     return (
       <View style={styles.root}>
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
@@ -113,7 +113,7 @@ const DetailsTileOwnerSection = ({
               onPress={handlePressCollection}
               style={[styles.description, styles.name]}
             >
-              {premiumConditions.nft_collection?.name}
+              {streamConditions.nft_collection?.name}
             </Text>
           </Text>
         </View>
@@ -121,8 +121,8 @@ const DetailsTileOwnerSection = ({
     )
   }
   if (
-    isPremiumContentFollowGated(premiumConditions) ||
-    isPremiumContentTipGated(premiumConditions)
+    isContentFollowGated(streamConditions) ||
+    isContentTipGated(streamConditions)
   ) {
     return (
       <View style={styles.root}>
@@ -133,7 +133,7 @@ const DetailsTileOwnerSection = ({
         <View style={styles.descriptionContainer}>
           <Text>
             <Text style={styles.description}>
-              {isPremiumContentFollowGated(premiumConditions)
+              {isContentFollowGated(streamConditions)
                 ? messages.ownerFollowGated
                 : messages.ownerTipGated}
             </Text>
@@ -142,7 +142,7 @@ const DetailsTileOwnerSection = ({
       </View>
     )
   }
-  if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+  if (isContentUSDCPurchaseGated(streamConditions)) {
     return (
       <View style={styles.root}>
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
@@ -153,7 +153,7 @@ const DetailsTileOwnerSection = ({
           <Text>
             <Text style={styles.description}>
               {messages.ownerUSDCPurchase(
-                formatPrice(premiumConditions.usdc_purchase.price)
+                formatPrice(streamConditions.usdc_purchase.price)
               )}
             </Text>
           </Text>
@@ -165,14 +165,14 @@ const DetailsTileOwnerSection = ({
 }
 
 type DetailsTileHasAccessProps = {
-  premiumConditions: PremiumConditions
+  streamConditions: AccessConditions
   isOwner: boolean
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
 }
 
 export const DetailsTileHasAccess = ({
-  premiumConditions,
+  streamConditions,
   isOwner,
   style,
   trackArtist
@@ -181,7 +181,7 @@ export const DetailsTileHasAccess = ({
   const navigation = useNavigation()
 
   const { nftCollection, collectionLink, followee, tippedUser } =
-    usePremiumConditionsEntity(premiumConditions)
+    useStreamConditionsEntity(streamConditions)
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -224,7 +224,7 @@ export const DetailsTileHasAccess = ({
   )
 
   const renderUnlockedDescription = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       if (!nftCollection) return null
       return (
         <View style={styles.descriptionContainer}>
@@ -245,7 +245,7 @@ export const DetailsTileHasAccess = ({
         </View>
       )
     }
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isContentFollowGated(streamConditions)) {
       if (!followee) return null
       return renderUnlockedSpecialAccessDescription({
         entity: followee,
@@ -253,7 +253,7 @@ export const DetailsTileHasAccess = ({
         suffix: messages.unlockedFollowGatedSuffix
       })
     }
-    if (isPremiumContentTipGated(premiumConditions)) {
+    if (isContentTipGated(streamConditions)) {
       if (!tippedUser) return null
       return renderUnlockedSpecialAccessDescription({
         entity: tippedUser,
@@ -261,7 +261,7 @@ export const DetailsTileHasAccess = ({
         suffix: messages.unlockedTipGatedSuffix
       })
     }
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       if (!trackArtist) return null
       return renderUnlockedSpecialAccessDescription({
         entity: trackArtist,
@@ -271,7 +271,7 @@ export const DetailsTileHasAccess = ({
     }
     return null
   }, [
-    premiumConditions,
+    streamConditions,
     nftCollection,
     styles.descriptionContainer,
     styles.description,
@@ -286,7 +286,7 @@ export const DetailsTileHasAccess = ({
   if (isOwner) {
     return (
       <DetailsTileOwnerSection
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
         handlePressCollection={handlePressCollection}
       />
     )
@@ -299,9 +299,7 @@ export const DetailsTileHasAccess = ({
         <LockedStatusBadge
           locked={false}
           variant={
-            isPremiumContentUSDCPurchaseGated(premiumConditions)
-              ? 'purchase'
-              : 'gated'
+            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }
         />
       </View>
