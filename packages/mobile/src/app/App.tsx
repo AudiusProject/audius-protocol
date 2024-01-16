@@ -64,7 +64,7 @@ const App = () => {
   useEffectOnce(() => {
     setLibs(null)
     subscribeToNetworkStatusUpdates()
-    TrackPlayer.setupPlayer()
+    TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
   useEnterForeground(() => {

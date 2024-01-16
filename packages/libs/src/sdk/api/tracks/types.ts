@@ -12,7 +12,7 @@ const messages = {
   invalidReleaseDateError: 'Release date should not be in the future'
 }
 
-export const PremiumConditionsEthNFTCollection = z
+export const EthCollectibleGatedConditions = z
   .object({
     chain: z.literal('eth'),
     address: z.string(),
@@ -24,7 +24,7 @@ export const PremiumConditionsEthNFTCollection = z
   })
   .strict()
 
-export const PremiumConditionsSolNFTCollection = z
+export const SolCollectibleGatedConditions = z
   .object({
     chain: z.literal('sol'),
     address: z.string(),
@@ -34,20 +34,32 @@ export const PremiumConditionsSolNFTCollection = z
   })
   .strict()
 
-export const PremiumConditionsNFTCollection = z.union([
-  PremiumConditionsEthNFTCollection,
-  PremiumConditionsSolNFTCollection
-])
+export const CollectibleGatedConditions = z
+  .object({
+    nftCollection: z.optional(
+      z.union([EthCollectibleGatedConditions, SolCollectibleGatedConditions])
+    )
+  })
+  .strict()
 
-export const PremiumConditionsFollowUserId = z
+export const FollowGatedConditions = z
   .object({
     followUserId: HashId
   })
   .strict()
 
-export const PremiumConditionsTipUserId = z
+export const TipGatedConditions = z
   .object({
     tipUserId: HashId
+  })
+  .strict()
+
+export const USDCPurchaseConditions = z
+  .object({
+    usdcPurchase: z.object({
+      price: z.number().positive(),
+      splits: z.any()
+    })
   })
   .strict()
 
@@ -81,7 +93,6 @@ export const createUploadTrackMetadataSchema = () =>
       .refine((val) => val !== null, {
         message: messages.genreRequiredError
       }),
-    isPremium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
     isUnlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
@@ -89,13 +100,28 @@ export const createUploadTrackMetadataSchema = () =>
     mood: z
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
       .nullable(),
-    premiumConditions: z.optional(
-      z.union([
-        PremiumConditionsNFTCollection,
-        PremiumConditionsFollowUserId,
-        PremiumConditionsTipUserId
-      ])
-    ),
+    isStreamGated: z.optional(z.boolean()),
+    streamConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
+    isDownloadGated: z.optional(z.boolean()),
+    downloadConditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditions,
+          TipGatedConditions,
+          USDCPurchaseConditions
+        ])
+      )
+      .nullable(),
     releaseDate: z.optional(
       z.date().max(new Date(), { message: messages.invalidReleaseDateError })
     ),
@@ -118,7 +144,11 @@ export const createUploadTrackMetadataSchema = () =>
     }),
     previewStartSeconds: z.optional(z.number()),
     audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string())
+    previewCid: z.optional(z.string()),
+    origFileCid: z.optional(z.string()),
+    origFilename: z.optional(z.string()),
+    isDownloadable: z.optional(z.string()),
+    isOriginalAvailable: z.optional(z.string())
   })
 
 export type TrackMetadata = z.input<

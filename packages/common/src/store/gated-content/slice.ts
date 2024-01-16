@@ -1,39 +1,39 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, PremiumContentSignature, PremiumTrackStatus } from 'models'
+import { ID, AccessSignature, GatedTrackStatus } from 'models'
 import { Nullable } from 'utils'
 
-type PremiumContentState = {
-  premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
-  statusMap: { [id: ID]: PremiumTrackStatus }
+type GatedContentState = {
+  nftAccessSignatureMap: { [id: ID]: Nullable<AccessSignature> }
+  statusMap: { [id: ID]: GatedTrackStatus }
   lockedContentId: Nullable<ID>
   followeeIds: ID[]
   tippedUserIds: ID[]
 }
 
-const initialState: PremiumContentState = {
-  premiumTrackSignatureMap: {},
+const initialState: GatedContentState = {
+  nftAccessSignatureMap: {},
   statusMap: {},
   lockedContentId: null,
   followeeIds: [],
   tippedUserIds: []
 }
 
-type UpdatePremiumContentSignaturesPayload = {
-  [id: ID]: Nullable<PremiumContentSignature>
+type UpdateNftAccessSignaturesPayload = {
+  [id: ID]: Nullable<AccessSignature>
 }
 
-type RemovePremiumContentSignaturesPayload = {
+type RevokeAccessPayload = {
   trackIds: ID[]
 }
 
-type UpdatePremiumTrackStatusPayload = {
+type UpdateGatedTrackStatusPayload = {
   trackId: ID
-  status: PremiumTrackStatus
+  status: GatedTrackStatus
 }
 
-type UpdatePremiumTrackStatusesPayload = {
-  [id: ID]: PremiumTrackStatus
+type UpdateGatedTrackStatusesPayload = {
+  [id: ID]: GatedTrackStatus
 }
 
 type IdPayload = {
@@ -41,35 +41,30 @@ type IdPayload = {
 }
 
 const slice = createSlice({
-  name: 'premiumContent',
+  name: 'gatedContent',
   initialState,
   reducers: {
-    updatePremiumContentSignatures: (
+    updateNftAccessSignatures: (
       state,
-      action: PayloadAction<UpdatePremiumContentSignaturesPayload>
+      action: PayloadAction<UpdateNftAccessSignaturesPayload>
     ) => {
-      state.premiumTrackSignatureMap = {
-        ...state.premiumTrackSignatureMap,
+      state.nftAccessSignatureMap = {
+        ...state.nftAccessSignatureMap,
         ...action.payload
       }
     },
-    removePremiumContentSignatures: (
-      state,
-      action: PayloadAction<RemovePremiumContentSignaturesPayload>
-    ) => {
-      action.payload.trackIds.forEach((trackId) => {
-        delete state.premiumTrackSignatureMap[trackId]
-      })
+    revokeAccess: (_state, __action: PayloadAction<RevokeAccessPayload>) => {
+      // triggers saga
     },
-    updatePremiumTrackStatus: (
+    updateGatedTrackStatus: (
       state,
-      action: PayloadAction<UpdatePremiumTrackStatusPayload>
+      action: PayloadAction<UpdateGatedTrackStatusPayload>
     ) => {
       state.statusMap[action.payload.trackId] = action.payload.status
     },
-    updatePremiumTrackStatuses: (
+    updateGatedTrackStatuses: (
       state,
-      action: PayloadAction<UpdatePremiumTrackStatusesPayload>
+      action: PayloadAction<UpdateGatedTrackStatusesPayload>
     ) => {
       state.statusMap = {
         ...state.statusMap,
@@ -102,10 +97,10 @@ const slice = createSlice({
 })
 
 export const {
-  updatePremiumContentSignatures,
-  removePremiumContentSignatures,
-  updatePremiumTrackStatus,
-  updatePremiumTrackStatuses,
+  updateNftAccessSignatures,
+  revokeAccess,
+  updateGatedTrackStatus,
+  updateGatedTrackStatuses,
   setLockedContentId,
   resetLockedContentId,
   addFolloweeId,

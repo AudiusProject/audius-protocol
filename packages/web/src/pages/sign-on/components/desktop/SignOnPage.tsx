@@ -5,7 +5,7 @@ import {
   Status,
   User,
   accountSelectors,
-  AccountImage,
+  Image,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile
@@ -75,26 +75,27 @@ export type SignOnProps = {
   onViewSignIn: () => void
   onEmailChange: (email: string, validate?: boolean) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   setTikTokProfile: (
     uuid: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   validateHandle: (
@@ -158,6 +159,7 @@ const SignOnPage = ({
   onViewSignIn,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -186,6 +188,7 @@ const SignOnPage = ({
     email,
     name,
     password,
+    otp,
     handle,
     twitterId,
     verified,
@@ -230,6 +233,8 @@ const SignOnPage = ({
           onMetaMaskSignIn={onMetaMaskSignIn}
           email={email}
           password={password}
+          otp={otp}
+          onOtpChange={onOtpChange}
           onSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
           onEmailChange={onEmailChange}

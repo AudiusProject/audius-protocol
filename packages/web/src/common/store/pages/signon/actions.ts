@@ -1,11 +1,10 @@
 import {
   ID,
   User,
-  AccountImage,
   InstagramProfile,
   TwitterProfile,
-  NativeAccountImage,
-  TikTokProfile
+  TikTokProfile,
+  Image
 } from '@audius/common'
 
 import { UiErrorCode } from 'store/errors/actions'
@@ -230,9 +229,10 @@ export const signUpFailed = ({
  * Attemp sign-in to the account
  * @param email account email
  * @param password account password
+ * @param? otp account otp
  */
-export function signIn(email: string, password: string) {
-  return { type: SIGN_IN, email, password }
+export function signIn(email: string, password: string, otp?: string) {
+  return { type: SIGN_IN, email, password, otp }
 }
 
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
@@ -321,8 +321,8 @@ export function setFinishedPhase1(finished: boolean) {
 export function setTwitterProfile(
   twitterId: string,
   profile: TwitterProfile,
-  profileImage?: AccountImage | NativeAccountImage | null,
-  coverPhoto?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null,
+  coverPhoto?: Image | null
 ) {
   return {
     type: SET_TWITTER_PROFILE,
@@ -340,7 +340,7 @@ export function setTwitterProfileError(error: string) {
 export function setInstagramProfile(
   instagramId: string,
   profile: InstagramProfile,
-  profileImage?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null
 ) {
   return {
     type: SET_INSTAGRAM_PROFILE,
@@ -357,7 +357,7 @@ export function setInstagramProfileError(error: string) {
 export function setTikTokProfile(
   tikTokId: string,
   profile: TikTokProfile,
-  profileImage?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null
 ) {
   return {
     type: SET_TIKTOK_PROFILE,

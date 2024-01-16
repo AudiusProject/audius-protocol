@@ -6,7 +6,7 @@ import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
-import { Track, isPremiumContentUSDCPurchaseGated } from 'models/Track'
+import { Track, isContentUSDCPurchaseGated } from 'models/Track'
 import { User } from 'models/User'
 import { BNUSDC } from 'models/Wallet'
 import {
@@ -52,8 +52,8 @@ import {
 } from 'store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from 'utils/wallet'
 
-import { pollPremiumTrack } from '../premium-content/sagas'
-import { updatePremiumTrackStatus } from '../premium-content/slice'
+import { pollGatedTrack } from '../gated-content/sagas'
+import { updateGatedTrackStatus } from '../gated-content/slice'
 
 import {
   buyUSDC,
@@ -92,11 +92,8 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (
-    !trackInfo ||
-    !isPremiumContentUSDCPurchaseGated(trackInfo?.premium_conditions)
-  ) {
-    throw new Error('Content is missing premium conditions')
+  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
+    throw new Error('Content is missing stream conditions')
   }
   const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
   if (!artistInfo) {
@@ -104,7 +101,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const {
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     },
     title
@@ -205,11 +202,8 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (
-    !trackInfo ||
-    !isPremiumContentUSDCPurchaseGated(trackInfo?.premium_conditions)
-  ) {
-    throw new Error('Content is missing premium conditions')
+  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
+    throw new Error('Content is missing stream conditions')
   }
 
   const user = yield* select(getUser, { id: trackInfo.owner_id })
@@ -223,7 +217,7 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
 
   const {
     blocknumber,
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { splits }
     }
   } = trackInfo
@@ -252,10 +246,10 @@ function* pollForPurchaseConfirmation({
     )
   }
   yield* put(
-    updatePremiumTrackStatus({ trackId: contentId, status: 'UNLOCKING' })
+    updateGatedTrackStatus({ trackId: contentId, status: 'UNLOCKING' })
   )
 
-  yield* pollPremiumTrack({
+  yield* pollGatedTrack({
     trackId: contentId,
     currentUserId,
     isSourceTrack: true

@@ -45,7 +45,7 @@ def get_usdc_purchase_tracks(args, strategy):
                 genre=genre,
                 time_range=time_range,
                 strategy=strategy,
-                exclude_premium=False,
+                exclude_gated=False,
                 usdc_purchase_only=True,
             ),
         )

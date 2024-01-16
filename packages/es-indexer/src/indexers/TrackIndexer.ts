@@ -95,7 +95,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     -- etl tracks
     select 
       tracks.*,
-      case when tracks.premium_conditions->>'usdc_purchase'
+      case when tracks.stream_conditions->>'usdc_purchase'
         is not null then true
         else false
       end as purchaseable,

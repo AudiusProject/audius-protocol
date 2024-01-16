@@ -10,7 +10,7 @@ import {
   FieldVisibility,
   LineupTrack,
   Remix,
-  PremiumConditions,
+  AccessConditions,
   Nullable,
   Genre,
   Collection
@@ -132,8 +132,8 @@ export type DesktopTrackTileProps = {
   /** If the track is playing */
   isPlaying?: boolean
 
-  /** If the track is premium */
-  isPremium?: boolean
+  /** If the track is gated */
+  isStreamGated?: boolean
 
   /** If the track is unlisted/hidden */
   isUnlisted?: boolean
@@ -141,11 +141,11 @@ export type DesktopTrackTileProps = {
   /** If the track is a scheduled release */
   isScheduledRelease?: boolean
 
-  /** Premium conditions if track is premium */
-  premiumConditions?: Nullable<PremiumConditions>
+  /** Stream conditions if track is gated */
+  streamConditions?: Nullable<AccessConditions>
 
   /** If logged in user has access to track */
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
 
   /** If track metadata is loading in */
   isLoading?: boolean

@@ -54,10 +54,10 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
-// Premium content
+// Gated content
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type PremiumConditionsEthNFTCollection = {
+export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
   address: string
@@ -67,7 +67,7 @@ export type PremiumConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type PremiumConditionsSolNFTCollection = {
+export type AccessConditionsSolNFTCollection = {
   chain: Chain.Sol
   address: string
   name: string
@@ -78,31 +78,36 @@ export type PremiumConditionsSolNFTCollection = {
 // nft_collection can be undefined during upload flow when user has set track to
 // collectible-gated but hasn't specified collection yet, but should always be defined
 // after user has set the collection.
-export type PremiumConditionsCollectibleGated = {
+export type CollectibleGatedConditions = {
   nft_collection:
-    | PremiumConditionsEthNFTCollection
-    | PremiumConditionsSolNFTCollection
+    | AccessConditionsEthNFTCollection
+    | AccessConditionsSolNFTCollection
     | undefined
 }
 
-export type PremiumConditionsFollowGated = { follow_user_id: number }
+export type FollowGatedConditions = { follow_user_id: number }
 
-export type PremiumConditionsTipGated = { tip_user_id: number }
+export type TipGatedConditions = { tip_user_id: number }
 
-export type PremiumConditionsUSDCPurchase = {
+export type USDCPurchaseConditions = {
   usdc_purchase: {
     price: number
     splits: Record<ID, number>
   }
 }
 
-export type PremiumConditions =
-  | PremiumConditionsCollectibleGated
-  | PremiumConditionsFollowGated
-  | PremiumConditionsTipGated
-  | PremiumConditionsUSDCPurchase
+export type AccessConditions =
+  | CollectibleGatedConditions
+  | FollowGatedConditions
+  | TipGatedConditions
+  | USDCPurchaseConditions
 
-export enum PremiumContentType {
+export type AccessPermissions = {
+  stream: boolean
+  download: boolean
+}
+
+export enum GatedContentType {
   COLLECTIBLE_GATED = 'collectible gated',
   SPECIAL_ACCESS = 'special access',
   USDC_PURCHASE = 'usdc purchase'
@@ -116,27 +121,27 @@ export enum TrackAccessType {
   USDC_GATED = 'usdc_gated'
 }
 
-export const isPremiumContentCollectibleGated = (
-  premiumConditions?: Nullable<PremiumConditions>
-): premiumConditions is PremiumConditionsCollectibleGated =>
-  'nft_collection' in (premiumConditions ?? {})
+export const isContentCollectibleGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is CollectibleGatedConditions =>
+  'nft_collection' in (gatedConditions ?? {})
 
-export const isPremiumContentFollowGated = (
-  premiumConditions?: Nullable<PremiumConditions>
-): premiumConditions is PremiumConditionsFollowGated =>
-  'follow_user_id' in (premiumConditions ?? {})
+export const isContentFollowGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is FollowGatedConditions =>
+  'follow_user_id' in (gatedConditions ?? {})
 
-export const isPremiumContentTipGated = (
-  premiumConditions?: Nullable<PremiumConditions>
-): premiumConditions is PremiumConditionsTipGated =>
-  'tip_user_id' in (premiumConditions ?? {})
+export const isContentTipGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is TipGatedConditions =>
+  'tip_user_id' in (gatedConditions ?? {})
 
-export const isPremiumContentUSDCPurchaseGated = (
-  premiumConditions?: Nullable<PremiumConditions>
-): premiumConditions is PremiumConditionsUSDCPurchase =>
-  'usdc_purchase' in (premiumConditions ?? {})
+export const isContentUSDCPurchaseGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is USDCPurchaseConditions =>
+  'usdc_purchase' in (gatedConditions ?? {})
 
-export type PremiumContentSignature = {
+export type AccessSignature = {
   data: string
   signature: string
 }
@@ -159,7 +164,7 @@ export type SolCollectionMap = {
   }
 }
 
-export type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
+export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
@@ -194,12 +199,19 @@ export type TrackMetadata = {
   is_scheduled_release: boolean
   is_unlisted: boolean
   is_available: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<AccessConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<AccessConditions>
+  access: AccessPermissions
   field_visibility?: FieldVisibility
   listenCount?: number
   permalink: string
+  track_cid: Nullable<CID>
+  orig_file_cid: Nullable<CID>
+  orig_filename: Nullable<string>
+  is_downloadable: boolean
+  is_original_available: boolean
 
   // Optional Fields
   is_playlist_upload?: boolean

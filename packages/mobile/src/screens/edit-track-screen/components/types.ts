@@ -1,10 +1,10 @@
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 
 export type TrackAvailabilitySelectionProps = {
   selected: boolean
   disabled?: boolean
   disabledContent?: boolean
-  previousPremiumConditions?: Nullable<PremiumConditions>
+  previousStreamConditions?: Nullable<AccessConditions>
   isScheduledRelease?: boolean
   isUnlisted?: boolean
 }

@@ -37,24 +37,24 @@ type TileArtworkProps = {
     user: { name: string; is_verified: boolean; user_id: ID }
   }
   callback: () => void
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
 }
 
 export const ArtworkIcon = ({
   isBuffering,
   isPlaying,
   artworkIconClassName,
-  doesUserHaveAccess,
+  hasStreamAccess,
   isTrack
 }: {
   isBuffering: boolean
   isPlaying: boolean
   artworkIconClassName?: string
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isTrack?: boolean
 }) => {
   let artworkIcon
-  if (isTrack && !doesUserHaveAccess) {
+  if (isTrack && !hasStreamAccess) {
     artworkIcon = <IconLock width={36} height={36} />
   } else if (isBuffering) {
     artworkIcon = <LoadingSpinner className={styles.spinner} />
@@ -91,7 +91,7 @@ const Artwork = memo(
     image,
     coSign,
     label,
-    doesUserHaveAccess,
+    hasStreamAccess,
     isTrack
   }: ArtworkProps) => {
     const imageElement = (
@@ -110,7 +110,7 @@ const Artwork = memo(
             isBuffering={isBuffering}
             isPlaying={isPlaying}
             artworkIconClassName={artworkIconClassName}
-            doesUserHaveAccess={doesUserHaveAccess}
+            hasStreamAccess={hasStreamAccess}
             isTrack={isTrack}
           />
         )}

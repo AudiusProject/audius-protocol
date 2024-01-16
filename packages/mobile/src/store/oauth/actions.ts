@@ -1,8 +1,8 @@
 import type {
-  AccountImage,
   InstagramAccountPayload,
   TwitterProfile,
-  TikTokProfile
+  TikTokProfile,
+  Image
 } from '@audius/common'
 
 import type { Provider } from './reducer'
@@ -61,8 +61,8 @@ type SetTwitterInfoAction = {
   type: typeof SET_TWITTER_INFO
   uuid: any
   profile: TwitterProfile
-  profileImage: AccountImage
-  profileBanner: AccountImage
+  profileImage: Image
+  profileBanner: Image | undefined
   requiresUserReview: any
 }
 type SetTwitterErrorAction = {
@@ -74,7 +74,7 @@ type SetInstagramInfoAction = {
   type: typeof SET_INSTAGRAM_INFO
   uuid: any
   profile: InstagramAccountPayload
-  profileImage: AccountImage
+  profileImage: Image
   requiresUserReview: any
 }
 type SetInstagramErrorAction = {
@@ -86,7 +86,7 @@ type SetTikTokInfoAction = {
   type: typeof SET_TIKTOK_INFO
   uuid: any
   profile: TikTokProfile
-  profileImage: AccountImage
+  profileImage: Image | undefined
   requiresUserReview: any
 }
 type SetTikTokErrorAction = {
@@ -163,8 +163,8 @@ export const closePopup = (abandoned: boolean): ClosePopupAction => ({
 export const setTwitterInfo = (
   uuid: string,
   profile: TwitterProfile,
-  profileImage: AccountImage,
-  profileBanner: AccountImage,
+  profileImage: Image,
+  profileBanner: Image | undefined,
   requiresUserReview: boolean
 ): SetTwitterInfoAction => ({
   type: SET_TWITTER_INFO,
@@ -182,7 +182,7 @@ export const setTwitterError = (error: any): SetTwitterErrorAction => ({
 export const setInstagramInfo = (
   uuid: string,
   profile: InstagramAccountPayload,
-  profileImage: AccountImage,
+  profileImage: Image,
   requiresUserReview: boolean
 ): SetInstagramInfoAction => ({
   type: SET_INSTAGRAM_INFO,
@@ -199,7 +199,7 @@ export const setInstagramError = (error: any): SetInstagramErrorAction => ({
 export const setTikTokInfo = (
   uuid: string,
   profile: TikTokProfile,
-  profileImage: AccountImage,
+  profileImage: Image | undefined,
   requiresUserReview: boolean
 ): SetTikTokInfoAction => ({
   type: SET_TIKTOK_INFO,

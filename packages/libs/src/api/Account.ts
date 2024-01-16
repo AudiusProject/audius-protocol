@@ -56,7 +56,7 @@ export class Account extends Base {
   /**
    * Logs a user into Audius
    */
-  async login(email: string, password: string) {
+  async login(email: string, password: string, otp?: string) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
       FIND_USER: 'FIND_USER'
@@ -68,7 +68,8 @@ export class Account extends Base {
       this.REQUIRES(Services.HEDGEHOG)
 
       try {
-        const ownerWallet = await this.hedgehog.login(email, password)
+        // @ts-ignore - hedgehog.login is overridden
+        const ownerWallet = await this.hedgehog.login(email, password, otp)
         await this.web3Manager.setOwnerWallet(ownerWallet)
       } catch (e) {
         return { error: (e as Error).message, phase }
