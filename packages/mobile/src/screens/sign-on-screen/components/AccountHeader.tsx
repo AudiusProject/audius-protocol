@@ -122,26 +122,36 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
       {onSelectCoverPhoto ? (
-        <IconButton
-          accessibilityLabel={messages.selectCoverPhoto}
+        <Pressable
+          hitSlop={{
+            bottom: spacing.unit10,
+            left: spacing.unit7,
+            right: 0,
+            top: 0
+          }}
+          onPress={onSelectCoverPhoto}
           style={{
             // we want the pressable surface larger than just the icon
-            width: spacing.unit14,
-            height: spacing.unit14,
             position: 'absolute',
             top: 0,
             right: 0,
-            paddingTop: spacing.m,
-            paddingRight: spacing.m,
-            justifyContent: 'flex-end',
-            alignItems: 'flex-start',
-            borderRadius: 0
+            backgroundColor: 'red',
+            display: 'flex'
           }}
-          color='staticWhite'
-          shadow='near'
-          onPress={onSelectCoverPhoto}
-          icon={IconImage}
-        />
+        >
+          <IconButton
+            accessibilityLabel={messages.selectCoverPhoto}
+            style={{
+              paddingTop: spacing.m,
+              paddingRight: spacing.m,
+              borderRadius: 0
+            }}
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectCoverPhoto}
+            icon={IconImage}
+          />
+        </Pressable>
       ) : null}
     </HarmonyCoverPhoto>
   )
