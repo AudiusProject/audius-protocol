@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
-import { TRPCError } from '@trpc/server'
 import { sql } from '../db'
 import { UserRow } from '../db-tables'
 import { esc } from './search-router'
@@ -15,7 +14,7 @@ export const trackRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const row = await ctx.loaders.trackLoader.load(parseInt(input))
     if (!row) {
-      throw new TRPCError({ code: 'NOT_FOUND' })
+      return null;
     }
     return row
   }),
@@ -88,7 +87,7 @@ export const trackRouter = router({
 
       const hits = found.hits.hits.map((h) => h._source)
       if (hits.length === 0) {
-        throw new TRPCError({ code: 'NOT_FOUND' })
+        return null;
       }
       return hits[0]
     }),

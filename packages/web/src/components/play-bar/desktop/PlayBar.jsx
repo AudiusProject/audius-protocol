@@ -17,7 +17,6 @@ import {
   queueSelectors,
   FeatureFlags,
   playbackRateValueMap,
-  premiumContentSelectors,
   cacheTracksSelectors,
   Kind
 } from '@audius/common'
@@ -63,7 +62,6 @@ const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getAccountUser, getUserId } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
 const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
@@ -312,7 +310,7 @@ class PlayBar extends Component {
     let duration = null
     let isOwner = false
     let isTrackUnlisted = false
-    let isPremium = false
+    let isStreamGated = false
     let trackPermalink = ''
 
     if (uid && track && user) {
@@ -328,7 +326,7 @@ class PlayBar extends Component {
       duration = audioPlayer.getDuration()
       trackId = track.track_id
       isTrackUnlisted = track.is_unlisted
-      isPremium = track.is_premium
+      isStreamGated = track.is_stream_gated
     } else if (collectible && user) {
       // Special case for audio nft playlist
       trackTitle = collectible.name
@@ -374,7 +372,7 @@ class PlayBar extends Component {
                 artistUserId={artistUserId}
                 isVerified={isVerified}
                 isTrackUnlisted={isTrackUnlisted}
-                isPremium={isPremium}
+                isStreamGated={isStreamGated}
                 onClickTrackTitle={this.goToTrackPage}
                 onClickArtistName={this.goToArtistPage}
                 hasShadow={false}
@@ -466,7 +464,6 @@ const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state) => {
-    const premiumTrackSignatureMap = getPremiumTrackSignatureMap(state)
     const location = getLocationPathname(state)
     const lineupEntries =
       getLineupEntries(getLineupSelectorForRoute(location), state) ?? []
@@ -484,14 +481,9 @@ const makeMapStateToProps = () => {
       if (entry.kind !== Kind.TRACKS) return false
 
       const { id } = entry
-      const {
-        is_premium: isPremium,
-        premium_content_signature: premiumContentSignature
-      } = getTrack(state, { id }) ?? {}
+      const { access } = getTrack(state, { id }) ?? {}
 
-      const hasPremiumContentSignature =
-        !!premiumContentSignature || !!premiumTrackSignatureMap[id]
-      return !isPremium || hasPremiumContentSignature
+      return !!access?.stream
     })
 
     return {

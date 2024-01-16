@@ -3,9 +3,12 @@ import { Ref, forwardRef, useCallback, useContext } from 'react'
 import {
   MAX_HANDLE_LENGTH,
   socialMediaMessages,
-  pickHandleErrorMessages
+  pickHandleErrorMessages,
+  pickHandlePageMessages as messages,
+  useIsWaitingForValidation
 } from '@audius/common'
 import { TextLink } from '@audius/harmony'
+import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'
 
 import {
@@ -17,11 +20,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-
-const messages = {
-  handle: 'Handle',
-  linkToClaim: 'Link to claim.'
-}
 
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
@@ -45,11 +43,15 @@ export const HandleField = forwardRef(
       onCompleteSocialMediaLogin,
       onErrorSocialMediaLogin,
       onStartSocialMediaLogin,
+      onChange,
       ...other
     } = props
+
     const [{ value: handle }, { error }] = useField('handle')
 
     const { toast } = useContext(ToastContext)
+
+    const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
     const handleVerifyHandleError = useCallback(() => {
       toast(socialMediaMessages.verificationError)
@@ -79,7 +81,7 @@ export const HandleField = forwardRef(
     const AuthComponent = error ? handleAuthMap[error] : undefined
 
     const helperText =
-      handle && error ? (
+      handle && !!error ? (
         <>
           {error}{' '}
           {onCompleteSocialMediaLogin &&
@@ -97,6 +99,8 @@ export const HandleField = forwardRef(
             </TextLink>
           ) : null}
         </>
+      ) : !isWaitingForValidation && handle ? (
+        messages.handleAvailable
       ) : null
 
     return (
@@ -110,6 +114,14 @@ export const HandleField = forwardRef(
         placeholder={messages.handle}
         transformValueOnChange={(value) => value.replace(/\s/g, '')}
         debouncedValidationMs={1000}
+        error={!!error && !!helperText}
+        endIcon={
+          !isWaitingForValidation && !error && handle ? IconCheck : undefined
+        }
+        onChange={(e) => {
+          onChange?.(e)
+          handleChange()
+        }}
         {...other}
       />
     )

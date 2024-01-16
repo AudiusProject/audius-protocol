@@ -56,9 +56,12 @@ const useSetProfileFromInstagram = () => {
         profile,
         profile.profile_pic_url_hd
           ? {
-              uri: profile.profile_pic_url_hd,
-              name: 'ProfileImage',
-              type: 'image/jpeg'
+              url: profile.profile_pic_url_hd,
+              file: {
+                uri: profile.profile_pic_url_hd,
+                name: 'ProfileImage',
+                type: 'image/jpeg'
+              }
             }
           : null
       )

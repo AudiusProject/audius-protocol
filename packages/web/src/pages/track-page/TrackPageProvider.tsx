@@ -30,8 +30,7 @@ import {
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   playerSelectors,
-  queueSelectors,
-  premiumContentSelectors
+  queueSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -73,7 +72,6 @@ const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
 const {
   getUser,
   getLineup,
@@ -521,7 +519,6 @@ function makeMapStateToProps() {
       status: getStatus(state),
       moreByArtist: getMoreByArtistLineup(state),
       userId: getUserId(state),
-      premiumTrackSignatureMap: getPremiumTrackSignatureMap(state),
 
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),

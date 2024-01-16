@@ -8,7 +8,6 @@ import {
 import {
   Box,
   Button,
-  ButtonType,
   Divider,
   Flex,
   IconArrowRight,
@@ -25,7 +24,8 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   resetSignOn,
   setLinkedSocialOnFirstPage,
-  setValueField
+  setValueField,
+  startSignUp
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -80,6 +80,7 @@ export const CreateEmailPage = () => {
   const handleCompleteSocialMediaLogin = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
+      dispatch(startSignUp())
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
       navigate(
@@ -158,7 +159,7 @@ export const CreateEmailPage = () => {
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
-              variant={ButtonType.PRIMARY}
+              variant='primary'
               type='submit'
               fullWidth
               iconRight={IconArrowRight}

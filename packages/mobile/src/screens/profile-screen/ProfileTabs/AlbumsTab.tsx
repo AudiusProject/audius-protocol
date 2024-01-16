@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import {
   profilePageActions,
   profilePageSelectors,
-  reachabilitySelectors,
   Status
 } from '@audius/common'
 import { useIsFocused } from '@react-navigation/native'
@@ -17,13 +16,11 @@ import { getIsOwner, useSelectProfile } from '../selectors'
 
 const { getProfileAlbums, getCollectionsStatus } = profilePageSelectors
 const { fetchCollections } = profilePageActions
-const { getIsReachable } = reachabilitySelectors
 
 const emptyAlbums = []
 
 export const AlbumsTab = () => {
   const { handle, album_count } = useSelectProfile(['handle', 'album_count'])
-  const isReachable = useSelector(getIsReachable)
   const albums = useSelector((state) => getProfileAlbums(state, handle))
   const collectionsStatus = useSelector((state) =>
     getCollectionsStatus(state, handle)
@@ -46,13 +43,11 @@ export const AlbumsTab = () => {
   return (
     <CollectionList
       collection={album_count > 0 || isOwner ? albums : emptyAlbums}
-      collectionType='album'
       style={{ paddingTop: spacing(3) }}
       ListEmptyComponent={
         <EmptyProfileTile tab='albums' style={{ marginTop: 0 }} />
       }
       disableTopTabScroll
-      showCreatePlaylistTile={!!isReachable}
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
     />

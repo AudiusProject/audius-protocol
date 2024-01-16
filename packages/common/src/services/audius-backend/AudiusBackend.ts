@@ -1589,9 +1589,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, otp?: string) {
     await waitForLibsInit()
-    return audiusLibs.Account.login(email, password)
+    return audiusLibs.Account.login(email, password, otp)
   }
 
   async function signOut() {

@@ -4,14 +4,7 @@ import {
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
-import {
-  Flex,
-  Paper,
-  PlainButton,
-  PlainButtonType,
-  Text,
-  useTheme
-} from '@audius/harmony'
+import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -95,6 +88,27 @@ export const FinishProfilePage = () => {
     displayName: savedDisplayName || ''
   }
 
+  const setCoverPhoto = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('coverPhoto', { value }))
+    },
+    [dispatch]
+  )
+
+  const setProfileImage = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('profileImage', { value }))
+    },
+    [dispatch]
+  )
+
+  const setDisplayName = useCallback(
+    (value: string) => {
+      dispatch(setValueField('name', value))
+    },
+    [dispatch]
+  )
+
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       dispatch(setValueField('name', displayName))
@@ -140,6 +154,8 @@ export const FinishProfilePage = () => {
               mode='editing'
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
+              onProfileImageChange={setProfileImage}
+              onCoverPhotoChange={setCoverPhoto}
             />
             <ImageUploadErrorText />
             <HarmonyTextField
@@ -149,6 +165,7 @@ export const FinishProfilePage = () => {
               placeholder={messages.inputPlaceholder}
               required
               maxLength={32}
+              onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l
               })}
@@ -161,10 +178,7 @@ export const FinishProfilePage = () => {
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
-                <PlainButton
-                  variant={PlainButtonType.SUBDUED}
-                  onClick={history.goBack}
-                >
+                <PlainButton variant='subdued' onClick={history.goBack}>
                   {messages.goBack}
                 </PlainButton>
               )

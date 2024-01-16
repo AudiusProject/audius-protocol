@@ -1,6 +1,5 @@
-import { useState } from 'react'
-
-import RadialGradient from 'react-native-radial-gradient'
+import { css } from '@emotion/native'
+import { StyleSheet } from 'react-native'
 
 import {
   IconInstagram,
@@ -8,104 +7,56 @@ import {
   IconTwitter
 } from 'app/harmony-native/icons'
 
-import { useTheme } from '../../../foundations/theme'
-import { Box } from '../../layout'
+import { RadialGradient } from '../../RadialGradient/RadialGradient'
+import { Flex } from '../../layout/Flex/Flex'
 import { Button } from '../Button/Button'
-import type { ButtonProps } from '../types'
-import { ButtonSize } from '../types'
+import type { HexColor } from '../Button/types'
 
 import type { SocialButtonProps, SocialMedia } from './types'
 
-const getButtonLogo = (type: SocialMedia) => {
-  switch (type) {
-    case 'instagram':
-      return <IconInstagram color='staticWhite' size='l' />
-    case 'tiktok':
-      return <IconTikTok color='staticWhite' size='l' />
-    case 'twitter':
-      return <IconTwitter color='staticWhite' size='l' />
-    default:
-      return undefined
-  }
+const socialLogos = {
+  tiktok: IconTikTok,
+  instagram: IconInstagram,
+  twitter: IconTwitter
 }
 
-const getSocialButtonProps = (type: SocialMedia): ButtonProps => {
-  switch (type) {
-    case 'tiktok':
-      return { hexColor: '#fe2c55' }
-    case 'twitter':
-      return { hexColor: '#1ba1f1' }
-    case 'instagram':
-      return { hexColor: '#ca1d7e' }
-    default:
-      return {}
-  }
+const socialHexColor: Record<SocialMedia, HexColor> = {
+  tiktok: '#fe2c55',
+  twitter: '#1ba1f1',
+  instagram: '#ca1d7e'
 }
 
 export const SocialButton = (props: SocialButtonProps) => {
   const { socialType, ...rest } = props
-  const socialButtonProps = getSocialButtonProps(socialType)
-  const [isPressing, setIsPressing] = useState(false)
-  const { iconSizes } = useTheme()
 
-  const handlePressIn = () => {
-    setIsPressing(true)
-  }
-  const handlePressOut = () => {
-    setIsPressing(false)
-  }
-
-  const [buttonDimensions, setButtonDimensions] = useState<{
-    height: number
-    width: number
-  }>({ height: 0, width: 0 })
-
-  const gradientColors = isPressing
-    ? ['#DFB600', '#D2501F', '#C33137', '#AA005E', '#5000DF']
-    : ['#FFD600', '#F2703F', '#E35157', '#CA1D7E', '#7017FF']
-
-  const radiusMod = rest.size === ButtonSize.LARGE ? 1.2 : 1.1
-  const gradientCenter =
-    rest.size === ButtonSize.SMALL
-      ? [12, 36]
-      : rest.size === ButtonSize.LARGE
-      ? [20, 68]
-      : [16, 52]
+  const SocialLogo = socialLogos[socialType]
 
   return (
     <Button
-      {...socialButtonProps}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onLayout={(e) => {
-        setButtonDimensions({
-          height: e.nativeEvent.layout.height,
-          width: e.nativeEvent.layout.width
-        })
-      }}
+      hexColor={socialHexColor[socialType]}
+      style={css({ flex: 1, height: 56, paddingHorizontal: 0 })}
       {...rest}
     >
       {socialType === 'instagram' ? (
-        <>
+        <Flex w='100%' h='100%' alignItems='center' justifyContent='center'>
           <RadialGradient
-            colors={gradientColors}
-            center={gradientCenter}
-            style={{
-              height: buttonDimensions.height,
-              width: buttonDimensions.width,
-              position: 'absolute',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            stops={[0, 0.2, 0.4, 0.6, 0.8, 1]}
-            radius={buttonDimensions.width * radiusMod}
-          >
-            {getButtonLogo(socialType)}
-          </RadialGradient>
-          <Box w={iconSizes.l} />
-        </>
+            style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
+            colors={['#FFD600', '#FF6930', '#FE3B36', 'rgba(254, 59, 54, 0)']}
+            stops={[0, 0.4844, 0.7344, 1]}
+            center={[40, 120]}
+            radius={70}
+          />
+          <RadialGradient
+            style={StyleSheet.absoluteFillObject}
+            colors={['#FF1B90', '#F80261', '#ED00C0', '#C500E9', '#7017FF']}
+            stops={[0.2439, 0.4367, 0.6885, 0.7768, 0.8932]}
+            center={[84.5, 113]}
+            radius={136}
+          />
+          <SocialLogo color='staticWhite' size='l' style={{ zIndex: 2 }} />
+        </Flex>
       ) : (
-        getButtonLogo(socialType)
+        <SocialLogo color='staticWhite' size='l' />
       )}
     </Button>
   )

@@ -7,14 +7,7 @@ import {
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import {
-  Box,
-  Button,
-  ButtonType,
-  Flex,
-  Text,
-  IconLogoCircleUSDC
-} from '@audius/harmony'
+import { Box, Button, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
@@ -86,7 +79,7 @@ export const AddFunds = ({
             setSelectedVendor={setSelectedPurchaseVendor}
           />
           <Button
-            variant={ButtonType.PRIMARY}
+            variant='primary'
             fullWidth
             onClick={() =>
               onContinue(selectedPurchaseMethod, selectedPurchaseVendor)

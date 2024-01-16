@@ -17,8 +17,12 @@ const TRACK_PROPS = [
   'credits_splits',
   'release_date',
   'file_type',
-  'is_premium',
-  'premium_conditions',
+  'is_stream_gated',
+  'stream_conditions',
+  'is_download_gated',
+  'download_conditions',
+  'is_original_available',
+  'is_downloadable',
   'ai_attribution_user_id'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']

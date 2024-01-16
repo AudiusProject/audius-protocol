@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 
 import { AudiusQueryContext, signUpFetch } from '@audius/common'
-import { Button, ButtonType, IconMetamask } from '@audius/harmony'
+import { Button, IconMetamask } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -57,7 +57,7 @@ export const SignUpWithMetaMaskButton = () => {
   return (
     <>
       <Button
-        variant={ButtonType.SECONDARY}
+        variant='secondary'
         iconRight={IconMetamask}
         isStaticIcon
         onClick={handleClick}

@@ -566,7 +566,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     continue
 
                 # Add playlist track ids in entities to fetch
-                # to prevent playlists from including premium tracks
+                # to prevent playlists from including gated tracks
                 tracks = json_metadata.get("playlist_contents", {}).get("track_ids", [])
                 for track in tracks:
                     entities_to_fetch[EntityType.TRACK].add(track["track"])

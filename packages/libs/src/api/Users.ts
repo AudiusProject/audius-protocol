@@ -403,6 +403,46 @@ export class Users extends Base {
   }
 
   /**
+   * Fixes a bug that caused users to not complete signup
+   * #flare-206
+   */
+  async repairEntityManagerUserV2(newMetadata: any) {
+    const { user_id: userId } = newMetadata
+    const dnUser = await this.discoveryProvider.getUserAccount(
+      newMetadata.wallet
+    )
+    if (!dnUser) {
+      try {
+        const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
+        const manageEntityResponse =
+          await this.contracts.EntityManagerClient!.manageEntity(
+            userId,
+            EntityManagerClient.EntityType.USER,
+            userId,
+            EntityManagerClient.Action.CREATE,
+            JSON.stringify({
+              cid: cid.toString(),
+              data: newMetadata
+            })
+          )
+        await this._waitForDiscoveryToIndexUser(
+          userId,
+          manageEntityResponse.txReceipt.blockNumber
+        )
+        // Update libs instance with new user metadata object
+        this.userStateManager.setCurrentUser({ ...newMetadata })
+      } catch (e) {
+        const errorMsg = `repairEntityManagerUserV2() error: ${e}`
+        if (e instanceof Error) {
+          e.message = errorMsg
+          throw e
+        }
+        throw new Error(errorMsg)
+      }
+    }
+  }
+
+  /**
    * Updates a user on whether they are verified on Audius
    */
   async updateIsVerified(userId: number, privateKey: string) {

@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   Chain,
   collectiblesSelectors,
-  isPremiumContentCollectibleGated
+  isContentCollectibleGated
 } from '@audius/common'
 import { useField } from 'formik'
 import { View, Image } from 'react-native'
@@ -59,8 +59,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export const NFTCollectionsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
-  const [{ value: premiumConditions }, , { setValue: setPremiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const { ethCollectionMap, solCollectionMap, collectionImageMap } =
     useSelector(getSupportedUserCollections)
   const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
@@ -109,20 +109,20 @@ export const NFTCollectionsScreen = () => {
   )
 
   const value = useMemo(() => {
-    if (!isPremiumContentCollectibleGated(premiumConditions)) return ''
-    if (Chain.Eth === premiumConditions?.nft_collection?.chain) {
-      return premiumConditions.nft_collection.slug
+    if (!isContentCollectibleGated(streamConditions)) return ''
+    if (Chain.Eth === streamConditions?.nft_collection?.chain) {
+      return streamConditions.nft_collection.slug
     }
-    if (Chain.Sol === premiumConditions?.nft_collection?.chain) {
-      return premiumConditions.nft_collection.address
+    if (Chain.Sol === streamConditions?.nft_collection?.chain) {
+      return streamConditions.nft_collection.address
     }
     return ''
-  }, [premiumConditions])
+  }, [streamConditions])
 
   const handleChange = useCallback(
     (value: string) => {
       if (ethCollectionMap[value]) {
-        setPremiumConditions({
+        setStreamConditions({
           nft_collection: {
             chain: Chain.Eth,
             standard: ethCollectionMap[value].standard,
@@ -134,7 +134,7 @@ export const NFTCollectionsScreen = () => {
           }
         })
       } else if (solCollectionMap[value]) {
-        setPremiumConditions({
+        setStreamConditions({
           nft_collection: {
             chain: Chain.Sol,
             address: value,
@@ -145,14 +145,14 @@ export const NFTCollectionsScreen = () => {
         })
       }
     },
-    [setPremiumConditions, ethCollectionMap, solCollectionMap]
+    [setStreamConditions, ethCollectionMap, solCollectionMap]
   )
 
   const handleSubmit = useCallback(() => {
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       navigation.goBack()
     }
-  }, [premiumConditions, navigation])
+  }, [streamConditions, navigation])
 
   const renderFooter = useCallback(() => {
     return hasUnsupportedCollection ? (
@@ -187,7 +187,7 @@ export const NFTCollectionsScreen = () => {
           fullWidth
           title={messages.done}
           onPress={handleSubmit}
-          disabled={!isPremiumContentCollectibleGated(premiumConditions)}
+          disabled={!isContentCollectibleGated(streamConditions)}
         />
       }
       footer={renderFooter()}

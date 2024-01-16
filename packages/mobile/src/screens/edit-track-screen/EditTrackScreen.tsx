@@ -4,7 +4,7 @@ import type { UploadTrack } from '@audius/common'
 import {
   creativeCommons,
   formatPrice,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   useUSDCPurchaseConfig
 } from '@audius/common'
 import { Formik } from 'formik'
@@ -51,7 +51,7 @@ const useEditTrackSchema = () => {
           title: z.string(),
           genre: z.any(),
           description: z.string().nullish(),
-          premium_conditions: z.any(),
+          stream_conditions: z.any(),
           duration: z.number().nullable(),
           preview_start_seconds: z.any()
         })
@@ -85,9 +85,9 @@ const useEditTrackSchema = () => {
         )
         .refine(
           (values) => {
-            const { premium_conditions: premiumConditions } = values
-            if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
-              const { price } = premiumConditions.usdc_purchase
+            const { stream_conditions: streamConditions } = values
+            if (isContentUSDCPurchaseGated(streamConditions)) {
+              const { price } = streamConditions.usdc_purchase
               return price > 0 && price >= minContentPriceCents / 100
             }
             return true
@@ -101,10 +101,10 @@ const useEditTrackSchema = () => {
         )
         .refine(
           (values) => {
-            const { premium_conditions: premiumConditions } = values
-            if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+            const { stream_conditions: streamConditions } = values
+            if (isContentUSDCPurchaseGated(streamConditions)) {
               return (
-                premiumConditions.usdc_purchase.price <=
+                streamConditions.usdc_purchase.price <=
                 maxContentPriceCents / 100
               )
             }
@@ -121,18 +121,18 @@ const useEditTrackSchema = () => {
           (values) => {
             const {
               duration,
-              premium_conditions: premiumConditions,
+              stream_conditions: streamConditions,
               preview_start_seconds: previewStartSeconds
             } = values
             // We only care about preview if track is usdc gated
             if (
               previewStartSeconds === null &&
-              !isPremiumContentUSDCPurchaseGated(premiumConditions)
+              !isContentUSDCPurchaseGated(streamConditions)
             )
               return true
             if (
               previewStartSeconds !== null &&
-              !isPremiumContentUSDCPurchaseGated(premiumConditions)
+              !isContentUSDCPurchaseGated(streamConditions)
             )
               return false
 
@@ -183,21 +183,21 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
   // Handle price conversion of usdc gated tracks from cents => dollars on edit.
   // Convert back to cents on submit function below.
-  const premiumConditionsOverride = isPremiumContentUSDCPurchaseGated(
-    initialValuesProp.premium_conditions
+  const streamConditionsOverride = isContentUSDCPurchaseGated(
+    initialValuesProp.stream_conditions
   )
     ? {
         usdc_purchase: {
-          ...initialValuesProp.premium_conditions.usdc_purchase,
+          ...initialValuesProp.stream_conditions.usdc_purchase,
           price:
-            initialValuesProp.premium_conditions.usdc_purchase.price /
+            initialValuesProp.stream_conditions.usdc_purchase.price /
             10 ** PRECISION
         }
       }
-    : initialValuesProp.premium_conditions
+    : initialValuesProp.stream_conditions
   const initialValues: FormValues = {
     ...initialValuesProp,
-    premium_conditions: premiumConditionsOverride,
+    stream_conditions: streamConditionsOverride,
     licenseType: computeLicenseVariables(
       initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
     )
@@ -239,14 +239,14 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       }
 
       // If track is usdc gated, then price and preview need to be parsed into numbers before submitting
-      if (isPremiumContentUSDCPurchaseGated(metadata.premium_conditions)) {
-        metadata.premium_conditions = {
+      if (isContentUSDCPurchaseGated(metadata.stream_conditions)) {
+        metadata.stream_conditions = {
           usdc_purchase: {
-            ...metadata.premium_conditions.usdc_purchase,
+            ...metadata.stream_conditions.usdc_purchase,
             // Convert dollar price to cents
             // @ts-ignore the price input field stored it as a string that needs to be parsed into a number
             price:
-              Number(metadata.premium_conditions.usdc_purchase.price) *
+              Number(metadata.stream_conditions.usdc_purchase.price) *
               10 ** PRECISION
           }
         }

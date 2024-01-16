@@ -1,7 +1,7 @@
 import { useState, useCallback, KeyboardEvent, useContext } from 'react'
 
 import {
-  AccountImage,
+  Image,
   InstagramProfile,
   TwitterProfile,
   formatInstagramProfile,
@@ -30,7 +30,7 @@ const messages = {
 }
 
 type ProfilePageProps = {
-  profileImage?: AccountImage
+  profileImage?: Image
   twitterId: any
   isVerified: boolean
   onNextPage: () => void
@@ -38,20 +38,20 @@ type ProfilePageProps = {
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   setTikTokProfile: (
     uuid: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   recordTwitterStart: () => void

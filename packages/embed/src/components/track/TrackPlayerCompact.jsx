@@ -23,10 +23,10 @@ const TrackPlayerCompact = ({
   duration,
   seekTo,
   backgroundColor,
-  premiumConditions
+  streamConditions
 }) => {
   const isPurchaseable =
-    premiumConditions && 'usdc_purchase' in premiumConditions
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <div

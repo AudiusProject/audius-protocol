@@ -23,6 +23,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -71,7 +72,6 @@ import {
   PlaylistLibraryState
 } from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
-import premiumContent from './premium-content/slice'
 import { purchaseContentReducer } from './purchase-content'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
@@ -269,10 +269,10 @@ export const reducers = (
   // Tipping
   tipping: tippingReducer,
 
-  // Premium content
+  // Gated content
   buyUSDC: buyUSDCReducer,
   buyCrypto: buyCryptoReducer,
-  premiumContent,
+  gatedContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
 
@@ -398,9 +398,9 @@ export type CommonState = {
   // Tipping
   tipping: ReturnType<typeof tippingReducer>
 
-  // Premium content
+  // Gated content
   purchaseContent: ReturnType<typeof purchaseContentReducer>
-  premiumContent: ReturnType<typeof premiumContent>
+  gatedContent: ReturnType<typeof gatedContent>
   withdrawUSDC: ReturnType<typeof withdrawUSDCReducer>
 
   // Collectibles

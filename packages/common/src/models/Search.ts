@@ -2,12 +2,7 @@ import { Nullable } from 'utils/typeUtils'
 
 import { CollectionImage } from './Collection'
 import { Repost } from './Repost'
-import {
-  PremiumConditions,
-  PremiumContentSignature,
-  TrackImage,
-  TrackSegment
-} from './Track'
+import { AccessConditions, TrackImage, TrackSegment } from './Track'
 import { User, UserImage, UserMultihash } from './User'
 
 type BaseUser = Pick<
@@ -80,9 +75,10 @@ export type SearchTrack = TrackImage & {
   has_current_user_reposted: undefined
   is_unlisted: boolean
   is_scheduled_release: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<AccessConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<AccessConditions>
   has_current_user_saved: undefined
   stem_of: null
   updated_at: string

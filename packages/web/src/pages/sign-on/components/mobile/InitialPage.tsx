@@ -41,6 +41,7 @@ const errorMessages = {
 
 const signInErrorMessages = {
   inUse: 'Invalid password',
+  requiresOtp: 'Enter the verification code sent to your email',
   default: 'Invalid Credentials'
 }
 
@@ -69,10 +70,16 @@ type SignInProps = {
     error: string
     status: Status
   }
+  otp: {
+    value: string
+    error: string
+    status: Status
+  }
   onViewSignUp: () => void
   onSubmitSignIn: (email: string, password: string) => void
   onEmailChange: (email: string) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   isLoading: boolean
   didSucceed: boolean
 }
@@ -210,17 +217,27 @@ const SignUpEmail = ({
 const SignIn = ({
   email,
   password,
+  otp,
   onSubmitSignIn,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   isLoading,
   didSucceed,
   hasAccount
 }: SignInProps) => {
   const { setStackReset } = useContext(RouterContext)
   const signInError = password.error
-  const errorMessage =
-    signInErrorMessages[email.error === 'inUse' ? 'inUse' : 'default']
+  const requiresOtp = signInError.includes('403')
+
+  let errorMessage: string
+  if (email.error === 'inUse') {
+    errorMessage = signInErrorMessages.inUse
+  } else if (requiresOtp) {
+    errorMessage = signInErrorMessages.requiresOtp
+  } else {
+    errorMessage = signInErrorMessages.default
+  }
 
   const onValidateEmailChange = (email: string) => {
     onEmailChange(email)
@@ -280,6 +297,19 @@ const SignIn = ({
           )}
         </Spring>
       )}
+      {requiresOtp ? (
+        <Input
+          placeholder='Verification Code'
+          size='medium'
+          name='otp'
+          value={otp.value}
+          characterLimit={6}
+          type='number'
+          variant={'normal'}
+          onChange={onOtpChange}
+          className={cn(styles.signInInput, styles.inputField)}
+        />
+      ) : null}
       <Flex justifyContent='center'>
         <Button
           text='Sign In'
@@ -303,11 +333,13 @@ const SignIn = ({
 export const InitialPage = ({
   isSignIn,
   email,
+  otp,
   password,
   isLoading,
   didSucceed,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   onViewSignIn,
   onSubmitSignIn,
   onViewSignUp,
@@ -332,6 +364,7 @@ export const InitialPage = ({
         <div className={styles.topSectionTransition} ref={topAreaRef}>
           {isSignIn ? (
             <SignIn
+              otp={otp}
               hasAccount={hasAccount}
               didSucceed={didSucceed}
               isLoading={isLoading}
@@ -339,6 +372,7 @@ export const InitialPage = ({
               password={password}
               onSubmitSignIn={onSubmitSignIn}
               onPasswordChange={onPasswordChange}
+              onOtpChange={onOtpChange}
               onEmailChange={onEmailChange}
               onViewSignUp={onViewSignUp}
             />

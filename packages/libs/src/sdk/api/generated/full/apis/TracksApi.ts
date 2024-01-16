@@ -16,6 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  FullTopListener,
   FullTrackResponse,
   FullTracksResponse,
   RemixesResponseFull,
@@ -26,6 +27,8 @@ import type {
   TrendingIdsResponse,
 } from '../models';
 import {
+    FullTopListenerFromJSON,
+    FullTopListenerToJSON,
     FullTrackResponseFromJSON,
     FullTrackResponseToJSON,
     FullTracksResponseFromJSON,
@@ -57,16 +60,16 @@ export interface GetFeelingLuckyTracksRequest {
     minFollowers?: number;
 }
 
+export interface GetGatedTrackSignaturesRequest {
+    userId: string;
+    trackIds?: Array<number>;
+    tokenIds?: Array<string>;
+}
+
 export interface GetMostLovedTracksRequest {
     userId?: string;
     limit?: number;
     withUsers?: boolean;
-}
-
-export interface GetPremiumTrackSignaturesRequest {
-    userId: string;
-    trackIds?: Array<number>;
-    tokenIds?: Array<string>;
 }
 
 export interface GetRecommendedTracksRequest {
@@ -116,6 +119,13 @@ export interface GetTrackRemixesRequest {
 
 export interface GetTrackStemsRequest {
     trackId: string;
+}
+
+export interface GetTrackTopListenersRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetTrendingTrackIDsRequest {
@@ -313,6 +323,44 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets gated track signatures for passed in gated track ids
+     */
+    async getGatedTrackSignaturesRaw(params: GetGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getGatedTrackSignatures.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.trackIds) {
+            queryParameters['track_ids'] = params.trackIds;
+        }
+
+        if (params.tokenIds) {
+            queryParameters['token_ids'] = params.tokenIds;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets gated track signatures for passed in gated track ids
+     */
+    async getGatedTrackSignatures(params: GetGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.getGatedTrackSignaturesRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
     async getMostLovedTracksRaw(params: GetMostLovedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -348,44 +396,6 @@ export class TracksApi extends runtime.BaseAPI {
     async getMostLovedTracks(params: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
         const response = await this.getMostLovedTracksRaw(params, initOverrides);
         return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets premium track signatures for passed in premium track ids
-     */
-    async getPremiumTrackSignaturesRaw(params: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (params.userId === null || params.userId === undefined) {
-            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getPremiumTrackSignatures.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.trackIds) {
-            queryParameters['track_ids'] = params.trackIds;
-        }
-
-        if (params.tokenIds) {
-            queryParameters['token_ids'] = params.tokenIds;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Gets premium track signatures for passed in premium track ids
-     */
-    async getPremiumTrackSignatures(params: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getPremiumTrackSignaturesRaw(params, initOverrides);
     }
 
     /**
@@ -686,6 +696,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
         const response = await this.getTrackStemsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListenersRaw(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTopListener>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackTopListeners.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/top_listeners`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTopListenerFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTopListener> {
+        const response = await this.getTrackTopListenersRaw(params, initOverrides);
         return await response.value();
     }
 

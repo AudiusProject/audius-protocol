@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import type { IconColors } from '@audius/harmony'
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
-import type { TextStyle } from 'react-native/types'
+import type { TextStyle, ViewStyle } from 'react-native'
 import {
   interpolateColor,
   useAnimatedStyle,
@@ -14,16 +14,17 @@ import type { IconProps } from 'app/harmony-native/icons'
 
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { ButtonProps } from '../types'
-import { ButtonSize, ButtonType } from '../types'
+
+import type { ButtonProps } from './types'
 
 export const Button = (props: ButtonProps) => {
   const {
     color,
     hexColor,
-    variant = ButtonType.PRIMARY,
-    size = ButtonSize.DEFAULT,
+    variant = 'primary',
+    size = 'default',
     disabled,
+    style,
     ...baseProps
   } = props
   const { isLoading } = baseProps
@@ -189,22 +190,40 @@ export const Button = (props: ButtonProps) => {
   }
 
   const dynamicStyles =
-    variant === ButtonType.SECONDARY
+    variant === 'secondary'
       ? secondaryDynamicStyles
-      : variant === ButtonType.TERTIARY
+      : variant === 'tertiary'
       ? tertiaryDynamicStyles
-      : variant === ButtonType.DESTRUCTIVE
+      : variant === 'destructive'
       ? destructiveDynamicStyles
       : primaryDynamicStyles
 
-  const buttonCss: ReactNativeStyle = useAnimatedStyle(() => ({
+  const buttonStyles: ViewStyle = {
     borderWidth: 0,
     borderRadius: cornerRadius.s,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadows.near,
+    ...(variant === 'secondary'
+      ? secondaryStyles
+      : variant === 'tertiary'
+      ? tertiaryStyles
+      : variant === 'destructive'
+      ? destructiveStyles
+      : primaryStyles),
 
-    ...(!isDisabled && {
+    ...(size === 'small'
+      ? smallStyles
+      : size === 'large'
+      ? largeStyles
+      : defaultStyles),
+
+    ...(isDisabled && { shadowColor: 'transparent' })
+  }
+
+  const animatedButtonStyles = useAnimatedStyle(() => {
+    if (isDisabled) return {}
+    return {
       borderColor: interpolateColor(
         pressed.value,
         [0, 1],
@@ -215,54 +234,38 @@ export const Button = (props: ButtonProps) => {
         [0, 1],
         [dynamicStyles.default.background, dynamicStyles.press.background]
       )
-    }),
+    }
+  })
 
-    ...(variant === ButtonType.SECONDARY
-      ? secondaryStyles
-      : variant === ButtonType.TERTIARY
-      ? tertiaryStyles
-      : variant === ButtonType.DESTRUCTIVE
-      ? destructiveStyles
-      : primaryStyles),
+  const textStyles =
+    size === 'small'
+      ? smallTextStyles
+      : size === 'large'
+      ? largeTextStyles
+      : defaultTextStyles
 
-    ...(size === ButtonSize.SMALL
-      ? smallStyles
-      : size === ButtonSize.LARGE
-      ? largeStyles
-      : defaultStyles),
-
-    ...(isDisabled && { shadowColor: 'transparent' })
-  }))
-
-  const textCss: TextStyle = useAnimatedStyle(() => ({
-    ...(!isDisabled && {
+  const animatedTextStyles = useAnimatedStyle(() => {
+    if (isDisabled) return {}
+    return {
       color: interpolateColor(
         pressed.value,
         [0, 1],
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
-    }),
-
-    ...(size === ButtonSize.SMALL
-      ? smallTextStyles
-      : size === ButtonSize.LARGE
-      ? largeTextStyles
-      : defaultTextStyles)
-  }))
+    }
+  })
 
   const textColor =
-    (variant === ButtonType.SECONDARY && !isDisabled) ||
-    variant === ButtonType.TERTIARY
+    (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
-      : variant === ButtonType.DESTRUCTIVE
+      : variant === 'destructive'
       ? 'danger'
       : 'staticWhite'
 
   const iconSize: IconProps['size'] =
-    size === ButtonSize.SMALL ? 's' : size === ButtonSize.LARGE ? 'l' : 'm'
+    size === 'small' ? 's' : size === 'large' ? 'l' : 'm'
 
-  const loaderSize =
-    size === ButtonSize.SMALL ? 16 : size === ButtonSize.LARGE ? 24 : 20
+  const loaderSize = size === 'small' ? 16 : size === 'large' ? 24 : 20
 
   const [isPressing, setIsPressing] = useState(false)
 
@@ -274,7 +277,7 @@ export const Button = (props: ButtonProps) => {
   }
 
   const iconColor = useMemo(() => {
-    if (isDisabled && variant === ButtonType.SECONDARY) {
+    if (isDisabled && variant === 'secondary') {
       return 'staticWhite'
     }
 
@@ -294,10 +297,10 @@ export const Button = (props: ButtonProps) => {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={isDisabled}
-      style={buttonCss}
+      style={[buttonStyles, animatedButtonStyles, style]}
       sharedValue={pressed}
       styles={{
-        text: textCss
+        text: [textStyles, animatedTextStyles]
       }}
       innerProps={{
         text: {

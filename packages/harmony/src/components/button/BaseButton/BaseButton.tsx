@@ -6,7 +6,8 @@ import { Slot, Slottable } from '@radix-ui/react-slot'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
-import type { BaseButtonProps } from '../types'
+
+import type { BaseButtonProps } from './types'
 
 /**
  * Base component for Harmony buttons. Not intended to be used directly. Use
@@ -80,17 +81,17 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         transform: fullWidth ? 'scale(1.00)' : 'scale(1.04)'
       },
       ':active': {
-        transform: 'scale(0.98)'
+        transform: fullWidth ? 'scale(1.00)' : 'scale(0.98)'
       },
 
       ...((disabled || isLoading || _isHovered || _isPressed) && {
         pointerEvents: 'none'
       }),
       ...(_isHovered && {
-        transform: 'scale(1.04)'
+        transform: fullWidth ? 'scale(1.00)' : 'scale(1.04)'
       }),
       ...(_isPressed && {
-        transform: 'scale(0.98)'
+        transform: fullWidth ? 'scale(1.00)' : 'scale(0.98)'
       })
     }
 

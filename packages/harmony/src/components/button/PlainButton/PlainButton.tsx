@@ -3,7 +3,8 @@ import { forwardRef } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
+
+import { PlainButtonProps } from './types'
 
 /**
  * A plain Button component (no border/background). Includes a few variants and options to
@@ -12,8 +13,8 @@ import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
 export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
   function PlainButton(props, ref) {
     const {
-      variant = PlainButtonType.DEFAULT,
-      size = PlainButtonSize.DEFAULT,
+      variant = 'default',
+      size = 'default',
       disabled,
       ...baseProps
     } = props
@@ -45,9 +46,9 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
 
     const buttonCss: CSSObject = {
       '--text-color':
-        variant === PlainButtonType.SUBDUED && !isDisabled
+        variant === 'subdued' && !isDisabled
           ? color.text.subdued
-          : variant === PlainButtonType.INVERTED
+          : variant === 'inverted'
           ? color.static.white
           : color.text.default,
       background: 'transparent',
@@ -58,22 +59,20 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       },
       fontWeight: typography.weight.bold,
 
-      ...(size === PlainButtonSize.LARGE ? largeStyles : defaultStyles),
+      ...(size === 'large' ? largeStyles : defaultStyles),
 
       '&:hover': {
         '--text-color':
-          variant === PlainButtonType.INVERTED
+          variant === 'inverted'
             ? color.static.white
             : color.secondary.secondary,
-        ...(variant === PlainButtonType.INVERTED && { opacity: 0.8 })
+        ...(variant === 'inverted' && { opacity: 0.8 })
       },
 
       '&:active': {
         '--text-color':
-          variant === PlainButtonType.INVERTED
-            ? color.static.white
-            : color.secondary.s500,
-        ...(variant === PlainButtonType.INVERTED && { opacity: 0.5 })
+          variant === 'inverted' ? color.static.white : color.secondary.s500,
+        ...(variant === 'inverted' && { opacity: 0.5 })
       },
 
       ...(isDisabled && {
@@ -81,8 +80,7 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       })
     }
 
-    const iconCss =
-      size === PlainButtonSize.LARGE ? largeIconStyles : defaultIconStyles
+    const iconCss = size === 'large' ? largeIconStyles : defaultIconStyles
 
     return (
       <BaseButton

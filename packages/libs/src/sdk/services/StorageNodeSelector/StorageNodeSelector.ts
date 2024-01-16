@@ -30,7 +30,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private selectionState: 'healthy_only' | 'failed_all'
   private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
   private readonly initialDiscoveryFetchPromise: Promise<void>
-  private resolveInitialDiscoveryFetchPromise: () => void = () => { }
+  private resolveInitialDiscoveryFetchPromise: () => void = () => {}
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
@@ -130,12 +130,14 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     // Select the next node in rendezvous order from the list of all nodes
-    this.selectedNode = await this.selectUntilEndOfList() ?? null
+    this.selectedNode = (await this.selectUntilEndOfList()) ?? null
     this.logger.info('Selected content node', this.selectedNode)
 
     if (!this.selectedNode) {
       // We've selected all healthy nodes. Return null and start over next time select() is called
-      this.logger.info('Selected all healthy nodes. Returning null and starting over next time select() is called')
+      this.logger.info(
+        'Selected all healthy nodes. Returning null and starting over next time select() is called'
+      )
       this.selectionState = 'failed_all'
     }
 

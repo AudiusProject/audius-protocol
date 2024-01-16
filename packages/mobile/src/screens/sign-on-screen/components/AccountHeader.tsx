@@ -7,7 +7,7 @@ import {
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import { isEmpty } from 'lodash'
-import type { ImageURISource } from 'react-native'
+import { Pressable, type ImageURISource } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -122,14 +122,35 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
       {onSelectCoverPhoto ? (
-        <IconButton
-          accessibilityLabel={messages.selectCoverPhoto}
-          style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
-          color='staticWhite'
-          shadow='near'
+        <Pressable
+          // we want the pressable surface larger than just the icon
+          hitSlop={{
+            bottom: spacing.unit10,
+            left: spacing.unit7,
+            right: 0,
+            top: 0
+          }}
           onPress={onSelectCoverPhoto}
-          icon={IconImage}
-        />
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            display: 'flex'
+          }}
+        >
+          <IconButton
+            accessibilityLabel={messages.selectCoverPhoto}
+            style={{
+              paddingTop: spacing.m,
+              paddingRight: spacing.m,
+              borderRadius: 0
+            }}
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectCoverPhoto}
+            icon={IconImage}
+          />
+        </Pressable>
       ) : null}
     </HarmonyCoverPhoto>
   )
@@ -155,23 +176,25 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const { profilePicture, onSelectProfilePicture } = props
 
   return (
-    <Avatar
-      accessibilityLabel='Profile Picture'
-      size='xl'
-      variant='strong'
-      source={profilePicture ?? { uri: undefined }}
-    >
-      {onSelectProfilePicture ? (
-        <IconButton
-          accessibilityLabel={messages.selectProfilePicture}
-          icon={IconCamera}
-          size='2xl'
-          color='staticWhite'
-          shadow='near'
-          onPress={onSelectProfilePicture}
-        />
-      ) : null}
-    </Avatar>
+    <Pressable onPress={onSelectProfilePicture}>
+      <Avatar
+        accessibilityLabel='Profile Picture'
+        size='xl'
+        variant='strong'
+        source={profilePicture ?? { uri: undefined }}
+      >
+        {onSelectProfilePicture && !profilePicture ? (
+          <IconButton
+            accessibilityLabel={messages.selectProfilePicture}
+            icon={IconCamera}
+            size='2xl'
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectProfilePicture}
+          />
+        ) : null}
+      </Avatar>
+    </Pressable>
   )
 }
 

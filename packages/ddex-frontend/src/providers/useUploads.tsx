@@ -9,8 +9,14 @@ export type XmlFileRow = {
   status: string
 }
 
+type UploadsResponse = {
+  uploads: XmlFileRow[]
+  hasMoreNext: boolean
+  hasMorePrev: boolean
+}
+
 const useUploads = (statusFilter = '', nextId?: number, prevId?: number) => {
-  return useQuery({
+  return useQuery<UploadsResponse>({
     queryKey: ['uploads', statusFilter, nextId, prevId],
     queryFn: async () => {
       const params = new URLSearchParams({ status: statusFilter })
@@ -25,13 +31,16 @@ const useUploads = (statusFilter = '', nextId?: number, prevId?: number) => {
           `Failed fetching uploads: ${response.status} ${response.statusText}`
         )
       }
-      const uploads = (await response.json()) as XmlFileRow[]
+      const data = (await response.json()) as UploadsResponse
 
-      return uploads.map((upload) => ({
-        ...upload,
-        uploaded_at: new Date(upload.uploaded_at),
-      }))
-    },
+      return {
+        ...data,
+        uploads: data.uploads.map((upload) => ({
+          ...upload,
+          uploaded_at: new Date(upload.uploaded_at)
+        }))
+      }
+    }
   })
 }
 

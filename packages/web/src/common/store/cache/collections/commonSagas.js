@@ -57,8 +57,9 @@ const { getTrack } = cacheTracksSelectors
 const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
-  editingToast: 'Saving changes...',
-  editToast: 'Changes saved!'
+  editToast: 'Changes saved!',
+  removingTrack: 'Removing track...',
+  removedTrack: 'Removed track'
 }
 
 /** Counts instances of trackId in a playlist. */
@@ -84,8 +85,6 @@ function* editPlaylistAsync(action) {
 
   const audiusBackend = yield getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield getContext('imageUtils')
-
-  yield put(toast({ content: messages.editingToast }))
 
   formFields.description = squashNewLines(formFields.description)
 
@@ -224,6 +223,13 @@ function* removeTrackFromPlaylistAsync(action) {
   playlist.playlist_contents.track_ids.splice(index, 1)
   const count = countTrackIds(playlist.playlist_contents, trackId)
 
+  yield put(
+    toast({
+      content: messages.removingTrack,
+      key: `remove-track-${trackId}`
+    })
+  )
+
   yield call(
     confirmRemoveTrackFromPlaylist,
     userId,
@@ -310,6 +316,12 @@ function* confirmRemoveTrackFromPlaylist(
               metadata: confirmedPlaylist
             }
           ])
+        )
+        yield put(manualClearToast({ key: `remove-track-${trackId}` }))
+        yield put(
+          toast({
+            content: messages.removedTrack
+          })
         )
       },
       function* ({ error, timeout, message }) {
