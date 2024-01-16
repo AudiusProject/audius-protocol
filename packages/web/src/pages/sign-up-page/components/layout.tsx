@@ -110,19 +110,12 @@ export const Page = (props: PageProps) => {
 
   if (centered) {
     return (
-      <Flex
-        flex={1}
-        direction='column'
-        alignItems='center'
-        style={{ overflow: 'auto' }}
-        as={as}
-      >
+      <Flex flex={1} direction='column' alignItems='center' as={as}>
         {accountHeader}
         <AnimatedFlex
           {...layoutProps}
           {...other}
           alignSelf='center'
-          // css={!isMobile && { maxWidth: 610 }}
           style={{ ...styles }}
         >
           {childrenArray}
