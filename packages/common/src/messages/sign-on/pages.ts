@@ -59,7 +59,9 @@ export const pickHandlePageMessages = {
   claimHandleDescription:
     'Verify your Audius account by linking a verified social media account.',
   claimHandleHeadsUp:
-    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.',
+  handleAvailable: 'Handle available!',
+  linkToClaim: 'Link to claim.'
 }
 
 export const finishProfilePageMessages = {
@@ -68,7 +70,12 @@ export const finishProfilePageMessages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
-  goBack: 'Go back'
+  uploadProfilePhoto: 'Upload a profile photo to continue',
+  goBack: 'Go back',
+  profileImageUploadError: 'There was an issue uploading your profile image.',
+  coverPhotoUploadError: 'There was an issue uploading your cover photo image.',
+  bothImageUploadError:
+    'There was an issue uploading your profile and cover photo image.'
 }
 
 export const selectGenresPageMessages = {
@@ -77,13 +84,31 @@ export const selectGenresPageMessages = {
   continue: 'Continue'
 }
 
+export const reviewHandlePageMessages = {
+  heading: 'Review Your Handle',
+  handle: 'Handle',
+  description:
+    "We've connected your social account but need your help with an issue we encountered. "
+}
+
+export const createLoginDetailsPageMessages = {
+  title: 'Create Login Details',
+  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  emailLabel: 'Email',
+  handleLabel: 'Handle',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  signIn: 'Sign In'
+}
+
 export const selectArtstsPageMessages = {
   header: 'Follow At Least 3 Artists',
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
   genresLabel: 'Genre',
   pickArtists: (genre: string) => `Pick ${genre} Artists`,
-  selected: 'Selected'
+  selected: 'Selected',
+  backToGenres: 'Back To Genres'
 }
 
 export const welcomeModalMessages = {

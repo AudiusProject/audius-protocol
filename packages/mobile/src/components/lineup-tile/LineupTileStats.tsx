@@ -4,15 +4,15 @@ import type {
   ID,
   FavoriteType,
   RepostType,
-  PremiumConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import {
   formatCount,
   repostsUserListActions,
   favoritesUserListActions,
-  isPremiumContentUSDCPurchaseGated,
-  getLocalTimezone
+  isContentUSDCPurchaseGated,
+  dayjs
 } from '@audius/common'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -31,7 +31,7 @@ import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeTag'
+import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
@@ -106,8 +106,8 @@ type Props = {
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
-  doesUserHaveAccess?: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  hasStreamAccess?: boolean
+  streamConditions: Nullable<AccessConditions>
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
@@ -128,8 +128,8 @@ export const LineupTileStats = ({
   repostCount,
   saveCount,
   showRankIcon,
-  doesUserHaveAccess,
-  premiumConditions,
+  hasStreamAccess,
+  streamConditions,
   isOwner,
   isArtistPick,
   showArtistPick,
@@ -160,22 +160,21 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease =
-    isUnlisted && moment.utc(releaseDate).isAfter(moment())
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {premiumConditions ? (
-          <LineupTilePremiumContentTypeTag
-            premiumConditions={premiumConditions}
-            doesUserHaveAccess={doesUserHaveAccess}
+        {streamConditions ? (
+          <LineupTileGatedContentTypeTag
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
             isOwner={isOwner}
           />
         ) : null}
-        {!premiumConditions && showArtistPick && isArtistPick ? (
+        {!streamConditions && showArtistPick && isArtistPick ? (
           <View style={styles.tagContainer}>
             <IconStar
               fill={neutralLight4}
@@ -207,9 +206,11 @@ export const LineupTileStats = ({
               width={spacing(4)}
             />
             <Text fontSize='xs' colorValue={accentPurple}>
-              Releases{' '}
-              {moment.utc(releaseDate).local().format('M/D/YY @ h:mm A')}{' '}
-              {getLocalTimezone()}
+              Releases
+              {' ' +
+                moment(releaseDate).local().format('M/D/YY @ h:mm A') +
+                ' ' +
+                dayjs().format('z')}
             </Text>
           </View>
         ) : null}
@@ -261,13 +262,11 @@ export const LineupTileStats = ({
           ) : null}
         </View>
       </View>
-      {premiumConditions && !isOwner ? (
+      {streamConditions && !isOwner ? (
         <LockedStatusBadge
-          locked={!doesUserHaveAccess}
+          locked={!hasStreamAccess}
           variant={
-            isPremiumContentUSDCPurchaseGated(premiumConditions)
-              ? 'purchase'
-              : 'gated'
+            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }
         />
       ) : !hidePlays ? (

@@ -41,17 +41,17 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
     ...other
   } = props
 
-  const height = heightProp ?? theme.iconSizes[sizeH ?? size]
+  const height = heightProp ?? theme.iconSizes?.[sizeH ?? size]
   if (height) {
     other.height = height 
   }
 
-  const width = widthProp ?? theme.iconSizes[sizeW ?? size]
+  const width = widthProp ?? theme.iconSizes?.[sizeW ?? size]
   if (width) {
     other.width = width
   }
 
-  const fillColor = other.fill ?? theme.color.icon[color] ?? 'red'
+  const fillColor = other.fill ?? theme.color?.icon[color] ?? 'red'
 
   ${native ? nativeStyles : webStyles}
 

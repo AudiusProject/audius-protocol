@@ -22,10 +22,11 @@ import {
   shareModalUIActions,
   RepostType,
   playerSelectors,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
@@ -113,14 +114,14 @@ export const TrackTileComponent = ({
     title,
     track_id,
     genre,
-    is_premium: isPremium,
-    premium_conditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions,
     preview_cid
   } = track
 
   const hasPreview =
     isUSDCEnabled &&
-    isPremiumContentUSDCPurchaseGated(premium_conditions) &&
+    isContentUSDCPurchaseGated(stream_conditions) &&
     !!preview_cid
 
   const renderImage = useCallback(
@@ -128,6 +129,11 @@ export const TrackTileComponent = ({
       <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
     ),
     [track]
+  )
+
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
   )
 
   const handlePress = useCallback(() => {
@@ -154,10 +160,11 @@ export const TrackTileComponent = ({
 
     const overflowActions = [
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -165,6 +172,9 @@ export const TrackTileComponent = ({
         : null,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
       isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner && track?.is_scheduled_release && track?.is_unlisted
+        ? OverflowAction.RELEASE_NOW
+        : null,
       isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
@@ -180,10 +190,13 @@ export const TrackTileComponent = ({
     genre,
     isEditAlbumsEnabled,
     isOwner,
-    isPremium,
+    isStreamGated,
     isNewPodcastControlsEnabled,
+    albumInfo,
     playbackPositionInfo?.status,
     isOnArtistsTracksTab,
+    track?.is_scheduled_release,
+    track?.is_unlisted,
     dispatch
   ])
 

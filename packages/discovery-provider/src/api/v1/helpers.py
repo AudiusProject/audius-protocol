@@ -382,7 +382,7 @@ def extend_track(track):
             duration += float(segment["duration"])
         track["duration"] = round(duration)
 
-    downloadable = (
+    downloadable = track.get("is_downloadable") or (
         "download" in track
         and track["download"]
         and track["download"]["is_downloadable"]
@@ -972,6 +972,13 @@ def format_authorized_app(authorized_app):
         "grantor_user_id": encode_int_id(authorized_app["grantor_user_id"]),
         "grant_created_at": authorized_app["grant_created_at"],
         "grant_updated_at": authorized_app["grant_updated_at"],
+    }
+
+
+def format_dashboard_wallet_user(dashboard_wallet_user):
+    return {
+        "wallet": dashboard_wallet_user["wallet"],
+        "user": extend_user(dashboard_wallet_user["user"]),
     }
 
 

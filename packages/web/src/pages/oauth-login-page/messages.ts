@@ -6,6 +6,8 @@ export const messages = {
   alreadyAuthorizedContinuePrompt: (appName: string) => `Sign in to ${appName}`,
   permissionsRequestedHeader: 'This application will receive',
   readOnlyAccountAccess: 'Read-only access to your account',
+  connectDashboardWalletAccess:
+    'Permission to link this wallet to your account',
   writeAccountAccess: 'Read/Write access to your account',
   emailLoading: 'Email loading',
   emailAddressAccess: 'Your Email Address',
@@ -24,6 +26,11 @@ export const messages = {
     'Whoops, this is an invalid link (redirect URI missing or invalid).',
   missingAppNameError: 'Whoops, this is an invalid link (app name missing).',
   scopeError: `Whoops, this is an invalid link (scope missing or invalid).`,
+  connectWalletNoPostMessageError:
+    'Whoops, this is an invalid link (redirectUri must be `postMessage` if tx is `connectDashboardWallet`).',
+  writeOnceParamsError:
+    'Whoops, this is an invalid link (transaction params missing or invalid).',
+  writeOnceTxError: `Whoops, this is an invalid link ('tx' missing or invalid).`,
   missingFieldError: 'Whoops, you must enter both your email and password.',
   originInvalidError:
     'Whoops, this is an invalid link (redirect URI is set to `postMessage` but origin is missing).',

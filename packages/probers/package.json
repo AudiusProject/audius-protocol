@@ -1,7 +1,7 @@
 {
   "name": "probers",
   "private": true,
-  "version": "1.5.56",
+  "version": "1.5.61",
   "description": "Automated client tests",
   "scripts": {
     "cypress:open": "cypress open",
@@ -25,7 +25,6 @@
     "cypress-wait-until": "^1.7.2",
     "dayjs": "^1.11.6",
     "lodash": "4.17.21",
-    "typescript": "^4.8.4",
     "web3": "4.1.1"
   },
   "standard": {
@@ -36,7 +35,8 @@
   },
   "devDependencies": {
     "cypress-plugin-tab": "^1.0.5",
-    "eslint": "8.19.0",
-    "eslint-plugin-cypress": "2.12.1"
+    "eslint": "8.56.0",
+    "eslint-plugin-cypress": "2.12.1",
+    "typescript": "5.0.4"
   }
 }

@@ -39,6 +39,10 @@ class TrackSegment(TypedDict):
 class TrackMetadata(TypedDict):
     track_cid: Optional[str]
     preview_cid: Optional[str]
+    orig_file_cid: Optional[str]
+    orig_filename: Optional[str]
+    is_downloadable: Optional[bool]
+    is_original_available: Optional[bool]
     owner_id: Optional[int]
     audio_upload_id: Optional[str]
     title: Optional[str]
@@ -61,11 +65,14 @@ class TrackMetadata(TypedDict):
     track_segments: List[TrackSegment]
     download: Any
     remix_of: Optional[TrackRemix]
+    is_scheduled_release: bool
     is_unlisted: bool
     field_visibility: Optional[TrackFieldVisibility]
     stem_of: Optional[TrackStem]
-    is_premium: Optional[bool]
-    premium_conditions: Optional[Any]
+    is_stream_gated: Optional[bool]
+    stream_conditions: Optional[Any]
+    is_download_gated: Optional[bool]
+    download_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
     ai_attribution_user_id: Optional[int]
 
@@ -73,6 +80,10 @@ class TrackMetadata(TypedDict):
 track_metadata_format: TrackMetadata = {
     "track_cid": None,
     "preview_cid": None,
+    "orig_file_cid": None,
+    "orig_filename": None,
+    "is_downloadable": False,
+    "is_original_available": False,
     "owner_id": None,
     "audio_upload_id": None,
     "title": None,
@@ -99,11 +110,14 @@ track_metadata_format: TrackMetadata = {
         "cid": None,
     },
     "remix_of": None,
+    "is_scheduled_release": False,
     "is_unlisted": False,
     "field_visibility": None,
     "stem_of": None,
-    "is_premium": False,
-    "premium_conditions": None,
+    "is_stream_gated": False,
+    "stream_conditions": None,
+    "is_download_gated": False,
+    "download_conditions": None,
     "is_playlist_upload": False,
     "ai_attribution_user_id": None,
 }
@@ -175,6 +189,9 @@ immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",
     "track_cid",
+    "orig_file_cid",
+    "orig_filename",
+    "is_original_available",
     "duration",
     "is_available",
 }

@@ -4,12 +4,13 @@ import {
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   chatSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   purchaseContentSagas,
   remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   uploadConfirmationModalUISagas as uploadConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
@@ -50,9 +51,9 @@ import savedSagas from 'common/store/pages/saved/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import trendingPageSagas from 'common/store/pages/trending/sagas'
 import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
-import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import playlistUpdatesSagas from 'common/store/playlist-updates/sagas'
@@ -206,6 +207,7 @@ export default function* rootSaga() {
     themeSagas(),
     tokenDashboardSagas(),
     uploadConfirmationModalSagas(),
+    publishTrackConfirmationModalSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
@@ -221,8 +223,8 @@ export default function* rootSaga() {
     tippingSagas(),
     solanaSagas(),
 
-    // Premium content
-    premiumContentSagas(),
+    // Gated content
+    gatedContentSagas(),
     buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),

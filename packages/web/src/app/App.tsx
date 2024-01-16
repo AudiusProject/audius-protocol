@@ -20,6 +20,7 @@ const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
+const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
@@ -50,6 +51,9 @@ export const AppInner = () => {
           </Route>
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
+          </Route>
+          <Route path='/demo/trpc/history'>
+            <TrpcHistoryPage />
           </Route>
           <Route path='/demo/trpc'>
             <DemoTrpcPage />

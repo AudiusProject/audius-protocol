@@ -11,10 +11,11 @@ import {
   stemsUploadSelectors,
   stemsUploadActions,
   editTrackModalSelectors,
-  useEditTrackModal
+  useEditTrackModal,
+  publishTrackConfirmationModalUIActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -28,6 +29,8 @@ import { FEED_PAGE, getPathname } from 'utils/route'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
 
 const messages = {
   deleteTrack: 'DELETE TRACK'
@@ -50,6 +53,7 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
+  const dispatch = useDispatch()
   const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
@@ -68,16 +72,41 @@ const EditTrackModal = ({
   const [pendingDeletes, setPendingDeletes] = useState<ID[]>([])
   const onSaveEdit = (formFields: Track) => {
     if (!metadata) return
-    onEdit(metadata.track_id, formFields)
-    if (pendingUploads.length) {
-      uploadStems(metadata.track_id, pendingUploads)
-      setPendingUploads([])
+
+    const confirmEdit = (metadata: Track, formFields: Track) => {
+      const isDownloadable = !!formFields.download?.is_downloadable
+      const isDownloadGated = formFields.is_stream_gated
+      const downloadConditions = formFields.stream_conditions
+      const formFieldsToUpdate = {
+        ...formFields,
+        is_downloadable: isDownloadable,
+        is_download_gated: isDownloadGated,
+        download_conditions: downloadConditions
+      }
+      onEdit(metadata.track_id, formFieldsToUpdate)
+      if (pendingUploads.length) {
+        uploadStems(metadata.track_id, pendingUploads)
+        setPendingUploads([])
+      }
+      if (pendingDeletes.length) {
+        pendingDeletes.forEach((id) => onDelete(id))
+        setPendingDeletes([])
+      }
+      onClose()
     }
-    if (pendingDeletes.length) {
-      pendingDeletes.forEach((id) => onDelete(id))
-      setPendingDeletes([])
+
+    if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
+      // confirm for unlisted -> listed
+      dispatch(
+        openPublishTrackConfirmationModal({
+          confirmCallback: () => {
+            confirmEdit(metadata, formFields)
+          }
+        })
+      )
+    } else {
+      confirmEdit(metadata, formFields)
     }
-    onClose()
   }
   const onSelectDelete = () => {
     setShowDeleteConfirmation(true)
@@ -190,7 +219,7 @@ const EditTrackModal = ({
         onDelete={onSelectDelete}
         onCancel={onCancel}
         showUnlistedToggle={
-          metadata ? metadata.is_unlisted || metadata.is_premium : false
+          metadata ? metadata.is_unlisted || metadata.is_stream_gated : false
         }
         stems={combinedStems}
         onDeleteStem={onDeleteStem}

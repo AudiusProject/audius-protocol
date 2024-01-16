@@ -10,7 +10,6 @@ import {
 } from '@audius/common'
 import {
   FilterButton,
-  FilterButtonType,
   Flex,
   IconCreditCard,
   IconDonate,
@@ -109,7 +108,7 @@ export const PaymentMethod = ({
             <FilterButton
               onSelect={handleSelectVendor}
               selection={selectedVendor?.toString()}
-              variant={FilterButtonType.REPLACE_LABEL}
+              variant='replaceLabel'
               options={vendorOptions}
               popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
             />

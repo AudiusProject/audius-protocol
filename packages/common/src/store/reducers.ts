@@ -21,6 +21,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -54,10 +55,10 @@ import smartCollection from './pages/smart-collection/slice'
 import tokenDashboardSlice from './pages/token-dashboard/slice'
 import track from './pages/track/reducer'
 import TrackPageState from './pages/track/types'
-import trendingPlaylists from './pages/trending-playlists/slice'
-import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
+import trendingPlaylists from './pages/trending-playlists/slice'
+import trendingUnderground from './pages/trending-underground/slice'
 import { PlaybackPositionState } from './playback-position'
 import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
@@ -66,7 +67,6 @@ import {
   PlaylistLibraryState
 } from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
-import premiumContent from './premium-content/slice'
 import { purchaseContentReducer } from './purchase-content'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
@@ -104,6 +104,8 @@ import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import publishPlaylistConfirmationReducer from './ui/publish-playlist-confirmation-modal/slice'
 import { PublishPlaylistConfirmationModalState } from './ui/publish-playlist-confirmation-modal/types'
+import publishTrackConfirmationReducer from './ui/publish-track-confirmation-modal/slice'
+import { PublishTrackConfirmationModalState } from './ui/publish-track-confirmation-modal/types'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import relatedArtistsReducer from './ui/related-artists/slice'
 import { RelatedArtistsState } from './ui/related-artists/types'
@@ -205,6 +207,7 @@ export const reducers = (storage: Storage) => ({
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     uploadConfirmationModal: uploadConfirmationReducer,
+    publishTrackConfirmationModal: publishTrackConfirmationReducer,
     userList: combineReducers({
       followers: followersUserListReducer,
       following: followingUserListReducer,
@@ -255,10 +258,10 @@ export const reducers = (storage: Storage) => ({
   // Tipping
   tipping: tippingReducer,
 
-  // Premium content
+  // Gated content
   buyUSDC: buyUSDCReducer,
   buyCrypto: buyCryptoReducer,
-  premiumContent,
+  gatedContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
 
@@ -332,6 +335,7 @@ export type CommonState = {
     toast: ToastState
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
+    publishTrackConfirmationModal: PublishTrackConfirmationModalState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
@@ -383,9 +387,9 @@ export type CommonState = {
   // Tipping
   tipping: ReturnType<typeof tippingReducer>
 
-  // Premium content
+  // Gated content
   purchaseContent: ReturnType<typeof purchaseContentReducer>
-  premiumContent: ReturnType<typeof premiumContent>
+  gatedContent: ReturnType<typeof gatedContent>
   withdrawUSDC: ReturnType<typeof withdrawUSDCReducer>
 
   // Collectibles

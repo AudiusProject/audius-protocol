@@ -185,7 +185,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
 def get_purchase_metadata_from_memo(
     session: Session, memos: List[str], timestamp: datetime
 ) -> Union[PurchaseMetadataDict, None]:
-    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
+    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     for memo in memos:
         try:
             content_metadata = memo.split(":")
@@ -274,7 +274,12 @@ def validate_purchase(
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
-        if account not in balance_changes or balance_changes[account]["change"] < split:
+        if account not in balance_changes:
+            logger.error(
+                f"index_payment_router.py | No split given to account={account}, expected={split}"
+            )
+            return False
+        if balance_changes[account]["change"] < split:
             logger.error(
                 f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )

@@ -10,11 +10,15 @@ import {
   Remix,
   CoverArtSizes,
   ID,
-  PremiumConditions,
+  AccessConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  publishTrackConfirmationModalUIActions,
+  CommonState,
+  cacheTracksSelectors
 } from '@audius/common'
+import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
   Button,
@@ -27,11 +31,11 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
+import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { UserLink } from 'components/link'
+import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -45,16 +49,22 @@ import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
+import { DownloadSection } from './DownloadSection'
+import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import { PremiumTrackSection } from './PremiumTrackSection'
+
+const { requestOpen: openPublishTrackConfirmationModal } =
+  publishTrackConfirmationModalUIActions
+const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -87,19 +97,22 @@ export type GiantTrackTileProps = {
   credits: string
   currentUserId: Nullable<ID>
   description: string
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
+  hasDownloadAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
   following: boolean
   genre: string
   isArtistPick: boolean
   isOwner: boolean
-  isPremium: boolean
+  isStreamGated: boolean
+  isDownloadGated: boolean
   isPublishing: boolean
   isRemix: boolean
   isReposted: boolean
   isSaved: boolean
   isUnlisted: boolean
+  isScheduledRelease: boolean
   listenCount: number
   loading: boolean
   mood: string
@@ -116,7 +129,8 @@ export type GiantTrackTileProps = {
   onUnfollow: () => void
   playing: boolean
   previewing: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  streamConditions: Nullable<AccessConditions>
+  downloadConditions: Nullable<AccessConditions>
   released: string
   repostCount: number
   saveCount: number
@@ -134,18 +148,20 @@ export const GiantTrackTile = ({
   coverArtSizes,
   credits,
   description,
-  doesUserHaveAccess,
+  hasStreamAccess,
+  hasDownloadAccess,
   duration,
   fieldVisibility,
   following,
   genre,
   isArtistPick,
   isOwner,
-  isPremium,
+  isStreamGated,
   isRemix,
   isReposted,
   isPublishing,
   isSaved,
+  isScheduledRelease,
   isUnlisted,
   listenCount,
   loading,
@@ -166,12 +182,13 @@ export const GiantTrackTile = ({
   saveCount,
   playing,
   previewing,
-  premiumConditions,
+  streamConditions,
   tags,
   trackId,
   trackTitle,
   userId
 }: GiantTrackTileProps) => {
+  const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(true)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -183,28 +200,36 @@ export const GiantTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const track = useSelector(
+    (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
+  const hasDownloadableAssets = track?.is_downloadable || track?._stems
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
-  const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
+  const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
-  const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
-
-  let isScheduledRelease = false
-  if (!isPublishing && moment.utc(released).isAfter(moment())) {
-    isScheduledRelease = true
-  }
+  const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
+  )
 
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
         className={className}
         isUnlisted={isUnlisted}
+        isScheduledRelease={isScheduledRelease}
         isRemix={isRemix}
-        isPremium={isPremium}
+        isStreamGated={isStreamGated}
         isPodcast={genre === Genre.PODCASTS}
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
       />
     )
   }
@@ -244,7 +269,19 @@ export const GiantTrackTile = ({
             )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={isPublishing ? undefined : () => onMakePublic(trackId)}
+          onClick={
+            isPublishing
+              ? undefined
+              : () => {
+                  dispatch(
+                    openPublishTrackConfirmationModal({
+                      confirmCallback: () => {
+                        onMakePublic(trackId)
+                      }
+                    })
+                  )
+                }
+          }
         />
       )
     )
@@ -359,7 +396,7 @@ export const GiantTrackTile = ({
 
   const renderListenCount = () => {
     const shouldShow =
-      isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
+      isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
 
     if (!shouldShow) {
       return null
@@ -406,6 +443,29 @@ export const GiantTrackTile = ({
     )
   }
 
+  const renderAlbum = () => {
+    if (!isEditAlbumsEnabled || !albumInfo) return null
+    return (
+      <InfoLabel
+        className={styles.infoLabelPlacement}
+        labelName='album'
+        labelValue={
+          <Link
+            to={albumInfo.permalink}
+            color='accentPurple'
+            size='small'
+            css={({ spacing }) => ({
+              // the link is too tall
+              marginTop: spacing.negativeUnit
+            })}
+          >
+            {albumInfo.playlist_name}
+          </Link>
+        }
+      />
+    )
+  }
+
   const renderReleased = () => {
     return (
       !isUnlisted &&
@@ -448,25 +508,12 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={styles.downloadButtonsContainer}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={following}
-        doesUserHaveAccess={doesUserHaveAccess}
-        onDownload={onDownload}
-      />
-    )
-  }
-
   const isLoading = loading || artworkLoading
-  // Omitting isOwner and doesUserHaveAccess so that we always show premium DogEars
+  // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        premiumConditions,
+        streamConditions,
         isUnlisted:
           isUnlisted && (!released || moment(released).isBefore(moment()))
       })
@@ -493,9 +540,9 @@ export const GiantTrackTile = ({
       includeFavorite: false,
       includeTrackPage: false,
       isArtistPick,
-      includeEmbed: !(isUnlisted || isPremium),
+      includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: !(isUnlisted || isPremium),
+      includeAddToPlaylist: !(isUnlisted || isStreamGated),
       extraMenuItems: overflowMenuExtraItems
     }
   }
@@ -527,7 +574,7 @@ export const GiantTrackTile = ({
               {isLoading && <Skeleton className={styles.skeleton} />}
             </div>
             <div className={styles.artistWrapper}>
-              <div className={cn(fadeIn)}>
+              <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
                   color='secondary'
@@ -538,7 +585,7 @@ export const GiantTrackTile = ({
                   badgeSize={18}
                   popover
                 />
-              </div>
+              </Flex>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
@@ -548,7 +595,7 @@ export const GiantTrackTile = ({
           <div className={cn(styles.playSection, fadeIn)}>
             {showPlay ? (
               <PlayPauseButton
-                disabled={!doesUserHaveAccess}
+                disabled={!hasStreamAccess}
                 playing={playing && !previewing}
                 onPlay={onPlay}
                 trackId={trackId}
@@ -584,8 +631,8 @@ export const GiantTrackTile = ({
           >
             {renderShareButton()}
             {renderMakePublicButton()}
-            {doesUserHaveAccess && renderRepostButton()}
-            {doesUserHaveAccess && renderFavoriteButton()}
+            {hasStreamAccess && renderRepostButton()}
+            {hasStreamAccess && renderFavoriteButton()}
             <span>
               {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
@@ -620,12 +667,15 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isPremium && premiumConditions ? (
-        <PremiumTrackSection
+      {isStreamGated &&
+      streamConditions &&
+      isLosslessDownloadsEnabled &&
+      !hasDownloadableAssets ? (
+        <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}
           ownerId={userId}
         />
@@ -652,6 +702,7 @@ export const GiantTrackTile = ({
               labelValue={credits}
             />
           ) : null}
+          {renderAlbum()}
         </div>
         {description ? (
           <UserGeneratedText
@@ -663,7 +714,11 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         {renderTags()}
-        {renderDownloadButtons()}
+        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+          <Box pt='l' w='100%'>
+            <DownloadSection trackId={trackId} onDownload={onDownload} />
+          </Box>
+        ) : null}
       </div>
     </Tile>
   )

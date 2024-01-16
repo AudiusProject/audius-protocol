@@ -1,12 +1,10 @@
-import moment from 'moment'
-
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
 import type { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector } from 'utils'
+import { removeNullable, createDeepEqualSelector, dayjs } from 'utils'
 
 import { Status } from '../../../models'
-import type { ID, User, UserCollection } from '../../../models'
+import type { Collection, ID, User, UserCollection } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
 import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'
@@ -114,6 +112,12 @@ export const getProfilePlaylists = createDeepEqualSelector(
   (collections) => collections?.filter(({ is_album }) => !is_album)
 )
 
+const sortByDateDesc = (a: Collection, b: Collection) =>
+  dayjs(b.created_at).diff(dayjs(a.created_at))
+
+const sortBySaveCountDesc = (a: Collection, b: Collection) =>
+  b.save_count - a.save_count
+
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
     [
@@ -167,19 +171,11 @@ export const makeGetProfile = () => {
       )
 
       if (sortMode === CollectionSortMode.SAVE_COUNT) {
-        playlists = playlists.sort((a, b) => b.save_count - a.save_count)
-        albums = albums.sort((a, b) => b.save_count - a.save_count)
+        playlists = playlists.sort(sortBySaveCountDesc)
+        albums = albums.sort(sortBySaveCountDesc)
       } else {
-        // This is safe bc moment allows you to subtract timestamps, presumably by
-        // overloading `valueOf
-        playlists = playlists.sort(
-          // @ts-ignore
-          (a, b) => moment(b.created_at) - moment(a.created_at)
-        )
-        albums = albums.sort(
-          // @ts-ignore
-          (a, b) => moment(b.created_at) - moment(a.created_at)
-        )
+        playlists = playlists.sort(sortByDateDesc)
+        albums = albums.sort(sortByDateDesc)
       }
       const followersPopulated =
         followers?.userIds

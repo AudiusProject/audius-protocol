@@ -51,6 +51,8 @@ type Config struct {
 	RewardsManagerProgramId          string
 	RewardsManagerProgramPda         string
 	RewardsManagerTokenPda           string
+	OptimizelySdkKey                 string
+	DDEXKey                          string
 }
 
 func main() {
@@ -123,6 +125,8 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 	rewardsManagerProgramId := ""
 	rewardsManagerProgramPda := ""
 	rewardsManagerTokenPda := ""
+	optimizelySdkKey := ""
+	ddexKey := ""
 
 	if nodeType == "content" {
 		myEndpoint = mustGetenv("creatorNodeEndpoint")
@@ -185,6 +189,8 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		rewardsManagerProgramId = mustGetenv("audius_solana_rewards_manager_program_address")
 		rewardsManagerProgramPda = mustGetenv("audius_solana_rewards_manager_account")
 		rewardsManagerTokenPda = mustGetenv("audius_solana_rewards_manager_token_pda")
+		optimizelySdkKey = os.Getenv("OPTIMIZELY_SDK_KEY")
+		ddexKey = os.Getenv("DDEX_KEY")
 	}
 
 	logger := slog.With("endpoint", myEndpoint)
@@ -243,10 +249,12 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		ClaimableTokenPda:                claimableTokenPda,
 		SolanaFeePayerAddress:            solanaFeePayerAddress,
 		ClaimableTokenProgramAddress:     claimableTokenProgramAddress,
-		PaymentRouterProgramAddress:	  paymentRouterProgramAddress,
+		PaymentRouterProgramAddress:      paymentRouterProgramAddress,
 		RewardsManagerProgramId:          rewardsManagerProgramId,
 		RewardsManagerProgramPda:         rewardsManagerProgramPda,
 		RewardsManagerTokenPda:           rewardsManagerTokenPda,
+		OptimizelySdkKey:                 optimizelySdkKey,
+		DDEXKey:                          ddexKey,
 	}
 
 	ph, err := New(config)

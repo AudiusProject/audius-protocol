@@ -54,7 +54,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   return (
     <TextBase
       ref={ref}
-      style={[styleProp, textStyles]}
+      style={[textStyles, styleProp]}
       role={isHeading ? 'heading' : undefined}
       {...other}
     />
@@ -62,3 +62,4 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
 })
 
 export { variantStylesMap }
+export type { TextSize, TextColors } from '@audius/harmony'

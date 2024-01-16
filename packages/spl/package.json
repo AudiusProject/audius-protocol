@@ -1,11 +1,10 @@
 {
-  "private": true,
   "name": "@audius/spl",
-  "version": "0.0.10",
+  "version": "0.0.17",
   "description": "The core Typescript mappings to the Audius Solana Programs",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.all.json",
     "build": "tsc --build --verbose tsconfig.all.json",

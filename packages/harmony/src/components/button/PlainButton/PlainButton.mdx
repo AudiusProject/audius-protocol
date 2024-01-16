@@ -16,7 +16,6 @@ import {
 } from 'storybook/components'
 
 import { Box } from '../../layout'
-import { PlainButtonSize } from '../types'
 
 import { PlainButton } from './PlainButton'
 import * as PlainButtonStories from './PlainButton.stories'
@@ -90,7 +89,7 @@ import * as PlainButtonStories from './PlainButton.stories'
           'Use plain buttons to reveal or hide additional information.',
         size: 'small',
         component: (
-          <PlainButton size={PlainButtonSize.LARGE} iconRight={IconCaretDown}>
+          <PlainButton size='large' iconRight={IconCaretDown}>
             See More
           </PlainButton>
         )
@@ -101,10 +100,7 @@ import * as PlainButtonStories from './PlainButton.stories'
         size: 'small',
         component: (
           <Box pv='m' ph='xl' border='strong' borderRadius='s'>
-            <PlainButton
-              size={PlainButtonSize.LARGE}
-              iconLeft={IconCloudUpload}
-            >
+            <PlainButton size='large' iconLeft={IconCloudUpload}>
               Upload
             </PlainButton>
           </Box>

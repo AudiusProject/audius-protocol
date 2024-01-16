@@ -1,9 +1,8 @@
 import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
-import { TRPCError } from '@trpc/server'
 import { Client as ES } from '@elastic/elasticsearch'
 
-const esc = new ES({ node: process.env.audius_elasticsearch_url })
+export const esc = new ES({ node: process.env.audius_elasticsearch_url })
 
 export const searchRouter = router({
   users: publicProcedure

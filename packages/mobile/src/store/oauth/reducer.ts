@@ -1,4 +1,4 @@
-import type { TikTokProfile } from '@audius/common'
+import type { Image, TikTokProfile } from '@audius/common'
 
 import type { OAuthActions } from './actions'
 import {
@@ -14,19 +14,19 @@ import {
 } from './actions'
 import type { AUTH_RESPONSE_MESSAGE_TYPE } from './types'
 
-type TwitterInfo = {
+export type TwitterInfo = {
   uuid: any
   profile: any
-  profileImage: any
+  profileImage: Image
   profileBanner: any
   requiresUserReview: any
   twitterId?: any
 }
 
-type InstagramInfo = {
+export type InstagramInfo = {
   uuid: any
   profile: any
-  profileImage: any
+  profileImage: Image
   requiresUserReview: any
   instagramId?: any
 }
@@ -34,7 +34,7 @@ type InstagramInfo = {
 type TikTokInfo = {
   uuid: string
   profile: TikTokProfile
-  profileImage: { url: string; file: File } | undefined
+  profileImage: Image | undefined
   requiresUserReview: boolean
 }
 

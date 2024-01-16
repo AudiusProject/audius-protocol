@@ -9,7 +9,7 @@ import {
   Genre,
   CommonState,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
@@ -28,8 +28,8 @@ import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import { GatedContentLabel } from '../GatedContentLabel'
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
-import { PremiumContentLabel } from '../PremiumContentLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -70,23 +70,23 @@ const RankAndIndexIndicator = ({
 }
 
 const renderLockedOrPlaysContent = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   fieldVisibility,
   isOwner,
-  isPremium,
+  isStreamGated,
   listenCount,
   variant
 }: Pick<
   TrackTileProps,
-  | 'doesUserHaveAccess'
+  | 'hasStreamAccess'
   | 'fieldVisibility'
   | 'isOwner'
-  | 'isPremium'
+  | 'isStreamGated'
   | 'listenCount'
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
-  if (isPremium && !isOwner) {
-    return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
+  if (isStreamGated && !isOwner) {
+    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -116,9 +116,10 @@ const TrackTile = ({
   isReposted,
   isOwner,
   isUnlisted,
-  isPremium,
-  premiumConditions,
-  doesUserHaveAccess,
+  isScheduledRelease,
+  isStreamGated,
+  streamConditions,
+  hasStreamAccess,
   listenCount,
   isActive,
   isArtistPick,
@@ -155,6 +156,10 @@ const TrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -166,22 +171,22 @@ const TrackTile = ({
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId },
         { source: ModalSource.TrackTile }
       )
-    } else if (trackId && !doesUserHaveAccess && onClickLocked) {
+    } else if (trackId && !hasStreamAccess && onClickLocked) {
       onClickLocked()
     }
   }, [
     isPurchase,
     trackId,
     openPremiumContentPurchaseModal,
-    doesUserHaveAccess,
+    hasStreamAccess,
     onClickLocked
   ])
 
@@ -224,23 +229,23 @@ const TrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        doesUserHaveAccess,
+        hasStreamAccess,
         isArtistPick,
         isOwner,
         isUnlisted:
           isUnlisted &&
           (!releaseDate || moment(releaseDate).isBefore(moment())),
-        premiumConditions
+        streamConditions
       })
 
   let specialContentLabel = null
   let scheduledReleaseLabel = null
   if (!isLoading) {
-    if (isPremium) {
+    if (isStreamGated) {
       specialContentLabel = (
-        <PremiumContentLabel
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={!!doesUserHaveAccess}
+        <GatedContentLabel
+          streamConditions={streamConditions}
+          hasStreamAccess={!!hasStreamAccess}
           isOwner={isOwner}
         />
       )
@@ -252,9 +257,11 @@ const TrackTile = ({
         </div>
       )
     }
-    scheduledReleaseLabel = (
-      <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
-    )
+    if (isScheduledReleasesEnabled) {
+      scheduledReleaseLabel = (
+        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
+      )
+    }
   }
 
   return (
@@ -366,7 +373,7 @@ const TrackTile = ({
               styles.topRight
             )}
           >
-            {isUnlisted ? (
+            {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
@@ -385,10 +392,10 @@ const TrackTile = ({
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                  doesUserHaveAccess,
+                  hasStreamAccess,
                   fieldVisibility,
                   isOwner,
-                  isPremium,
+                  isStreamGated,
                   listenCount,
                   variant: isPurchase ? 'premium' : 'gated'
                 })
@@ -397,7 +404,7 @@ const TrackTile = ({
         </div>
         <div className={styles.divider} />
         <BottomRow
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isDisabled={isDisabled}
           isLoading={isLoading}
           isFavorited={isFavorited}
@@ -413,8 +420,8 @@ const TrackTile = ({
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
-          onClickPremiumPill={onClickPremiumPill}
-          premiumConditions={premiumConditions}
+          onClickPill={onClickPill}
+          streamConditions={streamConditions}
           isTrack={isTrack}
           trackId={trackId}
         />

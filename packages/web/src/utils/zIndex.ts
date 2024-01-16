@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 /**
  * Standardize the use of zIndex across the application
  *
@@ -8,7 +10,7 @@ export enum zIndex {
   // These are still set in css, added here for reference
   // TODO: use these enums
 
-  PREMIUM_TRACK_TILE_CORNER_TAG = 3,
+  GATED_TRACK_TILE_CORNER_TAG = 3,
 
   // FROSTED_HEADER_BACKGROUND = 10,
   // HEADER_CONTAINER = 13,

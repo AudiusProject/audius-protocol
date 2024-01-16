@@ -8,7 +8,7 @@ import {
   trackPageLineupActions,
   QueueItem,
   OverflowAction,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -124,9 +124,9 @@ const TrackPage = ({
   const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
   const isFollowing = user ? user.does_current_user_follow : false
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(heroTrack)
-  const loading = !heroTrack || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+    useGatedContentAccess(heroTrack)
+  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -196,9 +196,10 @@ const TrackPage = ({
           onRepost={onRepost}
           onDownload={onDownloadTrack}
           isUnlisted={defaults.isUnlisted}
-          isPremium={defaults.isPremium}
-          premiumConditions={defaults.premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          isStreamGated={defaults.isStreamGated}
+          streamConditions={defaults.streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          hasDownloadAccess={hasDownloadAccess}
           isRemix={!!defaults.remixParentTrackId}
           fieldVisibility={defaults.fieldVisibility}
           aiAttributedUserId={defaults.aiAttributionUserId}

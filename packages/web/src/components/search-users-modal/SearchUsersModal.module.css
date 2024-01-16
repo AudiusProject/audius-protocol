@@ -16,10 +16,6 @@
   flex: 1;
 }
 
-.icon path {
-  fill: var(--neutral);
-}
-
 .iconLight {
   /* Fixes vertical alignment inside IconButton */
   display: block;

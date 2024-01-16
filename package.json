@@ -1,13 +1,12 @@
 {
   "name": "root",
-  "version": "1.5.56",
+  "version": "1.5.61",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
     "packages/es-indexer"
   ],
-  "cacheBust": 1,
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -64,17 +63,19 @@
   },
   "devDependencies": {
     "@emotion/eslint-plugin": "11.11.0",
+    "@tsconfig/strictest": "2.0.2",
     "@types/keyv": "4.2.0",
-    "@typescript-eslint/eslint-plugin": "5.48.2",
-    "@typescript-eslint/parser": "5.48.2",
+    "@types/react": "18.2.0",
+    "@typescript-eslint/eslint-plugin": "6.16.0",
+    "@typescript-eslint/parser": "6.16.0",
     "concurrently": "7.4.0",
-    "eslint": "8.25.0",
+    "eslint": "8.56.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-config-prettier-standard": "4.0.1",
     "eslint-config-standard": "17.0.0",
     "eslint-import-resolver-alias": "1.1.2",
     "eslint-import-resolver-typescript": "3.5.5",
-    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jest": "27.1.1",
     "eslint-plugin-mdx": "2.2.0",
     "eslint-plugin-n": "15.3.0",
@@ -86,11 +87,11 @@
     "eslint-plugin-standard": "4.1.0",
     "npm-check-updates": "16.4.1",
     "patch-package": "6.5.1",
-    "prettier": "2.7.1",
-    "prettier-config-standard": "5.0.0",
+    "prettier": "2.8.8",
+    "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "typescript": "4.9.4",
+    "typescript": "5.0.4",
     "wait-on": "7.2.0"
   },
   "dependencies": {
@@ -99,11 +100,11 @@
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
-    "@types/react": "18.0.26",
+    "@types/react": "18.2.0",
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
     "moment": "2.24.0",
-    "react-native-svg": "12.3.0",
+    "react-native-svg": "13.14.0",
     "redux": "4.1.1",
     "webpack": "5.88.2"
   },

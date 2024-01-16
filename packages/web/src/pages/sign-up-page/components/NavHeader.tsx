@@ -8,16 +8,13 @@ import {
   IconCaretLeft,
   IconCloseAlt,
   PlainButton,
-  PlainButtonSize,
-  PlainButtonType,
   useTheme
 } from '@audius/harmony'
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
 
-import { getSignOn } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useSelector } from 'utils/reducer'
 import {
+  SIGN_IN_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -27,18 +24,15 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
-import { determineAllowedRoute } from '../utils/determineAllowedRoutes'
+import { useDetermineAllowedRoute } from '../utils/useDetermineAllowedRoutes'
 
 import { ProgressHeader } from './ProgressHeader'
 
 export const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
-  const signUpState = useSelector(getSignOn)
+  const determineAllowedRoute = useDetermineAllowedRoute()
   if (match?.params.currentPath) {
-    const { allowedRoutes } = determineAllowedRoute(
-      signUpState,
-      match?.params.currentPath
-    )
+    const { allowedRoutes } = determineAllowedRoute(match?.params.currentPath)
     const currentRouteIndex = allowedRoutes.indexOf(match.params.currentPath)
     const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
     return isBackAllowed
@@ -84,18 +78,18 @@ export const NavHeader = () => {
 
   return (
     <Switch>
-      <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
-        <HeaderRoot pv='l'>
-          {isMobile ? (
+      <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
+        {isMobile ? (
+          <HeaderRoot pv='l'>
             <PlainButton
-              size={PlainButtonSize.LARGE}
+              size='large'
               css={{ padding: 0 }}
               onClick={handleClose}
               iconLeft={IconCloseAlt}
-              variant={PlainButtonType.SUBDUED}
+              variant='subdued'
             />
-          ) : null}
-        </HeaderRoot>
+          </HeaderRoot>
+        ) : null}
       </Route>
       {!isMobile ? (
         <Route
@@ -119,17 +113,19 @@ export const NavHeader = () => {
           {isBackAllowed ? (
             <>
               <PlainButton
-                size={PlainButtonSize.LARGE}
+                size='large'
                 css={{ padding: 0 }}
                 onClick={history.goBack}
                 iconLeft={IconCaretLeft}
-                variant={PlainButtonType.SUBDUED}
+                variant='subdued'
               />
               {audiusLogo}
               <Box css={{ width: iconSizes.m }} />
             </>
           ) : (
-            audiusLogo
+            <Flex w='100%' justifyContent='center'>
+              {audiusLogo}
+            </Flex>
           )}
         </HeaderRoot>
       </Route>

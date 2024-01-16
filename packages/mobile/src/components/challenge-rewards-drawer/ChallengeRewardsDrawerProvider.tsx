@@ -45,7 +45,7 @@ const MODAL_NAME = 'ChallengeRewardsExplainer'
 
 const styles = {
   button: {
-    width: '100%'
+    width: '100%' as const
   }
 }
 

@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 
-import moment from 'moment'
-import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
+
+import dayjs from 'utils/dayjs'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
@@ -52,19 +53,16 @@ const messages = {
     `${friendlyName} ${categoryCount || ''}`
 }
 
+const sortByDateAsc = (a: Track, b: Track) =>
+  dayjs(a.created_at).diff(dayjs(b.created_at))
+
 const doesRequireFollow = (
   isOwner: boolean,
   following: boolean,
   track: Track
 ) => !isOwner && !following && track.download?.requires_follow
 
-const useCurrentStems = ({
-  trackId,
-  useSelector
-}: {
-  trackId: ID
-  useSelector: typeof reduxUseSelector
-}) => {
+export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -78,11 +76,7 @@ const useCurrentStems = ({
   // Sort the stems, filter deletes
   const stemTracks = Object.values(stemTracksMap)
     .filter((t) => !t._marked_deleted && !t.is_delete)
-    .sort(
-      (a, b) =>
-        moment(a.created_at).milliseconds() -
-        moment(b.created_at).milliseconds()
-    )
+    .sort(sortByDateAsc)
     .map((t) => ({
       downloadURL: t.download?.cid,
       category: t.stem_of.category,
@@ -93,13 +87,7 @@ const useCurrentStems = ({
   return { stemTracks, track }
 }
 
-const useUploadingStems = ({
-  trackId,
-  useSelector
-}: {
-  trackId: ID
-  useSelector: typeof reduxUseSelector
-}) => {
+const useUploadingStems = ({ trackId }: { trackId: ID }) => {
   const currentUploads = useSelector(
     (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
@@ -253,19 +241,17 @@ export const useDownloadTrackButtons = ({
   isOwner,
   onDownload,
   onNotLoggedInClick,
-  trackId,
-  useSelector
+  trackId
 }: UseDownloadTrackButtonsArgs & {
   trackId: ID
-  useSelector: typeof reduxUseSelector
 }) => {
   const isLoggedIn = useSelector(getHasAccount)
 
   // Get already uploaded stems and parent track
-  const { stemTracks, track } = useCurrentStems({ trackId, useSelector })
+  const { stemTracks, track } = useCurrentStems({ trackId })
 
   // Get the currently uploading stems
-  const { uploadingTracks } = useUploadingStems({ trackId, useSelector })
+  const { uploadingTracks } = useUploadingStems({ trackId })
 
   // Combine uploaded and uploading stems
   const combinedStems = [...stemTracks, ...uploadingTracks] as Stem[]

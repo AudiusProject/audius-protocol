@@ -36,6 +36,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
+import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
 
 const {
   ALL_RIGHTS_RESERVED_TYPE,
@@ -192,8 +193,8 @@ const BasicForm = (props) => {
         initialTrackId={
           props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
         }
-        isPremium={props.defaultFields.is_premium ?? false}
-        premiumConditions={props.defaultFields.premium_conditions ?? null}
+        isStreamGated={props.defaultFields.is_stream_gated ?? false}
+        streamConditions={props.defaultFields.stream_conditions ?? null}
         isRemix={isRemix}
         setIsRemix={setIsRemix}
         isOpen={remixSettingsModalVisible}
@@ -339,6 +340,9 @@ const AdvancedForm = (props) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
 
   const {
     remixSettingsModalVisible,
@@ -350,14 +354,22 @@ const AdvancedForm = (props) => {
   } = props
 
   let availabilityState = {
-    is_premium: props.defaultFields.is_premium,
-    premium_conditions: props.defaultFields.premium_conditions,
+    is_stream_gated: props.defaultFields.is_stream_gated,
+    stream_conditions: props.defaultFields.stream_conditions,
     preview_start_seconds: props.defaultFields.preview_start_seconds
   }
+
+  const releaseDateState = {
+    is_unlisted: props.defaultFields.is_unlisted,
+    is_scheduled_release: props.defaultFields.is_scheduled_release,
+    release_date: props.defaultFields.release_date
+  }
+
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
   if (showAvailability) {
     availabilityState = {
       ...availabilityState,
+      scheduled_release: props.defaultFields.is_scheduled_release,
       unlisted: props.defaultFields.is_unlisted,
       genre: props.defaultFields.field_visibility.genre,
       mood: props.defaultFields.field_visibility.mood,
@@ -383,19 +395,25 @@ const AdvancedForm = (props) => {
       play_count: newState.plays,
       remixes: !hideRemixes
     })
-    props.onChangeField('is_premium', newState.is_premium)
+    props.onChangeField('is_stream_gated', newState.is_stream_gated)
 
-    // Check whether the field is invalid if premium track is collectible-gated
+    // Check whether the field is invalid if track is collectible-gated
     // so that the user cannot proceed until they pick an nft collection.
     const isInvalidNFTCollection =
-      'nft_collection' in (newState.premium_conditions ?? {}) &&
-      !newState.premium_conditions?.nft_collection
+      'nft_collection' in (newState.stream_conditions ?? {}) &&
+      !newState.stream_conditions?.nft_collection
     props.onChangeField(
-      'premium_conditions',
-      newState.premium_conditions,
+      'stream_conditions',
+      newState.stream_conditions,
       isInvalidNFTCollection
     )
     props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
+  }
+
+  const didUpdateReleaseDate = (newState) => {
+    props.onChangeField('release_date', newState.release_date)
+    props.onChangeField('is_unlisted', newState.is_unlisted)
+    props.onChangeField('is_scheduled_release', newState.is_unlisted)
   }
 
   const didToggleHideRemixesState = () => {
@@ -431,8 +449,8 @@ const AdvancedForm = (props) => {
         initialTrackId={
           props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
         }
-        isPremium={props.defaultFields.is_premium ?? false}
-        premiumConditions={props.defaultFields.premium_conditions ?? null}
+        isStreamGated={props.defaultFields.is_stream_gated ?? false}
+        streamConditions={props.defaultFields.stream_conditions ?? null}
         isRemix={isRemix}
         setIsRemix={setIsRemix}
         isOpen={remixSettingsModalVisible}
@@ -510,6 +528,13 @@ const AdvancedForm = (props) => {
             <AiAttributionButton
               className={styles.releaseButton}
               onClick={() => setAiAttributionModalVisible(true)}
+            />
+          )}
+          {isScheduledReleasesEnabled && (
+            <ReleaseDateTriggerLegacy
+              didUpdateState={didUpdateReleaseDate}
+              metadataState={releaseDateState}
+              initialForm={props.initialForm}
             />
           )}
           {props.type !== 'track' && (

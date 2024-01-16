@@ -9,11 +9,11 @@ import {
 } from '@audius/common'
 import {
   Button,
-  ButtonType,
   Flex,
   IconCart,
   IconExternalLink,
-  IconMessage
+  IconMessage,
+  TextLink
 } from '@audius/harmony'
 import {
   ModalContent,
@@ -25,7 +25,6 @@ import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
-import { ExternalLink } from 'components/link'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -105,15 +104,17 @@ export const SaleModalContent = ({
         </DetailSection>
         <DetailSection
           label={
-            <ExternalLink
-              variant='inherit'
-              to={makeSolanaTransactionLink(purchaseDetails.signature)}
+            <TextLink
+              variant='subdued'
+              href={makeSolanaTransactionLink(purchaseDetails.signature)}
+              isExternal
+              applyHoverStylesToInnerSvg
             >
               <Flex gap='xs'>
                 {messages.transaction}
                 <IconExternalLink size='s' color='subdued' />
               </Flex>
-            </ExternalLink>
+            </TextLink>
           }
         />
         <TransactionSummary transaction={purchaseDetails} />
@@ -122,7 +123,7 @@ export const SaleModalContent = ({
         <Button
           className={styles.button}
           iconLeft={IconMessage}
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           onClick={handleClickMessageBuyer}
         >
           {messages.messageBuyer}

@@ -25,6 +25,7 @@ type TrackListProps = {
   ids?: ID[]
   contextPlaylistId?: ID
   isReorderable?: boolean
+  isAlbumPage?: boolean
   onRemove?: (index: number) => void
   onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
   showSkeleton?: boolean
@@ -48,6 +49,7 @@ export const TrackList = ({
   hideArt,
   ids,
   isReorderable,
+  isAlbumPage = false,
   noDividerMargin,
   onRemove,
   onReorder,
@@ -76,7 +78,8 @@ export const TrackList = ({
 
   const renderDraggableTrack: DraggableFlatListProps<UID | ID>['renderItem'] =
     useCallback(
-      ({ item, index = -1, drag }) => {
+      ({ item, getIndex = () => -1, drag }) => {
+        const index = getIndex() ?? -1
         const RootView = isReorderable ? OpacityDecorator : Fragment
         return (
           <RootView>
@@ -87,6 +90,7 @@ export const TrackList = ({
               onDrag={drag}
               hideArt={hideArt}
               isReorderable={isReorderable}
+              showViewAlbum={isAlbumPage}
               uid={uids && (item as UID)}
               prevUid={uids && uids[index - 1]}
               key={item}
@@ -104,6 +108,7 @@ export const TrackList = ({
         contextPlaylistId,
         hideArt,
         ids,
+        isAlbumPage,
         isReorderable,
         noDividerMargin,
         onRemove,
@@ -119,7 +124,7 @@ export const TrackList = ({
     ({ item, index }) =>
       renderDraggableTrack({
         item,
-        index,
+        getIndex: () => index,
         drag: noOp,
         isActive: false
       }) as ReactElement,

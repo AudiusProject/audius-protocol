@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import {
   createRemixOfMetadata,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
   remixSettingsActions,
   remixSettingsSelectors,
   Status,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
@@ -102,11 +102,11 @@ export const RemixSettingsScreen = () => {
     useField<RemixOfField>('remix_of')
   const [{ value: remixesVisible }, , { setValue: setRemixesVisible }] =
     useField<boolean>('field_visibility.remixes')
-  const [{ value: isPremium }] = useField<boolean>('is_premium')
-  const [{ value: premiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
-  const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
-  const isCollectibleGated = isPremiumContentCollectibleGated(premiumConditions)
+  const [{ value: isStreamGated }] = useField<boolean>('is_stream_gated')
+  const [{ value: streamConditions }] =
+    useField<Nullable<AccessConditions>>('stream_conditions')
+  const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
+  const isCollectibleGated = isContentCollectibleGated(streamConditions)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
@@ -121,17 +121,17 @@ export const RemixSettingsScreen = () => {
   const isInvalidParentTrack = parentTrackStatus === Status.ERROR
 
   useEffect(() => {
-    if (isPremium) {
+    if (isStreamGated) {
       setRemixOf(null)
     }
-    if (isPremium && !isUsdcGated) {
+    if (isStreamGated && !isUsdcGated) {
       setRemixesVisible(false)
     } else {
       setRemixesVisible(true)
     }
     // adding the useField setters cause infinite rendering
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPremium, isUsdcGated])
+  }, [isStreamGated, isUsdcGated])
 
   const handleFetchParentTrack = useMemo(
     () =>
@@ -202,10 +202,10 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(parentTrack)
+  const { hasStreamAccess } = useGatedContentAccess(parentTrack)
   const hasErrors = Boolean(
     isTrackRemix &&
-      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
+      (isInvalidParentTrack || isRemixUrlMissing || !hasStreamAccess)
   )
 
   return (
@@ -233,7 +233,7 @@ export const RemixSettingsScreen = () => {
     >
       <View>
         <View style={styles.setting}>
-          {isPremium ? (
+          {isStreamGated ? (
             <HelpCallout
               style={styles.changeAvailability}
               content={`${messages.changeAvailbilityPrefix} ${
@@ -250,7 +250,7 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={isTrackRemix}
               onValueChange={handleChangeIsRemix}
-              isDisabled={isPremium}
+              isDisabled={isStreamGated}
             />
           </View>
           {isTrackRemix ? (
@@ -272,7 +272,7 @@ export const RemixSettingsScreen = () => {
               {hasErrors ? (
                 <InputErrorMessage
                   message={
-                    !doesUserHaveAccess
+                    !hasStreamAccess
                       ? messages.remixAccessError
                       : isInvalidParentTrack
                       ? messages.invalidRemixUrl
@@ -290,7 +290,7 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
-              isDisabled={isPremium && !isUsdcGated}
+              isDisabled={isStreamGated && !isUsdcGated}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>

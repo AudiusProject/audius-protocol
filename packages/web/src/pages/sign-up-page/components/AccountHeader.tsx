@@ -2,10 +2,15 @@ import {
   Avatar,
   Box,
   Flex,
+  IconArrowLeft,
+  IconButton,
   IconCamera,
   IconVerified,
-  Text
+  PlainButton,
+  Text,
+  useTheme
 } from '@audius/harmony'
+import { useHistory } from 'react-router-dom'
 
 import {
   getHandleField,
@@ -20,10 +25,13 @@ import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
 
 type AccountHeaderProps = {
+  backButtonText?: string
   mode: 'editing' | 'viewing'
   size?: 'small' | 'large'
   formDisplayName?: string
   formProfileImage?: ImageFieldValue
+  onProfileImageChange?: (value: ImageFieldValue) => void
+  onCoverPhotoChange?: (value: ImageFieldValue) => void
 }
 
 const ProfileImageAvatar = ({
@@ -49,23 +57,40 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'pointer',
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >
       {isEditing && !imageUrl ? (
-        <IconCamera size='l' color='staticWhite' />
+        <IconButton
+          aria-label='test'
+          size='l'
+          color='staticWhite'
+          shadow='drop'
+          icon={IconCamera}
+        />
       ) : null}
     </Avatar>
   )
 }
 
 export const AccountHeader = (props: AccountHeaderProps) => {
-  const { mode, formDisplayName, formProfileImage, size } = props
+  const {
+    backButtonText,
+    mode,
+    formDisplayName,
+    formProfileImage,
+    onProfileImageChange,
+    onCoverPhotoChange,
+    size
+  } = props
   const { value: profileImage } = useSelector(getProfileImageField) ?? {}
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
   const isEditing = mode === 'editing'
+  const { spacing } = useTheme()
+  const history = useHistory()
 
   const displayName = formDisplayName ?? storedDisplayName
 
@@ -74,9 +99,31 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   return (
     <Box w='100%'>
+      {backButtonText ? (
+        <Box
+          css={{
+            position: 'absolute',
+            top: spacing.xl,
+            left: spacing.xl,
+            zIndex: 2
+          }}
+        >
+          <PlainButton
+            iconLeft={IconArrowLeft}
+            variant='inverted'
+            onClick={history.goBack}
+          >
+            {backButtonText}
+          </PlainButton>
+        </Box>
+      ) : null}
       <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
-          <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
+          <ImageField
+            onChange={onCoverPhotoChange}
+            name='coverPhoto'
+            imageResizeOptions={{ square: false }}
+          >
             {(uploadedImage) => (
               <CoverPhotoBanner
                 coverPhotoUrl={uploadedImage?.url}
@@ -110,7 +157,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         gap={isSmallSize ? 's' : 'xl'}
       >
         {isEditing ? (
-          <ImageField name='profileImage' css={{ flex: 0 }}>
+          <ImageField
+            onChange={onProfileImageChange}
+            name='profileImage'
+            css={{ flex: 0 }}
+          >
             {(uploadedImage) => (
               <ProfileImageAvatar
                 imageUrl={uploadedImage?.url ?? profileImage?.url}
@@ -148,8 +199,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
           </Text>
           <Flex gap='s' alignItems='center'>
             <Text
-              variant='body'
-              size={isSmallSize ? 's' : 'm'}
+              variant='title'
+              size={isSmallSize ? 'm' : 'l'}
               color='staticWhite'
               shadow='emphasis'
             >

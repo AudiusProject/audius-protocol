@@ -9,13 +9,7 @@ import {
   useWithdrawUSDCModal,
   useAddFundsModal
 } from '@audius/common'
-import {
-  Button,
-  ButtonType,
-  PlainButton,
-  IconQuestionCircle,
-  PlainButtonType
-} from '@audius/harmony'
+import { Button, PlainButton, IconQuestionCircle } from '@audius/harmony'
 import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 
@@ -104,7 +98,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
-            variant={PlainButtonType.INVERTED}
+            variant='inverted'
           >
             {messages.learnMore}
           </PlainButton>
@@ -112,20 +106,12 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
       </div>
       <div className={styles.withdrawContainer}>
         <div className={styles.addFundsButton}>
-          <Button
-            variant={ButtonType.SECONDARY}
-            fullWidth
-            onClick={handleAddFunds}
-          >
+          <Button variant='secondary' fullWidth onClick={handleAddFunds}>
             {messages.addFunds}
           </Button>
         </div>
         <div className={styles.withdrawButton}>
-          <Button
-            variant={ButtonType.SECONDARY}
-            fullWidth
-            onClick={handleWithdraw}
-          >
+          <Button variant='secondary' fullWidth onClick={handleWithdraw}>
             {messages.withdraw}
           </Button>
         </div>

@@ -3,7 +3,6 @@ import { useCallback, memo, MouseEvent } from 'react'
 import {
   ID,
   UID,
-  Name,
   Collection,
   CoverPhotoSizes,
   ProfilePictureSizes,
@@ -14,7 +13,9 @@ import {
   ProfilePageTabs,
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
-  useSelectTierInfo
+  useSelectTierInfo,
+  CreatePlaylistSource,
+  FeatureFlags
 } from '@audius/common'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
@@ -22,7 +23,6 @@ import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import IconReposts from 'assets/img/iconRepost.svg'
-import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/desktop/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -35,18 +35,13 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
+import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
-import {
-  collectionPage,
-  UPLOAD_PAGE,
-  UPLOAD_ALBUM_PAGE,
-  UPLOAD_PLAYLIST_PAGE,
-  profilePage
-} from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
@@ -134,7 +129,6 @@ export type ProfilePageProps = {
     tracks: number,
     isPrivate?: boolean
   ) => string
-  createPlaylist: () => void
   updateProfile: (metadata: any) => void
   updateProfilePicture: (
     selectedFiles: any,
@@ -177,7 +171,6 @@ const ProfilePage = ({
   formatCardSecondaryText,
   loadMoreUserFeed,
   loadMoreArtistTracks,
-  createPlaylist,
   updateProfile,
 
   onFollow,
@@ -247,22 +240,10 @@ const ProfilePage = ({
   setNotificationSubscription,
   didChangeTabsFrom
 }: ProfilePageProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const renderProfileCompletionCard = () => {
     return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
   }
-  const record = useRecord()
-  const onClickUploadAlbum = useCallback(() => {
-    goToRoute(UPLOAD_ALBUM_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
-  const onClickUploadPlaylist = useCallback(() => {
-    goToRoute(UPLOAD_PLAYLIST_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
-  const onClickUploadTrack = useCallback(() => {
-    goToRoute(UPLOAD_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
 
   const { tierNumber } = useSelectTierInfo(userId ?? 0)
   const profileHasCollectiblesTierRequirement =
@@ -329,14 +310,14 @@ const ProfilePage = ({
         }}
       />
     ))
-    if (isOwner) {
+    if (isOwner && isEditAlbumsEnabled) {
       albumCards.unshift(
         <UploadChip
           key='upload-chip'
           type='album'
           variant='card'
-          onClick={onClickUploadAlbum}
           isFirst={albumCards.length === 0}
+          source={CreatePlaylistSource.PROFILE_PAGE}
         />
       )
     }
@@ -389,9 +370,8 @@ const ProfilePage = ({
           key='upload-chip'
           type='playlist'
           variant='card'
-          onClick={onClickUploadPlaylist}
-          isArtist={isArtist}
           isFirst={playlistCards.length === 0}
+          source={CreatePlaylistSource.PROFILE_PAGE}
         />
       )
     }
@@ -401,7 +381,7 @@ const ProfilePage = ({
         key='upload-chip'
         type='track'
         variant='tile'
-        onClick={onClickUploadTrack}
+        source='profile'
       />
     ) : null
 
@@ -594,7 +574,7 @@ const ProfilePage = ({
       <UploadChip
         type='playlist'
         variant='card'
-        onClick={createPlaylist}
+        source={CreatePlaylistSource.PROFILE_PAGE}
         isFirst={playlistCards.length === 0}
       />
     )
@@ -753,7 +733,6 @@ const ProfilePage = ({
           onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
-          goToRoute={goToRoute}
         />
         <CoverPhoto
           userId={userId}

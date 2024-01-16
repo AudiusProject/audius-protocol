@@ -1349,9 +1349,6 @@ export const audiusBackend = ({
     trackIds: ID[] = [],
     isPrivate = true
   ) {
-    // Creating an album is automatically public.
-    if (isAlbum) isPrivate = false
-
     try {
       const web3 = await audiusLibs.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()
@@ -1594,9 +1591,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, otp?: string) {
     await waitForLibsInit()
-    return audiusLibs.Account.login(email, password)
+    return audiusLibs.Account.login(email, password, otp)
   }
 
   async function signOut() {

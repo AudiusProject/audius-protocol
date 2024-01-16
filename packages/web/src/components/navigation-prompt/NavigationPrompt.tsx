@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Location } from 'history'
@@ -85,14 +85,14 @@ export const NavigationPrompt = (props: Props) => {
             <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
               <Button
                 className={styles.button}
-                variant={ButtonType.SECONDARY}
+                variant='secondary'
                 onClick={closeModal}
               >
                 {messages.cancel}
               </Button>
               <Button
                 className={styles.button}
-                variant={ButtonType.DESTRUCTIVE}
+                variant='destructive'
                 onClick={handleConfirmNavigationClick}
               >
                 {messages.proceed}

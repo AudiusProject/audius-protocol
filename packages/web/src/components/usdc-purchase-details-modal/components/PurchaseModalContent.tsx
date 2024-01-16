@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import { makeSolanaTransactionLink, useGetTrackById } from '@audius/common'
 import {
   Button,
-  ButtonType,
   Flex,
   IconArrowRight,
-  IconExternalLink
+  IconExternalLink,
+  TextLink
 } from '@audius/harmony'
 import {
   ModalHeader,
@@ -18,7 +18,6 @@ import {
 import moment from 'moment'
 
 import { Icon } from 'components/Icon'
-import { ExternalLink } from 'components/link'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -83,15 +82,17 @@ export const PurchaseModalContent = ({
         </DetailSection>
         <DetailSection
           label={
-            <ExternalLink
-              variant='inherit'
-              to={makeSolanaTransactionLink(purchaseDetails.signature)}
+            <TextLink
+              variant='subdued'
+              href={makeSolanaTransactionLink(purchaseDetails.signature)}
+              isExternal
+              applyHoverStylesToInnerSvg
             >
               <Flex gap='xs'>
                 {messages.transaction}
                 <IconExternalLink size='s' color='subdued' />
               </Flex>
-            </ExternalLink>
+            </TextLink>
           }
         />
         <TransactionSummary transaction={purchaseDetails} />
@@ -99,7 +100,7 @@ export const PurchaseModalContent = ({
       <ModalFooter className={styles.footer}>
         <Button
           className={styles.button}
-          variant={ButtonType.SECONDARY}
+          variant='secondary'
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
         >

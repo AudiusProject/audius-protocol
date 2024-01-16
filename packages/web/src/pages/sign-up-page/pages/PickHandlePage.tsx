@@ -1,7 +1,6 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useRef } from 'react'
 
 import {
-  useAudiusQueryContext,
   socialMediaMessages,
   pickHandlePageMessages as messages,
   pickHandleSchema
@@ -11,6 +10,7 @@ import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import {
   setValueField,
   unsetSocialProfile
@@ -51,11 +51,12 @@ type SocialMediaSectionProps = {
   onError: () => void
 }
 
-const SocialMediaSection = ({
-  onCompleteSocialMediaLogin,
-  onStart,
-  onError
-}: SocialMediaSectionProps) => {
+const PickHandleValidationSchema = toFormikValidationSchema(
+  pickHandleSchema({ audiusQueryContext, restrictedHandles })
+)
+
+const SocialMediaSection = (props: SocialMediaSectionProps) => {
+  const { onCompleteSocialMediaLogin, onStart, onError } = props
   const { isMobile } = useMedia()
 
   return (
@@ -92,7 +93,6 @@ const SocialMediaSection = ({
 
 export const PickHandlePage = () => {
   const { isMobile } = useMedia()
-
   const dispatch = useDispatch()
 
   const alreadyLinkedSocial = useSelector(getIsSocialConnected)
@@ -107,15 +107,10 @@ export const PickHandlePage = () => {
 
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
-  const audiusQueryContext = useAudiusQueryContext()
-  const validationSchema = useMemo(() => {
-    return toFormikValidationSchema(
-      pickHandleSchema({ audiusQueryContext, restrictedHandles })
-    )
-  }, [audiusQueryContext])
 
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
+  const handleInputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
@@ -158,50 +153,53 @@ export const PickHandlePage = () => {
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={validationSchema}
+      validationSchema={PickHandleValidationSchema}
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      <Page as={Form} centered={!isMobile} transitionBack='vertical'>
-        {isWaitingForSocialLogin ? (
-          <SocialMediaLoading />
-        ) : (
-          <>
-            <Heading
-              prefix={
-                isMobile ? null : <OutOfText numerator={1} denominator={2} />
-              }
-              heading={messages.title}
-              description={messages.description}
-              centered={!isMobile}
+      {isWaitingForSocialLogin ? (
+        <SocialMediaLoading />
+      ) : (
+        <Page
+          as={Form}
+          centered={!isMobile}
+          transitionBack='vertical'
+          autoFocusInputRef={handleInputRef}
+        >
+          <Heading
+            prefix={
+              isMobile ? null : <OutOfText numerator={1} denominator={2} />
+            }
+            heading={messages.title}
+            description={messages.description}
+            centered={!isMobile}
+          />
+          <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+            <HandleField
+              ref={handleInputRef}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onStartSocialMediaLogin={handleStartSocialMediaLogin}
+              onErrorSocialMediaLogin={handleErrorSocialMediaLogin}
             />
-            <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
-              <HandleField
-                autoFocus
-                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-                onStartSocialMediaLogin={handleStartSocialMediaLogin}
-                onErrorSocialMediaLogin={handleErrorSocialMediaLogin}
-              />
-              <Divider>
-                <Text
-                  variant='body'
-                  color='subdued'
-                  size='s'
-                  css={{ textTransform: 'uppercase' }}
-                >
-                  {messages.or}
-                </Text>
-              </Divider>
-              <SocialMediaSection
-                onStart={handleStartSocialMediaLogin}
-                onError={handleErrorSocialMediaLogin}
-                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-              />
-            </Flex>
-            <PageFooter centered />
-          </>
-        )}
-      </Page>
+            <Divider>
+              <Text
+                variant='body'
+                color='subdued'
+                size='s'
+                css={{ textTransform: 'uppercase' }}
+              >
+                {messages.or}
+              </Text>
+            </Divider>
+            <SocialMediaSection
+              onStart={handleStartSocialMediaLogin}
+              onError={handleErrorSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+            />
+          </Flex>
+          <PageFooter centered />
+        </Page>
+      )}
     </Formik>
   )
 }

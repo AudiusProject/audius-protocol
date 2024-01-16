@@ -110,7 +110,9 @@ export const PaymentMethod = ({
       icon: IconCreditCard,
       content:
         vendorOptions.length > 1 ? (
-          <CardSelectionButton selectedVendor={purchaseVendor} />
+          <CardSelectionButton
+            selectedVendor={purchaseVendor ?? vendorOptions[0]}
+          />
         ) : null
     },
     {

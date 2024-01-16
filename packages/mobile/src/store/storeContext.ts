@@ -51,7 +51,7 @@ export const storeContext: CommonStoreContext = {
   instagramAppId: Config.INSTAGRAM_APP_ID,
   instagramRedirectUrl: Config.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
-  openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL),
+  openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL!),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

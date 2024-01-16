@@ -89,7 +89,7 @@ describe('Create Notification', () => {
       {
         track_id: 10,
         owner_id: 1,
-        premium_conditions: {
+        stream_conditions: {
           usdc_purchase: {
             price: 100,
             splits: {

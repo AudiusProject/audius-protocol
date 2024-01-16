@@ -175,6 +175,7 @@ export enum Name {
   LISTEN_GATED = 'Listen: Gated',
 
   // Unlocked Gated Tracks
+  USDC_PURCHASE_GATED_TRACK_UNLOCKED = 'USDC Gated: Track Unlocked',
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
@@ -425,7 +426,12 @@ export enum Name {
 
   // Jupiter
   JUPITER_QUOTE_REQUEST = 'Jupiter: Quote Request',
-  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response'
+  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response',
+
+  // Repair Signups
+  SIGN_UP_REPAIR_START = 'Sign Up Repair: Start',
+  SIGN_UP_REPAIR_SUCCESS = 'Sign Up Repair: Success',
+  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure'
 }
 
 type PageView = {
@@ -465,22 +471,28 @@ type CreateAccountCompleteTwitter = {
 }
 type CreateAccountStartInstagram = {
   eventName: Name.CREATE_ACCOUNT_START_INSTAGRAM
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartTikTok = {
   eventName: Name.CREATE_ACCOUNT_START_TIKTOK
-  emailAddress: string
+  emailAddress?: string
 }
-type CreateAccountCompleteTikTok = {
-  eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
-  emailAddress: string
-}
+type CreateAccountCompleteTikTok =
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      emailAddress: string
+    }
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      isVerified: boolean
+      handle: string
+    }
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
   emailAddress: string
@@ -833,7 +845,7 @@ type EmbedCopy = {
 // Track Upload
 type TrackUploadOpen = {
   eventName: Name.TRACK_UPLOAD_OPEN
-  source: 'nav' | 'profile' | 'signup'
+  source: 'nav' | 'profile' | 'signup' | 'library'
 }
 type TrackUploadStartUploading = {
   eventName: Name.TRACK_UPLOAD_START_UPLOADING
@@ -929,6 +941,11 @@ type TrackEditAccessChanged = {
 }
 
 // Unlocked Gated Tracks
+type USDCGatedTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+  count: number
+}
+
 type CollectibleGatedTrackUnlocked = {
   eventName: Name.COLLECTIBLE_GATED_TRACK_UNLOCKED
   count: number
@@ -2095,6 +2112,7 @@ export type AllTrackingEvents =
   | TrackUploadShareWithFans
   | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
+  | USDCGatedTrackUnlocked
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked

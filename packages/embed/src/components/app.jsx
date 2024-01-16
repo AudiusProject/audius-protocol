@@ -436,8 +436,8 @@ const App = (props) => {
     const artworkClickURL =
       tracksResponse?.permalink || collectionsResponse?.permalink
         ? stripLeadingSlash(
-            tracksResponse?.permalink || collectionsResponse?.permalink
-          )
+          tracksResponse?.permalink || collectionsResponse?.permalink
+        )
         : null
     const listenOnAudiusURL = artworkClickURL
     const flavor = requestState.playerFlavor
@@ -448,7 +448,7 @@ const App = (props) => {
         listenOnAudiusURL={listenOnAudiusURL}
         flavor={flavor}
         isMobileWebTwitter={mobileWebTwitter}
-        premiumConditions={tracksResponse?.premiumConditions}
+        streamConditions={tracksResponse?.streamConditions}
       />
     )
   }

@@ -28,7 +28,8 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
+import { albumPage, profilePage } from 'utils/route'
+import { trpc } from 'utils/trpcClientWeb'
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
@@ -53,6 +54,7 @@ const messages = {
   unreposted: 'Un-Reposted!',
   unsetArtistPick: 'Unset as Artist Pick',
   visitArtistPage: 'Visit Artist Page',
+  visitAlbumPage: 'Visit Album Page',
   visitTrackPage: 'Visit Track Page',
   visitEpisodePage: 'Visit Episode Page',
   markAsPlayed: 'Mark as Played',
@@ -73,6 +75,7 @@ export type OwnProps = {
   includeFavorite?: boolean
   includeRepost?: boolean
   includeShare?: boolean
+  includeAlbumPage?: boolean
   includeTrackPage?: boolean
   isArtistPick?: boolean
   isDeleted?: boolean
@@ -120,6 +123,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeFavorite,
       includeRepost,
       includeShare,
+      includeAlbumPage,
       includeTrackPage,
       isArtistPick,
       isDeleted,
@@ -143,6 +147,10 @@ const TrackMenu = (props: TrackMenuProps) => {
       unsetArtistPick
     } = props
 
+    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+      { trackId },
+      { enabled: !!trackId }
+    )
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
@@ -229,11 +237,14 @@ const TrackMenu = (props: TrackMenuProps) => {
       }
     }
 
-    // TODO: Add back go to album when we have better album linking.
-    // const albumPageMenuItem = {
-    //   text: 'Visit Album Page',
-    //   onClick: () => goToRoute(albumPage(handle, albumName, albumId))
-    // }
+    const albumPageMenuItem = {
+      text: messages.visitAlbumPage,
+      onClick: () =>
+        albumInfo &&
+        goToRoute(
+          albumPage(handle, albumInfo?.playlist_name, albumInfo?.playlist_id)
+        )
+    }
 
     const artistPageMenuItem = {
       text: messages.visitArtistPage,
@@ -288,10 +299,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)
     }
-    // TODO: Add back go to album when we have better album linking.
-    // if (albumId && albumName) {
-    //   menu.items.push(albumPageMenuItem)
-    // }
+    if (albumInfo && includeAlbumPage && isEditAlbumsEnabled) {
+      menu.items.push(albumPageMenuItem)
+    }
     if (handle && !isOwnerDeactivated) {
       menu.items.push(artistPageMenuItem)
     }
@@ -358,6 +368,7 @@ TrackMenu.defaultProps = {
   includeEdit: true,
   includeEmbed: true,
   includeFavorite: true,
+  includeAlbumPage: true,
   includeTrackPage: true,
   includeAddToAlbum: true,
   includeAddToPlaylist: true,

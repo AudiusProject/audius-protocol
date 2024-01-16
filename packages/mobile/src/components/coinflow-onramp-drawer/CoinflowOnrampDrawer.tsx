@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
+import { getCoinflowDeviceId } from 'app/services/coinflow'
 import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -45,7 +46,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-const { transactionSucceeded } = coinflowModalUIActions
+const { transactionCanceled, transactionSucceeded } = coinflowModalUIActions
 
 const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
   const styles = useStyles()
@@ -65,7 +66,7 @@ const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
 
 export const CoinflowOnrampDrawer = () => {
   const {
-    data: { amount, serializedTransaction },
+    data: { amount, serializedTransaction, purchaseMetadata },
     isOpen,
     onClose
   } = useCoinflowOnrampModal()
@@ -73,6 +74,8 @@ export const CoinflowOnrampDrawer = () => {
   const [transaction, setTransaction] = useState<Transaction | undefined>(
     undefined
   )
+
+  const deviceId = getCoinflowDeviceId()
 
   const adapter = useCoinflowAdapter()
 
@@ -94,6 +97,11 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const handleClose = useCallback(() => {
+    dispatch(transactionCanceled({}))
+    onClose()
+  }, [dispatch, onClose])
+
   const showContent = isOpen && adapter
 
   return (
@@ -104,12 +112,14 @@ export const CoinflowOnrampDrawer = () => {
       modalName={MODAL_NAME}
       isGestureSupported={false}
       isFullscreen
-      onClose={onClose}
+      onClose={handleClose}
     >
       {showContent ? (
         <CoinflowPurchase
+          deviceId={deviceId}
           transaction={transaction}
           wallet={adapter.wallet}
+          chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           onSuccess={handleSuccess}
           merchantId={env.COINFLOW_MERCHANT_ID || ''}

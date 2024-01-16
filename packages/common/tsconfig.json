@@ -34,6 +34,7 @@
     "noImplicitAny": true,
     "strict": true,
     "downlevelIteration": true,
+    "ignoreDeprecations": "5.0",
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

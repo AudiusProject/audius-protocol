@@ -76,6 +76,11 @@ premium_content_signature = ns.model(
     {"data": fields.String, "signature": fields.String},
 )
 
+access = ns.model(
+    "access",
+    {"stream": fields.Boolean, "download": fields.Boolean},
+)
+
 track = ns.model(
     "Track",
     {
@@ -83,8 +88,17 @@ track = ns.model(
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
-        "track_cid": fields.String(allow_null=True),
+        "track_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
         "preview_cid": fields.String(allow_null=True),
+        "orig_file_cid": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
+        "orig_filename": fields.String(
+            allow_null=True
+        ),  # remove nullability after backfill
+        "is_original_available": fields.Boolean,
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -97,7 +111,8 @@ track = ns.model(
         "duration": fields.Integer(required=True),
         # Whether or not the track is downloadable, see `download`
         # on `track_full` for more details
-        "downloadable": fields.Boolean,
+        "is_downloadable": fields.Boolean,
+        "downloadable": fields.Boolean,  # todo: remove since we have 'is_downloadable' now
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,
@@ -126,6 +141,7 @@ track_full = ns.clone(
         "field_visibility": fields.Nested(field_visibility),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),
         "has_current_user_reposted": fields.Boolean(required=True),
+        "is_scheduled_release": fields.Boolean,
         "is_unlisted": fields.Boolean(required=True),
         "has_current_user_saved": fields.Boolean(required=True),
         "followee_favorites": fields.List(fields.Nested(favorite), required=True),
@@ -139,11 +155,19 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "is_premium": fields.Boolean,
-        "premium_conditions": fields.Raw(allow_null=True),
+        # the following "premium" fields are deprecated and will be removed in the future
+        "is_premium": fields.Boolean(attribute="is_stream_gated"),
+        "premium_conditions": fields.Raw(
+            attribute="stream_conditions", allow_null=True
+        ),
         "premium_content_signature": fields.Nested(
             premium_content_signature, allow_null=True
         ),
+        "is_stream_gated": fields.Boolean,
+        "stream_conditions": fields.Raw(allow_null=True),
+        "is_download_gated": fields.Boolean,
+        "download_conditions": fields.Raw(allow_null=True),
+        "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,

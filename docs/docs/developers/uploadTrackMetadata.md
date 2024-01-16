@@ -22,8 +22,10 @@ Contains required and optional fields for uploading a track.
   tags?: string; // Comma separated list of tags
   remixOf?: { tracks: Array<{ parentTrackId: string }> }; // For specifying the track(s) that your track is a remix of
   aiAttributionUserId?: string; // Audius user ID of the artist whom your AI-generated track was trained on. Note: Only artists who have opted into AI attribution can be used.
-  isPremium?: boolean; // Whether your track is only available to users who meet certain criteria, which must be specified by `premiumConditions`.
-  premiumConditions?: PremiumConditions; // See "Specifying Premium Conditions" section below
+  isStreamGated?: boolean; // Whether streaming your track is only available to users who meet certain criteria, which must be specified by `streamConditions`.
+  streamConditions?: AccessConditions; // See "Specifying Stream Conditions" section below
+  isDownloadGated?: boolean; // Whether downloading your track is only available to users who meet certain criteria, which must be specified by `downloadConditions`. Note that stream gated tracks are automatically download gated, whereas the reverse is not true.
+  downloadConditions?: AccessConditions;
   isUnlisted?: boolean; // If set to true, only users with a link to your track will be able to listen, and your track will not show up in your profile or in any feed. Defaults to false.
   fieldVisibility?: {
     mood?: boolean;
@@ -65,9 +67,19 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
     tags: "plantlife,love,monstera",
     remixOf: { tracks: [{ parentTrackId: "KVx2xpO" }] },
     aiAttributionUserId: "3aE1p",
-    isPremium: true,
-    premiumConditions: {
-      tipUserId: "7eP5n", // Require tipping user to unlock track
+    isStreamGated: true,
+    streamConditions: {
+      tipUserId: "7eP5n", // Require tipping user to unlock track for streaming
+    },
+    isDownloadGated: true,
+    downloadConditions: {
+      usdcPurchase: { // Require usdc purchase to unlock track for download
+        price: 1,
+        splits: {
+          // usdc user bank and usdc amount padded with correct number of decimals
+          'FwtT6g2tmwbgY6gf4NWBhupJBqJjgkaHRzCJpA1YHrL2': 10000
+        }
+      }
     },
     isUnlisted: true,
     fieldVisibility: {
@@ -89,9 +101,9 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 });
 ```
 
-## Specifying Premium Conditions
+## Specifying Stream Conditions
 
-Use the `PremiumConditions` field to specify the criteria required to unlock a track.
+Use the `AccessConditions` field to specify the criteria required to unlock a track.
 
 ### Tip-gated
 
@@ -104,8 +116,8 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
   // ...
   metadata: {
     // ...
-    isPremium: true,
-    premiumConditions: {
+    isStreamGated: true,
+    streamConditions: {
       tipUserId: "7eP5n", // Require tipping user with user ID "7eP5n" to unlock track
     },
   },
@@ -123,8 +135,8 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
   // ...
   metadata: {
     // ...
-    isPremium: true,
-    premiumConditions: {
+    isStreamGated: true,
+    streamConditions: {
       followUserId: "7eP5n", // Require following user with user ID "7eP5n" to unlock track
     },
   },
@@ -142,8 +154,8 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
   // ...
   metadata: {
     // ...
-    isPremium: true,
-    premiumConditions: {
+    isStreamGated: true,
+    streamConditions: {
       chain: "eth",
       address: "0xAbCdEfGhIjKlMnOpQrStUvWxYz", // The Ethereum address of the NFT contract
       standard: "ERC-721", // The standard followed by the NFT - either "ERC-721" or "ERC-1155"
@@ -163,8 +175,8 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
   // ...
   metadata: {
     // ...
-    isPremium: true,
-    premiumConditions: {
+    isStreamGated: true,
+    streamConditions: {
       chain: "sol",
       address: "ABCDEF1234567890", // The address of the NFT on the Solana blockchain
       name: "Example NFT", // The name of the NFT

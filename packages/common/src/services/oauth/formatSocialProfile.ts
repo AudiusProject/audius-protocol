@@ -186,3 +186,5 @@ export const formatTikTokProfile = async (
     handleTooLong
   }
 }
+
+export type TikTokProfileData = Awaited<ReturnType<typeof formatTikTokProfile>>

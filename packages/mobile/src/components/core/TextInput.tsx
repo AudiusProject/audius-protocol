@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback } from 'react'
+import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -119,6 +119,7 @@ export type TextInputProps = RNTextInputProps & {
   iconProp?: Pick<SvgProps, 'fill' | 'width' | 'height'>
   hideInputAccessory?: boolean
   hideKeyboard?: boolean
+  error?: boolean
 }
 
 export type TextInputRef = RNTextInput
@@ -149,16 +150,18 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       placeholder,
       hideInputAccessory: hideInputAccessoryProp,
       autoCorrect = false,
+      error,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
     const styles = useStyles()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
-    const isLabelActive = isFocused || value || startAdornment
+    const isLabelActive = isFocused || !!value || !!startAdornment
     const labelY = useRef(
       new Animated.Value(isLabelActive ? activeLabelY : inactiveLabelY)
     )
+
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
     const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
     const iconProps = { ...styles.icon, ...iconProp }
@@ -166,6 +169,24 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const hideInputAccessory =
       (hideInputAccessoryProp ?? returnKeyType === 'search') ||
       Platform.OS === 'android'
+
+    // Trigger label animation on mount if value is prefilled
+    useEffect(() => {
+      if (isLabelActive) {
+        const labelYAnimation = Animated.spring(labelY.current, {
+          toValue: activeLabelY,
+          useNativeDriver: true
+        })
+
+        const labelFontSizeAnimation = Animated.spring(labelAnimation.current, {
+          toValue: 16,
+          useNativeDriver: false
+        })
+
+        const animations = [labelYAnimation, labelFontSizeAnimation]
+        Animated.parallel(animations).start()
+      }
+    }, [isLabelActive])
 
     const handleFocus = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
@@ -209,7 +230,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         Animated.parallel(animations).start()
       },
-      [onFocus, isLabelActive]
+      [onFocus, isLabelActive, hideKeyboard]
     )
 
     const handleBlur = useCallback(
@@ -263,7 +284,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       onClear?.()
     }, [onClear])
 
-    const { neutral, neutralLight4, secondary, neutralLight7 } =
+    const { neutral, neutralLight4, secondary, neutralLight7, accentRed } =
       useThemeColors()
 
     const themeVariant = useThemeVariant()
@@ -277,13 +298,15 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             style,
             stylesProp?.root,
             {
-              borderColor: borderFocusAnimation.current.interpolate({
-                inputRange: [0, 1],
-                outputRange: [
-                  convertHexToRGBA(neutralLight7),
-                  convertHexToRGBA(secondary)
-                ]
-              })
+              borderColor: error
+                ? accentRed
+                : borderFocusAnimation.current.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [
+                      convertHexToRGBA(neutralLight7),
+                      convertHexToRGBA(secondary)
+                    ]
+                  })
             }
           ]}
         >

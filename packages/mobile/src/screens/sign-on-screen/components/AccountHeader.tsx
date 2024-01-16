@@ -6,19 +6,26 @@ import {
   getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
-import type { ImageURISource } from 'react-native'
+import { isEmpty } from 'lodash'
+import { Pressable, type ImageURISource } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
   Avatar,
   Flex,
   CoverPhoto as HarmonyCoverPhoto,
+  IconButton,
   IconCamera,
   IconImage,
   IconVerified,
   Text,
   useTheme
 } from '@audius/harmony-native'
+
+const messages = {
+  selectCoverPhoto: 'Select Cover Photo',
+  selectProfilePicture: 'Select Profile Picture'
+}
 
 type AccountHeaderProps = {
   onSelectCoverPhoto?: () => void
@@ -86,9 +93,13 @@ export const ReadOnlyAccountHeader = () => {
   return (
     <AccountHeader
       handle={handle}
-      coverPhoto={coverPhoto as ImageURISource}
+      coverPhoto={
+        isEmpty(coverPhoto) ? undefined : (coverPhoto as ImageURISource)
+      }
       displayName={displayName}
-      profilePicture={profileImage as ImageURISource}
+      profilePicture={
+        isEmpty(profileImage) ? undefined : (profileImage as ImageURISource)
+      }
       isVerified={isVerified}
     />
   )
@@ -111,11 +122,35 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
       {onSelectCoverPhoto ? (
-        <IconImage
-          style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
-          color='staticWhite'
+        <Pressable
+          // we want the pressable surface larger than just the icon
+          hitSlop={{
+            bottom: spacing.unit10,
+            left: spacing.unit7,
+            right: 0,
+            top: 0
+          }}
           onPress={onSelectCoverPhoto}
-        />
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            display: 'flex'
+          }}
+        >
+          <IconButton
+            accessibilityLabel={messages.selectCoverPhoto}
+            style={{
+              paddingTop: spacing.m,
+              paddingRight: spacing.m,
+              borderRadius: 0
+            }}
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectCoverPhoto}
+            icon={IconImage}
+          />
+        </Pressable>
       ) : null}
     </HarmonyCoverPhoto>
   )
@@ -141,20 +176,25 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const { profilePicture, onSelectProfilePicture } = props
 
   return (
-    <Avatar
-      accessibilityLabel='Profile Picture'
-      size='xl'
-      variant='strong'
-      source={profilePicture ?? { uri: undefined }}
-    >
-      {onSelectProfilePicture ? (
-        <IconCamera
-          size='2xl'
-          color='staticWhite'
-          onPress={onSelectProfilePicture}
-        />
-      ) : null}
-    </Avatar>
+    <Pressable onPress={onSelectProfilePicture}>
+      <Avatar
+        accessibilityLabel='Profile Picture'
+        size='xl'
+        variant='strong'
+        source={profilePicture ?? { uri: undefined }}
+      >
+        {onSelectProfilePicture && !profilePicture ? (
+          <IconButton
+            accessibilityLabel={messages.selectProfilePicture}
+            icon={IconCamera}
+            size='2xl'
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectProfilePicture}
+          />
+        ) : null}
+      </Avatar>
+    </Pressable>
   )
 }
 

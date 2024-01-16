@@ -1,19 +1,27 @@
 import { useCallback } from 'react'
 
-import { signInPageMessages as messages } from '@audius/common'
+import { signInPageMessages as messages, signInSchema } from '@audius/common'
+import {
+  getEmailField,
+  getStatus
+} from 'audius-client/src/common/store/pages/signon/selectors'
 import { signIn } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex, Text } from '@audius/harmony-native'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button } from 'app/components/core'
-import { TextField } from 'app/components/fields'
+import { PasswordField } from 'app/components/fields'
 
+import { EmailField } from '../components/EmailField'
 import { Heading } from '../components/layout'
 
 import type { SignOnScreenProps } from './types'
+
+const signinFormikSchema = toFormikValidationSchema(signInSchema)
 
 type SignInValues = {
   email: string
@@ -21,11 +29,12 @@ type SignInValues = {
 }
 
 export const SignInScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail } = props
   const dispatch = useDispatch()
+  const { value: existingEmailValue } = useSelector(getEmailField)
+  const signInStatus = useSelector(getStatus)
 
   const initialValues = {
-    email,
+    email: existingEmailValue ?? '',
     password: ''
   }
 
@@ -38,17 +47,17 @@ export const SignInScreen = (props: SignOnScreenProps) => {
   )
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={signinFormikSchema}
+      onSubmit={handleSubmit}
+    >
       {({ handleSubmit }) => (
         <>
           <Heading heading={messages.title} centered />
           <View>
-            <TextField
-              name='email'
-              label={messages.emailLabel}
-              onChangeText={onChangeEmail}
-            />
-            <TextField name='password' label={messages.passwordLabel} />
+            <EmailField name='email' label={messages.emailLabel} />
+            <PasswordField name='password' label={messages.passwordLabel} />
           </View>
           <Flex gap='l'>
             <Button
@@ -56,6 +65,7 @@ export const SignInScreen = (props: SignOnScreenProps) => {
               fullWidth
               title={messages.signIn}
               icon={IconArrow}
+              disabled={signInStatus === 'loading'}
               onPress={() => handleSubmit()}
             />
             <Text color='accent' textAlign='center'>

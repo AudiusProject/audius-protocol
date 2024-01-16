@@ -10,7 +10,9 @@ test('search user', async () => {
 
   {
     const userIds = await caller.search.users({ q: 'dave' })
-    expect(userIds).toEqual(['102', '103'])
+    expect(userIds).length(2)
+    expect(userIds).toContain('102')
+    expect(userIds).toContain('103')
   }
 
   {
@@ -34,3 +36,10 @@ test('search tracks', async () => {
     expect(trackIds).toEqual(['201'])
   }
 })
+
+// test('you can query for playlists that contain a track id', async () => {
+//   const caller = await testRouter()
+
+//   const playlistIds = await caller.tracks.getAlbumBacklink({ trackId: 101 })
+//   expect(playlistIds?.playlist_id).toEqual(['301'])
+// })

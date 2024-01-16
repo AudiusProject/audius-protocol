@@ -501,7 +501,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
-    redis_inst.delete("publish_scheduled_releases")
+    redis_inst.delete("publish_scheduled_releases_lock")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 

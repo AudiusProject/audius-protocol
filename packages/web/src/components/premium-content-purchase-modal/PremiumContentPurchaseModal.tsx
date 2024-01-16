@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
-  isTrackPurchasable,
+  isTrackPurchaseable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
@@ -74,12 +74,12 @@ const RenderForm = ({
   track
 }: {
   onClose: () => void
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
 }) => {
   const dispatch = useDispatch()
   const {
     permalink,
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     }
   } = track
@@ -106,7 +106,7 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm>
+    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: mobile })}>
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
         onClose={onClose}
@@ -189,9 +189,9 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidTrack = track && isTrackPurchasable(track)
+  const isValidTrack = track && isTrackPurchaseable(track)
   const price = isValidTrack
-    ? track?.premium_conditions?.usdc_purchase?.price
+    ? track?.stream_conditions?.usdc_purchase?.price
     : 0
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
@@ -210,10 +210,10 @@ export const PremiumContentPurchaseModal = () => {
 
   const handleClose = useCallback(() => {
     // Don't allow closing if we're in the middle of a purchase
-    if (!isUnlocking) {
+    if (!isUnlocking || stage === PurchaseContentStage.START) {
       onClose()
     }
-  }, [isUnlocking, onClose])
+  }, [isUnlocking, stage, onClose])
 
   const handleClosed = useCallback(() => {
     onClosed()

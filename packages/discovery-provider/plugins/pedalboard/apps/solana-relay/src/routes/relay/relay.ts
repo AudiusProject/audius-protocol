@@ -1,9 +1,5 @@
 import {
-  BaseTransactionConfirmationStrategy,
-  BlockhashWithExpiryBlockHeight,
-  Commitment,
   Connection,
-  DurableNonceTransactionConfirmationStrategy,
   PublicKey,
   TransactionMessage,
   VersionedTransaction
@@ -17,22 +13,7 @@ import fetch from 'cross-fetch'
 import { Logger } from 'pino'
 import base58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
-type Prettify<T> = {
-  [K in keyof T]: T[K]
-} & {}
-type RequestBody = {
-  transaction: string
-  confirmationOptions?: {
-    strategy?: Prettify<
-      | Omit<
-          DurableNonceTransactionConfirmationStrategy,
-          keyof BaseTransactionConfirmationStrategy
-        >
-      | BlockhashWithExpiryBlockHeight
-    >
-    commitment?: Commitment
-  }
-}
+import type { RelayRequestBody } from '@audius/sdk'
 
 const connection = new Connection(config.solanaEndpoint)
 
@@ -89,12 +70,16 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
 }
 
 export const relay = async (
-  req: Request<unknown, unknown, RequestBody>,
+  req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { transaction: encodedTransaction, confirmationOptions } = req.body
+    const {
+      transaction: encodedTransaction,
+      confirmationOptions,
+      sendOptions
+    } = req.body
     const { strategy, commitment } = confirmationOptions ?? {}
     const confirmationStrategy =
       strategy ?? (await connection.getLatestBlockhash())
@@ -121,7 +106,10 @@ export const relay = async (
     logger.info('Sending transaction...')
     const serializedTx = transaction.serialize()
 
-    const signature = await connection.sendRawTransaction(serializedTx)
+    const signature = await connection.sendRawTransaction(
+      serializedTx,
+      sendOptions
+    )
     if (commitment) {
       logger.info(`Waiting for transaction to be ${commitment}...`)
       await connection.confirmTransaction(

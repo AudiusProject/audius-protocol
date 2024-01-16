@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 
 import {
-  isPremiumContentFollowGated,
+  isContentFollowGated,
   type FieldVisibility,
   type Nullable,
-  type PremiumConditions,
-  isPremiumContentTipGated,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated
+  type AccessConditions,
+  isContentTipGated,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { useField } from 'formik'
 
@@ -45,9 +45,13 @@ const fieldVisibilityKeys = Object.keys(fieldVisibilityLabelMap)
 type AccessAndSaleFieldProps = Partial<ContextualMenuProps>
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const [{ value: premiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: streamConditions }] =
+    useField<Nullable<AccessConditions>>('stream_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }] = useField<boolean>(
+    'is_scheduled_release'
+  )
+
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')
 
@@ -56,24 +60,24 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     .map((visibilityKey) => fieldVisibilityLabelMap[visibilityKey])
 
   const trackAvailabilityLabels = useMemo(() => {
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
-      const amountLabel = `$${premiumConditions.usdc_purchase.price}`
+    if (isContentUSDCPurchaseGated(streamConditions)) {
+      const amountLabel = `$${streamConditions.usdc_purchase.price}`
       return [messages.premium, amountLabel]
     }
-    if (isPremiumContentCollectibleGated(premiumConditions)) {
+    if (isContentCollectibleGated(streamConditions)) {
       return [messages.collectibleGated]
     }
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isContentFollowGated(streamConditions)) {
       return [messages.specialAccess, messages.followersOnly]
     }
-    if (isPremiumContentTipGated(premiumConditions)) {
+    if (isContentTipGated(streamConditions)) {
       return [messages.specialAccess, messages.supportersOnly]
     }
-    if (isUnlisted) {
+    if (isUnlisted && !isScheduledRelease) {
       return [messages.hidden, ...fieldVisibilityLabels]
     }
     return [messages.public]
-  }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
+  }, [streamConditions, isUnlisted, fieldVisibilityLabels, isScheduledRelease])
 
   return (
     <ContextualMenu

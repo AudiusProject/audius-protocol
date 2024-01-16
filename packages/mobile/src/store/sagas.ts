@@ -3,11 +3,12 @@ import {
   chatSagas,
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
@@ -45,9 +46,9 @@ import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import trendingPageSagas from 'common/store/pages/trending/sagas'
 import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
-import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
@@ -128,7 +129,7 @@ export default function* rootSaga() {
     ...solanaSagas(),
 
     // Premium content
-    ...premiumContentSagas(),
+    ...gatedContentSagas(),
     ...purchaseContentSagas(),
     ...buyCryptoSagas(),
     ...buyUSDCSagas(),
@@ -196,6 +197,7 @@ export default function* rootSaga() {
     ...reachabilitySagas(),
     ...searchSagas(),
     ...publishPlaylistConfirmationModalSagas(),
+    ...publishTrackConfirmationModalSagas(),
     ...toastSagas(),
 
     initKeyboardEvents,
