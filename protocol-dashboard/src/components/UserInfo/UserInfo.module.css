@@ -85,6 +85,7 @@
 
 .userName {
   display: flex;
+  align-items: center;
   gap: var(--unit-1);
   font-size: var(--font-m);
   min-height: var(--font-m);

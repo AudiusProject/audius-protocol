@@ -20,11 +20,12 @@
 }
 
 .appBarContainer {
+  max-width: 992px;
   display: inline-flex;
   width: 100%;
   justify-content: center;
   align-items: center;
-  padding: 60px 28px 48px;
+  padding: 60px 0px 48px;
   margin: 0px auto;
   box-sizing: border-box;
 }
