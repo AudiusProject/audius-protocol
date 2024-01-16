@@ -15,6 +15,7 @@ test('get user', async () => {
   const caller = await testRouter(101)
 
   const steve = await caller.users.get('101')
+  if (!steve) throw new Error('steve not found')
   expect(steve.handle).toEqual('steve')
   expect(steve.trackCount).toEqual(2)
   expect(steve.playlistCount).toEqual(1)
@@ -22,6 +23,7 @@ test('get user', async () => {
   expect(steve.followingCount).toEqual(1)
 
   const dave = await caller.users.get('102')
+  if (!dave) throw new Error('dave not found')
   expect(dave.handle).toEqual('dave')
   expect(dave.followerCount).toEqual(1)
   expect(dave.followingCount).toEqual(0)
@@ -45,6 +47,7 @@ test('get user', async () => {
 test('get track', async () => {
   const caller = await testRouter(101)
   const t = await caller.tracks.get('201')
+  if (!t) throw new Error('track not found')
   expect(t.title).toEqual('Who let the dogs out')
 })
 
@@ -52,6 +55,7 @@ test("dave tries to get steve's private track", async () => {
   // TODO: this should probably 404...
   const daveRouter = await testRouter(201)
   const t = await daveRouter.tracks.get('202')
+  if (!t) throw new Error('track not found')
   expect(t.title).toEqual("Steve's unlisted dogs track")
   expect(t.isUnlisted).toEqual(true)
 })
