@@ -248,7 +248,7 @@ class PurchaseMetadataDict(TypedDict):
 def get_purchase_metadata_from_memo(
     session: Session, memos: List[str], timestamp: datetime
 ) -> Union[PurchaseMetadataDict, None]:
-    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
+    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     for memo in memos:
         try:
             content_metadata = memo.split(":")

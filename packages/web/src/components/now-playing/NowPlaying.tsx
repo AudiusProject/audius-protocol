@@ -23,9 +23,9 @@ import {
   playerSelectors,
   queueSelectors,
   playbackRateValueMap,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   DogEarType,
-  premiumContentSelectors,
+  gatedContentSelectors,
   usePremiumContentPurchaseModal,
   ModalSource,
   FeatureFlags
@@ -45,8 +45,8 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
-import { PremiumConditionsPill } from 'components/track/PremiumConditionsPill'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -76,7 +76,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { getGatedTrackStatusMap } = gatedContentSelectors
 
 type OwnProps = {
   onClose: () => void
@@ -316,7 +316,7 @@ const NowPlaying = g(
             : OverflowAction.FAVORITE
           : null,
         isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        !collectible && !track?.is_premium
+        !collectible && !track?.is_stream_gated
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,
@@ -397,13 +397,13 @@ const NowPlaying = g(
     const matrix = isMatrix()
     const darkMode = isDarkMode()
 
-    const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-    const premiumTrackStatus =
+    const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+    const gatedTrackStatus =
       track_id &&
-      premiumTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
+      gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
     const { onOpen: openPremiumContentPurchaseModal } =
       usePremiumContentPurchaseModal()
-    const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+    const onClickPill = useAuthenticatedClickCallback(() => {
       openPremiumContentPurchaseModal(
         {
           contentId: typeof track_id === 'number' ? track_id : -1
@@ -412,11 +412,11 @@ const NowPlaying = g(
       )
     }, [track_id, openPremiumContentPurchaseModal])
 
-    const { doesUserHaveAccess } = usePremiumContentAccess(track)
+    const { hasStreamAccess } = useGatedContentAccess(track)
     const shouldShowPurchasePreview =
-      track?.premium_conditions &&
-      'usdc_purchase' in track.premium_conditions &&
-      !doesUserHaveAccess
+      track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions &&
+      !hasStreamAccess
 
     return (
       <div className={styles.nowPlaying}>
@@ -552,12 +552,12 @@ const NowPlaying = g(
           </div>
         </div>
         <div className={styles.actions}>
-          {shouldShowPurchasePreview && track.premium_conditions ? (
-            <PremiumConditionsPill
+          {shouldShowPurchasePreview && track.stream_conditions ? (
+            <GatedConditionsPill
               showIcon={false}
-              premiumConditions={track.premium_conditions}
-              unlocking={premiumTrackStatus === 'UNLOCKING'}
-              onClick={onClickPremiumPill}
+              streamConditions={track.stream_conditions}
+              unlocking={gatedTrackStatus === 'UNLOCKING'}
+              onClick={onClickPill}
               className={styles.premiumPill}
               buttonSize='large'
             />

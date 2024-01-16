@@ -2,10 +2,9 @@ import { ReactNode, useCallback, useState } from 'react'
 
 import { Flex, IconCaretDown, IconComponent, useTheme } from '@audius/harmony'
 import { ColorValue } from '@audius/stems'
-import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
-import useMeasure from 'react-use-measure'
 
+import { Expandable } from 'components/expandable/Expandable'
 import { Text } from 'components/typography'
 
 import styles from './SummaryTable.module.css'
@@ -16,32 +15,6 @@ export type SummaryTableItem = {
   icon?: IconComponent
   value?: ReactNode
   disabled?: boolean
-}
-
-const Expandable = ({
-  expanded,
-  children
-}: {
-  expanded: boolean
-  children: React.ReactNode
-}) => {
-  const [ref, bounds] = useMeasure({
-    polyfill: ResizeObserver,
-    offsetSize: true
-  })
-
-  return (
-    <Flex
-      direction='column'
-      alignSelf='stretch'
-      className={styles.expandableContainer}
-      style={{ height: expanded ? bounds.height : 0 }}
-    >
-      <Flex direction='column' ref={ref}>
-        {children}
-      </Flex>
-    </Flex>
-  )
 }
 
 export type SummaryTableProps = {

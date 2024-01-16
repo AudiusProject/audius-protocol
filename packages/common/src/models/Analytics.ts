@@ -175,6 +175,7 @@ export enum Name {
   LISTEN_GATED = 'Listen: Gated',
 
   // Unlocked Gated Tracks
+  USDC_PURCHASE_GATED_TRACK_UNLOCKED = 'USDC Gated: Track Unlocked',
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
@@ -940,6 +941,11 @@ type TrackEditAccessChanged = {
 }
 
 // Unlocked Gated Tracks
+type USDCGatedTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+  count: number
+}
+
 type CollectibleGatedTrackUnlocked = {
   eventName: Name.COLLECTIBLE_GATED_TRACK_UNLOCKED
   count: number
@@ -2106,6 +2112,7 @@ export type AllTrackingEvents =
   | TrackUploadShareWithFans
   | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
+  | USDCGatedTrackUnlocked
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked

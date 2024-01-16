@@ -219,10 +219,10 @@ def get_feed_sql(args):
                 )
             reposted_tracks = reposted_tracks.order_by(desc(Track.created_at)).all()
 
-            # filter out premium track reposts from feed
+            # filter out gated track reposts from feed
             reposted_tracks = list(
                 filter(
-                    lambda track: track["is_premium"] == False,  # not a premium track
+                    lambda track: track.is_stream_gated == False,  # not a gated track
                     reposted_tracks,
                 )
             )
@@ -261,10 +261,10 @@ def get_feed_sql(args):
         # filter out collectible gated tracks from feed
         tracks = list(
             filter(
-                lambda item: ("premium_conditions" not in item)  # not a track
-                or (item["premium_conditions"] is None)  # not a premium track
+                lambda item: ("stream_conditions" not in item)  # not a track
+                or (item["stream_conditions"] is None)  # not a gated track
                 or (
-                    "nft_collection" not in item["premium_conditions"]
+                    "nft_collection" not in item["stream_conditions"]
                 ),  # not a collectible gated track
                 tracks,
             )

@@ -25,11 +25,11 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   reachabilitySelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   playbackPositionSelectors,
   FeatureFlags,
-  isPremiumContentUSDCPurchaseGated,
-  isPremiumContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated,
   queueSelectors
 } from '@audius/common'
 import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
@@ -169,7 +169,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginTop: spacing(2),
     marginBottom: spacing(4)
   },
-  premiumHeaderText: {
+  gatedHeaderText: {
     letterSpacing: 2,
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -177,7 +177,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     fontSize: typography.fontSize.small,
     color: palette.neutralLight4
   },
-  premiumIcon: {
+  gatedIcon: {
     marginRight: spacing(2.5),
     fill: palette.accentBlue
   },
@@ -209,7 +209,9 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const { doesUserHaveAccess } = usePremiumContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
+    track as Track
+  ) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -245,7 +247,7 @@ export const TrackScreenDetailsTile = ({
     has_current_user_saved,
     is_unlisted,
     is_delete,
-    is_premium: isPremium,
+    is_stream_gated: isStreamGated,
     mood,
     owner_id,
     play_count,
@@ -259,8 +261,8 @@ export const TrackScreenDetailsTile = ({
   } = track
 
   const isOwner = owner_id === currentUserId
-  const hideFavorite = is_unlisted || !doesUserHaveAccess
-  const hideRepost = is_unlisted || !isReachable || !doesUserHaveAccess
+  const hideFavorite = is_unlisted || !hasStreamAccess
+  const hideRepost = is_unlisted || !isReachable || !hasStreamAccess
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -402,7 +404,7 @@ export const TrackScreenDetailsTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = !isPremium
+    const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
@@ -448,13 +450,13 @@ export const TrackScreenDetailsTile = ({
   }
 
   const renderHeaderText = () => {
-    if (isPremium && track.premium_conditions != null) {
+    if (isStreamGated && track.stream_conditions != null) {
       let IconComponent = IconSpecialAccess
       let text = messages.specialAccess
-      if (isPremiumContentCollectibleGated(track.premium_conditions)) {
+      if (isContentCollectibleGated(track.stream_conditions)) {
         IconComponent = IconCollectible
         text = messages.collectibleGated
-      } else if (isPremiumContentUSDCPurchaseGated(track.premium_conditions)) {
+      } else if (isContentUSDCPurchaseGated(track.stream_conditions)) {
         IconComponent = IconCart
         text = messages.usdcPurchase
       }
@@ -462,12 +464,12 @@ export const TrackScreenDetailsTile = ({
       return (
         <View style={styles.headerView}>
           <IconComponent
-            style={styles.premiumIcon}
+            style={styles.gatedIcon}
             fill={neutralLight4}
             width={spacing(4.5)}
             height={spacing(4.5)}
           />
-          <Text style={styles.premiumHeaderText}>{text}</Text>
+          <Text style={styles.gatedHeaderText}>{text}</Text>
         </View>
       )
     }
@@ -566,7 +568,7 @@ export const TrackScreenDetailsTile = ({
     return (
       <TrackScreenDownloadButtons
         following={user.does_current_user_follow}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasDownloadAccess={hasDownloadAccess}
         isOwner={isOwner}
         trackId={track_id}
       />
@@ -600,7 +602,8 @@ export const TrackScreenDetailsTile = ({
       hideOverflow={!isReachable}
       hideFavoriteCount={is_unlisted}
       hideListenCount={
-        (!isOwner && is_unlisted && !field_visibility?.play_count) || isPremium
+        (!isOwner && is_unlisted && !field_visibility?.play_count) ||
+        isStreamGated
       }
       hideRepostCount={is_unlisted}
       isPlaying={isPlaying && isPlayingId}

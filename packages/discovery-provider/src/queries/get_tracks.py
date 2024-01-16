@@ -46,7 +46,7 @@ class GetTrackArgs(TypedDict):
 
     query: Optional[str]
     filter_deleted: bool
-    exclude_premium: bool
+    exclude_gated: bool
     routes: List[RouteArgs]
     filter_tracks: str
 
@@ -125,9 +125,9 @@ def _get_tracks(session, args):
         if filter_deleted:
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
-    # Allow filtering of premium tracks
-    if args.get("exclude_premium", False):
-        base_query = base_query.filter(TrackWithAggregates.is_premium == False)
+    # Allow filtering of gated tracks
+    if args.get("exclude_gated", False):
+        base_query = base_query.filter(TrackWithAggregates.is_stream_gated == False)
 
     if "min_block_number" in args and args.get("min_block_number") is not None:
         min_block_number = args.get("min_block_number")

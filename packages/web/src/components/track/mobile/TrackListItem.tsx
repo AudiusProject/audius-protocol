@@ -99,7 +99,7 @@ export type TrackListItemProps = {
   className?: string
   index: number
   isLoading: boolean
-  isPremium?: boolean
+  isStreamGated?: boolean
   isSaved?: boolean
   isReposted?: boolean
   isActive?: boolean

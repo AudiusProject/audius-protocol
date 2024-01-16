@@ -11,10 +11,6 @@
   transform: rotate(-180deg);
 }
 
-.expandableContainer {
-  transition: height var(--harmony-expressive);
-}
-
 .radioGroup {
   width: 100%;
 }

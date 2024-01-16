@@ -74,7 +74,16 @@ const EditTrackModal = ({
     if (!metadata) return
 
     const confirmEdit = (metadata: Track, formFields: Track) => {
-      onEdit(metadata.track_id, formFields)
+      const isDownloadable = !!formFields.download?.is_downloadable
+      const isDownloadGated = formFields.is_stream_gated
+      const downloadConditions = formFields.stream_conditions
+      const formFieldsToUpdate = {
+        ...formFields,
+        is_downloadable: isDownloadable,
+        is_download_gated: isDownloadGated,
+        download_conditions: downloadConditions
+      }
+      onEdit(metadata.track_id, formFieldsToUpdate)
       if (pendingUploads.length) {
         uploadStems(metadata.track_id, pendingUploads)
         setPendingUploads([])
@@ -85,6 +94,7 @@ const EditTrackModal = ({
       }
       onClose()
     }
+
     if (metadata.is_unlisted === true && formFields.is_unlisted === false) {
       // confirm for unlisted -> listed
       dispatch(
@@ -209,7 +219,7 @@ const EditTrackModal = ({
         onDelete={onSelectDelete}
         onCancel={onCancel}
         showUnlistedToggle={
-          metadata ? metadata.is_unlisted || metadata.is_premium : false
+          metadata ? metadata.is_unlisted || metadata.is_stream_gated : false
         }
         stems={combinedStems}
         onDeleteStem={onDeleteStem}

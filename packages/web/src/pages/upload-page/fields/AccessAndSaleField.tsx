@@ -5,22 +5,22 @@ import {
   FeatureFlags,
   FieldVisibility,
   formatPrice,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated,
   Nullable,
-  PremiumConditions,
   TrackAvailabilityType,
   USDCPurchaseConfig,
   useUSDCPurchaseConfig,
   useAccessAndRemixSettings,
-  PremiumConditionsCollectibleGated,
-  PremiumConditionsUSDCPurchase,
-  PremiumConditionsFollowGated,
-  PremiumConditionsTipGated,
+  CollectibleGatedConditions,
+  USDCPurchaseConditions,
+  FollowGatedConditions,
+  TipGatedConditions,
   ID,
-  useFeatureFlag
+  useFeatureFlag,
+  AccessConditions
 } from '@audius/common'
 import {
   IconCart,
@@ -121,20 +121,20 @@ const messages = {
 }
 export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 export const IS_UNLISTED = 'is_unlisted'
-export const IS_PREMIUM = 'is_premium'
-export const PREMIUM_CONDITIONS = 'premium_conditions'
+export const IS_STREAM_GATED = 'is_stream_gated'
+export const STREAM_CONDITIONS = 'stream_conditions'
 
 export const AVAILABILITY_TYPE = 'availability_type'
 export const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const FIELD_VISIBILITY = 'field_visibility'
-export const PRICE = 'premium_conditions.usdc_purchase.price'
+export const PRICE = 'stream_conditions.usdc_purchase.price'
 export const PRICE_HUMANIZED = 'price_humanized'
 export const PREVIEW = 'preview_start_seconds'
 
 export type AccessAndSaleFormValues = {
   [IS_UNLISTED]: boolean
   [AVAILABILITY_TYPE]: TrackAvailabilityType
-  [PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
+  [STREAM_CONDITIONS]: Nullable<AccessConditions>
   [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
   [FIELD_VISIBILITY]: FieldVisibility
   [PRICE_HUMANIZED]: string
@@ -152,7 +152,7 @@ export const AccessAndSaleFormSchema = (
 ) =>
   z
     .object({
-      [PREMIUM_CONDITIONS]: z.any(),
+      [STREAM_CONDITIONS]: z.any(),
       [PREVIEW]: z.optional(
         z.nullable(z.number({ invalid_type_error: messages.required }))
       ),
@@ -161,12 +161,12 @@ export const AccessAndSaleFormSchema = (
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        const premiumConditions = formValues[PREMIUM_CONDITIONS]
+        const streamConditions = formValues[STREAM_CONDITIONS]
         if (
           formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isPremiumContentUSDCPurchaseGated(premiumConditions)
+          isContentUSDCPurchaseGated(streamConditions)
         ) {
-          const { price } = premiumConditions.usdc_purchase
+          const { price } = streamConditions.usdc_purchase
           return price > 0 && price >= minContentPriceCents
         }
         return true
@@ -179,12 +179,12 @@ export const AccessAndSaleFormSchema = (
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        const premiumConditions = formValues[PREMIUM_CONDITIONS]
+        const streamConditions = formValues[STREAM_CONDITIONS]
         if (
           formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isPremiumContentUSDCPurchaseGated(premiumConditions)
+          isContentUSDCPurchaseGated(streamConditions)
         ) {
-          return premiumConditions.usdc_purchase.price <= maxContentPriceCents
+          return streamConditions.usdc_purchase.price <= maxContentPriceCents
         }
         return true
       },
@@ -224,9 +224,9 @@ export const AccessAndSaleFormSchema = (
  * Allows us to store all the user selections in the Access & Sale modal
  * so that their previous selections is remembered as they change between the radio button options.
  * On submit (saving the changes in the Access & Sale modal), we only save the corresponding
- * premium conditions based on the availability type they have currently selected.
+ * stream conditions based on the availability type they have currently selected.
  */
-export const getCombinedDefaultPremiumConditionValues = (
+export const getCombinedDefaultGatedConditionValues = (
   userId: Nullable<ID>
 ) => ({
   usdc_purchase: { price: null },
@@ -259,15 +259,17 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
       IS_SCHEDULED_RELEASE
     )
-  const [{ value: isPremium }, , { setValue: setIsPremiumValue }] =
-    useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
+  const [{ value: isStreamGated }, , { setValue: setIsStreamGated }] =
+    useTrackField<SingleTrackEditValues[typeof IS_STREAM_GATED]>(
+      IS_STREAM_GATED
+    )
   const [
-    { value: savedPremiumConditions },
+    { value: savedStreamConditions },
     ,
-    { setValue: setPremiumConditionsValue }
+    { setValue: setStreamConditionsValue }
   ] =
-    useTrackField<SingleTrackEditValues[typeof PREMIUM_CONDITIONS]>(
-      PREMIUM_CONDITIONS
+    useTrackField<SingleTrackEditValues[typeof STREAM_CONDITIONS]>(
+      STREAM_CONDITIONS
     )
   const [{ value: fieldVisibility }, , { setValue: setFieldVisibilityValue }] =
     useTrackField<SingleTrackEditValues[typeof FIELD_VISIBILITY]>(
@@ -282,33 +284,29 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   /**
-   * Premium conditions from inside the modal.
+   * Stream conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
-   * determine the final premium conditions that get saved to the track.
+   * determine the final stream conditions that get saved to the track.
    */
   const accountUserId = useSelector(getUserId)
-  const tempPremiumConditions = useMemo(
+  const tempStreamConditions = useMemo(
     () => ({
-      ...getCombinedDefaultPremiumConditionValues(accountUserId),
-      ...savedPremiumConditions
+      ...getCombinedDefaultGatedConditionValues(accountUserId),
+      ...savedStreamConditions
     }),
-    [accountUserId, savedPremiumConditions]
+    [accountUserId, savedStreamConditions]
   )
 
   const initialValues = useMemo(() => {
-    const isUsdcGated = isPremiumContentUSDCPurchaseGated(
-      savedPremiumConditions
-    )
-    const isTipGated = isPremiumContentTipGated(savedPremiumConditions)
-    const isFollowGated = isPremiumContentFollowGated(savedPremiumConditions)
-    const isCollectibleGated = isPremiumContentCollectibleGated(
-      savedPremiumConditions
-    )
+    const isUsdcGated = isContentUSDCPurchaseGated(savedStreamConditions)
+    const isTipGated = isContentTipGated(savedStreamConditions)
+    const isFollowGated = isContentFollowGated(savedStreamConditions)
+    const isCollectibleGated = isContentCollectibleGated(savedStreamConditions)
 
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlisted)
-    set(initialValues, IS_PREMIUM, isPremium)
-    set(initialValues, PREMIUM_CONDITIONS, tempPremiumConditions)
+    set(initialValues, IS_STREAM_GATED, isStreamGated)
+    set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
 
     let availabilityType = TrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -316,8 +314,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       set(
         initialValues,
         PRICE_HUMANIZED,
-        tempPremiumConditions.usdc_purchase.price
-          ? (Number(tempPremiumConditions.usdc_purchase.price) / 100).toFixed(2)
+        tempStreamConditions.usdc_purchase.price
+          ? (Number(tempStreamConditions.usdc_purchase.price) / 100).toFixed(2)
           : undefined
       )
     }
@@ -340,10 +338,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     )
     return initialValues as AccessAndSaleFormValues
   }, [
-    savedPremiumConditions,
+    savedStreamConditions,
     isUnlisted,
-    isPremium,
-    tempPremiumConditions,
+    isStreamGated,
+    tempStreamConditions,
     fieldVisibility,
     preview,
     isScheduledRelease
@@ -355,48 +353,47 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
-      const premiumConditions = get(values, PREMIUM_CONDITIONS)
+      const streamConditions = get(values, STREAM_CONDITIONS)
+
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
         remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
       })
       setIsUnlistedValue(isUnlisted)
-      setIsPremiumValue(false)
-      setPremiumConditionsValue(null)
+      setIsStreamGated(false)
+      setStreamConditionsValue(null)
       setPreviewValue(undefined)
 
-      // For gated options, extract the correct premium conditions based on the selected availability type
+      // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case TrackAvailabilityType.USDC_PURCHASE: {
           setPreviewValue(preview ?? 0)
           const {
             usdc_purchase: { price }
-          } = premiumConditions as PremiumConditionsUSDCPurchase
-          setPremiumConditionsValue({
+          } = streamConditions as USDCPurchaseConditions
+          setStreamConditionsValue({
             // @ts-ignore fully formed in saga (validated + added splits)
             usdc_purchase: { price: Math.round(price) }
           })
-          setIsPremiumValue(true)
+          setIsStreamGated(true)
           break
         }
         case TrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
-            const { follow_user_id } =
-              premiumConditions as PremiumConditionsFollowGated
-            setPremiumConditionsValue({ follow_user_id })
+            const { follow_user_id } = streamConditions as FollowGatedConditions
+            setStreamConditionsValue({ follow_user_id })
           } else {
-            const { tip_user_id } =
-              premiumConditions as PremiumConditionsTipGated
-            setPremiumConditionsValue({ tip_user_id })
+            const { tip_user_id } = streamConditions as TipGatedConditions
+            setStreamConditionsValue({ tip_user_id })
           }
-          setIsPremiumValue(true)
+          setIsStreamGated(true)
           break
         }
         case TrackAvailabilityType.COLLECTIBLE_GATED: {
           const { nft_collection } =
-            premiumConditions as PremiumConditionsCollectibleGated
-          setPremiumConditionsValue({ nft_collection })
-          setIsPremiumValue(true)
+            streamConditions as CollectibleGatedConditions
+          setStreamConditionsValue({ nft_collection })
+          setIsStreamGated(true)
           break
         }
         case TrackAvailabilityType.HIDDEN: {
@@ -415,17 +412,17 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     },
     [
       setFieldVisibilityValue,
-      setIsPremiumValue,
+      setIsStreamGated,
       setIsUnlistedValue,
-      setPremiumConditionsValue,
+      setStreamConditionsValue,
       setPreviewValue,
       isUnlisted
     ]
   )
 
   const renderValue = useCallback(() => {
-    if (isPremiumContentCollectibleGated(savedPremiumConditions)) {
-      const { nft_collection } = savedPremiumConditions
+    if (isContentCollectibleGated(savedStreamConditions)) {
+      const { nft_collection } = savedStreamConditions
       if (!nft_collection) return null
       const { imageUrl, name } = nft_collection
 
@@ -462,11 +459,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       icon: IconSpecialAccess
     }
 
-    if (isPremiumContentUSDCPurchaseGated(savedPremiumConditions)) {
+    if (isContentUSDCPurchaseGated(savedStreamConditions)) {
       selectedValues = [
         {
           label: messages.price(
-            savedPremiumConditions.usdc_purchase.price / 100
+            savedStreamConditions.usdc_purchase.price / 100
           ),
           icon: IconCart
         }
@@ -477,9 +474,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           icon: IconNote
         })
       }
-    } else if (isPremiumContentFollowGated(savedPremiumConditions)) {
+    } else if (isContentFollowGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.followersOnly]
-    } else if (isPremiumContentTipGated(savedPremiumConditions)) {
+    } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
     } else if (isUnlisted && !isScheduledRelease && fieldVisibility) {
       const fieldVisibilityKeys = Object.keys(
@@ -509,7 +506,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   }, [
     fieldVisibility,
     isUnlisted,
-    savedPremiumConditions,
+    savedStreamConditions,
     preview,
     isScheduledRelease
   ])
@@ -529,7 +526,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         <AccessAndSaleMenuFields
           isRemix={isRemix}
           isUpload={isUpload}
-          premiumConditions={tempPremiumConditions}
+          streamConditions={tempStreamConditions}
           isScheduledRelease={isScheduledRelease}
         />
       }
@@ -538,12 +535,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 }
 
 type AccesAndSaleMenuFieldsProps = {
-  premiumConditions: SingleTrackEditValues[typeof PREMIUM_CONDITIONS]
+  streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
-  initialPremiumConditions?: PremiumConditions
+  initialStreamConditions?: AccessConditions
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -551,7 +548,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isRemix,
     isUpload,
     isInitiallyUnlisted,
-    initialPremiumConditions,
+    initialStreamConditions,
     isScheduledRelease
   } = props
 
@@ -573,7 +570,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     useAccessAndRemixSettings({
       isUpload: !!isUpload,
       isRemix,
-      initialPremiumConditions: initialPremiumConditions ?? null,
+      initialStreamConditions: initialStreamConditions ?? null,
       isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease
     })
@@ -593,7 +590,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
-            initialPremiumConditions={initialPremiumConditions}
+            initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
@@ -614,7 +611,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
-            initialPremiumConditions={initialPremiumConditions}
+            initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}

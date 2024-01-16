@@ -15,10 +15,9 @@ import {
   reachabilitySelectors,
   Nullable,
   FeatureFlags,
-  premiumContentSelectors,
+  gatedContentSelectors,
   QueryParams,
   Genre,
-  doesUserHaveTrackAccess,
   getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common'
@@ -61,7 +60,7 @@ const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
@@ -86,11 +85,6 @@ export function* watchPlay() {
       const track = yield* select(getTrack, { id: trackId })
       const isReachable = yield* select(getIsReachable)
       if (!track) return
-      if (track.is_premium && !track.premium_content_signature) {
-        console.warn(
-          'Should have signature for premium track to reduce potential DN latency'
-        )
-      }
 
       if (!isReachable && isNativeMobile) {
         // Play offline.
@@ -106,14 +100,12 @@ export function* watchPlay() {
       const encodedTrackId = encodeHashId(trackId)
 
       let queryParams: QueryParams = {}
-      const premiumTrackSignatureMap = yield* select(
-        getPremiumTrackSignatureMap
-      )
-      const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
-      queryParams = yield* call(getQueryParams, {
+      const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+      const nftAccessSignature = nftAccessSignatureMap[track.track_id]
+      queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
-        premiumContentSignature
-      })
+        nftAccessSignature
+      })) as unknown as QueryParams
 
       let trackDuration = track.duration
 
@@ -205,8 +197,8 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
-    if (doesUserHaveAccess || isPreview) {
+    const doesUserHaveStreamAccess = !!track?.access?.stream
+    if (!trackId || doesUserHaveStreamAccess || isPreview) {
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))
     } else {

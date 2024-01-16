@@ -28,8 +28,10 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   saveCount: heroTrack?.save_count ?? 0,
   isUnlisted: heroTrack?.is_unlisted ?? false,
   isScheduledRelease: heroTrack?.is_scheduled_release ?? false,
-  isPremium: heroTrack?.is_premium ?? false,
-  premiumConditions: heroTrack?.premium_conditions ?? null,
+  isStreamGated: heroTrack?.is_stream_gated ?? false,
+  streamConditions: heroTrack?.stream_conditions ?? null,
+  isDownloadGated: heroTrack?.is_download_gated ?? false,
+  downloadConditions: heroTrack?.download_conditions ?? null,
   isPublishing: heroTrack?._is_publishing ?? false,
   aiAttributionUserId: heroTrack?.ai_attribution_user_id ?? null,
   fieldVisibility: {

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './Access';
 export * from './ActivityFull';
 export * from './CollectionActivityFull';
 export * from './CollectionLibraryResponseFull';
@@ -37,7 +38,6 @@ export * from './PlaylistArtwork';
 export * from './PlaylistFull';
 export * from './PlaylistFullWithoutTracks';
 export * from './PlaylistLibrary';
-export * from './PremiumContentSignature';
 export * from './ProfilePicture';
 export * from './Purchase';
 export * from './PurchasesCountResponse';
@@ -53,6 +53,7 @@ export * from './SearchModel';
 export * from './StemFull';
 export * from './StemParent';
 export * from './StemsResponse';
+export * from './StreamSignature';
 export * from './SupporterReference';
 export * from './TopGenreUsersResponseFull';
 export * from './TopUsersResponseFull';

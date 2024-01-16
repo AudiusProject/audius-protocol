@@ -227,7 +227,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           const userError = response !== undefined && response.status < 500
 
           if (userError) {
-            this.logger.warn(`status code ${response.status} below 500, not reselecting`, endpoint, context)
+            this.logger.warn(
+              `status code ${response.status} below 500, not reselecting`,
+              endpoint,
+              context
+            )
             return response
           }
           return await this.reselectAndRetry({ context, endpoint })
@@ -237,7 +241,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       onError: async (context: ErrorContext) => {
         const endpoint = await this.getSelectedEndpoint()
         const response = context.response
-        
+
         if (!endpoint) {
           await this.select(endpoint)
         } else {
