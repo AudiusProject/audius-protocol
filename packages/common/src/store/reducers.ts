@@ -146,10 +146,10 @@ import wallet from './wallet/slice'
  * @returns an object of all reducers to be used with `combineReducers`
  */
 export const reducers = (
-  history: History,
   storage: Storage,
   ssrPageProps?: SsrPageProps,
-  isServerSide?: boolean
+  isServerSide?: boolean,
+  history?: History
 ) => ({
   account,
 

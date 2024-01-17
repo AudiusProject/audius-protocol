@@ -36,10 +36,10 @@ const createRootReducer = (
   isServerSide?: boolean
 ) => {
   const commonStoreReducers = clientStoreReducers(
-    routeHistory,
     localForage,
     ssrPageProps,
-    isServerSide
+    isServerSide,
+    routeHistory
   )
 
   return combineReducers({
