@@ -66,7 +66,9 @@ export const AccountHeader = (props: AccountHeaderProps) => {
           position: 'absolute',
           left: spacing.unit4,
           top: spacing.unit10,
-          width: Dimensions.get('window').width - 4 * spacing.unit4
+          // Need to use explicit width to ensure text doesn't overflow
+          // unit16 covers the 4xunit4 spacings on left and right
+          width: Dimensions.get('window').width - spacing.unit16
         })}
       >
         <ProfilePicture

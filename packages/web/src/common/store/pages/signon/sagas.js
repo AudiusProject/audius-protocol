@@ -476,7 +476,7 @@ function* signUp() {
         const isNativeMobile = yield getContext('isNativeMobile')
 
         const isSignUpRedesignEnabled = yield call(
-          getFeatureEnabled(FeatureFlags.VERIFY_HANDLE_WITH_TWITTER)
+          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
         )
 
         if (isNativeMobile && !isSignUpRedesignEnabled) {

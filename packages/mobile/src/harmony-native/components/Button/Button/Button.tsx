@@ -224,13 +224,15 @@ export const Button = (props: ButtonProps) => {
 
   const animatedButtonStyles = useAnimatedStyle(() => {
     return {
-      borderColor: interpolateColor(
-        pressed.value,
-        [0, 1],
-        [dynamicStyles.default.border, dynamicStyles.press.border]
-      ),
+      borderColor: disabled
+        ? buttonStyles.borderColor
+        : interpolateColor(
+            pressed.value,
+            [0, 1],
+            [dynamicStyles.default.border, dynamicStyles.press.border]
+          ),
       backgroundColor: disabled
-        ? themeColors.neutral.n150
+        ? buttonStyles.backgroundColor
         : interpolateColor(
             pressed.value,
             [0, 1],
