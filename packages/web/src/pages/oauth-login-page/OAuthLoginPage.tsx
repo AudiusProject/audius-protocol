@@ -53,7 +53,7 @@ export const OAuthLoginPage = () => {
   const [showOtpInput, setShowOtpInput] = useState(false)
   const [otpInput, setOtpInput] = useState('')
   const [otpEmail, setOtpEmail] = useState<string | null>(null)
-  const [credentialsError, setSignInError] = useState<string | null>(null)
+  const [signInError, setSignInError] = useState<string | null>(null)
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
@@ -85,13 +85,15 @@ export const OAuthLoginPage = () => {
       setShowOtpInput(false)
     }
   }
-  useEffect(() => {
-    if (otpEmail !== emailInput) {
+
+  const handleEmailInputChange = (input: string) => {
+    if (otpEmail !== input) {
       toggleOtpUI(false)
-    } else if (otpEmail === emailInput && !showOtpInput) {
+    } else if (otpEmail === input && !showOtpInput) {
       toggleOtpUI(true)
     }
-  }, [otpEmail, emailInput])
+    setEmailInput(input)
+  }
 
   const setAndLogGeneralSubmitError = (
     isUserError: boolean,
@@ -304,7 +306,7 @@ export const OAuthLoginPage = () => {
               required
               autoComplete='username'
               value={emailInput}
-              onChange={setEmailInput}
+              onChange={handleEmailInputChange}
             />
             <Input
               className={styles.passwordInput}
@@ -318,14 +320,14 @@ export const OAuthLoginPage = () => {
               type='password'
               onChange={setPasswordInput}
             />
-            {credentialsError == null ? null : (
+            {signInError == null ? null : (
               <div className={styles.credentialsErrorContainer}>
                 <IconValidationX
                   width={14}
                   height={14}
                   className={styles.credentialsErrorIcon}
                 />
-                <span className={styles.errorText}>{credentialsError}</span>
+                <span className={styles.errorText}>{signInError}</span>
               </div>
             )}
             {showOtpInput ? (
