@@ -1,4 +1,10 @@
-import { FormEvent, useCallback, useLayoutEffect, useState } from 'react'
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState
+} from 'react'
 
 import {
   accountSelectors,
@@ -44,7 +50,10 @@ export const OAuthLoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
-  const [hasCredentialsError, setHasCredentialsError] = useState(false)
+  const [showOtpInput, setShowOtpInput] = useState(false)
+  const [otpInput, setOtpInput] = useState('')
+  const [otpEmail, setOtpEmail] = useState<string | null>(null)
+  const [credentialsError, setSignInError] = useState<string | null>(null)
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
@@ -64,29 +73,47 @@ export const OAuthLoginPage = () => {
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
-    setHasCredentialsError(false)
+    setSignInError(null)
   }
 
-  const setAndLogGeneralSubmitError = useCallback(
-    (isUserError: boolean, errorMessage: string, error?: Error) => {
-      setGeneralSubmitError(errorMessage)
-      record(
-        make(Name.AUDIUS_OAUTH_ERROR, {
-          isUserError,
-          error: errorMessage,
-          appId: (apiKey || appName)!,
-          scope: scope!
-        })
-      )
-      if (error && !isUserError) {
-        reportToSentry({ level: ErrorLevel.Error, error })
-      }
-    },
-    [record, appName, apiKey, scope]
-  )
+  const toggleOtpUI = (on: boolean) => {
+    if (on) {
+      setShowOtpInput(true)
+      setSignInError(messages.otpError)
+    } else {
+      setSignInError(null)
+      setShowOtpInput(false)
+    }
+  }
+  useEffect(() => {
+    if (otpEmail !== emailInput) {
+      toggleOtpUI(false)
+    } else if (otpEmail === emailInput && !showOtpInput) {
+      toggleOtpUI(true)
+    }
+  }, [otpEmail, emailInput])
+
+  const setAndLogGeneralSubmitError = (
+    isUserError: boolean,
+    errorMessage: string,
+    error?: Error
+  ) => {
+    setGeneralSubmitError(errorMessage)
+    record(
+      make(Name.AUDIUS_OAUTH_ERROR, {
+        isUserError,
+        error: errorMessage,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
+    if (error && !isUserError) {
+      reportToSentry({ level: ErrorLevel.Error, error })
+    }
+  }
 
   const setAndLogInvalidCredentialsError = () => {
-    setHasCredentialsError(true)
+    setSignInError(messages.invalidCredentialsError)
     record(
       make(Name.AUDIUS_OAUTH_ERROR, {
         isUserError: true,
@@ -132,7 +159,8 @@ export const OAuthLoginPage = () => {
     try {
       signInResponse = await audiusBackendInstance.signIn(
         emailInput,
-        passwordInput
+        passwordInput,
+        otpInput || undefined
       )
     } catch (err) {
       setIsSubmitting(false)
@@ -161,6 +189,10 @@ export const OAuthLoginPage = () => {
     ) {
       setIsSubmitting(false)
       setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
+    } else if (signInResponse.error && signInResponse.error.includes('403')) {
+      setIsSubmitting(false)
+      setOtpEmail(emailInput)
+      toggleOtpUI(true)
     } else {
       setIsSubmitting(false)
       setAndLogInvalidCredentialsError()
@@ -286,18 +318,29 @@ export const OAuthLoginPage = () => {
               type='password'
               onChange={setPasswordInput}
             />
-            {!hasCredentialsError ? null : (
+            {credentialsError == null ? null : (
               <div className={styles.credentialsErrorContainer}>
                 <IconValidationX
                   width={14}
                   height={14}
                   className={styles.credentialsErrorIcon}
                 />
-                <span className={styles.errorText}>
-                  {messages.invalidCredentialsError}
-                </span>
+                <span className={styles.errorText}>{credentialsError}</span>
               </div>
             )}
+            {showOtpInput ? (
+              <Input
+                placeholder='Verification Code'
+                size='medium'
+                name='otp'
+                value={otpInput}
+                characterLimit={6}
+                type='number'
+                variant={'normal'}
+                onChange={setOtpInput}
+                className={cn(styles.otpInput)}
+              />
+            ) : null}
             <CTAButton
               isSubmitting={isSubmitting}
               text={messages.signInButton}
