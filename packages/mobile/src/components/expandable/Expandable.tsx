@@ -63,8 +63,8 @@ export const Expandable = ({
     <View style={styles.root}>
       <TouchableOpacity style={styleProp} onPress={toggleExpanded}>
         {renderHeader?.()}
-        {isExpanded ? children : null}
       </TouchableOpacity>
+      {isExpanded ? children : null}
     </View>
   )
 }

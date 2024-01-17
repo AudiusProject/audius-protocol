@@ -68,8 +68,7 @@ export const DownloadRow = ({
         <Text color='neutralLight4'>{index}</Text>
         <View style={styles.titleContainer}>
           <Text>{track?.stem_of?.category ?? messages.fullTrack}</Text>
-          {/* <Text>{track?.orig_filename}</Text> */}
-          <Text color='neutralLight4'>{messages.fullTrack}</Text>
+          <Text color='neutralLight4'>{track?.orig_filename}</Text>
         </View>
       </View>
       <View>
