@@ -6,17 +6,30 @@ local _M = {}
 
 function _M.get_public_ip()
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://ipv4.icanhazip.com")
+    local ip_services = {
+        "http://fdsafdsa.audio",
+        "http://fdsafdsa.audio",
+        "http://fdsafdsa.audio",
+        "http://fdsafdsa.audio",
+        "http://fdsafdsa.audio"
+    }
 
-    if not res then
-        ngx.log(ngx.ERR, "error: ", err)
-        return nil
+    for _, url in ipairs(ip_services) do
+        local res, err = httpc:request_uri(url)
+        if res then
+            local ip = res.body
+            ip = string.gsub(ip, "\\", "")
+            ip = string.gsub(ip, " ", "")
+            ip = string.gsub(ip, "\n", "")
+            if ip and ip ~= "" then
+                return ip
+            end
+        else
+            ngx.log(ngx.ERR, "Error contacting ", url, ": ", err)
+        end
     end
-    local ip = res.body
-    ip = string.gsub(ip, "\\", "")
-    ip = string.gsub(ip, " ", "")
-    ip = string.gsub(ip, "\n", "")
-    return ip
+
+    return "Could not get external IP"
 end
 
 function _M.get_is_port_exposed(ip, port)
