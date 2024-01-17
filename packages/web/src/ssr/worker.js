@@ -9,7 +9,7 @@
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import { renderPage } from 'vike/server'
 
-const DEBUG = true
+const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
