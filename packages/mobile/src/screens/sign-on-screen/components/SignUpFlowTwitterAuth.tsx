@@ -9,7 +9,7 @@ import {
 import Config from 'react-native-config'
 import { useAsync } from 'react-use'
 
-import { SocialButton } from 'app/screens/sign-on-screen/components/temp-harmony/SocialButton'
+import { SocialButton } from '@audius/harmony-native'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { env } from 'app/services/env'
 import * as oauthActions from 'app/store/oauth/actions'
@@ -194,10 +194,8 @@ export const SignUpFlowTwitterAuth = ({
       />
       <SocialButton
         socialType='twitter'
-        style={{ flex: 1, height: '100%' }}
         onPress={handlePress}
-        title={socialMediaMessages.signUpTwitter}
-        noText
+        aria-label={socialMediaMessages.signUpTwitter}
       />
     </>
   )

@@ -3,6 +3,7 @@ package crudr
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -106,7 +108,9 @@ func (p *PeerClient) doSweep() error {
 		var cursor Cursor
 		err := p.crudr.DB.Where("host = ?", host).First(&cursor).Error
 		if err != nil {
-			p.logger.Info("failed to get cursor", "err", err)
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				p.logger.Info("failed to get cursor", "err", err)
+			}
 		} else {
 			lastUlid = cursor.LastULID
 		}

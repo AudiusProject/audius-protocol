@@ -1623,8 +1623,8 @@ export const audiusBackend = ({
       handle?: string
       isVerified?: boolean
       location?: string
-      profilePicture: File
-      coverPhoto: File
+      profilePicture: File | null
+      coverPhoto: File | null
     }
     hasWallet: boolean
     referrer: Nullable<ID>
