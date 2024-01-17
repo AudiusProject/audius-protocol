@@ -805,9 +805,8 @@ function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
-    const theTracks = getTracksLineup(state)
     return {
-      tracks: theTracks,
+      tracks: getTracksLineup(state),
       trackCount: (getCollection(state) as Collection)?.playlist_contents
         .track_ids.length,
       collectionUid: getCollectionUid(state) || '',
