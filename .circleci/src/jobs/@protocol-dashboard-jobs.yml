@@ -1,7 +1,7 @@
 protocol-dashboard-init:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
 
   steps:
     - checkout
