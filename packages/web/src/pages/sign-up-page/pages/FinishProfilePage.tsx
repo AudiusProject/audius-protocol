@@ -96,7 +96,7 @@ export const FinishProfilePage = () => {
   )
 
   const setProfileImage = useCallback(
-    async (value: ImageFieldValue) => {
+    (value: ImageFieldValue) => {
       dispatch(setField('profileImage', value))
     },
     [dispatch]

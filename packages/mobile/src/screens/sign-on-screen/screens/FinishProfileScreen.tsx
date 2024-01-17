@@ -55,9 +55,9 @@ export const FinishProfileScreen = () => {
     (values: FinishProfileValues) => {
       const { displayName, profileImage, coverPhoto } = values
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(signUp())
       navigation.navigate('SelectGenre')
