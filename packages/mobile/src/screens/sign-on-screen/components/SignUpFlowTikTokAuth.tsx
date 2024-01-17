@@ -4,17 +4,20 @@ import {
   useAudiusQueryContext,
   type TikTokProfileData,
   pickHandleSchema,
-  Name
+  Name,
+  formatTikTokProfile
 } from '@audius/common'
+import type { GestureResponderEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { restrictedHandles } from 'utils/restrictedHandles'
 
-import { TikTokAuthButton } from 'app/components/tiktok-auth'
+import { SocialButton } from '@audius/harmony-native'
+import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import { getAbandoned } from 'app/store/oauth/selectors'
 
-type SignupFlowTikTokAuthProps = {
+type SignUpFlowTikTokAuthProps = {
   onStart: () => void
   onFailure: (e: unknown) => void
   onSuccess: (info: {
@@ -31,7 +34,7 @@ export const SignUpFlowTikTokAuth = ({
   onSuccess,
   onFailure,
   onClose
-}: SignupFlowTikTokAuthProps) => {
+}: SignUpFlowTikTokAuthProps) => {
   const dispatch = useDispatch()
   const abandoned = useSelector(getAbandoned)
   const audiusQueryContext = useAudiusQueryContext()
@@ -42,11 +45,10 @@ export const SignUpFlowTikTokAuth = ({
     }
   }, [abandoned, onClose])
 
-  const handleSuccess = async ({
-    profileData
-  }: {
-    profileData: TikTokProfileData
-  }) => {
+  const handleSuccess = async (
+    profileData: TikTokProfileData,
+    requiresUserReview: boolean
+  ) => {
     try {
       const { profile, handleTooLong } = profileData
       const handleSchema = pickHandleSchema({
@@ -57,7 +59,8 @@ export const SignUpFlowTikTokAuth = ({
       const validationResult = await handleSchema.safeParseAsync({
         handle: profile.username
       })
-      const requiresReview = !handleTooLong && !validationResult.success
+      const requiresReview =
+        (!handleTooLong && !validationResult.success) || requiresUserReview
 
       track(
         make({
@@ -76,19 +79,64 @@ export const SignUpFlowTikTokAuth = ({
     }
   }
 
-  const handlePress = () => {
+  const withTikTokAuth = useTikTokAuth({
+    onError: (error) => {
+      onFailure(error)
+      dispatch(oauthActions.setTikTokError(error))
+    }
+  })
+
+  const handlePress = (e: GestureResponderEvent) => {
     onStart()
     dispatch(oauthActions.setTikTokError(null))
+    withTikTokAuth(async (accessToken: string) => {
+      try {
+        // Using TikTok v1 api because v2 does not have CORS headers set
+        const result = await fetch(
+          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              fields: [
+                'open_id',
+                'username',
+                'display_name',
+                'avatar_large_url',
+                'is_verified'
+              ]
+            })
+          }
+        )
+
+        const resultJson = await result.json()
+        const tikTokProfile = resultJson.data.user
+
+        const profileData = await formatTikTokProfile(
+          tikTokProfile,
+          async (image: File) => image
+        )
+
+        const { profile, profileImage, requiresUserReview } = profileData
+        dispatch(
+          oauthActions.setTikTokInfo(
+            tikTokProfile.open_id,
+            profile,
+            profileImage,
+            requiresUserReview
+          )
+        )
+        handleSuccess(profileData, requiresUserReview)
+      } catch (e) {
+        console.error(e)
+      }
+    })
   }
 
   return (
-    <TikTokAuthButton
+    <SocialButton
+      socialType='tiktok'
       onPress={handlePress}
-      onError={onFailure}
-      onSuccess={handleSuccess}
-      onClose={onClose}
-      style={{ flex: 1 }}
-      noText
+      aria-label='Sign up with TikTok'
     />
   )
 }
