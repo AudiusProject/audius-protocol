@@ -1,10 +1,15 @@
+import { SquareSizes, WidthSizes, accountSelectors } from '@audius/common'
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
 
 import {
   getCoverPhotoField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
+
+const { getUserId } = accountSelectors
 
 const messages = {
   selectCoverPhoto: 'Select cover photo'
@@ -25,9 +30,18 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: profileImage } = useSelector(getProfileImageField) ?? {}
 
+  const userId = useSelector(getUserId) ?? {}
+  const accountProfilePic = useProfilePicture(
+    userId as number,
+    SquareSizes.SIZE_150_BY_150
+  )
+  const accountCoverPhoto = useCoverPhoto(userId as number, WidthSizes.SIZE_640)
+
   const { color, spacing, cornerRadius } = useTheme()
-  const coverPhotoUrl = propsCoverPhotoUrl ?? coverPhoto?.url
-  const profileImageUrl = propsProfileImageUrl ?? profileImage?.url
+  const coverPhotoUrl =
+    propsCoverPhotoUrl ?? coverPhoto?.url ?? accountCoverPhoto.source
+  const profileImageUrl =
+    propsProfileImageUrl ?? profileImage?.url ?? accountProfilePic
   const hasImage = coverPhotoUrl || profileImageUrl
   return (
     <Box

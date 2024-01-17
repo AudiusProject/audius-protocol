@@ -30,10 +30,13 @@ import {
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_LOADING_PAGE,
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE,
-  TRENDING_PAGE
+  TRENDING_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_ARTISTS_PAGE
 } from 'utils/route'
 
 const messages = {
@@ -49,6 +52,16 @@ const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion } = useTheme()
   const accountCreationStatus = useSelector(getStatus)
+
+  const hideCloseButton = useRouteMatch({
+    path: [
+      SIGN_UP_GENRES_PAGE,
+      SIGN_UP_ARTISTS_PAGE,
+      SIGN_UP_APP_CTA_PAGE,
+      SIGN_UP_LOADING_PAGE
+    ],
+    exact: true
+  })
 
   const collapsedDesktopPageMatch = useRouteMatch({
     path: [
@@ -67,7 +80,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
 
   return (
     <Flex w='100%' p='unit14' justifyContent='center'>
-      {accountCreationStatus !== EditingStatus.LOADING ? (
+      {!hideCloseButton ? (
         <Link
           to={TRENDING_PAGE}
           css={{

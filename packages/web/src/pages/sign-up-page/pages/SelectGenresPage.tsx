@@ -8,10 +8,11 @@ import {
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setField } from 'common/store/pages/signon/actions'
+import { getGenres } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -22,14 +23,15 @@ import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
 
 type SelectGenresValue = { genres: Genre[] }
 
-const initialValues: SelectGenresValue = {
-  genres: []
-}
-
 export const SelectGenresPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
+  const savedGenres = useSelector(getGenres)
+
+  const initialValues: SelectGenresValue = {
+    genres: (savedGenres as Genre[]) ?? []
+  }
   const handleSubmit = useCallback(
     (values: SelectGenresValue) => {
       const { genres } = values
@@ -49,7 +51,7 @@ export const SelectGenresPage = () => {
         onSubmit={handleSubmit}
         validationSchema={toFormikValidationSchema(selectGenresSchema)}
       >
-        {({ isValid, dirty }) => (
+        {({ isValid }) => (
           <Page
             as={Form}
             centered
@@ -81,11 +83,7 @@ export const SelectGenresPage = () => {
                 )
               })}
             </Flex>
-            <PageFooter
-              centered
-              sticky
-              buttonProps={{ disabled: !(dirty && isValid) }}
-            />
+            <PageFooter centered sticky buttonProps={{ disabled: !isValid }} />
           </Page>
         )}
       </Formik>

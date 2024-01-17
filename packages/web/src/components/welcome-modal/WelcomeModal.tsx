@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { fillString, welcomeModalMessages as messages } from '@audius/common'
+import {
+  SquareSizes,
+  accountSelectors,
+  fillString,
+  welcomeModalMessages as messages
+} from '@audius/common'
 import {
   Button,
   Flex,
@@ -20,15 +25,25 @@ import {
 } from 'common/store/pages/signon/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
 
+const { getUserId } = accountSelectors
+
 export const WelcomeModal = () => {
   const { isMobile } = useMedia()
   const { value: userName } = useSelector(getNameField)
-  const { value: profileImage } = { ...useSelector(getProfileImageField) }
+  const { value: signOnProfileImage } = { ...useSelector(getProfileImageField) }
+  const userId = useSelector(getUserId) ?? {}
+  const presavedProfilePic = useProfilePicture(
+    userId as number,
+    SquareSizes.SIZE_150_BY_150
+  )
   const [isOpen, setIsOpen] = useModalState('Welcome')
+
+  const profileImage = signOnProfileImage?.url ?? presavedProfilePic
 
   const Root = isMobile ? Drawer : Modal
   const onClose = useCallback(() => {
@@ -56,7 +71,7 @@ export const WelcomeModal = () => {
           zIndex: 2
         }}
       >
-        <Avatar variant='strong' src={profileImage?.url} />
+        <Avatar variant='strong' src={profileImage} />
       </Box>
       <Flex
         direction='column'
