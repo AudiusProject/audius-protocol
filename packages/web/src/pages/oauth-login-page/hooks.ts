@@ -25,6 +25,7 @@ import {
   getDeveloperApp,
   getIsAppAuthorized,
   getIsRedirectValid,
+  handleAuthorizeConnectDashboardWallet,
   isValidApiKey,
   validateWriteOnceParams,
   WriteOnceParams
@@ -112,7 +113,8 @@ export const useParsedQueryParams = () => {
       const { error: writeOnceParamsError, txParams: txParamsRes } =
         validateWriteOnceParams({
           tx,
-          params: rest
+          params: rest,
+          willUsePostMessage: parsedRedirectUri === 'postmessage'
         })
       txParams = txParamsRes
 
@@ -261,8 +263,7 @@ export const useOAuthSetup = () => {
     async ({
       account,
       grantCreated,
-      onError,
-      txSignature
+      onError
     }: {
       account: User
       grantCreated?: boolean | undefined
@@ -275,7 +276,6 @@ export const useOAuthSetup = () => {
         errorMessage: string
         error?: Error
       }) => void
-      txSignature?: { message: string; signature: string }
     }) => {
       const jwt = await formOAuthResponse({
         account,
@@ -288,8 +288,7 @@ export const useOAuthSetup = () => {
               shouldRedirect: true
             })
           )
-        },
-        txSignature
+        }
       })
       if (jwt == null) {
         onError({ isUserError: false, errorMessage: messages.miscError })
@@ -401,7 +400,6 @@ export const useOAuthSetup = () => {
     }) => void
   }) => {
     let shouldCreateWriteGrant = false
-    let txSignature: { message: string; signature: string } | undefined
 
     if (scope === 'write') {
       try {
@@ -431,20 +429,22 @@ export const useOAuthSetup = () => {
       }
     } else if (scope === 'write_once') {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
-      const message = `Connecting Audius protocol dashboard wallet ${
-        txParams!.wallet
-      } at ${Math.round(new Date().getTime() / 1000)}`
-      // Make signature and return
-      const { signature } =
-        await audiusBackendInstance.signDiscoveryNodeRequest(message)
-      txSignature = { message, signature }
+      const success = await handleAuthorizeConnectDashboardWallet({
+        state,
+        originUrl: parsedOrigin,
+        onError,
+        account,
+        txParams: txParams!
+      })
+      if (!success) {
+        return
+      }
     }
 
     await formResponseAndRedirect({
       account,
       grantCreated: shouldCreateWriteGrant,
-      onError,
-      txSignature
+      onError
     })
   }
 

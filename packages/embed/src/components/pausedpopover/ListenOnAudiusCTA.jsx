@@ -8,12 +8,12 @@ const messages = {
   buy: 'Buy'
 }
 
-const ListenOnAudiusCTA = ({ audiusURL, premiumConditions }) => {
+const ListenOnAudiusCTA = ({ audiusURL, streamConditions }) => {
   const onClick = () => {
     window.open(getCopyableLink(audiusURL), '_blank')
   }
   const isPurchaseable =
-    premiumConditions && 'usdc_purchase' in premiumConditions
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Button
@@ -24,11 +24,11 @@ const ListenOnAudiusCTA = ({ audiusURL, premiumConditions }) => {
       <Text variant='title' size='l'>
         {isPurchaseable
           ? `${messages.buy} $${USDC(
-              premiumConditions.usdc_purchase.price / 100
-            ).toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}`
+            streamConditions.usdc_purchase.price / 100
+          ).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`
           : messages.listen}
       </Text>
     </Button>

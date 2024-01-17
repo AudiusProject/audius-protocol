@@ -22,8 +22,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     profileImageUrl: propsProfileImageUrl,
     isEditing
   } = props
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
 
   const { color, spacing, cornerRadius } = useTheme()
   const coverPhotoUrl = propsCoverPhotoUrl ?? coverPhoto?.url

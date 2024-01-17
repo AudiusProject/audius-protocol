@@ -11,7 +11,7 @@ import {
   collectionPageLineupActions as tracksActions,
   imageBlank as placeholderCoverArt,
   newCollectionMetadata,
-  usePremiumContentAccessMap,
+  useGatedContentAccessMap,
   EditPlaylistValues,
   cacheCollectionsSelectors,
   useEditPlaylistModal
@@ -329,7 +329,7 @@ const EditPlaylistPage = g(
 
     useTemporaryNavContext(setters)
 
-    const trackAccessMap = usePremiumContentAccessMap(tracks ?? [])
+    const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
 
     // Put together track list if necessary
     let trackList = null
@@ -341,10 +341,10 @@ const EditPlaylistPage = g(
           showRemoveTrackDrawer &&
           t.track_id === confirmRemoveTrack?.trackId &&
           playlistTrack?.time === confirmRemoveTrack?.timestamp
-        const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
           t.track_id
-        ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-        const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+        ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+        const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
         return {
           isLoading: false,
@@ -354,7 +354,7 @@ const EditPlaylistPage = g(
           permalink: t.permalink,
           trackId: t.track_id,
           time: playlistTrack?.time,
-          isPremium: t.is_premium,
+          isStreamGated: t.is_stream_gated,
           isDeleted: t.is_delete || !!t.user.is_deactivated,
           isLocked,
           isRemoveActive

@@ -31,7 +31,7 @@ def get_remixable_tracks(args):
                 Track.is_current == True,
                 Track.is_unlisted == False,
                 Track.is_delete == False,
-                Track.is_premium == False,
+                Track.is_stream_gated == False,
                 StemTrack.is_current == True,
                 StemTrack.is_unlisted == False,
                 StemTrack.is_delete == False,

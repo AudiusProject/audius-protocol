@@ -91,7 +91,7 @@ export const createScheduledReleaseService = (
         releaseDate: release.release_date,
 
         isUnlisted: release.data.isUnlisted,
-        isPremium: release.data.isPremium,
+        isStreamGated: release.data.isStreamGated,
         fieldVisibility: release.data.fieldVisibility,
         description: release.data.description,
         license: release.data.license,

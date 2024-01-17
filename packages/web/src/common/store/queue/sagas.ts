@@ -22,8 +22,7 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  getContext,
-  doesUserHaveTrackAccess
+  getContext
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -89,12 +88,12 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
-    const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
+    const doesUserHaveStreamAccess = !!track.access.stream
     return {
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
+      isPreview: isPreview(track, currentUserId) && !doesUserHaveStreamAccess
     }
   }
 }
@@ -303,17 +302,14 @@ export function* watchNext() {
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
     const currentUserId = yield* select(getUserId)
-    const doesUserHaveAccess = yield* call(
-      doesUserHaveTrackAccess,
-      track ?? null
-    )
+    const doesUserHaveStreamAccess = !!track?.access?.stream
 
-    // Skip deleted, owner deactivated, or locked premium track
+    // Skip deleted, owner deactivated, or locked gated track
     if (
       track &&
       (track.is_delete ||
         user?.is_deactivated ||
-        (!doesUserHaveAccess && !track.preview_cid))
+        (!doesUserHaveStreamAccess && !track.preview_cid))
     ) {
       yield* put(next({ skip }))
     } else {
@@ -330,7 +326,7 @@ export function* watchNext() {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
         const isTrackPreview =
-          isPreview(track, currentUserId) && !doesUserHaveAccess
+          isPreview(track, currentUserId) && !doesUserHaveStreamAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
@@ -417,10 +413,7 @@ export function* watchPrevious() {
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
       const currentUserId = yield* select(getUserId)
-      const doesUserHaveAccess = yield* call(
-        doesUserHaveTrackAccess,
-        track ?? null
-      )
+      const doesUserHaveStreamAccess = !!track?.access?.stream
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.
@@ -428,7 +421,7 @@ export function* watchPrevious() {
         track &&
         (track.is_delete ||
           user?.is_deactivated ||
-          (!doesUserHaveAccess && !track.preview_cid))
+          (!doesUserHaveStreamAccess && !track.preview_cid))
       ) {
         yield* put(previous())
       } else {
@@ -439,7 +432,8 @@ export function* watchPrevious() {
               uid,
               trackId: id,
               source,
-              isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
+              isPreview:
+                isPreview(track, currentUserId) && !doesUserHaveStreamAccess
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {

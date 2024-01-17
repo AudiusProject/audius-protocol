@@ -2,9 +2,9 @@ import { MouseEvent, ReactNode, useCallback } from 'react'
 
 import {
   FieldVisibility,
-  premiumContentSelectors,
+  gatedContentSelectors,
   ID,
-  PremiumConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import cn from 'classnames'
@@ -16,11 +16,11 @@ import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import typeStyles from 'components/typography/typography.module.css'
 
-import { PremiumConditionsPill } from '../PremiumConditionsPill'
+import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackTile.module.css'
 
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { getGatedTrackStatusMap } = gatedContentSelectors
 
 const messages = {
   repostLabel: 'Repost',
@@ -28,7 +28,7 @@ const messages = {
 }
 
 type BottomRowProps = {
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   isDisabled?: boolean
   isLoading?: boolean
   isFavorited?: boolean
@@ -43,15 +43,15 @@ type BottomRowProps = {
   showIconButtons?: boolean
   isTrack?: boolean
   trackId?: ID
-  premiumConditions?: Nullable<PremiumConditions>
+  streamConditions?: Nullable<AccessConditions>
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
-  onClickPremiumPill?: (e: MouseEvent) => void
+  onClickPill?: (e: MouseEvent) => void
 }
 
 export const BottomRow = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   isDisabled,
   isLoading,
   isFavorited,
@@ -66,14 +66,14 @@ export const BottomRow = ({
   showIconButtons,
   isTrack,
   trackId,
-  premiumConditions,
+  streamConditions,
   onClickRepost,
   onClickFavorite,
   onClickShare,
-  onClickPremiumPill
+  onClickPill
 }: BottomRowProps) => {
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const premiumTrackStatus = trackId && premiumTrackStatusMap[trackId]
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
 
   const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
 
@@ -111,7 +111,7 @@ export const BottomRow = ({
     )
   }
 
-  if (isTrack && premiumConditions && !isLoading && !doesUserHaveAccess) {
+  if (isTrack && streamConditions && !isLoading && !hasStreamAccess) {
     return (
       <div
         className={cn(
@@ -120,10 +120,10 @@ export const BottomRow = ({
           styles.bottomRow
         )}
       >
-        <PremiumConditionsPill
-          premiumConditions={premiumConditions}
-          unlocking={premiumTrackStatus === 'UNLOCKING'}
-          onClick={onClickPremiumPill}
+        <GatedConditionsPill
+          streamConditions={streamConditions}
+          unlocking={gatedTrackStatus === 'UNLOCKING'}
+          onClick={onClickPill}
         />
         <div>{rightActions}</div>
       </div>

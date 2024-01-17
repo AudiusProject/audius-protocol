@@ -11,12 +11,12 @@ import {
   formatDate,
   OverflowAction,
   imageBlank as placeholderArt,
-  PremiumConditions,
+  AccessConditions,
   Nullable,
   getDogEarType,
-  isPremiumContentCollectibleGated,
-  isPremiumContentUSDCPurchaseGated,
-  FeatureFlags
+  FeatureFlags,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import {
   Button,
@@ -41,12 +41,13 @@ import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
-import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
+import { GatedTrackSection } from 'components/track/GatedTrackSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
+import { trpc } from 'utils/trpcClientWeb'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
 
@@ -121,9 +122,10 @@ type TrackHeaderProps = {
   saveCount: number
   repostCount: number
   isUnlisted: boolean
-  isPremium: boolean
-  premiumConditions: Nullable<PremiumConditions>
-  doesUserHaveAccess: boolean
+  isStreamGated: boolean
+  streamConditions: Nullable<AccessConditions>
+  hasStreamAccess: boolean
+  hasDownloadAccess: boolean
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
@@ -158,9 +160,10 @@ const TrackHeader = ({
   isSaved,
   isReposted,
   isUnlisted,
-  isPremium,
-  premiumConditions,
-  doesUserHaveAccess,
+  isStreamGated,
+  streamConditions,
+  hasStreamAccess,
+  hasDownloadAccess,
   isRemix,
   fieldVisibility,
   coSign,
@@ -184,16 +187,19 @@ const TrackHeader = ({
 }: TrackHeaderProps) => {
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
-  const showSocials = !isUnlisted && doesUserHaveAccess
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const showSocials = !isUnlisted && hasStreamAccess
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
-  const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
+  const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
-  const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
+  const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount =
-    isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
+    isOwner || (!isStreamGated && (isUnlisted || fieldVisibility.play_count))
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
+  )
 
   const image = useTrackCoverArt(
     trackId,
@@ -230,15 +236,16 @@ const TrackHeader = ({
       isOwner || !showSocials
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isOwner || !showSocials
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
@@ -278,7 +285,7 @@ const TrackHeader = ({
         trackId={trackId}
         isOwner={isOwner}
         following={isFollowing}
-        doesUserHaveAccess={doesUserHaveAccess}
+        hasDownloadAccess={hasDownloadAccess}
         onDownload={onDownload}
       />
     )
@@ -322,10 +329,10 @@ const TrackHeader = ({
   )
 
   const renderDogEar = () => {
-    // Omitting isOwner and doesUserHaveAccess to ensure we always show premium DogEars
+    // Omitting isOwner and hasStreamAccess to ensure we always show gated DogEars
     const DogEarType = getDogEarType({
       isUnlisted,
-      premiumConditions
+      streamConditions
     })
     if (!isLoading && DogEarType) {
       return (
@@ -338,18 +345,18 @@ const TrackHeader = ({
   }
 
   const renderHeaderText = () => {
-    if (isPremium) {
+    if (isStreamGated) {
       let IconComponent = IconSpecialAccess
       let titleMessage = messages.specialAccess
-      if (isPremiumContentCollectibleGated(premiumConditions)) {
+      if (isContentCollectibleGated(streamConditions)) {
         IconComponent = IconCollectible
         titleMessage = messages.collectibleGated
-      } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      } else if (isContentUSDCPurchaseGated(streamConditions)) {
         IconComponent = IconCart
         titleMessage = messages.premiumTrack
       }
       return (
-        <div className={cn(styles.typeLabel, styles.premiumContentLabel)}>
+        <div className={cn(styles.typeLabel, styles.gatedContentLabel)}>
           <IconComponent />
           <span>{titleMessage}</span>
         </div>
@@ -394,21 +401,21 @@ const TrackHeader = ({
       </div>
       {showPlay ? (
         <PlayButton
-          disabled={!doesUserHaveAccess}
+          disabled={!hasStreamAccess}
           playing={isPlaying && !isPreviewing}
           onPlay={onPlay}
         />
       ) : null}
-      {premiumConditions && trackId ? (
-        <PremiumTrackSection
+      {streamConditions && trackId ? (
+        <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}
-          wrapperClassName={styles.premiumTrackSectionWrapper}
-          className={styles.premiumTrackSection}
-          buttonClassName={styles.premiumTrackSectionButton}
+          wrapperClassName={styles.gatedTrackSectionWrapper}
+          className={styles.gatedTrackSection}
+          buttonClassName={styles.gatedTrackSectionButton}
           ownerId={userId}
         />
       ) : null}
@@ -491,7 +498,7 @@ TrackHeader.defaultProps = {
 
   saveCount: 0,
   tags: [],
-  onPlay: () => {}
+  onPlay: () => { }
 }
 
 export default TrackHeader

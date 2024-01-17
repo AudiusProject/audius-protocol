@@ -46,6 +46,7 @@ export default interface SignOnPageState {
   email: EditableField
   name: EditableField
   password: EditableField
+  otp: EditableField
   handle: EditableField
   genres: string[]
   verified: boolean
@@ -56,8 +57,8 @@ export default interface SignOnPageState {
   instagramId: string
   linkedSocialOnFirstPage: boolean
   twitterScreenName: string
-  profileImage: EditableField<ImageFieldValue>
-  coverPhoto: EditableField<ImageFieldValue>
+  profileImage: ImageFieldValue
+  coverPhoto: ImageFieldValue
   suggestedFollowIds: ID[]
   suggestedFollowEntries: User[]
   followIds: ID[]

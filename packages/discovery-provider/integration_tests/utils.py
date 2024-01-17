@@ -222,8 +222,10 @@ def populate_mock_db(db, entities, block_offset=None):
                 if track_meta.get("release_date")
                 else None,
                 is_unlisted=track_meta.get("is_unlisted", False),
-                is_premium=track_meta.get("is_premium", False),
-                premium_conditions=track_meta.get("premium_conditions", None),
+                is_stream_gated=track_meta.get("is_stream_gated", False),
+                stream_conditions=track_meta.get("stream_conditions", None),
+                is_download_gated=track_meta.get("is_download_gated", False),
+                download_conditions=track_meta.get("download_conditions", None),
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
                 ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),

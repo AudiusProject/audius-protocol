@@ -2,7 +2,10 @@ import { useCallback, useState } from 'react'
 
 import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
-import { Pressable, type GestureResponderEvent } from 'react-native'
+import {
+  type GestureResponderEvent,
+  TouchableWithoutFeedback
+} from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
@@ -14,7 +17,7 @@ import Animated, {
 import { useTheme } from '../../foundations/theme/useTheme'
 import { Text } from '../Text/Text'
 
-import type { TextLinkProps } from './types'
+import type { LinkProps, TextLinkProps } from './types'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
@@ -33,7 +36,6 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     showUnderline,
     ...other
   } = props
-  const { onPress: onPressLink, ...linkProps } = useLinkProps({ to, action })
   const { color, motion } = useTheme()
   const [isPressing, setIsPressing] = useState(showUnderline)
   const pressed = useSharedValue(0)
@@ -41,10 +43,9 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e)
-      onPressLink(e)
       pressed.value = withTiming(0, motion.press)
     },
-    [motion.press, onPress, onPressLink, pressed]
+    [motion.press, onPress, pressed]
   )
 
   const variantColors = {
@@ -73,28 +74,60 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     )
   }))
 
+  let element = (
+    <AnimatedText
+      style={[
+        animatedLinkStyles,
+        css({
+          textDecorationLine: isPressing || showUnderline ? 'underline' : 'none'
+        })
+      ]}
+      variant={textVariant}
+      {...other}
+    >
+      {children}
+    </AnimatedText>
+  )
+
+  const rootProps = {
+    onPressIn: () => setIsPressing(true),
+    onPressOut: () => setIsPressing(false)
+  }
+
+  if (to) {
+    element = (
+      <Link to={to} action={action} onPress={handlePress} {...rootProps}>
+        {element}
+      </Link>
+    )
+  } else {
+    element = (
+      <TouchableWithoutFeedback onPress={handlePress} {...other} {...rootProps}>
+        {element}
+      </TouchableWithoutFeedback>
+    )
+  }
+
+  return <GestureDetector gesture={tap}>{element}</GestureDetector>
+}
+
+const Link = <ParamList extends ReactNavigation.RootParamList>(
+  props: LinkProps<ParamList>
+) => {
+  const { to, action, onPress, children, ...other } = props
+  const { onPress: onPressLink, ...linkProps } = useLinkProps({ to, action })
+
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      onPress?.(e)
+      onPressLink(e)
+    },
+    [onPress, onPressLink]
+  )
+
   return (
-    <GestureDetector gesture={tap}>
-      <Pressable
-        onPress={handlePress}
-        onPressIn={() => setIsPressing(true)}
-        onPressOut={() => setIsPressing(false)}
-      >
-        <AnimatedText
-          style={[
-            animatedLinkStyles,
-            css({
-              textDecorationLine:
-                isPressing || showUnderline ? 'underline' : 'none'
-            })
-          ]}
-          variant={textVariant}
-          {...other}
-          {...linkProps}
-        >
-          {children}
-        </AnimatedText>
-      </Pressable>
-    </GestureDetector>
+    <TouchableWithoutFeedback onPress={handlePress} {...other} {...linkProps}>
+      {children}
+    </TouchableWithoutFeedback>
   )
 }

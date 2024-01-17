@@ -29,7 +29,7 @@ class DateTimeEncoder(json.JSONEncoder):
     def default(self, o):  # pylint: disable=E0202
         if isinstance(o, (datetime.date, datetime.datetime)):
             # the Z is required in JS date format
-            return o.isoformat() + " Z"
+            return o.isoformat() + "Z"
         return json.JSONEncoder.default(self, o)
 
 

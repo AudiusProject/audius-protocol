@@ -61,7 +61,25 @@ export const UploadingTracksScreen = () => {
   const dispatch = useDispatch()
 
   useEffectOnce(() => {
-    dispatch(uploadTracks(tracks, undefined, UploadType.INDIVIDUAL_TRACK))
+    // set download gate based on stream gate
+    // this will be updated once the UI for download gated tracks is implemented
+    const tracksToUpload = tracks.map((track) => {
+      const isDownloadable = !!track.metadata.download?.is_downloadable
+      const isDownloadGated = track.metadata.is_stream_gated
+      const downloadConditions = track.metadata.stream_conditions
+      return {
+        ...track,
+        metadata: {
+          ...track.metadata,
+          is_downloadable: isDownloadable,
+          is_download_gated: isDownloadGated,
+          download_conditions: downloadConditions
+        }
+      }
+    })
+    dispatch(
+      uploadTracks(tracksToUpload, undefined, UploadType.INDIVIDUAL_TRACK)
+    )
   })
 
   const trackUploadProgress = useSelector(getCombinedUploadPercentage)

@@ -16,7 +16,7 @@ import {
   cacheTracksActions,
   SquareSizes,
   Name,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -44,9 +44,9 @@ export const ChatMessageTrack = ({
     { disabled: !permalink || !currentUserId }
   )
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(track ?? null)
+  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
-    !!track?.is_premium && !!track?.preview_cid && !doesUserHaveAccess
+    !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
 
   const trackId = track?.track_id
 
