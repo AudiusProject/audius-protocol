@@ -1,7 +1,13 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { type ID, DownloadQuality } from '@audius/common'
+import {
+  DownloadQuality,
+  cacheTracksSelectors,
+  useCurrentStems
+} from '@audius/common'
+import type { ID, CommonState } from '@audius/common'
 import { Animated, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { IconReceive, IconCaretDown } from '@audius/harmony-native'
 import { Button, SegmentedControl, Text } from 'app/components/core'
@@ -9,6 +15,14 @@ import { Expandable, useExpandable } from 'app/components/expandable'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+
+import { DownloadRow } from './DownloadRow'
+
+const { getTrack } = cacheTracksSelectors
+
+const ORIGINAL_TRACK_INDEX = 1
+const STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK = 1
+const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
@@ -20,8 +34,6 @@ const messages = {
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
-    display: 'flex',
-    flexDirection: 'column',
     borderWidth: 1,
     borderColor: palette.borderDefault,
     borderRadius: spacing(2),
@@ -29,13 +41,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   titleContainer: {
     padding: spacing(4),
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
   titleContainerInner: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing(2)
@@ -45,8 +55,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   qualityContainer: {
     padding: spacing(4),
-    display: 'flex',
-    flexDirection: 'column',
     borderTopWidth: 1,
     borderColor: palette.borderDefault,
     gap: spacing(4),
@@ -63,6 +71,10 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const { isExpanded, setIsExpanded, springToValue } = useExpandable()
   const rotateAnim = useRef(new Animated.Value(0))
+  const { stemTracks } = useCurrentStems({ trackId })
+  const track = useSelector((state: CommonState) =>
+    getTrack(state, { id: trackId })
+  )
 
   const onExpand = useCallback(() => {
     springToValue({
@@ -143,6 +155,26 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             style={styles.downloadAll}
           />
         </View>
+        {track?.is_downloadable ? (
+          <DownloadRow
+            trackId={trackId}
+            quality={quality}
+            index={ORIGINAL_TRACK_INDEX}
+          />
+        ) : null}
+        {stemTracks?.map((s, i) => (
+          <DownloadRow
+            trackId={s.id}
+            key={s.id}
+            index={
+              i +
+              (track?.is_downloadable
+                ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+            }
+            quality={quality}
+          />
+        ))}
       </Expandable>
     </View>
   )
