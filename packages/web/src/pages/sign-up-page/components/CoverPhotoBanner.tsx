@@ -27,22 +27,27 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     profileImageUrl: propsProfileImageUrl,
     isEditing
   } = props
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const { value: signOnCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: signOnProfileImage } = useSelector(getProfileImageField) ?? {}
 
   const userId = useSelector(getUserId) ?? {}
   const accountProfilePic = useProfilePicture(
     userId as number,
     SquareSizes.SIZE_150_BY_150
   )
-  const accountCoverPhoto = useCoverPhoto(userId as number, WidthSizes.SIZE_640)
+  const accountCoverPhotoObj = useCoverPhoto(
+    userId as number,
+    WidthSizes.SIZE_640
+  )
+  const accountCoverPhoto =
+    accountCoverPhotoObj.source === '' ? undefined : accountCoverPhotoObj.source
 
   const { color, spacing, cornerRadius } = useTheme()
-  const coverPhotoUrl =
-    propsCoverPhotoUrl ?? coverPhoto?.url ?? accountCoverPhoto.source
-  const profileImageUrl =
-    propsProfileImageUrl ?? profileImage?.url ?? accountProfilePic
-  const hasImage = coverPhotoUrl || profileImageUrl
+  const coverPhoto =
+    propsCoverPhotoUrl ?? signOnCoverPhoto?.url ?? accountCoverPhoto
+  const profileImage =
+    propsProfileImageUrl ?? signOnProfileImage?.url ?? accountProfilePic
+  const hasImage = coverPhoto || profileImage
   return (
     <Box
       h='100%'
@@ -62,7 +67,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
           // gradient overlay
           background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%)`,
           // When there is no cover photo we use the profile photo and heavily blur it
-          ...(hasImage && !coverPhotoUrl
+          ...(hasImage && !coverPhoto
             ? {
                 backdropFilter: 'blur(25px)'
               }
@@ -76,7 +81,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
         },
         ...(hasImage
           ? {
-              backgroundImage: `url(${coverPhotoUrl ?? profileImageUrl})`,
+              backgroundImage: `url(${coverPhoto ?? profileImage})`,
               backgroundPosition: 'center',
               backgroundSize: '100%',
               backgroundRepeat: 'no-repeat, no-repeat'

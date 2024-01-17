@@ -91,15 +91,15 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     size
   } = props
   const { value: profileImageField } = useSelector(getProfileImageField) ?? {}
+  const { value: storedDisplayName } = useSelector(getNameField)
+  const { value: handle } = useSelector(getHandleField)
+  const isVerified = useSelector(getIsVerified)
   const userId = useSelector(getUserId) ?? {}
   const presavedProfilePic = useProfilePicture(
     userId as number,
     SquareSizes.SIZE_150_BY_150
   )
 
-  const { value: storedDisplayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
-  const isVerified = useSelector(getIsVerified)
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()
   const navigate = useNavigateToPage()
