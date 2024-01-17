@@ -12,7 +12,7 @@ import {
   withdrawUSDCSelectors,
   Status,
   Name,
-  WithdrawalMethod,
+  WithdrawMethod,
   useFeatureFlag,
   FeatureFlags,
   useRemoteVar,
@@ -57,6 +57,8 @@ const messages = {
   }
 }
 
+const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
+
 const WithdrawUSDCFormSchema = (
   userBalanceCents: number,
   minWithdrawBalanceCents: number
@@ -67,7 +69,7 @@ const WithdrawUSDCFormSchema = (
 
   return z.discriminatedUnion(METHOD, [
     z.object({
-      [METHOD]: z.literal(WithdrawalMethod.COINFLOW),
+      [METHOD]: z.literal(WithdrawMethod.COINFLOW),
       // If user has no balance, don't validate minimum, the form will just be disabled
       [AMOUNT]:
         userBalanceCents !== 0
@@ -75,11 +77,14 @@ const WithdrawUSDCFormSchema = (
           : amount
     }),
     z.object({
-      [METHOD]: z.literal(WithdrawalMethod.MANUAL_TRANSFER),
+      [METHOD]: z.literal(WithdrawMethod.MANUAL_TRANSFER),
       // If user has no balance, don't validate minimum, the form will just be disabled
       [AMOUNT]:
         userBalanceCents !== 0
-          ? amount.gte(1, messages.errors.amountTooLow)
+          ? amount.gte(
+              MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
+              messages.errors.amountTooLow
+            )
           : amount,
       [ADDRESS]: z
         .string()
@@ -165,7 +170,7 @@ export const WithdrawUSDCModal = () => {
     }: {
       amount: number
       address: string
-      method: WithdrawalMethod
+      method: WithdrawMethod
     }) => {
       dispatch(
         beginWithdrawUSDC({
@@ -245,8 +250,8 @@ export const WithdrawUSDCModal = () => {
             [ADDRESS]: '',
             [CONFIRM]: false,
             [METHOD]: isCoinflowEnabled
-              ? WithdrawalMethod.COINFLOW
-              : WithdrawalMethod.MANUAL_TRANSFER
+              ? WithdrawMethod.COINFLOW
+              : WithdrawMethod.MANUAL_TRANSFER
           }}
           validationSchema={toFormikValidationSchema(
             WithdrawUSDCFormSchema(

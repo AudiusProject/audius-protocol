@@ -7,7 +7,7 @@ import {
   useUSDCBalance,
   formatUSDCWeiToFloorCentsNumber,
   BNUSDC,
-  WithdrawalMethod
+  WithdrawMethod
 } from '@audius/common'
 import { Button, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
@@ -69,7 +69,7 @@ export const ConfirmTransferDetails = () => {
     if (!confirmError) {
       setData({
         page:
-          methodValue === WithdrawalMethod.COINFLOW
+          methodValue === WithdrawMethod.COINFLOW
             ? WithdrawUSDCModalPages.PREPARE_TRANSFER
             : WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
       })
@@ -79,7 +79,7 @@ export const ConfirmTransferDetails = () => {
 
   return (
     <div className={styles.root}>
-      {methodValue === WithdrawalMethod.MANUAL_TRANSFER ? (
+      {methodValue === WithdrawMethod.MANUAL_TRANSFER ? (
         <Hint
           text={messages.notSure}
           link={LEARN_MORE_LINK}
@@ -96,7 +96,7 @@ export const ConfirmTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      {methodValue === WithdrawalMethod.COINFLOW ? (
+      {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='medium'>
           {messages.cashTransferDescription}
         </Text>

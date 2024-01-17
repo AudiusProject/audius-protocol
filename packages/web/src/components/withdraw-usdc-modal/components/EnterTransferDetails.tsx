@@ -15,7 +15,7 @@ import {
   padDecimalValue,
   decimalIntegerToHumanReadable,
   Name,
-  WithdrawalMethod,
+  WithdrawMethod,
   FeatureFlags,
   useFeatureFlag
 } from '@audius/common'
@@ -52,9 +52,9 @@ const messages = {
   usdc: '(USDC)'
 }
 
-const withdrawalMethodOptions = [
-  { key: WithdrawalMethod.COINFLOW, text: messages.cash },
-  { key: WithdrawalMethod.MANUAL_TRANSFER, text: messages.crypto }
+const WithdrawMethodOptions = [
+  { key: WithdrawMethod.COINFLOW, text: messages.cash },
+  { key: WithdrawMethod.MANUAL_TRANSFER, text: messages.crypto }
 ]
 
 export const EnterTransferDetails = () => {
@@ -78,7 +78,7 @@ export const EnterTransferDetails = () => {
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
-    useField<WithdrawalMethod>(METHOD)
+    useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(value || balanceNumber)
   )
@@ -104,7 +104,7 @@ export const EnterTransferDetails = () => {
   ] = useField(ADDRESS)
 
   const disableContinue =
-    methodValue === WithdrawalMethod.COINFLOW
+    methodValue === WithdrawMethod.COINFLOW
       ? !!balance?.isZero()
       : !!(!address || balance?.isZero())
 
@@ -125,7 +125,7 @@ export const EnterTransferDetails = () => {
   const handleContinue = useCallback(async () => {
     try {
       setAmountTouched(true)
-      if (methodValue === WithdrawalMethod.MANUAL_TRANSFER) {
+      if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
         setAddressTouched(true)
       }
       const errors = await validateForm()
@@ -162,12 +162,12 @@ export const EnterTransferDetails = () => {
         <SegmentedControl
           fullWidth
           label={messages.transferMethod}
-          options={withdrawalMethodOptions}
+          options={WithdrawMethodOptions}
           onSelectOption={setMethod}
           selected={methodValue}
         />
       ) : null}
-      {methodValue === WithdrawalMethod.COINFLOW ? (
+      {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='medium'>
           {messages.cashTransferDescription}
         </Text>

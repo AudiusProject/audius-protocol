@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from 'models/Status'
 
-import { CoinflowWithdrawalState, WithdrawalMethod } from './types'
+import { CoinflowWithdrawState, WithdrawMethod } from './types'
 
 type WithdrawUSDCState = {
   withdrawStatus: Status
-  coinflowState: CoinflowWithdrawalState
+  coinflowState: CoinflowWithdrawState
   destinationAddress?: string
   amount?: number
-  method: WithdrawalMethod
+  method: WithdrawMethod
   withdrawError?: Error
   withdrawTransaction?: string
   destinationError?: Error
@@ -18,8 +18,8 @@ type WithdrawUSDCState = {
 
 const initialState: WithdrawUSDCState = {
   withdrawStatus: Status.IDLE,
-  method: WithdrawalMethod.MANUAL_TRANSFER,
-  coinflowState: CoinflowWithdrawalState.IDLE
+  method: WithdrawMethod.MANUAL_TRANSFER,
+  coinflowState: CoinflowWithdrawState.IDLE
 }
 
 const slice = createSlice({
@@ -32,7 +32,7 @@ const slice = createSlice({
         /** Balance in cents. Used for analytics */
         currentBalance: number
         /** Transfer amount in cents */
-        method: WithdrawalMethod
+        method: WithdrawMethod
         amount: number
         destinationAddress: string
       }>
@@ -40,19 +40,19 @@ const slice = createSlice({
       state.withdrawStatus = Status.LOADING
     },
     beginCoinflowWithdrawal: (state) => {
-      state.coinflowState = CoinflowWithdrawalState.FUNDING_ROOT_WALLET
+      state.coinflowState = CoinflowWithdrawState.FUNDING_ROOT_WALLET
     },
     coinflowWithdrawalReady: (state) => {
-      state.coinflowState = CoinflowWithdrawalState.READY_FOR_WITHDRAWAL
+      state.coinflowState = CoinflowWithdrawState.READY_FOR_WITHDRAWAL
     },
     coinflowWithdrawalSucceeded: (
       state,
       _action: PayloadAction<{ transaction: string }>
     ) => {
-      state.coinflowState = CoinflowWithdrawalState.SUCCESS
+      state.coinflowState = CoinflowWithdrawState.SUCCESS
     },
     coinflowWithdrawalCanceled: (state) => {
-      state.coinflowState = CoinflowWithdrawalState.CANCELED
+      state.coinflowState = CoinflowWithdrawState.CANCELED
     },
     withdrawUSDCSucceeded: (
       state,

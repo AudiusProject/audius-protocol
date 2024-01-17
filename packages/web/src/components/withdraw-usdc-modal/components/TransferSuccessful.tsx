@@ -9,7 +9,7 @@ import {
   Status,
   withdrawUSDCSelectors,
   Name,
-  WithdrawalMethod
+  WithdrawMethod
 } from '@audius/common'
 import { Button, Flex } from '@audius/harmony'
 import {
@@ -104,7 +104,7 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      {methodValue !== WithdrawalMethod.MANUAL_TRANSFER ? (
+      {methodValue !== WithdrawMethod.MANUAL_TRANSFER ? (
         <>
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>

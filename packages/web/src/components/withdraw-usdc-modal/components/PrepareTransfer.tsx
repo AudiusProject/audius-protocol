@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import {
-  CoinflowWithdrawalState,
+  CoinflowWithdrawState,
   withdrawUSDCSelectors,
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal
@@ -18,7 +18,7 @@ const { getCoinflowState } = withdrawUSDCSelectors
 const messages = {
   holdOn: 'Hold on!',
   preparingTransfer:
-    "We're preparing your transfer. This could take a few moments."
+    "We're preparing your transfer. This could take a few moments. Please do not close your browser."
 }
 
 export const PrepareTransfer = () => {
@@ -26,7 +26,7 @@ export const PrepareTransfer = () => {
   const { setData } = useWithdrawUSDCModal()
 
   useEffect(() => {
-    if (coinflowState === CoinflowWithdrawalState.READY_FOR_WITHDRAWAL) {
+    if (coinflowState === CoinflowWithdrawState.READY_FOR_WITHDRAWAL) {
       setData({ page: WithdrawUSDCModalPages.COINFLOW_TRANSFER })
     }
   }, [coinflowState, setData])

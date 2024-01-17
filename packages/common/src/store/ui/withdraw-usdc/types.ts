@@ -1,4 +1,4 @@
-export enum CoinflowWithdrawalState {
+export enum CoinflowWithdrawState {
   IDLE = 'IDLE',
   FUNDING_ROOT_WALLET = 'FUNDING_ROOT_WALLET',
   READY_FOR_WITHDRAWAL = 'READY_FOR_WITHDRAWAL',
@@ -8,7 +8,7 @@ export enum CoinflowWithdrawalState {
   ERROR = 'ERROR'
 }
 
-export enum WithdrawalMethod {
+export enum WithdrawMethod {
   COINFLOW = 'COINFLOW',
   MANUAL_TRANSFER = 'MANUAL_TRANSFER'
 }

@@ -1,4 +1,4 @@
-import { WithdrawalMethod } from '@audius/common'
+import { WithdrawMethod } from '@audius/common'
 
 export const AMOUNT = 'amount'
 export const ADDRESS = 'address'
@@ -9,5 +9,5 @@ export type WithdrawFormValues = {
   [AMOUNT]: number
   [ADDRESS]: string
   [CONFIRM]: boolean
-  [METHOD]: WithdrawalMethod
+  [METHOD]: WithdrawMethod
 }

@@ -15,7 +15,7 @@ import {
   WithdrawUSDCTransferEventFields,
   withdrawUSDCModalActions,
   WithdrawUSDCModalPages,
-  WithdrawalMethod,
+  WithdrawMethod,
   buyUSDCActions
 } from '@audius/common'
 import {
@@ -558,10 +558,10 @@ function* doWithdrawUSDC({
   payload: { amount, method, currentBalance, destinationAddress }
 }: ReturnType<typeof beginWithdrawUSDC>) {
   switch (method) {
-    case WithdrawalMethod.COINFLOW:
+    case WithdrawMethod.COINFLOW:
       yield* call(doWithdrawUSDCCoinflow, { amount, currentBalance })
       break
-    case WithdrawalMethod.MANUAL_TRANSFER:
+    case WithdrawMethod.MANUAL_TRANSFER:
       yield* call(doWithdrawUSDCManualTransfer, {
         amount,
         currentBalance,
