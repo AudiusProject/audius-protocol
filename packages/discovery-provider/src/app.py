@@ -215,7 +215,7 @@ def configure_flask(test_config, app, mode="app"):
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 # ISO-8601 timestamp format
-                return o.strftime("%Y-%m-%dT%H:%M:%S Z")
+                return o.strftime("%Y-%m-%dT%H:%M:%SZ")
             return JSONEncoder.default(self, o)
 
     app.json_encoder = TimestampJSONEncoder

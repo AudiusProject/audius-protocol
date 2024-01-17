@@ -57,8 +57,8 @@ export default interface SignOnPageState {
   instagramId: string
   linkedSocialOnFirstPage: boolean
   twitterScreenName: string
-  profileImage: EditableField<ImageFieldValue>
-  coverPhoto: EditableField<ImageFieldValue>
+  profileImage: ImageFieldValue
+  coverPhoto: ImageFieldValue
   suggestedFollowIds: ID[]
   suggestedFollowEntries: User[]
   followIds: ID[]

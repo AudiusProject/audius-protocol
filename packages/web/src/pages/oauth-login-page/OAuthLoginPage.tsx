@@ -25,6 +25,7 @@ import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
+
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 
@@ -44,7 +45,10 @@ export const OAuthLoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
-  const [hasCredentialsError, setHasCredentialsError] = useState(false)
+  const [showOtpInput, setShowOtpInput] = useState(false)
+  const [otpInput, setOtpInput] = useState('')
+  const [otpEmail, setOtpEmail] = useState<string | null>(null)
+  const [signInError, setSignInError] = useState<string | null>(null)
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
@@ -64,7 +68,26 @@ export const OAuthLoginPage = () => {
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
-    setHasCredentialsError(false)
+    setSignInError(null)
+  }
+
+  const toggleOtpUI = (on: boolean) => {
+    if (on) {
+      setShowOtpInput(true)
+      setSignInError(messages.otpError)
+    } else {
+      setSignInError(null)
+      setShowOtpInput(false)
+    }
+  }
+
+  const handleEmailInputChange = (input: string) => {
+    if (otpEmail !== input) {
+      toggleOtpUI(false)
+    } else if (otpEmail === input && !showOtpInput) {
+      toggleOtpUI(true)
+    }
+    setEmailInput(input)
   }
 
   const setAndLogGeneralSubmitError = useCallback(
@@ -82,11 +105,11 @@ export const OAuthLoginPage = () => {
         reportToSentry({ level: ErrorLevel.Error, error })
       }
     },
-    [record, appName, apiKey, scope]
+    [apiKey, appName, record, scope]
   )
 
   const setAndLogInvalidCredentialsError = () => {
-    setHasCredentialsError(true)
+    setSignInError(messages.invalidCredentialsError)
     record(
       make(Name.AUDIUS_OAUTH_ERROR, {
         isUserError: true,
@@ -132,7 +155,8 @@ export const OAuthLoginPage = () => {
     try {
       signInResponse = await audiusBackendInstance.signIn(
         emailInput,
-        passwordInput
+        passwordInput,
+        otpInput || undefined
       )
     } catch (err) {
       setIsSubmitting(false)
@@ -161,6 +185,10 @@ export const OAuthLoginPage = () => {
     ) {
       setIsSubmitting(false)
       setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
+    } else if (signInResponse.error && signInResponse.error.includes('403')) {
+      setIsSubmitting(false)
+      setOtpEmail(emailInput)
+      toggleOtpUI(true)
     } else {
       setIsSubmitting(false)
       setAndLogInvalidCredentialsError()
@@ -272,7 +300,7 @@ export const OAuthLoginPage = () => {
               required
               autoComplete='username'
               value={emailInput}
-              onChange={setEmailInput}
+              onChange={handleEmailInputChange}
             />
             <Input
               className={styles.passwordInput}
@@ -286,18 +314,29 @@ export const OAuthLoginPage = () => {
               type='password'
               onChange={setPasswordInput}
             />
-            {!hasCredentialsError ? null : (
+            {signInError == null ? null : (
               <div className={styles.credentialsErrorContainer}>
                 <IconValidationX
                   width={14}
                   height={14}
                   className={styles.credentialsErrorIcon}
                 />
-                <span className={styles.errorText}>
-                  {messages.invalidCredentialsError}
-                </span>
+                <span className={styles.errorText}>{signInError}</span>
               </div>
             )}
+            {showOtpInput ? (
+              <Input
+                placeholder='Verification Code'
+                size='medium'
+                name='otp'
+                value={otpInput}
+                characterLimit={6}
+                type='number'
+                variant={'normal'}
+                onChange={setOtpInput}
+                className={cn(styles.otpInput)}
+              />
+            ) : null}
             <CTAButton
               isSubmitting={isSubmitting}
               text={messages.signInButton}
