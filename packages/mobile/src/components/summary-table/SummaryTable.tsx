@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react'
-import React, { useRef, useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { removeNullable } from '@audius/common'
-import { Animated, View } from 'react-native'
+import { LayoutAnimation, View } from 'react-native'
 
-import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
 import { Text } from 'app/components/core'
-import { Expandable, useExpandable } from 'app/components/expandable'
+import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { useThemeColors, type ThemeColors } from 'app/utils/theme'
+import { type ThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
@@ -68,36 +67,21 @@ export const SummaryTable = ({
   collapsible = false
 }: SummaryTableProps) => {
   const styles = useStyles()
-  const { neutral } = useThemeColors()
   const nonNullItems = items.filter(removeNullable)
-  const rotateAnim = useRef(new Animated.Value(0))
+  const [isExpanded, setIsExpanded] = useState(false)
 
-  const { isExpanded, setIsExpanded, springToValue } = useExpandable()
-  const onExpand = useCallback(() => {
-    springToValue({
-      animation: rotateAnim.current,
-      value: isExpanded ? 0 : 180
-    })
-  }, [isExpanded, springToValue])
+  const onToggleExpand = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(180, 'easeInEaseOut', 'opacity')
+    )
+    setIsExpanded((expanded) => !expanded)
+  }, [])
 
   const renderHeader = () => {
     return collapsible ? (
       <View style={[styles.row, styles.grayRow]}>
         <View style={styles.collapsibleTitle}>
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  rotate: rotateAnim.current.interpolate({
-                    inputRange: [0, 180],
-                    outputRange: ['0deg', '-180deg']
-                  })
-                }
-              ]
-            }}
-          >
-            <IconCaretDown width={16} height={16} fill={neutral} />
-          </Animated.View>
+          <ExpandableArrowIcon expanded={isExpanded} iconSize='s' />
           <Text weight='bold'>{title}</Text>
         </View>
         <Text variant='body' fontSize='large' weight='bold'>
@@ -166,9 +150,8 @@ export const SummaryTable = ({
     <Expandable
       style={styles.container}
       renderHeader={renderHeader}
-      isExpanded={isExpanded}
-      setIsExpanded={setIsExpanded}
-      onExpand={onExpand}
+      expanded={isExpanded}
+      onToggleExpand={onToggleExpand}
     >
       {renderContent()}
     </Expandable>

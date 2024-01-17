@@ -1,1 +1,2 @@
-export { Expandable, useExpandable } from './Expandable'
+export { Expandable } from './Expandable'
+export { ExpandableArrowIcon } from './ExpandableArrowIcon'
