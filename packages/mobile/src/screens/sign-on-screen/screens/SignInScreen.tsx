@@ -66,7 +66,12 @@ export const SignInScreen = () => {
             >
               {messages.signIn}
             </Button>
-            <TextLink variant='visible' textAlign='center' onPress={onOpen}>
+            <TextLink
+              variant='visible'
+              textVariant='body'
+              textAlign='center'
+              onPress={onOpen}
+            >
               {messages.forgotPassword}
             </TextLink>
           </Flex>

@@ -86,10 +86,11 @@ export const Button = (props: ButtonProps) => {
     hexColor ?? (color ? themeColors.special[color] : null)
 
   const primaryStyles: ReactNativeStyle = {
-    ...(isDisabled && {
-      backgroundColor: themeColors.neutral.n150
-    })
+    backgroundColor: isDisabled
+      ? themeColors.neutral.n150
+      : themeColors.primary.primary
   }
+
   const primaryDynamicStyles = {
     default: {
       background: primaryOverrideColor ?? themeColors.primary.primary,
@@ -222,20 +223,21 @@ export const Button = (props: ButtonProps) => {
   }
 
   const animatedButtonStyles = useAnimatedStyle(() => {
-    if (isDisabled) return {}
     return {
       borderColor: interpolateColor(
         pressed.value,
         [0, 1],
         [dynamicStyles.default.border, dynamicStyles.press.border]
       ),
-      backgroundColor: interpolateColor(
-        pressed.value,
-        [0, 1],
-        [dynamicStyles.default.background, dynamicStyles.press.background]
-      )
+      backgroundColor: disabled
+        ? themeColors.neutral.n150
+        : interpolateColor(
+            pressed.value,
+            [0, 1],
+            [dynamicStyles.default.background, dynamicStyles.press.background]
+          )
     }
-  })
+  }, [disabled])
 
   const textStyles =
     size === 'small'
@@ -245,7 +247,6 @@ export const Button = (props: ButtonProps) => {
       : defaultTextStyles
 
   const animatedTextStyles = useAnimatedStyle(() => {
-    if (isDisabled) return {}
     return {
       color: interpolateColor(
         pressed.value,
@@ -253,7 +254,7 @@ export const Button = (props: ButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  })
+  }, [disabled])
 
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
@@ -297,7 +298,7 @@ export const Button = (props: ButtonProps) => {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={isDisabled}
-      style={[buttonStyles, animatedButtonStyles, style]}
+      style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}
       styles={{
         text: [textStyles, animatedTextStyles]

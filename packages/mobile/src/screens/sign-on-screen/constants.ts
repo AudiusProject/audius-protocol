@@ -1,1 +1,1 @@
-export const PANEL_EXPAND_DELAY = 3000
+export const PANEL_EXPAND_DURATION = 880
