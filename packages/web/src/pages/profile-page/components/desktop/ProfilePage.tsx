@@ -310,7 +310,7 @@ const ProfilePage = ({
         }}
       />
     ))
-    if (isOwner && isEditAlbumsEnabled) {
+    if (isOwner) {
       albumCards.unshift(
         <UploadChip
           key='upload-chip'
