@@ -43,6 +43,7 @@ export const OAuthLoginPage = () => {
   const dispatch = useDispatch()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   const [emailInput, setEmailInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
   const [showOtpInput, setShowOtpInput] = useState(false)
@@ -52,19 +53,6 @@ export const OAuthLoginPage = () => {
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
-
-  const {
-    scope,
-    tx,
-    queryParamsError,
-    loading,
-    userAlreadyWriteAuthorized,
-    apiKey,
-    appName,
-    userEmail,
-    authorize,
-    txParams
-  } = useOAuthSetup()
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
@@ -90,23 +78,24 @@ export const OAuthLoginPage = () => {
     setEmailInput(input)
   }
 
-  const setAndLogGeneralSubmitError = useCallback(
-    (isUserError: boolean, errorMessage: string, error?: Error) => {
-      setGeneralSubmitError(errorMessage)
-      record(
-        make(Name.AUDIUS_OAUTH_ERROR, {
-          isUserError,
-          error: errorMessage,
-          appId: (apiKey || appName)!,
-          scope: scope!
-        })
-      )
-      if (error && !isUserError) {
-        reportToSentry({ level: ErrorLevel.Error, error })
-      }
-    },
-    [apiKey, appName, record, scope]
-  )
+  const setAndLogGeneralSubmitError = (
+    isUserError: boolean,
+    errorMessage: string,
+    error?: Error
+  ) => {
+    setGeneralSubmitError(errorMessage)
+    record(
+      make(Name.AUDIUS_OAUTH_ERROR, {
+        isUserError,
+        error: errorMessage,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
+    if (error && !isUserError) {
+      reportToSentry({ level: ErrorLevel.Error, error })
+    }
+  }
 
   const setAndLogInvalidCredentialsError = () => {
     setSignInError(messages.invalidCredentialsError)
@@ -120,21 +109,31 @@ export const OAuthLoginPage = () => {
     )
   }
 
-  const handleAuthError = useCallback(
-    ({
-      isUserError,
-      errorMessage,
-      error
-    }: {
-      isUserError: boolean
-      errorMessage: string
-      error?: Error
-    }) => {
-      setIsSubmitting(false)
-      setAndLogGeneralSubmitError(isUserError, errorMessage, error)
-    },
-    [setAndLogGeneralSubmitError]
-  )
+  const handleAuthError = ({
+    isUserError,
+    errorMessage,
+    error
+  }: {
+    isUserError: boolean
+    errorMessage: string
+    error?: Error
+  }) => {
+    setIsSubmitting(false)
+    setAndLogGeneralSubmitError(isUserError, errorMessage, error)
+  }
+
+  const {
+    scope,
+    tx,
+    queryParamsError,
+    loading,
+    userAlreadyWriteAuthorized,
+    apiKey,
+    appName,
+    userEmail,
+    authorize,
+    txParams
+  } = useOAuthSetup({ onError: handleAuthError })
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -174,8 +173,7 @@ export const OAuthLoginPage = () => {
     ) {
       // Success - perform Oauth authorization
       await authorize({
-        account: signInResponse.user,
-        onError: handleAuthError
+        account: signInResponse.user
       })
     } else if (
       (!signInResponse.error &&
@@ -208,13 +206,16 @@ export const OAuthLoginPage = () => {
       setAndLogGeneralSubmitError(false, messages.miscError)
     } else {
       setIsSubmitting(true)
-      authorize({ account, onError: handleAuthError })
+      authorize({ account })
     }
   }
 
   const handleSignOut = () => {
     dispatch(signOut())
   }
+
+  const isSubmitDisabled =
+    generalSubmitError === messages.disconnectDashboardWalletWrongUserError
 
   let titleText
   if (!isLoggedIn) {
@@ -341,6 +342,7 @@ export const OAuthLoginPage = () => {
               isSubmitting={isSubmitting}
               text={messages.signInButton}
               buttonType='submit'
+              isDisabled={isSubmitDisabled}
             />
           </form>
           <div className={styles.signUpButtonContainer}>
