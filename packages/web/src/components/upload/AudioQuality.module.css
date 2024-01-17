@@ -1,0 +1,10 @@
+.learnMore {
+  font-weight: 500;
+  color: var(--primary-dark-2);
+  cursor: pointer;
+}
+
+.learnMore:hover {
+  color: var(--primary-dark-2);
+  text-decoration: underline;
+}

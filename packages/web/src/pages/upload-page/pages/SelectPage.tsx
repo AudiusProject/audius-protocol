@@ -4,12 +4,15 @@ import {
   Nullable,
   UploadType,
   removeNullable,
-  newCollectionMetadata
+  newCollectionMetadata,
+  FeatureFlags
 } from '@audius/common'
 import cn from 'classnames'
 
+import { AudioQuality } from 'components/upload/AudioQuality'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
@@ -25,6 +28,10 @@ type SelectPageProps = {
 }
 
 export const SelectPageNew = (props: SelectPageProps) => {
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
   const { formState, onContinue } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
@@ -105,6 +112,9 @@ export const SelectPageNew = (props: SelectPageProps) => {
             onDropAccepted={onSelectTracks}
             onDropRejected={onSelectTracks}
           />
+          {isLosslessDownloadsEnabled ? (
+            <AudioQuality className={styles.audioQuality} />
+          ) : null}
           {uploadTrackError ? (
             <InvalidFileType
               reason={uploadTrackError.reason}
