@@ -286,10 +286,14 @@ export const useOAuthSetup = ({
         const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
           wallets: [txParams.wallet]
         })
-        const dashboardWalletUser = res.data?.[0].user
-        if (!dashboardWalletUser) {
+        const walletHasConnectedUser = res.data?.length === 1
+        if (walletHasConnectedUser && tx === 'connect_dashboard_wallet') {
+          setQueryParamsError(messages.connectWalletAlreadyConnectedError)
+        } else if (
+          !walletHasConnectedUser &&
+          tx === 'disconnect_dashboard_wallet'
+        ) {
           setQueryParamsError(messages.disconnectWalletNotConnectedError)
-          return
         }
       }
     }

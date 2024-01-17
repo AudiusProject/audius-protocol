@@ -33,6 +33,8 @@ export const messages = {
   scopeError: `Whoops, this is an invalid link (scope missing or invalid).`,
   connectWalletNoPostMessageError:
     'Whoops, this is an invalid link (redirectUri must be `postMessage` if tx is `connectDashboardWallet`).',
+  connectWalletAlreadyConnectedError:
+    'Whoops, this is an invalid link (the specified wallet is already connected to an Audius account).',
   disconnectWalletNotConnectedError:
     'Whoops, this is an invalid link (the specified wallet is not connected to an Audius account).',
   writeOnceParamsError:
