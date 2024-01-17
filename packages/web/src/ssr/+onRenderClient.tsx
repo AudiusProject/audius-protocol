@@ -8,11 +8,10 @@ import { PageContextClient } from 'vike/types'
 
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 
+import '../index.css'
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
-
-import '../index.css'
 
 // @ts-ignore
 window.global ||= window

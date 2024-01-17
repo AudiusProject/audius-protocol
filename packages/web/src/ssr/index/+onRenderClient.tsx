@@ -8,9 +8,8 @@ import { Buffer } from 'buffer'
 import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
-import { Root } from '../../Root'
-
 import '../../index.css'
+import { Root } from '../../Root'
 
 // @ts-ignore
 window.global ||= window
