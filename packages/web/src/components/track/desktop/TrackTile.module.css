@@ -143,7 +143,7 @@
   height: var(--unit-5);
 }
 
-.container .premiumDogEarContainer {
+.container .gatedDogEarContainer {
   box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
     inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
 }

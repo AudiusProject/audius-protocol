@@ -2,10 +2,10 @@ import {
   ID,
   UID,
   usePremiumContentPurchaseModal,
-  premiumContentSelectors,
+  gatedContentSelectors,
   themeSelectors,
   Theme,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   cacheTracksSelectors,
   CommonState,
   ModalSource
@@ -15,14 +15,14 @@ import { useSelector } from 'react-redux'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { PremiumConditionsPill } from 'components/track/PremiumConditionsPill'
+import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { shouldShowDark } from 'utils/theme/theme'
 
 import styles from './SocialActions.module.css'
 
 const { getTheme } = themeSelectors
-const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { getGatedTrackStatusMap } = gatedContentSelectors
 const { getTrack } = cacheTracksSelectors
 
 type SocialActionsProps = {
@@ -56,32 +56,32 @@ export const SocialActions = ({
   const favoriteText = favorited ? messages.unfavorite : messages.favorite
   const repostText = reposted ? messages.reposted : messages.repost
 
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const premiumTrackStatus = trackId && premiumTrackStatusMap[trackId]
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     openPremiumContentPurchaseModal(
       { contentId: trackId },
       { source: ModalSource.PlayBar }
     )
   }, [trackId, openPremiumContentPurchaseModal])
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const theme = useSelector(getTheme)
   const matrix = theme === Theme.MATRIX
 
   return (
     <div className={styles.root}>
-      {track?.premium_conditions &&
-      'usdc_purchase' in track.premium_conditions &&
-      !doesUserHaveAccess ? (
-        <PremiumConditionsPill
+      {track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions &&
+      !hasStreamAccess ? (
+        <GatedConditionsPill
           showIcon={false}
-          premiumConditions={track.premium_conditions}
-          unlocking={premiumTrackStatus === 'UNLOCKING'}
-          onClick={onClickPremiumPill}
+          streamConditions={track.stream_conditions}
+          unlocking={gatedTrackStatus === 'UNLOCKING'}
+          onClick={onClickPill}
         />
       ) : (
         <>

@@ -2,15 +2,15 @@ import { useCallback } from 'react'
 
 import {
   useLockedContent,
-  premiumContentActions,
-  usePremiumContentAccess
+  gatedContentActions,
+  useGatedContentAccess
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconLock from 'app/assets/images/iconLock.svg'
 import { Text } from 'app/components/core'
-import { DetailsTilePremiumAccess } from 'app/components/details-tile/DetailsTilePremiumAccess'
+import { DetailsTileGatedAccess } from 'app/components/details-tile/DetailsTilePremiumAccess'
 import { NativeDrawer } from 'app/components/drawer'
 import { TrackDetailsTile } from 'app/components/track-details-tile/TrackDetailsTile'
 import { makeStyles, flexRowCentered } from 'app/styles'
@@ -19,7 +19,7 @@ import { useColor } from 'app/utils/theme'
 
 const LOCKED_CONTENT_MODAL_NAME = 'LockedContent'
 
-const { resetLockedContentId } = premiumContentActions
+const { resetLockedContentId } = gatedContentActions
 
 const messages = {
   howToUnlock: 'HOW TO UNLOCK'
@@ -42,7 +42,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderBottomWidth: 1,
     width: '100%'
   },
-  premiumTrackSection: {
+  gatedTrackSection: {
     padding: 0,
     borderWidth: 0,
     backgroundColor: 'transparent'
@@ -54,13 +54,13 @@ export const LockedContentDrawer = () => {
   const neutralLight2 = useColor('neutralLight2')
   const dispatch = useDispatch()
   const { id, track, owner } = useLockedContent()
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
 
   const handleClose = useCallback(() => {
     dispatch(resetLockedContentId())
   }, [dispatch])
 
-  if (!id || !track || !track.premium_conditions || !owner) {
+  if (!id || !track || !track.stream_conditions || !owner) {
     return null
   }
 
@@ -78,12 +78,12 @@ export const LockedContentDrawer = () => {
           </Text>
         </View>
         <TrackDetailsTile trackId={track.track_id} />
-        <DetailsTilePremiumAccess
-          style={styles.premiumTrackSection}
+        <DetailsTileGatedAccess
+          style={styles.gatedTrackSection}
           trackId={track.track_id}
-          premiumConditions={track.premium_conditions}
+          streamConditions={track.stream_conditions}
           isOwner={false}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
         />
       </View>
     </NativeDrawer>

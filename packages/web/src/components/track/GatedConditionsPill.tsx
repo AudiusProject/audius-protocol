@@ -2,35 +2,35 @@ import type { MouseEvent } from 'react'
 
 import {
   formatPrice,
-  isPremiumContentUSDCPurchaseGated,
-  PremiumConditions
+  isContentUSDCPurchaseGated,
+  AccessConditions
 } from '@audius/common'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
 import cn from 'classnames'
 
-import styles from './PremiumConditionsPill.module.css'
+import styles from './GatedConditionsPill.module.css'
 
 const messages = {
   unlocking: 'Unlocking',
   locked: 'Locked'
 }
 
-export const PremiumConditionsPill = ({
+export const GatedConditionsPill = ({
   className,
-  premiumConditions,
+  streamConditions,
   unlocking,
   onClick,
   showIcon = true,
   buttonSize = 'small'
 }: {
-  premiumConditions: PremiumConditions
+  streamConditions: AccessConditions
   unlocking: boolean
   onClick?: (e: MouseEvent) => void
   showIcon?: boolean
   className?: string
   buttonSize?: ButtonSize
 }) => {
-  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
   let message = null
   if (unlocking) {
@@ -38,7 +38,7 @@ export const PremiumConditionsPill = ({
     message = isPurchase ? undefined : messages.unlocking
   } else {
     message = isPurchase
-      ? `$${formatPrice(premiumConditions.usdc_purchase.price)}`
+      ? `$${formatPrice(streamConditions.usdc_purchase.price)}`
       : messages.locked
   }
 

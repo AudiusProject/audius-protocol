@@ -80,6 +80,18 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
+    origFileCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
+    origFilename?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
     mood?: string;
     /**
      * 
@@ -187,6 +199,8 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'id': json['id'],
         'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
         'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
+        'origFileCid': !exists(json, 'orig_file_cid') ? undefined : json['orig_file_cid'],
+        'origFilename': !exists(json, 'orig_filename') ? undefined : json['orig_filename'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
@@ -218,6 +232,8 @@ export function TrackToJSON(value?: Track | null): any {
         'id': value.id,
         'track_cid': value.trackCid,
         'preview_cid': value.previewCid,
+        'orig_file_cid': value.origFileCid,
+        'orig_filename': value.origFilename,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': RemixParentToJSON(value.remixOf),

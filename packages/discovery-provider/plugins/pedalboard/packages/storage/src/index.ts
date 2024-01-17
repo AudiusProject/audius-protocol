@@ -794,8 +794,8 @@ export type Tracks = {
   txhash: string;
   slot: number | null;
   is_available: boolean;
-  is_premium: boolean;
-  premium_conditions: unknown | null;
+  is_stream_gated: boolean;
+  stream_conditions: unknown | null;
   track_cid: string | null;
   is_playlist_upload: boolean;
   duration: number | null;

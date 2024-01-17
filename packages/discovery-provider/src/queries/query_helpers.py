@@ -1,6 +1,7 @@
 # pylint: disable=too-many-lines
 import enum
 import logging
+from collections import defaultdict
 from typing import Optional, Tuple
 
 from flask import request
@@ -10,6 +11,8 @@ from sqlalchemy.sql.expression import or_
 
 from src import exceptions
 from src.api.v1 import helpers as v1Helpers
+from src.gated_content.content_access_checker import content_access_checker
+from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -22,10 +25,6 @@ from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
-from src.premium_content.signature import get_premium_content_signature_for_user
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users
@@ -390,7 +389,7 @@ def get_track_play_count_dict(session, track_ids):
 #   repost_count, save_count
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
-#   if current_user_id available and track is premium and user has access, populates premium_content_signature
+#   populate stream and download access
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
@@ -490,9 +489,9 @@ def populate_track_metadata(
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
-        # has current user unlocked premium tracks
+        # has current user unlocked gated tracks
         # if so, also populate corresponding signatures
-        _populate_premium_track_metadata(session, tracks, current_user_id)
+        _populate_gated_track_metadata(session, tracks, current_user_id)
 
     for track in tracks:
         track_id = track["track_id"]
@@ -557,9 +556,8 @@ def populate_track_metadata(
     return tracks
 
 
-def _populate_premium_track_metadata(session, tracks, current_user_id):
-    premium_tracks = list(filter(lambda track: track["is_premium"], tracks))
-    if not premium_tracks:
+def _populate_gated_track_metadata(session, tracks, current_user_id):
+    if not tracks:
         return
 
     current_user_wallet = (
@@ -572,46 +570,95 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
     )
     if not current_user_wallet:
         logger.warn(
-            f"query_helpers.py | _populate_premium_track_metadata | no wallet for current_user_id {current_user_id}"
+            f"query_helpers.py | _populate_gated_track_metadata | no wallet for current_user_id {current_user_id}"
         )
         return
 
-    premium_content_access_args = []
-    for track in premium_tracks:
-        premium_content_access_args.append(
+    # gated track access
+    gated_track_access = {track["track_id"]: defaultdict() for track in tracks}
+    gated_tracks = list(
+        filter(
+            lambda track: track["stream_conditions"] or track["download_conditions"],
+            tracks,
+        )
+    )
+    gated_track_ids = set([track["track_id"] for track in gated_tracks])
+    gated_content_access_args = []
+    for track in gated_tracks:
+        gated_content_access_args.append(
             {
                 "user_id": current_user_id,
-                "premium_content_id": track["track_id"],
-                "premium_content_type": "track",
+                "content_id": track["track_id"],
+                "content_type": "track",
             }
         )
 
-    premium_content_access = premium_content_access_checker.check_access_for_batch(
-        session, premium_content_access_args
+    gated_content_access = content_access_checker.check_access_for_batch(
+        session, gated_content_access_args
     )
 
-    for track in premium_tracks:
+    for track in gated_tracks:
         track_id = track["track_id"]
-        track_cid = track["track_cid"]
-        does_user_have_track_access = (
-            current_user_id in premium_content_access["track"]
-            and track_id in premium_content_access["track"][current_user_id]
-            and premium_content_access["track"][current_user_id][track_id][
-                "does_user_have_access"
+        has_stream_access = (
+            current_user_id in gated_content_access["track"]
+            and track_id in gated_content_access["track"][current_user_id]
+            and gated_content_access["track"][current_user_id][track_id][
+                "has_stream_access"
             ]
         )
-        if does_user_have_track_access:
+        has_download_access = (
+            current_user_id in gated_content_access["track"]
+            and track_id in gated_content_access["track"][current_user_id]
+            and gated_content_access["track"][current_user_id][track_id][
+                "has_download_access"
+            ]
+        )
+        gated_track_access[track_id]["has_stream_access"] = has_stream_access
+        gated_track_access[track_id]["has_download_access"] = has_download_access
+
+    for track in tracks:
+        track_id = track["track_id"]
+        if track_id not in gated_track_ids:
+            track[response_name_constants.access] = {
+                "stream": True,
+                "download": True,
+            }
             track[
                 response_name_constants.premium_content_signature
-            ] = get_premium_content_signature_for_user(
+            ] = get_gated_content_signature_for_user_wallet(
                 {
                     "track_id": track_id,
-                    "track_cid": track_cid,
+                    "track_cid": track["track_cid"],
                     "type": "track",
                     "user_wallet": current_user_wallet[0],
-                    "is_premium": True,
+                    "user_id": current_user_id,
+                    "is_gated": False,
                 }
             )
+        else:
+            has_stream_access = gated_track_access[track_id].get(
+                "has_stream_access", True
+            )
+            has_download_access = gated_track_access[track_id].get(
+                "has_download_access", True
+            )
+            track[response_name_constants.access] = {
+                "stream": has_stream_access,
+                "download": has_download_access,
+            }
+            if has_stream_access:
+                track[
+                    response_name_constants.premium_content_signature
+                ] = get_gated_content_signature_for_user_wallet(
+                    {
+                        "track_id": track_id,
+                        "track_cid": track["track_cid"],
+                        "type": "track",
+                        "user_wallet": current_user_wallet[0],
+                        "user_id": current_user_id,
+                        "is_gated": True,
+                    }
+                )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):

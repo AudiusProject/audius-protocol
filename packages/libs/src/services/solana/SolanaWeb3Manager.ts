@@ -1,4 +1,9 @@
+import { route } from '@audius/spl'
 import * as splToken from '@solana/spl-token'
+import {
+  TOKEN_PROGRAM_ID,
+  createTransferCheckedInstruction
+} from '@solana/spl-token'
 import {
   Connection,
   Keypair,
@@ -33,11 +38,6 @@ import { TransactionHandler } from './transactionHandler'
 import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import { wAudioFromWeiAudio } from './wAudio'
-import { route } from '@audius/spl'
-import {
-  TOKEN_PROGRAM_ID,
-  createTransferCheckedInstruction
-} from '@solana/spl-token'
 
 type EvaluateChallengeAttestationsConfig = {
   challengeId: string
@@ -744,7 +744,7 @@ export class SolanaWeb3Manager {
 
     const transaction = new Transaction({
       feePayer: this.feePayerKey,
-      recentBlockhash: recentBlockhash
+      recentBlockhash
     }).add(...instructions)
     transaction.partialSign(senderKeypair)
     if (skipSendAndReturnTransaction) {

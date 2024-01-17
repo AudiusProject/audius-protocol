@@ -14,7 +14,7 @@
 }
 
 .unlocked.gated,
-.coloredWhenLocked.premium {
+.coloredWhenLocked.gated {
   background-color: var(--accent-blue);
 }
 

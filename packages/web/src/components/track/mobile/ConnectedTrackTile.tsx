@@ -19,7 +19,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   playerSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   FeatureFlags,
   Genre
 } from '@audius/common'
@@ -112,8 +112,8 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted,
-    is_premium: isPremium,
-    premium_conditions: premiumConditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     track_id,
     title,
     genre,
@@ -147,9 +147,9 @@ const ConnectedTrackTile = ({
     { trackId: track_id },
     { enabled: !!track_id }
   )
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(trackWithFallback)
-  const loading = isLoading || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess } =
+    useGatedContentAccess(trackWithFallback)
+  const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
     if (has_current_user_saved) {
@@ -189,20 +189,20 @@ const ConnectedTrackTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const repostAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null
     const favoriteAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = !isPremium
+    const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
@@ -275,9 +275,9 @@ const ConnectedTrackTile = ({
       isMatrix={isMatrix()}
       isTrending={isTrending}
       isUnlisted={is_unlisted}
-      isPremium={isPremium}
-      premiumConditions={premiumConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      isStreamGated={isStreamGated}
+      streamConditions={streamConditions}
+      hasStreamAccess={hasStreamAccess}
       showRankIcon={showRankIcon}
       variant={variant}
       releaseDate={releaseDate}

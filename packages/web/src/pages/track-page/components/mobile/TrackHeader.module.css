@@ -113,6 +113,7 @@
   flex-wrap: wrap;
   width: 100%;
 }
+
 .infoFact {
   flex: 1;
   display: flex;
@@ -177,6 +178,7 @@
 .loadingSkeleton :global(.ant-skeleton-content) {
   padding: 0 !important;
 }
+
 .loadingSkeleton :global(.ant-skeleton-paragraph) li {
   border-radius: 4px;
 }
@@ -190,6 +192,7 @@
   height: 24px;
   width: 160px !important;
 }
+
 .loadingSkeleton.loadingName :global(.ant-skeleton-paragraph) li {
   height: 24px;
   width: 120px !important;
@@ -210,33 +213,33 @@
   margin-bottom: 24px;
 }
 
-.premiumContentLabel {
+.gatedContentLabel {
   display: flex;
   align-items: center;
   gap: var(--unit-2);
 }
 
-.premiumContentLabel svg {
+.gatedContentLabel svg {
   width: calc(var(--unit) * 4.5);
   height: calc(var(--unit) * 4.5);
 }
 
-.premiumContentLabel path {
+.gatedContentLabel path {
   fill: var(--text-subdued);
 }
 
-.premiumTrackSectionWrapper {
+.gatedTrackSectionWrapper {
   margin: 0;
   background: var(--neutral-light-10);
   width: 100%;
 }
 
-.premiumTrackSection {
+.gatedTrackSection {
   flex-direction: column;
   gap: var(--unit-6);
 }
 
-.premiumTrackSectionButton {
+.gatedTrackSectionButton {
   width: 100%;
 }
 

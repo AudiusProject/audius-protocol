@@ -1,11 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 
-import {
-  Status,
-  User,
-  Track,
-  isPremiumContentUSDCPurchaseGated
-} from '@audius/common'
+import { Status, User, Track, isContentUSDCPurchaseGated } from '@audius/common'
 import { SelectablePill } from '@audius/harmony'
 import {
   IconHidden,
@@ -71,7 +66,7 @@ enum Pills {
   PUBLIC,
   PREMIUM,
   SPECIAL_ACCESS,
-  GATED,
+  COLLECTIBLE_GATED,
   HIDDEN
 }
 
@@ -91,39 +86,45 @@ export const TracksTableContainer = ({
   }
 
   let filteredData: DataSourceTrack[]
-  const { hasOnlyOneSection, pub, gated, hidden, premium, specialAccess } =
-    useMemo(() => {
-      const pub = dataSource.filter(
-        (data) =>
-          data.is_unlisted === false &&
-          !isPremiumContentUSDCPurchaseGated(data.premium_conditions)
-      )
-      const gated = dataSource.filter(
-        (data) =>
-          'tip_user_id' in (data.premium_conditions || {}) ||
-          'follow_user_id' in (data.premium_conditions || {})
-      )
-      const hidden = dataSource.filter((data) => data.is_unlisted === true)
-      const premium = dataSource.filter(
-        (data) => 'usdc_purchase' in (data.premium_conditions || {})
-      )
-      const specialAccess = dataSource.filter(
-        (data) => 'nft_collection' in (data.premium_conditions || {})
-      )
+  const {
+    hasOnlyOneSection,
+    pub,
+    collectibleGated,
+    hidden,
+    premium,
+    specialAccess
+  } = useMemo(() => {
+    const pub = dataSource.filter(
+      (data) =>
+        data.is_unlisted === false &&
+        !isContentUSDCPurchaseGated(data.stream_conditions)
+    )
+    const specialAccess = dataSource.filter(
+      (data) =>
+        'tip_user_id' in (data.stream_conditions || {}) ||
+        'follow_user_id' in (data.stream_conditions || {})
+    )
+    const hidden = dataSource.filter((data) => data.is_unlisted === true)
+    const premium = dataSource.filter(
+      (data) => 'usdc_purchase' in (data.stream_conditions || {})
+    )
+    const collectibleGated = dataSource.filter(
+      (data) => 'nft_collection' in (data.stream_conditions || {})
+    )
 
-      const arrays = [pub, gated, hidden, premium, specialAccess]
-      const nonEmptyArrays = arrays.filter((arr) => arr.length > 0)
-      const hasOnlyOneSection = nonEmptyArrays.length === 1
+    const arrays = [pub, specialAccess, hidden, premium, collectibleGated]
+    const nonEmptyArrays = arrays.filter((arr) => arr.length > 0)
+    const hasOnlyOneSection = nonEmptyArrays.length === 1
 
-      return {
-        hasOnlyOneSection,
-        pub,
-        gated,
-        hidden,
-        premium,
-        specialAccess
-      }
-    }, [dataSource])
+    return {
+      hasOnlyOneSection,
+      pub,
+      specialAccess,
+      hidden,
+      premium,
+      collectibleGated
+    }
+  }, [dataSource])
 
   switch (selectedPill) {
     case Pills.ALL:
@@ -133,8 +134,8 @@ export const TracksTableContainer = ({
     case Pills.PUBLIC:
       filteredData = pub
       break
-    case Pills.GATED:
-      filteredData = gated
+    case Pills.COLLECTIBLE_GATED:
+      filteredData = collectibleGated
       break
     case Pills.HIDDEN:
       filteredData = hidden
@@ -210,16 +211,16 @@ export const TracksTableContainer = ({
               onClick={() => setSelectedPill(Pills.SPECIAL_ACCESS)}
             />
           ) : null}
-          {gated.length > 0 ? (
+          {collectibleGated.length > 0 ? (
             <SelectablePill
-              isSelected={selectedPill === Pills.GATED}
+              isSelected={selectedPill === Pills.COLLECTIBLE_GATED}
               label={
                 messages.gated +
                 (hasOnlyOneSection ? ` ${messages.tracks}` : '')
               }
               icon={IconCollectible}
               size='large'
-              onClick={() => setSelectedPill(Pills.GATED)}
+              onClick={() => setSelectedPill(Pills.COLLECTIBLE_GATED)}
             />
           ) : null}
           {hidden.length > 0 ? (

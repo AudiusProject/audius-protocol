@@ -25,7 +25,7 @@ const suggestedTrackCount = 5
 
 const isValidTrack = (track: Track | UserTrackMetadata) => {
   return (
-    !track.is_premium &&
+    !track.is_stream_gated &&
     !track.is_delete &&
     !track.is_invalid &&
     !track.is_unlisted

@@ -55,7 +55,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       isEditAlbumsEnabled && props.user?.user_id === props.currentUserId
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      !props.isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      !props.isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE

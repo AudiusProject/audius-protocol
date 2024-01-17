@@ -93,7 +93,8 @@ export const ShareDrawer = () => {
     account.user_id === content.artist.user_id
   const shareType = content?.type ?? 'track'
 
-  const isPremiumTrack = content?.type === 'track' && content.track.is_premium
+  const isStreamGatedTrack =
+    content?.type === 'track' && content.track.is_stream_gated
 
   const handleShareToDirectMessage = useCallback(async () => {
     if (!content) return
@@ -166,7 +167,7 @@ export const ShareDrawer = () => {
     !content.track.is_unlisted &&
     !content.track.is_invalid &&
     !content.track.is_delete &&
-    !isPremiumTrack
+    !isStreamGatedTrack
 
   const shouldIncludeTikTokSoundAction = Boolean(
     isShareSoundToTikTokEnabled && isOwner && isShareableTrack

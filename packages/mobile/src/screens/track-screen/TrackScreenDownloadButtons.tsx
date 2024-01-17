@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import type { ID, ButtonType as DownloadButtonType } from '@audius/common'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Button } from 'app/components/core'
@@ -22,7 +22,7 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: DownloadButtonType
   label: string
-  doesUserHaveAccess: boolean
+  hasDownloadAccess: boolean
   onClick?: () => void
 }
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles(() => ({
 const DownloadButton = ({
   label,
   state,
-  doesUserHaveAccess,
+  hasDownloadAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const { toast } = useToast()
@@ -51,14 +51,14 @@ const DownloadButton = ({
   const requiresFollow = state === ButtonState.REQUIRES_FOLLOW
   const isProcessing = state === ButtonState.PROCESSING
   const isDisabled =
-    !doesUserHaveAccess || state === ButtonState.PROCESSING || requiresFollow
+    !hasDownloadAccess || state === ButtonState.PROCESSING || requiresFollow
 
   const handlePress = useCallback(() => {
     if (requiresFollow) {
       toast({ content: messages.followToDownload })
     }
 
-    if (!doesUserHaveAccess) {
+    if (!hasDownloadAccess) {
       toast({ content: messages.mustHaveAccess })
     }
 
@@ -67,7 +67,7 @@ const DownloadButton = ({
     }
 
     onClick()
-  }, [isDisabled, onClick, requiresFollow, doesUserHaveAccess, toast])
+  }, [isDisabled, onClick, requiresFollow, hasDownloadAccess, toast])
 
   // Manually handling disabled state in order to show a toast
   // when a follow is required
@@ -89,7 +89,7 @@ const DownloadButton = ({
 
 type TrackScreenDownloadButtonsProps = {
   following: boolean
-  doesUserHaveAccess: boolean
+  hasDownloadAccess: boolean
   isHidden?: boolean
   isOwner: boolean
   trackId: ID
@@ -97,7 +97,7 @@ type TrackScreenDownloadButtonsProps = {
 
 export const TrackScreenDownloadButtons = ({
   following,
-  doesUserHaveAccess,
+  hasDownloadAccess,
   isOwner,
   trackId
 }: TrackScreenDownloadButtonsProps) => {
@@ -122,8 +122,7 @@ export const TrackScreenDownloadButtons = ({
     trackId,
     onDownload: handleDownload,
     isOwner,
-    following,
-    useSelector
+    following
   })
 
   const shouldHide = buttons.length === 0
@@ -136,7 +135,7 @@ export const TrackScreenDownloadButtons = ({
       {buttons.map((props) => (
         <DownloadButton
           {...props}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasDownloadAccess={hasDownloadAccess}
           key={props.label}
         />
       ))}
