@@ -234,7 +234,8 @@ export const DetailsTile = ({
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const hasDownloadableAssets =
-    track.is_downloadable || (track?._stems?.length ?? 0) > 0
+    (track as Track).is_downloadable ||
+    ((track as Track)?._stems?.length ?? 0) > 0
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
