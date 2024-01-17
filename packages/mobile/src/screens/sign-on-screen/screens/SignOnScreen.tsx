@@ -17,7 +17,8 @@ import {
   Flex,
   IconAudiusLogoHorizontalColor,
   Paper,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
 
@@ -53,13 +54,9 @@ const CreateAccountLink = (props: TextProps) => {
           style={{ justifyContent: 'flex-end' }}
         >
           {messages.newToAudius}{' '}
-          <Text
-            color='staticWhite'
-            style={css({ textDecorationLine: 'underline' })}
-            onPress={onPress}
-          >
+          <TextLink variant='inverted' showUnderline onPress={onPress}>
             {messages.createAccount}
-          </Text>
+          </TextLink>
         </Text>
       </SafeAreaView>
     </AnimatedFlex>
@@ -149,10 +146,6 @@ export const SignOnScreen = ({ route }) => {
     setScreen(params.screen)
   }, [params])
 
-  const screenProps = {
-    onChangeScreen: setScreen
-  }
-
   return (
     <>
       <Background />
@@ -160,9 +153,9 @@ export const SignOnScreen = ({ route }) => {
         <ExpandablePanel>
           <IconAudiusLogoHorizontalColor style={css({ alignSelf: 'center' })} />
           {screen === 'sign-up' ? (
-            <CreateEmailScreen {...screenProps} />
+            <CreateEmailScreen onChangeScreen={setScreen} />
           ) : (
-            <SignInScreen {...screenProps} />
+            <SignInScreen />
           )}
         </ExpandablePanel>
         {screen === 'sign-up' ? (

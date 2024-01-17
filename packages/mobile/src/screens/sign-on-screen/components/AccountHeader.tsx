@@ -85,9 +85,9 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
 export const ReadOnlyAccountHeader = () => {
   const { value: handle } = useSelector(getHandleField)
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
   const { value: displayName } = useSelector(getNameField)
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   const isVerified = useSelector(getIsVerified)
 
   return (
@@ -157,8 +157,8 @@ const CoverPhoto = (props: CoverPhotoProps) => {
 }
 
 export const ReadOnlyCoverPhotoBanner = () => {
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   return (
     <CoverPhoto
       coverPhoto={coverPhoto as ImageURISource}
@@ -199,7 +199,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
 }
 
 export const ReadOnlyProfilePicture = () => {
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   return <ProfilePicture profilePicture={profileImage as ImageURISource} />
 }
 

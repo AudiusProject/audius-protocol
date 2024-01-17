@@ -57,7 +57,6 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
     <NewEmailField
       name='email'
       label={messages.emailLabel}
-      noGutter
       onChangeScreen={onChangeScreen}
     />
   )

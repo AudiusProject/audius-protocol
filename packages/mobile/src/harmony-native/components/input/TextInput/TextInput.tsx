@@ -10,6 +10,8 @@ import type {
 import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import Animated, {
+  FadeInUp,
+  FadeOutUp,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -32,6 +34,8 @@ const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 export type TextInputRef = Ref<RNTextInput>
+export type TextInputChangeEvent =
+  NativeSyntheticEvent<TextInputChangeEventData>
 
 export const TextInput = forwardRef(
   (props: TextInputProps, ref: TextInputRef) => {
@@ -62,6 +66,7 @@ export const TextInput = forwardRef(
       _incorrectError,
       _isFocused,
       _disablePointerEvents,
+      style,
       ...other
     } = props
 
@@ -86,21 +91,24 @@ export const TextInput = forwardRef(
     }
 
     const focused = useSharedValue(_isFocused ? 1 : 0)
+    const focusedLabel = useSharedValue(_isFocused ? 1 : 0)
 
     const handleFocus = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      (e: TextInputChangeEvent) => {
         focused.value = withTiming(1, motion.press)
+        focusedLabel.value = withTiming(1, motion.expressive)
         onFocusProp?.(e)
       },
-      [focused, motion.press, onFocusProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onFocusProp]
     )
 
     const handleBlur = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         focused.value = withTiming(0, motion.press)
+        focusedLabel.value = withTiming(0, motion.expressive)
         onBlurProp?.(e)
       },
-      [focused, motion.press, onBlurProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onBlurProp]
     )
 
     const [isFocusedState, onFocus, onBlur] = useFocusState(
@@ -200,19 +208,27 @@ export const TextInput = forwardRef(
       fontSize: hasValue
         ? typography.size.s
         : interpolate(
-            focused.value,
+            focusedLabel.value,
             [0, 1],
             [typography.size.m, typography.size.s]
           ),
       transform: [
         {
-          translateY: hasValue ? 0 : interpolate(focused.value, [0, 1], [13, 0])
+          translateY: hasValue
+            ? 0
+            : interpolate(focusedLabel.value, [0, 1], [13, 0])
         }
       ]
     }))
 
     return (
-      <Flex direction='column' gap='xs' alignItems='flex-start' w='100%'>
+      <Flex
+        direction='column'
+        gap='xs'
+        alignItems='flex-start'
+        w='100%'
+        style={style}
+      >
         <Pressable
           onPress={handlePressRoot}
           pointerEvents={disabled || _disablePointerEvents ? 'none' : undefined}
@@ -223,7 +239,7 @@ export const TextInput = forwardRef(
               w='100%'
               direction='row'
               alignItems='center'
-              border='default'
+              border={disabled ? 'default' : 'strong'}
               borderRadius='s'
               backgroundColor='surface1'
               ph='l'
@@ -300,6 +316,7 @@ export const TextInput = forwardRef(
                     style={css({
                       flex: 1,
                       fontSize: typography.size[isSmall ? 's' : 'l'],
+                      fontFamily: typography.fontByWeight.medium,
                       color: color.text[disabled ? 'subdued' : 'default']
                     })}
                     onChange={handleChange}
@@ -325,14 +342,16 @@ export const TextInput = forwardRef(
           </GestureDetector>
         </Pressable>
         {helperText ? (
-          <Text
+          <AnimatedText
+            entering={FadeInUp}
+            exiting={FadeOutUp}
             variant='body'
             size={helperTextSize}
             strength='default'
             color={statusColor ?? 'default'}
           >
             {helperText}
-          </Text>
+          </AnimatedText>
         ) : null}
       </Flex>
     )

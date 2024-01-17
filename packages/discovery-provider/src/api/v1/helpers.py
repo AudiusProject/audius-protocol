@@ -931,7 +931,7 @@ def get_default_max(value, default, max=None):
 def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[]):
     formatted_response_data = {}
     for aggregate_monthly_play in aggregate_monthly_plays_for_user:
-        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%S Z")
+        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%SZ")
         if month not in formatted_response_data:
             formatted_response_data[month] = {}
             formatted_response_by_month = formatted_response_data[month]
