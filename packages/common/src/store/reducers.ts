@@ -1,3 +1,4 @@
+import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
@@ -145,6 +146,7 @@ import wallet from './wallet/slice'
  * @returns an object of all reducers to be used with `combineReducers`
  */
 export const reducers = (
+  history: History,
   storage: Storage,
   ssrPageProps?: SsrPageProps,
   isServerSide?: boolean
@@ -253,7 +255,7 @@ export const reducers = (
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
     track: track(ssrPageProps),
-    trending,
+    trending: trending(history),
     trendingPlaylists,
     trendingUnderground,
     settings,
