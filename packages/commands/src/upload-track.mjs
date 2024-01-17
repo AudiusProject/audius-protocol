@@ -91,32 +91,6 @@ const getDownloadConditions = async ({
   return null
 }
 
-const getDownloadMetadata = (isDownloadable, downloadConditions) => {
-  if (!isDownloadable) {
-    return {
-      is_downloadable: false,
-      is_download_gated: false,
-      download_conditions: null
-    }
-  }
-  const downloadability = {
-    is_downloadable: true,
-    download: {
-      cid: '',
-      is_downloadable: true,
-      requires_follow: false
-    }
-  }
-  if (downloadConditions) {
-    return {
-      ...downloadability,
-      is_download_gated: true,
-      download_conditions: downloadConditions,
-    }
-  }
-  return downloadability
-}
-
 program
   .command('upload-track')
   .description('Upload a new track')
@@ -218,16 +192,12 @@ program
           price,
           audiusLibs
         })
-
-        const downloadMetadata = getDownloadMetadata(
-          isDownloadable,
-          await getDownloadConditions({
-            streamConditions,
-            downloadConditions,
-            downloadPrice,
-            audiusLibs
-          })
-        )
+        const parsedDownloadConditions = await getDownloadConditions({
+          streamConditions,
+          downloadConditions,
+          downloadPrice,
+          audiusLibs
+        })
 
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
@@ -256,7 +226,15 @@ program
             track_segments: [],
             is_stream_gated: parsedStreamConditions != null,
             stream_conditions: parsedStreamConditions,
-            ...downloadMetadata,
+            is_download_gated: parsedDownloadConditions != null,
+            download_conditions: parsedDownloadConditions,
+            is_original_available: true,
+            is_downloadable: !!isDownloadable,
+            download: {
+              cid: '',
+              is_downloadable: !!isDownloadable,
+              requires_follow: false
+            },
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
