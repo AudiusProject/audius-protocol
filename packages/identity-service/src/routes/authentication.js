@@ -5,7 +5,7 @@ const {
   errorResponseBadRequest,
   errorResponseForbidden
 } = require('../apiHelpers')
-const { validateOtp, sendOtp } = require('../utils/otp')
+const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
 
 module.exports = function (app) {
   /**
@@ -87,6 +87,13 @@ module.exports = function (app) {
       const existingUser = await models.Authentication.findOne({
         where: { lookupKey }
       })
+      if (!existingUser) {
+        return errorResponseBadRequest('Invalid credentials')
+      }
+
+      if (bypassOtp(email)) {
+        return successResponse(existingUser)
+      }
 
       const redis = req.app.get('redis')
       const sendgrid = req.app.get('sendgrid')
@@ -94,21 +101,17 @@ module.exports = function (app) {
         req.logger.error('Missing sendgrid api key')
       }
 
-      if (existingUser) {
-        if (!otp) {
-          await sendOtp({ email, redis, sendgrid })
-          return errorResponseForbidden('Missing otp')
-        }
-
-        const isOtpValid = await validateOtp({ email, otp, redis })
-        if (!isOtpValid) {
-          return errorResponseBadRequest('Invalid credentials')
-        }
-
-        return successResponse(existingUser)
+      if (!otp) {
+        await sendOtp({ email, redis })
+        return errorResponseForbidden('Missing otp')
       }
 
-      return errorResponseBadRequest('Invalid credentials')
+      const isOtpValid = await validateOtp({ email, otp, redis })
+      if (!isOtpValid) {
+        return errorResponseBadRequest('Invalid credentials')
+      }
+
+      return successResponse(existingUser)
     })
   )
 }
