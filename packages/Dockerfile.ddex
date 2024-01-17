@@ -38,6 +38,7 @@ RUN CI=true npm i
 
 # Build the frontend and its dependencies
 COPY --from=frontend-builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
 RUN npx turbo run build --filter=@audius/ddex-frontend
 
