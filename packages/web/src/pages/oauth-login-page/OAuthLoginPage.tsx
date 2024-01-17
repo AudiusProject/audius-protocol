@@ -1,10 +1,4 @@
-import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState
-} from 'react'
+import { FormEvent, useCallback, useLayoutEffect, useState } from 'react'
 
 import {
   accountSelectors,
@@ -31,6 +25,7 @@ import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
+
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 
@@ -95,24 +90,23 @@ export const OAuthLoginPage = () => {
     setEmailInput(input)
   }
 
-  const setAndLogGeneralSubmitError = (
-    isUserError: boolean,
-    errorMessage: string,
-    error?: Error
-  ) => {
-    setGeneralSubmitError(errorMessage)
-    record(
-      make(Name.AUDIUS_OAUTH_ERROR, {
-        isUserError,
-        error: errorMessage,
-        appId: (apiKey || appName)!,
-        scope: scope!
-      })
-    )
-    if (error && !isUserError) {
-      reportToSentry({ level: ErrorLevel.Error, error })
-    }
-  }
+  const setAndLogGeneralSubmitError = useCallback(
+    (isUserError: boolean, errorMessage: string, error?: Error) => {
+      setGeneralSubmitError(errorMessage)
+      record(
+        make(Name.AUDIUS_OAUTH_ERROR, {
+          isUserError,
+          error: errorMessage,
+          appId: (apiKey || appName)!,
+          scope: scope!
+        })
+      )
+      if (error && !isUserError) {
+        reportToSentry({ level: ErrorLevel.Error, error })
+      }
+    },
+    [apiKey, appName, record, scope]
+  )
 
   const setAndLogInvalidCredentialsError = () => {
     setSignInError(messages.invalidCredentialsError)
