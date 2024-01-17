@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import {
+  MAX_DISPLAY_NAME_LENGTH,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -163,8 +164,7 @@ export const FinishProfilePage = () => {
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
-              required
-              maxLength={32}
+              maxLength={MAX_DISPLAY_NAME_LENGTH}
               onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l

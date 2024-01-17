@@ -474,7 +474,12 @@ function* signUp() {
         yield put(signOnActions.signUpSucceededWithId(userId))
 
         const isNativeMobile = yield getContext('isNativeMobile')
-        if (isNativeMobile) {
+
+        const isSignUpRedesignEnabled = yield call(
+          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+        )
+
+        if (isNativeMobile && !isSignUpRedesignEnabled) {
           yield put(requestPushNotificationPermissions())
         } else {
           // Set the has request browser permission to true as the signon provider will open it

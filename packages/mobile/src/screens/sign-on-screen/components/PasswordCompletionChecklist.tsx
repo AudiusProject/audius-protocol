@@ -49,7 +49,6 @@ export const PasswordCompletionChecklist = () => {
         const isTouched =
           path === 'password' ? passwordMeta.touched : confirmMeta.touched
 
-        // TODO: uncomment when we use harmony CompletionChecklist
         const status =
           !password || (!isTouched && error)
             ? 'incomplete'

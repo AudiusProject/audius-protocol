@@ -144,41 +144,32 @@ export const PickHandleScreen = () => {
       validationSchema={validationSchema}
       validateOnChange={false}
     >
-      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
-        <Page>
-          {isWaitingForSocialLogin ? (
-            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
-          ) : null}
-          <Heading
-            heading={messages.title}
-            description={messages.description}
+      <Page>
+        {isWaitingForSocialLogin ? (
+          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+        ) : null}
+        <Heading heading={messages.title} description={messages.description} />
+        <Flex direction='column' gap='l'>
+          <HandleField />
+          <Divider>
+            <Text
+              variant='body'
+              color='subdued'
+              size='s'
+              style={css({ textTransform: 'uppercase' })}
+            >
+              {messages.or}
+            </Text>
+          </Divider>
+          <SocialMediaSection
+            onStart={handleStartSocialMediaLogin}
+            onError={handleErrorSocialMediaLogin}
+            onClose={handleCloseSocialMediaLogin}
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
           />
-          <Flex direction='column' gap='l'>
-            <HandleField />
-            <Divider>
-              <Text
-                variant='body'
-                color='subdued'
-                size='s'
-                style={css({ textTransform: 'uppercase' })}
-              >
-                {messages.or}
-              </Text>
-            </Divider>
-            <SocialMediaSection
-              onStart={handleStartSocialMediaLogin}
-              onError={handleErrorSocialMediaLogin}
-              onClose={handleCloseSocialMediaLogin}
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-            />
-          </Flex>
-          <PageFooter
-            p='l'
-            buttonProps={{ disabled: !(dirty && isValid) }}
-            onSubmit={triggerSubmit}
-          />
-        </Page>
-      )}
+        </Flex>
+        <PageFooter />
+      </Page>
     </Formik>
   )
 }

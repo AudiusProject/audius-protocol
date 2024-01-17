@@ -9,7 +9,7 @@ import {
   IconMessage
 } from '@audius/harmony-native'
 
-import { PANEL_EXPAND_DELAY } from '../constants'
+import { PANEL_EXPAND_DURATION } from '../constants'
 
 // import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
 // import IconHeadphones from './temp-harmony/iconHeadphones.svg'
@@ -64,7 +64,7 @@ export const AudiusValues = (props: AudiusValuesProps) => {
       alignItems='center'
       justifyContent='center'
       style={{ flexGrow: 1 }}
-      entering={FadeIn.delay(isPanelExpanded ? 0 : PANEL_EXPAND_DELAY)}
+      entering={FadeIn.delay(isPanelExpanded ? 0 : PANEL_EXPAND_DURATION)}
       exiting={FadeOut}
     >
       <AudiusValue icon={IconCloudUpload} text={messages.unlimitedStreaming} />
