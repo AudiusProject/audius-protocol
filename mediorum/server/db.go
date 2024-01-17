@@ -6,6 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/mediorum/ddl"
+	slogGorm "github.com/orandin/slog-gorm"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -65,7 +66,11 @@ type UploadCursor struct {
 }
 
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{})
+	gormLogger := slogGorm.New()
+
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
+		Logger: gormLogger,
+	})
 	if err != nil {
 		panic(err)
 	}
