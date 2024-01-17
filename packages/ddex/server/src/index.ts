@@ -37,7 +37,7 @@ const port = process.env.DDEX_PORT || 8926
       '/trpc',
       trpcExpress.createExpressMiddleware({
         router: appRouter,
-        createContext: ({ req, res }) => createContext({ req, res }, services),
+        createContext: (opts) => createContext(opts, services),
       })
     )
 
