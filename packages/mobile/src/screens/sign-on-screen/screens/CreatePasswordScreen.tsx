@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   createPasswordPageMessages as messages,
@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
+import { KeyboardAvoidingView } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -50,6 +51,8 @@ export const CreatePasswordScreen = () => {
     [dispatch, navigation]
   )
 
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+
   return (
     <Formik
       initialValues={initialValues}
@@ -57,36 +60,50 @@ export const CreatePasswordScreen = () => {
       validationSchema={passwordFormikSchema}
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
-        <Page>
-          <Heading
-            heading={messages.createYourPassword}
-            description={messages.description}
-          />
-          <Flex direction='column' h='100%' gap='l'>
-            <ReadOnlyField label={messages.yourEmail} value={email} />
-            <TextField
-              name='password'
-              label={messages.passwordLabel}
-              textContentType='password'
-              secureTextEntry
-              noGutter
+        <KeyboardAvoidingView
+          keyboardShowingOffset={keyboardOffset - 32}
+          style={{ overflow: 'hidden' }}
+        >
+          <Page>
+            <Heading
+              heading={messages.createYourPassword}
+              description={messages.description}
             />
-            <TextField
-              name='confirmPassword'
-              label={messages.confirmPasswordLabel}
-              textContentType='password'
-              secureTextEntry
-              noGutter
+            <Flex
+              direction='column'
+              h='100%'
+              gap='l'
+              onLayout={(e) => {
+                e.currentTarget.measureInWindow((x, y, w, h) => {
+                  setKeyboardOffset(y)
+                })
+              }}
+            >
+              <ReadOnlyField label={messages.yourEmail} value={email} />
+              <TextField
+                name='password'
+                label={messages.passwordLabel}
+                textContentType='password'
+                secureTextEntry
+                noGutter
+              />
+              <TextField
+                name='confirmPassword'
+                label={messages.confirmPasswordLabel}
+                textContentType='password'
+                secureTextEntry
+                noGutter
+              />
+              <PasswordCompletionChecklist />
+            </Flex>
+            <PageFooter
+              p='l'
+              buttonProps={{ disabled: !(dirty && isValid) }}
+              prefix={<SignUpAgreementText />}
+              onSubmit={triggerSubmit}
             />
-            <PasswordCompletionChecklist />
-          </Flex>
-          <PageFooter
-            p='l'
-            buttonProps={{ disabled: !(dirty && isValid) }}
-            prefix={<SignUpAgreementText />}
-            onSubmit={triggerSubmit}
-          />
-        </Page>
+          </Page>
+        </KeyboardAvoidingView>
       )}
     </Formik>
   )
