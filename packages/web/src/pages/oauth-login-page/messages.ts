@@ -25,6 +25,7 @@ export const messages = {
   redirectURIInvalidError:
     'Whoops, this is an invalid link (redirect URI missing or invalid).',
   missingAppNameError: 'Whoops, this is an invalid link (app name missing).',
+  otpError: 'Enter the verification code sent to your email',
   scopeError: `Whoops, this is an invalid link (scope missing or invalid).`,
   writeOnceParamsError:
     'Whoops, this is an invalid link (transaction params missing or invalid).',
