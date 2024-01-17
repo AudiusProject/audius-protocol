@@ -9,15 +9,12 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useEffectOnce, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
-import { getStatus } from 'common/store/pages/signon/selectors'
-import { EditingStatus } from 'common/store/pages/signon/types'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
@@ -51,7 +48,6 @@ type RootProps = {
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion } = useTheme()
-  const accountCreationStatus = useSelector(getStatus)
 
   const hideCloseButton = useRouteMatch({
     path: [
