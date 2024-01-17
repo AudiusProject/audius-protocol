@@ -7,11 +7,11 @@ local _M = {}
 function _M.get_public_ip()
     local httpc = http.new()
     local ip_services = {
-        "http://fdsafdsa.audio",
-        "http://fdsafdsa.audio",
-        "http://fdsafdsa.audio",
-        "http://fdsafdsa.audio",
-        "http://fdsafdsa.audio"
+        "http://ipv4.icanhazip.com",
+        "http://ipv4bot.whatismyipaddress.com",
+        "http://checkip.amazonaws.com",
+        "http://ipinfo.io/ip",
+        "http://api.ipify.org"
     }
 
     for _, url in ipairs(ip_services) do
@@ -22,14 +22,14 @@ function _M.get_public_ip()
             ip = string.gsub(ip, " ", "")
             ip = string.gsub(ip, "\n", "")
             if ip and ip ~= "" then
-                return ip
+                return true, ip
             end
         else
             ngx.log(ngx.ERR, "Error contacting ", url, ": ", err)
         end
     end
 
-    return "Could not get external IP"
+    return false, "Could not get external IP"
 end
 
 function _M.get_is_port_exposed(ip, port)
