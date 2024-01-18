@@ -6,7 +6,7 @@ import {
   useGetTrackById,
   FieldVisibility,
   Remix,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -21,7 +21,7 @@ import { fullTrackPage } from 'utils/route'
 
 import { useTrackField } from '../../hooks'
 import { SingleTrackEditValues } from '../../types'
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../AccessAndSaleField'
 
 import styles from './RemixSettingsField.module.css'
 import { RemixSettingsMenuFields } from './RemixSettingsMenuFields'
@@ -53,11 +53,13 @@ export const RemixSettingsField = () => {
     useTrackField<FieldVisibility[typeof SHOW_REMIXES_BASE]>(SHOW_REMIXES)
   const [{ value: remixOf }, , { setValue: setRemixOf }] =
     useTrackField<SingleTrackEditValues[typeof REMIX_OF]>(REMIX_OF)
-  const [{ value: isPremium }] =
-    useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
-  const [{ value: premiumConditions }] =
-    useTrackField<SingleTrackEditValues[typeof PREMIUM_CONDITIONS]>(
-      PREMIUM_CONDITIONS
+  const [{ value: isStreamGated }] =
+    useTrackField<SingleTrackEditValues[typeof IS_STREAM_GATED]>(
+      IS_STREAM_GATED
+    )
+  const [{ value: streamConditions }] =
+    useTrackField<SingleTrackEditValues[typeof STREAM_CONDITIONS]>(
+      STREAM_CONDITIONS
     )
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
@@ -80,30 +82,29 @@ export const RemixSettingsField = () => {
     set(initialValues, SHOW_REMIXES, showRemixes)
     set(initialValues, IS_REMIX, isRemix)
     set(initialValues, REMIX_LINK, remixLink)
-    set(initialValues, IS_PREMIUM, isPremium)
-    set(initialValues, PREMIUM_CONDITIONS, premiumConditions)
+    set(initialValues, IS_STREAM_GATED, isStreamGated)
+    set(initialValues, STREAM_CONDITIONS, streamConditions)
     return initialValues as unknown as RemixSettingsFormValues
   }, [
     showRemixes,
     isRemix,
     remixLink,
     parentTrackId,
-    isPremium,
-    premiumConditions
+    isStreamGated,
+    streamConditions
   ])
 
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   // If the track is public or usdc purchase gated, default to showing remixes.
   // Otherwise, default to hiding remixes.
   useEffect(() => {
-    if (!isPremium || isUSDCPurchaseGated) {
+    if (!isStreamGated || isUSDCPurchaseGated) {
       setShowRemixes(true)
-    } else if (isPremium) {
+    } else if (isStreamGated) {
       setShowRemixes(false)
     }
-  }, [isPremium, isUSDCPurchaseGated, setShowRemixes])
+  }, [isStreamGated, isUSDCPurchaseGated, setShowRemixes])
 
   const handleSubmit = useCallback(
     (values: RemixSettingsFormValues) => {

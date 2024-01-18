@@ -215,6 +215,8 @@ export class CreatorNode {
     updatedMetadata.track_segments = []
     updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
+    updatedMetadata.orig_file_cid = audioResp.orig_file_cid
+    updatedMetadata.orig_filename = audioResp.orig_filename
     if (updatedMetadata.preview_start_seconds != null) {
       const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
       updatedMetadata.preview_cid = audioResp.results[previewKey]

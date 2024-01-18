@@ -8,6 +8,8 @@ export const messages = {
   readOnlyAccountAccess: 'Read-only access to your account',
   connectDashboardWalletAccess:
     'Permission to link this wallet to your account',
+  disconnectDashboardWalletAccess:
+    'Permission to unlink this wallet from your account',
   writeAccountAccess: 'Read/Write access to your account',
   emailLoading: 'Email loading',
   emailAddressAccess: 'Your Email Address',
@@ -22,10 +24,19 @@ export const messages = {
   miscError: 'An error has occurred. Please try again.',
   accountIncompleteError:
     'It looks like your account was never fully completed! Please complete your sign-up first.',
+  disconnectDashboardWalletWrongUserError:
+    'This account is not connected to that wallet.',
   redirectURIInvalidError:
     'Whoops, this is an invalid link (redirect URI missing or invalid).',
   missingAppNameError: 'Whoops, this is an invalid link (app name missing).',
+  otpError: 'Enter the verification code sent to your email',
   scopeError: `Whoops, this is an invalid link (scope missing or invalid).`,
+  connectWalletNoPostMessageError:
+    'Whoops, this is an invalid link (redirectUri must be `postMessage` if tx is `connectDashboardWallet`).',
+  connectWalletAlreadyConnectedError:
+    'Whoops, this is an invalid link (the specified wallet is already connected to an Audius account).',
+  disconnectWalletNotConnectedError:
+    'Whoops, this is an invalid link (the specified wallet is not connected to an Audius account).',
   writeOnceParamsError:
     'Whoops, this is an invalid link (transaction params missing or invalid).',
   writeOnceTxError: `Whoops, this is an invalid link ('tx' missing or invalid).`,

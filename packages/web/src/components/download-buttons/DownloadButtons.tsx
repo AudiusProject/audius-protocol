@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
 import {
@@ -29,7 +29,7 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: ButtonType
   label: string
-  doesUserHaveAccess: boolean
+  hasDownloadAccess: boolean
   onClick?: () => void
 }
 
@@ -47,18 +47,18 @@ const DownloadButton = ({
   label,
   state,
   type,
-  doesUserHaveAccess,
+  hasDownloadAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const isDisabled =
-    !doesUserHaveAccess ||
+    !hasDownloadAccess ||
     state === ButtonState.PROCESSING ||
     state === ButtonState.REQUIRES_FOLLOW
 
   const getTooltipText = useCallback(() => {
-    if (!doesUserHaveAccess) {
+    if (!hasDownloadAccess) {
       return messages.mustHaveAccess
     }
 
@@ -78,7 +78,7 @@ const DownloadButton = ({
             return messages.downloadableTrack
         }
     }
-  }, [doesUserHaveAccess, state, type])
+  }, [hasDownloadAccess, state, type])
 
   const renderIcon = () => {
     if (state === ButtonState.PROCESSING) {
@@ -139,7 +139,7 @@ type DownloadButtonsProps = {
   onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
   isOwner: boolean
   following: boolean
-  doesUserHaveAccess: boolean
+  hasDownloadAccess: boolean
   isHidden?: boolean
   className?: string
 }
@@ -148,7 +148,7 @@ const DownloadButtons = ({
   trackId,
   isOwner,
   following,
-  doesUserHaveAccess,
+  hasDownloadAccess,
   onDownload,
   className
 }: DownloadButtonsProps) => {
@@ -168,8 +168,7 @@ const DownloadButtons = ({
     isOwner,
     onDownload,
     onNotLoggedInClick,
-    trackId,
-    useSelector
+    trackId
   })
   const shouldHide = buttons.length === 0
   if (shouldHide) {
@@ -185,7 +184,7 @@ const DownloadButtons = ({
       {buttons.map((props) => (
         <DownloadButton
           {...props}
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasDownloadAccess={hasDownloadAccess}
           key={props.label}
         />
       ))}

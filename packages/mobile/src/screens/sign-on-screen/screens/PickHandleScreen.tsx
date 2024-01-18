@@ -16,19 +16,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
+  Divider,
   Flex,
   IconVerified,
   Paper,
   Text,
   useTheme
 } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { HandleField } from '../components/HandleField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading, Page, PageFooter } from '../components/layout'
-import { Divider } from '../components/temp-harmony/Divider'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
@@ -142,42 +142,34 @@ export const PickHandleScreen = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
+      validateOnChange={false}
     >
-      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
-        <Page>
-          {isWaitingForSocialLogin ? (
-            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
-          ) : null}
-          <Heading
-            heading={messages.title}
-            description={messages.description}
+      <Page>
+        {isWaitingForSocialLogin ? (
+          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+        ) : null}
+        <Heading heading={messages.title} description={messages.description} />
+        <Flex direction='column' gap='l'>
+          <HandleField />
+          <Divider>
+            <Text
+              variant='body'
+              color='subdued'
+              size='s'
+              style={css({ textTransform: 'uppercase' })}
+            >
+              {messages.or}
+            </Text>
+          </Divider>
+          <SocialMediaSection
+            onStart={handleStartSocialMediaLogin}
+            onError={handleErrorSocialMediaLogin}
+            onClose={handleCloseSocialMediaLogin}
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
           />
-          <Flex direction='column' gap='l'>
-            <TextField name='handle' label={messages.handle} noGutter />
-            <Divider>
-              <Text
-                variant='body'
-                color='subdued'
-                size='s'
-                style={css({ textTransform: 'uppercase' })}
-              >
-                {messages.or}
-              </Text>
-            </Divider>
-            <SocialMediaSection
-              onStart={handleStartSocialMediaLogin}
-              onError={handleErrorSocialMediaLogin}
-              onClose={handleCloseSocialMediaLogin}
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-            />
-          </Flex>
-          <PageFooter
-            p='l'
-            buttonProps={{ disabled: !(dirty && isValid) }}
-            onSubmit={triggerSubmit}
-          />
-        </Page>
-      )}
+        </Flex>
+        <PageFooter />
+      </Page>
     </Formik>
   )
 }

@@ -1,32 +1,48 @@
-# Build stage for DDEX frontend
-FROM node:18.17-slim AS frontend-dist
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:18-alpine AS base
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+# Prune turbo dependencies
+FROM base AS builder
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
 WORKDIR /app
-COPY ddex-frontend/package*.json ddex-frontend/*config*.js ddex-frontend/tsconfig*.json ddex-frontend/vite.config.ts ./
-RUN npm install
-COPY ddex-frontend/src ./src
-COPY ddex-frontend/public ./public
-COPY ddex-frontend/index.html .
-RUN npm run build
+RUN npm install turbo --global
 
-# Build stage for DDEX backend
-FROM node:18.17-slim AS backend-dist
-WORKDIR /backend
-COPY ddex/package*.json ddex/tsconfig.json ./
-RUN npm install
-COPY ddex/src ./src
-RUN npm run build
+COPY . .
+RUN turbo prune --scope=@audius/ddex-frontend --scope=@audius/ddex --docker
 
-# Final stage
-FROM node:18.17-slim
-WORKDIR /usr/src/app
-COPY --from=frontend-dist /app/dist ./public
-COPY --from=backend-dist /backend/dist ./dist
-COPY --from=backend-dist /backend/node_modules ./node_modules
+# Install and build frontend and backend dists and run app
+FROM base AS runner
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
+
+RUN CI=true npm i
+
+# Build the app and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
+COPY turbo.json turbo.json
+RUN npx turbo run build --filter=@audius/ddex-frontend --filter=@audius/ddex
+
+COPY packages/ddex-frontend/dist /app/packages/ddex/public
+
+WORKDIR /app/packages/ddex
 
 EXPOSE 8926
 CMD [ "node", "dist/index.js" ]

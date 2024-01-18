@@ -32,7 +32,7 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
     ) -> bool:
-        return does_user_exist_with_verification_status(session, user_id, False)
+        return True
 
     def should_show_challenge_for_user(self, session: Session, user_id: int) -> bool:
         return True

@@ -7,6 +7,7 @@ apis/TransactionsApi.ts
 apis/UsersApi.ts
 apis/index.ts
 index.ts
+models/Access.ts
 models/ActivityFull.ts
 models/CollectionActivityFull.ts
 models/CollectionLibraryResponseFull.ts
@@ -44,7 +45,6 @@ models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
-models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/Purchase.ts
 models/PurchasesCountResponse.ts
@@ -60,6 +60,7 @@ models/SearchModel.ts
 models/StemFull.ts
 models/StemParent.ts
 models/StemsResponse.ts
+models/StreamSignature.ts
 models/SupporterReference.ts
 models/TopGenreUsersResponseFull.ts
 models/TopUsersResponseFull.ts

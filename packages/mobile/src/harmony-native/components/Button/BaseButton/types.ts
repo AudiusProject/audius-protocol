@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react'
 
-import type { PressableProps, TextStyle, ViewProps } from 'react-native'
+import type {
+  PressableProps,
+  StyleProp,
+  TextStyle,
+  ViewProps
+} from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 
 import type { LoadingSpinnerProps } from 'app/components/loading-spinner/LoadingSpinner'
@@ -9,7 +14,7 @@ import type { Icon, IconProps } from 'app/harmony-native/icons'
 import type { TextProps } from '../../Text/Text'
 
 type BaseButtonStyles = {
-  text?: TextStyle
+  text?: StyleProp<TextStyle>
   icon?: IconProps['style']
 }
 

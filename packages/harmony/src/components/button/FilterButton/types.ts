@@ -6,7 +6,11 @@ export type FilterButtonSize = 'default' | 'small'
 export type FilterButtonVariant = 'fillContainer' | 'replaceLabel'
 
 export type FilterButtonOption = {
-  label: string
+  value: string
+  /**
+   * The label to display. If not provided, uses the value.
+   */
+  label?: string
   icon?: IconComponent
 }
 
@@ -30,9 +34,9 @@ export type FilterButtonProps = {
   'aria-label'?: string
 
   /**
-   * An initial section (from the provided options)
+   * The selected value
    */
-  initialSelectionIndex?: number
+  selection?: string
 
   /**
    * The button size

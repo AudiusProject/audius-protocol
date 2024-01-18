@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react'
 
-import type { PressableProps } from 'react-native/types'
+import type { PressableProps } from 'react-native'
 
 export type FollowButtonProps = {
   /**

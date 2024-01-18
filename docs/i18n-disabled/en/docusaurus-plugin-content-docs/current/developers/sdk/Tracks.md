@@ -293,8 +293,6 @@ Create an object with the following fields and pass it as the first argument, as
 | :-------- | :------- | :------------------ | :----------- |
 | `trackId` | `string` | The ID of the track | **Required** |
 
-TODO: should we document premium content signature?
-
 #### Returns
 
 Returns a `Promise` containing a `string` url which can be used to stream the track.

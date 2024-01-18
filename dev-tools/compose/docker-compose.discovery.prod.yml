@@ -39,6 +39,12 @@ services:
     profiles:
       - notifications
 
+  discovery-provider-openresty:
+    build:
+      context: ${PROJECT_ROOT}/packages/discovery-provider
+      dockerfile: Dockerfile.nginx
+    restart: unless-stopped
+
   comms:
     build:
       context: ${PROJECT_ROOT}/comms

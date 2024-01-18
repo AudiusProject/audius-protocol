@@ -56,11 +56,11 @@ export const sdk = (config: SdkConfig) => {
   const oauth =
     typeof window !== 'undefined'
       ? new OAuth({
-          appName,
-          apiKey,
-          usersApi: apis.users,
-          logger: services.logger
-        })
+        appName,
+        apiKey,
+        usersApi: apis.users,
+        logger: services.logger
+      })
       : undefined
 
   return {
@@ -105,7 +105,7 @@ const initializeServices = (config: SdkConfig) => {
   const defaultSolana = new Solana({
     middleware: [
       config.services?.discoveryNodeSelector?.createMiddleware() ??
-        defaultDiscoveryNodeSelector.createMiddleware()
+      defaultDiscoveryNodeSelector.createMiddleware()
     ]
   })
 

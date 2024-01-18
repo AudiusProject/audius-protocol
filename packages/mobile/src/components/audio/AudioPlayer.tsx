@@ -22,7 +22,7 @@ import {
   queueActions,
   queueSelectors,
   reachabilitySelectors,
-  premiumContentSelectors,
+  gatedContentSelectors,
   RepeatMode,
   FeatureFlags,
   encodeHashId,
@@ -94,7 +94,7 @@ const {
 } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getNftAccessSignatureMap } = gatedContentSelectors
 
 // TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
@@ -138,7 +138,7 @@ const playerEvents = [
   Event.PlaybackError,
   Event.PlaybackProgressUpdated,
   Event.PlaybackQueueEnded,
-  Event.PlaybackTrackChanged,
+  Event.PlaybackActiveTrackChanged,
   Event.RemotePlay,
   Event.RemotePause,
   Event.RemoteNext,
@@ -185,7 +185,7 @@ export const AudioPlayer = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+  const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
   // Queue Things
@@ -274,10 +274,6 @@ export const AudioPlayer = () => {
     },
     [dispatch]
   )
-  const incrementCount = useCallback(
-    () => dispatch(playerActions.incrementCount()),
-    [dispatch]
-  )
 
   // Perform initial setup for the track player
   useAsync(async () => {
@@ -309,16 +305,15 @@ export const AudioPlayer = () => {
         if (!track) {
           continue
         }
-        const { track_id: trackId, premium_content_signature } = track
+        const trackId = track.track_id
 
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else {
-          const premiumContentSignature =
-            premium_content_signature || premiumTrackSignatureMap[trackId]
+          const nftAccessSignature = nftAccessSignatureMap[trackId]
           queryParamsMap[trackId] = await getQueryParams({
             audiusBackendInstance,
-            premiumContentSignature
+            nftAccessSignature
           })
         }
       }
@@ -326,12 +321,12 @@ export const AudioPlayer = () => {
       setGatedQueryParamsMap(queryParamsMap)
       return queryParamsMap
     },
-    [premiumTrackSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
+    [nftAccessSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
-    const duration = await TrackPlayer.getDuration()
-    const position = await TrackPlayer.getPosition()
+    const duration = (await TrackPlayer.getProgress()).duration
+    const position = (await TrackPlayer.getProgress()).position
 
     if (event.type === Event.PlaybackError) {
       console.error(`TrackPlayer Playback Error:`, event)
@@ -363,14 +358,9 @@ export const AudioPlayer = () => {
       // TODO: Queue ended, what should done here?
     }
 
-    if (event.type === Event.PlaybackTrackChanged) {
-      const playerIndex = await TrackPlayer.getCurrentTrack()
-      if (playerIndex === null) return
-
-      // Manually increment player count if we are repeating
-      if ((await TrackPlayer.getRepeatMode()) === TrackPlayerRepeatMode.Track) {
-        incrementCount()
-      }
+    if (event.type === Event.PlaybackActiveTrackChanged) {
+      const playerIndex = await TrackPlayer.getActiveTrackIndex()
+      if (playerIndex === undefined) return
 
       // Update queue and player state if the track player auto plays next track
       if (playerIndex !== queueIndex) {
@@ -381,24 +371,8 @@ export const AudioPlayer = () => {
         } else {
           const { track, isPreview } = queueTracks[playerIndex] ?? {}
 
-          // Skip track if user does not have access i.e. for an unlocked premium track
-          const doesUserHaveAccess = (() => {
-            if (!track) return false
-
-            const {
-              track_id: trackId,
-              is_premium: isPremium,
-              premium_content_signature: premiumContentSignature
-            } = track
-
-            const hasPremiumContentSignature =
-              !!premiumContentSignature ||
-              !!(trackId && premiumTrackSignatureMap[trackId])
-
-            return !isPremium || hasPremiumContentSignature
-          })()
-
-          if (!track || !doesUserHaveAccess) {
+          // Skip track if user does not have access i.e. for an unlocked gated track
+          if (!track?.access?.stream) {
             next()
           } else {
             // Track Player natively went to the next track
@@ -451,14 +425,15 @@ export const AudioPlayer = () => {
       // Handle track end event
       if (
         isNewPodcastControlsEnabled &&
-        event?.position != null &&
-        event?.track != null
+        event?.lastPosition !== undefined &&
+        event?.index !== undefined
       ) {
-        const { track } = queueTracks[event.track] ?? {}
+        const { track } = queueTracks[event.index] ?? {}
         const isLongFormContent =
           track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
         const isAtEndOfTrack =
-          track?.duration && event.position >= track.duration - TRACK_END_BUFFER
+          track?.duration &&
+          event.lastPosition >= track.duration - TRACK_END_BUFFER
 
         if (isLongFormContent && isAtEndOfTrack) {
           dispatch(
@@ -684,7 +659,7 @@ export const AudioPlayer = () => {
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
-    const playerIdx = await TrackPlayer.getCurrentTrack()
+    const playerIdx = await TrackPlayer.getActiveTrackIndex()
     const queue = await TrackPlayer.getQueue()
 
     if (
@@ -698,12 +673,12 @@ export const AudioPlayer = () => {
   }, [queueIndex])
 
   const handleTogglePlay = useCallback(async () => {
-    if (playbackState === State.Playing && !playing) {
+    if (playbackState.state === State.Playing && !playing) {
       await TrackPlayer.pause()
     } else if (
-      (playbackState === State.Paused ||
-        playbackState === State.Ready ||
-        playbackState === State.Stopped) &&
+      (playbackState.state === State.Paused ||
+        playbackState.state === State.Ready ||
+        playbackState.state === State.Stopped) &&
       playing
     ) {
       await TrackPlayer.play()

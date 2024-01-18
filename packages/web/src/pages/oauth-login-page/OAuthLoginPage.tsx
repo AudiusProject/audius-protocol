@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useLayoutEffect, useState } from 'react'
+import { FormEvent, useLayoutEffect, useState } from 'react'
 
 import {
   accountSelectors,
@@ -18,13 +18,14 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { SIGN_UP_PAGE } from 'utils/route'
 
-import styles from './OAuthLoginPage.module.css'
-import { CTAButton } from './components/CTAButton'
 import { ContentWrapper } from './components/ContentWrapper'
+import { CTAButton } from './components/CTAButton'
 import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
+import styles from './OAuthLoginPage.module.css'
 import { WriteOnceTx } from './utils'
+
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 
@@ -42,12 +43,84 @@ export const OAuthLoginPage = () => {
   const dispatch = useDispatch()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   const [emailInput, setEmailInput] = useState('')
   const [passwordInput, setPasswordInput] = useState('')
-  const [hasCredentialsError, setHasCredentialsError] = useState(false)
+  const [showOtpInput, setShowOtpInput] = useState(false)
+  const [otpInput, setOtpInput] = useState('')
+  const [otpEmail, setOtpEmail] = useState<string | null>(null)
+  const [signInError, setSignInError] = useState<string | null>(null)
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
+
+  const clearErrors = () => {
+    setGeneralSubmitError(null)
+    setSignInError(null)
+  }
+
+  const toggleOtpUI = (on: boolean) => {
+    if (on) {
+      setShowOtpInput(true)
+      setSignInError(messages.otpError)
+    } else {
+      setSignInError(null)
+      setShowOtpInput(false)
+    }
+  }
+
+  const handleEmailInputChange = (input: string) => {
+    if (otpEmail !== input) {
+      toggleOtpUI(false)
+    } else if (otpEmail === input && !showOtpInput) {
+      toggleOtpUI(true)
+    }
+    setEmailInput(input)
+  }
+
+  const setAndLogGeneralSubmitError = (
+    isUserError: boolean,
+    errorMessage: string,
+    error?: Error
+  ) => {
+    setGeneralSubmitError(errorMessage)
+    record(
+      make(Name.AUDIUS_OAUTH_ERROR, {
+        isUserError,
+        error: errorMessage,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
+    if (error && !isUserError) {
+      reportToSentry({ level: ErrorLevel.Error, error })
+    }
+  }
+
+  const setAndLogInvalidCredentialsError = () => {
+    setSignInError(messages.invalidCredentialsError)
+    record(
+      make(Name.AUDIUS_OAUTH_ERROR, {
+        isUserError: true,
+        error: messages.invalidCredentialsError,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
+  }
+
+  const handleAuthError = ({
+    isUserError,
+    errorMessage,
+    error
+  }: {
+    isUserError: boolean
+    errorMessage: string
+    error?: Error
+  }) => {
+    setIsSubmitting(false)
+    setAndLogGeneralSubmitError(isUserError, errorMessage, error)
+  }
 
   const {
     scope,
@@ -60,58 +133,7 @@ export const OAuthLoginPage = () => {
     userEmail,
     authorize,
     txParams
-  } = useOAuthSetup()
-
-  const clearErrors = () => {
-    setGeneralSubmitError(null)
-    setHasCredentialsError(false)
-  }
-
-  const setAndLogGeneralSubmitError = useCallback(
-    (isUserError: boolean, errorMessage: string, error?: Error) => {
-      setGeneralSubmitError(errorMessage)
-      record(
-        make(Name.AUDIUS_OAUTH_ERROR, {
-          isUserError,
-          error: errorMessage,
-          appId: (apiKey || appName)!,
-          scope: scope!
-        })
-      )
-      if (error && !isUserError) {
-        reportToSentry({ level: ErrorLevel.Error, error })
-      }
-    },
-    [record, appName, apiKey, scope]
-  )
-
-  const setAndLogInvalidCredentialsError = () => {
-    setHasCredentialsError(true)
-    record(
-      make(Name.AUDIUS_OAUTH_ERROR, {
-        isUserError: true,
-        error: messages.invalidCredentialsError,
-        appId: (apiKey || appName)!,
-        scope: scope!
-      })
-    )
-  }
-
-  const handleAuthError = useCallback(
-    ({
-      isUserError,
-      errorMessage,
-      error
-    }: {
-      isUserError: boolean
-      errorMessage: string
-      error?: Error
-    }) => {
-      setIsSubmitting(false)
-      setAndLogGeneralSubmitError(isUserError, errorMessage, error)
-    },
-    [setAndLogGeneralSubmitError]
-  )
+  } = useOAuthSetup({ onError: handleAuthError })
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -132,7 +154,8 @@ export const OAuthLoginPage = () => {
     try {
       signInResponse = await audiusBackendInstance.signIn(
         emailInput,
-        passwordInput
+        passwordInput,
+        otpInput || undefined
       )
     } catch (err) {
       setIsSubmitting(false)
@@ -150,8 +173,7 @@ export const OAuthLoginPage = () => {
     ) {
       // Success - perform Oauth authorization
       await authorize({
-        account: signInResponse.user,
-        onError: handleAuthError
+        account: signInResponse.user
       })
     } else if (
       (!signInResponse.error &&
@@ -161,6 +183,10 @@ export const OAuthLoginPage = () => {
     ) {
       setIsSubmitting(false)
       setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
+    } else if (signInResponse.error && signInResponse.error.includes('403')) {
+      setIsSubmitting(false)
+      setOtpEmail(emailInput)
+      toggleOtpUI(true)
     } else {
       setIsSubmitting(false)
       setAndLogInvalidCredentialsError()
@@ -180,13 +206,16 @@ export const OAuthLoginPage = () => {
       setAndLogGeneralSubmitError(false, messages.miscError)
     } else {
       setIsSubmitting(true)
-      authorize({ account, onError: handleAuthError })
+      authorize({ account })
     }
   }
 
   const handleSignOut = () => {
     dispatch(signOut())
   }
+
+  const isSubmitDisabled =
+    generalSubmitError === messages.disconnectDashboardWalletWrongUserError
 
   let titleText
   if (!isLoggedIn) {
@@ -272,7 +301,7 @@ export const OAuthLoginPage = () => {
               required
               autoComplete='username'
               value={emailInput}
-              onChange={setEmailInput}
+              onChange={handleEmailInputChange}
             />
             <Input
               className={styles.passwordInput}
@@ -286,22 +315,34 @@ export const OAuthLoginPage = () => {
               type='password'
               onChange={setPasswordInput}
             />
-            {!hasCredentialsError ? null : (
+            {signInError == null ? null : (
               <div className={styles.credentialsErrorContainer}>
                 <IconValidationX
                   width={14}
                   height={14}
                   className={styles.credentialsErrorIcon}
                 />
-                <span className={styles.errorText}>
-                  {messages.invalidCredentialsError}
-                </span>
+                <span className={styles.errorText}>{signInError}</span>
               </div>
             )}
+            {showOtpInput ? (
+              <Input
+                placeholder='Verification Code'
+                size='medium'
+                name='otp'
+                value={otpInput}
+                characterLimit={6}
+                type='number'
+                variant={'normal'}
+                onChange={setOtpInput}
+                className={cn(styles.otpInput)}
+              />
+            ) : null}
             <CTAButton
               isSubmitting={isSubmitting}
               text={messages.signInButton}
               buttonType='submit'
+              isDisabled={isSubmitDisabled}
             />
           </form>
           <div className={styles.signUpButtonContainer}>

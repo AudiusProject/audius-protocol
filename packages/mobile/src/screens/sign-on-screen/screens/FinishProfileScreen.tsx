@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  MAX_DISPLAY_NAME_LENGTH,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -22,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Paper, useTheme, Text } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
+import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
@@ -55,9 +56,9 @@ export const FinishProfileScreen = () => {
     (values: FinishProfileValues) => {
       const { displayName, profileImage, coverPhoto } = values
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(signUp())
       navigation.navigate('SelectGenre')
@@ -71,29 +72,24 @@ export const FinishProfileScreen = () => {
       onSubmit={handleSubmit}
       validationSchema={finishProfileFormikSchema}
     >
-      {({ handleSubmit }) => (
-        <Page>
-          <Heading
-            heading={messages.header}
-            description={messages.description}
+      <Page>
+        <Heading heading={messages.header} description={messages.description} />
+        <Paper>
+          <AccountHeaderField />
+          <HarmonyTextField
+            name='displayName'
+            label={messages.displayName}
+            placeholder={messages.inputPlaceholder}
+            maxLength={MAX_DISPLAY_NAME_LENGTH}
+            autoComplete='off'
+            style={css({
+              padding: spacing.l,
+              paddingTop: spacing.unit10
+            })}
           />
-          <Paper>
-            <AccountHeaderField />
-            <TextField
-              name='displayName'
-              label={messages.displayName}
-              style={css({
-                padding: spacing.l,
-                paddingTop: spacing.unit10
-              })}
-            />
-          </Paper>
-          <PageFooter
-            prefix={<UploadProfilePhotoHelperText />}
-            onSubmit={handleSubmit}
-          />
-        </Page>
-      )}
+        </Paper>
+        <PageFooter prefix={<UploadProfilePhotoHelperText />} />
+      </Page>
     </Formik>
   )
 }

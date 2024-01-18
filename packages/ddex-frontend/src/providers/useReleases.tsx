@@ -5,7 +5,7 @@ export type ReleaseRowData = {
   genre: string
   releaseDate: Date
   isUnlisted: boolean
-  isPremium: boolean
+  isStreamGated: boolean
   description: string
   license: string
   userId: string
@@ -27,8 +27,15 @@ export type ReleaseRow = {
   data: ReleaseRowData
   status: string
 }
+
+type ReleasesResponse = {
+  releases: ReleaseRow[]
+  hasMoreNext: boolean
+  hasMorePrev: boolean
+}
+
 const useReleases = (statusFilter = '', nextCursor = '', prevCursor = '') => {
-  return useQuery({
+  return useQuery<ReleasesResponse>({
     queryKey: ['releases', statusFilter, nextCursor, prevCursor],
     queryFn: async () => {
       const params = new URLSearchParams({ status: statusFilter })
@@ -43,16 +50,22 @@ const useReleases = (statusFilter = '', nextCursor = '', prevCursor = '') => {
           `Failed fetching releases: ${response.status} ${response.statusText}`
         )
       }
-      const releases = (await response.json()) as ReleaseRow[]
-      return releases.map((release) => ({
-        ...release,
-        release_date: new Date(release.release_date),
-        data: {
-          ...JSON.parse(release.data as unknown as string),
-          releaseDate: new Date(release.data.releaseDate),
-        },
-      }))
-    },
+      const data = (await response.json()) as ReleasesResponse
+
+      return {
+        ...data,
+        releases: data.releases.map((release) => ({
+          ...release,
+          release_date: new Date(release.release_date),
+          data: {
+            ...JSON.parse(release.data as unknown as string),
+            releaseDate: new Date(
+              JSON.parse(release.data as unknown as string).releaseDate
+            )
+          }
+        }))
+      }
+    }
   })
 }
 

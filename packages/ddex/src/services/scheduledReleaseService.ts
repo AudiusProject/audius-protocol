@@ -24,12 +24,17 @@ export const createScheduledReleaseService = (
 ): ScheduledReleaseService => {
   const worker = async (release: ReleaseRow) => {
     console.log('Processing release', release)
-    const err = await upload(release)
-    if (err) {
-      console.error('Error uploading release ${release.id}:', err)
+    try {
+      const err = await upload(release)
+      if (err) {
+        console.error(`Error uploading release ${release.id}: ${err}`)
+        await sql`UPDATE releases SET status = 'error' WHERE id = ${release.id}`
+      } else {
+        await sql`UPDATE releases SET status = 'success' WHERE id = ${release.id}`
+      }
+    } catch (error) {
+      console.error(`Error uploading release ${release.id}: ${error}`)
       await sql`UPDATE releases SET status = 'error' WHERE id = ${release.id}`
-    } else {
-      await sql`UPDATE releases SET status = 'success' WHERE id = ${release.id}`
     }
   }
 
@@ -45,7 +50,16 @@ export const createScheduledReleaseService = (
         // TODO: If we do this then if the server restarts it'll see everything as processing and not re-add it to the queue.
         // Need to add all releases in 'processing' state to the queue on server start in case it restarted in the middle of processing.
         await sql`UPDATE releases SET status = 'processing' WHERE id = ${release.id}`
-        queue.push(release)
+        queue.push({
+          ...release,
+          release_date: new Date(release.release_date),
+          data: {
+            ...JSON.parse(release.data as unknown as string),
+            releaseDate: new Date(
+              JSON.parse(release.data as unknown as string).releaseDate
+            ),
+          },
+        })
       }
     } catch (error) {
       console.error('Error processing releases:', error)
@@ -58,6 +72,7 @@ export const createScheduledReleaseService = (
   // TODO: We'll want a similar cron to scan for failed releases and re-process them
 
   const upload = async (release: ReleaseRow) => {
+    console.log('Uploading release', JSON.stringify(release))
     const uploadTrackRequest: UploadTrackRequest = {
       userId: release.data.userId,
       // TODO replace with actual img file from upload request
@@ -71,14 +86,12 @@ export const createScheduledReleaseService = (
         title: release.data.title,
 
         // todo: need to normalize genre
-        // genre: firstValue(trackNode, "Genre", "trackGenre"),
         genre: release.data.genre as Genre,
 
-        // todo: need to parse release date if present
         releaseDate: release.release_date,
 
         isUnlisted: release.data.isUnlisted,
-        isPremium: release.data.isPremium,
+        isStreamGated: release.data.isStreamGated,
         fieldVisibility: release.data.fieldVisibility,
         description: release.data.description,
         license: release.data.license,

@@ -8,6 +8,16 @@ type ResetPasswordArgs = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
+    getCurrentUserId: {
+      async fetch(_, context) {
+        const { audiusBackend } = context
+        const account = await audiusBackend.getAccount()
+        return account?.user_id || null
+      },
+      options: {
+        type: 'query'
+      }
+    },
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
@@ -23,6 +33,6 @@ const accountApi = createApi({
   }
 })
 
-export const { useResetPassword } = accountApi.hooks
+export const { useGetCurrentUserId, useResetPassword } = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer

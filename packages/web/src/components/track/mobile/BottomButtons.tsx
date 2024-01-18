@@ -2,9 +2,9 @@ import { MouseEvent, memo } from 'react'
 
 import {
   Nullable,
-  PremiumConditions,
-  PremiumTrackStatus,
-  isPremiumContentUSDCPurchaseGated
+  AccessConditions,
+  GatedTrackStatus,
+  isContentUSDCPurchaseGated
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -15,7 +15,7 @@ import ShareButton from 'components/alt-button/ShareButton'
 import typeStyles from 'components/typography/typography.module.css'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
-import { PremiumConditionsPill } from '../PremiumConditionsPill'
+import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './BottomButtons.module.css'
 
@@ -26,27 +26,27 @@ type BottomButtonsProps = {
   toggleRepost: () => void
   onClickOverflow: () => void
   onShare: () => void
-  onClickPremiumPill?: (e: MouseEvent) => void
+  onClickPill?: (e: MouseEvent) => void
   isLoading: boolean
   isOwner: boolean
   isDarkMode: boolean
   isUnlisted?: boolean
   isShareHidden?: boolean
   isTrack?: boolean
-  doesUserHaveAccess?: boolean
+  hasStreamAccess?: boolean
   readonly?: boolean
-  premiumConditions?: Nullable<PremiumConditions>
-  premiumTrackStatus?: PremiumTrackStatus
+  streamConditions?: Nullable<AccessConditions>
+  gatedTrackStatus?: GatedTrackStatus
   isMatrixMode: boolean
 }
 
 const BottomButtons = (props: BottomButtonsProps) => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const isUSDCPurchase =
-    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(props.premiumConditions)
+    isUSDCEnabled && isContentUSDCPurchaseGated(props.streamConditions)
 
   // Readonly variant only renders content for locked USDC tracks
-  if (!!props.readonly && (!isUSDCPurchase || props.doesUserHaveAccess)) {
+  if (!!props.readonly && (!isUSDCPurchase || props.hasStreamAccess)) {
     return null
   }
 
@@ -60,12 +60,12 @@ const BottomButtons = (props: BottomButtonsProps) => {
     />
   )
 
-  // Premium condition without access
+  // Stream conditions without access
   if (
     props.isTrack &&
     !props.isLoading &&
-    props.premiumConditions &&
-    !props.doesUserHaveAccess
+    props.streamConditions &&
+    !props.hasStreamAccess
   ) {
     return (
       <div
@@ -75,11 +75,11 @@ const BottomButtons = (props: BottomButtonsProps) => {
           styles.bottomButtons
         )}
       >
-        <div className={styles.premiumContentContainer}>
-          <PremiumConditionsPill
-            premiumConditions={props.premiumConditions}
-            unlocking={props.premiumTrackStatus === 'UNLOCKING'}
-            onClick={props.onClickPremiumPill}
+        <div className={styles.gatedContentContainer}>
+          <GatedConditionsPill
+            streamConditions={props.streamConditions}
+            unlocking={props.gatedTrackStatus === 'UNLOCKING'}
+            onClick={props.onClickPill}
           />
         </div>
         {props.readonly ? null : moreButton}

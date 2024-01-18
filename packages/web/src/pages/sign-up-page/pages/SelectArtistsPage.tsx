@@ -23,7 +23,11 @@ import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
+import {
+  SIGN_UP_APP_CTA_PAGE,
+  SIGN_UP_COMPLETED_REDIRECT,
+  SIGN_UP_GENRES_PAGE
+} from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -116,12 +120,17 @@ export const SelectArtistsPage = () => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
-            <AccountHeader mode='viewing' />
+            <AccountHeader
+              backButtonText={messages.backToGenres}
+              backTo={SIGN_UP_GENRES_PAGE}
+              mode='viewing'
+            />
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
               mb={isMobile ? undefined : 'xl'}
               style={styles}
+              css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Flex
                 direction='column'

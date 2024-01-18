@@ -38,11 +38,13 @@ const {
 export const usePurchaseContentFormConfiguration = ({
   track,
   price,
-  presetValues
+  presetValues,
+  purchaseVendor
 }: {
   track?: Nullable<UserTrackMetadata>
   price: number
   presetValues: PayExtraAmountPresetValues
+  purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
@@ -59,7 +61,7 @@ export const usePurchaseContentFormConfiguration = ({
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
-    [PURCHASE_VENDOR]: PurchaseVendor.STRIPE
+    [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE
   }
 
   const onSubmit = useCallback(

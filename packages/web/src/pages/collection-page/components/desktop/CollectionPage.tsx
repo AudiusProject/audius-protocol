@@ -21,7 +21,7 @@ import {
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
-import { SuggestedTracks } from 'components/suggested-tracks'
+import { SuggestedCollectionTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -273,14 +273,15 @@ const CollectionPage = ({
               removeText={`${messages.remove} ${
                 isAlbum ? messages.type.album : messages.type.playlist
               }`}
+              isAlbumPage={isAlbum}
             />
           </div>
         )}
       </Tile>
-      {isOwner && !isAlbum && !isNftPlaylist ? (
+      {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
         <>
           <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedTracks collectionId={playlistId} />
+          <SuggestedCollectionTracks collectionId={playlistId} />
         </>
       ) : null}
     </Page>
