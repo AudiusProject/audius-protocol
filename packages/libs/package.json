@@ -117,6 +117,8 @@
     "semver": "6.3.0",
     "snakecase-keys": "5.4.5",
     "stream-browserify": "3.0.0",
+    "strtok3": "6.3.0",
+    "token-types": "4.2.1",
     "ulid": "2.3.0",
     "url": "0.11.1",
     "web3": "1.8.2",
