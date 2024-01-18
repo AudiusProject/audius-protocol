@@ -6,10 +6,8 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 
-# -- DDEX frontend --
-
 # Prune turbo dependencies
-FROM base AS frontend-builder
+FROM base AS builder
 
 RUN apk add --no-cache libc6-compat
 RUN apk update
@@ -18,10 +16,10 @@ WORKDIR /app
 RUN npm install turbo --global
 
 COPY . .
-RUN turbo prune --scope=@audius/ddex-frontend --docker
+RUN turbo prune --scope=@audius/ddex-frontend --scope=@audius/ddex --docker
 
-# Install and build frontend dist
-FROM base AS frontend-dist
+# Install and build frontend and backend dists and run app
+FROM base AS runner
 
 WORKDIR /app
 
@@ -30,61 +28,21 @@ RUN apk update
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
-COPY --from=frontend-builder /app/out/json/ .
-COPY --from=frontend-builder /app/out/package-lock.json ./package-lock.json
-COPY --from=frontend-builder /app/scripts ./scripts
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
 
 RUN CI=true npm i
 
-# Build the frontend and its dependencies
-COPY --from=frontend-builder /app/out/full/ .
+# Build the app and its dependencies
+COPY --from=builder /app/out/full/ .
 COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
-RUN npx turbo run build --filter=@audius/ddex-frontend
+RUN npx turbo run build --filter=@audius/ddex-frontend --filter=@audius/ddex
 
-# -- DDEX backend --
+COPY packages/ddex-frontend/dist /app/packages/ddex/public
 
-# Prune turbo dependencies
-FROM base AS backend-builder
-
-RUN apk add --no-cache libc6-compat
-RUN apk update
- 
-WORKDIR /app
-RUN npm install turbo --global
-
-COPY . .
-RUN turbo prune --scope=@audius/ddex --docker
-
-# Install and build backend dist
-FROM base AS backend-dist
-
-WORKDIR /backend
-
-RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
-RUN apk update
-
-# First install dependencies (as they change less often)
-COPY .gitignore .gitignore
-COPY --from=backend-builder /app/out/json/ .
-COPY --from=backend-builder /app/out/package-lock.json ./package-lock.json
-COPY --from=backend-builder /app/scripts ./scripts
-
-RUN CI=true npm i
-
-# Build the backend and its dependencies
-COPY --from=backend-builder /app/out/full/ .
-COPY turbo.json turbo.json
-RUN npx turbo run build --filter=@audius/ddex
-
-# Combine frontend and backend
-FROM node:18.17-slim
-
-WORKDIR /usr/src/app
-
-COPY --from=frontend-dist /app/packages/ddex-frontend/dist ./public
-COPY --from=backend-dist /backend/packages/ddex/dist ./dist
-COPY --from=backend-dist /backend/packages/ddex/node_modules ./node_modules
+WORKDIR /app/packages/ddex
 
 EXPOSE 8926
 CMD [ "node", "dist/index.js" ]
