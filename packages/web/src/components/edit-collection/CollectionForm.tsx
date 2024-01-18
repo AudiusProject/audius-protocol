@@ -23,14 +23,14 @@ const messages = {
       "Set defaults for all tracks in this collection. Use 'Override' to personalize individual track details."
   },
   completeButton: 'Complete Upload',
-  editPlaylistButtonText: 'Save Changes',
+  saveButtonText: 'Save Changes',
   cancelButtonText: 'Cancel',
   deletePlaylistButtonText: 'Delete Playlist',
   deleteAlbumButtonText: 'Delete Album',
   createPlaylistButtonText: 'Create Playlist'
 }
 
-export type EditPlaylistValues = Omit<Collection, 'artwork'> & {
+export type EditCollectionValues = Omit<Collection, 'artwork'> & {
   artwork: Nullable<{
     file?: Blob
     url?: string
@@ -39,7 +39,7 @@ export type EditPlaylistValues = Omit<Collection, 'artwork'> & {
   }>
 }
 
-type PlaylistFormProps = {
+type CollectionFormProps = {
   metadata: Collection
   isAlbum?: boolean
   /** Only applies to edit mode */
@@ -49,19 +49,19 @@ type PlaylistFormProps = {
   onSave: (formFields: CollectionMetadata) => void
 }
 
-const playlistFormSchema = PlaylistSchema.pick({
+const collectionFormSchema = PlaylistSchema.pick({
   artwork: true,
   playlist_name: true,
   description: true
 })
 
-const PlaylistForm = ({
+const CollectionForm = ({
   isAlbum = false,
   metadata,
   onSave,
   onCancel,
   onDelete
-}: PlaylistFormProps) => {
+}: CollectionFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const coverArtUrl = useCollectionCoverArt(
     metadata.playlist_id,
@@ -70,14 +70,14 @@ const PlaylistForm = ({
   )
 
   return (
-    <Formik<EditPlaylistValues>
+    <Formik<EditCollectionValues>
       initialValues={{
         ...metadata,
         artwork: coverArtUrl ? { url: coverArtUrl } : null,
         description: metadata.description ?? ''
       }}
       onSubmit={onSave}
-      validationSchema={toFormikValidationSchema(playlistFormSchema)}
+      validationSchema={toFormikValidationSchema(collectionFormSchema)}
     >
       <Form>
         <Flex direction='column' w='100%' gap='2xl'>
@@ -106,7 +106,7 @@ const PlaylistForm = ({
                 ? messages.deleteAlbumButtonText
                 : messages.deletePlaylistButtonText
             }
-            saveText={messages.editPlaylistButtonText}
+            saveText={messages.saveButtonText}
             cancelText={messages.cancelButtonText}
             onCancel={onCancel}
             onDelete={onDelete}
@@ -118,4 +118,4 @@ const PlaylistForm = ({
   )
 }
 
-export default PlaylistForm
+export default CollectionForm

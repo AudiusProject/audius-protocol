@@ -4,8 +4,9 @@ import { isEmpty } from 'lodash'
 
 import Input from 'components/data-entry/Input'
 
+import { CreateActions, EditActions } from '../edit-collection/FormActions'
+
 import styles from './FolderForm.module.css'
-import { CreateActions, EditActions } from './FormActions'
 
 const messages = {
   createFolderButtonText: 'Create Folder',

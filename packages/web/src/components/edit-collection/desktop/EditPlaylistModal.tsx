@@ -16,7 +16,7 @@ import {
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import PlaylistForm from 'components/create-playlist/PlaylistForm'
+import CollectionForm from 'components/edit-collection/CollectionForm'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
 import { useSelector } from 'utils/reducer'
@@ -99,7 +99,7 @@ const EditPlaylistModal = () => {
           {collection == null ? (
             <LoadingSpinner className={styles.spinner} />
           ) : (
-            <PlaylistForm
+            <CollectionForm
               metadata={collection}
               isAlbum={isAlbum}
               onDelete={onClickDelete}
