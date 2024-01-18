@@ -66,6 +66,7 @@
     "@audius/fixed-decimal": "*",
     "@audius/hedgehog": "2.1.0",
     "@audius/spl": "*",
+    "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",
     "@certusone/wormhole-sdk": "0.1.1",
@@ -126,7 +127,6 @@
     "zod": "3.21.4"
   },
   "devDependencies": {
-    "@babel/core": "7.23.5",
     "@babel/plugin-transform-runtime": "7.18.2",
     "@babel/preset-env": "7.16.11",
     "@babel/preset-typescript": "7.23.3",
