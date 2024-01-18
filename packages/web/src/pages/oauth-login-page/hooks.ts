@@ -15,10 +15,10 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-import { audiusSdk } from 'services/audius-sdk'
 import { messages } from './messages'
 import {
   authWrite,
@@ -298,7 +298,7 @@ export const useOAuthSetup = ({
       }
     }
     verifyValidWalletIfApplicable()
-  }, [])
+  }, [tx, txParams?.wallet])
 
   const formResponseAndRedirect = useCallback(
     async ({
@@ -372,7 +372,8 @@ export const useOAuthSetup = ({
       apiKey,
       appName,
       scope,
-      dispatch
+      dispatch,
+      onError
     ]
   )
 
@@ -433,9 +434,9 @@ export const useOAuthSetup = ({
           })
         }
       }
-      verifyDisconnectWalletUser()
     }
-  }, [])
+    verifyDisconnectWalletUser()
+  }, [account?.user_id, onError, tx, txParams?.wallet])
 
   const authorize = async ({ account }: { account: User }) => {
     let shouldCreateWriteGrant = false
