@@ -28,8 +28,10 @@ import type { TextColors, TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
+import { TextInputAccessoryView } from './TextInputAccessoryView'
 import { TextInputSize, type TextInputProps } from './types'
 
+const inputAccessoryViewID = 'harmonyInputAccessoryView'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
@@ -325,6 +327,7 @@ export const TextInput = forwardRef(
                     onFocus={onFocus}
                     onBlur={onBlur}
                     selectionColor={color.secondary.secondary}
+                    inputAccessoryViewID={inputAccessoryViewID}
                     {...other}
                   />
                   {endAdornmentText && shouldShowAdornments ? (
@@ -355,6 +358,7 @@ export const TextInput = forwardRef(
             {helperText}
           </AnimatedText>
         ) : null}
+        <TextInputAccessoryView nativeID={inputAccessoryViewID} />
       </Flex>
     )
   }

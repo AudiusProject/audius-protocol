@@ -3,6 +3,11 @@ import type { SignOnScreenParams } from './screens/SignOnScreen'
 
 export type SignUpScreenParamList = {
   SignOn: SignOnScreenParams
+
+  // Sign In
+  ConfirmEmail: undefined
+
+  // Sign Up
   CreatePassword: CreatePasswordParams
   PickHandle: undefined
   FinishProfile: undefined
@@ -11,6 +16,7 @@ export type SignUpScreenParamList = {
   ReviewHandle: undefined
   CreateLoginDetails: undefined
   AccountLoading: undefined
+
   // For leaving signup
   HomeStack: { screen: 'Trending' }
 }
