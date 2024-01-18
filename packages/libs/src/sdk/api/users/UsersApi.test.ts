@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { ClaimableTokensProgram } from '@audius/spl'
+import { DecodedTransferClaimableTokensInstruction } from '@audius/spl/dist/types/claimable-tokens/types'
 import { beforeAll, expect, jest } from '@jest/globals'
 import {
   PublicKey,
@@ -286,26 +287,23 @@ describe('UsersApi', () => {
           expect(ClaimableTokensProgram.isTransferInstruction(decoded)).toBe(
             true
           )
-          // Typescript hint - always true
-          if (ClaimableTokensProgram.isTransferInstruction(decoded)) {
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(decoded.keys.destination.pubkey.toBase58()).toBe(
-              userBanks[receiverUserId]?.toBase58()
-            )
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(decoded.keys.sourceUserBank.pubkey.toBase58()).toBe(
-              userBanks[senderUserId]?.toBase58()
-            )
-            const data =
-              ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
+          // Typescript hint - see above assert
+          const decoded2 = decoded as DecodedTransferClaimableTokensInstruction
 
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(data.destination.toBase58()).toBe(
-              userBanks[receiverUserId]?.toBase58()
-            )
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(data.amount).toBe(outputAmount)
-          }
+          expect(decoded2.keys.destination.pubkey.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(decoded2.keys.sourceUserBank.pubkey.toBase58()).toBe(
+            userBanks[senderUserId]?.toBase58()
+          )
+          const data =
+            ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
+
+          expect(data.destination.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(data.amount).toBe(outputAmount)
+
           return { signature: 'fake-sig' }
         })
 
