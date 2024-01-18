@@ -683,10 +683,7 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isStreamGated &&
-      streamConditions &&
-      isLosslessDownloadsEnabled &&
-      !hasDownloadableAssets ? (
+      {isStreamGated && streamConditions ? (
         <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
