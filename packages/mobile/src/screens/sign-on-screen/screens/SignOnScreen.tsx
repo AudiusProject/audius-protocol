@@ -2,8 +2,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 
 import { css } from '@emotion/native'
-import { Dimensions, ImageBackground, SafeAreaView } from 'react-native'
-import RadialGradientOld from 'react-native-radial-gradient'
+import { ImageBackground, SafeAreaView } from 'react-native'
 import Animated, {
   CurvedTransition,
   FadeIn,
