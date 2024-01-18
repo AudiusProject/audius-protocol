@@ -162,7 +162,7 @@ export const PickHandlePage = () => {
       ) : (
         <Page
           as={Form}
-          centered={!isMobile}
+          centered
           transitionBack='vertical'
           autoFocusInputRef={handleInputRef}
         >
@@ -197,7 +197,7 @@ export const PickHandlePage = () => {
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
           </Flex>
-          <PageFooter centered />
+          <PageFooter centered sticky />
         </Page>
       )}
     </Formik>

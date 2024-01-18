@@ -5,10 +5,10 @@ import { Box, Flex, IconCaretDown, Text } from '@audius/harmony'
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 
 type MobileFilterButtonTypes = {
-  options: { label: string }[]
+  options: { value: string; label?: string }[]
   onClose?: () => void
-  onSelect?: (label: string) => void
-  initialSelectionIndex?: number
+  onSelect?: (value: string) => void
+  selection?: string
   zIndex?: number
 }
 
@@ -16,24 +16,23 @@ export const MobileFilterButton = ({
   options,
   onClose,
   onSelect,
-  initialSelectionIndex,
+  selection,
   zIndex
 }: MobileFilterButtonTypes) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [selection, setSelection] = useState(
-    initialSelectionIndex !== undefined ? options[initialSelectionIndex] : null
-  )
+  const selectedOption = options.find((option) => option.value === selection)
+  const selectedLabel = selectedOption?.label ?? selectedOption?.value ?? ''
   useEffect(() => {
     if (selection && onSelect) {
-      onSelect(selection.label)
+      onSelect(selection)
     }
   }, [selection, onSelect])
 
   const actions = options.map((option) => ({
-    text: option.label,
+    text: option.label ?? option.value,
     onClick: () => {
       setIsOpen(false)
-      setSelection(option)
+      onSelect?.(option.value)
     }
   }))
   return (
@@ -52,7 +51,7 @@ export const MobileFilterButton = ({
         onClick={() => setIsOpen((open) => !open)}
       >
         <Text variant='title' strength='weak' size='s'>
-          {selection?.label}
+          {selectedLabel}
         </Text>
         <IconCaretDown size='s' color='default' />
       </Flex>

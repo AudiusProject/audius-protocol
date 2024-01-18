@@ -859,7 +859,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             }
           })
         )
-        yield* put(
+        yield put(
           addLocalCollection({
             collectionId: confirmedPlaylist.playlist_id,
             isAlbum: confirmedPlaylist.is_album,

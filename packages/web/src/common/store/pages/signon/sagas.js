@@ -359,20 +359,20 @@ function* signUp() {
 
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
-  const createUserMetadata = {
-    name: signOn.name.value.trim(),
-    handle: signOn.handle.value,
-    profilePicture: (signOn.profileImage && signOn.profileImage.file) || null,
-    coverPhoto: (signOn.coverPhoto && signOn.coverPhoto.file) || null,
-    isVerified: signOn.verified,
-    location
-  }
   const name = signOn.name.value.trim()
   const email = signOn.email.value
   const password = signOn.password.value
   const handle = signOn.handle.value
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
+  const createUserMetadata = {
+    name,
+    handle,
+    profilePicture: signOn.profileImage?.file || null,
+    coverPhoto: signOn.coverPhoto?.file || null,
+    isVerified: signOn.verified,
+    location
+  }
 
   yield call(audiusBackendInstance.setUserHandleForRelay, handle)
 
@@ -474,7 +474,12 @@ function* signUp() {
         yield put(signOnActions.signUpSucceededWithId(userId))
 
         const isNativeMobile = yield getContext('isNativeMobile')
-        if (isNativeMobile) {
+
+        const isSignUpRedesignEnabled = yield call(
+          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+        )
+
+        if (isNativeMobile && !isSignUpRedesignEnabled) {
           yield put(requestPushNotificationPermissions())
         } else {
           // Set the has request browser permission to true as the signon provider will open it
@@ -635,10 +640,13 @@ function* signIn(action) {
       const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
       yield put(trackEvent)
 
-      // Reset the sign on in the background after page load as to relieve the UI loading
-      yield delay(1000)
       yield put(signOnActions.resetSignOn())
+
       const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        // Reset the sign on in the background after page load as to relieve the UI loading
+        yield delay(1000)
+      }
       if (isNativeMobile) {
         yield put(requestPushNotificationPermissions())
       } else {

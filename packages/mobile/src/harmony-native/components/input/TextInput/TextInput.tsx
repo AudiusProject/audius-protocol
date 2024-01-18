@@ -10,8 +10,8 @@ import type {
 import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import Animated, {
-  FadeInUp,
-  FadeOutUp,
+  FadeIn,
+  FadeOut,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -28,8 +28,10 @@ import type { TextColors, TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
+import { TextInputAccessoryView } from './TextInputAccessoryView'
 import { TextInputSize, type TextInputProps } from './types'
 
+const inputAccessoryViewID = 'harmonyInputAccessoryView'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
@@ -62,6 +64,7 @@ export const TextInput = forwardRef(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      IconProps,
       endAdornment: endAdornmentProp,
       _incorrectError,
       _isFocused,
@@ -83,7 +86,7 @@ export const TextInput = forwardRef(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' />
+      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -246,7 +249,9 @@ export const TextInput = forwardRef(
               gap={isSmall ? 's' : 'm'}
               style={animatedRootStyles}
             >
-              {StartIcon ? <StartIcon size='m' color='subdued' /> : null}
+              {StartIcon ? (
+                <StartIcon size='m' color='subdued' {...IconProps} />
+              ) : null}
               <Flex
                 direction='column'
                 gap='xs'
@@ -284,6 +289,7 @@ export const TextInput = forwardRef(
                   direction='row'
                   alignItems='center'
                   justifyContent='space-between'
+                  gap='2xs'
                 >
                   {startAdornmentText && shouldShowAdornments ? (
                     <Text
@@ -308,9 +314,7 @@ export const TextInput = forwardRef(
                     placeholder={
                       shouldShowPlaceholder ? placeholderText : undefined
                     }
-                    placeholderTextColor={
-                      color.text[disabled ? 'subdued' : 'default']
-                    }
+                    placeholderTextColor={color.text.subdued}
                     underlineColorAndroid='transparent'
                     aria-label={ariaLabel ?? labelText}
                     style={css({
@@ -323,6 +327,7 @@ export const TextInput = forwardRef(
                     onFocus={onFocus}
                     onBlur={onBlur}
                     selectionColor={color.secondary.secondary}
+                    inputAccessoryViewID={inputAccessoryViewID}
                     {...other}
                   />
                   {endAdornmentText && shouldShowAdornments ? (
@@ -343,8 +348,8 @@ export const TextInput = forwardRef(
         </Pressable>
         {helperText ? (
           <AnimatedText
-            entering={FadeInUp}
-            exiting={FadeOutUp}
+            entering={FadeIn}
+            exiting={FadeOut}
             variant='body'
             size={helperTextSize}
             strength='default'
@@ -353,6 +358,7 @@ export const TextInput = forwardRef(
             {helperText}
           </AnimatedText>
         ) : null}
+        <TextInputAccessoryView nativeID={inputAccessoryViewID} />
       </Flex>
     )
   }

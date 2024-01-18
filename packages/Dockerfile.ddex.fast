@@ -6,37 +6,51 @@
 # 5. run audius-compose push --prod "ddex"
 # 6. ssh into a stage node and edit ~/audius-docker-compose/discovery-provider/docker-compose.yml: change the ddex image to the SHA you just pushed
 
-# Build DDEX backend
-FROM node:18.17-slim AS backend-dist
-WORKDIR /backend
-# COPY packages/ddex/package*.json packages/ddex/tsconfig.json ./
-# COPY packages/ddex/src ./src
+FROM node:18-alpine AS base
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+FROM base as builder
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+WORKDIR /app
 RUN npm install turbo --global
+
 COPY . .
 RUN turbo prune --scope=@audius/ddex --docker
 
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    make \
-    g++ \
-    curl \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+# Install and build backend dist and run app
+FROM base AS runner
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
 
 RUN CI=true npm i
+
+# Build the app and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
 RUN npx turbo run build --filter=@audius/ddex
 
-# Final stage
-FROM node:18.17-slim
-WORKDIR /usr/src/app
-COPY --from=backend-dist /backend/packages/ddex/dist ./dist
-COPY --from=backend-dist /backend/packages/ddex/node_modules ./node_modules
-
 # Copy the frontend dist from local filesystem instead of building it in Docker, which hangs
-COPY packages/ddex-frontend/dist/ ./public
+COPY packages/ddex-frontend/dist /app/packages/ddex/public
+
+WORKDIR /app/packages/ddex
 
 EXPOSE 8926
 CMD [ "node", "dist/index.js" ]

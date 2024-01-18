@@ -88,8 +88,10 @@ export const SelectArtistsScreen = () => {
           ))}
         </Tab.Navigator>
         <PageFooter
-          onSubmit={handleSubmit}
-          buttonProps={{ disabled: selectedArtists.length < 3 }}
+          buttonProps={{
+            disabled: selectedArtists.length < 3,
+            onPress: handleSubmit
+          }}
           postfix={
             <Text variant='body'>
               {messages.selected} {selectedArtists.length || 0}/3
