@@ -249,11 +249,6 @@ export enum BooleanKeys {
   SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK',
 
   /**
-   * Boolean to use amplitude as the metrics tracking.
-   */
-  USE_AMPLITUDE = 'USE_AMPLITUDE',
-
-  /**
    * Boolean to enable "Transactions" button on Audio page.
    */
   AUDIO_TRANSACTIONS_ENABLED = 'AUDIO_TRANSACTIONS_ENABLED',

@@ -242,11 +242,11 @@ export const Lineup = ({
   const handleRefresh = useCallback(() => {
     if (!refreshing) {
       dispatch(
-        actions.refreshInView(true, fetchPayload, limit, extraFetchOptions)
+        actions.refreshInView(true, fetchPayload, null, extraFetchOptions)
       )
     }
     setRefreshing(true)
-  }, [refreshing, dispatch, actions, fetchPayload, limit, extraFetchOptions])
+  }, [refreshing, dispatch, actions, fetchPayload, extraFetchOptions])
 
   useEffect(() => {
     if (status !== Status.LOADING) {

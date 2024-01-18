@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import {
   ID,
   User,
-  AccountImage,
+  Image,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile
@@ -47,26 +47,27 @@ export type SignOnProps = {
   onEmailChange: (email: string, validate?: boolean) => void
   onEmailSubmitted: (email: string) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   setTikTokProfile: (
     uuid: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   recordInstagramStart: () => void
@@ -111,6 +112,7 @@ const SignOnPage = ({
   onEmailChange,
   onEmailSubmitted,
   onPasswordChange,
+  onOtpChange,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -132,6 +134,7 @@ const SignOnPage = ({
     email,
     name,
     password,
+    otp,
     handle,
     twitterId,
     verified,
@@ -167,10 +170,12 @@ const SignOnPage = ({
           isSignIn={page === Pages.SIGNIN}
           email={email}
           password={password}
+          otp={otp}
           onViewSignIn={onViewSignIn}
           onSubmitSignIn={onSignIn}
           onViewSignUp={onViewSignUp}
           onPasswordChange={onPasswordChange}
+          onOtpChange={onOtpChange}
           onEmailChange={onEmailChange}
           onEmailSubmitted={onEmailSubmitted}
         />

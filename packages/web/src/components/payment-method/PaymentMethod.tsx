@@ -10,7 +10,6 @@ import {
 } from '@audius/common'
 import {
   FilterButton,
-  FilterButtonType,
   Flex,
   IconCreditCard,
   IconDonate,
@@ -35,6 +34,7 @@ const messages = {
 type PaymentMethodProps = {
   selectedMethod: Nullable<PurchaseMethod>
   setSelectedMethod: (method: PurchaseMethod) => void
+  selectedVendor: Nullable<PurchaseVendor>
   setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
@@ -45,6 +45,7 @@ type PaymentMethodProps = {
 export const PaymentMethod = ({
   selectedMethod,
   setSelectedMethod,
+  selectedVendor,
   setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
@@ -57,8 +58,8 @@ export const PaymentMethod = ({
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const vendorOptions = [
-    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
-    { label: PurchaseVendor.STRIPE }
+    ...(isCoinflowEnabled ? [{ value: PurchaseVendor.COINFLOW }] : []),
+    { value: PurchaseVendor.STRIPE }
   ]
 
   const handleSelectVendor = useCallback(
@@ -99,15 +100,15 @@ export const PaymentMethod = ({
           mobile ? (
             <MobileFilterButton
               onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
+              selection={selectedVendor?.toString()}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
             <FilterButton
               onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
-              variant={FilterButtonType.REPLACE_LABEL}
+              selection={selectedVendor?.toString()}
+              variant='replaceLabel'
               options={vendorOptions}
               popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
             />

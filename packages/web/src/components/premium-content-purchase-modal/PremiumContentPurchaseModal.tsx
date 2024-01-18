@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
-  isTrackPurchasable,
+  isTrackPurchaseable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
@@ -13,7 +13,10 @@ import {
   purchaseContentSelectors,
   isContentPurchaseInProgress,
   usePayExtraPresets,
-  PurchaseContentPage
+  PurchaseContentPage,
+  useFeatureFlag,
+  FeatureFlags,
+  PurchaseVendor
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -71,12 +74,12 @@ const RenderForm = ({
   track
 }: {
   onClose: () => void
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
 }) => {
   const dispatch = useDispatch()
   const {
     permalink,
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     }
   } = track
@@ -103,7 +106,7 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm>
+    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: mobile })}>
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
         onClose={onClose}
@@ -174,6 +177,8 @@ export const PremiumContentPurchaseModal = () => {
     onClosed,
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
+  const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
+    useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -184,15 +189,18 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidTrack = track && isTrackPurchasable(track)
+  const isValidTrack = track && isTrackPurchaseable(track)
   const price = isValidTrack
-    ? track?.premium_conditions?.usdc_purchase?.price
+    ? track?.stream_conditions?.usdc_purchase?.price
     : 0
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
       track,
       price,
-      presetValues
+      presetValues,
+      purchaseVendor: isCoinflowEnabled
+        ? PurchaseVendor.COINFLOW
+        : PurchaseVendor.STRIPE
     })
 
   // Attempt recovery once on re-mount of the form
@@ -202,10 +210,10 @@ export const PremiumContentPurchaseModal = () => {
 
   const handleClose = useCallback(() => {
     // Don't allow closing if we're in the middle of a purchase
-    if (!isUnlocking) {
+    if (!isUnlocking || stage === PurchaseContentStage.START) {
       onClose()
     }
-  }, [isUnlocking, onClose])
+  }, [isUnlocking, stage, onClose])
 
   const handleClosed = useCallback(() => {
     onClosed()
@@ -230,7 +238,7 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
-      {isValidTrack ? (
+      {isValidTrack && isCoinflowEnabledLoaded ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

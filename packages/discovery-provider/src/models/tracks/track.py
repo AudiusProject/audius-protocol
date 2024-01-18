@@ -40,6 +40,12 @@ class Track(Base, RepresentableMixin):
     track_cid = Column(
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
+    orig_file_cid = Column(String, index=True)
+    orig_filename = Column(Text)
+    is_downloadable = Column(Boolean, nullable=False, server_default=text("false"))
+    is_original_available = Column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     title = Column(Text)
     duration = Column(Integer)
     preview_start_seconds = Column(Float)
@@ -61,6 +67,7 @@ class Track(Base, RepresentableMixin):
     updated_at = Column(DateTime, nullable=False)
     cover_art_sizes = Column(String)
     download = Column(JSONB())
+    is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
     field_visibility = Column(JSONB(True))
     route_id = Column(String)
@@ -74,8 +81,10 @@ class Track(Base, RepresentableMixin):
     )
     slot = Column(Integer)
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
-    is_premium = Column(Boolean, nullable=False, server_default=text("false"))
-    premium_conditions = Column(JSONB(True))
+    is_stream_gated = Column(Boolean, nullable=False, server_default=text("false"))
+    stream_conditions = Column(JSONB(True))
+    is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
+    download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 

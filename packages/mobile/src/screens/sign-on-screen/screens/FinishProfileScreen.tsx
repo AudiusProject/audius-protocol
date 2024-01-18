@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  MAX_DISPLAY_NAME_LENGTH,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -10,15 +11,19 @@ import {
   getHandleField,
   getIsVerified
 } from 'audius-client/src/common/store/pages/signon/selectors'
-import { setField, setValueField } from 'common/store/pages/signon/actions'
+import {
+  setField,
+  setValueField,
+  signUp
+} from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
-import type { ImageURISource } from 'react-native'
+import { isEmpty } from 'lodash'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Paper, useTheme, Text } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
+import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
@@ -31,15 +36,15 @@ const AnimatedText = Animated.createAnimatedComponent(Text)
 const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
 const initialValues = {
-  profileImage: null,
-  coverPhoto: null,
+  profileImage: {} as Image,
+  coverPhoto: {} as Image,
   displayName: ''
 }
 
 type FinishProfileValues = {
   displayName: string
-  profileImage: ImageURISource | null
-  coverPhoto?: ImageURISource | null
+  profileImage: Image
+  coverPhoto?: Image
 }
 
 export const FinishProfileScreen = () => {
@@ -51,10 +56,11 @@ export const FinishProfileScreen = () => {
     (values: FinishProfileValues) => {
       const { displayName, profileImage, coverPhoto } = values
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
+      dispatch(signUp())
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]
@@ -66,36 +72,31 @@ export const FinishProfileScreen = () => {
       onSubmit={handleSubmit}
       validationSchema={finishProfileFormikSchema}
     >
-      {({ handleSubmit }) => (
-        <Page>
-          <Heading
-            heading={messages.header}
-            description={messages.description}
+      <Page>
+        <Heading heading={messages.header} description={messages.description} />
+        <Paper>
+          <AccountHeaderField />
+          <HarmonyTextField
+            name='displayName'
+            label={messages.displayName}
+            placeholder={messages.inputPlaceholder}
+            maxLength={MAX_DISPLAY_NAME_LENGTH}
+            autoComplete='off'
+            style={css({
+              padding: spacing.l,
+              paddingTop: spacing.unit10
+            })}
           />
-          <Paper>
-            <AccountHeaderField />
-            <TextField
-              name='displayName'
-              label={messages.displayName}
-              style={css({
-                padding: spacing.l,
-                paddingTop: spacing.unit10
-              })}
-            />
-          </Paper>
-          <PageFooter
-            prefix={<UploadProfilePhotoHelperText />}
-            onSubmit={handleSubmit}
-          />
-        </Page>
-      )}
+        </Paper>
+        <PageFooter prefix={<UploadProfilePhotoHelperText />} />
+      </Page>
     </Formik>
   )
 }
 
 const AccountHeaderField = () => {
   const [{ value: profileImage }, , { setValue: setProfileImage }] =
-    useField<ImageURISource>('profileImage')
+    useField<Image>('profileImage')
 
   const handleSelectProfilePicture = useCallback(() => {
     const handleImageSelected = (image: Image) => {
@@ -110,7 +111,7 @@ const AccountHeaderField = () => {
   }, [setProfileImage])
 
   const [{ value: coverPhoto }, , { setValue: setCoverPhoto }] =
-    useField<ImageURISource>('coverPhoto')
+    useField<Image>('coverPhoto')
 
   const handleSelectCoverPhoto = useCallback(() => {
     const handleImageSelected = (image: Image) => {
@@ -129,8 +130,8 @@ const AccountHeaderField = () => {
 
   return (
     <AccountHeader
-      profilePicture={profileImage}
-      coverPhoto={coverPhoto}
+      profilePicture={isEmpty(profileImage) ? undefined : profileImage}
+      coverPhoto={isEmpty(coverPhoto) ? undefined : coverPhoto}
       onSelectProfilePicture={handleSelectProfilePicture}
       onSelectCoverPhoto={handleSelectCoverPhoto}
       displayName={displayName}
@@ -142,8 +143,8 @@ const AccountHeaderField = () => {
 
 const UploadProfilePhotoHelperText = () => {
   const [{ value: displayName }, { touched }] = useField('displayName')
-  const [{ value: profileImage }] = useField('profileImage')
-  const isVisible = displayName && touched && !profileImage
+  const [{ value: profileImage }] = useField<Image>('profileImage')
+  const isVisible = displayName && touched && isEmpty(profileImage)
   const { motion } = useTheme()
 
   if (!isVisible) return null

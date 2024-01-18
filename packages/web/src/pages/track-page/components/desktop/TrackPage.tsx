@@ -5,7 +5,7 @@ import {
   User,
   trackPageLineupActions,
   QueueItem,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -112,9 +112,9 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(heroTrack)
-  const loading = !heroTrack || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+    useGatedContentAccess(heroTrack)
+  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -161,9 +161,13 @@ const TrackPage = ({
       isSaved={isSaved}
       badge={badge}
       isUnlisted={defaults.isUnlisted}
-      isPremium={defaults.isPremium}
-      premiumConditions={defaults.premiumConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      isScheduledRelease={defaults.isScheduledRelease}
+      isStreamGated={defaults.isStreamGated}
+      streamConditions={defaults.streamConditions}
+      isDownloadGated={defaults.isDownloadGated}
+      downloadConditions={defaults.downloadConditions}
+      hasStreamAccess={hasStreamAccess}
+      hasDownloadAccess={hasDownloadAccess}
       isRemix={!!defaults.remixParentTrackId}
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}

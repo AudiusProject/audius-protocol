@@ -7,14 +7,7 @@ import {
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import {
-  Box,
-  Button,
-  ButtonType,
-  Flex,
-  Text,
-  IconLogoCircleUSDC
-} from '@audius/harmony'
+import { Box, Button, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
@@ -61,7 +54,7 @@ export const AddFunds = ({
         })}
       >
         <Flex direction='column' w='100%' gap='xl' p='xl'>
-          <Box h='unit6' border='strong' p='m' borderRadius='s'>
+          <Box border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>
                 <IconLogoCircleUSDC />
@@ -81,12 +74,13 @@ export const AddFunds = ({
             </Flex>
           </Box>
           <PaymentMethod
+            selectedVendor={selectedPurchaseVendor ?? null}
             selectedMethod={selectedPurchaseMethod}
             setSelectedMethod={setSelectedPurchaseMethod}
             setSelectedVendor={setSelectedPurchaseVendor}
           />
           <Button
-            variant={ButtonType.PRIMARY}
+            variant='primary'
             fullWidth
             onClick={() =>
               onContinue(selectedPurchaseMethod, selectedPurchaseVendor)

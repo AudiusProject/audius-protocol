@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 64
   },
-  animationContainer: {
+  spinningGlyph: {
     height: 110,
     width: 110,
     marginBottom: 16
@@ -54,19 +54,18 @@ const SignupLoadingPage = () => {
   const spinnerColor = useColor('secondary')
   return (
     <View style={styles.container}>
-      <View style={styles.animationContainer}>
-        <LottieView
-          source={require('app/assets/animations/loadingSpinningGlyph.json')}
-          autoPlay
-          loop
-          colorFilters={[
-            {
-              keypath: 'Audius Logo-01 Outlines',
-              color: spinnerColor
-            }
-          ]}
-        />
-      </View>
+      <LottieView
+        style={styles.spinningGlyph}
+        source={require('app/assets/animations/loadingSpinningGlyph.json')}
+        autoPlay
+        loop
+        colorFilters={[
+          {
+            keypath: 'Audius Logo-01 Outlines',
+            color: spinnerColor
+          }
+        ]}
+      />
       <Text style={styles.title}>{messages.title}</Text>
       <Text style={styles.subtitle}>{messages.subtitle}</Text>
     </View>

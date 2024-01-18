@@ -42,7 +42,8 @@ export const TopArtistsCardList = (props: Props) => {
       )}
       sceneName={genre}
       numColumns={2}
-      ListFooterComponent={<Box h={140} />}
+      // TODO: Figure out sticky header and footers
+      ListFooterComponent={<Box h={148} />}
       LoadingCardComponent={FollowArtistTileSkeleton}
     />
   )

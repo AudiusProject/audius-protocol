@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native'
 import {
   interpolateColor,
   useAnimatedStyle,
@@ -8,14 +9,20 @@ import { useTheme } from 'app/harmony-native/foundations/theme'
 import type { Icon, IconProps } from 'app/harmony-native/icons'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import type { BaseButtonProps } from '../types'
+import type { BaseButtonProps } from '../BaseButton/types'
 
 export type IconButtonProps = {
   icon: Icon
   ripple?: boolean
-  accessibilityLabel: string
+  style?: StyleProp<ViewStyle>
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &
-  Pick<BaseButtonProps, 'onPress' | 'disabled'>
+  Pick<BaseButtonProps, 'onPress' | 'disabled' | 'style'> &
+  (
+    | {
+        accessibilityLabel: string
+      }
+    | { 'aria-label': string }
+  )
 
 export const IconButton = (props: IconButtonProps) => {
   const {
@@ -24,6 +31,7 @@ export const IconButton = (props: IconButtonProps) => {
     size = 'l',
     shadow,
     ripple,
+    style,
     ...other
   } = props
   const { disabled } = other
@@ -46,7 +54,7 @@ export const IconButton = (props: IconButtonProps) => {
   return (
     <BaseButton
       {...other}
-      style={[buttonStyles, ripple ? rippleStyles : undefined]}
+      style={[buttonStyles, ripple ? rippleStyles : undefined, style]}
       sharedValue={pressed}
     >
       <Icon

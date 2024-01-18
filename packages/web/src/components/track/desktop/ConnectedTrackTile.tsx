@@ -19,8 +19,8 @@ import {
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  usePremiumContentAccess,
-  premiumContentActions,
+  useGatedContentAccess,
+  gatedContentActions,
   Genre
 } from '@audius/common'
 import cn from 'classnames'
@@ -63,7 +63,7 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getUserHandle } = accountSelectors
-const { setLockedContentId } = premiumContentActions
+const { setLockedContentId } = gatedContentActions
 
 type OwnProps = {
   uid: UID
@@ -117,8 +117,9 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted: isUnlisted,
-    is_premium: isPremium,
-    premium_conditions: premiumConditions,
+    is_scheduled_release: isScheduledRelease,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     track_id: trackId,
     title,
     genre,
@@ -151,9 +152,9 @@ const ConnectedTrackTile = ({
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
   const hasPreview = !!track?.preview_cid
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(trackWithFallback)
-  const loading = isLoading || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess } =
+    useGatedContentAccess(trackWithFallback)
+  const loading = isLoading || isFetchingNFTAccess
 
   const dispatch = useDispatch()
   const [, setLockedContentVisibility] = useModalState('LockedContent')
@@ -189,7 +190,7 @@ const ConnectedTrackTile = ({
       showSkeleton: loading,
       callback: () => setArtworkLoaded(true),
       label: `${title} by ${name}`,
-      doesUserHaveAccess: doesUserHaveAccess || hasPreview
+      hasStreamAccess: hasStreamAccess || hasPreview
     }
     return <TrackArtwork {...artworkProps} />
   }
@@ -198,10 +199,10 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: !isPremium,
+      includeAddToPlaylist: !isStreamGated,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
-      includeEmbed: !isPremium,
+      includeEmbed: !isStreamGated,
       includeFavorite: false,
       includeRepost: false,
       includeShare: false,
@@ -325,7 +326,7 @@ const ConnectedTrackTile = ({
 
       // Show the locked content modal if gated track and user does not have access.
       // Also skip toggle play in this case.
-      if (trackId && !doesUserHaveAccess && !hasPreview) {
+      if (trackId && !hasStreamAccess && !hasPreview) {
         openLockedContentModal()
         return
       }
@@ -337,7 +338,7 @@ const ConnectedTrackTile = ({
       hasPreview,
       uid,
       trackId,
-      doesUserHaveAccess,
+      hasStreamAccess,
       openLockedContentModal
     ]
   )
@@ -362,9 +363,10 @@ const ConnectedTrackTile = ({
       isReposted={isReposted}
       isOwner={isOwner}
       isUnlisted={isUnlisted}
-      isPremium={isPremium}
-      premiumConditions={premiumConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      isScheduledRelease={isScheduledRelease}
+      isStreamGated={isStreamGated}
+      streamConditions={streamConditions}
+      hasStreamAccess={hasStreamAccess}
       isLoading={loading}
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}
@@ -399,7 +401,7 @@ const ConnectedTrackTile = ({
     />
   )
 
-  if (isPremium) {
+  if (isStreamGated) {
     return tileContent
   }
 

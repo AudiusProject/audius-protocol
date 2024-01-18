@@ -1,7 +1,7 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import type {
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentError
 } from '@audius/common'
 import {
@@ -12,7 +12,7 @@ import {
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
-  isTrackPurchasable,
+  isTrackPurchaseable,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
@@ -231,7 +231,7 @@ const RenderForm = ({
   track
 }: {
   onClose: () => void
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
 }) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -249,7 +249,7 @@ const RenderForm = ({
   useEffect(() => resetForm, [track.track_id, resetForm])
 
   const {
-    premium_conditions: {
+    stream_conditions: {
       usdc_purchase: { price }
     }
   } = track
@@ -341,7 +341,7 @@ const RenderForm = ({
                     setSelectedMethod={setPurchaseMethod}
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance={!balance?.isZero()}
+                    showExistingBalance={!!(balance && !balance.isZero())}
                     isCoinflowEnabled={showCoinflow}
                   />
                 )}
@@ -433,9 +433,9 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidTrack = track && isTrackPurchasable(track)
+  const isValidTrack = track && isTrackPurchaseable(track)
   const price = isValidTrack
-    ? track?.premium_conditions?.usdc_purchase?.price
+    ? track?.stream_conditions?.usdc_purchase?.price
     : 0
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({ track, presetValues, price })
@@ -445,11 +445,11 @@ export const PremiumTrackPurchaseDrawer = () => {
     dispatch(purchaseContentActions.cleanup())
   }, [onClosed, dispatch])
 
-  if (!track || !isTrackPurchasable(track) || !isUSDCEnabled) return null
+  if (!track || !isTrackPurchaseable(track) || !isUSDCEnabled) return null
 
   return (
     <Drawer
-      blockClose={isUnlocking}
+      blockClose={isUnlocking && stage !== PurchaseContentStage.START}
       isOpen={isOpen}
       onClose={onClose}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}

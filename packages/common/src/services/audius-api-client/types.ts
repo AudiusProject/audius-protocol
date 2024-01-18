@@ -15,9 +15,10 @@ import {
   Supporter,
   Supporting,
   UserTip,
-  PremiumConditions,
-  PremiumContentSignature,
-  ID
+  AccessConditions,
+  AccessSignature,
+  ID,
+  AccessPermissions
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -127,6 +128,7 @@ export type APITrack = {
   field_visibility: FieldVisibility
   followee_reposts: APIRepost[]
   has_current_user_reposted: boolean
+  is_scheduled_release: boolean
   is_unlisted: boolean
   has_current_user_saved: boolean
   followee_favorites: APIFavorite[]
@@ -140,9 +142,17 @@ export type APITrack = {
   play_count: number
   permalink: string
   is_available: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<AccessConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<AccessConditions>
+  access: AccessPermissions
+  preview_cid: Nullable<CID>
+  track_cid: Nullable<CID>
+  orig_file_cid: Nullable<CID>
+  orig_filename: Nullable<string>
+  is_downloadable: boolean
+  is_original_available: boolean
 }
 
 export type APISearchTrack = Omit<
@@ -277,6 +287,6 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
   followee_supporters: { user_id: string }[]
 }
 
-export type GetPremiumContentSignaturesResponse = {
-  [id: ID]: PremiumContentSignature
+export type GetNFTGatedTrackSignaturesResponse = {
+  [id: ID]: AccessSignature
 }

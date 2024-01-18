@@ -310,6 +310,7 @@ export const PullToRefresh = ({
       ]}
     >
       <LottieView
+        style={{ height: '100%', width: '100%' }}
         ref={(animation) => (animationRef.current = animation)}
         loop={shouldShowSpinner}
         autoPlay={false}

@@ -27,7 +27,7 @@ const TrackPlayerCard = ({
   seekTo,
   backgroundColor,
   isTwitter,
-  premiumConditions
+  streamConditions
 }) => {
   const mobileWebTwitter = isMobileWebTwitter(isTwitter)
   const getBottomWrapperStyle = () =>
@@ -59,7 +59,7 @@ const TrackPlayerCard = ({
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
   const isPurchaseable =
-    premiumConditions && 'usdc_purchase' in premiumConditions
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Card

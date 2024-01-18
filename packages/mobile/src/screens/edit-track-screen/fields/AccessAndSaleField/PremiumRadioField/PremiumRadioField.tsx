@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   FeatureFlags,
   Name,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   useFeatureFlag
 } from '@audius/common'
 import { useField } from 'formik'
@@ -87,7 +87,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
-  const { selected, disabled, previousPremiumConditions } = props
+  const { selected, disabled, previousStreamConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
 
@@ -113,20 +113,20 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     : neutral
 
   const selectedUsdcPurchaseValue = useMemo(() => {
-    if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {
-      return previousPremiumConditions.usdc_purchase
+    if (isContentUSDCPurchaseGated(previousStreamConditions)) {
+      return previousStreamConditions.usdc_purchase
     }
     return { price: null }
-  }, [previousPremiumConditions])
+  }, [previousStreamConditions])
   const [{ value: preview }] = useField(TRACK_PREVIEW)
   const previewStartSeconds = useRef(preview ?? 0).current
 
   useEffect(() => {
     if (selected) {
       setTrackAvailabilityFields({
-        is_premium: true,
+        is_stream_gated: true,
         // @ts-ignore fully formed in saga (validated + added splits)
-        premium_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
+        stream_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
         preview_start_seconds: previewStartSeconds,
         'field_visibility.remixes': false
       })

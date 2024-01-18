@@ -1,5 +1,5 @@
 import {
-  PremiumConditions,
+  AccessConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
   useAccessAndRemixSettings
@@ -23,14 +23,14 @@ const messages = {
 type CollectibleGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
-  initialPremiumConditions?: PremiumConditions
+  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
 }
 
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
+  const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
     props
 
   const hasCollectibles = useSelector((state) => {
@@ -48,7 +48,7 @@ export const CollectibleGatedRadioField = (
   } = useAccessAndRemixSettings({
     isUpload: !!isUpload,
     isRemix,
-    initialPremiumConditions: initialPremiumConditions ?? null,
+    initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted
   })
 

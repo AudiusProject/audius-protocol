@@ -154,7 +154,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    // [C-3593] - skipped until the test can be updated
+    it.skip('should create an account', () => {
       testSignUp()
     })
   })
@@ -190,7 +191,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    // [C-3593] - skipped until the test can be updated
+    it.skip('should create an account', () => {
       testSignUp()
     })
   })

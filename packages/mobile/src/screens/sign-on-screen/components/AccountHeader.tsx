@@ -6,19 +6,26 @@ import {
   getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
-import type { ImageURISource } from 'react-native'
+import { isEmpty } from 'lodash'
+import { Pressable, type ImageURISource, Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
   Avatar,
   Flex,
   CoverPhoto as HarmonyCoverPhoto,
+  IconButton,
   IconCamera,
   IconImage,
   IconVerified,
   Text,
   useTheme
 } from '@audius/harmony-native'
+
+const messages = {
+  selectCoverPhoto: 'Select Cover Photo',
+  selectProfilePicture: 'Select Profile Picture'
+}
 
 type AccountHeaderProps = {
   onSelectCoverPhoto?: () => void
@@ -45,7 +52,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   return (
     // 2 zIndex is to appear above the <Page> component
-    <Flex style={{ zIndex: 2 }}>
+    <Flex style={{ zIndex: 2 }} w='100%'>
       <CoverPhoto
         onSelectCoverPhoto={onSelectCoverPhoto}
         profilePicture={profilePicture}
@@ -58,7 +65,10 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         style={css({
           position: 'absolute',
           left: spacing.unit4,
-          top: spacing.unit10
+          top: spacing.unit10,
+          // Need to use explicit width to ensure text doesn't overflow
+          // unit16 covers the 4xunit4 spacings on left and right
+          width: Dimensions.get('window').width - spacing.unit16
         })}
       >
         <ProfilePicture
@@ -78,17 +88,21 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
 export const ReadOnlyAccountHeader = () => {
   const { value: handle } = useSelector(getHandleField)
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
   const { value: displayName } = useSelector(getNameField)
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   const isVerified = useSelector(getIsVerified)
 
   return (
     <AccountHeader
       handle={handle}
-      coverPhoto={coverPhoto as ImageURISource}
+      coverPhoto={
+        isEmpty(coverPhoto) ? undefined : (coverPhoto as ImageURISource)
+      }
       displayName={displayName}
-      profilePicture={profileImage as ImageURISource}
+      profilePicture={
+        isEmpty(profileImage) ? undefined : (profileImage as ImageURISource)
+      }
       isVerified={isVerified}
     />
   )
@@ -111,19 +125,43 @@ const CoverPhoto = (props: CoverPhotoProps) => {
       topCornerRadius={onSelectCoverPhoto ? 'm' : undefined}
     >
       {onSelectCoverPhoto ? (
-        <IconImage
-          style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
-          color='staticWhite'
+        <Pressable
+          // we want the pressable surface larger than just the icon
+          hitSlop={{
+            bottom: spacing.unit10,
+            left: spacing.unit7,
+            right: 0,
+            top: 0
+          }}
           onPress={onSelectCoverPhoto}
-        />
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            display: 'flex'
+          }}
+        >
+          <IconButton
+            accessibilityLabel={messages.selectCoverPhoto}
+            style={{
+              paddingTop: spacing.m,
+              paddingRight: spacing.m,
+              borderRadius: 0
+            }}
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectCoverPhoto}
+            icon={IconImage}
+          />
+        </Pressable>
       ) : null}
     </HarmonyCoverPhoto>
   )
 }
 
 export const ReadOnlyCoverPhotoBanner = () => {
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   return (
     <CoverPhoto
       coverPhoto={coverPhoto as ImageURISource}
@@ -141,25 +179,30 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const { profilePicture, onSelectProfilePicture } = props
 
   return (
-    <Avatar
-      accessibilityLabel='Profile Picture'
-      size='xl'
-      variant='strong'
-      source={profilePicture ?? { uri: undefined }}
-    >
-      {onSelectProfilePicture ? (
-        <IconCamera
-          size='2xl'
-          color='staticWhite'
-          onPress={onSelectProfilePicture}
-        />
-      ) : null}
-    </Avatar>
+    <Pressable onPress={onSelectProfilePicture}>
+      <Avatar
+        accessibilityLabel='Profile Picture'
+        size='xl'
+        variant='strong'
+        source={profilePicture ?? { uri: undefined }}
+      >
+        {onSelectProfilePicture && !profilePicture ? (
+          <IconButton
+            accessibilityLabel={messages.selectProfilePicture}
+            icon={IconCamera}
+            size='2xl'
+            color='staticWhite'
+            shadow='near'
+            onPress={onSelectProfilePicture}
+          />
+        ) : null}
+      </Avatar>
+    </Pressable>
   )
 }
 
 export const ReadOnlyProfilePicture = () => {
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   return <ProfilePicture profilePicture={profileImage as ImageURISource} />
 }
 
@@ -174,19 +217,23 @@ const AccountDetails = (props: AccountDetailsProps) => {
   const { displayName, handle, isVerified, emphasis } = props
   const shadow = emphasis ? 'emphasis' : undefined
   return (
-    <Flex>
+    <Flex flex={1}>
       <Text
         variant='heading'
         size='s'
         strength='strong'
         color='staticWhite'
+        ellipsizeMode='tail'
+        numberOfLines={1}
+        style={{ flex: 1, flexShrink: 1 }}
         shadow={shadow}
       >
         {displayName || ' '}
       </Text>
-      <Flex>
+      <Flex h={50}>
         <Text variant='title' size='s' color='staticWhite' shadow={shadow}>
-          @{handle}
+          {' '}
+          @{handle}{' '}
         </Text>
         {isVerified ? <IconVerified size='s' /> : null}
       </Flex>

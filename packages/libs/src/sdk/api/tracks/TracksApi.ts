@@ -82,6 +82,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
+    this.logger.info('Parsing inputs')
     const {
       userId,
       trackFile,
@@ -91,6 +92,7 @@ export class TracksApi extends GeneratedTracksApi {
     } = await parseParams('uploadTrack', createUploadTrackSchema())(params)
 
     // Transform metadata
+    this.logger.info('Transforming metadata')
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
       parsedMetadata,
       userId
@@ -102,6 +104,7 @@ export class TracksApi extends GeneratedTracksApi {
     }
 
     // Upload track audio and cover art to storage node
+    this.logger.info('Uploading track audio and cover art')
     const [coverArtResponse, audioResponse] = await Promise.all([
       retry3(
         async () =>
@@ -137,6 +140,7 @@ export class TracksApi extends GeneratedTracksApi {
       )
 
     // Write metadata to chain
+    this.logger.info('Writing metadata to chain')
     const trackId = await this.trackUploadHelper.generateId('track')
     const response = await this.entityManager.manageEntity({
       userId,
@@ -150,6 +154,8 @@ export class TracksApi extends GeneratedTracksApi {
       auth: this.auth,
       ...advancedOptions
     })
+
+    this.logger.info('Successfully uploaded track')
     return {
       ...response,
       trackId: encodeHashId(trackId)

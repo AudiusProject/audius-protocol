@@ -3,11 +3,12 @@ import {
   chatSagas,
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
@@ -128,7 +129,7 @@ export default function* rootSaga() {
     ...solanaSagas(),
 
     // Premium content
-    ...premiumContentSagas(),
+    ...gatedContentSagas(),
     ...purchaseContentSagas(),
     ...buyCryptoSagas(),
     ...buyUSDCSagas(),
@@ -196,6 +197,7 @@ export default function* rootSaga() {
     ...reachabilitySagas(),
     ...searchSagas(),
     ...publishPlaylistConfirmationModalSagas(),
+    ...publishTrackConfirmationModalSagas(),
     ...toastSagas(),
 
     initKeyboardEvents,

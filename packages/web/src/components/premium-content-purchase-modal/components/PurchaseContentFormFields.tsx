@@ -120,10 +120,11 @@ export const PurchaseContentFormFields = ({
         <PaymentMethod
           selectedMethod={purchaseMethod}
           setSelectedMethod={handleChangeMethod}
+          selectedVendor={purchaseVendor}
           setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance={!balanceBN?.isZero()}
+          showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
           isCoinflowEnabled={showCoinflow}
         />
       )}

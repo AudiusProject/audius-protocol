@@ -526,8 +526,8 @@ def get_notifications(session: Session, args: GetNotificationArgs):
                 ).one_or_none()
                 if (
                     res
-                    and res.premium_conditions
-                    and "usdc_purchase" in res.premium_conditions
+                    and res.stream_conditions
+                    and "usdc_purchase" in res.stream_conditions
                 ):
                     # Filter out the notification
                     continue

@@ -5,21 +5,35 @@ import {
   useAudiusQueryContext,
   createEmailPageMessages as messages
 } from '@audius/common'
-import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import {
+  setLinkedSocialOnFirstPage,
+  setValueField,
+  startSignUp
+} from 'common/store/pages/signon/actions'
+import {
+  getEmailField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Text } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
-import { TextField } from 'app/components/fields'
+import {
+  Button,
+  Divider,
+  Flex,
+  IconArrowRight,
+  Text,
+  TextLink
+} from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { resetOAuthState } from 'app/store/oauth/actions'
 
-import { EmailInUseHint } from '../components/EmailInUseHint'
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { NewEmailField } from '../components/NewEmailField'
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
+import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading } from '../components/layout'
-import { Divider } from '../components/temp-harmony/Divider'
+import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 
 import type { SignOnScreenProps } from './types'
@@ -29,15 +43,16 @@ type SignUpEmailValues = {
 }
 
 export const CreateEmailScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail, onChangeScreen } = props
+  const { onChangeScreen } = props
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
-  const existingEmailValue = useSelector(getEmailField) || email
+  const existingEmailValue = useSelector(getEmailField)
+  const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
-  const emailFormikSchema = useMemo(() => {
+  const EmailSchema = useMemo(() => {
     return toFormikValidationSchema(emailSchema(queryContext))
   }, [queryContext])
 
@@ -45,19 +60,49 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
+      dispatch(startSignUp())
       navigation.navigate('CreatePassword', { email })
     },
     [dispatch, navigation]
+  )
+
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin,
+    handleCloseSocialMediaLogin,
+    setIsWaitingForSocialLogin
+  } = useSocialMediaLoader({
+    resetAction: resetOAuthState,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+
+  const handleCompleteSocialMediaLogin = useCallback(
+    (result: { requiresReview: boolean; handle: string }) => {
+      const { handle, requiresReview } = result
+      setIsWaitingForSocialLogin(false)
+      dispatch(setLinkedSocialOnFirstPage(true))
+      dispatch(setValueField('handle', handle))
+
+      navigation.navigate(
+        requiresReview ? 'ReviewHandle' : 'CreateLoginDetails'
+      )
+    },
+    [dispatch, navigation, setIsWaitingForSocialLogin]
   )
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={emailFormikSchema}
+      validationSchema={EmailSchema}
+      validateOnChange={false}
     >
       {({ handleSubmit }) => (
         <>
+          {isWaitingForSocialLogin ? (
+            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          ) : null}
           <Heading
             heading={messages.title}
             description={
@@ -70,33 +115,39 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             centered
           />
           <Flex direction='column' gap='l'>
-            {/* TODO: replace with harmony text input */}
-            <TextField
+            <NewEmailField
               name='email'
               label={messages.emailLabel}
-              noGutter
-              onChangeText={onChangeEmail}
+              onChangeScreen={onChangeScreen}
             />
-            <EmailInUseHint onChangeScreen={onChangeScreen} />
             <Divider>
               <Text variant='body' size='s' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <SocialMediaLoginOptions />
+            <SocialMediaSignUpButtons
+              onError={handleErrorSocialMediaLogin}
+              onStart={handleStartSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onClose={handleCloseSocialMediaLogin}
+            />
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
-              title={messages.signUp}
               onPress={() => handleSubmit()}
               fullWidth
-            />
+              iconRight={IconArrowRight}
+            >
+              {messages.signUp}
+            </Button>
             <Text variant='body' size='m' textAlign='center'>
               {messages.haveAccount}{' '}
-              {/* TODO: Need TextLink equivalent for native harmony? */}
-              <Text onPress={() => onChangeScreen('sign-in')} color='accent'>
+              <TextLink
+                variant='visible'
+                onPress={() => onChangeScreen('sign-in')}
+              >
                 {messages.signIn}
-              </Text>
+              </TextLink>
             </Text>
           </Flex>
         </>

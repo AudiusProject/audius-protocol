@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { useLeavingAudiusModal } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import {
   IconExternalLink,
   IconInfo,
@@ -42,11 +42,7 @@ export const LeavingAudiusModal = () => {
       size={'small'}
     >
       <ModalHeader>
-        <ModalTitle
-          iconClassName={styles.icon}
-          icon={<Icon icon={IconInfo} />}
-          title={messages.title}
-        />
+        <ModalTitle icon={<Icon icon={IconInfo} />} title={messages.title} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>
@@ -58,11 +54,7 @@ export const LeavingAudiusModal = () => {
         />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          variant={ButtonType.SECONDARY}
-          onClick={onClose}
-        >
+        <Button className={styles.button} variant='secondary' onClick={onClose}>
           {messages.goBack}
         </Button>
         <Button className={styles.button} onClick={handleOpen}>

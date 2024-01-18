@@ -23,7 +23,7 @@ const TrackPlayerTiny = ({
   duration,
   seekTo,
   onTogglePlay,
-  premiumConditions
+  streamConditions
 }) => {
   const info = `${title} • ${artistName}`
 
@@ -74,7 +74,7 @@ const TrackPlayerTiny = ({
   }
 
   const isPurchaseable =
-    premiumConditions && 'usdc_purchase' in premiumConditions
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <div className={styles.wrapper}>

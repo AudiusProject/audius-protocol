@@ -13,6 +13,7 @@ import { useTrackImage } from 'app/components/image/TrackImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { EditTrackScreen } from './EditTrackScreen'
 
@@ -39,10 +40,25 @@ export const EditTrackModalScreen = () => {
 
   const handleSubmit = useCallback(
     (metadata: ExtendedTrackMetadata) => {
-      dispatch(editTrack(id, metadata))
+      if (track?.is_unlisted === true && metadata.is_unlisted === false) {
+        dispatch(
+          setVisibility({
+            drawer: 'ReleaseNowConfirmation',
+            visible: true,
+            data: {
+              trackId: id,
+              handleConfirm: () => {
+                dispatch(editTrack(id, metadata))
+              }
+            }
+          })
+        )
+      } else {
+        dispatch(editTrack(id, metadata))
+      }
       navigation.goBack()
     },
-    [dispatch, id, navigation]
+    [dispatch, id, navigation, track?.is_unlisted]
   )
 
   if (!track) return null

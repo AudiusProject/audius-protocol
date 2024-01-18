@@ -7,10 +7,17 @@ So records should have a blocknumber to get indexed.
 */
 
 import { sql } from '../src/db'
-import { FollowRow, PlaylistRow, SaveRow, TrackRow } from '../src/db-tables'
+import {
+  FollowRow,
+  PlayRow,
+  PlaylistRow,
+  RepostRow,
+  SaveRow,
+  TrackRow,
+} from '../src/db-tables'
 
 type TableFixture<RowType> = {
-  common: RowType
+  common: Partial<RowType>
   rows: RowType[]
 }
 
@@ -41,14 +48,17 @@ const fixtures = {
       {
         user_id: 101,
         handle: 'steve',
+        name: 'Steve Steve',
       },
       {
         user_id: 102,
         handle: 'dave',
+        name: 'Dave Dave',
       },
       {
         user_id: 103,
         handle: 'dave again',
+        name: 'Dave Again',
       },
     ],
   },
@@ -63,7 +73,7 @@ const fixtures = {
       isUnlisted: false,
       txhash: '0x123',
       isAvailable: true,
-      isPremium: false,
+      isStreamGated: false,
       isPlaylistUpload: false,
       trackSegments: '[]',
     },
@@ -157,6 +167,48 @@ const fixtures = {
       },
     ],
   } as TableFixture<SaveRow>,
+
+  reposts: {
+    common: {
+      blocknumber: 1,
+      createdAt: new Date(),
+      isCurrent: true,
+      isDelete: false,
+      txhash: '0x123',
+      isRepostOfRepost: false,
+    },
+    rows: [
+      {
+        userId: 102,
+        repostType: 'track',
+        repostItemId: 201,
+      },
+    ],
+  } as TableFixture<RepostRow>,
+
+  plays: {
+    common: {},
+    rows: [
+      {
+        userId: 101,
+        playItemId: 201,
+        createdAt: dateAddDays(-1),
+        updatedAt: dateAddDays(-1),
+      },
+      {
+        userId: 101,
+        playItemId: 202,
+        createdAt: dateAddDays(-2),
+        updatedAt: dateAddDays(-2),
+      },
+      {
+        userId: 101,
+        playItemId: 203,
+        createdAt: dateAddDays(-4),
+        updatedAt: dateAddDays(-4),
+      },
+    ],
+  } as TableFixture<PlayRow>,
 }
 
 function dateAddDays(dayDelta: number) {

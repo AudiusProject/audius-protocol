@@ -17,6 +17,7 @@ import { TextInputSize, type TextInputProps } from './types'
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props, ref) => {
     const {
+      'aria-label': ariaLabel,
       required,
       className,
       inputRootClassName,
@@ -40,6 +41,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      IconProps,
       endAdornment: endAdornmentProp,
       _incorrectError,
       _isHovered,
@@ -50,7 +52,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' />
+      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -139,7 +141,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={props['aria-label'] ?? labelText}
+          aria-label={ariaLabel ?? labelText}
           aria-required={required}
           id={id}
           {...other}
@@ -170,7 +172,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          {StartIcon ? <StartIcon size='m' /> : null}
+          {StartIcon ? (
+            <StartIcon size='m' color='subdued' {...IconProps} />
+          ) : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex

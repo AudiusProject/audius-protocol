@@ -9,23 +9,26 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import LoadingSpinner from 'app/components/loading-spinner'
-
 import { useTheme } from '../../../foundations/theme'
+import { LoadingSpinner } from '../../LoadingSpinner/LoadingSpinner'
 import { Text } from '../../Text/Text'
-import type { BaseButtonProps } from '../types'
+
+import type { BaseButtonProps } from './types'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+const AnimatedText = Animated.createAnimatedComponent(Text)
 
 export const BaseButton = (props: BaseButtonProps) => {
   const {
     iconLeft: LeftIconComponent,
     iconRight: RightIconComponent,
     isLoading,
+    isStaticIcon,
     widthToHideText,
-    styles,
+    innerProps,
     children,
     style,
+    styles,
     sharedValue: sharedValueProp,
     minWidth,
     fullWidth,
@@ -45,7 +48,9 @@ export const BaseButton = (props: BaseButtonProps) => {
 
   const childElement = isTextChild ? (
     !isTextHidden ? (
-      <Text>{children}</Text>
+      <AnimatedText {...innerProps?.text} style={styles?.text}>
+        {children}
+      </AnimatedText>
     ) : null
   ) : (
     children
@@ -64,6 +69,7 @@ export const BaseButton = (props: BaseButtonProps) => {
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
+    overflow: 'hidden',
     minWidth,
     ...(fullWidth && {
       width: '100%',
@@ -72,7 +78,9 @@ export const BaseButton = (props: BaseButtonProps) => {
   }
 
   const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+    ...(!fullWidth && {
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+    })
   }))
 
   const handleLayoutChange = useCallback((event: LayoutChangeEvent) => {
@@ -88,13 +96,19 @@ export const BaseButton = (props: BaseButtonProps) => {
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner style={[{ height: 16, width: 16 }, styles?.icon]} />
+          <LoadingSpinner {...innerProps?.loader} />
         ) : LeftIconComponent ? (
-          <LeftIconComponent style={styles?.icon} size='s' color='default' />
+          <LeftIconComponent
+            {...innerProps?.icon}
+            color={isStaticIcon ? 'default' : innerProps?.icon?.color}
+          />
         ) : null}
         {childElement}
         {RightIconComponent ? (
-          <RightIconComponent style={styles?.icon} size='s' color='default' />
+          <RightIconComponent
+            {...innerProps?.icon}
+            color={isStaticIcon ? 'default' : innerProps?.icon?.color}
+          />
         ) : null}
       </AnimatedPressable>
     </GestureDetector>

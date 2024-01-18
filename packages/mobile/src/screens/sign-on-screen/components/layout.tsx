@@ -1,11 +1,21 @@
 import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
+import { useFormikContext } from 'formik'
 import { Dimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
-import { Box, Flex, Paper, Text } from '@audius/harmony-native'
-import { Button, type ButtonProps } from 'app/components/core'
+import type {
+  FlexProps,
+  BoxProps,
+  PaperProps,
+  ButtonProps
+} from '@audius/harmony-native'
+import { Button, Flex, Paper, Text } from '@audius/harmony-native'
+
+const messages = {
+  continue: 'Continue'
+}
 
 type PageProps = FlexProps & {
   centered?: boolean
@@ -18,6 +28,8 @@ export const gutterSize: FlexProps['p'] = 'l'
 export const Page = (props: PageProps) => {
   const { children, style, noGutter, ...other } = props
 
+  const insets = useSafeAreaInsets()
+
   const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
@@ -29,7 +41,17 @@ export const Page = (props: PageProps) => {
 
   return (
     // 1 zIndex is to appear below
-    <Flex {...layoutProps} style={[css({ zIndex: 1 }), style]} {...other}>
+    <Flex
+      {...layoutProps}
+      style={[
+        css({
+          zIndex: 1,
+          paddingBottom: insets.bottom
+        }),
+        style
+      ]}
+      {...other}
+    >
       {children}
     </Flex>
   )
@@ -40,11 +62,12 @@ type PageFooterProps = {
   postfix?: ReactNode
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
-  onSubmit?: () => void
 } & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, onSubmit, ...other } = props
+  const { prefix, postfix, buttonProps, ...other } = props
+  const insets = useSafeAreaInsets()
+  const { handleSubmit, dirty, isValid } = useFormikContext() ?? {}
 
   return (
     <Flex
@@ -58,7 +81,7 @@ export const PageFooter = (props: PageFooterProps) => {
       })}
     >
       {/* Prefixes float above the shadowed paper container  */}
-      <Flex ph={gutterSize}>{prefix}</Flex>
+      {prefix ? <Flex ph={gutterSize}>{prefix}</Flex> : null}
       <Paper
         p='l'
         justifyContent='center'
@@ -67,16 +90,19 @@ export const PageFooter = (props: PageFooterProps) => {
         direction='column'
         shadow='midInverted'
         style={css({
-          borderRadius: 0
+          borderRadius: 0,
+          paddingBottom: insets.bottom
         })}
         {...other}
       >
         <Button
           fullWidth
+          disabled={!dirty || !isValid}
+          onPress={() => handleSubmit?.()}
           {...buttonProps}
-          title='Continue'
-          onPress={() => onSubmit?.()}
-        />
+        >
+          {messages.continue}
+        </Button>
         {/* postfixes live insde the paper */}
         {postfix}
       </Paper>
@@ -118,20 +144,20 @@ export const Heading = (props: HeadingProps) => {
 
 type ReadOnlyFieldProps = {
   label: string
-  value: string
+  value: string | ReactNode
 }
 
 export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
   const { label, value } = props
 
   return (
-    <Box>
+    <Flex gap='xs'>
       <Text variant='label' size='xs'>
         {label}
       </Text>
       <Text variant='body' size='m'>
         {value}
       </Text>
-    </Box>
+    </Flex>
   )
 }

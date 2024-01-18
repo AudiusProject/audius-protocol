@@ -4,14 +4,14 @@ import type { CommonState, Track } from '@audius/common'
 import {
   FeatureFlags,
   Genre,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   squashNewLines,
   accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
-  getLocalTimezone
+  isContentUSDCPurchaseGated,
+  dayjs
 } from '@audius/common'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
@@ -145,9 +145,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   releaseContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'center',
     gap: spacing(1)
+  },
+  releasesLabel: {
+    paddingTop: 2
   }
 }))
 
@@ -196,7 +198,7 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const { doesUserHaveAccess } = usePremiumContentAccess(
+  const { hasStreamAccess } = useGatedContentAccess(
     track ? (track as unknown as Track) : null
   )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -206,8 +208,7 @@ export const DetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
-  const { track_id: trackId, premium_conditions: premiumConditions } =
-    track ?? {}
+  const { track_id: trackId, stream_conditions: streamConditions } = track ?? {}
 
   const styles = useStyles()
   const navigation = useNavigation()
@@ -221,14 +222,20 @@ export const DetailsTile = ({
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-
+  const isUnpublishedScheduledRelease =
+    track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
+  const isLosslessDownloadsEnabled = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const hasDownloadableAssets =
+    (track as Track).is_downloadable ||
+    ((track as Track)?._stems?.length ?? 0) > 0
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -250,14 +257,11 @@ export const DetailsTile = ({
     light()
     onPressPreview?.()
   }, [onPressPreview])
-  const isScheduledRelease = track?.release_date
-    ? moment.utc(track.release_date).isAfter(moment())
-    : false
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      premiumConditions,
-      isUnlisted: isUnlisted && !isScheduledRelease
+      streamConditions,
+      isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
   }
@@ -380,16 +384,17 @@ export const DetailsTile = ({
                 <DetailsProgressInfo track={track} />
               ) : null}
               <View style={styles.buttonSection}>
-                {!doesUserHaveAccess &&
+                {!hasStreamAccess &&
                 !isOwner &&
-                premiumConditions &&
-                trackId ? (
+                streamConditions &&
+                trackId &&
+                !(isLosslessDownloadsEnabled && hasDownloadableAssets) ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                   />
                 ) : null}
-                {doesUserHaveAccess || isOwner ? (
+                {hasStreamAccess || isOwner ? (
                   <Button
                     styles={{
                       text: styles.playButtonText,
@@ -404,25 +409,29 @@ export const DetailsTile = ({
                     fullWidth
                   />
                 ) : null}
-                {(doesUserHaveAccess || isOwner) && premiumConditions ? (
+                {(hasStreamAccess || isOwner) &&
+                streamConditions &&
+                !(isLosslessDownloadsEnabled && hasDownloadableAssets) ? (
                   <DetailsTileHasAccess
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                     isOwner={isOwner}
                     trackArtist={user}
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
-                {isScheduledRelease && track?.release_date ? (
+                {isUnpublishedScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
-                    <HarmonyText color='accent' strength='strong' size='m'>
-                      Releases on
+                    <HarmonyText
+                      color='accent'
+                      strength='strong'
+                      size='m'
+                      style={styles.releasesLabel}
+                    >
+                      Releases
                       {' ' +
-                        moment
-                          .utc(track.release_date)
-                          .local()
-                          .format('M/D/YY @ h:mm A ') +
-                        getLocalTimezone()}
+                        moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                        dayjs().format('z')}
                     </HarmonyText>
                   </View>
                 ) : null}

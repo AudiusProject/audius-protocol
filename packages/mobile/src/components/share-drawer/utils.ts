@@ -1,4 +1,4 @@
-import type { ShareModalContent } from '@audius/common'
+import type { ShareContent } from '@audius/common'
 import { makeTwitterShareUrl } from '@audius/common'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -10,7 +10,7 @@ import {
 
 import { messages } from './messages'
 
-export const getContentUrl = (content: ShareModalContent) => {
+export const getContentUrl = (content: ShareContent) => {
   switch (content.type) {
     case 'track': {
       const { track } = content
@@ -40,7 +40,7 @@ const getShareHandle = async (handle: string) => {
   return twitterHandle ? `@${twitterHandle}` : handle
 }
 
-export const getTwitterShareText = async (content: ShareModalContent) => {
+export const getTwitterShareText = async (content: ShareContent) => {
   switch (content.type) {
     case 'track': {
       const {
@@ -81,7 +81,7 @@ export const getTwitterShareText = async (content: ShareModalContent) => {
   }
 }
 
-export const getTwitterShareUrl = async (content: ShareModalContent) => {
+export const getTwitterShareUrl = async (content: ShareContent) => {
   const url = getContentUrl(content)
   const shareText = await getTwitterShareText(content)
   return makeTwitterShareUrl(url ?? null, shareText)

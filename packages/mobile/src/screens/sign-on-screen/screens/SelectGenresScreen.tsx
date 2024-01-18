@@ -8,11 +8,11 @@ import {
 } from '@audius/common'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
-import { ScrollView, View } from 'react-native'
+import { ScrollView } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, SelectablePill } from '@audius/harmony-native'
+import { Box, Flex, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
@@ -69,6 +69,8 @@ const SelectGenresFieldArray = () => {
           />
         ))}
       </Flex>
+      {/* TODO improved sticky footer and header */}
+      <Box h={80} />
     </ScrollView>
   )
 }
@@ -94,24 +96,17 @@ export const SelectGenresScreen = () => {
       validateOnChange
       validationSchema={toFormikValidationSchema(selectGenresSchema)}
     >
-      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
-        <View>
-          <Page noGutter>
-            <ReadOnlyAccountHeader />
-            <Flex ph={gutterSize} gap='2xl'>
-              <Heading
-                heading={messages.header}
-                description={messages.description}
-              />
-              <SelectGenresFieldArray />
-            </Flex>
-            <PageFooter
-              buttonProps={{ disabled: !(dirty && isValid) }}
-              onSubmit={triggerSubmit}
-            />
-          </Page>
-        </View>
-      )}
+      <Page noGutter>
+        <ReadOnlyAccountHeader />
+        <Flex ph={gutterSize} gap='2xl' flex={1}>
+          <Heading
+            heading={messages.header}
+            description={messages.description}
+          />
+          <SelectGenresFieldArray />
+        </Flex>
+        <PageFooter />
+      </Page>
     </Formik>
   )
 }

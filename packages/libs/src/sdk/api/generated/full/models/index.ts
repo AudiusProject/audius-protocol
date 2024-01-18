@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './Access';
 export * from './ActivityFull';
 export * from './Attestation';
 export * from './AttestationReponse';
@@ -26,6 +27,7 @@ export * from './FullSubscribersResponse';
 export * from './FullSupporter';
 export * from './FullSupporting';
 export * from './FullTip';
+export * from './FullTopListener';
 export * from './FullTrackResponse';
 export * from './FullTracks';
 export * from './FullTracksResponse';
@@ -38,7 +40,6 @@ export * from './PlaylistArtwork';
 export * from './PlaylistFull';
 export * from './PlaylistFullWithoutTracks';
 export * from './PlaylistLibrary';
-export * from './PremiumContentSignature';
 export * from './ProfilePicture';
 export * from './Purchase';
 export * from './PurchasesCountResponse';
@@ -54,6 +55,7 @@ export * from './SearchModel';
 export * from './StemFull';
 export * from './StemParent';
 export * from './StemsResponse';
+export * from './StreamSignature';
 export * from './SupporterReference';
 export * from './TopGenreUsersResponseFull';
 export * from './TopUsersResponseFull';

@@ -18,7 +18,16 @@ const typographyOverrides = {
   },
   lineHeight: mapValues(harmonyThemes.day.typography.lineHeight, (pxSize) =>
     parseInt(pxSize)
-  )
+  ),
+  shadow: {
+    emphasis: {
+      textShadowColor: 'rgba(0, 0, 0, 0.20)',
+      textShadowOffset: { width: 0, height: 1.34 },
+      textShadowRadius: 8,
+      padding: 8,
+      margin: -8
+    }
+  }
 }
 
 const commonFoundations = {

@@ -46,7 +46,6 @@ type ProfileWrappingProps = {
   onUpdateTikTokHandle: (handle: string) => void
   onUpdateWebsite: (website: string) => void
   onUpdateDonation: (donation: string) => void
-  goToRoute: (route: string) => void
 }
 
 const ProfileWrapping = (props: ProfileWrappingProps) => {
@@ -83,8 +82,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     onUpdateInstagramHandle,
     onUpdateTikTokHandle,
     onUpdateWebsite,
-    onUpdateDonation,
-    goToRoute
+    onUpdateDonation
   } = props
 
   return (
@@ -155,7 +153,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             onUpdateTikTokHandle={onUpdateTikTokHandle}
             onUpdateWebsite={onUpdateWebsite}
             onUpdateDonation={onUpdateDonation}
-            goToRoute={goToRoute}
           />
         )}
       </div>

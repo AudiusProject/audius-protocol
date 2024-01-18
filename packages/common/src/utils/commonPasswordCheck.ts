@@ -49,5 +49,8 @@ export const commonPasswordCheck = async (
 }
 
 export const isNotCommonPassword = async (password: string) => {
+  if (password.length < 8) {
+    return false
+  }
   return !(await commonPasswordCheck(password))
 }

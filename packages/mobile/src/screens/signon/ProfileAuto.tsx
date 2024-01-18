@@ -205,26 +205,35 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
 
   const setOAuthInfo = useCallback(() => {
     if (twitterInfo) {
+      // Replace twitter's returned image (which may vary) with the hd one
+      const twitterProfileImageUrl = twitterInfo.profile.profile_image_url_https
+        ? twitterInfo.profile.profile_image_url_https.replace(
+            /_(normal|bigger|mini)/g,
+            ''
+          )
+        : null
       dispatch(
         signOnActions.setTwitterProfile(
           twitterInfo.uuid,
           twitterInfo.profile,
-          twitterInfo.profile.profile_image_url_https
+          twitterProfileImageUrl
             ? {
-                // Replace twitter's returned image (which may vary) with the hd one
-                uri: twitterInfo.profile.profile_image_url_https.replace(
-                  /_(normal|bigger|mini)/g,
-                  ''
-                ),
-                name: 'ProfileImage',
-                type: 'image/jpeg'
+                url: twitterProfileImageUrl,
+                file: {
+                  uri: twitterProfileImageUrl,
+                  name: 'ProfileImage',
+                  type: 'image/jpeg'
+                }
               }
             : null,
           twitterInfo.profile.profile_banner_url
             ? {
-                uri: twitterInfo.profile.profile_banner_url,
-                name: 'ProfileBanner',
-                type: 'image/png'
+                url: twitterInfo.profile.profile_banner_url,
+                file: {
+                  uri: twitterInfo.profile.profile_banner_url,
+                  name: 'ProfileBanner',
+                  type: 'image/png'
+                }
               }
             : null
         )
@@ -236,9 +245,12 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
           instagramInfo.profile,
           instagramInfo.profile.profile_pic_url_hd
             ? {
-                uri: instagramInfo.profile.profile_pic_url_hd,
-                name: 'ProfileImage',
-                type: 'image/jpeg'
+                url: instagramInfo.profile.profile_pic_url_hd,
+                file: {
+                  uri: instagramInfo.profile.profile_pic_url_hd,
+                  name: 'ProfileImage',
+                  type: 'image/jpeg'
+                }
               }
             : null
         )
@@ -250,9 +262,12 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
           tikTokInfo.profile,
           tikTokInfo.profile.avatar_large_url
             ? {
-                uri: tikTokInfo.profile.avatar_large_url,
-                name: 'ProfileImage',
-                type: 'image/jpeg'
+                url: tikTokInfo.profile.avatar_large_url,
+                file: {
+                  uri: tikTokInfo.profile.avatar_large_url,
+                  name: 'ProfileImage',
+                  type: 'image/jpeg'
+                }
               }
             : null
         )
@@ -461,6 +476,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
             {isTikTokEnabled ? (
               <TikTokAuthButton
                 onPress={handleTikTokPress}
+                noText={false}
                 styles={{ root: styles.socialButtonContainer }}
                 title={messages.tiktokButton}
               />

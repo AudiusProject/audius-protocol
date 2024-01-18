@@ -4,7 +4,8 @@ import {
   ElementType,
   ReactNode,
   forwardRef,
-  useContext
+  useContext,
+  RefObject
 } from 'react'
 
 import { Maybe } from '@audius/common'
@@ -22,6 +23,7 @@ import {
 } from '@audius/harmony'
 import styled, { CSSObject } from '@emotion/styled'
 import { animated, useSpring } from '@react-spring/web'
+import { useFormikContext } from 'formik'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -36,6 +38,7 @@ type PageProps = FlexProps & {
   centered?: boolean
   transition?: 'horizontal' | 'vertical'
   transitionBack?: 'horizontal' | 'vertical'
+  autoFocusInputRef?: RefObject<HTMLInputElement>
 }
 
 const transitionAxisConfig = {
@@ -46,7 +49,15 @@ const transitionAxisConfig = {
 const AnimatedFlex = animated(Flex)
 
 export const Page = (props: PageProps) => {
-  const { centered, children, as, transition, transitionBack, ...other } = props
+  const {
+    centered,
+    children,
+    as,
+    transition,
+    transitionBack,
+    autoFocusInputRef,
+    ...other
+  } = props
   const { isMobile } = useMedia()
   const { isGoBack } = useContext(RouteContext)
 
@@ -74,6 +85,9 @@ export const Page = (props: PageProps) => {
     to: {
       opacity: 1,
       transform: toTransform
+    },
+    onRest: () => {
+      autoFocusInputRef?.current?.focus()
     }
   })
 
@@ -94,8 +108,8 @@ export const Page = (props: PageProps) => {
           {...layoutProps}
           {...other}
           alignSelf='center'
-          css={!isMobile && { maxWidth: 610 }}
           style={styles}
+          flex={1}
         >
           {childrenArray}
         </AnimatedFlex>
@@ -179,6 +193,8 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
+  // On the MobileCTAPage we use this footer outside a formik context
+  const { isSubmitting } = useFormikContext() ?? { isSubmitting: false }
 
   return (
     <Paper
@@ -192,10 +208,9 @@ export const PageFooter = (props: PageFooterProps) => {
       backgroundColor='white'
       css={{
         overflow: 'unset',
-        position: sticky ? 'sticky' : 'absolute',
-        bottom: 0,
-        left: 0,
+        flexShrink: 0,
         zIndex: 1,
+        ...(sticky && { position: 'sticky', bottom: 0 }),
         borderBottomRightRadius: 0,
         borderBottomLeftRadius: 0
       }}
@@ -206,6 +221,7 @@ export const PageFooter = (props: PageFooterProps) => {
         type='submit'
         iconRight={IconArrowRight}
         fullWidth
+        isLoading={isSubmitting}
         css={!isMobile && centered && { width: 343 }}
         {...buttonProps}
       >

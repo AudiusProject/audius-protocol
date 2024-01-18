@@ -7,7 +7,6 @@ import {
 import {
   Box,
   Button,
-  ButtonType,
   Divider,
   Flex,
   IconArrowRight,
@@ -25,7 +24,8 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   resetSignOn,
   setLinkedSocialOnFirstPage,
-  setValueField
+  setValueField,
+  startSignUp
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -42,7 +42,7 @@ import {
   SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
-import { EmailField } from '../components/EmailField'
+import { NewEmailField } from '../components/EmailField'
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
@@ -77,6 +77,7 @@ export const CreateEmailPage = () => {
   const handleCompleteSocialMediaLogin = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
+      dispatch(startSignUp())
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
       navigate(
@@ -112,7 +113,7 @@ export const CreateEmailPage = () => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ dirty, isSubmitting }) => (
+      {({ isSubmitting }) => (
         <Page as={Form} pt='unit20'>
           <Box alignSelf='center'>
             {isMobile ? (
@@ -141,7 +142,7 @@ export const CreateEmailPage = () => {
             centered={isMobile}
           />
           <Flex direction='column' gap='l'>
-            <EmailField />
+            <NewEmailField />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
@@ -155,7 +156,7 @@ export const CreateEmailPage = () => {
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
-              variant={ButtonType.PRIMARY}
+              variant='primary'
               type='submit'
               fullWidth
               iconRight={IconArrowRight}

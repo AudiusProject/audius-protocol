@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import {
   createPasswordPageMessages as messages,
@@ -36,6 +36,7 @@ export const CreatePasswordPage = () => {
   const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
+  const passwordInputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = useCallback(
     (values: CreatePasswordValues) => {
@@ -53,7 +54,12 @@ export const CreatePasswordPage = () => {
       validationSchema={passwordFormikSchema}
     >
       {({ isValid, dirty }) => (
-        <Page as={Form} transition={isMobile ? undefined : 'horizontal'}>
+        <Page
+          centered
+          as={Form}
+          transition={isMobile ? undefined : 'horizontal'}
+          autoFocusInputRef={passwordInputRef}
+        >
           <Heading
             heading={messages.createYourPassword}
             description={messages.description}
@@ -63,7 +69,7 @@ export const CreatePasswordPage = () => {
               label={messages.yourEmail}
               value={emailField.value}
             />
-            <EnterPasswordSection />
+            <EnterPasswordSection inputRef={passwordInputRef} />
           </Flex>
           <PageFooter
             shadow='flat'

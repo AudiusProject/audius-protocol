@@ -4,7 +4,7 @@ import { cornerRadius } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { Pressable } from 'react-native'
 import type { GestureResponderEvent } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import Animated, {
   interpolate,
   interpolateColor,
@@ -52,15 +52,18 @@ export const SelectablePill = (props: SelectablePillProps) => {
   )
 
   const tap = Gesture.Tap()
+    .shouldCancelWhenOutside(true)
     .onBegin(() => {
-      pressed.value = withTiming(1, motion.hover)
+      pressed.value = withTiming(1, motion.press)
       if (!isSelected) {
-        selected.value = withTiming(1, motion.hover)
+        selected.value = withTiming(1, motion.press)
       }
     })
-    .onFinalize(() => {
+    .onFinalize((event) => {
       pressed.value = withTiming(0, motion.press)
-      if (isSelected) {
+      const isDeselect = event.state === State.END && isSelected
+      const isCancel = event.state !== State.END && !isSelected
+      if (isDeselect || isCancel) {
         selected.value = withTiming(0, motion.press)
       }
     })

@@ -3,6 +3,7 @@ import fetch from 'cross-fetch'
 
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
+import { ChallengesApi } from './api/challenges/ChallengesApi'
 import { ChatsApi } from './api/chats/ChatsApi'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
@@ -31,18 +32,17 @@ import {
   AppAuth,
   RewardManagerClient
 } from './services'
+import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
+import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
-import { StorageNodeSelector } from './services/StorageNodeSelector'
-import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
-import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
+import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { defaultClaimableTokensConfig } from './services/Solana/programs/ClaimableTokensClient/constants'
 import { defaultRewardManagerClentConfig } from './services/Solana/programs/RewardManagerClient/constants'
-import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
-import { ChallengesApi } from './api/challenges/ChallengesApi'
-import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
+import { StorageNodeSelector } from './services/StorageNodeSelector'
+import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 
 /**
  * The Audius SDK

@@ -365,7 +365,7 @@ class TrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            exclude_premium=True,
+            exclude_gated=True,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -426,7 +426,7 @@ class FullTrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            exclude_premium=False,
+            exclude_gated=False,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -2042,11 +2042,6 @@ class GetReplicaSet(FullGetReplicaSet):
     @ns.marshal_with(user_replica_set_response)
     def get(self, id: str):
         return super()._get(id)
-
-
-verify_token_response = make_response(
-    "verify_token", ns, fields.Nested(decoded_user_token)
-)
 
 
 @ns.route("/unclaimed_id", doc=False)

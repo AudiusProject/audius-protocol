@@ -1,12 +1,9 @@
-import { useCallback } from 'react'
-
-import { ID, Name, accountSelectors } from '@audius/common'
+import { ID, accountSelectors } from '@audius/common'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { make, useRecord } from 'common/store/analytics/actions'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
@@ -20,7 +17,6 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
-import { UPLOAD_PAGE } from 'utils/route'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
@@ -45,7 +41,6 @@ type ProfileLeftNavProps = {
   loading: boolean
   isDeactivated: boolean
   allowAiAttribution: boolean
-  goToRoute: (route: string) => void
   twitterHandle: string
   onUpdateTwitterHandle: (handle: string) => void
   instagramHandle: string
@@ -76,7 +71,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     loading,
     isDeactivated,
     allowAiAttribution,
-    goToRoute,
     twitterHandle,
     onUpdateTwitterHandle,
     instagramHandle,
@@ -97,13 +91,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     isOwner
   } = props
 
-  const record = useRecord()
   const accountUser = useSelector(getAccountUser)
-
-  const onClickUploadChip = useCallback(() => {
-    goToRoute(UPLOAD_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
 
   const renderTipAudioButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
@@ -221,11 +209,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           <RelatedArtists />
           {isArtist ? <ProfileTopTags /> : null}
           {showUploadChip ? (
-            <UploadChip
-              type='track'
-              variant='nav'
-              onClick={onClickUploadChip}
-            />
+            <UploadChip type='track' variant='nav' source='nav' />
           ) : null}
         </div>
       </div>

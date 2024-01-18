@@ -1,26 +1,21 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import {
   MAX_DISPLAY_NAME_LENGTH,
+  finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
-import {
-  Paper,
-  PlainButton,
-  PlainButtonType,
-  Text,
-  useTheme
-} from '@audius/harmony'
-import { Formik, Form, useField } from 'formik'
+import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
+import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
   setField,
   setValueField,
-  setFinishedPhase1
+  setFinishedPhase1,
+  signUp
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -45,31 +40,47 @@ export type FinishProfileValues = {
   displayName: string
 }
 
-const formSchema = toFormikValidationSchema(
-  z.object({
-    displayName: z.string().max(MAX_DISPLAY_NAME_LENGTH, ''),
-    profileImage: z.object({
-      url: z.string()
-    }),
-    coverPhoto: z
-      .object({
-        url: z.string().optional()
-      })
-      .optional()
-  })
-)
+const formSchema = toFormikValidationSchema(finishProfileSchema)
+
+const ImageUploadErrorText = () => {
+  const { errors } = useFormikContext<FinishProfileValues>()
+  let errorText
+  if (errors.coverPhoto === messages.coverPhotoUploadError) {
+    errorText = errors.coverPhoto
+  }
+  // Profile image error takes priority
+  if (errors.profileImage === messages.profileImageUploadError) {
+    // If both images have errors, we show a combined error message
+    if (errorText !== undefined) {
+      errorText = messages.bothImageUploadError
+    } else {
+      errorText = errors.profileImage
+    }
+  }
+
+  return (
+    <Flex ph='l' pt='2xl'>
+      {errorText ? (
+        <Text variant='body' size='m' strength='default' color='danger'>
+          {errorText}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+}
 
 export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
   const history = useHistory()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
-  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
+  const savedCoverPhoto = useSelector(getCoverPhotoField)
+  const savedProfileImage = useSelector(getProfileImageField)
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -78,15 +89,37 @@ export const FinishProfilePage = () => {
     displayName: savedDisplayName || ''
   }
 
+  const setCoverPhoto = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('coverPhoto', value))
+    },
+    [dispatch]
+  )
+
+  const setProfileImage = useCallback(
+    (value: ImageFieldValue) => {
+      dispatch(setField('profileImage', value))
+    },
+    [dispatch]
+  )
+
+  const setDisplayName = useCallback(
+    (value: string) => {
+      dispatch(setValueField('name', value))
+    },
+    [dispatch]
+  )
+
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
+      dispatch(signUp())
     },
     [navigate, dispatch]
   )
@@ -105,6 +138,7 @@ export const FinishProfilePage = () => {
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
           transitionBack='horizontal'
+          autoFocusInputRef={displayNameInputRef}
         >
           <Heading
             prefix={
@@ -116,36 +150,36 @@ export const FinishProfilePage = () => {
             description={messages.description}
             centered={!isMobile}
           />
-          <Paper direction='column'>
+          <Paper direction='column' style={{ flexShrink: 0 }}>
             <AccountHeader
               mode='editing'
               formDisplayName={values.displayName}
               formProfileImage={values.profileImage}
+              onProfileImageChange={setProfileImage}
+              onCoverPhotoChange={setCoverPhoto}
             />
+            <ImageUploadErrorText />
             <HarmonyTextField
+              ref={displayNameInputRef}
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
-              required
-              autoFocus
-              maxLength={32}
+              maxLength={MAX_DISPLAY_NAME_LENGTH}
+              onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
-                padding: theme.spacing.l,
-                paddingTop: theme.spacing.unit10
+                padding: theme.spacing.l
               })}
             />
           </Paper>
           {isMobile ? null : <UploadProfilePhotoHelperText />}
           <PageFooter
             centered
+            sticky
             buttonProps={{ disabled: !isValid }}
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
               isMobile || isSocialConnected ? null : (
-                <PlainButton
-                  variant={PlainButtonType.SUBDUED}
-                  onClick={history.goBack}
-                >
+                <PlainButton variant='subdued' onClick={history.goBack}>
                   {messages.goBack}
                 </PlainButton>
               )

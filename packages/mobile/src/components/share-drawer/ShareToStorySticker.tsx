@@ -28,7 +28,6 @@ type ShareToStoryStickerProps = {
     | 'track_id'
     | '_cover_art_sizes'
   >
-  user?: Pick<User, 'creator_node_endpoint'>
   artist: Pick<User, 'user_id' | 'name' | 'is_verified'>
   style?: StyleProp<ViewStyle>
   /** Called once the image loads successfully */
@@ -81,7 +80,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const ShareToStorySticker = ({
   track,
-  user,
   artist,
   style,
   onLoad,

@@ -1,40 +1,40 @@
-import type { ID, PremiumConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common'
 import {
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 
-type DetailsTilePremiumAccessProps = {
+type DetailsTileGatedAccessProps = {
   trackId: ID
-  premiumConditions: PremiumConditions
+  streamConditions: AccessConditions
   isOwner: boolean
-  doesUserHaveAccess: boolean
+  hasStreamAccess: boolean
   style?: ViewStyle
 }
 
-export const DetailsTilePremiumAccess = ({
+export const DetailsTileGatedAccess = ({
   trackId,
-  premiumConditions,
+  streamConditions,
   isOwner,
-  doesUserHaveAccess,
+  hasStreamAccess,
   style
-}: DetailsTilePremiumAccessProps) => {
+}: DetailsTileGatedAccessProps) => {
   const shouldDisplay =
-    isPremiumContentCollectibleGated(premiumConditions) ||
-    isPremiumContentFollowGated(premiumConditions) ||
-    isPremiumContentTipGated(premiumConditions)
+    isContentCollectibleGated(streamConditions) ||
+    isContentFollowGated(streamConditions) ||
+    isContentTipGated(streamConditions)
 
   if (!shouldDisplay) return null
 
-  if (doesUserHaveAccess) {
+  if (hasStreamAccess) {
     return (
       <DetailsTileHasAccess
-        premiumConditions={premiumConditions}
+        streamConditions={streamConditions}
         isOwner={isOwner}
         style={style}
       />
@@ -44,7 +44,7 @@ export const DetailsTilePremiumAccess = ({
   return (
     <DetailsTileNoAccess
       trackId={trackId}
-      premiumConditions={premiumConditions}
+      streamConditions={streamConditions}
       style={style}
     />
   )

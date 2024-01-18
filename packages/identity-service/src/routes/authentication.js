@@ -2,8 +2,10 @@ const models = require('../models')
 const {
   handleResponse,
   successResponse,
-  errorResponseBadRequest
+  errorResponseBadRequest,
+  errorResponseForbidden
 } = require('../apiHelpers')
+const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
 
 module.exports = function (app) {
   /**
@@ -73,24 +75,43 @@ module.exports = function (app) {
   app.get(
     '/authentication',
     handleResponse(async (req, res, next) => {
-      const queryParams = req.query
-
-      if (queryParams && queryParams.lookupKey) {
-        const lookupKey = queryParams.lookupKey
-        const existingUser = await models.Authentication.findOne({
-          where: { lookupKey }
-        })
-
-        if (existingUser) {
-          return successResponse(existingUser)
-        } else {
-          return errorResponseBadRequest(
-            'No auth record found for provided lookupKey.'
-          )
-        }
-      } else {
-        return errorResponseBadRequest('Missing queryParam lookupKey.')
+      const { lookupKey, username: email, otp } = req.query
+      if (!lookupKey) {
+        return errorResponseBadRequest('Missing lookupKey')
       }
+
+      if (!email) {
+        return errorResponseBadRequest('Missing email')
+      }
+
+      const existingUser = await models.Authentication.findOne({
+        where: { lookupKey }
+      })
+      if (!existingUser) {
+        return errorResponseBadRequest('Invalid credentials')
+      }
+
+      if (bypassOtp(email)) {
+        return successResponse(existingUser)
+      }
+
+      const redis = req.app.get('redis')
+      const sendgrid = req.app.get('sendgrid')
+      if (!sendgrid) {
+        req.logger.error('Missing sendgrid api key')
+      }
+
+      if (!otp) {
+        await sendOtp({ email, redis, sendgrid })
+        return errorResponseForbidden('Missing otp')
+      }
+
+      const isOtpValid = await validateOtp({ email, otp, redis })
+      if (!isOtpValid) {
+        return errorResponseBadRequest('Invalid credentials')
+      }
+
+      return successResponse(existingUser)
     })
   )
 }

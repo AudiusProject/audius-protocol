@@ -1,31 +1,37 @@
 import { useCallback } from 'react'
 
-import { signInPageMessages as messages } from '@audius/common'
+import { signInPageMessages as messages, signInSchema } from '@audius/common'
+import {
+  getEmailField,
+  getStatus
+} from 'audius-client/src/common/store/pages/signon/selectors'
 import { signIn } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
-import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Text } from '@audius/harmony-native'
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button } from 'app/components/core'
-import { TextField } from 'app/components/fields'
+import { Button, Flex, IconArrowRight, TextLink } from '@audius/harmony-native'
+import { PasswordField } from 'app/components/fields'
+import { useDrawer } from 'app/hooks/useDrawer'
 
+import { EmailField } from '../components/EmailField'
 import { Heading } from '../components/layout'
 
-import type { SignOnScreenProps } from './types'
+const signinFormikSchema = toFormikValidationSchema(signInSchema)
 
 type SignInValues = {
   email: string
   password: string
 }
 
-export const SignInScreen = (props: SignOnScreenProps) => {
-  const { email, onChangeEmail } = props
+export const SignInScreen = () => {
   const dispatch = useDispatch()
+  const { value: existingEmailValue } = useSelector(getEmailField)
+  const signInStatus = useSelector(getStatus)
+  const { onOpen } = useDrawer('ForgotPassword')
 
   const initialValues = {
-    email,
+    email: existingEmailValue ?? '',
     password: ''
   }
 
@@ -38,29 +44,36 @@ export const SignInScreen = (props: SignOnScreenProps) => {
   )
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={signinFormikSchema}
+      onSubmit={handleSubmit}
+    >
       {({ handleSubmit }) => (
         <>
           <Heading heading={messages.title} centered />
-          <View>
-            <TextField
-              name='email'
-              label={messages.emailLabel}
-              onChangeText={onChangeEmail}
-            />
-            <TextField name='password' label={messages.passwordLabel} />
-          </View>
+          <Flex gap='l'>
+            <EmailField name='email' label={messages.emailLabel} />
+            <PasswordField name='password' label={messages.passwordLabel} />
+          </Flex>
           <Flex gap='l'>
             <Button
-              size='large'
+              size='default'
               fullWidth
-              title={messages.signIn}
-              icon={IconArrow}
+              iconRight={IconArrowRight}
+              isLoading={signInStatus === 'loading'}
               onPress={() => handleSubmit()}
-            />
-            <Text color='accent' textAlign='center'>
+            >
+              {messages.signIn}
+            </Button>
+            <TextLink
+              variant='visible'
+              textVariant='body'
+              textAlign='center'
+              onPress={onOpen}
+            >
               {messages.forgotPassword}
-            </Text>
+            </TextLink>
           </Flex>
         </>
       )}

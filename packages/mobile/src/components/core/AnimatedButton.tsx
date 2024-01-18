@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
-import type { AnimatedLottieViewProps } from 'lottie-react-native'
+import type { LottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type {
   PressableProps,
@@ -9,13 +9,13 @@ import type {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import { Pressable, View } from 'react-native'
+import { Pressable } from 'react-native'
 import { usePrevious } from 'react-use'
 
 import { light, medium } from 'app/haptics'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
-export type IconJSON = AnimatedLottieViewProps['source']
+export type IconJSON = LottieViewProps['source']
 
 export type Haptics = boolean | 'light' | 'medium'
 
@@ -27,7 +27,7 @@ export type AnimatedButtonProps = {
   onLongPress?: GestureResponderHandler
   onPress?: GestureResponderHandler
   renderUnderlay?: (state: PressableStateCallbackType) => ReactNode
-  resizeMode?: AnimatedLottieViewProps['resizeMode']
+  resizeMode?: LottieViewProps['resizeMode']
   style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
   haptics?: Haptics
@@ -188,36 +188,35 @@ export const AnimatedButton = ({
       {(pressableState) => (
         <>
           {renderUnderlay?.(pressableState)}
-          <View style={wrapperStyle}>
-            {/* The key is needed for animations to work on android  */}
+          {/* The key is needed for animations to work on android  */}
+          <LottieView
+            style={[
+              !hasMultipleStates ? { opacity: isActive ? 1 : 0 } : undefined,
+              wrapperStyle
+            ]}
+            key={hasMultipleStates ? iconIndex : undefined}
+            ref={(animation) => (animationRef.current = animation)}
+            onAnimationFinish={handleAnimationFinish}
+            progress={progress}
+            loop={false}
+            source={source}
+            resizeMode={resizeMode}
+          />
+          {/**
+           * Secondary animation that is visible when inactive. This ensures
+           * active->inactive transition is smooth, since Lottie onAnimationFinish
+           * does not do this smoothly and results in partially inactive states.
+           */}
+          {!hasMultipleStates ? (
             <LottieView
-              style={
-                !hasMultipleStates ? { opacity: isActive ? 1 : 0 } : undefined
-              }
-              key={hasMultipleStates ? iconIndex : undefined}
-              ref={(animation) => (animationRef.current = animation)}
-              onAnimationFinish={handleAnimationFinish}
-              progress={progress}
+              key={isActive ? 'active' : 'inactive'}
+              style={[{ opacity: isActive ? 0 : 1 }, wrapperStyle]}
+              progress={0}
               loop={false}
               source={source}
               resizeMode={resizeMode}
             />
-            {/**
-             * Secondary animation that is visible when inactive. This ensures
-             * active->inactive transition is smooth, since Lottie onAnimationFinish
-             * does not do this smoothly and results in partially inactive states.
-             */}
-            {!hasMultipleStates ? (
-              <LottieView
-                key={isActive ? 'active' : 'inactive'}
-                style={{ opacity: isActive ? 0 : 1 }}
-                progress={0}
-                loop={false}
-                source={source}
-                resizeMode={resizeMode}
-              />
-            ) : null}
-          </View>
+          ) : null}
           {children}
         </>
       )}

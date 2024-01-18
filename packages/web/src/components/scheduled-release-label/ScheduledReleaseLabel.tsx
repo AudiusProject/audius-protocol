@@ -3,7 +3,7 @@ import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
-import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
+import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
 
 import styles from './ScheduledReleaseLabel.module.css'
 
@@ -16,20 +16,20 @@ export const ScheduledReleaseLabel = ({
   released,
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted) {
+  if (!released || !isUnlisted || moment(released).isBefore(moment())) {
     return null
   }
   return (
     <div
       className={cn(
-        premiumContentLabelStyles.labelContainer,
+        gatedContentLabelStyles.labelContainer,
         styles.scheduledReleaseLabel
       )}
     >
-      <IconCalendarMonth />
+      <IconCalendarMonth size='s' />
       <Text>
         Releases{' '}
-        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+        {moment(released).format('M/D/YY [@] h:mm A') +
           ' ' +
           getLocalTimezone()}
       </Text>
@@ -41,21 +41,22 @@ export const ScheduledReleaseGiantLabel = ({
   released,
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || !isUnlisted) {
+  if (!released || !isUnlisted || moment(released).isBefore(moment())) {
     return null
   }
 
   return (
     <div
       className={cn(
-        premiumContentLabelStyles.labelContainer,
+        gatedContentLabelStyles.labelContainer,
         styles.scheduledReleaseLabel
       )}
     >
       <IconCalendarMonth />
       <Text color='accent' variant='title'>
-        Releases on{' '}
-        {moment.utc(released).local().format('M/D/YY [@] h:mm A') +
+        Releases
+        {' ' +
+          moment(released).format('M/D/YY [@] h:mm A') +
           ' ' +
           getLocalTimezone()}
       </Text>

@@ -22,8 +22,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     profileImageUrl: propsProfileImageUrl,
     isEditing
   } = props
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
 
   const { color, spacing, cornerRadius } = useTheme()
   const coverPhotoUrl = propsCoverPhotoUrl ?? coverPhoto?.url
@@ -35,6 +35,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
       w='100%'
       borderRadius={isEditing ? 'm' : undefined}
       css={{
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
         '&:before': {
           content: '""',
           position: 'absolute',
@@ -53,6 +55,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
             : undefined),
           ...(isEditing && {
             overflow: 'hidden',
+            cursor: 'pointer',
             borderTopLeftRadius: cornerRadius.m,
             borderTopRightRadius: cornerRadius.m
           })

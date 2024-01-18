@@ -1,13 +1,12 @@
 {
   "name": "root",
-  "version": "1.5.57",
+  "version": "1.5.61",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
     "packages/es-indexer"
   ],
-  "cacheBust": 1,
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -27,7 +26,6 @@
     "web:dev": "npm run start:dev -w audius-client",
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
-    "web:stage-local-trpc": "npm run start:stage-local-trpc -w audius-client",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
     "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",
@@ -67,6 +65,7 @@
     "@emotion/eslint-plugin": "11.11.0",
     "@tsconfig/strictest": "2.0.2",
     "@types/keyv": "4.2.0",
+    "@types/react": "18.2.0",
     "@typescript-eslint/eslint-plugin": "6.16.0",
     "@typescript-eslint/parser": "6.16.0",
     "concurrently": "7.4.0",
@@ -101,11 +100,11 @@
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
-    "@types/react": "18.0.26",
+    "@types/react": "18.2.0",
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
     "moment": "2.24.0",
-    "react-native-svg": "12.3.0",
+    "react-native-svg": "13.14.0",
     "redux": "4.1.1",
     "webpack": "5.88.2"
   },

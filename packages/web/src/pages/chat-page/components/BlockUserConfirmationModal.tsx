@@ -70,11 +70,7 @@ export const BlockUserConfirmationModal = ({
   return (
     <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle
-          title={messages.title}
-          icon={<IconBlockMessages />}
-          iconClassName={styles.icon}
-        />
+        <ModalTitle title={messages.title} icon={<IconBlockMessages />} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div>{messages.content(user, isReportAbuse)}</div>

@@ -4,12 +4,13 @@ import {
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   chatSagas,
-  premiumContentSagas,
+  gatedContentSagas,
   purchaseContentSagas,
   remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   uploadConfirmationModalUISagas as uploadConfirmationModalSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
@@ -206,6 +207,7 @@ export default function* rootSaga() {
     themeSagas(),
     tokenDashboardSagas(),
     uploadConfirmationModalSagas(),
+    publishTrackConfirmationModalSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
@@ -221,8 +223,8 @@ export default function* rootSaga() {
     tippingSagas(),
     solanaSagas(),
 
-    // Premium content
-    premiumContentSagas(),
+    // Gated content
+    gatedContentSagas(),
     buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
