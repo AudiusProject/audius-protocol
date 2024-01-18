@@ -33,8 +33,8 @@ type ReviewHandleValues = {
 export const ReviewHandleScreen = () => {
   const dispatch = useDispatch()
   const { value: handle } = useSelector(getHandleField)
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   const hasImages = coverPhoto || profileImage
   const initialValues = {
     handle

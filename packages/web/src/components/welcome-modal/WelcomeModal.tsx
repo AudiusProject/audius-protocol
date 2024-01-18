@@ -30,20 +30,22 @@ import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
 
-const { getUserId } = accountSelectors
+const { getUserId, getUserName } = accountSelectors
 
 export const WelcomeModal = () => {
   const { isMobile } = useMedia()
-  const { value: userName } = useSelector(getNameField)
-  const { value: signOnProfileImage } = { ...useSelector(getProfileImageField) }
+  const { value: nameField } = useSelector(getNameField)
+  const accountName = useSelector(getUserName)
+  const profileImageField = useSelector(getProfileImageField)
   const userId = useSelector(getUserId) ?? {}
   const presavedProfilePic = useProfilePicture(
     userId as number,
     SquareSizes.SIZE_150_BY_150
   )
+  const userName = nameField ?? accountName
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
-  const profileImage = signOnProfileImage?.url ?? presavedProfilePic
+  const profileImage = profileImageField?.url ?? presavedProfilePic
 
   const Root = isMobile ? Drawer : Modal
   const onClose = useCallback(() => {

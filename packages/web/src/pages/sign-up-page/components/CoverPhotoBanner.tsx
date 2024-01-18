@@ -27,8 +27,8 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     profileImageUrl: propsProfileImageUrl,
     isEditing
   } = props
-  const { value: signOnCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: signOnProfileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhotoField = useSelector(getCoverPhotoField)
+  const profileImageField = useSelector(getProfileImageField)
 
   const userId = useSelector(getUserId) ?? {}
   const accountProfilePic = useProfilePicture(
@@ -44,9 +44,9 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
 
   const { color, spacing, cornerRadius } = useTheme()
   const coverPhoto =
-    propsCoverPhotoUrl ?? signOnCoverPhoto?.url ?? accountCoverPhoto
+    propsCoverPhotoUrl ?? coverPhotoField?.url ?? accountCoverPhoto
   const profileImage =
-    propsProfileImageUrl ?? signOnProfileImage?.url ?? accountProfilePic
+    propsProfileImageUrl ?? profileImageField?.url ?? accountProfilePic
   const hasImage = coverPhoto || profileImage
   return (
     <Box

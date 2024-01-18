@@ -50,6 +50,7 @@ export const SelectGenresPage = () => {
         initialValues={initialValues}
         onSubmit={handleSubmit}
         validationSchema={toFormikValidationSchema(selectGenresSchema)}
+        validateOnMount
       >
         {({ isValid }) => (
           <Page

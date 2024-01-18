@@ -118,6 +118,7 @@ export const HandleField = forwardRef(
         endIcon={
           !isWaitingForValidation && !error && handle ? IconCheck : undefined
         }
+        IconProps={{ size: 'l', color: 'default' }}
         onChange={(e) => {
           onChange?.(e)
           handleChange()

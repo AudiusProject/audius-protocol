@@ -21,6 +21,7 @@ services:
     extends:
       file: docker-compose.discovery.prod.yml
       service: es-indexer
+
   trpc:
     extends:
       file: docker-compose.discovery.prod.yml
@@ -30,6 +31,11 @@ services:
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider-elasticsearch
+
+  discovery-provider-openresty:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-openresty
 
   discovery-provider:
     extends:

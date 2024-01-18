@@ -26,7 +26,7 @@ import { useSelector } from 'utils/reducer'
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
 
-const { getUserId } = accountSelectors
+const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
@@ -90,26 +90,29 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     onCoverPhotoChange,
     size
   } = props
-  const { value: profileImageField } = useSelector(getProfileImageField) ?? {}
-  const { value: storedDisplayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
+  const profileImageField = useSelector(getProfileImageField)
+  const { value: displayNameField } = useSelector(getNameField)
+  const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
   const userId = useSelector(getUserId) ?? {}
-  const presavedProfilePic = useProfilePicture(
+  const accountProfilePic = useProfilePicture(
     userId as number,
     SquareSizes.SIZE_150_BY_150
   )
+  const accountHandle = useSelector(getUserHandle)
+  const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()
   const navigate = useNavigateToPage()
 
-  const displayName = formDisplayName ?? storedDisplayName
+  const displayName = formDisplayName || displayNameField || accountDisplayName
+  const handle = handleField || accountHandle
 
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile || size === 'small'
 
-  const savedProfileImage = profileImageField?.url ?? presavedProfilePic
+  const savedProfileImage = profileImageField?.url ?? accountProfilePic
 
   return (
     <Box w='100%'>

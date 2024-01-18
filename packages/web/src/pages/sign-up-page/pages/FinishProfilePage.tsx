@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import {
+  MAX_DISPLAY_NAME_LENGTH,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -78,26 +79,26 @@ export const FinishProfilePage = () => {
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
-  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
+  const savedCoverPhoto = useSelector(getCoverPhotoField)
+  const savedProfileImage = useSelector(getProfileImageField)
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
-    profileImage: savedProfileImage,
-    coverPhoto: savedCoverPhoto,
+    profileImage: savedProfileImage || {},
+    coverPhoto: savedCoverPhoto || {},
     displayName: savedDisplayName || ''
   }
 
   const setCoverPhoto = useCallback(
     (value: ImageFieldValue) => {
-      dispatch(setField('coverPhoto', { value }))
+      dispatch(setField('coverPhoto', value))
     },
     [dispatch]
   )
 
   const setProfileImage = useCallback(
     (value: ImageFieldValue) => {
-      dispatch(setField('profileImage', { value }))
+      dispatch(setField('profileImage', value))
     },
     [dispatch]
   )
@@ -112,9 +113,9 @@ export const FinishProfilePage = () => {
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
@@ -163,8 +164,7 @@ export const FinishProfilePage = () => {
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
-              required
-              maxLength={32}
+              maxLength={MAX_DISPLAY_NAME_LENGTH}
               onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l

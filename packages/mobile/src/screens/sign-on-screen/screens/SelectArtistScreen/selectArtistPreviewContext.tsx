@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo, useState } from 'react'
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ID } from '@audius/common'
 import {
@@ -6,6 +6,7 @@ import {
   useGetUserById,
   useGetUserTracksByHandle
 } from '@audius/common'
+import { Formik } from 'formik'
 import TrackPlayer, { RepeatMode, State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'
 
@@ -81,7 +82,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
   const togglePreview = useCallback(async () => {
     const { state } = await TrackPlayer.getPlaybackState()
-    if (state === State.Playing) {
+    if (state !== State.Paused) {
       setIsPlaying(false)
       await TrackPlayer.pause()
     } else if (state === State.Paused) {
@@ -101,9 +102,24 @@ export const SelectArtistsPreviewContextProvider = (props: {
     [hasPlayed, isPlaying, nowPlayingArtistId, playPreview, togglePreview]
   )
 
+  useEffect(() => {
+    const cleanup = async () => {
+      const { state } = await TrackPlayer.getPlaybackState()
+      if (state === State.Playing) {
+        await TrackPlayer.pause()
+      }
+    }
+    return () => {
+      cleanup()
+    }
+  }, [])
+
   return (
     <SelectArtistsPreviewContext.Provider value={context}>
-      {props.children}
+      {/* fake formik context to ensure useFormikContext works */}
+      <Formik initialValues={{}} onSubmit={() => {}}>
+        {props.children}
+      </Formik>
     </SelectArtistsPreviewContext.Provider>
   )
 }

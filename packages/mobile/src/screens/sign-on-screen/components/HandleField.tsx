@@ -1,46 +1,42 @@
 import {
-  pickHandlePageMessages as messages,
-  useIsWaitingForValidation
+  MAX_HANDLE_LENGTH,
+  pickHandlePageMessages as messages
 } from '@audius/common'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
-import { Flex, IconCheck, Text } from '@audius/harmony-native'
-import { TextField, type TextFieldProps } from 'app/components/fields'
+import { IconCheck } from '@audius/harmony-native'
+import type { HarmonyTextFieldProps } from 'app/components/fields'
+import { HarmonyTextField } from 'app/components/fields'
 
-export const HandleField = ({
-  name = 'handle',
-  ...other
-}: Partial<TextFieldProps>) => {
+export const HandleField = (props: Partial<HarmonyTextFieldProps>) => {
+  const { name = 'handle', ...other } = props
   const [{ value: handle }, { error }] = useField(name)
 
-  const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
+  const { isValid } = useFormikContext()
 
   const helperText =
     error && error !== 'handle required' && handle
       ? error
-      : handle && !isWaitingForValidation
+      : handle && isValid
       ? messages.handleAvailable
-      : null
+      : ''
 
   return (
-    <Flex gap='s'>
-      {/* TODO: harmonize this component */}
-      <TextField
-        name={name}
-        label={messages.handle}
-        noGutter
-        {...other}
-        onChangeText={() => {
-          handleChange()
-        }}
-        debouncedValidationMs={1000}
-        Icon={
-          !isWaitingForValidation && handle && !error ? IconCheck : undefined
-        }
-      />
-      {helperText ? (
-        <Text color={error ? 'danger' : 'default'}>{helperText}</Text>
-      ) : undefined}
-    </Flex>
+    <HarmonyTextField
+      name={name}
+      label={messages.handle}
+      helperText={helperText}
+      maxLength={MAX_HANDLE_LENGTH}
+      startAdornmentText='@'
+      placeholder={messages.handle}
+      transformValueOnChange={(value) => value.replace(/\s/g, '')}
+      debouncedValidationMs={1000}
+      endIcon={handle && isValid ? IconCheck : undefined}
+      IconProps={{ size: 'l', color: 'default' }}
+      autoCapitalize='none'
+      autoComplete='off'
+      clearErrorOnChange={false}
+      {...other}
+    />
   )
 }
