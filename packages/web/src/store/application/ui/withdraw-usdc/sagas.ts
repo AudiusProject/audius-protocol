@@ -197,7 +197,6 @@ function* doWithdrawUSDCCoinflow({
   yield* put(beginCoinflowWithdrawal())
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
-    // TODO
     destinationAddress: 'COINFLOW',
     amount: amount / 100,
     // Incoming balance is in cents, analytics values are in dollars

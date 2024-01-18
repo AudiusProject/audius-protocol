@@ -106,7 +106,7 @@ export const EnterTransferDetails = () => {
   const disableContinue =
     methodValue === WithdrawMethod.COINFLOW
       ? !!balance?.isZero()
-      : !!(!address || balance?.isZero())
+      : !address || !!balance?.isZero()
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
