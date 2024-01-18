@@ -9,15 +9,12 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useEffectOnce, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
-import { getStatus } from 'common/store/pages/signon/selectors'
-import { EditingStatus } from 'common/store/pages/signon/types'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
@@ -30,10 +27,13 @@ import {
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_LOADING_PAGE,
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE,
-  TRENDING_PAGE
+  TRENDING_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_ARTISTS_PAGE
 } from 'utils/route'
 
 const messages = {
@@ -48,7 +48,16 @@ type RootProps = {
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion } = useTheme()
-  const accountCreationStatus = useSelector(getStatus)
+
+  const hideCloseButton = useRouteMatch({
+    path: [
+      SIGN_UP_GENRES_PAGE,
+      SIGN_UP_ARTISTS_PAGE,
+      SIGN_UP_APP_CTA_PAGE,
+      SIGN_UP_LOADING_PAGE
+    ],
+    exact: true
+  })
 
   const collapsedDesktopPageMatch = useRouteMatch({
     path: [
@@ -67,7 +76,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
 
   return (
     <Flex w='100%' p='unit14' justifyContent='center'>
-      {accountCreationStatus !== EditingStatus.LOADING ? (
+      {!hideCloseButton ? (
         <Link
           to={TRENDING_PAGE}
           css={{
