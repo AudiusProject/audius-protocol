@@ -56,6 +56,7 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
       error={hasError}
       helperText={helperText ?? (hasError ? error : undefined)}
       onChange={(e) => {
+        propsOnChange?.(e)
         if (clearErrorOnChange) {
           setError(undefined)
         }
@@ -71,8 +72,6 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
         if (transformValueOnBlur) {
           e.nativeEvent.text = transformValueOnBlur(e.nativeEvent.text)
         }
-        field.onChange(name)(e.nativeEvent.text)
-        propsOnChange?.(e)
         field.onBlur(name)(e)
       }}
       {...other}

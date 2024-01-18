@@ -17,12 +17,13 @@ import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
-import { SignInPage } from 'pages/sign-in-page/SignInPage'
+import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
 import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { ScrollView } from 'pages/sign-up-page/components/layout'
 import {
+  SIGN_IN_CONFIRM_EMAIL_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
@@ -62,6 +63,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
   const collapsedDesktopPageMatch = useRouteMatch({
     path: [
       SIGN_IN_PAGE,
+      SIGN_IN_CONFIRM_EMAIL_PAGE,
       SIGN_UP_PAGE,
       SIGN_UP_EMAIL_PAGE,
       SIGN_UP_PASSWORD_PAGE,
