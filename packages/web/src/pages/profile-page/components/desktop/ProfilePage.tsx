@@ -14,8 +14,7 @@ import {
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
   useSelectTierInfo,
-  CreatePlaylistSource,
-  FeatureFlags
+  CreatePlaylistSource
 } from '@audius/common'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
@@ -35,7 +34,6 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
-import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
@@ -240,7 +238,6 @@ const ProfilePage = ({
   setNotificationSubscription,
   didChangeTabsFrom
 }: ProfilePageProps) => {
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const renderProfileCompletionCard = () => {
     return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
   }
@@ -310,7 +307,7 @@ const ProfilePage = ({
         }}
       />
     ))
-    if (isOwner && isEditAlbumsEnabled) {
+    if (isOwner) {
       albumCards.unshift(
         <UploadChip
           key='upload-chip'
