@@ -74,6 +74,7 @@ export const AddFunds = ({
             </Flex>
           </Box>
           <PaymentMethod
+            selectedVendor={selectedPurchaseVendor ?? null}
             selectedMethod={selectedPurchaseMethod}
             setSelectedMethod={setSelectedPurchaseMethod}
             setSelectedVendor={setSelectedPurchaseVendor}

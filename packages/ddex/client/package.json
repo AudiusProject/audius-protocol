@@ -21,6 +21,7 @@
     "@audius/harmony": "*",
     "@audius/sdk": "*",
     "@emotion/react": "11.11.1",
+    "@emotion/css": "11.11.2",
     "@emotion/styled": "11.11.0",
     "@headlessui/react": "1.7.17",
     "@heroicons/react": "1.0.6",
@@ -43,6 +44,7 @@
     "react-lottie": "1.2.3",
     "react-merge-refs": "2.1.1",
     "react-perfect-scrollbar": "1.5.8",
+    "react-spring": "8.0.27",
     "react-router-dom": "6.20.0",
     "react-use": "17.4.2",
     "react-use-measure": "2.1.1"

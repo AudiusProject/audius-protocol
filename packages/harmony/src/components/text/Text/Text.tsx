@@ -53,7 +53,7 @@ export const Text = forwardRef(
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
         ...('css' in variantConfig && variantConfig.css),
         ...(shadow && {
-          textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
+          textShadow: typography.shadow[shadow]
         }),
         textAlign
       })

@@ -1,15 +1,21 @@
-import { fillString, welcomeModalMessages as messages } from '@audius/common'
-import { css } from '@emotion/native'
-import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
-import { useSelector } from 'react-redux'
+import { useCallback } from 'react'
 
 import {
+  fillString,
+  welcomeModalMessages as messages,
+  settingsPageActions
+} from '@audius/common'
+import { css } from '@emotion/native'
+import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
+import { useDispatch, useSelector } from 'react-redux'
+
+import {
+  Button,
   Flex,
   IconArrowRight,
   IconCloudUpload,
   Text
 } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -19,12 +25,18 @@ import {
   ReadOnlyProfilePicture
 } from './AccountHeader'
 
+const { requestPushNotificationPermissions } = settingsPageActions
+
 export const WelcomeDrawer = () => {
   const { value: displayName } = useSelector(getNameField)
-
   const navigation = useNavigation()
-
   const { onClose: closeDrawer } = useDrawer('Welcome')
+  const dispatch = useDispatch()
+
+  const handleClose = useCallback(() => {
+    closeDrawer()
+    dispatch(requestPushNotificationPermissions())
+  }, [closeDrawer, dispatch])
 
   return (
     <NativeDrawer drawerName='Welcome'>
@@ -62,24 +74,20 @@ export const WelcomeDrawer = () => {
           </Text>
         </Flex>
         <Flex direction='column' gap='s'>
-          {/* TODO: replace with harmony button */}
+          <Button iconRight={IconArrowRight} onPress={handleClose} fullWidth>
+            {messages.startListening}
+          </Button>
           <Button
-            icon={IconArrowRight}
-            onPress={closeDrawer}
-            title={messages.startListening}
-            fullWidth
-          />
-          {/* TODO: replace with harmony button */}
-          <Button
-            icon={IconCloudUpload}
-            variant='secondaryAlt'
+            iconRight={IconCloudUpload}
+            variant='tertiary'
             onPress={() => {
-              closeDrawer()
+              handleClose()
               navigation.navigate('HomeStack', { screen: 'Upload' })
             }}
-            title={messages.upload}
             fullWidth
-          />
+          >
+            {messages.upload}
+          </Button>
         </Flex>
       </Flex>
     </NativeDrawer>

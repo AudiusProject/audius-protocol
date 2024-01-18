@@ -15,7 +15,7 @@ export type TextProps = NativeTextProps &
 
 export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const {
-    variant = 'body',
+    variant,
     size = 'm',
     strength = 'default',
     style: styleProp,
@@ -31,21 +31,19 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
       ? theme.color.secondary.secondary
       : theme.color.text[colorProp]
 
-  const variantStyles = variantStylesMap[variant]
+  const variantStyles = variant && variantStylesMap[variant]
   const t = theme.typography
 
   const textStyles: TextStyle = css({
-    fontSize: t.size[variantStyles.fontSize[size]],
-    lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
-    fontWeight: t.weight[variantStyles.fontWeight[strength]],
-    fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
-    ...('css' in variantStyles ? variantStyles.css : {}),
-    ...(color && { color }),
-    ...(shadow && {
-      textShadowColor: 'rgba(0, 0, 0, 0.50)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 5
+    ...(variantStyles && {
+      fontSize: t.size[variantStyles.fontSize[size]],
+      lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
+      fontWeight: t.weight[variantStyles.fontWeight[strength]],
+      fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
+      ...('css' in variantStyles ? variantStyles.css : {})
     }),
+    ...(color && { color }),
+    ...(shadow && t.shadow[shadow]),
     textAlign
   })
 

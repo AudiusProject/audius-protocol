@@ -37,6 +37,10 @@ export const typography = {
     '4xl': '68px',
     '5xl': '88px',
     '6xl': '120px'
+  },
+  shadow: {
+    emphasis:
+      '0px 1.34px 8px rgba(0, 0, 0, 0.20), 0px 6px 15px rgba(0, 0, 0, 0.10)'
   }
 }
 

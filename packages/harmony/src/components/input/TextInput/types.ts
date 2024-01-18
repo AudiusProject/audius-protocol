@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
-import type { IconComponent } from '../../icon'
+import type { IconComponent, IconProps } from '../../icon'
 
 export enum TextInputSize {
   SMALL = 'small',
@@ -85,6 +85,10 @@ export type TextInputProps = Omit<
    * Floating icon on the righthand side of the input
    */
   endIcon?: IconComponent
+  /**
+   * Override props to supply the start or end Icon
+   */
+  IconProps?: Partial<IconProps>
   /**
    * @hidden
    * Floating component on the righthand side of the input. Meant for internal use only.

@@ -8,10 +8,17 @@ export const passwordSchema = z
       .string()
       .regex(/\d/, { message: 'hasNumber' })
       .min(8, { message: 'minLength' })
+      .min(8, { message: 'notCommon' })
       .refine(isNotCommonPassword, { message: 'notCommon' }),
     confirmPassword: z.string()
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'matches',
-    path: ['confirmPassword']
-  })
+  .refine(
+    (data) => {
+      const { password, confirmPassword } = data
+      return password && confirmPassword && password === confirmPassword
+    },
+    {
+      message: 'matches',
+      path: ['confirmPassword']
+    }
+  )

@@ -60,6 +60,7 @@ export const SignUpWithMetaMaskButton = () => {
         variant='secondary'
         iconRight={IconMetamask}
         isStaticIcon
+        fullWidth
         onClick={handleClick}
       >
         {messages.signUpMetamask}

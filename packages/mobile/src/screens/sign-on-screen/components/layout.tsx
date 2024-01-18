@@ -1,12 +1,21 @@
 import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
+import { useFormikContext } from 'formik'
 import { Dimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
-import { Flex, Paper, Text } from '@audius/harmony-native'
-import { Button, type ButtonProps } from 'app/components/core'
+import type {
+  FlexProps,
+  BoxProps,
+  PaperProps,
+  ButtonProps
+} from '@audius/harmony-native'
+import { Button, Flex, Paper, Text } from '@audius/harmony-native'
+
+const messages = {
+  continue: 'Continue'
+}
 
 type PageProps = FlexProps & {
   centered?: boolean
@@ -53,12 +62,12 @@ type PageFooterProps = {
   postfix?: ReactNode
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
-  onSubmit?: () => void
 } & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, onSubmit, ...other } = props
+  const { prefix, postfix, buttonProps, ...other } = props
   const insets = useSafeAreaInsets()
+  const { handleSubmit, dirty, isValid } = useFormikContext() ?? {}
 
   return (
     <Flex
@@ -88,10 +97,12 @@ export const PageFooter = (props: PageFooterProps) => {
       >
         <Button
           fullWidth
+          disabled={!dirty || !isValid}
+          onPress={() => handleSubmit?.()}
           {...buttonProps}
-          title='Continue'
-          onPress={() => onSubmit?.()}
-        />
+        >
+          {messages.continue}
+        </Button>
         {/* postfixes live insde the paper */}
         {postfix}
       </Paper>

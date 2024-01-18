@@ -10,6 +10,16 @@ export const signInPageMessages = {
   forgotPassword: 'Forgot password?'
 }
 
+export const confirmEmailMessages = {
+  title: 'Confirm Email',
+  description: 'Enter the verification code sent to your email.',
+  otpLabel: 'Code',
+  otpPlaceholder: '123 456',
+  noEmailNotice: "Didn't get an email?",
+  resendCode: 'Resend Code',
+  resentToast: 'Verification code resent.'
+}
+
 export const createEmailPageMessages = {
   title: 'Sign Up For Audius',
   emailLabel: 'Email',
