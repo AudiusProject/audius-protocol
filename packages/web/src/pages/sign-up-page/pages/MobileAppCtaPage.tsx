@@ -39,7 +39,7 @@ export const MobileAppCtaPage = () => {
   }, [navigate])
 
   return (
-    <Page gap='3xl'>
+    <Page gap='3xl' centered>
       <Heading heading={messages.heading} description={messages.description} />
 
       <Flex direction='column' alignItems='center' gap='2xl'>
@@ -54,7 +54,7 @@ export const MobileAppCtaPage = () => {
         />
         <Hint icon={IconInfo}>{messages.qrInstruction}</Hint>
       </Flex>
-      <PageFooter buttonProps={{ onClick: handleContinue }} />
+      <PageFooter buttonProps={{ onClick: handleContinue }} centered />
     </Page>
   )
 }
