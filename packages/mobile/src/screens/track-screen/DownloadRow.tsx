@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux'
 
 import { Flex, Text, IconReceive, Box } from '@audius/harmony-native'
 import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/PlainButton'
-import { spacing } from 'app/styles/spacing'
 
 const { getTrack } = cacheTracksSelectors
 
