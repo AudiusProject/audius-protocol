@@ -56,30 +56,37 @@ export const SelectGenresPage = () => {
             css={{ paddingTop: 0 }}
             transition='horizontal'
           >
-            <Heading
-              heading={messages.header}
-              description={messages.description}
-              alignItems={!isMobile ? 'center' : undefined}
-            />
             <Flex
-              justifyContent={isMobile ? 'flex-start' : 'center'}
-              alignItems='flex-start'
-              gap='s'
-              wrap='wrap'
+              direction='column'
+              gap='2xl'
+              mt={isMobile ? '2xl' : '3xl'}
+              css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
-              {selectableGenres.map((genre) => {
-                const { label, value } = genre
-                return (
-                  <SelectablePillField
-                    key={label}
-                    name='genres'
-                    label={label}
-                    value={value}
-                    size='large'
-                    type='checkbox'
-                  />
-                )
-              })}
+              <Heading
+                heading={messages.header}
+                description={messages.description}
+                alignItems={!isMobile ? 'center' : undefined}
+              />
+              <Flex
+                justifyContent={isMobile ? 'flex-start' : 'center'}
+                alignItems='flex-start'
+                gap='s'
+                wrap='wrap'
+              >
+                {selectableGenres.map((genre) => {
+                  const { label, value } = genre
+                  return (
+                    <SelectablePillField
+                      key={label}
+                      name='genres'
+                      label={label}
+                      value={value}
+                      size='large'
+                      type='checkbox'
+                    />
+                  )
+                })}
+              </Flex>
             </Flex>
             <PageFooter
               centered

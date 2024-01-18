@@ -108,8 +108,8 @@ export const Page = (props: PageProps) => {
           {...layoutProps}
           {...other}
           alignSelf='center'
-          css={!isMobile && { maxWidth: 610 }}
           style={styles}
+          flex={1}
         >
           {childrenArray}
         </AnimatedFlex>
@@ -208,10 +208,9 @@ export const PageFooter = (props: PageFooterProps) => {
       backgroundColor='white'
       css={{
         overflow: 'unset',
-        position: sticky ? 'sticky' : 'absolute',
-        bottom: 0,
-        left: 0,
+        flexShrink: 0,
         zIndex: 1,
+        ...(sticky && { position: 'sticky', bottom: 0 }),
         borderBottomRightRadius: 0,
         borderBottomLeftRadius: 0
       }}

@@ -150,7 +150,7 @@ export const FinishProfilePage = () => {
             description={messages.description}
             centered={!isMobile}
           />
-          <Paper direction='column'>
+          <Paper direction='column' style={{ flexShrink: 0 }}>
             <AccountHeader
               mode='editing'
               formDisplayName={values.displayName}
@@ -174,6 +174,7 @@ export const FinishProfilePage = () => {
           {isMobile ? null : <UploadProfilePhotoHelperText />}
           <PageFooter
             centered
+            sticky
             buttonProps={{ disabled: !isValid }}
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={
