@@ -130,7 +130,6 @@ export const SelectArtistsPage = () => {
               mh={isMobile ? undefined : '5xl'}
               mb={isMobile ? undefined : 'xl'}
               style={styles}
-              css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Flex
                 direction='column'
