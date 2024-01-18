@@ -9,11 +9,11 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     tagline: "",
     url: "https://docs.audius.org",
     baseUrl: "/",
-    onBrokenLinks: "warn",
-    onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
     organizationName: "AudiusProject", // Usually your GitHub org/user name.
     projectName: "docs.audius.org", // Usually your repo name.
+    onBrokenLinks: 'throw',
+    onBrokenMarkdownLinks: 'throw',
 
     presets: [
       [

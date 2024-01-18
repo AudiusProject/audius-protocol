@@ -22,7 +22,7 @@ audius-cli set-config --required discovery-provider
 
 #### Creator Node
 
-There are four required creator node environment variables, available in the creator node section [here](setup.md#creator-node).
+There are four required creator node environment variables, available in the creator node section [here](/token/running-a-node/setup/installation#creator-node).
 
 The full list of variables and explanations can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/config.js). Generally node operators will not need to modify any other environment variables.
 
@@ -40,7 +40,7 @@ value : <db url>
 
 #### Discovery Provider
 
-There are two required discovery provider environment variables, available in the discovery provider section [here](setup.md#discovery-provider).
+There are two required discovery provider environment variables, available in the discovery provider section [here](/token/running-a-node/setup/installation#discovery-provider).
 
 The full list of variables and explanations can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/default_config.ini). Generally node operators will not need to modify any other environment variables.
 
