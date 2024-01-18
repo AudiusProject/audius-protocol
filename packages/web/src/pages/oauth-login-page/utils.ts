@@ -1,6 +1,7 @@
 import {
   SquareSizes,
   User,
+  decodeHashId,
   encodeHashId,
   getErrorMessage
 } from '@audius/common'
@@ -226,12 +227,21 @@ export const getIsAppAuthorized = async ({
   )
   return foundIndex !== undefined && foundIndex > -1
 }
-export type WriteOnceTx = 'connect_dashboard_wallet' // | ...
+export type WriteOnceTx =
+  | 'connect_dashboard_wallet'
+  | 'disconnect_dashboard_wallet'
 
 export type ConnectDashboardWalletParams = {
   wallet: string
 }
-export type WriteOnceParams = ConnectDashboardWalletParams // | ...
+
+export type DisconnectDashboardWalletParams = {
+  wallet: string
+}
+
+export type WriteOnceParams =
+  | ConnectDashboardWalletParams
+  | DisconnectDashboardWalletParams
 
 export const validateWriteOnceParams = ({
   tx,
@@ -248,6 +258,14 @@ export const validateWriteOnceParams = ({
     if (!willUsePostMessage) {
       error = messages.connectWalletNoPostMessageError
     }
+    if (!rawParams.wallet) {
+      error = messages.writeOnceParamsError
+      return { error, txParams }
+    }
+    txParams = {
+      wallet: rawParams.wallet
+    }
+  } else if (tx === 'disconnect_dashboard_wallet') {
     if (!rawParams.wallet) {
       error = messages.writeOnceParamsError
       return { error, txParams }
@@ -353,6 +371,73 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   } catch (e: unknown) {
     const error = getErrorMessage(e)
 
+    onError({
+      isUserError: false,
+      errorMessage: messages.miscError,
+      error: e instanceof Error ? e : new Error(error)
+    })
+    return false
+  }
+  return true
+}
+
+export const getIsUserConnectedToDashboardWallet = async ({
+  userId,
+  wallet
+}: {
+  userId: number
+  wallet: string
+}) => {
+  const sdk = await audiusSdk()
+  const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
+    wallets: [wallet]
+  })
+  const dashboardWalletUser = res.data?.[0].user
+  if (!dashboardWalletUser) {
+    return false
+  }
+  if (userId !== decodeHashId(dashboardWalletUser.id)) {
+    return false
+  }
+  return true
+}
+
+export const handleAuthorizeDisconnectDashboardWallet = async ({
+  account,
+  txParams,
+  onError
+}: {
+  onError: ({
+    isUserError,
+    errorMessage,
+    error
+  }: {
+    isUserError: boolean
+    errorMessage: string
+    error?: Error
+  }) => void
+  account: User
+  txParams: DisconnectDashboardWalletParams
+}) => {
+  const sdk = await audiusSdk()
+  try {
+    const isCorrectUser = getIsUserConnectedToDashboardWallet({
+      userId: account.user_id,
+      wallet: txParams.wallet
+    })
+    if (!isCorrectUser) {
+      onError({
+        isUserError: true,
+        errorMessage: messages.disconnectDashboardWalletWrongUserError
+      })
+      return
+    }
+    await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
+      wallet: txParams.wallet,
+      userId: encodeHashId(account.user_id)
+    })
+  } catch (e: unknown) {
+    const error = getErrorMessage(e)
     onError({
       isUserError: false,
       errorMessage: messages.miscError,
