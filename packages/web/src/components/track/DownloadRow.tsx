@@ -4,17 +4,23 @@ import {
   CommonState,
   ID,
   cacheTracksSelectors,
-  DownloadQuality
+  DownloadQuality,
+  useDownloadableContentAccess,
+  toastActions
 } from '@audius/common'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
-import { shallowEqual, useSelector } from 'react-redux'
+import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
+import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'utils/clientUtil'
+const { toast } = toastActions
 
 const { getTrack } = cacheTracksSelectors
 
 const messages = {
-  fullTrack: 'Full Track'
+  fullTrack: 'Full Track',
+  followToDownload: 'Must follow artist to download.'
 }
 
 type DownloadRowProps = {
@@ -29,16 +35,40 @@ export const DownloadRow = ({
   onDownload,
   index
 }: DownloadRowProps) => {
+  const isMobile = useIsMobile()
+  const dispatch = useDispatch()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+  const { shouldDisplayFollowDownloadLocked } = useDownloadableContentAccess({
+    trackId
+  })
 
   const handleClick = useCallback(() => {
-    if (track) {
+    if (isMobile && shouldDisplayFollowDownloadLocked) {
+      // On mobile, show a toast instead of a tooltip
+      dispatch(toast({ content: messages.followToDownload }))
+    } else if (track && track.access.download) {
       onDownload(trackId, track.stem_of?.category, trackId)
     }
-  }, [onDownload, track, trackId])
+  }, [
+    dispatch,
+    isMobile,
+    onDownload,
+    shouldDisplayFollowDownloadLocked,
+    track,
+    trackId
+  ])
+
+  const downloadButton = () => (
+    <PlainButton
+      onClick={handleClick}
+      disabled={shouldDisplayFollowDownloadLocked}
+    >
+      <Icon icon={IconReceive} size='small' />
+    </PlainButton>
+  )
 
   return (
     <Flex
@@ -54,16 +84,25 @@ export const DownloadRow = ({
           <Text variant='body' strength='default'>
             {track?.stem_of?.category ?? messages.fullTrack}
           </Text>
-          <Text color='subdued' size='xs'>
+          <Text variant='body' color='subdued'>
             {track?.orig_filename}
           </Text>
         </Flex>
       </Flex>
       <Flex gap='2xl'>
         <Text>size</Text>
-        <PlainButton onClick={handleClick}>
-          <Icon icon={IconReceive} size='small' />
-        </PlainButton>
+        {shouldDisplayFollowDownloadLocked ? (
+          <Tooltip
+            text={messages.followToDownload}
+            placement='top'
+            mouseEnterDelay={0}
+          >
+            {/* Need wrapping flex for the tooltip to appear for some reason */}
+            <Flex>{downloadButton()}</Flex>
+          </Tooltip>
+        ) : (
+          downloadButton()
+        )}
       </Flex>
     </Flex>
   )

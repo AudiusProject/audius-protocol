@@ -9,7 +9,8 @@ import {
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
-  isContentTipGated
+  isContentTipGated,
+  isContentUSDCPurchaseGated
 } from 'models/Track'
 import { getAccountUser } from 'store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
@@ -158,4 +159,35 @@ export const useLockedContent = () => {
   })
 
   return { id, track, owner }
+}
+
+export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
+  const track = useSelector((state: CommonState) =>
+    getTrack(state, { id: trackId })
+  )
+  // Only display downloadable-content-specific gated UI if the track is not
+  // stream-gated
+  const isDownloadGatedOnly =
+    !track?.is_stream_gated && track?.is_download_gated
+  const shouldDisplayFollowDownloadLocked =
+    isDownloadGatedOnly &&
+    isContentFollowGated(track?.download_conditions) &&
+    track?.access?.download === false
+  const isOnlyDownloadableContentPurchaseGated =
+    isDownloadGatedOnly &&
+    isContentUSDCPurchaseGated(track?.download_conditions)
+  const price = isContentUSDCPurchaseGated(track?.download_conditions)
+    ? track?.download_conditions.usdc_purchase.price
+    : undefined
+
+  return {
+    price,
+    shouldDisplayPremiumDownloadLocked:
+      isOnlyDownloadableContentPurchaseGated &&
+      track?.access?.download === false,
+    shouldDisplayPremiumDownloadUnlocked:
+      isOnlyDownloadableContentPurchaseGated &&
+      track?.access?.download === true,
+    shouldDisplayFollowDownloadLocked
+  }
 }
