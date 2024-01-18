@@ -4,6 +4,7 @@ import { PurchaseVendor } from 'models/PurchaseContent'
 import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
 
 import { BuyUSDCStage, PurchaseInfo, BuyUSDCError } from './types'
+import { Status } from 'models/Status'
 
 type StripeSessionStatus =
   | 'initialized'
@@ -17,21 +18,19 @@ type OnSuccess = {
   message?: string
 }
 
-type RecoveryStatus = 'idle' | 'in-progress' | 'success' | 'failure'
-
 type BuyUSDCState = {
   stage: BuyUSDCStage
   error?: BuyUSDCError
   vendor?: PurchaseVendor
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
-  recoveryStatus: RecoveryStatus
+  recoveryStatus: Status
 }
 
 const initialState: BuyUSDCState = {
   vendor: undefined,
   stage: BuyUSDCStage.START,
-  recoveryStatus: 'idle'
+  recoveryStatus: Status.IDLE
 }
 
 const slice = createSlice({
@@ -86,7 +85,7 @@ const slice = createSlice({
     },
     recoveryStatusChanged: (
       state,
-      action: PayloadAction<{ status: RecoveryStatus }>
+      action: PayloadAction<{ status: Status }>
     ) => {
       state.recoveryStatus = action.payload.status
     },

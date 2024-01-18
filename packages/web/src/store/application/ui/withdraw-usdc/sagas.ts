@@ -14,7 +14,9 @@ import {
   Name,
   WithdrawUSDCTransferEventFields,
   withdrawUSDCModalActions,
-  WithdrawUSDCModalPages
+  WithdrawUSDCModalPages,
+  WithdrawMethod,
+  buyUSDCActions
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -28,7 +30,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { getLibs } from 'services/audius-libs'
 import {
@@ -43,8 +45,15 @@ import {
   ROOT_ACCOUNT_SIZE
 } from 'services/solana/solana'
 
-const { beginWithdrawUSDC, withdrawUSDCFailed, withdrawUSDCSucceeded } =
-  withdrawUSDCActions
+const {
+  beginWithdrawUSDC,
+  beginCoinflowWithdrawal,
+  coinflowWithdrawalReady,
+  coinflowWithdrawalCanceled,
+  coinflowWithdrawalSucceeded,
+  withdrawUSDCFailed,
+  withdrawUSDCSucceeded
+} = withdrawUSDCActions
 const { set: setWithdrawUSDCModalData } = withdrawUSDCModalActions
 const { getFeePayer } = solanaSelectors
 
@@ -177,12 +186,206 @@ function* createDestinationTokenAccount({
   )
 }
 
-/**
- * Handles all logic for withdrawing USDC to a given destination. Expects amount in cents.
- */
-function* doWithdrawUSDC({
-  payload: { amount, currentBalance, destinationAddress }
-}: ReturnType<typeof beginWithdrawUSDC>) {
+function* doWithdrawUSDCCoinflow({
+  amount,
+  currentBalance
+}: Pick<
+  ReturnType<typeof beginWithdrawUSDC>['payload'],
+  'amount' | 'currentBalance'
+>) {
+  const { track, make } = yield* getContext('analytics')
+  yield* put(beginCoinflowWithdrawal())
+
+  const analyticsFields: WithdrawUSDCTransferEventFields = {
+    destinationAddress: 'COINFLOW',
+    amount: amount / 100,
+    // Incoming balance is in cents, analytics values are in dollars
+    currentBalance: currentBalance / 100
+  }
+  try {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.WITHDRAW_USDC_REQUESTED,
+        ...analyticsFields
+      })
+    )
+
+    const libs = yield* call(getLibs)
+    if (!libs.solanaWeb3Manager) {
+      throw new Error('Failed to get solana web3 manager')
+    }
+    const rootSolanaAccount = yield* call(getRootSolanaAccount)
+
+    const destinationAddress = rootSolanaAccount.publicKey.toString()
+
+    if (!destinationAddress || !amount) {
+      throw new Error('Please enter a valid destination address and amount')
+    }
+
+    let withdrawalAmount = amount
+    const feePayer = yield* select(getFeePayer)
+    if (feePayer === null) {
+      throw new Error('Missing Fee Payer.')
+    }
+    const feePayerPubkey = new PublicKey(feePayer)
+    const connection = libs.solanaWeb3Manager.connection
+
+    const destinationPubkey = new PublicKey(destinationAddress)
+    let destinationTokenAccountAddress: string
+
+    // Check to see if the address is already an associated token account
+    const isTokenAccountAddress = yield* call(isTokenAccount, {
+      accountAddress: destinationAddress as SolanaWalletAddress,
+      mint: 'usdc'
+    })
+
+    if (isTokenAccountAddress) {
+      // If the destination is already a token account, we can transfer directly
+      destinationTokenAccountAddress = destinationAddress
+    } else {
+      // If it's not, derive the associated token account
+      const destinationWallet = destinationPubkey
+      const destinationTokenAccount = yield* call(
+        getAssociatedTokenAddressSync,
+        libs.solanaWeb3Manager.mints.usdc,
+        destinationWallet
+      )
+      destinationTokenAccountAddress = destinationTokenAccount.toBase58()
+
+      // Ensure the derived token account exists
+      const tokenAccountInfo = yield* call(getTokenAccountInfo, {
+        tokenAccount: destinationTokenAccount,
+        mint: 'usdc'
+      })
+
+      // If not, then create an associated token account
+      if (tokenAccountInfo === null) {
+        console.debug(
+          'Withdraw USDC - destination associated token account does not exist. Creating...'
+        )
+        yield* call(createDestinationTokenAccount, {
+          destinationWallet,
+          destinationTokenAccount,
+          feePayer: feePayerPubkey
+        })
+
+        // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
+        // to still withdraw the amount we specified, and if not, withdraw as much as we can.
+        const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+        const accountInfo = yield* call(
+          getUserbankAccountInfo,
+          audiusBackendInstance,
+          { mint: 'usdc' }
+        )
+        const latestBalance = accountInfo?.amount ?? BigInt('0')
+        withdrawalAmount = Math.min(
+          withdrawalAmount,
+          formatUSDCWeiToFloorCentsNumber(
+            new BN(latestBalance.toString()) as BNUSDC
+          )
+        )
+      }
+    }
+
+    // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
+    const withdrawalAmountWei = new BN(withdrawalAmount)
+      .mul(new BN(10 ** TOKEN_LISTING_MAP.USDC.decimals))
+      .div(new BN(100))
+    const usdcUserBank = yield* call(getUSDCUserBank)
+    const transferInstructions = yield* call(
+      [
+        libs.solanaWeb3Manager,
+        libs.solanaWeb3Manager.createTransferInstructionsFromCurrentUser
+      ],
+      {
+        amount: withdrawalAmountWei,
+        feePayerKey: feePayerPubkey,
+        senderSolanaAddress: usdcUserBank,
+        recipientSolanaAddress: destinationTokenAccountAddress,
+        mint: 'usdc'
+      }
+    )
+
+    // Relay the withdrawal transfer so that the user doesn't need SOL if the account already exists
+    const { blockhash, lastValidBlockHeight } = yield* call([
+      connection,
+      connection.getLatestBlockhash
+    ])
+    const transferTransaction = new Transaction({
+      blockhash,
+      lastValidBlockHeight,
+      feePayer: feePayerPubkey
+    })
+    transferTransaction.add(...transferInstructions)
+    const {
+      res: transactionSignature,
+      error,
+      errorCode
+    } = yield* call(relayTransaction, audiusBackendInstance, {
+      transaction: transferTransaction,
+      skipPreflight: true
+    })
+
+    if (!transactionSignature || error) {
+      throw new Error(`Failed to transfer: [${errorCode}] ${error}`)
+    }
+    console.debug('Withdraw USDC - successfully transferred USDC.', {
+      transactionSignature
+    })
+    yield* call(
+      [libs.solanaWeb3Manager.connection, 'confirmTransaction'],
+      transactionSignature,
+      'finalized'
+    )
+    yield* put(coinflowWithdrawalReady())
+    const result = yield* race({
+      succeeded: take(coinflowWithdrawalSucceeded),
+      canceled: take(coinflowWithdrawalCanceled)
+    })
+
+    if (result.succeeded) {
+      yield* put(withdrawUSDCSucceeded({}))
+      yield* put(
+        setWithdrawUSDCModalData({
+          page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL
+        })
+      )
+      yield* call(
+        track,
+        make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
+      )
+    } else {
+      yield* put(buyUSDCActions.startRecoveryIfNecessary())
+    }
+  } catch (e: unknown) {
+    const error = e as Error
+    console.error('Withdraw USDC failed', e)
+    const reportToSentry = yield* getContext('reportToSentry')
+    yield* put(withdrawUSDCFailed({ error: e as Error }))
+
+    yield* call(
+      track,
+      make({ eventName: Name.WITHDRAW_USDC_FAILURE, ...analyticsFields, error })
+    )
+
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error
+    })
+  }
+}
+
+function* doWithdrawUSDCManualTransfer({
+  amount,
+  currentBalance,
+  destinationAddress
+}: Pick<
+  ReturnType<typeof beginWithdrawUSDC>['payload'],
+  'amount' | 'currentBalance' | 'destinationAddress'
+>) {
   const { track, make } = yield* getContext('analytics')
   const analyticsFields: WithdrawUSDCTransferEventFields = {
     destinationAddress,
@@ -344,6 +547,26 @@ function* doWithdrawUSDC({
       level: ErrorLevel.Error,
       error: e as Error
     })
+  }
+}
+
+/**
+ * Handles all logic for withdrawing USDC to a given destination. Expects amount in cents.
+ */
+function* doWithdrawUSDC({
+  payload: { amount, method, currentBalance, destinationAddress }
+}: ReturnType<typeof beginWithdrawUSDC>) {
+  switch (method) {
+    case WithdrawMethod.COINFLOW:
+      yield* call(doWithdrawUSDCCoinflow, { amount, currentBalance })
+      break
+    case WithdrawMethod.MANUAL_TRANSFER:
+      yield* call(doWithdrawUSDCManualTransfer, {
+        amount,
+        currentBalance,
+        destinationAddress
+      })
+      break
   }
 }
 
