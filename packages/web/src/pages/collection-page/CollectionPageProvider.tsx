@@ -307,12 +307,11 @@ class CollectionPage extends Component<
       }
     }
 
-    // check if a track has been added to collection
-    if (
-      metadata &&
-      prevMetadata &&
-      metadata.track_count > prevMetadata.track_count
-    ) {
+    const currentTrackCount = this.props.trackCount
+    const previousTrackCount = prevProps.trackCount
+
+    // Refetch tracks if a track has been added to collection
+    if (currentTrackCount > previousTrackCount) {
       this.props.fetchTracks()
     }
 
@@ -808,6 +807,8 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       tracks: getTracksLineup(state),
+      trackCount: (getCollection(state) as Collection)?.playlist_contents
+        .track_ids.length,
       collectionUid: getCollectionUid(state) || '',
       collection: getCollection(state) as Collection,
       collectionPermalink: getCollectionPermalink(state),

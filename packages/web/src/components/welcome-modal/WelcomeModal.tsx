@@ -27,7 +27,7 @@ import { UPLOAD_PAGE } from 'utils/route'
 export const WelcomeModal = () => {
   const { isMobile } = useMedia()
   const { value: userName } = useSelector(getNameField)
-  const { value: profileImage } = { ...useSelector(getProfileImageField) }
+  const profileImage = useSelector(getProfileImageField)
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
   const Root = isMobile ? Drawer : Modal

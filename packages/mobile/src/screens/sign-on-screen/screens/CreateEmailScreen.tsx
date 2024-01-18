@@ -18,8 +18,14 @@ import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Text } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
+import {
+  Button,
+  Divider,
+  Flex,
+  IconArrowRight,
+  Text,
+  TextLink
+} from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { resetOAuthState } from 'app/store/oauth/actions'
 
@@ -27,7 +33,6 @@ import { NewEmailField } from '../components/NewEmailField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading } from '../components/layout'
-import { Divider } from '../components/temp-harmony/Divider'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 
@@ -113,7 +118,6 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             <NewEmailField
               name='email'
               label={messages.emailLabel}
-              noGutter
               onChangeScreen={onChangeScreen}
             />
             <Divider>
@@ -121,7 +125,6 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-
             <SocialMediaSignUpButtons
               onError={handleErrorSocialMediaLogin}
               onStart={handleStartSocialMediaLogin}
@@ -131,16 +134,20 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
           </Flex>
           <Flex direction='column' gap='l'>
             <Button
-              title={messages.signUp}
               onPress={() => handleSubmit()}
               fullWidth
-            />
+              iconRight={IconArrowRight}
+            >
+              {messages.signUp}
+            </Button>
             <Text variant='body' size='m' textAlign='center'>
               {messages.haveAccount}{' '}
-              {/* TODO: Need TextLink equivalent for native harmony? */}
-              <Text onPress={() => onChangeScreen('sign-in')} color='accent'>
+              <TextLink
+                variant='visible'
+                onPress={() => onChangeScreen('sign-in')}
+              >
                 {messages.signIn}
-              </Text>
+              </TextLink>
             </Text>
           </Flex>
         </>

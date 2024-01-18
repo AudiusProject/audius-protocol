@@ -7,7 +7,7 @@ import {
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import { isEmpty } from 'lodash'
-import { Pressable, type ImageURISource } from 'react-native'
+import { Pressable, type ImageURISource, Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -52,7 +52,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   return (
     // 2 zIndex is to appear above the <Page> component
-    <Flex style={{ zIndex: 2 }}>
+    <Flex style={{ zIndex: 2 }} w='100%'>
       <CoverPhoto
         onSelectCoverPhoto={onSelectCoverPhoto}
         profilePicture={profilePicture}
@@ -65,7 +65,10 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         style={css({
           position: 'absolute',
           left: spacing.unit4,
-          top: spacing.unit10
+          top: spacing.unit10,
+          // Need to use explicit width to ensure text doesn't overflow
+          // unit16 covers the 4xunit4 spacings on left and right
+          width: Dimensions.get('window').width - spacing.unit16
         })}
       >
         <ProfilePicture
@@ -85,9 +88,9 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
 export const ReadOnlyAccountHeader = () => {
   const { value: handle } = useSelector(getHandleField)
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
   const { value: displayName } = useSelector(getNameField)
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   const isVerified = useSelector(getIsVerified)
 
   return (
@@ -157,8 +160,8 @@ const CoverPhoto = (props: CoverPhotoProps) => {
 }
 
 export const ReadOnlyCoverPhotoBanner = () => {
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   return (
     <CoverPhoto
       coverPhoto={coverPhoto as ImageURISource}
@@ -199,7 +202,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
 }
 
 export const ReadOnlyProfilePicture = () => {
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   return <ProfilePicture profilePicture={profileImage as ImageURISource} />
 }
 
@@ -214,19 +217,23 @@ const AccountDetails = (props: AccountDetailsProps) => {
   const { displayName, handle, isVerified, emphasis } = props
   const shadow = emphasis ? 'emphasis' : undefined
   return (
-    <Flex>
+    <Flex flex={1}>
       <Text
         variant='heading'
         size='s'
         strength='strong'
         color='staticWhite'
+        ellipsizeMode='tail'
+        numberOfLines={1}
+        style={{ flex: 1, flexShrink: 1 }}
         shadow={shadow}
       >
         {displayName || ' '}
       </Text>
-      <Flex>
+      <Flex h={50}>
         <Text variant='title' size='s' color='staticWhite' shadow={shadow}>
-          @{handle}
+          {' '}
+          @{handle}{' '}
         </Text>
         {isVerified ? <IconVerified size='s' /> : null}
       </Flex>

@@ -212,7 +212,8 @@ export const GiantTrackTile = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
-  const hasDownloadableAssets = track?.is_downloadable || track?._stems
+  const hasDownloadableAssets =
+    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)

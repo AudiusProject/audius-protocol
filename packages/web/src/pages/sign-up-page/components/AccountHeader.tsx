@@ -84,7 +84,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     onCoverPhotoChange,
     size
   } = props
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const profileImage = useSelector(getProfileImageField)
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)

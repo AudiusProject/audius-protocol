@@ -1,17 +1,14 @@
-import type { TextFieldProps } from './TextField'
-import { TextField } from './TextField'
+import { useField } from 'formik'
 
-export type PasswordFieldProps = TextFieldProps
+import type { PasswordInputProps } from '@audius/harmony-native'
+import { PasswordInput } from '@audius/harmony-native'
+
+export type PasswordFieldProps = PasswordInputProps & { name: string }
 
 export const PasswordField = (props: PasswordFieldProps) => {
+  const { name, ...other } = props
+  const [{ value, onChange }] = useField(name)
   return (
-    <TextField
-      autoComplete='off'
-      autoCorrect={false}
-      autoCapitalize='none'
-      textContentType='password'
-      secureTextEntry
-      {...props}
-    />
+    <PasswordInput value={value} onChangeText={onChange(name)} {...other} />
   )
 }

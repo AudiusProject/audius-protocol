@@ -33,11 +33,21 @@ const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
   )
 }
 
+const getWriteOncePermissionTitle = (tx: WriteOnceTx | null) => {
+  switch (tx) {
+    case 'connect_dashboard_wallet':
+      return messages.connectDashboardWalletAccess
+    case 'disconnect_dashboard_wallet':
+      return messages.disconnectDashboardWalletAccess
+  }
+}
+
 export const PermissionsSection = ({
   scope,
   isLoggedIn,
   userEmail,
-  txParams
+  txParams,
+  tx
 }: {
   scope: string | string[] | null
   tx: WriteOnceTx | null
@@ -79,7 +89,7 @@ export const PermissionsSection = ({
               {scope === 'write'
                 ? messages.writeAccountAccess
                 : scope === 'write_once'
-                ? messages.connectDashboardWalletAccess
+                ? getWriteOncePermissionTitle(tx)
                 : messages.readOnlyAccountAccess}
             </PermissionText>
             {scope === 'write' ? (
@@ -91,7 +101,7 @@ export const PermissionsSection = ({
             ) : null}
             {scope === 'write_once' ? (
               <PermissionDetail>
-                {txParams?.wallet.slice(0, 4)}...{txParams?.wallet.slice(-4)}
+                {txParams?.wallet.slice(0, 6)}...{txParams?.wallet.slice(-4)}
               </PermissionDetail>
             ) : null}
           </div>

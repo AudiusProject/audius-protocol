@@ -15,16 +15,21 @@ import { SignOnScreen } from './screens/SignOnScreen'
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
 
-export const SignOnStack = () => {
+type SignOnStackProps = {
+  isSplashScreenDismissed: boolean
+}
+
+export const SignOnStack = (props: SignOnStackProps) => {
+  const { isSplashScreenDismissed } = props
   const screenOptions = useScreenOptions(screenOptionsOverrides)
+
   return (
     <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
-      <Stack.Screen
-        name='SignOn'
-        component={SignOnScreen}
-        options={{ headerShown: false }}
-        initialParams={{ screen: 'sign-up' }}
-      />
+      <Stack.Screen name='SignOn' options={{ headerShown: false }}>
+        {() => (
+          <SignOnScreen isSplashScreenDismissed={isSplashScreenDismissed} />
+        )}
+      </Stack.Screen>
       <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
       <Stack.Screen name='PickHandle' component={PickHandleScreen} />
       <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />

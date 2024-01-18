@@ -5,7 +5,7 @@ import { uuid } from 'utils/uid'
 import { registerToast, dismissToast, toast } from './slice'
 import { ToastAction } from './types'
 
-const TOAST_TIMEOUT = 10000
+const TOAST_TIMEOUT = 3000
 
 function* handleToast(action: ToastAction) {
   const { timeout = TOAST_TIMEOUT, ...toastConfig } = action.payload

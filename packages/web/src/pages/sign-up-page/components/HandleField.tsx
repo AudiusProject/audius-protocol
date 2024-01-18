@@ -114,10 +114,10 @@ export const HandleField = forwardRef(
         placeholder={messages.handle}
         transformValueOnChange={(value) => value.replace(/\s/g, '')}
         debouncedValidationMs={1000}
-        error={!!error && !!helperText}
         endIcon={
           !isWaitingForValidation && !error && handle ? IconCheck : undefined
         }
+        IconProps={{ size: 'l', color: 'default' }}
         onChange={(e) => {
           onChange?.(e)
           handleChange()

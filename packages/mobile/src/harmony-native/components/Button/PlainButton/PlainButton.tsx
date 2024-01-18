@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import type { ReactNativeStyle } from '@emotion/native'
-import type { TextStyle } from 'react-native/types'
+import type { TextStyle } from 'react-native'
 import {
   interpolate,
   interpolateColor,
