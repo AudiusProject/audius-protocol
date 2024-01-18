@@ -35,7 +35,7 @@ import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
 
 export type FinishProfileValues = {
-  profileImage: ImageFieldValue
+  profileImage?: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string
 }
