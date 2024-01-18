@@ -53,7 +53,8 @@ const messages = {
   claim: 'Make Claim',
   connectAudiusProfile: 'Connect Audius Profile',
   connectAudiusProfileDescription:
-    'Help other users identify you by connecting your Audius account.'
+    'Help other users identify you by connecting your Audius account.',
+  unlinkAudiusProfile: 'Unlink Audius Profile'
 }
 
 interface ManageServiceProps {
@@ -98,6 +99,30 @@ const ConnectAudiusProfileButton = ({
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
+        action="connect"
+      />
+    </>
+  )
+}
+
+type DisconnectAudiusProfileButton = {
+  wallet: string
+}
+const DisconnectAudiusProfileButton = ({
+  wallet
+}: DisconnectAudiusProfileButton) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+
+  return (
+    <>
+      <span className={styles.actionText} onClick={onClick}>
+        {messages.unlinkAudiusProfile}
+      </span>
+      <ConnectAudiusProfileModal
+        wallet={wallet}
+        isOpen={isOpen}
+        onClose={onClose}
+        action="disconnect"
       />
     </>
   )
@@ -288,10 +313,12 @@ const ManageService: React.FC<ManageServiceProps> = (
   props: ManageServiceProps
 ) => {
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const { data: audiusProfileData } = useDashboardWalletUser(
-    accountUser?.wallet
-  )
+  const {
+    data: audiusProfileData,
+    status: audiusProfileDataStatus
+  } = useDashboardWalletUser(accountUser?.wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
+
   const isServiceProvider =
     userStatus === Status.Success && 'serviceProvider' in accountUser
   const isDelegator =
@@ -418,15 +445,23 @@ const ManageService: React.FC<ManageServiceProps> = (
           </div>
         )}
       </div>
-      {hasConnectedAudiusAccount || !accountUser?.wallet ? null : (
+      {!accountUser?.wallet || audiusProfileDataStatus !== 'success' ? null : (
         <div className={styles.connectProfileContainer}>
-          <div className={styles.connectProfileTextContainer}>
-            <h3 className={styles.title}>{messages.connectAudiusProfile}</h3>
-            <span>{messages.connectAudiusProfileDescription}</span>
-          </div>
-          <div>
-            <ConnectAudiusProfileButton wallet={accountUser.wallet} />
-          </div>
+          {!hasConnectedAudiusAccount ? (
+            <>
+              <div className={styles.connectProfileTextContainer}>
+                <h3 className={styles.title}>
+                  {messages.connectAudiusProfile}
+                </h3>
+                <span>{messages.connectAudiusProfileDescription}</span>
+              </div>
+              <div>
+                <ConnectAudiusProfileButton wallet={accountUser.wallet} />
+              </div>
+            </>
+          ) : (
+            <DisconnectAudiusProfileButton wallet={accountUser.wallet} />
+          )}
         </div>
       )}
     </Paper>

@@ -5,9 +5,8 @@ import clsx from 'clsx'
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
-import DisplayAudio from 'components/DisplayAudio'
-import { Position } from 'components/Tooltip'
 import UserImage from 'components/UserImage'
+import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import React, { useCallback, useState } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -78,9 +77,8 @@ const Misconfigured = ({
 }
 
 const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
-  const { user } = useUser({ wallet })
+  const { user, audiusProfile } = useUser({ wallet })
   const activeStake = user ? getActiveStake(user) : new BN('0')
-
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
     if (user) {
@@ -99,28 +97,23 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
           alt={messages.profileAlt}
           useSkeleton={false}
         />
-        <div className={styles.walletText}>
-          {formatShortWallet(user.wallet)}
+        {audiusProfile != null ? null : (
+          <div className={styles.walletText}>
+            {formatShortWallet(user.wallet)}
+          </div>
+        )}
+      </div>
+      {audiusProfile == null ? null : (
+        <div className={styles.userNameContainer}>
+          <div className={styles.userNameText}>
+            {audiusProfile.name}{' '}
+            <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
+          </div>
+          <div className={styles.walletText}>
+            {formatShortWallet(user.wallet)}
+          </div>
         </div>
-      </div>
-      <div className={styles.snippetText}>
-        <DisplayAudio
-          position={Position.BOTTOM}
-          className={styles.tokenText}
-          amount={user.audToken}
-          shortFormat
-        />
-        <p className={styles.userSnippetLabel}>{messages.wallet}</p>
-      </div>
-      <div className={styles.snippetText}>
-        <DisplayAudio
-          position={Position.BOTTOM}
-          className={styles.tokenText}
-          amount={activeStake}
-          shortFormat
-        />
-        <p className={styles.userSnippetLabel}>{messages.staked}</p>
-      </div>
+      )}
     </div>
   )
 }
@@ -138,6 +131,7 @@ const ConnectAudiusProfileButton = ({ wallet }: { wallet: string }) => {
         iconClassName={styles.launchAppBtnIcon}
       />
       <ConnectAudiusProfileModal
+        action="connect"
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
@@ -150,7 +144,10 @@ type AppBarProps = {}
 const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
-  const { data: audiusProfileData } = useDashboardWalletUser(wallet)
+  const {
+    data: audiusProfileData,
+    status: audiusProfileDataStatus
+  } = useDashboardWalletUser(wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
   const ethBlock = useEthBlockNumber()
   const { pathname } = useLocation()
@@ -174,6 +171,12 @@ const AppBar: React.FC<AppBarProps> = () => {
       </div>
       {!isMobile && (
         <div className={styles.right}>
+          {hasConnectedAudiusAccount ||
+          !wallet ||
+          !isLoggedIn ||
+          audiusProfileDataStatus === 'pending' ? null : (
+            <ConnectAudiusProfileButton wallet={wallet} />
+          )}
           <div className={styles.userAccountSnippetContainer}>
             {isMisconfigured || isAccountMisconfigured ? (
               <Misconfigured
@@ -184,9 +187,6 @@ const AppBar: React.FC<AppBarProps> = () => {
               isLoggedIn && wallet && <UserAccountSnippet wallet={wallet} />
             )}
           </div>
-          {hasConnectedAudiusAccount || !wallet || !isLoggedIn ? null : (
-            <ConnectAudiusProfileButton wallet={wallet} />
-          )}
         </div>
       )}
     </div>
