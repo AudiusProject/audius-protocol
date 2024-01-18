@@ -61,6 +61,7 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+import DownloadButtons from 'components/download-buttons/DownloadButtons'
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -503,9 +504,23 @@ export const GiantTrackTile = ({
       </>
     )
   }
+
   const renderScheduledReleaseRow = () => {
     return (
       <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    )
+  }
+
+  const renderDownloadButtons = () => {
+    return (
+      <DownloadButtons
+        className={styles.downloadButtonsContainer}
+        trackId={trackId}
+        isOwner={isOwner}
+        following={following}
+        hasDownloadAccess={hasDownloadAccess}
+        onDownload={onDownload}
+      />
     )
   }
 
@@ -715,6 +730,7 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         {renderTags()}
+        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
         {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
           <Box pt='l' w='100%'>
             <DownloadSection trackId={trackId} onDownload={onDownload} />
