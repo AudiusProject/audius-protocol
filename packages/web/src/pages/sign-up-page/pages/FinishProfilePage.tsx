@@ -84,8 +84,8 @@ export const FinishProfilePage = () => {
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
-    profileImage: savedProfileImage || {},
-    coverPhoto: savedCoverPhoto || {},
+    profileImage: savedProfileImage || undefined,
+    coverPhoto: savedCoverPhoto || undefined,
     displayName: savedDisplayName || ''
   }
 
