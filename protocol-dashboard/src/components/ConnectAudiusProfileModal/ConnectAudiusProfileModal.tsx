@@ -36,10 +36,11 @@ export const ConnectAudiusProfileModal = ({
     wallet,
     onSuccess: onClose
   })
+  const isConnect = action === 'connect'
   return (
     <Modal
       title={
-        action === 'connect'
+        isConnect
           ? messages.connectAudiusProfileTitle
           : messages.disconnectAudiusProfileTitle
       }
@@ -51,29 +52,27 @@ export const ConnectAudiusProfileModal = ({
       <div className={styles.innerModalWrapper}>
         <div className={styles.content}>
           <div className={styles.description}>
-            <span
-              className={cn({ [styles.boldDescription]: action === 'connect' })}
-            >
-              {action === 'connect'
+            <span className={cn({ [styles.boldDescription]: isConnect })}>
+              {isConnect
                 ? messages.connectAudiusProfileDescriptionP1
                 : messages.disconnectAudiusProfileDescriptionP1}
             </span>
             <span
               className={cn({
-                [styles.boldDescription]: action === 'disconnect'
+                [styles.boldDescription]: !isConnect
               })}
             >
-              {action === 'connect'
+              {isConnect
                 ? messages.connectAudiusProfileDescriptionP2
                 : messages.disconnectAudiusProfileDescriptionP2}
             </span>
           </div>
         </div>
         <Button
-          onClick={action === 'connect' ? connect : disconnect}
+          onClick={isConnect ? connect : disconnect}
           type={ButtonType.PRIMARY}
           text={
-            action === 'connect'
+            isConnect
               ? messages.connectProfileButton
               : messages.disconnectAudiusProfileButton
           }
