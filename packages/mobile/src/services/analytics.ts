@@ -1,5 +1,4 @@
 import { Amplitude } from '@amplitude/react-native'
-import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
 import { versionInfo } from 'app/utils/appVersionWithCodepush'
@@ -7,13 +6,14 @@ import { versionInfo } from 'app/utils/appVersionWithCodepush'
 import packageInfo from '../../package.json'
 import type { Track, Screen, AllEvents } from '../types/analytics'
 import { EventNames } from '../types/analytics'
+import { env } from 'app/env'
 
 const { version: clientVersion } = packageInfo
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
-const AmplitudeProxy = Config.AMPLITUDE_PROXY
+const AmplitudeWriteKey = env.AMPLITUDE_WRITE_KEY
+const AmplitudeProxy = env.AMPLITUDE_PROXY
 const amplitudeInstance = Amplitude.getInstance()
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 

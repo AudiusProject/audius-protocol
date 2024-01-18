@@ -7,7 +7,7 @@ import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
-import { env } from 'app/services/env'
+import { env } from 'app/env'
 import { makeStyles } from 'app/styles'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'

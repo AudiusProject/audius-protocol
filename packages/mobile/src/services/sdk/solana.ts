@@ -1,7 +1,7 @@
 import { Solana } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 
-import { env } from '../env'
+import { env } from 'app/env'
 
 export const solanaService = new Solana({
   middleware: [

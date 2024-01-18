@@ -7,13 +7,11 @@ import {
   useAudiusQueryContext
 } from '@audius/common'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import Config from 'react-native-config'
 import { useDispatch } from 'react-redux'
 
 import { SocialButton } from '@audius/harmony-native'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { make, track } from 'app/services/analytics'
-import { env } from 'app/services/env'
 import { Provider } from 'app/store/oauth/reducer'
 import { getInstagramProfile } from 'app/store/oauth/sagas'
 import type { InstagramCredentials } from 'app/store/oauth/types'
@@ -21,6 +19,7 @@ import { EventNames } from 'app/types/analytics'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
+import { env } from 'app/env'
 
 type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {
@@ -33,8 +32,8 @@ type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onClose?: () => void
 }
 
-const instagramAppId = Config.INSTAGRAM_APP_ID!
-const instagramRedirectUrl = Config.INSTAGRAM_REDIRECT_URL!
+const instagramAppId = env.INSTAGRAM_APP_ID
+const instagramRedirectUrl = env.INSTAGRAM_REDIRECT_URL
 
 const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(
   instagramRedirectUrl
@@ -47,7 +46,7 @@ const useSetProfileFromInstagram = () => {
   return async ({ code }: { code: string }) => {
     const { igUserProfile: profile } = await getInstagramProfile(
       code,
-      env.IDENTITY_SERVICE!
+      env.IDENTITY_SERVICE
     )
     // Update info in redux
     dispatch(

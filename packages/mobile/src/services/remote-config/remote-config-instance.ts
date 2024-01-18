@@ -5,18 +5,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
 import type { LocalPackage } from 'react-native-code-push'
 import codePush from 'react-native-code-push'
-import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import packageInfo from '../../../package.json'
+import { env } from 'app/env'
+import Config from 'react-native-config'
 
 export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 const { version: appVersion } = packageInfo
 
-const OPTIMIZELY_KEY = Config.OPTIMIZELY_KEY
+const OPTIMIZELY_KEY = env.OPTIMIZELY_KEY
 const DATA_FILE_URL = 'https://experiments.audius.co/datafiles/%s.json'
 
 /** Returns mobile platform (ios or android), mobile app version, and code push update number (if any) */

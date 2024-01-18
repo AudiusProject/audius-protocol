@@ -1,7 +1,6 @@
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
-import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   SafeAreaProvider,
@@ -35,9 +34,10 @@ import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
 import { AudiusTrpcProvider } from './TrpcProvider'
+import { env } from 'app/env'
 
 Sentry.init({
-  dsn: Config.SENTRY_DSN
+  dsn: env.SENTRY_DSN
 })
 
 const Airplay = Platform.select({

@@ -8,21 +8,20 @@ import {
 import { CoinflowPurchase } from '@coinflowlabs/react-native'
 import { Transaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'
-import Config from 'react-native-config'
 import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
 import { getCoinflowDeviceId } from 'app/services/coinflow'
-import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
+import { env } from 'app/env'
 
 const MODAL_NAME = 'CoinflowOnramp'
 
-const { ENVIRONMENT } = Config
+const { ENVIRONMENT } = env
 const IS_PRODUCTION = ENVIRONMENT === 'production'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({

@@ -7,7 +7,6 @@ import {
   themeSelectors,
   useSelectTierInfo
 } from '@audius/common'
-import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconAppearance from 'app/assets/images/iconAppearance.svg'
@@ -19,11 +18,12 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
+import { env } from 'app/env'
 const { getUserId } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
-const isStaging = Config.ENVIRONMENT === 'staging'
+const isStaging = env.ENVIRONMENT === 'staging'
 
 const messages = {
   appearance: 'Appearance',

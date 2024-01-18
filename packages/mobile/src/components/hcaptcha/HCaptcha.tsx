@@ -9,8 +9,8 @@ import {
 } from '@audius/common'
 import ConfirmHcaptcha from '@hcaptcha/react-native-hcaptcha'
 import type { NativeSyntheticEvent } from 'react-native'
-import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
+import { env } from 'app/env'
 
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
@@ -21,8 +21,8 @@ type HCaptchaMessage = {
   data: string
 }
 
-const siteKey = Config.HCAPTCHA_SITE_KEY as string
-const baseUrl = Config.HCAPTCHA_BASE_URL
+const siteKey = env.HCAPTCHA_SITE_KEY as string
+const baseUrl = env.HCAPTCHA_BASE_URL
 
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const REWARD_MODAL_NAME = 'ChallengeRewardsExplainer'

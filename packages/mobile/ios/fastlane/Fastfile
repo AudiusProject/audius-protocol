@@ -110,11 +110,8 @@ platform :ios do
       :DEVELOPMENT_TEAM => TEAM
     }
 
-    if ENV["IS_PRODUCTION"] == "true"
-      ENV["ENVFILE"]=".env.#{environment}"
-      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
-      puts "ENVFILE: #{ENV['ENVFILE']}"
-    end
+    ENV["ENVFILE"]=".env.#{environment}"
+    puts "ENVFILE: #{ENV['ENVFILE']}"
 
     plistVersionNumber = options[:plist_version] ? (options[:plist_version]) : (Gem::Version.new get_version_number_from_plist(
       scheme: scheme
