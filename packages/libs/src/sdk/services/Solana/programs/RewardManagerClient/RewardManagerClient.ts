@@ -1,5 +1,12 @@
 import { RewardManagerProgram } from '@audius/spl'
+import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
+import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
+
+import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
+import { parseParams } from '../../../../utils/parseParams'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
+
+import { defaultRewardManagerClentConfig } from './constants'
 import {
   CreateEvaluateAttestationsInstructionRequest,
   CreateEvaluateAttestationsInstructionSchema,
@@ -13,11 +20,6 @@ import {
   GetSubmittedAttestationsRequest,
   GetSubmittedAttestationsSchema
 } from './types'
-import { Secp256k1Program, type PublicKey } from '@solana/web3.js'
-import { parseParams } from '../../../../utils/parseParams'
-import type { RewardManagerStateData } from '@audius/spl/dist/types/reward-manager/types'
-import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
-import { defaultRewardManagerClentConfig } from './constants'
 
 /**
  * Connected client to the Solana RewardManager program.

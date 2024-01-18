@@ -1,6 +1,7 @@
 import { rest } from 'msw'
-import { AntiAbuseOracleSelector } from './AntiAbuseOracleSelector'
 import { setupServer } from 'msw/node'
+
+import { AntiAbuseOracleSelector } from './AntiAbuseOracleSelector'
 
 const HEALTHY_NODE = 'https://healthy-aao.audius.co'
 const OFFLINE_NODE = 'https://offline-aao.audius.co'

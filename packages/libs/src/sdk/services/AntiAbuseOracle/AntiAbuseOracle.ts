@@ -1,7 +1,10 @@
+import fetch from 'cross-fetch'
+
 import { BaseAPI, JSONApiResponse, exists } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
 import { AntiAbuseOracleSelectorService } from '../AntiAbuseOracleSelector'
+
 import {
   AntiAbuseOracleConfig,
   AntiAbuseOracleService,
@@ -9,7 +12,6 @@ import {
   AttestationResponse,
   GetAttestationSchema
 } from './types'
-import fetch from 'cross-fetch'
 
 export class AntiAbuseOracle extends BaseAPI implements AntiAbuseOracleService {
   private readonly antiAbuseOracleSelector: AntiAbuseOracleSelectorService

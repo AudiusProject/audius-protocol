@@ -1,8 +1,21 @@
 import fs from 'fs'
 import path from 'path'
 
+import { ClaimableTokensProgram } from '@audius/spl'
 import { beforeAll, expect, jest } from '@jest/globals'
+import {
+  PublicKey,
+  Secp256k1Program,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
+} from '@solana/web3.js'
 
+import {
+  ClaimableTokensClient,
+  SolanaRelay,
+  SolanaRelayWalletAdapter
+} from '../../services'
 import { Auth } from '../../services/Auth/Auth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
@@ -12,19 +25,6 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
-import {
-  PublicKey,
-  Secp256k1Program,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction
-} from '@solana/web3.js'
-import { ClaimableTokensProgram } from '@audius/spl'
-import {
-  ClaimableTokensClient,
-  SolanaRelay,
-  SolanaRelayWalletAdapter
-} from '../../services'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -288,18 +288,22 @@ describe('UsersApi', () => {
           )
           // Typescript hint - always true
           if (ClaimableTokensProgram.isTransferInstruction(decoded)) {
+            // eslint-disable-next-line jest/no-conditional-expect
             expect(decoded.keys.destination.pubkey.toBase58()).toBe(
               userBanks[receiverUserId]?.toBase58()
             )
+            // eslint-disable-next-line jest/no-conditional-expect
             expect(decoded.keys.sourceUserBank.pubkey.toBase58()).toBe(
               userBanks[senderUserId]?.toBase58()
             )
             const data =
               ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
 
+            // eslint-disable-next-line jest/no-conditional-expect
             expect(data.destination.toBase58()).toBe(
               userBanks[receiverUserId]?.toBase58()
             )
+            // eslint-disable-next-line jest/no-conditional-expect
             expect(data.amount).toBe(outputAmount)
           }
           return { signature: 'fake-sig' }

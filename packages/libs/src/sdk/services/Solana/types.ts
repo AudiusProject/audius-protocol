@@ -1,14 +1,16 @@
+import type { WalletAdapterProps } from '@solana/wallet-adapter-base'
 import {
   PublicKey,
   VersionedTransaction,
   SendOptions,
   Transaction
 } from '@solana/web3.js'
-import type { WalletAdapterProps } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
+
 import type { Prettify } from '../../utils/prettify'
-import type { SolanaRelay } from './SolanaRelay'
 import { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
+
+import type { SolanaRelay } from './SolanaRelay'
 
 export type SolanaWalletAdapter = WalletAdapterProps
 

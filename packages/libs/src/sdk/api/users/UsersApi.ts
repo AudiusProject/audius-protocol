@@ -12,6 +12,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
+import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -38,7 +39,6 @@ import {
   SendTipRequest,
   SendTipSchema
 } from './types'
-import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(

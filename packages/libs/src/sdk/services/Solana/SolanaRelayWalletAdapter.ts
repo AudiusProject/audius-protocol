@@ -5,6 +5,7 @@ import type {
   WalletReadyState
 } from '@solana/wallet-adapter-base'
 import type { PublicKey } from '@solana/web3.js'
+
 import type { SolanaRelay } from './SolanaRelay'
 import type { SolanaWalletAdapter } from './types'
 
@@ -21,10 +22,12 @@ import type { SolanaWalletAdapter } from './types'
 export class SolanaRelayWalletAdapter implements SolanaWalletAdapter {
   public readonly name =
     'AudiusSolanaWallet' as WalletName<'AudiusSolanaWallet'>
+
   public readonly url = ''
   public readonly icon = ''
   public readonly readyState: WalletReadyState =
     'Loadable' as WalletReadyState.Loadable
+
   public readonly supportedTransactionVersions?: SupportedTransactionVersions
 
   private readonly solanaRelay: SolanaRelay

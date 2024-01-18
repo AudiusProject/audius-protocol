@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 
+import sample from 'lodash/sample'
 import sampleSize from 'lodash/sampleSize'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import semver from 'semver'
@@ -11,6 +12,7 @@ import type {
   RequestContext,
   ResponseContext
 } from '../../api/generated/default'
+import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
 import type { LoggerService } from '../Logger'
@@ -33,8 +35,6 @@ import {
   ServiceSelectionEvents,
   DiscoveryNode
 } from './types'
-import sample from 'lodash/sample'
-import { getPathFromUrl } from '../../utils/getPathFromUrl'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**

@@ -1,7 +1,9 @@
 import { z } from 'zod'
+
 import { HashId } from '../../types/HashId'
 
 // @ts-ignore:next-line ignore the unused import, used in jsdoc
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ChallengesApi } from './ChallengesApi'
 
 export enum ChallengeId {

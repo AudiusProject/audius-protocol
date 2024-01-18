@@ -1,7 +1,8 @@
 import type { PublicKey } from '@solana/web3.js'
-import type { BaseSolanaProgramConfigInternal } from '../types'
 import { z } from 'zod'
+
 import { PublicKeySchema, SolanaWalletAdapter } from '../../types'
+import type { BaseSolanaProgramConfigInternal } from '../types'
 
 export type RewardManagerClientConfigInternal = {
   programId: PublicKey

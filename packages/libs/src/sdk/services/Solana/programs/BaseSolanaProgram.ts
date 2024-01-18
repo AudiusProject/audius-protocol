@@ -5,13 +5,15 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+
+import { parseParams } from '../../../utils/parseParams'
 import type { SolanaWalletAdapter } from '../types'
+
 import {
   BuildTransactionRequest,
   BuildTransactionSchema,
   type BaseSolanaProgramConfigInternal
 } from './types'
-import { parseParams } from '../../../utils/parseParams'
 
 const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
   arr.every((a) => a instanceof PublicKey)
@@ -96,7 +98,7 @@ export class BaseSolanaProgram {
       recentBlockhash = res.blockhash
     }
 
-    let addressLookupTableAccounts = !isPublicKeyArray(addressLookupTables)
+    const addressLookupTableAccounts = !isPublicKeyArray(addressLookupTables)
       ? addressLookupTables
       : await this.getLookupTableAccounts(addressLookupTables)
 

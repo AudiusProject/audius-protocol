@@ -1,19 +1,19 @@
 import { z } from 'zod'
 
+import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
+import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
 import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
-import type { StorageService } from './services/Storage'
-import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 import type {
   RewardManagerClient,
   ClaimableTokensClient,
   SolanaRelayService,
   SolanaWalletAdapter
 } from './services/Solana'
-import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
-import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
+import type { StorageService } from './services/Storage'
+import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 
 export type ServicesContainer = {
   /**

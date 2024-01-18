@@ -1,4 +1,5 @@
 import fetch, { Response } from 'cross-fetch'
+import shuffle from 'lodash/shuffle'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
@@ -10,7 +11,6 @@ import type {
   HealthCheckResponseData
 } from './healthCheckTypes'
 import type { DiscoveryNode } from './types'
-import shuffle from 'lodash/shuffle'
 
 // jest.mock('./healthChecks', () => ({
 //   getHealthCheck: jest.fn(() => ({}))
@@ -786,7 +786,7 @@ describe('discoveryNodeSelector', () => {
       })
       const nodes = await selector.getUniquelyOwnedEndpoints(3)
       expect(nodes.length).toBe(3)
-      expect(nodes.every((n) => n === HEALTHY_NODE))
+      expect(nodes.every((n) => n === HEALTHY_NODE)).toBe(true)
     })
 
     test('filters to allowlist', async () => {
@@ -845,8 +845,7 @@ describe('discoveryNodeSelector', () => {
       })
 
       await expect(async () => {
-        const res = await selector.getUniquelyOwnedEndpoints(3)
-        console.log(res)
+        await selector.getUniquelyOwnedEndpoints(3)
       }).rejects.toThrow(
         new Error('Not enough healthy services to choose from')
       )

@@ -4,6 +4,7 @@ import {
   type ConnectionConfig
 } from '@solana/web3.js'
 import { z } from 'zod'
+
 import { PublicKeySchema } from '../types'
 
 export type BaseSolanaProgramConfigInternal = {

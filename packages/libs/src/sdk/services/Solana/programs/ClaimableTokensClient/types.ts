@@ -1,4 +1,7 @@
+import type { PublicKey } from '@solana/web3.js'
 import { z } from 'zod'
+
+import type { Prettify } from '../../../../utils/prettify'
 import type { AuthService } from '../../../Auth'
 import {
   Mint,
@@ -6,8 +9,6 @@ import {
   PublicKeySchema,
   SolanaWalletAdapter
 } from '../../types'
-import type { PublicKey } from '@solana/web3.js'
-import type { Prettify } from '../../../../utils/prettify'
 import type { BaseSolanaProgramConfigInternal } from '../types'
 
 export type ClaimableTokensConfigInternal = {

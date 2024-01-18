@@ -1,4 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
+
 import type { RewardManagerClientConfigInternal } from './types'
 
 export const defaultRewardManagerClentConfig: RewardManagerClientConfigInternal =

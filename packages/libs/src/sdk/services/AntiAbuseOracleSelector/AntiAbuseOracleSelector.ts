@@ -1,21 +1,22 @@
-import sample from 'lodash/sample'
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { LoggerService } from '../Logger'
-import { defaultAntiAbuseOracleSelectorConfig } from './constants'
-import type {
-  AntiAbuseOracleSelectorService,
-  AntiAbuseOracleNode,
-  AntiAbuseOracleSelectorConfig
-} from './types'
+import fetch from 'cross-fetch'
+
 import {
   ErrorContext,
   Middleware,
   RequestContext
 } from '../../api/generated/default'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
-import { AntiAbuseOracleHealthCheckResponse } from '../AntiAbuseOracle/types'
-import fetch from 'cross-fetch'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
+import { AntiAbuseOracleHealthCheckResponse } from '../AntiAbuseOracle/types'
+import type { LoggerService } from '../Logger'
+
+import { defaultAntiAbuseOracleSelectorConfig } from './constants'
+import type {
+  AntiAbuseOracleSelectorService,
+  AntiAbuseOracleNode,
+  AntiAbuseOracleSelectorConfig
+} from './types'
 
 export class AntiAbuseOracleSelector implements AntiAbuseOracleSelectorService {
   private readonly endpoints: string[]

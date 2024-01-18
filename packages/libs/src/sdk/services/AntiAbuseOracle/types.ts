@@ -1,7 +1,9 @@
 import { z } from 'zod'
-import { ChallengeId } from '../../api/challenges/types'
+
 // @ts-ignore:next-line ignore the unused import, used in jsdoc
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ChallengesApi } from '../../api/challenges/ChallengesApi'
+import { ChallengeId } from '../../api/challenges/types'
 import { AntiAbuseOracleSelectorService } from '../AntiAbuseOracleSelector'
 
 export const GetAttestationSchema = z.object({

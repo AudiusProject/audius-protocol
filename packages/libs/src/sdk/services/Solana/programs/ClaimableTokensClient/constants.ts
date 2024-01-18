@@ -1,4 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
+
 import type { ClaimableTokensConfigInternal } from './types'
 
 export const defaultClaimableTokensConfig: ClaimableTokensConfigInternal = {

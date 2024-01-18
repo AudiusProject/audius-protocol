@@ -1,6 +1,7 @@
 import type { CommsResponse } from '../../api/chats/serverTypes'
 import type { DeepPartial } from '../../utils/deepPartial'
 import type { StorageNode } from '../StorageNodeSelector'
+
 import type { DiscoveryNode } from './types'
 
 export type FlaskFullResponse = Partial<{

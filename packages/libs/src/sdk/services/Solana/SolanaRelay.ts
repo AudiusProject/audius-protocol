@@ -1,14 +1,16 @@
 import { PublicKey } from '@solana/web3.js'
+import fetch from 'cross-fetch'
+
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
+
 import {
   type RelayRequestBody,
   type SolanaConfig,
   RelayRequest,
   RelaySchema
 } from './types'
-import fetch from 'cross-fetch'
 
 /**
  * Client for the Solana Relay Plugin on Discovery.
@@ -56,7 +58,7 @@ export class SolanaRelay extends BaseAPI {
       (json) => ({
         feePayer: !runtime.exists(json, 'feePayer')
           ? undefined
-          : new PublicKey(json['feePayer'] as string)
+          : new PublicKey(json.feePayer as string)
       })
     ).value()
     if (!feePayer) {
@@ -90,7 +92,7 @@ export class SolanaRelay extends BaseAPI {
         path: '/relay',
         method: 'POST',
         headers: headerParameters,
-        body: body
+        body
       },
       initOverrides
     )
@@ -100,7 +102,7 @@ export class SolanaRelay extends BaseAPI {
         throw new Error('Signature missing')
       }
       return {
-        signature: json['signature'] as string
+        signature: json.signature as string
       }
     }).value()
   }
