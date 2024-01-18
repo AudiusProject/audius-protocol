@@ -36,7 +36,7 @@ export default function createApp(
 
   const isDev = process.env.IS_DEV === 'true'
   const buildPath = isDev
-    ? path.join(__dirname, '..', '..', 'ddex-frontend', 'dist')
+    ? path.join(__dirname, '..', '..', 'client', 'dist')
     : path.join(__dirname, '..', 'public')
   app.use(express.static(buildPath))
   app.use(express.static(buildPath))

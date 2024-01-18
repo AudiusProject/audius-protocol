@@ -10,7 +10,7 @@ const Releases = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [prevCursor, setPrevCursor] = useState<string | undefined>(undefined)
-  const { data, error, isPending } = trpc.release.getReleases.useQuery({status: statusFilter, nextCursor, prevCursor})
+  const { data, error, isLoading } = trpc.release.getReleases.useQuery({status: statusFilter, nextCursor, prevCursor})
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -76,7 +76,7 @@ const Releases = () => {
               <label htmlFor='releasesErrorFilter'>Error</label>
             </div>
           </Flex>
-          {isPending && <div>Loading...</div>}
+          {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
           {data && (
             <table className={tableStyles.styledTable}>

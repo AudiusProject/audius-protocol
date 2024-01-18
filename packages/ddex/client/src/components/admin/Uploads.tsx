@@ -10,7 +10,7 @@ const Uploads = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [nextId, setNextId] = useState<number | undefined>(undefined)
   const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  const { data, error, isPending } = trpc.delivery.getUploads.useQuery({status: statusFilter, nextId, prevId})
+  const { data, error, isLoading } = trpc.delivery.getUploads.useQuery({status: statusFilter, nextId, prevId})
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -74,7 +74,7 @@ const Uploads = () => {
               <label htmlFor='uploadsErrorFilter'>Error</label>
             </div>
           </Flex>
-          {isPending && <div>Loading...</div>}
+          {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
           {data && (
             <table className={tableStyles.styledTable}>
