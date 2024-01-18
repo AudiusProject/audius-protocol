@@ -10,9 +10,9 @@ import * as uploadController from './controllers/uploadsController'
 
 export default function createApp(
   sql: Sql,
-  audiusSdk: AudiusSdk,
+  _audiusSdk: AudiusSdk,
   xmlProcessorService: XmlProcessorService,
-  scheduledReleaseService: ScheduledReleaseService
+  _scheduledReleaseService: ScheduledReleaseService
 ) {
   /*
    * Setup app
@@ -26,7 +26,7 @@ export default function createApp(
   app.get('/api/releases', uploadController.getReleases(sql))
   app.get('/api/uploads', uploadController.getUploads(sql))
   app.post('/api/upload', uploadController.postUploadXml(xmlProcessorService))
-  app.get('/api/health_check', (req: Request, res: Response) => {
+  app.get('/api/health_check', (_req: Request, res: Response) => {
     res.status(200).send('DDEX is alive!')
   })
 
@@ -40,7 +40,7 @@ export default function createApp(
     : path.join(__dirname, '..', 'public')
   app.use(express.static(buildPath))
   app.use(express.static(buildPath))
-  app.get('/', (req: Request, res: Response) => {
+  app.get('/', (_req: Request, res: Response) => {
     res.sendFile(path.join(buildPath, 'index.html'))
   })
 

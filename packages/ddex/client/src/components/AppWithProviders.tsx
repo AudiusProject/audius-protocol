@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import Web3 from 'web3'
 import { httpBatchLink } from '@trpc/client'
-import { trpc } from 'utils/trpc'
+import Web3 from 'web3'
 
 import { AudiusLibsProvider } from 'providers/AudiusLibsProvider'
 import { AudiusSdkProvider } from 'providers/AudiusSdkProvider'
 import { RemoteConfigProvider } from 'providers/RemoteConfigProvider'
 import { ThemeProvider } from 'providers/ThemeProvider'
+import { trpc } from 'utils/trpc'
 
 import App from './App'
 
@@ -29,27 +29,26 @@ const AppWithProviders = () => {
             // TODO: probably pass something from sdk oauth
             // authorization: getAuthCookie(),
           }
-        },
-      }),
-    ],
+        }
+      })
+    ]
   })
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <RemoteConfigProvider>
-        <AudiusLibsProvider>
-          <AudiusSdkProvider>
-            <ThemeProvider>
-              <App />
-            </ThemeProvider>
-          </AudiusSdkProvider>
-        </AudiusLibsProvider>
-      </RemoteConfigProvider>
-    </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <RemoteConfigProvider>
+          <AudiusLibsProvider>
+            <AudiusSdkProvider>
+              <ThemeProvider>
+                <App />
+              </ThemeProvider>
+            </AudiusSdkProvider>
+          </AudiusLibsProvider>
+        </RemoteConfigProvider>
+      </QueryClientProvider>
     </trpc.Provider>
   )
 }
 
 export default AppWithProviders
-

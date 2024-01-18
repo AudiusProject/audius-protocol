@@ -7,10 +7,16 @@ import { trpc } from 'utils/trpc'
 import tableStyles from './Table.module.css'
 
 const Uploads = () => {
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<
+    '' | 'error' | 'success' | 'pending' | undefined
+  >('')
   const [nextId, setNextId] = useState<number | undefined>(undefined)
   const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  const { data, error, isLoading } = trpc.delivery.getUploads.useQuery({status: statusFilter, nextId, prevId})
+  const { data, error, isLoading } = trpc.delivery.getUploads.useQuery({
+    status: statusFilter,
+    nextId,
+    prevId
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {

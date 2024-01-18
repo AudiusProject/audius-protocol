@@ -1,16 +1,18 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
-const isDevelopment = process.env.IS_DEV === 'true';
+const isDevelopment = process.env.IS_DEV === 'true'
 
 export default defineConfig({
   server: {
-    proxy: isDevelopment ? {
-      '/api': 'http://localhost:8926', // Assuming port for ../server Express server is unchanged
-      '/trpc': 'http://localhost:8926'
-    } : {}
+    proxy: isDevelopment
+      ? {
+          '/api': 'http://localhost:8926', // Assuming port for ../server Express server is unchanged
+          '/trpc': 'http://localhost:8926'
+        }
+      : {}
   },
   plugins: [
     react(),
@@ -21,25 +23,25 @@ export default defineConfig({
       globals: {
         Buffer: true,
         global: true,
-        process: true,
+        process: true
       },
-      protocolImports: true,
-    }),
+      protocolImports: true
+    })
   ],
   resolve: {
     alias: {
-      components: "/src/components",
-      pages: "/src/pages",
-      providers: "/src/providers",
-      utils: "/src/utils",
-      hooks: "/src/hooks",
-      assets: "/src/assets",
-    },
+      components: '/src/components',
+      pages: '/src/pages',
+      providers: '/src/providers',
+      utils: '/src/utils',
+      hooks: '/src/hooks',
+      assets: '/src/assets'
+    }
   },
   base: '/ddex/',
   build: {
     commonjsOptions: {
-      transformMixedEsModules: true,
-    },
-  },
+      transformMixedEsModules: true
+    }
+  }
 })

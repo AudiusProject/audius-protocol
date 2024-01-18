@@ -12,8 +12,8 @@ const getUploadsInput = z.object({
       z.literal(''),
     ])
     .optional(),
-  nextId: z.string().optional(),
-  prevId: z.string().optional(),
+  nextId: z.number().optional(),
+  prevId: z.number().optional(),
   limit: z.string().default('10'),
 })
 const deliveryRouter = router({

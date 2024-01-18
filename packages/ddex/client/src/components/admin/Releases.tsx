@@ -7,10 +7,16 @@ import { trpc } from 'utils/trpc'
 import tableStyles from './Table.module.css'
 
 const Releases = () => {
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<
+    '' | 'error' | 'success' | 'processing' | undefined
+  >('')
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [prevCursor, setPrevCursor] = useState<string | undefined>(undefined)
-  const { data, error, isLoading } = trpc.release.getReleases.useQuery({status: statusFilter, nextCursor, prevCursor})
+  const { data, error, isLoading } = trpc.release.getReleases.useQuery({
+    status: statusFilter,
+    nextCursor,
+    prevCursor
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -52,15 +58,15 @@ const Releases = () => {
             <div>
               <input
                 type='checkbox'
-                id='releasesPendingFilter'
-                checked={statusFilter === 'pending'}
+                id='releasesProcessingFilter'
+                checked={statusFilter === 'processing'}
                 onChange={() =>
                   setStatusFilter((curFilter) =>
-                    curFilter === 'pending' ? '' : 'pending'
+                    curFilter === 'processing' ? '' : 'processing'
                   )
                 }
               />
-              <label htmlFor='releasesPendingFilter'>Pending</label>
+              <label htmlFor='releasesProcessingFilter'>Processing</label>
             </div>
             <div>
               <input
