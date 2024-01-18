@@ -200,7 +200,6 @@ export const PageFooter = (props: PageFooterProps) => {
     isValid: true
   }
 
-
   return (
     <Paper
       w='100%'
