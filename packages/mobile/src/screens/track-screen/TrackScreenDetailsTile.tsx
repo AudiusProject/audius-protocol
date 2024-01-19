@@ -269,7 +269,7 @@ export const TrackScreenDetailsTile = ({
   const isScheduledRelease = release_date
     ? moment(release_date).isAfter(moment.now())
     : false
-  const isLosslessDownloadsEnabled = useFeatureFlag(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const hasDownloadableAssets =
