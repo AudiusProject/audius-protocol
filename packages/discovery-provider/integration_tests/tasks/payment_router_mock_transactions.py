@@ -4,8 +4,8 @@ from solders.rpc.responses import GetTransactionResp
 
 # Notes about the transactions below to make things easier:
 # - accountKeys[1] is the account which sent the money into payment router
-# - accountKeys[3] is the first recipient account. Values up to the "Tokenkeg..." account are all recipients
-# - The "data" field in the memo transaction is a base58 encoded string consisting of
+# - For transactions where the sender is not a user bank, accountKeys[3] is the first recipient account. Values up to the "Tokenkeg..." account are all recipients
+# - The "data" field in the memo transaction is a base58 encoded string consisting of either "recovery" or
 #   <content_type>:<content_id>:<block_number_at_time_of_transaction>:<purchaser_user_id>.
 # - `meta.preTokenBalances` and `meta.postTokenBalances` determine the amount paid
 # for the content. The negative balance change in the "sending" account should match the sum of
@@ -221,126 +221,165 @@ mock_valid_track_purchase_from_user_bank_single_recipient_tx = GetTransactionRes
         {
             "jsonrpc": "2.0",
             "result": {
-                "slot": 190957,
+                "slot": 26227,
                 "transaction": {
                     "signatures": [
-                        "5wPxiuLSF3MzXZt9XG99UEPNdxs8DtE2vWKezrB6zuMCrkMBJx6iU7xw5icaowpfgj96iLGnAgEAaBNSbneWdbZw"
+                        "4NgZHuZ1LNLRoJJi43B1iHbDKWwRhRnVKJJHYc2MPV5ArTkpc5sfcyd7Rgv5JZnXqEdSZdT9bpJ76myqHgCG2pfU"
                     ],
                     "message": {
                         "header": {
                             "numRequiredSignatures": 1,
                             "numReadonlySignedAccounts": 0,
-                            "numReadonlyUnsignedAccounts": 5,
+                            "numReadonlyUnsignedAccounts": 10,
                         },
                         "accountKeys": [
-                            "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
-                            # User bank as source address
+                            "HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg",
+                            # Sender user bank
                             "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX",
+                            "5B6jwaPf4mMdwyRjD9x7H9y8fFR5iwvZK64Ri3xkSXGh",
                             "A76eNhRrfdy6WfMoQf4ALasMxzRWHajH4TrVuX2NUjZT",
+                            # Receiver user bank
                             "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy",
-                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                            "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
-                            "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+                            "11111111111111111111111111111111",
+                            "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa",
                             "G231EZsMoCNBiQKP5quEeAM3oG516Zspirjnh7ywP71i",
+                            "KeccakSecp256k11111111111111111111111111111",
+                            "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+                            "Sysvar1nstructions1111111111111111111111111",
+                            "SysvarRent111111111111111111111111111111111",
+                            "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         ],
-                        "recentBlockhash": "6D65tSU7pjSmFvSj9qK2W2bjkESw4XZebeNmgA1rCqnF",
+                        "recentBlockhash": "8CTRtyjoo275ZwHuq9nBEdYtTwG6jP7VxMwxv2yeiS76",
                         "instructions": [
                             {
-                                "programIdIndex": 4,
-                                "accounts": [1, 5, 2, 0],
-                                "data": "hYECWfYe8vYqs",
+                                "programIdIndex": 9,
+                                "accounts": [],
+                                "data": "H4eCheRWTZDTCFYXS5QxY3AH8Yb7NdpeFkwCufrAPtfgLzs1F3cLufX635zDuSDUdZkpWMrub9ppgfEWsDPiSBsxnP8oEboGFbQn8h7VeMoJqAtPhCHcBfPtcrKFzgrW1YY2HQ18wZCXK4e71NH5dWaqkKvUYCCq6jADEQP87zRpNzprDiTQUTWwPi7yed3MyuRzP",
                                 "stackHeight": None,
                             },
                             {
-                                "programIdIndex": 6,
+                                "programIdIndex": 13,
+                                "accounts": [0, 1, 3, 2, 6, 12, 11, 5, 14],
+                                "data": "7PxDYbdhSHWR3DpxB6uwMyCTgjXC",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 7,
+                                "accounts": [3, 8, 14, 4],
+                                "data": "BQD4GnQPrhbq6Y9NJLgwWxBtNf2BL8pPGkJm9rAs",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 10,
                                 "accounts": [0],
                                 # "track:1:1:2"
                                 "data": "VsoUab4LQ4yax8R",
                                 "stackHeight": None,
                             },
-                            {
-                                "programIdIndex": 7,
-                                "accounts": [2, 8, 4, 3],
-                                "data": "BQD4GnQPrhbq6Y9NJLnwDUziXhfF6BjkLYFbnKZH",
-                                "stackHeight": None,
-                            },
                         ],
-                        "addressTableLookups": [],
                     },
                 },
                 "meta": {
                     "err": None,
                     "status": {"Ok": None},
-                    "fee": 5000,
+                    "fee": 10000,
                     "preBalances": [
-                        8420804160,
+                        19991459680,
+                        2039280,
+                        953520,
                         2039280,
                         2039280,
-                        2039280,
-                        929020800,
-                        1461600,
-                        119712000,
+                        1,
+                        0,
                         1141440,
                         946560,
+                        1,
+                        119712000,
+                        0,
+                        1009200,
+                        1141440,
+                        929020800,
                     ],
                     "postBalances": [
-                        8420799160,
+                        19991449680,
+                        2039280,
+                        953520,
                         2039280,
                         2039280,
-                        2039280,
-                        929020800,
-                        1461600,
-                        119712000,
+                        1,
+                        0,
                         1141440,
                         946560,
+                        1,
+                        119712000,
+                        0,
+                        1009200,
+                        1141440,
+                        929020800,
                     ],
                     "innerInstructions": [
+                        {
+                            "index": 1,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 14,
+                                    "accounts": [1, 3, 6, 6],
+                                    "data": "3QCwqmHZ4mdq",
+                                    "stackHeight": 2,
+                                }
+                            ],
+                        },
                         {
                             "index": 2,
                             "instructions": [
                                 {
-                                    "programIdIndex": 4,
-                                    "accounts": [2, 3, 8, 8],
-                                    "data": "3YKuzAsyicvj",
+                                    "programIdIndex": 14,
+                                    "accounts": [3, 4, 8, 8],
+                                    "data": "3QCwqmHZ4mdq",
                                     "stackHeight": 2,
                                 }
                             ],
-                        }
+                        },
                     ],
                     "logMessages": [
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [1]",
-                        "Program log: Instruction: TransferChecked",
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 6173 of 600000 compute units",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 invoke [1]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 777300 compute units",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
-                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo invoke [1]",
-                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo consumed 480 of 593827 compute units",
-                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo success",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 consumed 27936 of 800000 compute units",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 success",
                         "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa invoke [1]",
                         "Program log: Instruction: Route",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
                         "Program log: Instruction: Transfer",
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 576902 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 755619 compute units",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
                         "Program log: All transfers complete!",
-                        "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa consumed 21782 of 593347 compute units",
+                        "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa consumed 21782 of 772064 compute units",
                         "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa success",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo invoke [1]",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo consumed 480 of 750282 compute units",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo success",
                     ],
                     "preTokenBalances": [
                         {
                             "accountIndex": 1,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 10.0,
+                                "uiAmount": 7.0,
                                 "decimals": 6,
-                                "amount": "10000000",
-                                "uiAmountString": "10.0",
+                                "amount": "7000000",
+                                "uiAmountString": "7",
                             },
-                            "owner": "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
+                            "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 2,
+                            "accountIndex": 3,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
                                 "uiAmount": None,
@@ -352,13 +391,13 @@ mock_valid_track_purchase_from_user_bank_single_recipient_tx = GetTransactionRes
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 3,
+                            "accountIndex": 4,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 0,
+                                "uiAmount": 2.001,
                                 "decimals": 6,
-                                "amount": "0",
-                                "uiAmountString": "0",
+                                "amount": "2001000",
+                                "uiAmountString": "2.001",
                             },
                             "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -369,16 +408,16 @@ mock_valid_track_purchase_from_user_bank_single_recipient_tx = GetTransactionRes
                             "accountIndex": 1,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 9.0,
+                                "uiAmount": 6.0,
                                 "decimals": 6,
-                                "amount": "9000000",
-                                "uiAmountString": "9.0",
+                                "amount": "6000000",
+                                "uiAmountString": "6",
                             },
-                            "owner": "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
+                            "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 2,
+                            "accountIndex": 3,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
                                 "uiAmount": None,
@@ -390,13 +429,13 @@ mock_valid_track_purchase_from_user_bank_single_recipient_tx = GetTransactionRes
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 3,
+                            "accountIndex": 4,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 1.0,
+                                "uiAmount": 3.001,
                                 "decimals": 6,
-                                "amount": "1000000",
-                                "uiAmountString": "1.0",
+                                "amount": "3001000",
+                                "uiAmountString": "3.001",
                             },
                             "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -404,10 +443,9 @@ mock_valid_track_purchase_from_user_bank_single_recipient_tx = GetTransactionRes
                     ],
                     "rewards": [],
                     "loadedAddresses": {"writable": [], "readonly": []},
-                    "computeUnitsConsumed": 28435,
+                    "computeUnitsConsumed": 50198,
                 },
-                "version": 0,
-                "blockTime": 1701922096,
+                "blockTime": 1701757366,
             },
             "id": 0,
         }
@@ -608,99 +646,135 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
         {
             "jsonrpc": "2.0",
             "result": {
-                "slot": 190957,
+                "slot": 23952,
                 "transaction": {
                     "signatures": [
-                        "5wPxiuLSF3MzXZt9XG99UEPNdxs8DtE2vWKezrB6zuMCrkMBJx6iU7xw5icaowpfgj96iLGnAgEAaBNSbneWdbZw"
+                        "5w63hkGRYB95H7yuDTFxAw9json2EXVSNatQQ3444y3NHZPTQBT91G3iUeFXpPYyRouPdfDAeGTKa2oB4iDw8wHV"
                     ],
                     "message": {
                         "header": {
                             "numRequiredSignatures": 1,
                             "numReadonlySignedAccounts": 0,
-                            "numReadonlyUnsignedAccounts": 5,
+                            "numReadonlyUnsignedAccounts": 9,
                         },
                         "accountKeys": [
-                            "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
-                            # User bank as source address
+                            "HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg",
+                            # source user bank
                             "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX",
+                            "5B6jwaPf4mMdwyRjD9x7H9y8fFR5iwvZK64Ri3xkSXGh",
                             "A76eNhRrfdy6WfMoQf4ALasMxzRWHajH4TrVuX2NUjZT",
+                            # recipient account
                             "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy",
-                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                            "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
-                            "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+                            "11111111111111111111111111111111",
+                            "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa",
                             "G231EZsMoCNBiQKP5quEeAM3oG516Zspirjnh7ywP71i",
+                            "KeccakSecp256k11111111111111111111111111111",
+                            "Sysvar1nstructions1111111111111111111111111",
+                            "SysvarRent111111111111111111111111111111111",
+                            "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         ],
-                        "recentBlockhash": "6D65tSU7pjSmFvSj9qK2W2bjkESw4XZebeNmgA1rCqnF",
+                        "recentBlockhash": "8dq8k9h2yZk7nZomUzYYvAjVtFcux9sZEHa7te5mfFcv",
                         "instructions": [
                             {
-                                "programIdIndex": 4,
-                                "accounts": [1, 5, 2, 0],
-                                "data": "hYECWfYe8vYqs",
+                                "programIdIndex": 9,
+                                "accounts": [],
+                                "data": "H4eCheRWTZDTCFYXS5QxY3AH8Yb7NdpeFkwCufrAPtiDBtroMe2WhDEphzWPJ6ThwujM8Cmg8zQ8sKxubdGatUu43ej2kNSNdUm46dvwGUcVxAtJRbiYh96WDSFiiydXDABtLJYPZLkTaiJ72cUaNcBep18Cy6T9NTe3crrUGgEPwZ4wXCujYCakP7MLUJ2C22bno",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 12,
+                                "accounts": [0, 1, 3, 2, 6, 11, 10, 5, 13],
+                                "data": "7PxDYbdhSHWR3DpxB6uwMyCTgjXC",
                                 "stackHeight": None,
                             },
                             {
                                 "programIdIndex": 7,
-                                "accounts": [2, 8, 4, 3],
-                                "data": "BQD4GnQPrhbq6Y9NJLnwDUziXhfF6BjkLYFbnKZH",
+                                "accounts": [3, 8, 13, 4],
+                                "data": "BQD4GnQPrhbq6Y9NJLgwWxBtNf2BL8pPGkJm9rAs",
                                 "stackHeight": None,
                             },
                         ],
-                        "addressTableLookups": [],
                     },
                 },
                 "meta": {
                     "err": None,
                     "status": {"Ok": None},
-                    "fee": 5000,
+                    "fee": 10000,
                     "preBalances": [
-                        8420804160,
+                        19991469680,
+                        2039280,
+                        953520,
                         2039280,
                         2039280,
-                        2039280,
-                        929020800,
-                        1461600,
-                        119712000,
+                        1,
+                        0,
                         1141440,
                         946560,
+                        1,
+                        0,
+                        1009200,
+                        1141440,
+                        929020800,
                     ],
                     "postBalances": [
-                        8420799160,
+                        19991459680,
+                        2039280,
+                        953520,
                         2039280,
                         2039280,
-                        2039280,
-                        929020800,
-                        1461600,
-                        119712000,
+                        1,
+                        0,
                         1141440,
                         946560,
+                        1,
+                        0,
+                        1009200,
+                        1141440,
+                        929020800,
                     ],
                     "innerInstructions": [
+                        {
+                            "index": 1,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 13,
+                                    "accounts": [1, 3, 6, 6],
+                                    "data": "3QCwqmHZ4mdq",
+                                    "stackHeight": 2,
+                                }
+                            ],
+                        },
                         {
                             "index": 2,
                             "instructions": [
                                 {
-                                    "programIdIndex": 4,
-                                    "accounts": [2, 3, 8, 8],
-                                    "data": "3YKuzAsyicvj",
+                                    "programIdIndex": 13,
+                                    "accounts": [3, 4, 8, 8],
+                                    "data": "3QCwqmHZ4mdq",
                                     "stackHeight": 2,
                                 }
                             ],
-                        }
+                        },
                     ],
                     "logMessages": [
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [1]",
-                        "Program log: Instruction: TransferChecked",
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 6173 of 600000 compute units",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 invoke [1]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 577300 compute units",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 consumed 27936 of 600000 compute units",
+                        "Program testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9 success",
                         "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa invoke [1]",
                         "Program log: Instruction: Route",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
                         "Program log: Instruction: Transfer",
-                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 576902 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 555619 compute units",
                         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
                         "Program log: All transfers complete!",
-                        "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa consumed 21782 of 593347 compute units",
+                        "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa consumed 21782 of 572064 compute units",
                         "Program apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa success",
                     ],
                     "preTokenBalances": [
@@ -708,16 +782,16 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
                             "accountIndex": 1,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 10.0,
+                                "uiAmount": 8.0,
                                 "decimals": 6,
-                                "amount": "10000000",
-                                "uiAmountString": "10.0",
+                                "amount": "8000000",
+                                "uiAmountString": "8",
                             },
-                            "owner": "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
+                            "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 2,
+                            "accountIndex": 3,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
                                 "uiAmount": None,
@@ -729,13 +803,13 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 3,
+                            "accountIndex": 4,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 0,
+                                "uiAmount": 1.001,
                                 "decimals": 6,
-                                "amount": "0",
-                                "uiAmountString": "0",
+                                "amount": "1001000",
+                                "uiAmountString": "1.001",
                             },
                             "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -746,16 +820,16 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
                             "accountIndex": 1,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 9.0,
+                                "uiAmount": 7.0,
                                 "decimals": 6,
-                                "amount": "9000000",
-                                "uiAmountString": "9.0",
+                                "amount": "7000000",
+                                "uiAmountString": "7",
                             },
-                            "owner": "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W",
+                            "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 2,
+                            "accountIndex": 3,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
                                 "uiAmount": None,
@@ -767,13 +841,13 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         },
                         {
-                            "accountIndex": 3,
+                            "accountIndex": 4,
                             "mint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
                             "uiTokenAmount": {
-                                "uiAmount": 1.0,
+                                "uiAmount": 2.001,
                                 "decimals": 6,
-                                "amount": "1000000",
-                                "uiAmountString": "1.0",
+                                "amount": "2001000",
+                                "uiAmountString": "2.001",
                             },
                             "owner": "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt",
                             "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -781,15 +855,15 @@ mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx = GetTra
                     ],
                     "rewards": [],
                     "loadedAddresses": {"writable": [], "readonly": []},
-                    "computeUnitsConsumed": 28435,
+                    "computeUnitsConsumed": 49718,
                 },
-                "version": 0,
-                "blockTime": 1701922096,
+                "blockTime": 1701755091,
             },
             "id": 0,
         }
     )
 )
+
 
 # Routes $2.50 to a single recipient w/ memo for track purchase
 mock_valid_track_purchase_single_recipient_pay_extra_tx = GetTransactionResp.from_json(

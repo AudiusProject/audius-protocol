@@ -426,6 +426,8 @@ def test_process_payment_router_tx_details_transfer_partial_recovery(
         )
         # Recovery transaction was for half of the original amount, expect the difference
         assert transaction_record.change == -1000000
+        # TODO: Need to also update the balance
+        # TODO: Consider for the case of recovering too much, we might just index it as a regular inbound transfer so that the balance is correct.
 
 
 # Recovery transaction doesn't match the most recent outbound transfer (different addresses). Should index

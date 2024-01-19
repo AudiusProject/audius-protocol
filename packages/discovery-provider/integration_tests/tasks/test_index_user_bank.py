@@ -665,7 +665,7 @@ def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):
             challenge_event_bus=challenge_event_bus,
         )
 
-        # We do still expect the transfers to get indexed, but as regular transfers
+        # We expect no transactions to be logged for sender or receiver
         receiver_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
