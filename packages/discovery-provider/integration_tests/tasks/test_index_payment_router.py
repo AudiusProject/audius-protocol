@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 from unittest.mock import call, create_autospec
 
 from payment_router_mock_transactions import (
@@ -333,7 +332,7 @@ def test_process_payment_router_tx_details_transfer_from_user_bank_without_purch
 
 # Should revert the most recent outbound transaction to the sending address
 # of the recovery transaction
-def test_process_payment_router_tx_details_transfer_recovery(app, caplog):
+def test_process_payment_router_tx_details_transfer_recovery(app):
     tx_response = mock_valid_transfer_single_recipient_recovery_tx
     with app.app_context():
         db = get_db()
