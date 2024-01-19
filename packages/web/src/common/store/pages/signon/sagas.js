@@ -475,8 +475,8 @@ function* signUp() {
 
         const isNativeMobile = yield getContext('isNativeMobile')
 
-        const isSignUpRedesignEnabled = yield call(
-          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+        const isSignUpRedesignEnabled = getFeatureEnabled(
+          FeatureFlags.SIGN_UP_REDESIGN
         )
 
         if (isNativeMobile && !isSignUpRedesignEnabled) {
@@ -640,10 +640,13 @@ function* signIn(action) {
       const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
       yield put(trackEvent)
 
-      // Reset the sign on in the background after page load as to relieve the UI loading
-      yield delay(1000)
       yield put(signOnActions.resetSignOn())
+
       const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        // Reset the sign on in the background after page load as to relieve the UI loading
+        yield delay(1000)
+      }
       if (isNativeMobile) {
         yield put(requestPushNotificationPermissions())
       } else {

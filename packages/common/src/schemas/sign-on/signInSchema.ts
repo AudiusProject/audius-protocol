@@ -3,7 +3,8 @@ import { z } from 'zod'
 export const messages = {
   emailRequired: 'Please enter an email.',
   email: 'Please enter a valid email.',
-  passwordRequired: 'Please enter a password.'
+  passwordRequired: 'Please enter a password.',
+  invalidCredentials: 'Invalid credentials.'
 }
 
 export const signInSchema = z.object({
@@ -16,3 +17,5 @@ export const signInSchema = z.object({
     required_error: messages.passwordRequired
   })
 })
+
+export { messages as signInErrorMessages }

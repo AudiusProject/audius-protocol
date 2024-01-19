@@ -84,7 +84,7 @@ const initialState = {
     categories: {},
     selectedUserIds: []
   },
-  genres: ['Hip-Hop/Rap'],
+  genres: [],
   referrer: null
 }
 

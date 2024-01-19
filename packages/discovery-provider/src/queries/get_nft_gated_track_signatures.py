@@ -1,5 +1,4 @@
 import asyncio
-import base64
 import concurrent.futures
 import json
 import logging
@@ -299,20 +298,22 @@ def _get_metadata_account(mint_address: str):
 
 
 def _get_token_account_info(token_account):
-    return token_account["account"]["data"]["parsed"]["info"]
+    return token_account.account.data.parsed["info"]
 
 
 def _decode_metadata_account(metadata_account):
-    account_info = solana_client_manager.get_account_info(metadata_account)
-    if (
-        (not account_info)
-        or ("value" not in account_info)
-        or (not account_info["value"])
-        or ("data" not in account_info["value"])
-        or (not account_info["value"]["data"])
-    ):
+    try:
+        account_info = solana_client_manager.get_account_info_json_parsed(
+            metadata_account
+        )
+        if not account_info:
+            return None
+        return account_info.data
+    except Exception as e:
+        logger.error(
+            f"Could not decode metadata account {metadata_account}. Error: {e}"
+        )
         return None
-    return base64.b64decode(account_info["value"]["data"][0])
 
 
 async def _wrap_decode_metadata_account(metadata_account):
@@ -344,8 +345,11 @@ def _does_user_own_sol_nft_collection(
 
     for wallet in user_sol_wallets:
         try:
-            result = solana_client_manager.get_token_accounts_by_owner(wallet)
-            token_accounts = result["value"]
+            token_accounts = (
+                solana_client_manager.get_token_accounts_by_owner_json_parsed(
+                    Pubkey.from_string(wallet)
+                )
+            )
             nft_token_accounts = list(
                 filter(
                     lambda item: _get_token_account_info(item)["tokenAmount"]["amount"]

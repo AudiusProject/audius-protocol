@@ -16,9 +16,9 @@ WORKDIR /app
 RUN npm install turbo --global
 
 COPY . .
-RUN turbo prune --scope=@audius/ddex-frontend --scope=@audius/ddex --docker
+RUN turbo prune --scope=@audius/ddex-client --scope=@audius/ddex-server --docker
 
-# Install and build frontend and backend dists and run app
+# Install and build client and server dists and run app
 FROM base AS runner
 
 WORKDIR /app
@@ -38,11 +38,12 @@ RUN CI=true npm i
 COPY --from=builder /app/out/full/ .
 COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
-RUN npx turbo run build --filter=@audius/ddex-frontend --filter=@audius/ddex
+RUN npx turbo run build --filter=@audius/ddex-client --filter=@audius/ddex-server
 
-COPY packages/ddex-frontend/dist /app/packages/ddex/public
+CMD ["sh"]
+# COPY packages/ddex/client/dist /app/packages/ddex/server/public
 
-WORKDIR /app/packages/ddex
+# WORKDIR /app/packages/ddex/server
 
-EXPOSE 8926
-CMD [ "node", "dist/index.js" ]
+# EXPOSE 8926
+# CMD [ "node", "dist/index.js" ]
