@@ -24,6 +24,10 @@
     "postgres", # Temporary to stop spam from one SP. TODO: Move back to include_containers
   ]
 
+[sources.auto_upgrade]
+  type = "file"
+  include = ["/home/ubuntu/audius-docker-compose/auto-upgrade.log"]  # Path to the log files
+
 [transforms.parse]
   type = "remap"
   inputs = ["logs"]
