@@ -24,6 +24,11 @@
     "postgres", # Temporary to stop spam from one SP. TODO: Move back to include_containers
   ]
 
+[sources.auto_upgrade]
+  type = "file"
+  include = ["/auto-upgrade.log"]
+  ignore_checkpoints = true
+
 [transforms.parse]
   type = "remap"
   inputs = ["logs"]
@@ -47,9 +52,16 @@
     del(.otelTraceID)
   '''
 
+[transforms.parse_auto_upgrade]
+  type = "remap"
+  inputs = ["auto_upgrade"]
+  source = '''
+    .node = "$node"
+  '''
+
 [transforms.throttle]
   type = "throttle"
-  inputs = ["parse"]
+  inputs = ["parse", "parse_auto_upgrade"]
   # throttle ~3mm logs per node per 24 hour period (2000 * 60 * 24)
   # 3mm is at the upper range of average node log volume at this current time
   key_field = "node"   
@@ -63,7 +75,7 @@
 #   encoding.codec = "json"
 
 [sinks.axiom]
-  inputs = [ "parse" ]
+  inputs = [ "parse", "parse_auto_upgrade" ]
   type = "axiom"
   token = "$audius_axiom_token"
   dataset = "$audius_axiom_dataset"
