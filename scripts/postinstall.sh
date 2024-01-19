@@ -8,7 +8,7 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   ln -s ../../../node_modules/react-native react-native
   ln -s ../../../node_modules/react-native-code-push react-native-code-push
   cd ../ios
-  bundle check || bundle install
+  bundle check || bundle install || true
   if command -v pod >/dev/null; then
     pod install
   fi
