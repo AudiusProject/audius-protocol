@@ -1,6 +1,5 @@
 import { AudiusClient } from './AudiusClient'
 import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
-import { initAudiusSdk } from './sdk'
 
 declare global {
   interface Window {
@@ -133,11 +132,6 @@ export async function setup(this: AudiusClient): Promise<void> {
           this.libs = await configureReadOnlyLibs()
           this.isAccountMisconfigured = true
           this.hasValidAccount = false
-        } else {
-          initAudiusSdk({
-            getAddress: () => this.libs.web3Manager.getWalletAddress(),
-            signTransaction: data => this.libs.web3Manager.signTypedData(data)
-          })
         }
       }
     } catch (err) {

@@ -10,10 +10,11 @@ import {
 
 const dashboardWalletUsersBatcher = create({
   fetcher: async (wallets: string[]): Promise<DashboardWalletUser[]> => {
-    const sdk = await audiusSdk()
-    const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
-      wallets
-    })
+    const res = await audiusSdk.dashboardWalletUsers.bulkGetDashboardWalletUsers(
+      {
+        wallets
+      }
+    )
     return res.data
   },
   resolver: (data, query) => {

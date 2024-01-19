@@ -1,8 +1,9 @@
 import { DecodedUserToken, OAUTH_URL } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { getDashboardWalletUserQueryKey } from 'hooks/useDashboardWalletUsers'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { audiusSdk } from 'services/Audius/sdk'
+import { audiusSdk as sdk } from 'services/Audius/sdk'
 import { disableAudiusProfileRefetch } from 'store/account/slice'
 
 const env = import.meta.env.VITE_ENVIRONMENT
@@ -11,7 +12,6 @@ let resolveUserHandle = null
 let receiveUserHandlePromise = null
 
 const receiveUserId = async (event: MessageEvent) => {
-  const sdk = await audiusSdk()
   const oauthOrigin = new URL(OAUTH_URL[env]).origin
   if (
     event.origin !== oauthOrigin ||
@@ -38,10 +38,9 @@ export const useConnectAudiusProfile = ({
 }) => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const [isWaiting, setIsWaiting] = useState(false)
   const handleConnectSuccess = async (profile: DecodedUserToken) => {
     window.removeEventListener('message', receiveUserId)
-    const sdk = await audiusSdk()
-
     // Optimistically set user
     await queryClient.cancelQueries({
       queryKey: getDashboardWalletUserQueryKey(wallet)
@@ -56,20 +55,23 @@ export const useConnectAudiusProfile = ({
           user: audiusUser.data
         })
       }
+      setIsWaiting(false)
       onSuccess()
     } catch {
       console.error("Couldn't fetch Audius profile data.")
+      setIsWaiting(false)
     }
   }
 
   const connect = async () => {
-    const sdk = await audiusSdk()
+    setIsWaiting(true)
     sdk.oauth.init({
       env: env === 'production' ? 'production' : 'staging',
       successCallback: handleConnectSuccess,
       errorCallback: (errorMessage: string) => {
         window.removeEventListener('message', receiveUserId)
         console.error(errorMessage)
+        setIsWaiting(false)
       }
     })
     window.removeEventListener('message', receiveUserId)
@@ -108,16 +110,18 @@ export const useConnectAudiusProfile = ({
     })
     dispatch(disableAudiusProfileRefetch())
     queryClient.setQueryData(getDashboardWalletUserQueryKey(wallet), null)
+    setIsWaiting(false)
     onSuccess()
   }
 
   const disconnect = async () => {
-    const sdk = await audiusSdk()
+    setIsWaiting(true)
     sdk.oauth.init({
       env: env === 'production' ? 'production' : 'staging',
       successCallback: handleDisconnectSuccess,
       errorCallback: (errorMessage: string) => {
         console.error(errorMessage)
+        setIsWaiting(false)
       }
     })
     sdk.oauth.login({
@@ -129,5 +133,5 @@ export const useConnectAudiusProfile = ({
     })
   }
 
-  return { connect, disconnect }
+  return { connect, disconnect, isWaiting }
 }
