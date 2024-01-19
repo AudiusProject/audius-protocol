@@ -1,0 +1,4 @@
+Dockerfile
+Dockerfile.fast
+node_modules/
+dist/
