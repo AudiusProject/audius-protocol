@@ -7,6 +7,7 @@ import {
   newCollectionMetadata,
   FeatureFlags
 } from '@audius/common'
+import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import { AudioQuality } from 'components/upload/AudioQuality'
@@ -113,7 +114,9 @@ export const SelectPageNew = (props: SelectPageProps) => {
             onDropRejected={onSelectTracks}
           />
           {isLosslessDownloadsEnabled ? (
-            <AudioQuality className={styles.audioQuality} />
+            <Box css={{ top: '-68px' }}>
+              <AudioQuality />
+            </Box>
           ) : null}
           {uploadTrackError ? (
             <InvalidFileType

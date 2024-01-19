@@ -1,6 +1,4 @@
-import { Flex } from '@audius/harmony'
-
-import { Text } from 'components/typography'
+import { Flex, Text } from '@audius/harmony'
 
 import styles from './AudioQuality.module.css'
 
@@ -9,14 +7,10 @@ const messages = {
   learnMore: 'Learn more about lossless HD.'
 }
 
-type AudioQualityProps = {
-  className?: string
-}
-
-export const AudioQuality = ({ className }: AudioQualityProps) => {
+export const AudioQuality = () => {
   return (
-    <Flex justifyContent='center' alignItems='center' className={className}>
-      <Text>{messages.lossless}</Text>
+    <Flex justifyContent='center' alignItems='center'>
+      <Text variant='body'>{messages.lossless}</Text>
       &nbsp;
       <a className={styles.learnMore} href='' target='_blank'>
         {messages.learnMore}
