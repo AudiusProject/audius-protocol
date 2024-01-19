@@ -198,7 +198,10 @@ export enum IntKeys {
   HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS',
 
   /** Coinflow maximum */
-  COINFLOW_MAXIMUM_CENTS = 'COINFLOW_MAXIMUM_CENTS'
+  COINFLOW_MAXIMUM_CENTS = 'COINFLOW_MAXIMUM_CENTS',
+
+  /** Minimum balance required to initiate a USDC cash transfer */
+  MIN_USDC_WITHDRAW_BALANCE_CENTS = 'MIN_USDC_WITHDRAW_BALANCE_CENTS'
 }
 
 export enum BooleanKeys {

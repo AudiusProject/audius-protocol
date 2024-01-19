@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import { css } from '@emotion/native'
-import { useLinkProps } from '@react-navigation/native'
 import {
   type GestureResponderEvent,
   TouchableWithoutFeedback
@@ -17,7 +16,9 @@ import Animated, {
 import { useTheme } from '../../foundations/theme/useTheme'
 import { Text } from '../Text/Text'
 
-import type { LinkProps, TextLinkProps } from './types'
+import { ExternalLink } from './ExternalLink'
+import { InternalLink } from './InternalLink'
+import type { TextLinkProps } from './types'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
@@ -25,12 +26,8 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   props: TextLinkProps<ParamList>
 ) => {
   const {
-    to,
-    action,
     children,
     variant = 'default',
-    // TODO: Add external link support
-    // isExternal = false,
     onPress,
     textVariant,
     showUnderline,
@@ -90,44 +87,30 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   )
 
   const rootProps = {
+    onPress: handlePress,
     onPressIn: () => setIsPressing(true),
     onPressOut: () => setIsPressing(false)
   }
 
-  if (to) {
+  if ('to' in other) {
     element = (
-      <Link to={to} action={action} onPress={handlePress} {...rootProps}>
+      <InternalLink to={other.to} action={other.action} {...rootProps}>
         {element}
-      </Link>
+      </InternalLink>
+    )
+  } else if ('url' in other) {
+    element = (
+      <ExternalLink url={other.url} {...rootProps}>
+        {element}
+      </ExternalLink>
     )
   } else {
     element = (
-      <TouchableWithoutFeedback onPress={handlePress} {...other} {...rootProps}>
+      <TouchableWithoutFeedback {...rootProps}>
         {element}
       </TouchableWithoutFeedback>
     )
   }
 
   return <GestureDetector gesture={tap}>{element}</GestureDetector>
-}
-
-const Link = <ParamList extends ReactNavigation.RootParamList>(
-  props: LinkProps<ParamList>
-) => {
-  const { to, action, onPress, children, ...other } = props
-  const { onPress: onPressLink, ...linkProps } = useLinkProps({ to, action })
-
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      onPress?.(e)
-      onPressLink(e)
-    },
-    [onPress, onPressLink]
-  )
-
-  return (
-    <TouchableWithoutFeedback onPress={handlePress} {...other} {...linkProps}>
-      {children}
-    </TouchableWithoutFeedback>
-  )
 }

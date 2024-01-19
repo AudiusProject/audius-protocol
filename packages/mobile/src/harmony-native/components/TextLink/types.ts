@@ -1,27 +1,19 @@
-import type { ReactNode } from 'react'
-
-import type { NavigationAction } from '@react-navigation/native'
-import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { GestureResponderEvent } from 'react-native'
-import type { SetOptional } from 'type-fest'
 
 import type { TextProps } from '../Text/Text'
 
+import type { ExternalLinkProps } from './ExternalLink'
+import type { InternalLinkProps } from './InternalLink'
+
 type TextLinkTextProps = Omit<TextProps, 'variant' | 'color'>
 
-export type LinkProps<ParamList extends ReactNavigation.RootParamList> = {
-  to: To<ParamList>
-  action?: NavigationAction
-  target?: string
-  onPress?: (
-    e: React.MouseEvent<HTMLAnchorElement, MouseEvent> | GestureResponderEvent
-  ) => void
-  children?: ReactNode
+type NonLinkProps = {
+  onPress?: (e: GestureResponderEvent) => void
 }
 
 export type TextLinkProps<ParamList extends ReactNavigation.RootParamList> =
   TextLinkTextProps &
-    SetOptional<LinkProps<ParamList>, 'to'> & {
+    (InternalLinkProps<ParamList> | ExternalLinkProps | NonLinkProps) & {
       /**
        * Which variant to display.
        * @default default
@@ -38,11 +30,4 @@ export type TextLinkProps<ParamList extends ReactNavigation.RootParamList> =
        * a text-link is present when next to other text.
        */
       showUnderline?: boolean
-
-      /**
-       * Mark as true if the link destination is outside of the app. Causes the
-       * link to open in a new tab.
-       * @default false
-       */
-      isExternal?: boolean
     }

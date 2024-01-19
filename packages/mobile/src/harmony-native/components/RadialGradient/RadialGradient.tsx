@@ -1,8 +1,11 @@
 import { useState } from 'react'
 
+import { css } from '@emotion/native'
 import { View } from 'react-native'
 import type { RadialGradientProps } from 'react-native-radial-gradient'
 import RNRadialGradient from 'react-native-radial-gradient'
+
+const fullSize = css({ height: '100%', width: '100%' })
 
 // RadialGradient that uses percentages instead of pixels for center and radius
 // This makes RadialGradient much more useful and dynamic
@@ -28,10 +31,13 @@ export const RadialGradient = (props: RadialGradientProps) => {
     : undefined
 
   return (
-    <View style={style} onLayout={(e) => setDimensions(e.nativeEvent.layout)}>
+    <View
+      style={[fullSize, style]}
+      onLayout={(e) => setDimensions(e.nativeEvent.layout)}
+    >
       <RNRadialGradient
         {...other}
-        style={{ height, width }}
+        style={[style, { height, width }]}
         center={center}
         radius={radius}
       />

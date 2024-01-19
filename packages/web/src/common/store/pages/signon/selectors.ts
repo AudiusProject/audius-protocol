@@ -11,6 +11,16 @@ export const getEmailField = (state: AppState) => state.signOn.email
 export const getNameField = (state: AppState) => state.signOn.name
 export const getPasswordField = (state: AppState) => state.signOn.password
 export const getOtpField = (state: AppState) => state.signOn.otp
+export const getRequiresOtp = (state: AppState) => {
+  const passwordField = getPasswordField(state)
+  const { error } = passwordField
+  return error && error.includes('403')
+}
+export const getCanShowOtp = (state: AppState) => {
+  const { value: email } = getEmailField(state)
+  const { value: password, error } = getPasswordField(state)
+  return email && password && error
+}
 export const getHandleField = (state: AppState) => state.signOn.handle
 export const getIsVerified = (state: AppState) => state.signOn.verified
 export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto

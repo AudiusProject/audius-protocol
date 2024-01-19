@@ -19,7 +19,7 @@ import { useAsync } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Text, Flex, IconVerified, useTheme } from '@audius/harmony-native'
-import { TextField } from 'app/components/fields'
+import { PasswordField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { NewEmailField } from '../components/NewEmailField'
@@ -129,19 +129,10 @@ export const CreateLoginDetailsScreen = () => {
                 }
               />
               <EmailField onChangeScreen={navigateToLogin} />
-              <TextField
-                name='password'
-                label={messages.passwordLabel}
-                textContentType='password'
-                secureTextEntry
-                noGutter
-              />
-              <TextField
+              <PasswordField name='password' label={messages.passwordLabel} />
+              <PasswordField
                 name='confirmPassword'
                 label={messages.confirmPasswordLabel}
-                textContentType='password'
-                secureTextEntry
-                noGutter
               />
               <PasswordCompletionChecklist />
             </Flex>
