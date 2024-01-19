@@ -1,3 +1,4 @@
+import { TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -68,7 +69,7 @@ export const Dropzone = ({
     return (
       <>
         {message}
-        <span className={styles.link}>{messages.browse}</span>
+        <TextLink css={{ color: '#a30cb3' }}>{messages.browse}</TextLink>
       </>
     )
   }

@@ -1,20 +1,19 @@
-import { Flex, Text } from '@audius/harmony'
-
-import styles from './AudioQuality.module.css'
+import { Flex, Text, TextLink } from '@audius/harmony'
 
 const messages = {
-  lossless: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality.',
+  lossless: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality. ',
   learnMore: 'Learn more about lossless HD.'
 }
 
 export const AudioQuality = () => {
   return (
-    <Flex justifyContent='center' alignItems='center'>
-      <Text variant='body'>{messages.lossless}</Text>
-      &nbsp;
-      <a className={styles.learnMore} href='' target='_blank'>
-        {messages.learnMore}
-      </a>
+    <Flex justifyContent='center' alignItems='center' mh='3xl'>
+      <Text variant='body'>
+        {messages.lossless}
+        <TextLink href='' target='_blank' isExternal css={{ color: '#a30cb3' }}>
+          {messages.learnMore}
+        </TextLink>
+      </Text>
     </Flex>
   )
 }

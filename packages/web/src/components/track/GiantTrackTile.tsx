@@ -34,6 +34,7 @@ import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
+import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -61,7 +62,6 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
