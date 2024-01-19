@@ -1,4 +1,5 @@
 import { resolveRoute } from 'vike/routing'
+// eslint-disable-next-line import/no-unresolved
 import { PageContextServer } from 'vike/types'
 
 import { staticRoutes } from 'utils/route'

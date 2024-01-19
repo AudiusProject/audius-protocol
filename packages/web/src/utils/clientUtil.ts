@@ -1,7 +1,5 @@
 import { Client, OS, MobileOS } from '@audius/common'
 
-import { useSsrContext } from 'ssr/SsrContext'
-
 declare global {
   interface Window {
     opera: any

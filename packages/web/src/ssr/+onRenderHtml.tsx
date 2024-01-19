@@ -3,7 +3,7 @@ import { createMemoryHistory } from 'history'
 import ReactDOMServer from 'react-dom/server'
 import { Helmet } from 'react-helmet'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
-import { PageContextServer } from 'vike/types'
+import type { PageContextServer } from 'vike/types'
 
 import { isMobileUserAgent } from 'utils/clientUtil'
 

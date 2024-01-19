@@ -13,6 +13,7 @@ import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import {
   fetchSearch,
@@ -24,7 +25,6 @@ import Bar from 'components/search/SearchBar'
 import { collectionPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
-import { HistoryContext } from 'app/HistoryProvider'
 
 class ConnectedSearchBar extends Component {
   static contextType = HistoryContext

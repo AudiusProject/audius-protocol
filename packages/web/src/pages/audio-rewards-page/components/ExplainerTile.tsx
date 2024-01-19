@@ -4,8 +4,8 @@ import { Theme } from '@audius/common'
 import cn from 'classnames'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 
 import styles from './ExplainerTile.module.css'

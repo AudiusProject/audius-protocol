@@ -14,10 +14,10 @@ import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
 import {
   TRENDING_PAGE,

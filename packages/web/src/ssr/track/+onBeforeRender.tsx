@@ -7,7 +7,7 @@ import {
   stagingConfig,
   developmentConfig
 } from '@audius/sdk'
-import { PageContextServer } from 'vike/types'
+import type { PageContextServer } from 'vike/types'
 
 const sdkConfigs = {
   production: productionConfig,

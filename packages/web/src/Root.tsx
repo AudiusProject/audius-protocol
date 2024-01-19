@@ -52,7 +52,7 @@ const AppOrPublicSite = () => {
     window.onpopstate = () => {
       setRenderPublicSite(isPublicSiteRoute(history.location))
     }
-  }, [])
+  }, [history.location])
 
   const shouldRedirectToApp =
     foundUser && !isPublicSiteSubRoute(history.location)

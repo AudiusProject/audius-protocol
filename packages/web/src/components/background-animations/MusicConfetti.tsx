@@ -86,7 +86,7 @@ export const MusicConfetti = ({
       confetti.run()
       confettiRef.current = confetti
     },
-    [onCompletion, isMatrix, isMobile, colors]
+    [onCompletion, isMatrix, isMobile, colors, PATHS]
   )
 
   return (

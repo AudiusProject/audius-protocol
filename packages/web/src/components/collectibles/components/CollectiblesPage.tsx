@@ -37,6 +37,7 @@ import {
 } from 'react-beautiful-dnd'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconGradientCollectibles from 'assets/img/iconGradientCollectibles.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import CollectibleDetails from 'components/collectibles/components/CollectibleDetails'
@@ -60,7 +61,6 @@ import {
 import zIndex from 'utils/zIndex'
 
 import styles from './CollectiblesPage.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 const { getCollectible } = collectibleDetailsUISelectors
 const { setCollectible } = collectibleDetailsUIActions
 
@@ -538,7 +538,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     isUserOnTheirProfile,
     updateProfilePicture,
     onSave,
-    setIsEmbedModalOpen
+    setIsEmbedModalOpen,
+    history.location
   ])
 
   const overflowMenuItems: PopupMenuItem[] = [

@@ -4,7 +4,7 @@ import 'setimmediate'
 import { full as FullSdk } from '@audius/sdk'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
-import { PageContextClient } from 'vike/types'
+import type { PageContextClient } from 'vike/types'
 
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 

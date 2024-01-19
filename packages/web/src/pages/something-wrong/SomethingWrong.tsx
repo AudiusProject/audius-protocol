@@ -5,9 +5,9 @@ import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { UiErrorCode } from 'store/errors/actions'
 import { getIsErrorPageOpen, getUiErrorCode } from 'store/errors/selectors'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import zIndex from 'utils/zIndex'
 

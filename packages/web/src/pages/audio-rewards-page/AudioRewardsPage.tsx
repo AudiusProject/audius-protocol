@@ -16,10 +16,10 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'

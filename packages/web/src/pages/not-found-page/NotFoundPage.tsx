@@ -17,8 +17,8 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
-import { AppState } from 'store/types'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './NotFoundPage.module.css'

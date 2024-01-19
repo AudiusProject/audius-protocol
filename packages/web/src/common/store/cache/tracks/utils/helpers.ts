@@ -21,7 +21,7 @@ const getAccountUser = accountSelectors.getAccountUser
  */
 export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[],
-  isInitialFetchAfterSsr: boolean
+  isInitialFetchAfterSsr?: boolean
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
