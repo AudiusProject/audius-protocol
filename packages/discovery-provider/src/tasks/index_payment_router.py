@@ -130,6 +130,7 @@ class RouteTransactionMemoType(str, enum.Enum):
     purchase = "purchase"
     recovery = "recovery"
     unknown = "unknown"
+    none = "none"
 
 
 class RouteTransactionMemo(TypedDict):
@@ -200,6 +201,8 @@ def parse_route_transaction_memo(
     session: Session, memos: List[str], timestamp: datetime
 ) -> RouteTransactionMemo:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
+    if len(memos) == 0:
+        return RouteTransactionMemo(type=RouteTransactionMemoType.none, metadata=None)
     for memo in memos:
         if memo == RECOVERY_MEMO_STRING:
             return RouteTransactionMemo(
@@ -278,14 +281,14 @@ def parse_route_transaction_memo(
                         f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
                     )
             else:
-                logger.debug(
+                logger.info(
                     f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
                 )
         except (ValueError, KeyError) as e:
-            logger.debug(
+            logger.info(
                 f"index_payment_router.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
             )
-    logger.error("index_payment_router.py | Failed to find known memo format")
+    logger.info("index_payment_router.py | Failed to find known memo format")
     return RouteTransactionMemo(type=RouteTransactionMemoType.unknown, metadata=None)
 
 
@@ -386,7 +389,7 @@ def attempt_index_recovery_transfer(
     balance_changes: dict[str, BalanceChange],
     tx_sig: str,
 ):
-    if sender_user_account is None:
+    if sender_user_account is not None:
         raise Exception(
             f"Sender account for recovery cannot be a user bank: {sender_user_account}"
         )
@@ -464,6 +467,7 @@ def index_transfer(
         logger.debug(
             f"index_payment_router.py | tx: {tx_sig} | Creating transfer received tx {usdc_tx_received}"
         )
+    # If sender was a user bank, index a single transfer with a list of recipients
     if sender_user_account is not None:
         balance_change = balance_changes[sender_user_account["user_bank_account"]]
         usdc_tx_received = USDCTransactionsHistory(
@@ -475,7 +479,6 @@ def index_transfer(
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
             balance=Decimal(balance_change["post_balance"]),
-            # TODO: Payment router account? comma separated list of receiver accounts?
             tx_metadata=",".join(receiver_accounts),
         )
         session.add(usdc_tx_received)
@@ -523,7 +526,10 @@ def validate_and_index_usdc_transfers(
                 balance_changes=balance_changes,
                 tx_sig=tx_sig,
             )
-        except:
+        except Exception as e:
+            logger.warn(
+                f"index_payment_router.py | tx: {tx_sig} | Failed to index recovery transfer. Will index as plain transfer. Exception received was: {e}."
+            )
             index_transfer(
                 session=session,
                 sender_account=sender_account,
@@ -561,8 +567,8 @@ def find_sender_account_from_balance_changes(
     return next(
         (
             account
-            for account, change in balance_changes.items()
-            if change.amount == -total_sent
+            for account, balance_change in balance_changes.items()
+            if balance_change["change"] == -total_sent
         ),
         None,
     )
