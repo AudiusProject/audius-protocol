@@ -1,0 +1,41 @@
+package server
+
+import (
+	"context"
+	"io"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestQmSync(t *testing.T) {
+	ctx := context.Background()
+
+	ss := testNetwork[0]
+
+	_, err := ss.pgPool.Exec(ctx, `insert into qm_cids values ('Qm1'), ('Qm2'), ('Qm3') on conflict do nothing`)
+	assert.NoError(t, err)
+	err = ss.writeQmFile()
+	assert.NoError(t, err)
+
+	// read it back out
+	blobReader, err := ss.bucket.NewReader(ctx, _qmFileKey, nil)
+	assert.NoError(t, err)
+
+	cool, err := io.ReadAll(blobReader)
+	assert.NoError(t, err)
+	assert.Equal(t, "Qm1 Qm2 Qm3 ", strings.ReplaceAll(string(cool), "\n", " "))
+
+	s2 := testNetwork[1]
+
+	s2count := -1
+	s2.pgPool.QueryRow(ctx, "select count(*) from qm_cids").Scan(&s2count)
+	assert.Equal(t, 0, s2count)
+
+	err = s2.pullQmFromPeer(ss.Config.Self.Host)
+	assert.NoError(t, err)
+
+	s2.pgPool.QueryRow(ctx, "select count(*) from qm_cids").Scan(&s2count)
+	assert.Equal(t, 3, s2count)
+}
