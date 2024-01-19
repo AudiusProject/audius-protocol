@@ -75,25 +75,25 @@ platform :ios do
     if options[:bundle_id] === AUDIUSMUSIC_ID
       appId = AUDIUSMUSIC_ID
       provisioningProfile = AUDIUSMUSIC_PROFILE
-      environment = 'production'
+      environment = 'prod'
       scheme = 'AudiusReactNative'
       configuration = 'Release'
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
       appId = AUDIUSMUSIC_STAGING_ID
       provisioningProfile = AUDIUSMUSIC_STAGING_PROFILE
-      environment = 'staging'
+      environment = 'stage'
       scheme = 'Staging'
       configuration = 'Staging.Release'
     elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
       appId = AUDIUSMUSIC_RELEASECANDIDATE_ID
       provisioningProfile = AUDIUSMUSIC_RELEASECANDIDATE_PROFILE
-      environment = 'production'
+      environment = 'prod'
       scheme = 'AudiusReactNative'
       configuration = 'ReleaseCandidate'
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       appId = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       provisioningProfile = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE
-      environment = 'staging'
+      environment = 'stage'
       scheme = 'Staging'
       configuration = 'Staging.ReleaseCandidate'
     end

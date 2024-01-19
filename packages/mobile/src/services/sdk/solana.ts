@@ -13,7 +13,7 @@ export const solanaService = new Solana({
       }
     }
   ],
-  rpcEndpoint: process.env.SOLANA_CLUSTER_ENDPOINT,
+  rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
   mints: {
     wAUDIO: new PublicKey(env.WAUDIO_MINT_ADDRESS!),
     USDC: new PublicKey(env.USDC_MINT_ADDRESS!)
