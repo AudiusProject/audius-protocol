@@ -29,13 +29,23 @@ func TestQmSync(t *testing.T) {
 
 	s2 := testNetwork[1]
 
+	_, err = s2.pgPool.Exec(ctx, "truncate qm_cids, qm_sync")
+	assert.NoError(t, err)
+
 	s2count := -1
 	s2.pgPool.QueryRow(ctx, "select count(*) from qm_cids").Scan(&s2count)
 	assert.Equal(t, 0, s2count)
+
+	s2done := false
+	s2.pgPool.QueryRow(ctx, "select count(*) = 1 from qm_sync where host = $1", ss.Config.Self.Host).Scan(&s2done)
+	assert.False(t, s2done)
 
 	err = s2.pullQmFromPeer(ss.Config.Self.Host)
 	assert.NoError(t, err)
 
 	s2.pgPool.QueryRow(ctx, "select count(*) from qm_cids").Scan(&s2count)
 	assert.Equal(t, 3, s2count)
+
+	s2.pgPool.QueryRow(ctx, "select count(*) = 1 from qm_sync where host = $1", ss.Config.Self.Host).Scan(&s2done)
+	assert.True(t, s2done)
 }

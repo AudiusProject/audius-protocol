@@ -433,6 +433,8 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.startRepairer()
 
+		go ss.startQmSyncer()
+
 		ss.crud.StartClients()
 
 		go ss.startPollingDelistStatuses()

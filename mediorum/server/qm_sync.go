@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -58,6 +59,12 @@ func (ss *MediorumServer) serveInternalQmCsv(c echo.Context) error {
 func (ss *MediorumServer) pullQmFromPeer(host string) error {
 	ctx := context.Background()
 
+	done := false
+	ss.pgPool.QueryRow(ctx, "select count(*) = 1 from qm_sync where host = $1", host).Scan(&done)
+	if done {
+		return nil
+	}
+
 	req, err := http.Get(apiPath(host, "internal/qm.csv"))
 	if err != nil {
 		return err
@@ -83,7 +90,24 @@ func (ss *MediorumServer) pullQmFromPeer(host string) error {
 		return err
 	}
 
-	// todo: write a record to db that we have completed this host... no need to revisit
+	_, err = ss.pgPool.Exec(ctx, "insert into qm_sync values($1)", host)
+	return err
+}
 
-	return nil
+func (ss *MediorumServer) startQmSyncer() {
+	time.Sleep(time.Minute * 1)
+
+	err := ss.writeQmFile()
+	if err != nil {
+		ss.logger.Error("qmSync: failed to write qm.csv file", "err", err)
+	}
+
+	time.Sleep(time.Minute * 1)
+	for _, peer := range ss.findHealthyPeers(time.Hour) {
+		if err = ss.pullQmFromPeer(peer); err != nil {
+			ss.logger.Error("qmSync: failed to pull qm.csv from peer", "peer", peer, "err", err)
+		} else {
+			ss.logger.Info("qmSync: pulled qm.csv from peer", "peer", peer)
+		}
+	}
 }
