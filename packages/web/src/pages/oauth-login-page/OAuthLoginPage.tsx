@@ -18,12 +18,12 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { SIGN_UP_PAGE } from 'utils/route'
 
-import { ContentWrapper } from './components/ContentWrapper'
+import styles from './OAuthLoginPage.module.css'
 import { CTAButton } from './components/CTAButton'
+import { ContentWrapper } from './components/ContentWrapper'
 import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
-import styles from './OAuthLoginPage.module.css'
 import { WriteOnceTx } from './utils'
 
 const { signOut } = signOutActions

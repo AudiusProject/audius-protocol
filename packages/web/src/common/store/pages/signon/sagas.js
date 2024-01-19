@@ -475,9 +475,7 @@ function* signUp() {
 
         const isNativeMobile = yield getContext('isNativeMobile')
 
-        const isSignUpRedesignEnabled = yield call(
-          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
-        )
+        const isSignUpRedesignEnabled = getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
 
         if (isNativeMobile && !isSignUpRedesignEnabled) {
           yield put(requestPushNotificationPermissions())

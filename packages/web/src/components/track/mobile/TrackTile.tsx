@@ -371,7 +371,10 @@ const TrackTile = (props: CombinedProps) => {
               className={cn(fadeIn, styles.artist)}
               color={isActive ? 'primary' : 'neutral'}
             >
-              <ArtistPopover handle={artistHandle}>
+              <ArtistPopover
+                handle={artistHandle}
+                containerClassName={styles.artistPopover}
+              >
                 <Text variant='inherit' className={styles.text}>
                   {props.artistName}
                 </Text>

@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.5.61",
+  "version": "1.5.62",
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",

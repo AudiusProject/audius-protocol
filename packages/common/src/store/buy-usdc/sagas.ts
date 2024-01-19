@@ -44,6 +44,7 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
+import { Status } from 'models/Status'
 
 type PurchaseStepParams = {
   desiredAmount: number
@@ -417,7 +418,7 @@ function* recoverPurchaseIfNecessary() {
     const userBankAddress = userBank.toBase58()
 
     // Transfer all USDC from the from the root wallet to the user bank
-    yield* put(recoveryStatusChanged({ status: 'in-progress' }))
+    yield* put(recoveryStatusChanged({ status: Status.LOADING }))
     yield* call(
       track,
       make({
@@ -431,7 +432,7 @@ function* recoverPurchaseIfNecessary() {
       amount
     })
 
-    yield* put(recoveryStatusChanged({ status: 'success' }))
+    yield* put(recoveryStatusChanged({ status: Status.SUCCESS }))
     yield* call(
       track,
       make({
@@ -440,7 +441,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
-    yield* put(recoveryStatusChanged({ status: 'failure' }))
+    yield* put(recoveryStatusChanged({ status: Status.ERROR }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error: e as Error
