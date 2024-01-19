@@ -741,6 +741,7 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         <ClientOnly>
+          {renderTags()}
           {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
           {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
