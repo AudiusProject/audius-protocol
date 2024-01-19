@@ -40,11 +40,11 @@
   fill: var(--neutral);
 }
 
-.text>span {
+.text > span {
   color: var(--primary-dark-2);
 }
 
-.text>span:hover {
+.text > span:hover {
   border-bottom: 1px solid var(--primary);
 }
 
