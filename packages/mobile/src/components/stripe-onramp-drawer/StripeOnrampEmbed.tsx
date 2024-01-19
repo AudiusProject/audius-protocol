@@ -6,8 +6,8 @@ import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { env } from 'app/env'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles } from 'app/styles'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
@@ -15,7 +15,7 @@ import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 const { getStripeClientSecret } = stripeModalUISelectors
 const { stripeSessionStatusChanged, cancelStripeOnramp } = stripeModalUIActions
 
-const STRIPE_PUBLISHABLE_KEY = env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
+const STRIPE_PUBLISHABLE_KEY = env.STRIPE_CLIENT_PUBLISHABLE_KEY
 
 const useStyles = makeStyles(() => ({
   root: {

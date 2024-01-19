@@ -5,13 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
 import type { LocalPackage } from 'react-native-code-push'
 import codePush from 'react-native-code-push'
+import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
+import { env } from 'app/env'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import packageInfo from '../../../package.json'
-import { env } from 'app/env'
-import Config from 'react-native-config'
 
 export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 

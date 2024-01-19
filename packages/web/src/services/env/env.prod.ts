@@ -1,13 +1,12 @@
-import type { Env } from '@audius/common'
-import Config from 'react-native-config'
+import { Env } from '@audius/common'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
   ADROLL_AVD_ID: 'SDJ23TS7DBFPLMXRDF6JQY',
   ADROLL_PIX_ID: 'JZSZK5GWHBFL3FQ3NRFPNY',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
-  AMPLITUDE_PROXY: 'https://gain.audius.co',
-  AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
+  AMPLITUDE_PROXY: 'gain.audius.co',
+  AMPLITUDE_WRITE_KEY: null,
   AUDIUS_URL: 'https://audius.co',
   BITSKI_CALLBACK_URL: 'https://audius.co/bitski-callback.html',
   BITSKI_CLIENT_ID: '661ce11a-3e0f-4659-b365-795ad2111f42',
@@ -35,11 +34,12 @@ export const env: Env = {
   ETH_TOKEN_BRIDGE_ADDRESS: '0x3ee18B2214AFF97000D974cf647E7C347E8fa585',
   EXPLORE_CONTENT_URL:
     'https://download.audius.co/static-resources/explore-content.json',
-  FCM_PUSH_PUBLIC_KEY: null,
+  FCM_PUSH_PUBLIC_KEY:
+    'BDBRR9S_UczQBflfaFPQf1JuCIZhMk90G_QnRI9wWuoObt7Ck6sRCxPDJfB_mJY3p55WdAO4C4xVJTAMoiv6JJQ',
   FINGERPRINT_ENDPOINT: 'https://fp.audius.co',
   FINGERPRINT_PUBLIC_API_KEY: 'MNtDQ4NCsNSP7YOkOiQT',
   GA_HOSTNAME: 'audius.co',
-  GA_MEASUREMENT_ID: 'UA-120325397-2',
+  GA_MEASUREMENT_ID: 'G-V6N1ZTVGS5',
   GENERAL_ADMISSION: 'https://general-admission.audius.co',
   HCAPTCHA_BASE_URL: 'https://audius.co',
   HCAPTCHA_SITE_KEY: 'b250803e-dcba-428c-bc87-8acf559aacb9',
@@ -55,8 +55,6 @@ export const env: Env = {
   PUBLIC_PROTOCOL: 'https:',
   PUBLIC_URL: 'https://audius.co',
   REACHABILITY_URL: 'https://audius.co/204',
-  STRIPE_CLIENT_PUBLISHABLE_KEY:
-    'pk_live_51LPsGuCJOWtpH6AEKshlCs3L8QhAfevNvhev8K9a0u92O5ku83KRjLIqCdxgf3NhitdtmMGlw0Wjf33NjZJjZUBz006A3IoSiQ',
   RECAPTCHA_SITE_KEY: '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
   REGISTRY_ADDRESS: '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2',
   REWARDS_MANAGER_PROGRAM_ID: 'DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei',
@@ -72,14 +70,16 @@ export const env: Env = {
   SOLANA_RELAY_ENDPOINT: 'http://discoveryprovider.audius.co',
   SOLANA_TOKEN_PROGRAM_ADDRESS: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   SOLANA_WEB3_CLUSTER: 'mainnet-beta',
+  STRIPE_CLIENT_PUBLISHABLE_KEY:
+    'pk_live_51LPsGuCJOWtpH6AEKshlCs3L8QhAfevNvhev8K9a0u92O5ku83KRjLIqCdxgf3NhitdtmMGlw0Wjf33NjZJjZUBz006A3IoSiQ',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  USER_NODE: 'https://usermetadata.audius.co',
   USE_HASH_ROUTING: false,
+  USER_NODE: 'https://usermetadata.audius.co',
   WAUDIO_MINT_ADDRESS: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
-  WEB3_NETWORK_ID: '99',
+  WEB3_NETWORK_ID: '31524',
   WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
   WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
   WORMHOLE_RPC_HOSTS:

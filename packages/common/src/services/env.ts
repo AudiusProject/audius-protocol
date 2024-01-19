@@ -1,4 +1,4 @@
-import { Nullable } from "utils/typeUtils"
+import { Nullable } from 'utils/typeUtils'
 
 export type Environment = 'development' | 'staging' | 'production'
 
@@ -19,6 +19,8 @@ export type Env = {
   COINFLOW_APP_ID: string
   COINFLOW_MERCHANT_ID: string
   COINFLOW_PARTNER_ID: string
+  COGNITO_KEY: Nullable<string>
+  COGNITO_TEMPLATE_ID: Nullable<string>
   EAGER_DISCOVERY_NODES: string
   ENTITY_MANAGER_ADDRESS: string
   ENVIRONMENT: Environment
@@ -48,8 +50,9 @@ export type Env = {
   PAYMENT_ROUTER_PROGRAM_ID: string
   PUBLIC_HOSTNAME: string
   PUBLIC_PROTOCOL: string
+  PUBLIC_URL: string
   REACHABILITY_URL: string
-  REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY: string
+  STRIPE_CLIENT_PUBLISHABLE_KEY: string
   RECAPTCHA_SITE_KEY: string
   REGISTRY_ADDRESS: string
   REWARDS_MANAGER_PROGRAM_ID: string
@@ -68,8 +71,8 @@ export type Env = {
   SUGGESTED_FOLLOW_HANDLES: string
   TIKTOK_APP_ID: string
   USDC_MINT_ADDRESS: string
-  USER_METADATA_NODE: string
   USER_NODE: string
+  USE_HASH_ROUTING: Nullable<boolean>
   WAUDIO_MINT_ADDRESS: string
   WEB3_NETWORK_ID: string
   WEB3_PROVIDER_URL: string

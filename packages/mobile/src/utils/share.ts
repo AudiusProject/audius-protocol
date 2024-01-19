@@ -1,5 +1,6 @@
-import { env } from 'app/env'
 import { Share } from 'react-native'
+
+import { env } from 'app/env'
 
 // Docs for react native share: https://facebook.github.io/react-native/docs/share
 

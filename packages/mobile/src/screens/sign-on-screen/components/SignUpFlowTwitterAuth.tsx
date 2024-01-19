@@ -9,8 +9,8 @@ import {
 import { useAsync } from 'react-use'
 
 import { SocialButton } from '@audius/harmony-native'
-import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { env } from 'app/env'
+import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 

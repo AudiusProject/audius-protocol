@@ -3,16 +3,18 @@ import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
+import { env } from 'services/env'
+
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 // Host/protocol.
-export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
-  process.env.VITE_PUBLIC_HOSTNAME || 'audius.co'
+export const BASE_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
+  env.PUBLIC_HOSTNAME || 'audius.co'
 }`
-export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
-  process.env.VITE_GA_HOSTNAME || 'audius.co'
+export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
+  env.GA_HOSTNAME || 'audius.co'
 }`
-export const BASENAME = process.env.VITE_PUBLIC_URL
+export const BASENAME = env.PUBLIC_URL
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'

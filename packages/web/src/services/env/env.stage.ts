@@ -1,13 +1,12 @@
-import type { Env } from '@audius/common'
-import Config from 'react-native-config'
+import { Env } from '@audius/common'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',
   ADROLL_AVD_ID: null,
   ADROLL_PIX_ID: null,
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
-  AMPLITUDE_PROXY: 'https://gain.audius.co',
-  AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
+  AMPLITUDE_PROXY: 'gain.audius.co',
+  AMPLITUDE_WRITE_KEY: null,
   AUDIUS_URL: 'https://staging.audius.co',
   BITSKI_CALLBACK_URL: 'https://staging.audius.co/bitski-callback.html',
   BITSKI_CLIENT_ID: '7a543ec2-b55f-45d6-a5d4-0448c5a23485',
@@ -28,14 +27,15 @@ export const env: Env = {
   ENVIRONMENT: 'staging',
   ETH_BRIDGE_ADDRESS: null,
   ETH_NETWORK_ID: '5',
-  ETH_OWNER_WALLET: null,
+  ETH_OWNER_WALLET: '',
   ETH_PROVIDER_URL: 'https://eth.staging.audius.co',
   ETH_REGISTRY_ADDRESS: '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3',
   ETH_TOKEN_ADDRESS: '0x5375BE4c52fA29b26077B0F15ee5254D779676A6',
   ETH_TOKEN_BRIDGE_ADDRESS: null,
   EXPLORE_CONTENT_URL:
     'https://download.staging.audius.co/static-resources/explore-content.json',
-  FCM_PUSH_PUBLIC_KEY: null,
+  FCM_PUSH_PUBLIC_KEY:
+    'BIQQAP1Cb5LvBTkUknmRxCiQ-lHD1GjjsLFX4fo7c70FGHTSpN4iTNePCck7fCk9XBGIfwTxoDbNQO1vRiYSUFA',
   FINGERPRINT_ENDPOINT: 'https://fp.staging.audius.co',
   FINGERPRINT_PUBLIC_API_KEY: 'Rz2A3Y5YGSg9K80VgKPi',
   GA_HOSTNAME: 'staging.audius.co',
@@ -55,8 +55,6 @@ export const env: Env = {
   PUBLIC_PROTOCOL: 'https:',
   PUBLIC_URL: 'https://staging.audius.co',
   REACHABILITY_URL: 'https://staging.audius.co/204',
-  STRIPE_CLIENT_PUBLISHABLE_KEY:
-    'pk_test_51LPsGuCJOWtpH6AEZT3Wf2U2xmLZQrEV56yha7HEVTEyhYYVrWCdknml3t4gkSe9Nagd1o9Royy8zL3XEAmRzeHS00xAKTfgpi',
   RECAPTCHA_SITE_KEY: '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
   REGISTRY_ADDRESS: '0x793373aBF96583d5eb71a15d86fFE732CD04D452',
   REWARDS_MANAGER_PROGRAM_ID: 'CDpzvz7DfgbF95jSSCHLX3ERkugyfgn9Fw8ypNZ1hfXp',
@@ -72,14 +70,16 @@ export const env: Env = {
   SOLANA_RELAY_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
   SOLANA_TOKEN_PROGRAM_ADDRESS: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   SOLANA_WEB3_CLUSTER: 'mainnet-beta',
+  STRIPE_CLIENT_PUBLISHABLE_KEY:
+    'pk_test_51LPsGuCJOWtpH6AEZT3Wf2U2xmLZQrEV56yha7HEVTEyhYYVrWCdknml3t4gkSe9Nagd1o9Royy8zL3XEAmRzeHS00xAKTfgpi',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  USER_NODE: 'https://usermetadata.staging.audius.co',
   USE_HASH_ROUTING: false,
+  USER_NODE: 'https://usermetadata.staging.audius.co',
   WAUDIO_MINT_ADDRESS: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo',
-  WEB3_NETWORK_ID: '77',
+  WEB3_NETWORK_ID: '1056801',
   WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
   WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
   WORMHOLE_RPC_HOSTS: null

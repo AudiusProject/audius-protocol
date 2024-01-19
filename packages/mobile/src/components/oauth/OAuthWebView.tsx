@@ -4,12 +4,12 @@ import { WebView } from 'react-native-webview'
 import type { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { env } from 'app/env'
 import { closePopup, setCredentials } from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { getUrl, getIsOpen, getAuthProvider } from 'app/store/oauth/selectors'
 import type { Credentials } from 'app/store/oauth/types'
 import { AUTH_RESPONSE_MESSAGE_TYPE } from 'app/store/oauth/types'
-import { env } from 'app/env'
 
 const IDENTITY_SERVICE = env.IDENTITY_SERVICE
 

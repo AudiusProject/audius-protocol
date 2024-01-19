@@ -4,9 +4,9 @@ import NetInfo from '@react-native-community/netinfo'
 import { debounce } from 'lodash'
 import { AppState } from 'react-native'
 
+import { env } from 'app/env'
 import { dispatch } from 'app/store'
 import { setCurrentNetworkType } from 'app/store/offline-downloads/slice'
-import { env } from 'app/env'
 
 const REACHABILITY_URL = env.REACHABILITY_URL
 

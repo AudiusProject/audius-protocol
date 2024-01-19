@@ -32,6 +32,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
+import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
@@ -64,7 +65,6 @@ import { NativeDrawer } from '../drawer'
 import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
 
 import { messages } from './messages'
-import { env } from 'app/env'
 
 const DEFAULT_DOMINANT_COLORS = ['000000', '434343']
 const stickerLoadedEventEmitter = new EventEmitter()

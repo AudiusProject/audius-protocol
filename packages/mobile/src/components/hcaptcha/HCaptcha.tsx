@@ -10,6 +10,7 @@ import {
 import ConfirmHcaptcha from '@hcaptcha/react-native-hcaptcha'
 import type { NativeSyntheticEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+
 import { env } from 'app/env'
 
 const { setVisibility } = modalsActions

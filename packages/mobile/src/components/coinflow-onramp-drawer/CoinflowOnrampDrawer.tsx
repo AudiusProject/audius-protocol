@@ -12,12 +12,12 @@ import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
+import { env } from 'app/env'
 import { getCoinflowDeviceId } from 'app/services/coinflow'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
-import { env } from 'app/env'
 
 const MODAL_NAME = 'CoinflowOnramp'
 

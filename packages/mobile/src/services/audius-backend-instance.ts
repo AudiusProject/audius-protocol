@@ -3,6 +3,7 @@ import * as nativeLibs from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'react-native'
 
+import { env } from 'app/env'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
@@ -19,15 +20,15 @@ import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 import { discoveryNodeSelectorService } from './sdk/discoveryNodeSelector'
 import { getStorageNodeSelector } from './sdk/storageNodeSelector'
-import { env } from 'app/env'
 
 /**
  * audiusBackend initialized for a mobile environment
  */
 export const audiusBackendInstance = audiusBackend({
-  claimDistributionContractAddress: env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  claimDistributionContractAddress:
+    env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS ?? undefined,
   env,
-  ethOwnerWallet: env.ETH_OWNER_WALLET,
+  ethOwnerWallet: env.ETH_OWNER_WALLET ?? undefined,
   ethProviderUrls: (env.ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: env.ETH_REGISTRY_ADDRESS,
   ethTokenAddress: env.ETH_TOKEN_ADDRESS,
@@ -84,18 +85,18 @@ export const audiusBackendInstance = audiusBackend({
     solanaTokenAddress: env.SOLANA_TOKEN_PROGRAM_ADDRESS,
     waudioMintAddress: env.WAUDIO_MINT_ADDRESS,
     usdcMintAddress: env.USDC_MINT_ADDRESS,
-    wormholeAddress: env.WORMHOLE_ADDRESS
+    wormholeAddress: env.WORMHOLE_ADDRESS ?? undefined
   },
   userNodeUrl: env.USER_NODE,
   web3NetworkId: env.WEB3_NETWORK_ID,
   web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
   waitForWeb3: async () => {},
   wormholeConfig: {
-    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS,
-    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS,
-    solBridgeAddress: env.SOL_BRIDGE_ADDRESS,
-    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS,
-    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS
+    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
+    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,
+    solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
+    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
+    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
   },
   getLibs: async () => nativeLibs,
   waitForLibsInit,

@@ -10,6 +10,7 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 
 import { SocialButton } from '@audius/harmony-native'
+import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
 import { make, track } from 'app/services/analytics'
 import { Provider } from 'app/store/oauth/reducer'
@@ -19,7 +20,6 @@ import { EventNames } from 'app/types/analytics'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
-import { env } from 'app/env'
 
 type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {

@@ -9,12 +9,12 @@ import {
   events as tikTokEvents
 } from 'react-native-tiktok'
 
+import { env } from 'app/env'
 import { track, make } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
-import { env } from 'app/env'
 
 const authenticationUrl = `${env.IDENTITY_SERVICE}/tiktok`
 

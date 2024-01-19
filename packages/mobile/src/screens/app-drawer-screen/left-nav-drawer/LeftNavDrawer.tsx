@@ -21,6 +21,7 @@ import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
 import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
+import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { spacing } from 'app/styles/spacing'
@@ -30,7 +31,6 @@ import { AppDrawerContextProvider } from '../AppDrawerContext'
 import { AccountDetails } from './AccountDetails'
 import { LeftNavLink } from './LeftNavLink'
 import { VanityMetrics } from './VanityMetrics'
-import { env } from 'app/env'
 
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors

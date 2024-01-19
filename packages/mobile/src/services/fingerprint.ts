@@ -1,5 +1,6 @@
 import { FingerprintClient } from '@audius/common'
 import { FingerprintJsProAgent } from '@fingerprintjs/fingerprintjs-pro-react-native'
+
 import { env } from 'app/env'
 
 const apiKey = env.FINGERPRINT_PUBLIC_API_KEY || ''

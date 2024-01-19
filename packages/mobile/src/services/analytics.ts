@@ -1,12 +1,12 @@
 import { Amplitude } from '@amplitude/react-native'
 import VersionNumber from 'react-native-version-number'
 
+import { env } from 'app/env'
 import { versionInfo } from 'app/utils/appVersionWithCodepush'
 
 import packageInfo from '../../package.json'
 import type { Track, Screen, AllEvents } from '../types/analytics'
 import { EventNames } from '../types/analytics'
-import { env } from 'app/env'
 
 const { version: clientVersion } = packageInfo
 

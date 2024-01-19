@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconAppearance from 'app/assets/images/iconAppearance.svg'
 import { SegmentedControl } from 'app/components/core'
+import { env } from 'app/env'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
 
@@ -18,7 +19,6 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
-import { env } from 'app/env'
 const { getUserId } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors

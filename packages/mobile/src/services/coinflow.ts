@@ -1,5 +1,6 @@
-import { env } from 'app/env'
 import { NativeModules, Platform } from 'react-native'
+
+import { env } from 'app/env'
 
 const nsureSDK = NativeModules.NSureSDK
 

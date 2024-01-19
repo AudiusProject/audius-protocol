@@ -1,5 +1,6 @@
 import type { UserCollection, User } from '@audius/common'
 import { getHash, encodeUrlName } from '@audius/common'
+
 import { env } from 'app/env'
 
 type UserHandle = Pick<User, 'handle'>
