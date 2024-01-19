@@ -120,7 +120,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexDirection: 'row-reverse',
     justifyContent: 'flex-end',
     bottom: spacing(8),
-    gap: -spacing(4),
+    gap: -spacing(12),
     height: 0
   },
   reactionContainerIsAuthor: {
