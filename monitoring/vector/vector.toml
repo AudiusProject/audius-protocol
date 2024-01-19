@@ -27,6 +27,7 @@
 [sources.auto_upgrade]
   type = "file"
   include = ["/auto-upgrade.log"]
+  ignore_checkpoints = true
 
 [transforms.parse]
   type = "remap"
