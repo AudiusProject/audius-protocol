@@ -178,14 +178,27 @@ const { albumId } = await audiusSdk.albums.uploadTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type                                                                                                                                                                                                                                                                                             | Description                                                                   | Required?    |
-| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `coverArtFile`   | `File`                                                                                                                                                                                                                                                                                           | A file that will be used as the cover art for the album                       | _Optional_   |
-| `metadata`       | <code>{ <br/>&nbsp;&nbsp;genre: Genre;<br/>&nbsp;&nbsp;albumName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;license?: string; <br/>&nbsp;&nbsp;mood?: Mood; <br/>&nbsp;&nbsp;releaseDate?: Date; <br/>&nbsp;&nbsp;tags?: string; <br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the album                                 | **Required** |
-| `onProgress`     | `(progress: number) => void`                                                                                                                                                                                                                                                                     | A function that will be called with progress events as the image file uploads | _Optional_   |
-| `trackFiles`     | `Array<File>`                                                                                                                                                                                                                                                                                    | An array of track audio files                                                 | **Required** |
-| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                                                                                                                                     | An array of track files                                                       | _Optional_   |
-| `userId`         | `string`                                                                                                                                                                                                                                                                                         | The ID of the user                                                            | **Required** |
+| Name             | Type                                                         | Description                                                                   | Required?    |
+| :--------------- | :----------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile`   | `File`                                                       | A file that will be used as the cover art for the album                       | _Optional_   |
+| `metadata`       | _see code sample below_                                      | An object containing the details of the album                                 | **Required** |
+| `onProgress`     | `(progress: number) => void`                                 | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackFiles`     | `Array<File>`                                                | An array of track audio files                                                 | **Required** |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]` | An array of track files                                                       | _Optional_   |
+| `userId`         | `string`                                                     | The ID of the user                                                            | **Required** |
+
+```json
+{
+  genre: Genre;
+  albumName: string;
+  description?: string;
+  license?: string;
+  mood?: Mood;
+  releaseDate?: Date;
+  tags?: string;
+  upc?: string;
+}
+```
 
 #### `advancedOptions` parameters (advanced)
 
@@ -238,13 +251,26 @@ const { albumId } = await audiusSdk.albums.updateAlbum({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                                                                                                                                                                                                                                                                              | Description                                                                   | Required?    |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `albumId`      | `string`                                                                                                                                                                                                                                                                                                                          | The ID of the album                                                           | **Required** |
-| `userId`       | `string`                                                                                                                                                                                                                                                                                                                          | The ID of the User                                                            | **Required** |
-| `coverArtFile` | `string`                                                                                                                                                                                                                                                                                                                          | A file that will be used as the cover art for the album                       | _Optional_   |
-| `metadata`     | <code>{<br/>&nbsp;&nbsp;albumName?: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;albumContents?: {trackId: string, time: number}[],<br/>&nbsp;&nbsp;license?: string;<br/>&nbsp;&nbsp;mood?: Mood;<br/>&nbsp;&nbsp;releaseDate?: Date;<br/>&nbsp;&nbsp;tags?: string;<br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the album                                 | **Required** |
-| `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                                                                                                                      | A function that will be called with progress events as the image file uploads | _Optional_   |
+| Name           | Type                         | Description                                                                   | Required?    |
+| :------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `albumId`      | `string`                     | The ID of the album                                                           | **Required** |
+| `userId`       | `string`                     | The ID of the User                                                            | **Required** |
+| `coverArtFile` | `string`                     | A file that will be used as the cover art for the album                       | _Optional_   |
+| `metadata`     | _see code sample below_      | An object containing the details of the album                                 | **Required** |
+| `onProgress`   | `(progress: number) => void` | A function that will be called with progress events as the image file uploads | _Optional_   |
+
+```json
+{
+  albumName?: string;
+  description?: string;
+  albumContents?: {trackId: string, time: number}[],
+  license?: string;
+  mood?: Mood;
+  releaseDate?: Date;
+  tags?: string;
+  upc?: string;
+}
+```
 
 #### `advancedOptions`
 
@@ -323,11 +349,17 @@ await audiusSdk.albums.favoriteAlbum({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                                         | Description                                     | Required?    |
-| :--------- | :----------------------------------------------------------- | :---------------------------------------------- | :----------- |
-| `albumId`  | `string`                                                     | The ID of the album                             | **Required** |
-| `userId`   | `string`                                                     | The ID of the User                              | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | An object containing details about the favorite | _Optional_   |
+| Name       | Type                    | Description                                     | Required?    |
+| :--------- | :---------------------- | :---------------------------------------------- | :----------- |
+| `albumId`  | `string`                | The ID of the album                             | **Required** |
+| `userId`   | `string`                | The ID of the User                              | **Required** |
+| `metadata` | _see code sample below_ | An object containing details about the favorite | _Optional_   |
+
+```json
+{
+  isSaveOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 
@@ -406,11 +438,17 @@ await audiusSdk.albums.repostAlbum({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                                           | Description                                   | Required?    |
-| :--------- | :------------------------------------------------------------- | :-------------------------------------------- | :----------- |
-| `albumId`  | `string`                                                       | The ID of the album                           | **Required** |
-| `userId`   | `string`                                                       | The ID of the User                            | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | An object containing details about the repost | _Optional_   |
+| Name       | Type                    | Description                                   | Required?    |
+| :--------- | :---------------------- | :-------------------------------------------- | :----------- |
+| `albumId`  | `string`                | The ID of the album                           | **Required** |
+| `userId`   | `string`                | The ID of the User                            | **Required** |
+| `metadata` | _see code sample below_ | An object containing details about the repost | _Optional_   |
+
+```json
+{
+  isRepostOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 
