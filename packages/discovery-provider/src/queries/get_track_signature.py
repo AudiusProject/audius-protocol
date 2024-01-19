@@ -118,11 +118,8 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     user_data = args["user_data"]
     user_signature = args["user_signature"]
     nft_access_signature = args["nft_access_signature"]
-    is_downloadable = track.get("is_downloadable") or track.get("download", {}).get(
-        "is_downloadable"
-    )
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
-    if not cid or not is_downloadable:
+    if not cid:
         return None
 
     cid = cid.strip()
