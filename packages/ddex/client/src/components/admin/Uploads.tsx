@@ -2,15 +2,21 @@ import { useState } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
 
-import useUploads from 'providers/useUploads'
+import { trpc } from 'utils/trpc'
 
 import tableStyles from './Table.module.css'
 
 const Uploads = () => {
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<
+    '' | 'error' | 'success' | 'pending' | undefined
+  >('')
   const [nextId, setNextId] = useState<number | undefined>(undefined)
   const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  const { data, error, isPending } = useUploads(statusFilter, nextId, prevId)
+  const { data, error, isLoading } = trpc.delivery.getUploads.useQuery({
+    status: statusFilter,
+    nextId,
+    prevId
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -74,7 +80,7 @@ const Uploads = () => {
               <label htmlFor='uploadsErrorFilter'>Error</label>
             </div>
           </Flex>
-          {isPending && <div>Loading...</div>}
+          {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
           {data && (
             <table className={tableStyles.styledTable}>

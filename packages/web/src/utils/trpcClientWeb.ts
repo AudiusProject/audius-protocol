@@ -1,5 +1,6 @@
 import type { AppRouter } from '@audius/trpc-server'
-import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
+import { httpBatchLink } from '@trpc/client'
+import { createTRPCReact } from '@trpc/react-query'
 
 export const trpc = createTRPCReact<AppRouter>()
 

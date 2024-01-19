@@ -5,6 +5,8 @@
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
+    "packages/ddex/server",
+    "packages/ddex/client",
     "packages/es-indexer"
   ],
   "private": true,

@@ -2,19 +2,21 @@ import { useState } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
 
-import useReleases from 'providers/useReleases'
+import { trpc } from 'utils/trpc'
 
 import tableStyles from './Table.module.css'
 
 const Releases = () => {
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<
+    '' | 'error' | 'success' | 'processing' | undefined
+  >('')
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [prevCursor, setPrevCursor] = useState<string | undefined>(undefined)
-  const { data, error, isPending } = useReleases(
-    statusFilter,
+  const { data, error, isLoading } = trpc.release.getReleases.useQuery({
+    status: statusFilter,
     nextCursor,
     prevCursor
-  )
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -56,15 +58,15 @@ const Releases = () => {
             <div>
               <input
                 type='checkbox'
-                id='releasesPendingFilter'
-                checked={statusFilter === 'pending'}
+                id='releasesProcessingFilter'
+                checked={statusFilter === 'processing'}
                 onChange={() =>
                   setStatusFilter((curFilter) =>
-                    curFilter === 'pending' ? '' : 'pending'
+                    curFilter === 'processing' ? '' : 'processing'
                   )
                 }
               />
-              <label htmlFor='releasesPendingFilter'>Pending</label>
+              <label htmlFor='releasesProcessingFilter'>Processing</label>
             </div>
             <div>
               <input
@@ -80,7 +82,7 @@ const Releases = () => {
               <label htmlFor='releasesErrorFilter'>Error</label>
             </div>
           </Flex>
-          {isPending && <div>Loading...</div>}
+          {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
           {data && (
             <table className={tableStyles.styledTable}>
