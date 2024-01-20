@@ -2,6 +2,7 @@ import {
   BytesLike,
   Contract,
   JsonRpcProvider,
+  WebSocketProvider,
   ZeroAddress,
   ethers,
 } from 'ethers'
@@ -49,9 +50,9 @@ export const getRegisteredNodes = async (
 ): Promise<SP[]> => {
     const type = `${nodeType}-node`
   const providerUrl = isStaging(env)
-    ? 'https://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
-    : 'https://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
-  const provider = new JsonRpcProvider(providerUrl)
+    ? 'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
+    : 'wss://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
+  const provider = new WebSocketProvider(providerUrl)
 
   const initialRegistryAddress = isStaging(env)
     ? '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3'
@@ -117,7 +118,7 @@ export const getRegisteredNodes = async (
     if (type !== hexToUtf8(serviceType)) continue
     const serviceProviderIds =
       await serviceProviderFactory.getTotalServiceTypeProviders(serviceType)
-    for (let spid = BigInt(1); spid < serviceProviderIds; spid++) {
+    for (let spid = BigInt(0); spid < serviceProviderIds; spid++) {
       const {
         0: owner,
         1: endpoint,
