@@ -34,6 +34,7 @@ import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
+import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { Link, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -209,7 +210,8 @@ export const GiantTrackTile = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
-  const hasDownloadableAssets = track?.is_downloadable || track?._stems
+  const hasDownloadableAssets =
+    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
@@ -502,9 +504,23 @@ export const GiantTrackTile = ({
       </>
     )
   }
+
   const renderScheduledReleaseRow = () => {
     return (
       <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    )
+  }
+
+  const renderDownloadButtons = () => {
+    return (
+      <DownloadButtons
+        className={styles.downloadButtonsContainer}
+        trackId={trackId}
+        isOwner={isOwner}
+        following={following}
+        hasDownloadAccess={hasDownloadAccess}
+        onDownload={onDownload}
+      />
     )
   }
 
@@ -667,10 +683,7 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isStreamGated &&
-      streamConditions &&
-      isLosslessDownloadsEnabled &&
-      !hasDownloadableAssets ? (
+      {isStreamGated && streamConditions ? (
         <GatedTrackSection
           isLoading={isLoading}
           trackId={trackId}
@@ -714,6 +727,7 @@ export const GiantTrackTile = ({
           </UserGeneratedText>
         ) : null}
         {renderTags()}
+        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
         {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
           <Box pt='l' w='100%'>
             <DownloadSection trackId={trackId} onDownload={onDownload} />

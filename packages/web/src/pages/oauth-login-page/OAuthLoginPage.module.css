@@ -217,8 +217,19 @@
   color: var(--neutral-light-4);
 }
 
-.passwordInput {
+.passwordInput,
+.otpInput {
   margin-top: var(--unit-4);
+}
+
+/* Remove buttons on number input */
+.otpInput > input::-webkit-outer-spin-button,
+.otpInput > input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.otpInput > input[type='number'] {
+  -moz-appearance: textfield;
 }
 
 .buttonLoadingSpinner {

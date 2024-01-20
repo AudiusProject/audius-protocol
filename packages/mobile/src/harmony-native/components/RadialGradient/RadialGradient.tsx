@@ -1,26 +1,40 @@
 import { useState } from 'react'
 
-import { View } from 'react-native'
+import { css } from '@emotion/native'
+import { Platform, View } from 'react-native'
 import type { RadialGradientProps } from 'react-native-radial-gradient'
 import RNRadialGradient from 'react-native-radial-gradient'
+
+const fullSize = css({ height: '100%', width: '100%' })
 
 // RadialGradient that uses percentages instead of pixels for center and radius
 // This makes RadialGradient much more useful and dynamic
 export const RadialGradient = (props: RadialGradientProps) => {
-  const { center: centerProp, radius: radiusProp, style, ...other } = props
+  const {
+    center: centerProp = [50, 50],
+    radius: radiusProp,
+    style,
+    ...other
+  } = props
   const [{ height, width }, setDimensions] = useState({
     height: 0,
     width: 0
   })
 
-  // Note using x,y coordinates because it allows dynamic updates
-  // This technically works even though the types don't allow it
-  const center = centerProp
-    ? ({
-        x: (centerProp[0] * width) / 100,
-        y: (centerProp[1] * height) / 100
-      } as unknown as RadialGradientProps['center'])
+  let center = centerProp
+    ? [(centerProp[0] * width) / 100, (centerProp[1] * height) / 100]
     : undefined
+
+  // We update the center prop to use x,y coordinates on iOS due to
+  // bug where center prop cannot be updated on iOS
+  if (Platform.OS === 'ios') {
+    center = center
+      ? ({
+          x: center[0],
+          y: center[1]
+        } as unknown as RadialGradientProps['center'])
+      : undefined
+  }
 
   // Since we cant have ellipse gradients, we use the average of height and width
   const radius = radiusProp
@@ -28,10 +42,13 @@ export const RadialGradient = (props: RadialGradientProps) => {
     : undefined
 
   return (
-    <View style={style} onLayout={(e) => setDimensions(e.nativeEvent.layout)}>
+    <View
+      style={[fullSize, style]}
+      onLayout={(e) => setDimensions(e.nativeEvent.layout)}
+    >
       <RNRadialGradient
         {...other}
-        style={{ height, width }}
+        style={[style, { height, width }]}
         center={center}
         radius={radius}
       />

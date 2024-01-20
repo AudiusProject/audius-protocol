@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 import {
   purchaseContentSelectors,
   isContentPurchaseInProgress,
-  useUSDCBalance
+  useUSDCBalance,
+  Status
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -25,7 +26,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
 
   // Refresh balance on successful recovery
   useEffect(() => {
-    if (recoveryStatus === 'success') {
+    if (recoveryStatus === Status.SUCCESS) {
       refresh()
     }
   }, [recoveryStatus, refresh])

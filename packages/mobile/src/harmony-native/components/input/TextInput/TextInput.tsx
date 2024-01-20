@@ -10,6 +10,8 @@ import type {
 import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import Animated, {
+  FadeIn,
+  FadeOut,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -26,12 +28,16 @@ import type { TextColors, TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
+import { TextInputAccessoryView } from './TextInputAccessoryView'
 import { TextInputSize, type TextInputProps } from './types'
 
+const inputAccessoryViewID = 'harmonyInputAccessoryView'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 export type TextInputRef = Ref<RNTextInput>
+export type TextInputChangeEvent =
+  NativeSyntheticEvent<TextInputChangeEventData>
 
 export const TextInput = forwardRef(
   (props: TextInputProps, ref: TextInputRef) => {
@@ -58,10 +64,12 @@ export const TextInput = forwardRef(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      IconProps,
       endAdornment: endAdornmentProp,
       _incorrectError,
       _isFocused,
       _disablePointerEvents,
+      style,
       ...other
     } = props
 
@@ -78,7 +86,7 @@ export const TextInput = forwardRef(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' />
+      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -86,21 +94,24 @@ export const TextInput = forwardRef(
     }
 
     const focused = useSharedValue(_isFocused ? 1 : 0)
+    const focusedLabel = useSharedValue(_isFocused ? 1 : 0)
 
     const handleFocus = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      (e: TextInputChangeEvent) => {
         focused.value = withTiming(1, motion.press)
+        focusedLabel.value = withTiming(1, motion.expressive)
         onFocusProp?.(e)
       },
-      [focused, motion.press, onFocusProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onFocusProp]
     )
 
     const handleBlur = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         focused.value = withTiming(0, motion.press)
+        focusedLabel.value = withTiming(0, motion.expressive)
         onBlurProp?.(e)
       },
-      [focused, motion.press, onBlurProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onBlurProp]
     )
 
     const [isFocusedState, onFocus, onBlur] = useFocusState(
@@ -200,19 +211,27 @@ export const TextInput = forwardRef(
       fontSize: hasValue
         ? typography.size.s
         : interpolate(
-            focused.value,
+            focusedLabel.value,
             [0, 1],
             [typography.size.m, typography.size.s]
           ),
       transform: [
         {
-          translateY: hasValue ? 0 : interpolate(focused.value, [0, 1], [13, 0])
+          translateY: hasValue
+            ? 0
+            : interpolate(focusedLabel.value, [0, 1], [13, 0])
         }
       ]
     }))
 
     return (
-      <Flex direction='column' gap='xs' alignItems='flex-start' w='100%'>
+      <Flex
+        direction='column'
+        gap='xs'
+        alignItems='flex-start'
+        w='100%'
+        style={style}
+      >
         <Pressable
           onPress={handlePressRoot}
           pointerEvents={disabled || _disablePointerEvents ? 'none' : undefined}
@@ -223,14 +242,16 @@ export const TextInput = forwardRef(
               w='100%'
               direction='row'
               alignItems='center'
-              border='default'
+              border={disabled ? 'default' : 'strong'}
               borderRadius='s'
               backgroundColor='surface1'
               ph='l'
               gap={isSmall ? 's' : 'm'}
               style={animatedRootStyles}
             >
-              {StartIcon ? <StartIcon size='m' color='subdued' /> : null}
+              {StartIcon ? (
+                <StartIcon size='m' color='subdued' {...IconProps} />
+              ) : null}
               <Flex
                 direction='column'
                 gap='xs'
@@ -268,6 +289,7 @@ export const TextInput = forwardRef(
                   direction='row'
                   alignItems='center'
                   justifyContent='space-between'
+                  gap='2xs'
                 >
                   {startAdornmentText && shouldShowAdornments ? (
                     <Text
@@ -292,20 +314,20 @@ export const TextInput = forwardRef(
                     placeholder={
                       shouldShowPlaceholder ? placeholderText : undefined
                     }
-                    placeholderTextColor={
-                      color.text[disabled ? 'subdued' : 'default']
-                    }
+                    placeholderTextColor={color.text.subdued}
                     underlineColorAndroid='transparent'
                     aria-label={ariaLabel ?? labelText}
                     style={css({
                       flex: 1,
                       fontSize: typography.size[isSmall ? 's' : 'l'],
+                      fontFamily: typography.fontByWeight.medium,
                       color: color.text[disabled ? 'subdued' : 'default']
                     })}
                     onChange={handleChange}
                     onFocus={onFocus}
                     onBlur={onBlur}
                     selectionColor={color.secondary.secondary}
+                    inputAccessoryViewID={inputAccessoryViewID}
                     {...other}
                   />
                   {endAdornmentText && shouldShowAdornments ? (
@@ -325,15 +347,18 @@ export const TextInput = forwardRef(
           </GestureDetector>
         </Pressable>
         {helperText ? (
-          <Text
+          <AnimatedText
+            entering={FadeIn}
+            exiting={FadeOut}
             variant='body'
             size={helperTextSize}
             strength='default'
             color={statusColor ?? 'default'}
           >
             {helperText}
-          </Text>
+          </AnimatedText>
         ) : null}
+        <TextInputAccessoryView nativeID={inputAccessoryViewID} />
       </Flex>
     )
   }

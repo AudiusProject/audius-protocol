@@ -11,7 +11,6 @@ import { getFollowIds } from 'audius-client/src/common/store/pages/signon/select
 import type { AppState } from 'audius-client/src/store/types'
 import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
-import RadialGradient from 'react-native-radial-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { Icon } from '@audius/harmony-native'
@@ -24,6 +23,7 @@ import {
   IconPlay,
   IconUser,
   Paper,
+  RadialGradient,
   SoundwaveCircle,
   Text,
   useTheme
@@ -101,16 +101,13 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
     return (
       <RadialGradient
         style={css({
-          width: '100%',
-          height: '100%',
           alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0.73
+          justifyContent: 'center'
         })}
         colors={['rgba(0, 0, 0, 0.50)', 'rgba(0, 0, 0, 0.10)']}
         stops={[0, 1]}
-        center={[0.5, 0.5]}
-        radius={0.5}
+        center={[50, 50]}
+        radius={50}
       >
         <PreviewIcon size='l' color='staticWhite' shadow='drop' />
       </RadialGradient>

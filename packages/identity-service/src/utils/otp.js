@@ -3,6 +3,11 @@ const { getOtpEmail } = require('../notifications/emails/otp')
 const OTP_CHARS = '0123456789'
 const OTP_REDIS_PREFIX = 'otp'
 const OTP_EXPIRATION_SECONDS = 600
+const OTP_BYPASS_EMAILS = new Set(['testflight@audius.co'])
+
+const bypassOtp = (email) => {
+  return OTP_BYPASS_EMAILS.has(email)
+}
 
 const generateOtp = () => {
   let OTP = ''
@@ -52,6 +57,7 @@ const sendOtp = async ({ email, redis, sendgrid }) => {
 }
 
 module.exports = {
+  bypassOtp,
   validateOtp,
   sendOtp
 }

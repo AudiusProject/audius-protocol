@@ -6,7 +6,8 @@ import {
   useWithdrawUSDCModal,
   useUSDCBalance,
   formatUSDCWeiToFloorCentsNumber,
-  BNUSDC
+  BNUSDC,
+  WithdrawMethod
 } from '@audius/common'
 import { Button, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
@@ -17,11 +18,8 @@ import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import {
-  ADDRESS,
-  AMOUNT,
-  CONFIRM
-} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+
+import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -42,6 +40,8 @@ const messages = {
   goBack: 'Go Back',
   confirm: 'Confirm Transfer',
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
+  cashTransferDescription:
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
   guide: 'Guide to USDC Transfers on Audius'
 }
 
@@ -50,6 +50,7 @@ export const ConfirmTransferDetails = () => {
   const { setData } = useWithdrawUSDCModal()
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
+  const [{ value: methodValue }] = useField(METHOD)
   const [confirmField, { error: confirmError }] = useField(CONFIRM)
 
   const { data: balance } = useUSDCBalance()
@@ -66,13 +67,26 @@ export const ConfirmTransferDetails = () => {
   const handleContinue = useCallback(() => {
     setTouchedContinue(true)
     if (!confirmError) {
-      setData({ page: WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS })
+      setData({
+        page:
+          methodValue === WithdrawMethod.COINFLOW
+            ? WithdrawUSDCModalPages.PREPARE_TRANSFER
+            : WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
+      })
       submitForm()
     }
-  }, [setData, submitForm, confirmError])
+  }, [methodValue, setData, submitForm, confirmError])
 
   return (
     <div className={styles.root}>
+      {methodValue === WithdrawMethod.MANUAL_TRANSFER ? (
+        <Hint
+          text={messages.notSure}
+          link={LEARN_MORE_LINK}
+          icon={IconQuestionCircle}
+          linkText={messages.guide}
+        />
+      ) : null}
       <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
@@ -82,29 +96,37 @@ export const ConfirmTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
-          {addressValue}
+      {methodValue === WithdrawMethod.COINFLOW ? (
+        <Text variant='body' size='medium'>
+          {messages.cashTransferDescription}
         </Text>
-      </div>
-      <div className={styles.details}>
-        <Text variant='title' size='medium' strength='default'>
-          {messages.review}
-        </Text>
-        <Text variant='body' size='small' strength='default'>
-          {messages.byProceeding}
-        </Text>
-        <div className={styles.acknowledge}>
-          <Switch {...confirmField} />
-          <Text variant='body' size='small' strength='default'>
-            {messages.haveCarefully}
-          </Text>
-        </div>
-        {touchedContinue && confirmError ? (
-          <HelperText error>{confirmError}</HelperText>
-        ) : null}
-      </div>
+      ) : (
+        <>
+          <div className={styles.destination}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {addressValue}
+            </Text>
+          </div>
+          <div className={styles.details}>
+            <Text variant='title' size='medium' strength='default'>
+              {messages.review}
+            </Text>
+            <Text variant='body' size='small' strength='default'>
+              {messages.byProceeding}
+            </Text>
+            <div className={styles.acknowledge}>
+              <Switch {...confirmField} />
+              <Text variant='body' size='small' strength='default'>
+                {messages.haveCarefully}
+              </Text>
+            </div>
+            {touchedContinue && confirmError ? (
+              <HelperText error>{confirmError}</HelperText>
+            ) : null}
+          </div>
+        </>
+      )}
       <div className={styles.buttons}>
         <Button
           iconLeft={IconCaretLeft}
@@ -117,12 +139,6 @@ export const ConfirmTransferDetails = () => {
           {messages.confirm}
         </Button>
       </div>
-      <Hint
-        text={messages.notSure}
-        link={LEARN_MORE_LINK}
-        icon={IconQuestionCircle}
-        linkText={messages.guide}
-      />
     </div>
   )
 }

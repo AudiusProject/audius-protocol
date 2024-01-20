@@ -61,6 +61,7 @@ import { spacing } from 'app/styles/spacing'
 import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'
 
+import { DownloadSection } from './DownloadSection'
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
@@ -114,7 +115,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingVertical: spacing(4)
+    paddingTop: spacing(4)
   },
 
   moodEmoji: {
@@ -129,6 +130,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginVertical: spacing(4)
   },
 
+  bottomContent: {
+    gap: spacing(4),
+    marginHorizontal: spacing(3)
+  },
   hiddenTrackLabel: {
     marginTop: spacing(1),
     marginLeft: spacing(2),
@@ -138,11 +143,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase',
     color: palette.neutralLight4
   },
-
-  bottomContent: {
-    marginHorizontal: spacing(3)
-  },
-
   headerContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -269,6 +269,12 @@ export const TrackScreenDetailsTile = ({
   const isScheduledRelease = release_date
     ? moment(release_date).isAfter(moment.now())
     : false
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const hasDownloadableAssets =
+    (track as Track)?.is_downloadable ||
+    ((track as Track)?._stems?.length ?? 0) > 0
 
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
@@ -578,8 +584,11 @@ export const TrackScreenDetailsTile = ({
   const renderBottomContent = () => {
     return (
       <View style={styles.bottomContent}>
-        {renderDownloadButtons()}
         {renderTags()}
+        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
+        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+          <DownloadSection trackId={track_id} />
+        ) : null}
       </View>
     )
   }

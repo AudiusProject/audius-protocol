@@ -113,6 +113,12 @@
   padding: var(--unit-2) var(--unit-3) var(--unit-2) 18px;
 }
 
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .topSection {
   position: relative;
   display: inline-flex;
@@ -150,6 +156,10 @@
 
 .volumeIcon {
   margin-left: 6px;
+}
+
+.title {
+  width: 100%;
 }
 
 .isActive .title {

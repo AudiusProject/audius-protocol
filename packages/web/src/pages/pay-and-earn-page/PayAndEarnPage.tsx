@@ -1,3 +1,8 @@
+import { useEffect } from 'react'
+
+import { Status, buyUSDCActions, useUSDCBalance } from '@audius/common'
+import { useDispatch } from 'react-redux'
+
 import { useIsMobile } from 'utils/clientUtil'
 
 import { PayAndEarnPage as DesktopPayAndEarn } from './desktop/PayAndEarnPage'
@@ -6,6 +11,21 @@ import { PayAndEarnPageProps } from './types'
 
 export const PayAndEarnPage = (props: PayAndEarnPageProps) => {
   const isMobile = useIsMobile()
+  const dispatch = useDispatch()
+  const { recoveryStatus, refresh } = useUSDCBalance()
+
+  // Refresh balance on successful recovery
+  useEffect(() => {
+    if (recoveryStatus === Status.SUCCESS) {
+      refresh()
+    }
+  }, [recoveryStatus, refresh])
+
+  // Always check for recoverable USDC on page load
+  useEffect(() => {
+    dispatch(buyUSDCActions.startRecoveryIfNecessary())
+  }, [dispatch])
+
   const Content = isMobile ? MobilePayAndEarn : DesktopPayAndEarn
 
   return <Content {...props} />

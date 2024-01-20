@@ -20,6 +20,10 @@ export const getWithdrawStatus = (state: CommonState) => {
   return state.withdrawUSDC.withdrawStatus
 }
 
+export const getCoinflowState = (state: CommonState) => {
+  return state.withdrawUSDC.coinflowState
+}
+
 export const getWithdrawTransaction = (state: CommonState) => {
   return state.withdrawUSDC.withdrawTransaction
 }
