@@ -1,24 +1,5 @@
 import useSWR from 'swr'
-import { getAudiusContracts } from './utils/contracts'
-
-const prodEndpoint =
-  'https://api.audius.co'
-
-const stagingEndpoint =
-  'https://api.staging.audius.co'
-
-const gql = `
-query ServiceProviders($type: String) {
-  serviceNodes(where: {isRegistered: true, type: $type}) {
-    delegateOwnerWallet
-    endpoint
-    isRegistered
-    type {
-      id
-    }
-  }
-}
-`
+import { getRegisteredNodes } from './utils/contracts'
 
 export type SP = {
   delegateOwnerWallet: string
@@ -37,10 +18,11 @@ export function apiGatewayFetcher(
   env: string,
   type: 'content' | 'discovery'
 ) {
-  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`)
+  return getRegisteredNodes(env, type)
     .then(async (resp) => {
-      const data = await resp.json()
-      const sps = data.data as SP[]
+      const sps = resp
+
+      console.log({ oldSps: sps, type})
 
       const hostSortKey = (sp: SP) =>
         new URL(sp.endpoint).hostname.split('.').reverse().join('.')
@@ -50,8 +32,6 @@ export function apiGatewayFetcher(
 
       sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
       // console.log(sps)
-
-      getAudiusContracts().catch(console.log)
       return sps
     })
 }
