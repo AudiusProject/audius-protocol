@@ -2,6 +2,8 @@ begin;
 do $$ begin
 -- prod gate
 if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') then
+  -- idempotency gate
+  if exists (select * from "user_tips" where "signature" = '5wBDmfZUu8i1uxW5dBZED3uA4rc2aahf1rDPMgo1fjA5h8Mwp7b3euKyGiVjofqMBReCKT24gGxQxtosUSMKSwAc') then
 
   delete from "aggregate_user_tips"
   where 
@@ -20559,6 +20561,7 @@ if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb
       '5WLGUEeRHCAKjtqcWdhQvHKarDConcaL8G2R7vTgPyJMUpvJ1sxP82qAeYo9vyT8tijioCTURR4Jc4cvKosLjyfJ'
     );  
 
+  end if;
 end if;
 end $$;
 commit;
