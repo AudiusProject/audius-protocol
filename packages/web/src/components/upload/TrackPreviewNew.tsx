@@ -1,3 +1,5 @@
+import { FeatureFlags, useFeatureFlag } from '@audius/common'
+import { Flex, IconPenSquare } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'
 
@@ -39,16 +41,24 @@ type TrackPreviewProps = {
   index: number
   displayIndex: boolean
   onRemove: () => void
+  onEditTitle?: () => void
+  isTitleEditable?: boolean
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
   const {
     displayIndex = false,
     index,
     fileType = 'audio/mp3',
     trackTitle = 'Untitled',
     fileSize,
-    onRemove
+    onRemove,
+    onEditTitle,
+    isTitleEditable
   } = props
 
   const Icon = fileTypeIcon(fileType)
@@ -72,13 +82,31 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
         >
           {numeral(fileSize).format('0.0 b')}
         </Text>
-        <div className={styles.removeButtonContainer}>
-          <HarmonyPlainButton
-            iconRight={IconTrash}
-            onClick={onRemove}
-            className={styles.removeButton}
-          />
-        </div>
+        {isLosslessDownloadsEnabled ? (
+          <Flex gap='xs' alignItems='center'>
+            {isTitleEditable ? (
+              <HarmonyPlainButton
+                iconRight={IconPenSquare}
+                onClick={onEditTitle}
+                className={styles.editTitleButton}
+              />
+            ) : null}
+            <HarmonyPlainButton
+              iconRight={IconTrash}
+              onClick={onRemove}
+              className={styles.removeButton}
+            />
+          </Flex>
+        ) : null}
+        {!isLosslessDownloadsEnabled ? (
+          <div className={styles.removeButtonContainer}>
+            <HarmonyPlainButton
+              iconRight={IconTrash}
+              onClick={onRemove}
+              className={styles.removeButton}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )

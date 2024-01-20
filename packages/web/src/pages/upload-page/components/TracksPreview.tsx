@@ -77,7 +77,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           <TrackPreviewNew
             index={i}
             displayIndex={tracks.length > 1}
-            key={track.metadata.title + i}
+            key={`track-preview-${i}`}
             trackTitle={track.file.name}
             fileType={track.file.type}
             fileSize={track.file.size}
