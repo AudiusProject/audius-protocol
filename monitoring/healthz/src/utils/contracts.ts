@@ -44,15 +44,29 @@ const RewardsManagerKey = utf8ToHex('EthRewardsManagerProxy')
 const WormholeKey = utf8ToHex('WormholeClientProxy')
 const TrustedNotifierKey = utf8ToHex('TrustedNotifierManagerProxy')
 
+const ProdProvider = new WebSocketProvider(
+  'wss://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
+)
+const StageProvider = new WebSocketProvider(
+  'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
+)
+
+// `${env}-${type}` => SPs
+const spCache: Map<string, SP[]> = new Map()
+
 export const getRegisteredNodes = async (
   env: string,
   nodeType: string
 ): Promise<SP[]> => {
-    const type = `${nodeType}-node`
-  const providerUrl = isStaging(env)
-    ? 'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
-    : 'wss://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
-  const provider = new WebSocketProvider(providerUrl)
+  const type = `${nodeType}-node`
+
+  const cacheKey = `${env}-${type}`
+  const cached = spCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const provider = isStaging(env) ? StageProvider : ProdProvider
 
   const initialRegistryAddress = isStaging(env)
     ? '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3'
@@ -118,7 +132,7 @@ export const getRegisteredNodes = async (
     if (type !== hexToUtf8(serviceType)) continue
     const serviceProviderIds =
       await serviceProviderFactory.getTotalServiceTypeProviders(serviceType)
-    for (let spid = BigInt(0); spid < serviceProviderIds; spid++) {
+    for (let spid = BigInt(0); spid <= serviceProviderIds; spid++) {
       const {
         0: owner,
         1: endpoint,
@@ -133,10 +147,21 @@ export const getRegisteredNodes = async (
         spID: spid,
         // @ts-ignore
         type,
-        blockNumber
+        blockNumber,
       })
     }
   }
 
+  spCache.set(cacheKey, sps)
+
   return sps
 }
+
+const hydrateCache = () => {
+    getRegisteredNodes('staging', 'content')
+    getRegisteredNodes('prod', 'content')
+    getRegisteredNodes('staging', 'discovery')
+    getRegisteredNodes('prod', 'discovery')
+}
+
+hydrateCache()

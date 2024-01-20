@@ -44,10 +44,7 @@ export function useServiceProviders(
     const sps = await apiGatewayFetcher(env, type)
     const shouldIncludeUnregistered =
       env !== 'prod' && type === 'discovery'
-    if (shouldIncludeUnregistered) {
-      sps.push(...unregisteredStageNodes())
-      hostSort(sps)
-    }
+    hostSort(sps)
     return sps
   })
   return { data: sps, error }
@@ -65,15 +62,4 @@ export function hostSort(sps: SP[]) {
   const hostSortKey = (sp: SP) =>
     new URL(sp.endpoint).hostname.split('.').reverse().join('.')
   sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
-}
-
-function unregisteredStageNodes() {
-  return [
-    {
-      delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
-      endpoint: 'https://discoveryprovider4.staging.audius.co',
-      isRegistered: false,
-      type: { id: 'discovery-node' },
-    },
-  ]
 }
