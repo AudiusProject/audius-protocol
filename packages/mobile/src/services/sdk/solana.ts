@@ -2,23 +2,26 @@ import {
   ClaimableTokensClient,
   RewardManagerClient,
   SolanaRelay,
-  SolanaRelayWalletAdapter
+  SolanaRelayWalletAdapter,
+  Configuration
 } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 
 import { env } from '../env'
 
-const solanaRelay = new SolanaRelay(new Configuration({
-  middleware: [
-    {
-      pre: async (context) => {
-        const endpoint = env.SOLANA_RELAY_ENDPOINT
-        const url = `${endpoint}${context.url}`
-        return { url, init: context.init }
+const solanaRelay = new SolanaRelay(
+  new Configuration({
+    middleware: [
+      {
+        pre: async (context) => {
+          const endpoint = env.SOLANA_RELAY_ENDPOINT
+          const url = `${endpoint}${context.url}`
+          return { url, init: context.init }
+        }
       }
-    }
-  ]
-}))
+    ]
+  })
+)
 
 const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
 
