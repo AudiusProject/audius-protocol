@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { getAudiusContracts } from './utils/contracts'
 
 const prodEndpoint =
   'https://api.audius.co'
@@ -49,6 +50,8 @@ export function apiGatewayFetcher(
 
       sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
       // console.log(sps)
+
+      getAudiusContracts().catch(console.log)
       return sps
     })
 }
