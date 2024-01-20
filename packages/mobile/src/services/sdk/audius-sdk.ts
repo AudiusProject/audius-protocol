@@ -24,11 +24,11 @@ const initSdk = async () => {
       discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
       auth,
       storageNodeSelector: await getStorageNodeSelector(),
-      claimableTokensProgram: claimableTokensService,
-      rewardManagerProgram: rewardManagerService,
+      claimableTokensClient: claimableTokensService,
+      rewardManagerClient: rewardManagerService,
       antiAbuseOracleSelector: new AntiAbuseOracleSelector({
         endpoints: [env.AAO_ENDPOINT],
-        addresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
+        registeredAddresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
       })
     }
   })
@@ -43,7 +43,7 @@ export const audiusSdk = async () => {
     await new Promise((resolve) => {
       sdkEventEmitter.addListener(SDK_LOADED_EVENT_NAME, resolve)
     })
-    return await sdkInstance
+    return sdkInstance
   } else if (!sdkInstance) {
     return await initSdk()
   }

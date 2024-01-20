@@ -59,12 +59,12 @@ export type ServicesContainer = {
   /**
    * Claimable Tokens Program client for Solana
    */
-  claimableTokensProgram: ClaimableTokensClient
+  claimableTokensClient: ClaimableTokensClient
 
   /**
    * Reward Manager Program client for Solana
    */
-  rewardManagerProgram: RewardManagerClient
+  rewardManagerClient: RewardManagerClient
 
   /**
    * Service used to choose a healthy Anti Abuse Oracle

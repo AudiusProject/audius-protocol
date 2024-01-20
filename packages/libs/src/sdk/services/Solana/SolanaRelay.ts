@@ -1,16 +1,10 @@
 import { PublicKey } from '@solana/web3.js'
-import fetch from 'cross-fetch'
 
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
 
-import {
-  type RelayRequestBody,
-  type SolanaConfig,
-  RelayRequest,
-  RelaySchema
-} from './types'
+import { type RelayRequestBody, RelayRequest, RelaySchema } from './types'
 
 /**
  * Client for the Solana Relay Plugin on Discovery.
@@ -21,16 +15,6 @@ export class SolanaRelay extends BaseAPI {
    * from the selected Discovery Node.
    */
   private feePayer: PublicKey | null = null
-
-  constructor(config: SolanaConfig) {
-    super(
-      new runtime.Configuration({
-        fetchApi: fetch,
-        basePath: '/solana',
-        middleware: [config.discoveryNodeSelector.createMiddleware()]
-      })
-    )
-  }
 
   /**
    * Gets a random fee payer public key from the selected discovery node's

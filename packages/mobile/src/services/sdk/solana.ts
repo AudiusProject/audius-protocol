@@ -8,7 +8,7 @@ import { PublicKey } from '@solana/web3.js'
 
 import { env } from '../env'
 
-const solanaRelay = new SolanaRelay({
+const solanaRelay = new SolanaRelay(new Configuration({
   middleware: [
     {
       pre: async (context) => {
@@ -18,7 +18,7 @@ const solanaRelay = new SolanaRelay({
       }
     }
   ]
-})
+}))
 
 const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
 

@@ -68,7 +68,7 @@ describe('UsersApi', () => {
     discoveryNodeSelector,
     logger
   })
-  const solanaRelay = new SolanaRelay({ discoveryNodeSelector })
+  const solanaRelay = new SolanaRelay()
   const claimableTokens = new ClaimableTokensClient({
     solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
   })

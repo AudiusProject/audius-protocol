@@ -114,25 +114,31 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.antiAbuseOracleSelector ??
     new AntiAbuseOracleSelector({ logger })
 
-  const defaultSolanaRelay = new SolanaRelay({
-    discoveryNodeSelector
-  })
+  const defaultSolanaRelay = new SolanaRelay(
+    new Configuration({
+      middleware: [discoveryNodeSelector.createMiddleware()]
+    })
+  )
 
   const defaultSolanaWalletAdapter = new SolanaRelayWalletAdapter({
     solanaRelay: config.services?.solanaRelay ?? defaultSolanaRelay
   })
 
-  const defaultClaimableTokensProgram = new ClaimableTokensClient({
-    ...defaultClaimableTokensConfig,
-    solanaWalletAdapter:
-      config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
-  })
+  const claimableTokensClient =
+    config.services?.claimableTokensClient ??
+    new ClaimableTokensClient({
+      ...defaultClaimableTokensConfig,
+      solanaWalletAdapter:
+        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+    })
 
-  const defaultRewardManagerProgram = new RewardManagerClient({
-    ...defaultRewardManagerClentConfig,
-    solanaWalletAdapter:
-      config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
-  })
+  const rewardManagerClient =
+    config.services?.rewardManagerClient ??
+    new RewardManagerClient({
+      ...defaultRewardManagerClentConfig,
+      solanaWalletAdapter:
+        config.services?.solanaWalletAdapter ?? defaultSolanaWalletAdapter
+    })
 
   const defaultAntiAbuseOracle = new AntiAbuseOracle({
     antiAbuseOracleSelector
@@ -145,8 +151,8 @@ const initializeServices = (config: SdkConfig) => {
     entityManager: defaultEntityManager,
     storage: defaultStorage,
     auth: defaultAuthService,
-    claimableTokensProgram: defaultClaimableTokensProgram,
-    rewardManagerProgram: defaultRewardManagerProgram,
+    claimableTokensClient,
+    rewardManagerClient,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
     solanaRelay: defaultSolanaRelay,
     antiAbuseOracle: defaultAntiAbuseOracle,
@@ -186,7 +192,7 @@ const initializeApis = ({
     services.entityManager,
     services.auth,
     services.logger,
-    services.claimableTokensProgram
+    services.claimableTokensClient
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -236,8 +242,8 @@ const initializeApis = ({
     generatedApiClientConfig,
     users,
     services.discoveryNodeSelector,
-    services.rewardManagerProgram,
-    services.claimableTokensProgram,
+    services.rewardManagerClient,
+    services.claimableTokensClient,
     services.antiAbuseOracle,
     services.logger
   )
