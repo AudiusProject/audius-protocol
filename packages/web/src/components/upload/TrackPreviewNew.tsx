@@ -1,5 +1,10 @@
-import { FeatureFlags, useFeatureFlag } from '@audius/common'
-import { Flex, IconPenSquare } from '@audius/harmony'
+import {
+  FeatureFlags,
+  StemCategory,
+  stemCategoryFriendlyNames,
+  useFeatureFlag
+} from '@audius/common'
+import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'
 
@@ -13,6 +18,10 @@ import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
 
 import styles from './TrackPreview.module.css'
+
+const messages = {
+  selectType: 'Select Type'
+}
 
 const fileTypeIcon = (type: string) => {
   switch (type) {
@@ -43,6 +52,9 @@ type TrackPreviewProps = {
   onRemove: () => void
   onEditTitle?: () => void
   isTitleEditable?: boolean
+  onEditStemCategory?: () => void
+  stemCategory?: StemCategory
+  isStem?: boolean
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
@@ -58,10 +70,20 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     fileSize,
     onRemove,
     onEditTitle,
-    isTitleEditable
+    isTitleEditable,
+    onEditStemCategory,
+    stemCategory,
+    isStem
   } = props
 
   const Icon = fileTypeIcon(fileType)
+
+  const stemCategories = Object.keys(stemCategoryFriendlyNames).map(
+    (value) => ({
+      value,
+      label: stemCategoryFriendlyNames[value as StemCategory]
+    })
+  )
 
   return (
     <div className={styles.trackPreviewNew}>
@@ -74,7 +96,22 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       <Text className={styles.titleText} size='small'>
         {trackTitle}
       </Text>
-      <div className={styles.sizeContainer}>
+      <Flex alignItems='center'>
+        {isLosslessDownloadsEnabled && isStem ? (
+          <Box mr='xl'>
+            <FilterButton
+              label={messages.selectType}
+              options={stemCategories}
+              popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              popupTransformOrigin={{
+                vertical: 'top',
+                horizontal: 'right'
+              }}
+              onSelect={onEditStemCategory}
+              selection={stemCategory?.toString()}
+            />
+          </Box>
+        ) : null}
         <Text
           className={styles.fileSizeText}
           size='small'
@@ -83,7 +120,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           {numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (
-          <Flex gap='xs' alignItems='center'>
+          <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
             {isTitleEditable ? (
               <HarmonyPlainButton
                 iconRight={IconPenSquare}
@@ -99,15 +136,13 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           </Flex>
         ) : null}
         {!isLosslessDownloadsEnabled ? (
-          <div className={styles.removeButtonContainer}>
-            <HarmonyPlainButton
-              iconRight={IconTrash}
-              onClick={onRemove}
-              className={styles.removeButton}
-            />
-          </div>
+          <HarmonyPlainButton
+            iconRight={IconTrash}
+            onClick={onRemove}
+            className={styles.removeButton}
+          />
         ) : null}
-      </div>
+      </Flex>
     </div>
   )
 }

@@ -100,9 +100,13 @@
   display: none;
 }
 
+.trackPreviewNew:hover .iconsContainer {
+  width: 80px;
+}
+
 .trackPreviewNew:hover .removeButton,
 .trackPreviewNew:hover .editTitleButton {
-  display: inline;
+  display: flex;
 }
 
 .indexText {
@@ -116,11 +120,15 @@
 
 .titleText {
   flex: 1 1 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .fileSizeText {
-  display: inline;
+  display: flex;
   transition: var(--hover);
+  width: 80px;
+  justify-content: flex-end;
 }
 
 .removeButton,
@@ -138,4 +146,8 @@
 
 .removeButton:hover {
   color: var(--accent-red);
+}
+
+.iconsContainer {
+  justify-content: flex-end;
 }
