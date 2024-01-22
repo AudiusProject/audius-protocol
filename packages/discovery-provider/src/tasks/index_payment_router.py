@@ -395,7 +395,7 @@ def attempt_index_recovery_transfer(
         )
     if len(receiver_user_accounts) != 1:
         raise Exception(
-            f"Recovery transfer must have exactly one receiver account. Received: {','.join([a.user_bank_account for a in receiver_user_accounts])}"
+            f"Recovery transfer must have exactly one receiver account. Received: {','.join([a['user_bank_account'] for a in receiver_user_accounts])}"
         )
 
     receiver_user_account = receiver_user_accounts[0]
@@ -500,8 +500,12 @@ def validate_and_index_usdc_transfers(
     tx_sig: str,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
-    if memo["type"] is RouteTransactionMemoType.purchase and validate_purchase(
-        purchase_metadata=memo["metadata"], balance_changes=balance_changes
+    if (
+        memo["type"] is RouteTransactionMemoType.purchase
+        and memo["metadata"] is not None
+        and validate_purchase(
+            purchase_metadata=memo["metadata"], balance_changes=balance_changes
+        )
     ):
         index_purchase(
             session=session,
@@ -688,7 +692,10 @@ def process_route_instruction(
         )
 
         # If the memo had purchase information, dispatch challenge events
-        if memo["type"] is RouteTransactionMemoType.purchase:
+        if (
+            memo["type"] is RouteTransactionMemoType.purchase
+            and memo["metadata"] is not None
+        ):
             logger.info(
                 f"index_payment_router.py | tx: {tx_sig} | Purchase memo found. Dispatching challenge events"
             )
