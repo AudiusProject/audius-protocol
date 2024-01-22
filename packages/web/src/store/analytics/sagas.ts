@@ -2,6 +2,8 @@ import { Name, getContext } from '@audius/common'
 import { LOCATION_CHANGE } from 'connected-react-router'
 import { take } from 'redux-saga/effects'
 
+import { env } from 'services/env'
+
 function* trackLocation() {
   const analytics = yield* getContext('analytics')
   while (true) {
@@ -12,7 +14,7 @@ function* trackLocation() {
     } = yield take(LOCATION_CHANGE)
     if (pathname) {
       if ((window as any).gtag) {
-        ;(window as any).gtag('config', process.env.VITE_GA_MEASUREMENT_ID, {
+        ;(window as any).gtag('config', env.GA_MEASUREMENT_ID, {
           page_path: pathname
         })
       }

@@ -6,10 +6,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
+import { env } from 'services/env'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import './CheckPage.module.css'
+
 const { getAccountUser, getAccountStatus } = accountSelectors
 
 declare global {
@@ -18,8 +20,8 @@ declare global {
   }
 }
 
-const COGNITO_KEY = process.env.VITE_COGNITO_KEY
-const COGNITO_TEMPLATE_ID = process.env.VITE_COGNITO_TEMPLATE_ID
+const COGNITO_KEY = env.COGNITO_KEY
+const COGNITO_TEMPLATE_ID = env.COGNITO_TEMPLATE_ID
 
 const CheckPage = () => {
   const dispatch = useDispatch()
