@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   FeatureFlags,
   StemCategory,
@@ -17,6 +19,7 @@ import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
 import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
 
+import { EditableLabel } from './EditableLabel'
 import styles from './TrackPreview.module.css'
 
 const messages = {
@@ -50,11 +53,11 @@ type TrackPreviewProps = {
   index: number
   displayIndex: boolean
   onRemove: () => void
-  onEditTitle?: () => void
   isTitleEditable?: boolean
-  onEditStemCategory?: () => void
-  stemCategory?: StemCategory
+  onEditTitle?: (title: string) => void
   isStem?: boolean
+  stemCategory?: StemCategory
+  onEditStemCategory?: (stemCategory: StemCategory) => void
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
@@ -69,14 +72,16 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     trackTitle = 'Untitled',
     fileSize,
     onRemove,
-    onEditTitle,
     isTitleEditable,
-    onEditStemCategory,
+    onEditTitle,
+    isStem,
     stemCategory,
-    isStem
+    onEditStemCategory
   } = props
 
   const Icon = fileTypeIcon(fileType)
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
 
   const stemCategories = Object.keys(stemCategoryFriendlyNames).map(
     (value) => ({
@@ -93,11 +98,20 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
         </Text>
       ) : null}
       <Icon className={styles.trackPreviewImage} />
-      <Text className={styles.titleText} size='small'>
-        {trackTitle}
-      </Text>
+      {isLosslessDownloadsEnabled && isTitleEditable && onEditTitle ? (
+        <EditableLabel
+          isEditing={isEditingTitle}
+          setIsEditing={setIsEditingTitle}
+          value={trackTitle}
+          setValue={onEditTitle}
+        />
+      ) : (
+        <Text className={styles.titleText} size='small'>
+          {trackTitle}
+        </Text>
+      )}
       <Flex alignItems='center'>
-        {isLosslessDownloadsEnabled && isStem ? (
+        {isLosslessDownloadsEnabled && isStem && onEditStemCategory ? (
           <Box mr='xl'>
             <FilterButton
               label={messages.selectType}
@@ -107,7 +121,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
                 vertical: 'top',
                 horizontal: 'right'
               }}
-              onSelect={onEditStemCategory}
+              onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString()}
             />
           </Box>
@@ -124,7 +138,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             {isTitleEditable ? (
               <HarmonyPlainButton
                 iconRight={IconPenSquare}
-                onClick={onEditTitle}
+                onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
               />
             ) : null}
