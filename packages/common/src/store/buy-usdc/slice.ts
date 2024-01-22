@@ -1,10 +1,10 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { PurchaseVendor } from 'models/PurchaseContent'
+import { Status } from 'models/Status'
 import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
 
 import { BuyUSDCStage, PurchaseInfo, BuyUSDCError } from './types'
-import { Status } from 'models/Status'
 
 type StripeSessionStatus =
   | 'initialized'
