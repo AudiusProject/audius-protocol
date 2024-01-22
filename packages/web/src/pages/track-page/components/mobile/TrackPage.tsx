@@ -159,8 +159,10 @@ const TrackPage = ({
     <MobilePageContainer
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      noIndex={defaults.isUnlisted}
     >
       <div className={styles.trackContent}>
         <TrackPageHeader
