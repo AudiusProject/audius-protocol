@@ -71,7 +71,7 @@
       // Account recovery
       try {
         const urlParams = new URLSearchParams(window.location.search)
-        const useHashRouting = '%VITE_USE_HASH_ROUTING%' === 'true'
+        const useHashRouting = !!'%USE_HASH_ROUTING%'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 
@@ -110,10 +110,10 @@
     <!-- start Google Analytics -->
     <script
       async
-      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
+      src="https://www.googletagmanager.com/gtag/js?id=%GA_MEASUREMENT_ID%"
     ></script>
     <script>
-      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      const measurementId = '%GA_MEASUREMENT_ID%'
       if (!measurementId.includes('%')) {
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -125,8 +125,8 @@
 
     <!-- start Adroll -->
     <script async type="text/javascript">
-      const adroll_adv_id = '%VITE_ADROLL_AVD_ID%'
-      const adroll_pix_id = '%VITE_ADROLL_PIX_ID%'
+      const adroll_adv_id = '%ADROLL_AVD_ID%'
+      const adroll_pix_id = '%ADROLL_PIX_ID%'
       const adroll_version = '2.0'
       if (
         !adroll_adv_id.includes('%') &&
@@ -164,7 +164,7 @@
       async
       onLoad="window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
       onError="window.optimizelyDatafile = {}; window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
-      src="https://experiments.audius.co/datafiles/%VITE_OPTIMIZELY_KEY%.json/tag.js"
+      src="https://experiments.audius.co/datafiles/%OPTIMIZELY_KEY%.json/tag.js"
     ></script>
     <!-- end Optimizely -->
 

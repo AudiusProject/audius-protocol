@@ -50,7 +50,7 @@ export type Env = {
   PAYMENT_ROUTER_PROGRAM_ID: string
   PUBLIC_HOSTNAME: string
   PUBLIC_PROTOCOL: string
-  PUBLIC_URL: string
+  BASENAME: string
   REACHABILITY_URL: string
   STRIPE_CLIENT_PUBLISHABLE_KEY: string
   RECAPTCHA_SITE_KEY: string

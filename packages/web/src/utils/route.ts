@@ -14,7 +14,7 @@ export const BASE_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
 export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
   env.GA_HOSTNAME || 'audius.co'
 }`
-export const BASENAME = env.PUBLIC_URL
+export const BASENAME = env.BASENAME
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'

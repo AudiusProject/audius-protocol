@@ -104,7 +104,7 @@ web-build-production:
   resource_class: xlarge
   steps:
     - web-build:
-        build-type: prod-source-maps
+        build-type: prod
         build-directory: packages/web/build-production
         build-name: build-production
 

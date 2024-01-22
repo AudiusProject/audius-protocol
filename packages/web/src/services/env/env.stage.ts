@@ -53,7 +53,7 @@ export const env: Env = {
   PAYMENT_ROUTER_PROGRAM_ID: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',
   PUBLIC_HOSTNAME: 'staging.audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://staging.audius.co',
+  BASENAME: process.env.VITE_BASENAME || '',
   REACHABILITY_URL: 'https://staging.audius.co/204',
   RECAPTCHA_SITE_KEY: '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
   REGISTRY_ADDRESS: '0x793373aBF96583d5eb71a15d86fFE732CD04D452',

@@ -53,7 +53,7 @@ export const env: Env = {
   PAYMENT_ROUTER_PROGRAM_ID: 'paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa',
   PUBLIC_HOSTNAME: 'audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://audius.co',
+  BASENAME: process.env.VITE_BASENAME || '',
   REACHABILITY_URL: 'https://audius.co/204',
   RECAPTCHA_SITE_KEY: '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
   REGISTRY_ADDRESS: '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2',
