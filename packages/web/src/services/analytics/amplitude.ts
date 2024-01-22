@@ -2,8 +2,8 @@
 import { Name, Nullable, MobileOS } from '@audius/common'
 import amplitude from 'amplitude-js'
 
-import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
 import { env } from 'services/env'
+import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
 
 const AMP_API_KEY = env.AMPLITUDE_API_KEY
 const AMPLITUDE_PROXY = env.AMPLITUDE_PROXY

@@ -26,7 +26,7 @@ const HYDRATE_CLIENT = true
 export default async function render(
   pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
 ) {
-  const { pageProps, urlPathname } = pageContext
+  const { pageProps } = pageContext
 
   const isMobile = getIsMobile()
 
@@ -35,7 +35,6 @@ export default async function render(
       document.getElementById('root') as HTMLElement,
       <SsrContextProvider
         value={{
-          path: urlPathname,
           isServerSide: false,
           isSsrEnabled: true,
           pageProps,

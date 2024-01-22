@@ -1,5 +1,6 @@
-import indexHtml from '../../index.html?raw'
 import { env } from 'services/env'
+
+import indexHtml from '../../index.html?raw'
 
 const pattern = /%(\S+?)%/g
 
@@ -10,10 +11,10 @@ const pattern = /%(\S+?)%/g
 export const getIndexHtml = () => {
   return (
     indexHtml
-      // Replace all %VITE_*% with the corresponding environment variable
+      // Replace all %*% with the corresponding environment variable
       .replace(pattern, (text: string, key) => {
         if (key in env) {
-          return env[key] ?? text
+          return String(env[key as keyof typeof env] ?? text)
         }
         console.warn(`Missing environment variable: ${key}`)
         return text

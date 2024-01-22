@@ -3,8 +3,9 @@ import { createContext, memo, useContext } from 'react'
 import { Nullable, SsrPageProps } from '@audius/common'
 import { History } from 'history'
 
+import { isMobile as isMobileClient } from 'utils/clientUtil'
+
 export type SsrContextType = {
-  path: Nullable<string>
   /**
    * Is the app being rendered on the server
    */
@@ -14,6 +15,9 @@ export type SsrContextType = {
    * If so, this will be true on both the server and the client
    */
   isSsrEnabled: boolean
+  /**
+   * Is the app being rendered for a mobile device
+   */
   isMobile: boolean
   /**
    * The page props for the current request. This is available on both the server and the client.
@@ -35,7 +39,6 @@ export const useSsrContext = () => {
  * Context provider for the SSR data
  */
 export const SsrContext = createContext<SsrContextType>({
-  path: null,
   isServerSide: false,
   isSsrEnabled: false,
   isMobile: false,
@@ -45,8 +48,12 @@ export const SsrContext = createContext<SsrContextType>({
 
 export const SsrContextProvider = memo(
   (props: { value: SsrContextType; children: JSX.Element }) => {
+    const isMobile = props.value.isServerSide
+      ? props.value.isMobile
+      : isMobileClient()
+
     return (
-      <SsrContext.Provider value={props.value}>
+      <SsrContext.Provider value={{ ...props.value, isMobile }}>
         {props.children}
       </SsrContext.Provider>
     )

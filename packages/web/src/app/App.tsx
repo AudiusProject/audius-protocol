@@ -8,8 +8,8 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { initWebVitals } from 'services/webVitals'
 import { env } from 'services/env'
+import { initWebVitals } from 'services/webVitals'
 import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'

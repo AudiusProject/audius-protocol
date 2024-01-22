@@ -29,7 +29,6 @@ export default function render(
   const pageHtml = ReactDOMServer.renderToString(
     <SsrContextProvider
       value={{
-        path: urlPathname,
         isServerSide: true,
         isSsrEnabled: true,
         pageProps,
