@@ -3,20 +3,20 @@ import { createUseTikTokAuthHook } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CookieManager from '@react-native-cookies/cookies'
 import { Linking } from 'react-native'
-import Config from 'react-native-config'
 import {
   init as tikTokInit,
   auth as tikTokAuth,
   events as tikTokEvents
 } from 'react-native-tiktok'
 
+import { env } from 'app/env'
 import { track, make } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
 
-const authenticationUrl = `${Config.IDENTITY_SERVICE}/tiktok`
+const authenticationUrl = `${env.IDENTITY_SERVICE}/tiktok`
 
 const canOpenTikTok = () => {
   return Linking.canOpenURL('tiktok://app')
@@ -44,7 +44,7 @@ const authenticate = async (): Promise<Credentials> => {
     })
   }
 
-  tikTokInit(Config.TIKTOK_APP_ID!)
+  tikTokInit(env.TIKTOK_APP_ID!)
 
   return new Promise((resolve, reject) => {
     let authDone = false
@@ -64,14 +64,14 @@ const authenticate = async (): Promise<Credentials> => {
       }
 
       // Need to set a csrf cookie because it is required for web
-      await CookieManager.set(Config.IDENTITY_SERVICE!, {
+      await CookieManager.set(env.IDENTITY_SERVICE!, {
         name: 'csrfState',
         value: 'true'
       })
 
       try {
         const response = await fetch(
-          `${Config.IDENTITY_SERVICE}/tiktok/access_token`,
+          `${env.IDENTITY_SERVICE}/tiktok/access_token`,
           {
             credentials: 'include',
             method: 'POST',

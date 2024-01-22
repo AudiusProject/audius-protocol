@@ -1,5 +1,7 @@
-const PUBLIC_PROTOCOL = process.env.VITE_PUBLIC_PROTOCOL
-const PUBLIC_HOSTNAME = process.env.VITE_PUBLIC_HOSTNAME
+import { env } from 'services/env'
+
+const PUBLIC_PROTOCOL = env.PUBLIC_PROTOCOL
+const PUBLIC_HOSTNAME = env.PUBLIC_HOSTNAME
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
