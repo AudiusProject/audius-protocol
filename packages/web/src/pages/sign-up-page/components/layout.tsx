@@ -195,7 +195,9 @@ export const PageFooter = (props: PageFooterProps) => {
   const { isMobile } = useMedia()
   // On the MobileCTAPage we use this footer outside a formik context
   const { isSubmitting, dirty, isValid } = useFormikContext() ?? {
-    isSubmitting: false
+    isSubmitting: false,
+    dirty: true,
+    isValid: true
   }
 
   return (

@@ -123,7 +123,7 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
-  const isCloseToEndOfQueue = index + 9 >= length
+  const isCloseToEndOfQueue = index + 2 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
