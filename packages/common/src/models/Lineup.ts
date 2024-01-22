@@ -40,4 +40,6 @@ export type LineupState<T> = {
   dedupe?: boolean
   maxEntries: Nullable<number>
   entryIds?: Nullable<Set<UID>>
+  payload: unknown
+  handle?: string
 }

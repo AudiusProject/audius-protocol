@@ -40,7 +40,11 @@ export const initialLineupState = {
   // e.g. This should be true if we request 10 tracks but only get 9 back because
   // one is deleted
   // Whether the lineup is limited to a certain length
-  maxEntries: null
+  maxEntries: null,
+  // We save the payload of the last fetch call to re-use if not provided
+  payload: undefined,
+  // We save the handle of the last fetch call to re-use if not provided
+  handle: undefined
 }
 
 type SetInViewAction = {
@@ -53,6 +57,7 @@ type FetchLineupMetadatasRequestedAction = {
   limit: number
   offset: number
   handle: string
+  payload: unknown
 }
 
 type FetchLineupMetadatasSucceededAction<T> = {
@@ -120,6 +125,12 @@ export const actionsMap = {
     newState.total = action.limit + action.offset
     newState.status = Status.LOADING
     newState.isMetadataLoading = true
+    if (action.payload) {
+      newState.payload = action.payload
+    }
+    if (action.handle) {
+      newState.handle = action.handle
+    }
     return newState
   },
   [FETCH_LINEUP_METADATAS_SUCCEEDED]<T>(
