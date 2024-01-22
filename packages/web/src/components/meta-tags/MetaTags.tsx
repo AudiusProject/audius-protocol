@@ -15,6 +15,10 @@ export type MetaTagsProps = {
   noIndex?: boolean
 }
 
+/**
+ * This component is used to set the meta tags for a page.
+ * This is important for SEO
+ */
 export const MetaTags = (props: MetaTagsProps) => {
   const {
     title,
