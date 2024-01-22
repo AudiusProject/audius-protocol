@@ -130,7 +130,6 @@ class RouteTransactionMemoType(str, enum.Enum):
     purchase = "purchase"
     recovery = "recovery"
     unknown = "unknown"
-    none = "none"
 
 
 class RouteTransactionMemo(TypedDict):
@@ -199,10 +198,10 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
 
 def parse_route_transaction_memo(
     session: Session, memos: List[str], timestamp: datetime
-) -> RouteTransactionMemo:
+) -> RouteTransactionMemo | None:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     if len(memos) == 0:
-        return RouteTransactionMemo(type=RouteTransactionMemoType.none, metadata=None)
+        return None
     for memo in memos:
         if memo == RECOVERY_MEMO_STRING:
             return RouteTransactionMemo(
@@ -502,14 +501,15 @@ def validate_and_index_usdc_transfers(
     receiver_user_accounts: List[UserIdBankAccount],
     receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
-    memo: RouteTransactionMemo,
+    memo: RouteTransactionMemo | None,
     slot: int,
     timestamp: datetime,
     tx_sig: str,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
     if (
-        memo["type"] is RouteTransactionMemoType.purchase
+        memo is not None
+        and memo["type"] is RouteTransactionMemoType.purchase
         and memo["metadata"] is not None
         and validate_purchase(
             purchase_metadata=memo["metadata"], balance_changes=balance_changes
@@ -528,7 +528,7 @@ def validate_and_index_usdc_transfers(
         )
     # For invalid purchases or transfers not related to a purchase, we'll index
     # it as a regular transfer from the sender_account.
-    elif memo["type"] is RouteTransactionMemoType.recovery:
+    elif memo is not None and memo["type"] is RouteTransactionMemoType.recovery:
         try:
             attempt_index_recovery_transfer(
                 session=session,
@@ -567,23 +567,15 @@ def validate_and_index_usdc_transfers(
         )
 
 
-def find_sender_account_from_balance_changes(
-    balance_changes: dict[str, BalanceChange],
-    receiver_accounts: List[str],
-):
+def find_sender_account_from_balance_changes(balance_changes: dict[str, BalanceChange]):
     """Finds the sender account from the balance changes and receiver accounts"""
-    total_sent = 0
-    for account in receiver_accounts:
-        if account in balance_changes:
-            total_sent += balance_changes[account]["change"]
-    return next(
-        (
-            account
-            for account, balance_change in balance_changes.items()
-            if balance_change["change"] == -total_sent
-        ),
-        None,
-    )
+    min_change = 0
+    sender = None
+    for account, balance_change in balance_changes.items():
+        if balance_change["change"] < min_change:
+            sender = account
+            min_change = balance_change["change"]
+    return sender
 
 
 def process_route_instruction(
@@ -622,9 +614,7 @@ def process_route_instruction(
     # Detect the account which sent tokens _into_ payment router, as that's
     # our real source account
     sender_account = (
-        find_sender_account_from_balance_changes(
-            balance_changes=balance_changes, receiver_accounts=receiver_accounts
-        )
+        find_sender_account_from_balance_changes(balance_changes=balance_changes)
         or sender_pda_account
     )
 
@@ -701,7 +691,8 @@ def process_route_instruction(
 
         # If the memo had purchase information, dispatch challenge events
         if (
-            memo["type"] is RouteTransactionMemoType.purchase
+            memo is not None
+            and memo["type"] is RouteTransactionMemoType.purchase
             and memo["metadata"] is not None
         ):
             logger.info(

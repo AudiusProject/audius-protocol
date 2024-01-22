@@ -76,7 +76,7 @@ program
     const senderAccountPublicKey = senderAccountKeypair.publicKey
 
     try {
-      console.log('checking for source usdc account')
+      console.log('checking for source account...')
       const senderTokenAccount =
         await solanaWeb3Manager.findAssociatedTokenAddress(
           senderAccountPublicKey.toString(),
