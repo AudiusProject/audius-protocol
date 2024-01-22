@@ -21,14 +21,14 @@
   "python.testing.unittestEnabled": false,
   "[python]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     },
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.find.addExtraSpaceOnTop": false,
   "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll": "explicit"
   },
   "gitlens.advanced.fileHistoryFollowsRenames": true
 }
