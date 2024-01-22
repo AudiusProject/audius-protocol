@@ -1,7 +1,10 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
 
-from user_bank_mock_transactions import (
+from integration_tests.tasks.payment_router_mock_transactions import (
+    mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
+)
+from integration_tests.tasks.user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
     RECIPIENT_ACCOUNT_ADDRESS,
     SENDER_ACCOUNT_ADDRESS,
@@ -15,11 +18,6 @@ from user_bank_mock_transactions import (
     mock_valid_track_purchase_tx,
     mock_valid_transfer_without_purchase_tx,
 )
-
-from payment_router_mock_transactions import (
-    mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
-)
-
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus

@@ -1,23 +1,22 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
 
-from payment_router_mock_transactions import (
+from integration_tests.tasks.payment_router_mock_transactions import (
     mock_failed_track_purchase_single_recipient_tx,
-    mock_valid_track_purchase_from_user_bank_single_recipient_tx,
     mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx,
     mock_invalid_track_purchase_insufficient_split_tx,
     mock_invalid_track_purchase_missing_split_tx,
     mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_valid_track_purchase_from_user_bank_single_recipient_tx,
     mock_valid_track_purchase_multi_recipient_pay_extra_tx,
     mock_valid_track_purchase_multi_recipient_tx,
     mock_valid_track_purchase_single_recipient_pay_extra_tx,
     mock_valid_track_purchase_single_recipient_tx,
-    mock_valid_transfer_without_purchase_multi_recipient_tx,
-    mock_valid_transfer_without_purchase_single_recipient_tx,
     mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
     mock_valid_transfer_single_recipient_recovery_tx,
+    mock_valid_transfer_without_purchase_multi_recipient_tx,
+    mock_valid_transfer_without_purchase_single_recipient_tx,
 )
-
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -426,8 +425,70 @@ def test_process_payment_router_tx_details_transfer_partial_recovery(
         )
         # Recovery transaction was for half of the original amount, expect the difference
         assert transaction_record.change == -1000000
-        # TODO: Need to also update the balance
-        # TODO: Consider for the case of recovering too much, we might just index it as a regular inbound transfer so that the balance is correct.
+        assert transaction_record.balance == 1000000
+
+
+# Recovery transaction is for more than the original, should index as a new transfer
+def test_process_payment_router_tx_details_transfer_over_recovery(
+    app,
+):
+    tx_response = mock_valid_transfer_single_recipient_recovery_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_with_transaction = test_entries.copy()
+    test_entries_with_transaction["usdc_transactions_history"] = [
+        {
+            "user_bank": trackOwnerUserBank,
+            "signature": "existingWithdrawal",
+            "transaction_type": USDCTransactionType.transfer,
+            "method": USDCTransactionMethod.send,
+            "change": -500000,
+            "balance": 0,
+            "tx_metadata": transactionSenderUsdcAccount,
+        }
+    ]
+
+    populate_mock_db(db, test_entries_with_transaction)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect original transaction to be modified
+        existing_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.tx_metadata == transactionSenderUsdcAccount)
+            .first()
+        )
+        # Recovery transaction was for more than the original amount, expect original transaction to be unchanged
+        assert existing_transaction_record.change == -500000
+
+        # Expect new transaction to have been added
+        new_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.tx_metadata == transactionSenderUsdcAccount)
+            .first()
+        )
+
+        assert new_transaction_record is not None
+        assert new_transaction_record.change == 1000000
+        assert new_transaction_record.balance == 1000000
 
 
 # Recovery transaction doesn't match the most recent outbound transfer (different addresses). Should index

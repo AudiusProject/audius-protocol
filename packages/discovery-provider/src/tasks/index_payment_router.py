@@ -400,7 +400,8 @@ def attempt_index_recovery_transfer(
 
     receiver_user_account = receiver_user_accounts[0]
     receiver_bank_account = receiver_user_account["user_bank_account"]
-    receiver_balance_change = balance_changes[receiver_bank_account]["change"]
+    receiver_balance_change = balance_changes[receiver_bank_account]
+    receiver_balance_change_amount = receiver_balance_change["change"]
 
     # Find the previous transaction in the other direction (receiver -> sender)
     # So that we can modify it
@@ -421,21 +422,28 @@ def attempt_index_recovery_transfer(
             f"Failed to find matching previous transcation from {receiver_bank_account} to {sender_account}"
         )
 
-    # Previous transaction is completely undone by this recovery
-    if -previous_transaction.change <= receiver_balance_change:
+    difference = previous_transaction.change + receiver_balance_change_amount
+
+    # Previous transaction is undone by this recovery
+    if difference == 0:
         logger.info(
             f"index_payment_router.py | tx: {tx_sig} | Removing previous transaction {previous_transaction.signature}."
         )
         session.delete(previous_transaction)
-    else:
+    elif difference < 0:
         # Previous transaction is partially undone by this recovery
         # Modifying the object returned by the query will update the DB
         # when the session is flushed
         previous_transaction.change = (
-            previous_transaction.change + receiver_balance_change
+            previous_transaction.change + receiver_balance_change_amount
         )
+        previous_transaction.balance = Decimal(receiver_balance_change["post_balance"])
         logger.info(
             f"index_payment_router.py | tx: {tx_sig} | Found partial recovery for  {previous_transaction.signature}. New change value is {previous_transaction.change}."
+        )
+    else:
+        raise Exception(
+            f"Recovery transaction is for greater amount than original transaction ({receiver_balance_change_amount} > {-previous_transaction.change})"
         )
 
 
