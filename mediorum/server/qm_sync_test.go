@@ -48,4 +48,17 @@ func TestQmSync(t *testing.T) {
 
 	s2.pgPool.QueryRow(ctx, "select count(*) = 1 from qm_sync where host = $1", ss.Config.Self.Host).Scan(&s2done)
 	assert.True(t, s2done)
+
+	var qm string
+	s2.pgPool.QueryRow(ctx, "select * from qm_cids order by key").Scan(&qm)
+	assert.Equal(t, "Qm1", qm)
+
+	// run it again
+	err = s2.pullQmFromPeer(ss.Config.Self.Host)
+	assert.NoError(t, err)
+
+	// force duplicate run
+	s2.pgPool.Exec(ctx, "truncate qm_sync")
+	err = s2.pullQmFromPeer(ss.Config.Self.Host)
+	assert.NoError(t, err)
 }
