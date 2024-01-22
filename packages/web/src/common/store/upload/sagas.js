@@ -80,19 +80,9 @@ const combineMetadata = (trackMetadata, collectionMetadata) => {
   if (!metadata.release_date)
     metadata.release_date = collectionMetadata.release_date
 
-  if (collectionMetadata.tags) {
-    if (!metadata.tags) {
-      // Take collection tags
-      metadata.tags = collectionMetadata.tags
-    } else {
-      // Combine tags and dedupe
-      metadata.tags = [
-        ...new Set([
-          ...metadata.tags.split(','),
-          ...collectionMetadata.tags.split(',')
-        ])
-      ].join(',')
-    }
+  if (metadata.tags === null && collectionMetadata.tags) {
+    // Take collection tags
+    metadata.tags = collectionMetadata.tags
   }
   return trackMetadata
 }

@@ -8,6 +8,7 @@ import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import { env } from 'services/env'
 import { STATIC_EXPLORE_CONTENT_URL } from 'utils/constants'
 import { waitForRead } from 'utils/sagaHelpers'
 const {
@@ -22,7 +23,7 @@ const {
 const { getPlaylistIds, getProfileIds } = explorePageSelectors
 
 const EXPLORE_CONTENT_URL =
-  process.env.VITE_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
+  env.EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
 
 type ExploreContent = {
   featuredPlaylists: ID[]

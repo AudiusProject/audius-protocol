@@ -3,9 +3,10 @@ import { Name, Nullable, MobileOS } from '@audius/common'
 import amplitude from 'amplitude-js'
 
 import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
+import { env } from 'services/env'
 
-const AMP_API_KEY = process.env.VITE_AMPLITUDE_API_KEY
-const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
+const AMP_API_KEY = env.AMPLITUDE_API_KEY
+const AMPLITUDE_PROXY = env.AMPLITUDE_PROXY
 
 /**
  * ========================= Amplitude Analytics =========================
@@ -17,7 +18,7 @@ const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
 let amp: Nullable<any> = null
 export const init = async (isMobile: boolean) => {
   try {
-    if (!amp && AMP_API_KEY) {
+    if (!amp && AMP_API_KEY && AMPLITUDE_PROXY) {
       amplitude
         .getInstance()
         // Note: https is prepended to the apiEndpoint url specified

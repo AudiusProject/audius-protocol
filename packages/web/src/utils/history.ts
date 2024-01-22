@@ -5,8 +5,10 @@ import {
   HashHistoryBuildOptions
 } from 'history'
 
-const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
-const basename = process.env.VITE_PUBLIC_URL
+import { env } from 'services/env'
+
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
+const basename = env.PUBLIC_URL
 
 export const createHistory = () => {
   if (USE_HASH_ROUTING) {

@@ -1,5 +1,6 @@
 import { AnalyticsEvent, Nullable, AllTrackingEvents } from '@audius/common'
 
+import { env } from 'services/env'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import packageInfo from '../../../package.json'
@@ -7,7 +8,7 @@ import packageInfo from '../../../package.json'
 import * as amplitude from './amplitude'
 const { version } = packageInfo
 
-const IS_PRODUCTION_BUILD = process.env.VITE_ENVIRONMENT === 'production'
+const IS_PRODUCTION_BUILD = env.ENVIRONMENT === 'production'
 
 let resolveCallback: Nullable<(value?: any) => void> = null
 let rejectCallback: Nullable<(value?: any) => void> = null

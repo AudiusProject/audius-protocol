@@ -18,10 +18,11 @@ import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
+import { env } from 'services/env'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
-const ENVIRONMENT = process.env.VITE_ENVIRONMENT
+const ENVIRONMENT = env.ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,

@@ -2,9 +2,10 @@ import { SearchKind } from '@audius/common'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 
+import { env } from 'services/env'
 import { getPathname } from 'utils/route'
 
-const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 type matchParams = {
   category?: string
