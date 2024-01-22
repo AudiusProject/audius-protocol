@@ -1,6 +1,5 @@
 import { Share } from 'react-native'
-
-import { env } from 'app/env'
+import Config from 'react-native-config'
 
 // Docs for react native share: https://facebook.github.io/react-native/docs/share
 
@@ -10,7 +9,7 @@ type ShareProps = {
 }
 
 const share = async ({ message, url }: ShareProps) => {
-  const fullUrl = `${env.AUDIUS_URL}${url}`
+  const fullUrl = `${Config.AUDIUS_URL}${url}`
 
   try {
     // on iOS we can have both message and URL, on android, we need to concat
