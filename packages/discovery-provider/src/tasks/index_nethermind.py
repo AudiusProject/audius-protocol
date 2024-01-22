@@ -118,7 +118,7 @@ def fetch_tx_receipts(block: BlockData):
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
     logger.debug(
-        f"index_nethermind.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
+        f"index_nethermind.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}."
     )
     if num_processed_txs != num_submitted_txs:
         raise NotAllTransactionsFetched(
