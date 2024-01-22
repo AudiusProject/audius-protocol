@@ -15,12 +15,6 @@ RUN apk update
 WORKDIR /app
 RUN npm install turbo --global
 
-RUN apk add --no-cache libc6-compat
-RUN apk update
-
-WORKDIR /app
-RUN npm install turbo --global
-
 COPY . .
 RUN turbo prune --scope=@audius/ddex-client --scope=@audius/ddex-server --docker
 
