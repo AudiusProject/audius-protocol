@@ -34,15 +34,7 @@ const isStaging = (env: string): boolean => {
 
 /** contract keys */
 const RegistryKey = utf8ToHex('Registry')
-const GovernanceKey = utf8ToHex('Governance')
-const StakingKey = utf8ToHex('StakingProxy')
 const ServiceProviderFactoryKey = utf8ToHex('ServiceProviderFactory')
-const ClaimsManagerKey = utf8ToHex('ClaimsManagerProxy')
-const DelegateManagerKey = utf8ToHex('DelegateManager')
-const AudiusTokenKey = utf8ToHex('Token')
-const RewardsManagerKey = utf8ToHex('EthRewardsManagerProxy')
-const WormholeKey = utf8ToHex('WormholeClientProxy')
-const TrustedNotifierKey = utf8ToHex('TrustedNotifierManagerProxy')
 
 const ProdProvider = new WebSocketProvider(
   'wss://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
@@ -81,34 +73,9 @@ export const getRegisteredNodes = async (
     )
   }
 
-  const governanceAddress = await registry.getContract(GovernanceKey)
-  const stakingProxyAddress = await registry.getContract(StakingKey)
   const serviceProviderFactoryAddress = await registry.getContract(
     ServiceProviderFactoryKey
   )
-  const claimsManagerProxyAddress = await registry.getContract(ClaimsManagerKey)
-  const delegateManagerAddress = await registry.getContract(DelegateManagerKey)
-  const audiusTokenAddress = await registry.getContract(AudiusTokenKey)
-  const rewardsManagerProxyAddress = await registry.getContract(
-    RewardsManagerKey
-  )
-  const wormholeClientProxyAddress = await registry.getContract(WormholeKey)
-  const trustedNotifierManagerProxyAddress = await registry.getContract(
-    TrustedNotifierKey
-  )
-
-  const addresses = {
-    governanceAddress,
-    registryAddress,
-    stakingProxyAddress,
-    serviceProviderFactoryAddress,
-    claimsManagerProxyAddress,
-    delegateManagerAddress,
-    audiusTokenAddress,
-    rewardsManagerProxyAddress,
-    wormholeClientProxyAddress,
-    trustedNotifierManagerProxyAddress,
-  }
 
   const serviceProviderFactory = new Contract(
     serviceProviderFactoryAddress,
@@ -156,12 +123,3 @@ export const getRegisteredNodes = async (
 
   return sps
 }
-
-const hydrateCache = () => {
-    getRegisteredNodes('staging', 'content')
-    getRegisteredNodes('prod', 'content')
-    getRegisteredNodes('staging', 'discovery')
-    getRegisteredNodes('prod', 'discovery')
-}
-
-hydrateCache()
