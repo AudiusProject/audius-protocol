@@ -12,20 +12,11 @@ import { getPathname } from 'utils/route'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 
 import styles from './MobilePageContainer.module.css'
+import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 
 const { getHasTrack } = playerSelectors
 
-const messages = {
-  dotAudius: '• Audius',
-  audius: 'Audius'
-}
-
 type OwnProps = {
-  title?: string
-  description?: string | null
-  canonicalUrl?: string
-  structuredData?: Object | null
-
   children: ReactNode
 
   // Whether or not to always render the page at full viewport height.
@@ -40,7 +31,7 @@ type OwnProps = {
 
   // Has the default header and should add margins to the top for it
   hasDefaultHeader?: boolean
-}
+} & MetaTagsProps
 
 type MobilePageContainerProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
@@ -57,19 +48,23 @@ const PLAY_BAR_HEIGHT = 48
 
 const safeAreaBottom = getSafeArea(SafeAreaDirection.BOTTOM)
 
-const MobilePageContainer = ({
-  className,
-  title,
-  description,
-  canonicalUrl,
-  structuredData,
-  children,
-  backgroundClassName,
-  containerClassName,
-  fullHeight = false,
-  hasDefaultHeader = false,
-  hasPlayBar
-}: MobilePageContainerProps) => {
+const MobilePageContainer = (props: MobilePageContainerProps) => {
+  const {
+    backgroundClassName,
+    canonicalUrl,
+    children,
+    className,
+    containerClassName,
+    description,
+    fullHeight = false,
+    hasDefaultHeader = false,
+    hasPlayBar,
+    image,
+    noIndex,
+    ogDescription,
+    structuredData,
+    title
+  } = props
   const { history } = useHistoryContext()
   const { getScrollForRoute, setScrollForRoute } = useContext(ScrollContext)!
   const [getInitialPathname] = useInstanceVar(getPathname(history.location))
@@ -118,21 +113,17 @@ const MobilePageContainer = ({
 
   return (
     <>
-      <Helmet encodeSpecialCharacters={false}>
-        {title ? (
-          <title>{`${title} ${messages.dotAudius}`}</title>
-        ) : (
-          <title>{messages.audius}</title>
-        )}
-        {description && <meta name='description' content={description} />}
-        {/* TODO: re-enable once we fix redirects and casing of canonicalUrls */}
-        {/* {canonicalUrl && <link rel='canonical' href={canonicalUrl} />} */}
-        {structuredData && (
-          <script type='application/ld+json'>
-            {JSON.stringify(structuredData)}
-          </script>
-        )}
-      </Helmet>
+      <MetaTags
+        {...{
+          title,
+          description,
+          ogDescription,
+          image,
+          canonicalUrl,
+          structuredData,
+          noIndex
+        }}
+      />
       <div
         className={cn(styles.container, className, containerClassName, {
           [styles.hasDefaultHeader]: hasDefaultHeader
