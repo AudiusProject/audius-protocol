@@ -353,6 +353,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: blobs between peers
 	internalApi.GET("/blobs/:cid", ss.serveInternalBlobGET, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.serveInternalBlobPOST, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.GET("/qm.csv", ss.serveInternalQmCsv)
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
@@ -431,6 +432,8 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startHealthPoller()
 
 		go ss.startRepairer()
+
+		go ss.startQmSyncer()
 
 		ss.crud.StartClients()
 

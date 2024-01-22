@@ -172,6 +172,10 @@
   color: inherit;
 }
 
+.artistPopover {
+  width: 100%;
+}
+
 .skeleton {
   position: absolute;
   top: 0;

@@ -41,6 +41,22 @@
   opacity: 0.8;
 }
 
+.balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.spinner {
+  height: var(--unit-5);
+  width: var(--unit-5);
+  align-self: center;
+}
+
+.spinner g path {
+  stroke: var(--static-white) !important;
+}
+
 .usdcInfo {
   display: flex;
   width: 100%;

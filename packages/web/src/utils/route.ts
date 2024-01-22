@@ -69,6 +69,7 @@ export const SETTINGS_PAGE = '/settings'
 export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
+export const SIGN_IN_CONFIRM_EMAIL_PAGE = '/signin/confirm-email'
 export const SIGN_UP_PAGE = '/signup'
 export const SIGN_ON_ALIASES = Object.freeze([
   '/login',

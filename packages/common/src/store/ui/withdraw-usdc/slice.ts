@@ -2,10 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from 'models/Status'
 
+import { CoinflowWithdrawState, WithdrawMethod } from './types'
+
 type WithdrawUSDCState = {
   withdrawStatus: Status
+  coinflowState: CoinflowWithdrawState
   destinationAddress?: string
   amount?: number
+  method: WithdrawMethod
   withdrawError?: Error
   withdrawTransaction?: string
   destinationError?: Error
@@ -13,7 +17,9 @@ type WithdrawUSDCState = {
 }
 
 const initialState: WithdrawUSDCState = {
-  withdrawStatus: Status.IDLE
+  withdrawStatus: Status.IDLE,
+  method: WithdrawMethod.MANUAL_TRANSFER,
+  coinflowState: CoinflowWithdrawState.IDLE
 }
 
 const slice = createSlice({
@@ -26,15 +32,31 @@ const slice = createSlice({
         /** Balance in cents. Used for analytics */
         currentBalance: number
         /** Transfer amount in cents */
+        method: WithdrawMethod
         amount: number
         destinationAddress: string
       }>
     ) => {
       state.withdrawStatus = Status.LOADING
     },
+    beginCoinflowWithdrawal: (state) => {
+      state.coinflowState = CoinflowWithdrawState.FUNDING_ROOT_WALLET
+    },
+    coinflowWithdrawalReady: (state) => {
+      state.coinflowState = CoinflowWithdrawState.READY_FOR_WITHDRAWAL
+    },
+    coinflowWithdrawalSucceeded: (
+      state,
+      _action: PayloadAction<{ transaction: string }>
+    ) => {
+      state.coinflowState = CoinflowWithdrawState.SUCCESS
+    },
+    coinflowWithdrawalCanceled: (state) => {
+      state.coinflowState = CoinflowWithdrawState.CANCELED
+    },
     withdrawUSDCSucceeded: (
       state,
-      action: PayloadAction<{ transaction: string }>
+      action: PayloadAction<{ transaction?: string }>
     ) => {
       state.withdrawTransaction = action.payload.transaction
       state.withdrawError = undefined
@@ -50,6 +72,10 @@ const slice = createSlice({
 
 export const {
   beginWithdrawUSDC,
+  beginCoinflowWithdrawal,
+  coinflowWithdrawalReady,
+  coinflowWithdrawalSucceeded,
+  coinflowWithdrawalCanceled,
   withdrawUSDCSucceeded,
   withdrawUSDCFailed,
   cleanup
