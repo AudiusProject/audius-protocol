@@ -37,7 +37,7 @@ const RegistryKey = utf8ToHex('Registry')
 const ServiceProviderFactoryKey = utf8ToHex('ServiceProviderFactory')
 
 const ProdProvider = new WebSocketProvider(
-  'wss://eth-mainnet.g.alchemy.com/v2/W--Uss7AqotdfKao0PH6aTQa9bOG4osc'
+  'wss://eth-mainnet.alchemyapi.io/v2/hELYSivAlDc8LV29Mw_LumSdCZ4HQEge'
 )
 const StageProvider = new WebSocketProvider(
   'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
