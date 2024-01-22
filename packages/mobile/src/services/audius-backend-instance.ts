@@ -2,13 +2,14 @@ import { audiusBackend } from '@audius/common'
 import * as nativeLibs from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'react-native'
+import Config from 'react-native-config'
 
-import { env } from 'app/env'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { createPrivateKey } from './createPrivateKey'
 import { withEagerOption } from './eagerLoadUtils'
+import { env } from './env'
 import {
   libsInitEventEmitter,
   LIBS_INITTED_EVENT,
@@ -25,17 +26,16 @@ import { getStorageNodeSelector } from './sdk/storageNodeSelector'
  * audiusBackend initialized for a mobile environment
  */
 export const audiusBackendInstance = audiusBackend({
-  claimDistributionContractAddress:
-    env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS ?? undefined,
+  claimDistributionContractAddress: Config.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
   env,
-  ethOwnerWallet: env.ETH_OWNER_WALLET ?? undefined,
-  ethProviderUrls: (env.ETH_PROVIDER_URL || '').split(','),
-  ethRegistryAddress: env.ETH_REGISTRY_ADDRESS,
-  ethTokenAddress: env.ETH_TOKEN_ADDRESS,
+  ethOwnerWallet: Config.ETH_OWNER_WALLET,
+  ethProviderUrls: (Config.ETH_PROVIDER_URL || '').split(','),
+  ethRegistryAddress: Config.ETH_REGISTRY_ADDRESS,
+  ethTokenAddress: Config.ETH_TOKEN_ADDRESS,
   discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl: () => {
-    return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+    return `${Config.PUBLIC_PROTOCOL}//${Config.PUBLIC_HOSTNAME}`
   },
   getStorageNodeSelector,
   getWeb3Config: async (
@@ -55,8 +55,8 @@ export const audiusBackendInstance = audiusBackend({
   hedgehogConfig: {
     createKey: createPrivateKey
   },
-  identityServiceUrl: env.IDENTITY_SERVICE,
-  generalAdmissionUrl: env.GENERAL_ADMISSION,
+  identityServiceUrl: Config.IDENTITY_SERVICE,
+  generalAdmissionUrl: Config.GENERAL_ADMISSION,
   isElectron: false,
   isMobile: true,
   localStorage: AsyncStorage,
@@ -66,37 +66,37 @@ export const audiusBackendInstance = audiusBackend({
     setLibs(libs)
     libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
   },
-  recaptchaSiteKey: env.RECAPTCHA_SITE_KEY,
+  recaptchaSiteKey: Config.RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   reportError: reportToSentry,
-  registryAddress: env.REGISTRY_ADDRESS,
-  entityManagerAddress: env.ENTITY_MANAGER_ADDRESS,
+  registryAddress: Config.REGISTRY_ADDRESS,
+  entityManagerAddress: Config.ENTITY_MANAGER_ADDRESS,
   remoteConfigInstance,
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   solanaConfig: {
-    claimableTokenPda: env.CLAIMABLE_TOKEN_PDA,
-    claimableTokenProgramAddress: env.CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
-    rewardsManagerProgramId: env.REWARDS_MANAGER_PROGRAM_ID,
-    rewardsManagerProgramPda: env.REWARDS_MANAGER_PROGRAM_PDA,
-    rewardsManagerTokenPda: env.REWARDS_MANAGER_TOKEN_PDA,
+    claimableTokenPda: Config.CLAIMABLE_TOKEN_PDA,
+    claimableTokenProgramAddress: Config.CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
+    rewardsManagerProgramId: Config.REWARDS_MANAGER_PROGRAM_ID,
+    rewardsManagerProgramPda: Config.REWARDS_MANAGER_PROGRAM_PDA,
+    rewardsManagerTokenPda: Config.REWARDS_MANAGER_TOKEN_PDA,
     paymentRouterProgramId: env.PAYMENT_ROUTER_PROGRAM_ID,
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    solanaFeePayerAddress: env.SOLANA_FEE_PAYER_ADDRESS,
-    solanaTokenAddress: env.SOLANA_TOKEN_PROGRAM_ADDRESS,
-    waudioMintAddress: env.WAUDIO_MINT_ADDRESS,
-    usdcMintAddress: env.USDC_MINT_ADDRESS,
-    wormholeAddress: env.WORMHOLE_ADDRESS ?? undefined
+    solanaClusterEndpoint: Config.SOLANA_CLUSTER_ENDPOINT,
+    solanaFeePayerAddress: Config.SOLANA_FEE_PAYER_ADDRESS,
+    solanaTokenAddress: Config.SOLANA_TOKEN_PROGRAM_ADDRESS,
+    waudioMintAddress: Config.WAUDIO_MINT_ADDRESS,
+    usdcMintAddress: Config.USDC_MINT_ADDRESS,
+    wormholeAddress: Config.WORMHOLE_ADDRESS
   },
-  userNodeUrl: env.USER_NODE,
-  web3NetworkId: env.WEB3_NETWORK_ID,
-  web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
+  userNodeUrl: Config.USER_NODE,
+  web3NetworkId: Config.WEB3_NETWORK_ID,
+  web3ProviderUrls: (Config.WEB3_PROVIDER_URL || '').split(','),
   waitForWeb3: async () => {},
   wormholeConfig: {
-    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
-    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
-    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
+    ethBridgeAddress: Config.ETH_BRIDGE_ADDRESS,
+    ethTokenBridgeAddress: Config.ETH_TOKEN_BRIDGE_ADDRESS,
+    solBridgeAddress: Config.SOL_BRIDGE_ADDRESS,
+    solTokenBridgeAddress: Config.SOL_TOKEN_BRIDGE_ADDRESS,
+    wormholeRpcHosts: Config.WORMHOLE_RPC_HOSTS
   },
   getLibs: async () => nativeLibs,
   waitForLibsInit,

@@ -17,13 +17,12 @@ import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileW
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
-import { env } from 'services/env'
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
-const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
+const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 const isMobile = getIsMobile()
 
 const messages = {

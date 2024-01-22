@@ -19,6 +19,7 @@ import { CreativeKit } from '@snapchat/snap-kit-react-native'
 import type { FFmpegSession } from 'ffmpeg-kit-react-native'
 import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native'
 import { Platform, View } from 'react-native'
+import Config from 'react-native-config'
 import RNFS from 'react-native-fs'
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import type { ShareSingleOptions } from 'react-native-share'
@@ -32,7 +33,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
-import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
@@ -236,9 +236,9 @@ export const useShareToStory = ({
       const shareOptions: ShareSingleOptions = {
         backgroundVideo: videoUri,
         stickerImage: stickerUri,
-        attributionURL: env.AUDIUS_URL,
+        attributionURL: Config.AUDIUS_URL,
         social: Social.InstagramStories,
-        appId: env.INSTAGRAM_APP_ID
+        appId: Config.INSTAGRAM_APP_ID as string
       }
       await Share.shareSingle(shareOptions)
     },
@@ -268,7 +268,7 @@ export const useShareToStory = ({
   )
 
   const pasteToTikTokApp = useCallback((videoUri: string) => {
-    initTikTokShare(env.TIKTOK_APP_ID as string)
+    initTikTokShare(Config.TIKTOK_APP_ID as string)
     shareToTikTok(videoUri, (_code) => {
       // TODO: Handle errors handed back from TikTok
     })
