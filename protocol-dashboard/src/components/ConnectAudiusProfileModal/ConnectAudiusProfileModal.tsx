@@ -1,6 +1,7 @@
 import Button, { ButtonType } from 'components/Button'
 import Modal from 'components/Modal'
 import { useConnectAudiusProfile } from 'hooks/useConnectAudiusProfile'
+import { LoadingSpinner } from '../LoadingSpinner/LoadingSpinner'
 import styles from './ConnectAudiusProfileModal.module.css'
 import cn from 'clsx'
 
@@ -32,7 +33,7 @@ export const ConnectAudiusProfileModal = ({
   wallet,
   action
 }: ConnectAudiusProfileModalProps) => {
-  const { connect, disconnect } = useConnectAudiusProfile({
+  const { connect, disconnect, isWaiting } = useConnectAudiusProfile({
     wallet,
     onSuccess: onClose
   })
@@ -69,6 +70,8 @@ export const ConnectAudiusProfileModal = ({
           </div>
         </div>
         <Button
+          isDisabled={isWaiting}
+          rightIcon={isWaiting ? <LoadingSpinner /> : undefined}
           onClick={isConnect ? connect : disconnect}
           type={ButtonType.PRIMARY}
           text={

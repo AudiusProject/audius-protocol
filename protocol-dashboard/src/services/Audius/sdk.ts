@@ -7,20 +7,9 @@ import {
   stagingConfig
 } from '@audius/sdk'
 
-let instance = null
-let isReady = false
-let sdkResolve = null
-const sdkPromise = new Promise(resolve => {
-  sdkResolve = resolve
-})
+let audiusSdk = null
 
-const initAudiusSdk = ({
-  signTransaction,
-  getAddress
-}: {
-  signTransaction: (data: any) => Promise<string>
-  getAddress: () => Promise<string> | string
-}) => {
+const initAudiusSdk = () => {
   const env = import.meta.env.VITE_ENVIRONMENT
   const bootstrapConfig =
     env === 'development'
@@ -38,10 +27,9 @@ const initAudiusSdk = ({
     bootstrapServices: discoveryNodes
     // initialSelectedNode: 'https://discoveryprovider4.staging.audius.co'
   })
-  instance = sdk({
+  audiusSdk = sdk({
     appName: 'Audius Protocol Dashboard',
     services: {
-      auth: { signTransaction, getAddress },
       discoveryNodeSelector: dnSelector,
       entityManager: new EntityManager({
         contractAddress: entityManagerContractAddress,
@@ -51,15 +39,8 @@ const initAudiusSdk = ({
       })
     }
   })
-  sdkResolve()
-  isReady = true
 }
 
-const audiusSdk = async () => {
-  if (!isReady) {
-    await sdkPromise
-  }
-  return instance
-}
+initAudiusSdk()
 
-export { audiusSdk, initAudiusSdk, isReady }
+export { audiusSdk }
