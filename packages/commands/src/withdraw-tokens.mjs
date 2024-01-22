@@ -14,7 +14,7 @@ import {
 
 program
   .command('withdraw-tokens')
-  .description('Send USDC from a user bank to an external address')
+  .description('Send tokens from a user bank to an external address')
   .argument('<account>', 'The solana address of the recipient')
   .argument('<amount>', 'The amount of tokens to send (in wei)')
   .addOption(
