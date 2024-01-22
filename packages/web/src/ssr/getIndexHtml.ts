@@ -1,7 +1,7 @@
 import indexHtml from '../../index.html?raw'
+import { env } from 'services/env'
 
 const pattern = /%(\S+?)%/g
-const env = process.env
 
 /**
  * Transform index.html so that it can be used for SSR

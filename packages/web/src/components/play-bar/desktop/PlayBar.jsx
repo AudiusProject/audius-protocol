@@ -35,7 +35,7 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { audioPlayer } from 'services/audio-player'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import { getLocationPathname } from 'store/routing/selectors'
+import { getLocation } from 'store/routing/selectors'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { collectibleDetailsPage, profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
@@ -464,7 +464,7 @@ const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state) => {
-    const location = getLocationPathname(state)
+    const location = getLocation(state)
     const lineupEntries =
       getLineupEntries(getLineupSelectorForRoute(location), state) ?? []
 
