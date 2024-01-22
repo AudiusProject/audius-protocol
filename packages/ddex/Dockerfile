@@ -55,5 +55,5 @@ WORKDIR /app
 COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/server
 
-EXPOSE 8926
+EXPOSE 3000
 CMD ["node", "dist/index.js"]
