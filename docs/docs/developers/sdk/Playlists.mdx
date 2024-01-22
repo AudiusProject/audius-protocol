@@ -267,7 +267,7 @@ Create an object with the following fields and pass it as the first argument, as
 | Name           | Type                         | Description                                                                   | Required?    |
 | :------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
 | `coverArtFile` | `File`                       | A file that will be used as the cover art for the playlist                    | _Optional_   |
-| `metadata`     | _see code sample below_      | An object containing the details of the playlist                              | **Required** |
+| `metadata`     | _see code block below_       | An object containing the details of the playlist                              | **Required** |
 | `onProgress`   | `(progress: number) => void` | A function that will be called with progress events as the image file uploads | _Optional_   |
 | `trackIds`     | `Array<string>`              | An array of track IDs to be included in the playlist                          | **Required** |
 | `userId`       | `string`                     | The ID of the user                                                            | **Required** |
@@ -540,7 +540,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId`   | `string`                     | The ID of the playlist                                                        | **Required** |
 | `userId`       | `string`                     | The ID of the User                                                            | **Required** |
 | `coverArtFile` | `string`                     | A file that will be used as the cover art for the playlist                    | _Optional_   |
-| `metadata`     | _see code sample below_      | An object containing the details of the playlist                              | **Required** |
+| `metadata`     | _see code block below_       | An object containing the details of the playlist                              | **Required** |
 | `onProgress`   | `(progress: number) => void` | A function that will be called with progress events as the image file uploads | _Optional_   |
 
 ```json
@@ -633,11 +633,11 @@ await audiusSdk.playlists.favoritePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                    | Description                                     | Required?    |
-| :----------- | :---------------------- | :---------------------------------------------- | :----------- |
-| `playlistId` | `string`                | The ID of the playlist                          | **Required** |
-| `userId`     | `string`                | The ID of the User                              | **Required** |
-| `metadata`   | _see code sample below_ | An object containing details about the favorite | _Optional_   |
+| Name         | Type                   | Description                                     | Required?    |
+| :----------- | :--------------------- | :---------------------------------------------- | :----------- |
+| `playlistId` | `string`               | The ID of the playlist                          | **Required** |
+| `userId`     | `string`               | The ID of the User                              | **Required** |
+| `metadata`   | _see code block below_ | An object containing details about the favorite | _Optional_   |
 
 ```json
 {
@@ -722,11 +722,11 @@ await audiusSdk.playlists.repostPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                    | Description                                   | Required?    |
-| :----------- | :---------------------- | :-------------------------------------------- | :----------- |
-| `playlistId` | `string`                | The ID of the playlist                        | **Required** |
-| `userId`     | `string`                | The ID of the User                            | **Required** |
-| `metadata`   | _see code sample below_ | An object containing details about the repost | _Optional_   |
+| Name         | Type                   | Description                                   | Required?    |
+| :----------- | :--------------------- | :-------------------------------------------- | :----------- |
+| `playlistId` | `string`               | The ID of the playlist                        | **Required** |
+| `userId`     | `string`               | The ID of the User                            | **Required** |
+| `metadata`   | _see code block below_ | An object containing details about the repost | _Optional_   |
 
 ```json
 {
