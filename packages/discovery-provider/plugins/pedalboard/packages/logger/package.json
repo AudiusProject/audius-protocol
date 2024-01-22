@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/logger",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "private": true,
   "main": "./dist/index.js",
   "source": "./src/index.ts",

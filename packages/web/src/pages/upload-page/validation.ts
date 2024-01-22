@@ -1,5 +1,11 @@
 import { imageBlank } from '@audius/common'
-import { Genre, HashId, Mood, CollectibleGatedConditions } from '@audius/sdk'
+import {
+  Genre,
+  HashId,
+  Mood,
+  EthCollectibleGatedConditions,
+  SolCollectibleGatedConditions
+} from '@audius/sdk'
 import { z } from 'zod'
 
 const messages = {
@@ -16,6 +22,14 @@ const messages = {
     nameRequiredError: 'Your album must have a name.'
   }
 }
+
+const CollectibleGatedConditions = z
+  .object({
+    nft_collection: z.optional(
+      z.union([EthCollectibleGatedConditions, SolCollectibleGatedConditions])
+    )
+  })
+  .strict()
 
 const FollowGatedConditionsSchema = z
   .object({
