@@ -3,6 +3,7 @@ package server
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -70,6 +71,10 @@ func (ss *MediorumServer) pullQmFromPeer(host string) error {
 		return err
 	}
 	defer req.Body.Close()
+
+	if req.StatusCode != 200 {
+		return fmt.Errorf("bad status %d", req.StatusCode)
+	}
 
 	tx, err := ss.pgPool.Begin(context.Background())
 	if err != nil {
