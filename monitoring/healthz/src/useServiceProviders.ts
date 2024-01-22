@@ -5,7 +5,7 @@ const prodEndpoint =
   'https://api.audius.co'
 
 const stagingEndpoint =
-  'https://api.stagdius.co'
+  'https://api.staging.audius.co'
 
 export type SP = {
   delegateOwnerWallet: string
