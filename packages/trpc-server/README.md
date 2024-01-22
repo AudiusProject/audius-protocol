@@ -47,8 +47,8 @@ Start server:
 npm run dev
 ```
 
-Finally start client but override `VITE_TRPC_ENDPOINT`:
+Override `TRPC_ENDPOINT`` in the appropriate env (e.g. env.prod.ts)
 
 ```
-VITE_TRPC_ENDPOINT=http://localhost:2022/trpc npm run web:prod
+npm run web:prod
 ```

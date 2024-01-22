@@ -11,6 +11,7 @@ import {
 } from 'common/store/pages/signon/types'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
+import { env } from 'services/env'
 
 import styles from './FollowPage.module.css'
 
@@ -22,7 +23,7 @@ const messages = {
   following: 'Following'
 }
 
-const ENVIRONMENT = process.env.VITE_ENVIRONMENT
+const ENVIRONMENT = env.ENVIRONMENT
 const MINIMUM_FOLLOWER_COUNT =
   ENVIRONMENT === 'production' || ENVIRONMENT === 'staging' ? 3 : 0
 
