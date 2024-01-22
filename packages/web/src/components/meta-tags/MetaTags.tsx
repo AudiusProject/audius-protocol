@@ -7,7 +7,13 @@ const messages = {
 
 export type MetaTagsProps = {
   title?: string
+  /**
+   * Description of the page
+   */
   description?: string
+  /**
+   * Description of the content, for example a Track description
+   */
   ogDescription?: string
   image?: string
   canonicalUrl?: string
@@ -57,7 +63,7 @@ export const MetaTags = (props: MetaTagsProps) => {
         </Helmet>
       ) : null}
 
-      {/* OG Description - This is the actual description of the content, for example a Track description */}
+      {/* OG Description */}
       {ogDescription ? (
         <Helmet encodeSpecialCharacters={false}>
           <meta property='og:description' content={ogDescription} />
