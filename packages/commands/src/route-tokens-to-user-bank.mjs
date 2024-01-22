@@ -114,7 +114,9 @@ program
             skipPreflight: true
           }
         )
-        console.log(chalk.green(`Successfully created new ${mint} account`))
+        console.log(
+          chalk.green(`Successfully created new ${mint} token account`)
+        )
         console.log(
           chalk.yellow('Transaction Signature:'),
           accountCreationTxSignature

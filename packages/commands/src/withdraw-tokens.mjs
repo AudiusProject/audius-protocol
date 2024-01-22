@@ -16,13 +16,13 @@ program
   .command('withdraw-tokens')
   .description('Send USDC from a user bank to an external address')
   .argument('<account>', 'The solana address of the recipient')
-  .argument('<amount>', 'The amount of tokens to tip (in wei)')
+  .argument('<amount>', 'The amount of tokens to send (in wei)')
   .addOption(
     new Option('-m, --mint [mint]', 'The currency to use')
       .choices(['audio', 'usdc'])
       .default('usdc')
   )
-  .option('-f, --from [from]', 'The account to tip from')
+  .option('-f, --from [from]', 'The account to send from')
   .action(async (recipientAccount, amount, { from, mint }) => {
     const audiusLibs = await initializeAudiusLibs(from)
     const { solanaWeb3Manager } = audiusLibs
@@ -88,7 +88,9 @@ program
             skipPreflight: true
           }
         )
-        console.log(chalk.green(`Successfully created new ${mint} account`))
+        console.log(
+          chalk.green(`Successfully created new ${mint} token account`)
+        )
         console.log(
           chalk.yellow('Transaction Signature:'),
           accountCreationTxSignature
