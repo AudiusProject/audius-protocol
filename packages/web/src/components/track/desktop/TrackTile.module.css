@@ -115,8 +115,8 @@
 
 .text {
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .topSection {
@@ -143,6 +143,7 @@
   user-select: none;
   margin-right: 132px;
   padding-bottom: 2px;
+  display: flex;
 }
 
 .titleRow .skeleton {
@@ -159,7 +160,9 @@
 }
 
 .title {
-  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .isActive .title {
