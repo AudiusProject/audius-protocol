@@ -557,7 +557,7 @@ def populate_track_metadata(
 
 
 def _populate_gated_track_metadata(session, tracks, current_user_id):
-    if not tracks:
+    if not tracks or not current_user_id:
         return
 
     current_user_wallet = (

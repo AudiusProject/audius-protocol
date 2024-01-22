@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common'
 
+import { env } from 'app/env'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { env } from 'app/services/env'
 import { remoteConfigInstance } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { store } from 'app/store'

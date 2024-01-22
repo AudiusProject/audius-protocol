@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.5.61",
+  "version": "1.5.63",
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",
@@ -38,8 +38,8 @@
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",
     "@optimizely/optimizely-sdk": "4.0.0",
     "@tanstack/react-query": "4.35.7",
-    "@trpc/client": "10.38.5",
-    "@trpc/react-query": "10.38.5",
+    "@trpc/client": "10.38.4",
+    "@trpc/react-query": "10.38.4",
     "async-retry": "1.3.3",
     "bn.js": "5.1.0",
     "dayjs": "1.10.7",

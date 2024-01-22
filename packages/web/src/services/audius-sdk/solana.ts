@@ -6,6 +6,8 @@ import {
   SolanaRelayWalletAdapter
 } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
+import { env } from 'services/env'
+
 
 const solanaRelay = new SolanaRelay(
   new Configuration({
@@ -26,18 +28,18 @@ const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
 export const claimableTokensService = new ClaimableTokensClient({
   rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
   mints: {
-    wAUDIO: new PublicKey(process.env.VITE_WAUDIO_MINT_ADDRESS!),
-    USDC: new PublicKey(process.env.VITE_USDC_MINT_ADDRESS!)
+    wAUDIO: new PublicKey(env.WAUDIO_MINT_ADDRESS),
+    USDC: new PublicKey(env.USDC_MINT_ADDRESS)
   },
-  programId: new PublicKey(process.env.VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS!),
+  programId: new PublicKey(env.CLAIMABLE_TOKEN_PROGRAM_ADDRESS),
   solanaWalletAdapter
 })
 
 export const rewardManagerService = new RewardManagerClient({
-  programId: new PublicKey(process.env.VITE_REWARDS_MANAGER_PROGRAM_ID!),
-  rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+  programId: new PublicKey(env.REWARDS_MANAGER_PROGRAM_ID),
+  rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
   rewardManagerState: new PublicKey(
-    process.env.VITE_REWARDS_MANAGER_PROGRAM_PDA!
+    env.REWARDS_MANAGER_PROGRAM_PDA
   ),
   solanaWalletAdapter
 })

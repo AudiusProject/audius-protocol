@@ -11,7 +11,12 @@ import {
   Nullable,
   withdrawUSDCSelectors,
   Status,
-  Name
+  Name,
+  WithdrawMethod,
+  useFeatureFlag,
+  FeatureFlags,
+  useRemoteVar,
+  IntKeys
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
@@ -27,11 +32,14 @@ import { make, track } from 'services/analytics'
 import { isValidSolAddress } from 'services/solana/solana'
 
 import styles from './WithdrawUSDCModal.module.css'
+import { CoinflowWithdrawPage } from './components/CoinflowWithdrawPage'
 import { ConfirmTransferDetails } from './components/ConfirmTransferDetails'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
 import { ErrorPage } from './components/ErrorPage'
+import { PrepareTransfer } from './components/PrepareTransfer'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
+import { ADDRESS, AMOUNT, CONFIRM, METHOD, WithdrawFormValues } from './types'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
@@ -43,40 +51,52 @@ const messages = {
       'Your USDC wallet does not have enough funds to cover this transaction.',
     amountTooLow: 'Please withdraw at least $0.01.',
     invalidAddress: 'A valid Solana USDC wallet address is required.',
+    minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
     pleaseConfirm:
       'Please confirm you have reviewed the details and accept responsibility for any errors resulting in lost funds.'
   }
 }
 
-export const AMOUNT = 'amount'
-export const ADDRESS = 'address'
-export const CONFIRM = 'confirm'
+const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
 
-type WithdrawFormValues = {
-  [AMOUNT]: number
-  [ADDRESS]: string
-  [CONFIRM]: boolean
-}
+const WithdrawUSDCFormSchema = (
+  userBalanceCents: number,
+  minWithdrawBalanceCents: number
+) => {
+  const amount = z
+    .number()
+    .lte(userBalanceCents, messages.errors.insufficientBalance)
 
-const WithdrawUSDCFormSchema = (userBalance: number) => {
-  let amount = z.number().lte(userBalance, messages.errors.insufficientBalance)
-  if (userBalance !== 0) {
-    // If user has no balance, don't validate minimum, the form will just be disabled
-    amount = amount.gte(1, messages.errors.amountTooLow)
-  }
-
-  return z.object({
-    [AMOUNT]: amount,
-    [ADDRESS]: z
-      .string()
-      .refine(
-        (value) => isValidSolAddress(value as SolanaWalletAddress),
-        messages.errors.invalidAddress
-      ),
-    [CONFIRM]: z.literal(true, {
-      errorMap: () => ({ message: messages.errors.pleaseConfirm })
+  return z.discriminatedUnion(METHOD, [
+    z.object({
+      [METHOD]: z.literal(WithdrawMethod.COINFLOW),
+      // If user has no balance, don't validate minimum, the form will just be disabled
+      [AMOUNT]:
+        userBalanceCents !== 0
+          ? amount.gte(minWithdrawBalanceCents, messages.errors.minCashTransfer)
+          : amount
+    }),
+    z.object({
+      [METHOD]: z.literal(WithdrawMethod.MANUAL_TRANSFER),
+      // If user has no balance, don't validate minimum, the form will just be disabled
+      [AMOUNT]:
+        userBalanceCents !== 0
+          ? amount.gte(
+              MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
+              messages.errors.amountTooLow
+            )
+          : amount,
+      [ADDRESS]: z
+        .string()
+        .refine(
+          (value) => isValidSolAddress(value as SolanaWalletAddress),
+          messages.errors.invalidAddress
+        ),
+      [CONFIRM]: z.literal(true, {
+        errorMap: () => ({ message: messages.errors.pleaseConfirm })
+      })
     })
-  })
+  ])
 }
 
 /** Tracks form errors of interest, only sending events the first time
@@ -112,6 +132,12 @@ const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
 export const WithdrawUSDCModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, onClosed, data, setData } = useWithdrawUSDCModal()
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.COINFLOW_OFFRAMP_ENABLED
+  )
+  const minCashTransferBalanceCents = useRemoteVar(
+    IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS
+  )
   const { page } = data
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
@@ -137,10 +163,19 @@ export const WithdrawUSDCModal = () => {
   }, [withdrawalStatus, setData])
 
   const handleSubmit = useCallback(
-    ({ amount, address }: { amount: number; address: string }) => {
+    ({
+      amount,
+      address,
+      method
+    }: {
+      amount: number
+      address: string
+      method: WithdrawMethod
+    }) => {
       dispatch(
         beginWithdrawUSDC({
           amount,
+          method,
           currentBalance: balanceNumberCents,
           destinationAddress: address
         })
@@ -154,15 +189,24 @@ export const WithdrawUSDCModal = () => {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
       formPage = <EnterTransferDetails />
       break
+    case WithdrawUSDCModalPages.COINFLOW_TRANSFER:
+      formPage = <CoinflowWithdrawPage />
+      break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
       formPage = <ConfirmTransferDetails />
+      break
+    case WithdrawUSDCModalPages.PREPARE_TRANSFER:
+      formPage = <PrepareTransfer />
       break
     case WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS:
       formPage = <TransferInProgress />
       break
     case WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL:
       formPage = (
-        <TransferSuccessful priorBalanceCents={priorBalanceCents || 0} />
+        <TransferSuccessful
+          onClickDone={onClose}
+          priorBalanceCents={priorBalanceCents || 0}
+        />
       )
       break
     case WithdrawUSDCModalPages.ERROR:
@@ -170,13 +214,7 @@ export const WithdrawUSDCModal = () => {
       break
   }
 
-  const formRef = useRef<
-    FormikProps<{
-      amount: number
-      address: string
-      confirm: boolean
-    }>
-  >(null)
+  const formRef = useRef<FormikProps<WithdrawFormValues>>(null)
 
   const handleOnClosed = useCallback(() => {
     dispatch(cleanup())
@@ -210,10 +248,16 @@ export const WithdrawUSDCModal = () => {
           initialValues={{
             [AMOUNT]: balanceNumberCents,
             [ADDRESS]: '',
-            [CONFIRM]: false
+            [CONFIRM]: false,
+            [METHOD]: isCoinflowEnabled
+              ? WithdrawMethod.COINFLOW
+              : WithdrawMethod.MANUAL_TRANSFER
           }}
           validationSchema={toFormikValidationSchema(
-            WithdrawUSDCFormSchema(balanceNumberCents)
+            WithdrawUSDCFormSchema(
+              balanceNumberCents,
+              minCashTransferBalanceCents
+            )
           )}
           validateOnChange
           onSubmit={handleSubmit}

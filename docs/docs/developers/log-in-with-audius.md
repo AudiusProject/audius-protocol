@@ -215,7 +215,7 @@ Be careful to not expose API secrets on your frontend!
 
 - [Read full SDK `oauth` docs](sdk-oauth-methods)
 
-- [Explore the API docs](./sdk/classes/TracksApi)
+- [Explore the API docs](./developers/sdk/Tracks)
 
 :::note
 
@@ -440,6 +440,6 @@ const track = await audiusSdk.tracks.favoriteTrack({
 });
 ```
 
-See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/classes/TracksApi) for further reading.
+See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/Tracks) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)

@@ -76,7 +76,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     zIndex: zIndex.CHAT_REACTIONS_POPUP_CONTENT
   },
   emoji: {
-    height: spacing(17)
+    height: spacing(22)
   },
   copyContainer: {
     zIndex: zIndex.CHAT_REACTIONS_POPUP_CONTENT
@@ -237,7 +237,7 @@ export const ReactionPopup = ({
             selectedReaction={selectedReaction as ReactionTypes}
             onChange={handleReactionChanged}
             isVisible={true}
-            scale={1.6}
+            scale={2}
             style={{
               emoji: styles.emoji
             }}

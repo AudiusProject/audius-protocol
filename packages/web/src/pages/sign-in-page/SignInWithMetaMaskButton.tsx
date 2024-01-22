@@ -30,6 +30,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       variant='secondary'
       iconRight={IconMetamask}
       isStaticIcon
+      fullWidth
       onClick={handleClick}
       {...props}
     >
