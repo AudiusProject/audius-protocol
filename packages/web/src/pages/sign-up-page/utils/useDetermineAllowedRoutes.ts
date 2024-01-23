@@ -6,7 +6,7 @@ import { getSignOn } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { SignUpPath } from 'utils/route'
 
-const { getHasAccount } = accountSelectors
+const { getAccountUser } = accountSelectors
 
 /**
  * Checks against existing sign up redux state,
@@ -16,9 +16,9 @@ const { getHasAccount } = accountSelectors
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const hasAccount = useSelector(getHasAccount)
+  const user = useSelector(getAccountUser)
 
-  const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
+  const pastAccountPhase = signUpState.finishedPhase1 || user
 
   // this requestedRoute string should have already trimmed out /signup/
   return (
@@ -28,6 +28,13 @@ export const useDetermineAllowedRoute = () => {
     isAllowedRoute: boolean
     correctedRoute: string
   } => {
+    if (user?.followee_count && user?.followee_count >= 3) {
+      return {
+        allowedRoutes: [],
+        isAllowedRoute: false,
+        correctedRoute: `/trending`
+      }
+    }
     const attemptedPath = requestedRoute.replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
     let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
