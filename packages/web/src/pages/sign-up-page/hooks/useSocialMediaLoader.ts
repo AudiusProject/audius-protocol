@@ -51,7 +51,6 @@ export const useSocialMediaLoader = ({
       const isUserClose = error.message?.includes(
         'Popup has been closed by user'
       )
-      console.log({ error, platform })
 
       if (platform === 'instagram') {
         if (isUserClose) {
