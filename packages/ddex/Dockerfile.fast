@@ -51,5 +51,5 @@ COPY packages/ddex/server/dist /app/packages/ddex/server/public
 
 WORKDIR /app/packages/ddex/server
 
-EXPOSE 8926
+EXPOSE 3000
 CMD [ "node", "dist/index.js" ]

@@ -15,4 +15,3 @@ If you want to run the frontend locally, you'll need to:
 
 Notes:
 * When running on stage or prod, the backend serves the frontend as static assets at the root path
-* (for now) When ran on stage or prod, the app will query its local `/d_api/env` endpoint to get environment variables that are set on the node. TODO: The backend can just read these from the environment directly.
