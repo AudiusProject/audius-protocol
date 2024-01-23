@@ -8,7 +8,6 @@ import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { env } from 'services/env'
 import { STATIC_EXPLORE_CONTENT_URL } from 'utils/constants'
 import { waitForRead } from 'utils/sagaHelpers'
 const {
@@ -22,16 +21,13 @@ const {
 } = explorePageActions
 const { getPlaylistIds, getProfileIds } = explorePageSelectors
 
-const EXPLORE_CONTENT_URL =
-  env.EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
-
 type ExploreContent = {
   featuredPlaylists: ID[]
   featuredProfiles: ID[]
 }
 
 export const fetchExploreContent = async (
-  exploreContentUrl = EXPLORE_CONTENT_URL
+  exploreContentUrl: string = STATIC_EXPLORE_CONTENT_URL
 ): Promise<ExploreContent> => {
   const response = await fetch(exploreContentUrl)
   return await response.json()

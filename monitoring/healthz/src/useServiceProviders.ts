@@ -1,23 +1,11 @@
 import useSWR from 'swr'
+import { getRegisteredNodes } from './utils/contracts'
 
 const prodEndpoint =
   'https://api.audius.co'
 
 const stagingEndpoint =
   'https://api.staging.audius.co'
-
-const gql = `
-query ServiceProviders($type: String) {
-  serviceNodes(where: {isRegistered: true, type: $type}) {
-    delegateOwnerWallet
-    endpoint
-    isRegistered
-    type {
-      id
-    }
-  }
-}
-`
 
 export type SP = {
   delegateOwnerWallet: string
@@ -51,6 +39,12 @@ export function apiGatewayFetcher(
       // console.log(sps)
       return sps
     })
+    .catch(async (e) => {
+      // fallback to chain if GA is down
+      console.warn("falling back to chain rpc to gather SPs", e)
+      const sps = getRegisteredNodes(env, type)
+      return sps
+    })
 }
 
 export function useServiceProviders(
@@ -59,12 +53,7 @@ export function useServiceProviders(
 ) {
   const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
     const sps = await apiGatewayFetcher(env, type)
-    const shouldIncludeUnregistered =
-      env !== 'prod' && type === 'discovery'
-    if (shouldIncludeUnregistered) {
-      sps.push(...unregisteredStageNodes())
-      hostSort(sps)
-    }
+    hostSort(sps)
     return sps
   })
   return { data: sps, error }
@@ -82,15 +71,4 @@ export function hostSort(sps: SP[]) {
   const hostSortKey = (sp: SP) =>
     new URL(sp.endpoint).hostname.split('.').reverse().join('.')
   sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
-}
-
-function unregisteredStageNodes() {
-  return [
-    {
-      delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
-      endpoint: 'https://discoveryprovider4.staging.audius.co',
-      isRegistered: false,
-      type: { id: 'discovery-node' },
-    },
-  ]
 }

@@ -2,8 +2,6 @@ import { Env } from '@audius/common'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
-  ADROLL_AVD_ID: 'SDJ23TS7DBFPLMXRDF6JQY',
-  ADROLL_PIX_ID: 'JZSZK5GWHBFL3FQ3NRFPNY',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'gain.audius.co',
   AMPLITUDE_WRITE_KEY: null,
@@ -53,7 +51,7 @@ export const env: Env = {
   PAYMENT_ROUTER_PROGRAM_ID: 'paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa',
   PUBLIC_HOSTNAME: 'audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://audius.co',
+  BASENAME: process.env.VITE_BASENAME || '',
   REACHABILITY_URL: 'https://audius.co/204',
   RECAPTCHA_SITE_KEY: '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
   REGISTRY_ADDRESS: '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2',

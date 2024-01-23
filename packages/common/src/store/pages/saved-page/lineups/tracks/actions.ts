@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
 import { LineupActions } from '../../../../../store/lineup/actions'
 
 export const PREFIX = 'SAVED_TRACKS'

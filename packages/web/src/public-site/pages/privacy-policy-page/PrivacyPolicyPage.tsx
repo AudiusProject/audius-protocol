@@ -4,7 +4,7 @@ import { env } from 'services/env'
 
 import styles from './PrivacyPolicyPage.module.css'
 
-const BASENAME = env.PUBLIC_URL
+const BASENAME = env.BASENAME
 
 const messages = {
   download: 'Download Privacy Policy'

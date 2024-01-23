@@ -22,7 +22,8 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  getContext
+  getContext,
+  lineupRegistry
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -37,12 +38,12 @@ const {
   getIndex,
   getLength,
   getOvershot,
-  getQueueAutoplay,
   getRepeat,
   getShuffle,
   getSource,
   getUid,
-  getUndershot
+  getUndershot,
+  getCurrentArtist
 } = queueSelectors
 
 const {
@@ -111,9 +112,8 @@ function* handleQueueAutoplay({
   ignoreSkip: boolean
   track: any
 }) {
-  const isQueueAutoplayEnabled = yield* select(getQueueAutoplay)
   const index = yield* select(getIndex)
-  if (!isQueueAutoplayEnabled || index < 0) {
+  if (index < 0) {
     return
   }
 
@@ -124,7 +124,7 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
-  const isCloseToEndOfQueue = index + 9 >= length
+  const isCloseToEndOfQueue = index + 2 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
@@ -166,6 +166,14 @@ export function* watchPlay() {
       )
 
       if (!playActionTrack) return
+
+      const length = yield* select(getLength)
+      const index = yield* select(getIndex)
+      const isNearEndOfQueue = index + 3 >= length
+
+      if (isNearEndOfQueue) {
+        yield* call(fetchLineupTracks)
+      }
 
       yield* call(handleQueueAutoplay, {
         skip: false,
@@ -267,6 +275,32 @@ export function* watchPlay() {
       }
     }
   })
+}
+
+// Fetches more lineup tracks if available. This is needed for cases
+// where the user hasn't scrolled through the lineup.
+function* fetchLineupTracks() {
+  const source = yield* select(getSource)
+  if (!source) return
+
+  const lineupEntry = lineupRegistry[source]
+  if (!lineupEntry) return
+
+  const currentArtist = yield* select(getCurrentArtist)
+  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+
+  if (lineup.hasMore) {
+    const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
+    yield* put(
+      lineupEntry.actions.fetchLineupMetadatas(
+        offset,
+        5,
+        false,
+        lineup.payload,
+        { handle: lineup.handle }
+      )
+    )
+  }
 }
 
 export function* watchPause() {

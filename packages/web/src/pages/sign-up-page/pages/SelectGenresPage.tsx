@@ -62,7 +62,6 @@ export const SelectGenresPage = () => {
             <Flex
               direction='column'
               gap='2xl'
-              mt={isMobile ? '2xl' : '3xl'}
               css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Heading

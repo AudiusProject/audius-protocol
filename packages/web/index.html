@@ -67,7 +67,7 @@
       // Account recovery
       try {
         const urlParams = new URLSearchParams(window.location.search)
-        const useHashRouting = '%USE_HASH_ROUTING%' === 'true'
+        const useHashRouting = '%USE_HASH_ROUTING%'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 
@@ -110,49 +110,12 @@
     ></script>
     <script>
       const measurementId = '%GA_MEASUREMENT_ID%'
-      if (!measurementId.includes('%')) {
-        window.dataLayer = window.dataLayer || []
-        function gtag() {
-          dataLayer.push(arguments)
-        }
-        gtag('js', new Date())
-        gtag('config', '%GA_MEASUREMENT_ID%')
-      }
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', measurementId);
     </script>
     <!-- end Google Analytics -->
-
-    <!-- start Adroll -->
-    <script async type="text/javascript">
-      const adroll_adv_id = '%ADROLL_AVD_ID%'
-      const adroll_pix_id = '%ADROLL_PIX_ID%'
-      const adroll_version = '2.0'
-      if (!adroll_adv_id.includes('%') && !adroll_pix_id.includes('%')) {
-        ;(function (w, d, e, o, a) {
-          w.__adroll_loaded = true
-          w.adroll = w.adroll || []
-          w.adroll.f = ['setProperties', 'identify', 'track']
-          var roundtripUrl =
-            'https://s.adroll.com/j/' + adroll_adv_id + '/roundtrip.js'
-          for (a = 0; a < w.adroll.f.length; a++) {
-            w.adroll[w.adroll.f[a]] =
-              w.adroll[w.adroll.f[a]] ||
-              (function (n) {
-                return function () {
-                  w.adroll.push([n, arguments])
-                }
-              })(w.adroll.f[a])
-          }
-
-          e = d.createElement('script')
-          o = d.getElementsByTagName('script')[0]
-          e.async = 1
-          e.src = roundtripUrl
-          o.parentNode.insertBefore(e, o)
-        })(window, document)
-        adroll.track('pageView')
-      }
-    </script>
-    <!-- end Adroll -->
 
     <!-- start Optimizely -->
     <script

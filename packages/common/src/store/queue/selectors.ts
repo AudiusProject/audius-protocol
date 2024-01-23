@@ -17,8 +17,6 @@ export const getUndershot = (state: CommonState) => state.queue.undershot
 export const getPositions = (state: CommonState) => state.queue.positions
 export const getIndex = (state: CommonState) => state.queue.index
 export const getRepeat = (state: CommonState) => state.queue.repeat
-export const getQueueAutoplay = (state: CommonState) =>
-  state.queue.queueAutoplay
 export const getShuffle = (state: CommonState) => state.queue.shuffle
 export const getShuffleIndex = (state: CommonState) => state.queue.shuffleIndex
 export const getShuffleOrder = (state: CommonState) => state.queue.shuffleOrder
@@ -48,7 +46,8 @@ export const getCollectionId = (state: CommonState) => {
 
 const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getPlayerTrackId(state) })
-const getCurrentUser = (state: CommonState) => {
+
+export const getCurrentArtist = (state: CommonState) => {
   const track = getCurrentTrack(state)
   const queueable = state.queue.order[state.queue.index]
   if (track || queueable?.artistId) {
@@ -59,7 +58,13 @@ const getCurrentUser = (state: CommonState) => {
 
 export const makeGetCurrent = () => {
   return createSelector(
-    [getPlayerUid, getSource, getCurrentTrack, getCurrentUser, getCollectible],
+    [
+      getPlayerUid,
+      getSource,
+      getCurrentTrack,
+      getCurrentArtist,
+      getCollectible
+    ],
     (uid, source, track, user, collectible) => ({
       uid,
       source,

@@ -17,7 +17,7 @@ import { AppContextProvider } from '../app/AppContextProvider'
 
 import LandingPage from './pages/landing-page/LandingPage'
 
-const BASENAME = env.PUBLIC_URL
+const BASENAME = env.BASENAME
 
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
