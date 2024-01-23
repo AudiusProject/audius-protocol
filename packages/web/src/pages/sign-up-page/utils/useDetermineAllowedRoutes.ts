@@ -2,7 +2,7 @@ import { accountSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getSignOn } from 'common/store/pages/signon/selectors'
+import { getAccountAlreadyExisted, getSignOn } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { SignUpPath } from 'utils/route'
 
@@ -17,6 +17,7 @@ export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
   const hasAccount = useSelector(getHasAccount)
+  const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
 
@@ -79,7 +80,10 @@ export const useDetermineAllowedRoute = () => {
 
     const isAllowedRoute = allowedRoutes.includes(attemptedPath)
     // If requested route is allowed return that, otherwise return the last step in the route stack
-    const correctedPath = isAllowedRoute
+    const correctedPath = 
+      attemptedPath === '/signup' && hasAlreadySignedUp
+      ? allowedRoutes[allowedRoutes.length - 1]
+      : isAllowedRoute
       ? attemptedPath
       : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
       attemptedPath === '/signup'
