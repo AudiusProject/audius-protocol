@@ -87,7 +87,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
         userId={user_id}
         onClick={() => {
           dispatch(
-            make(Name.CREATE_ACCOUNT_PREVIEW_ARTIST, {
+            make(Name.CREATE_ACCOUNT_ARTIST_PREVIEWED, {
               artistName: name,
               artistID: user_id
             })
