@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   accountSelectors,
@@ -34,6 +34,7 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
+import { ToastContext } from 'components/toast/ToastContext'
 const { getAccountUser, getAccountStatus } = accountSelectors
 
 export const useParsedQueryParams = () => {
@@ -164,6 +165,8 @@ export const useOAuthSetup = ({
   const record = useRecord()
   const history = useHistory()
   const dispatch = useDispatch()
+  const { toast, clear } = useContext(ToastContext)
+
   const {
     appName: queryParamAppName,
     apiKey,
@@ -470,10 +473,15 @@ export const useOAuthSetup = ({
     } else if (scope === 'write_once') {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
       if ((tx as WriteOnceTx) === 'connect_dashboard_wallet') {
+        const sendWalletSignaturePromptToast = () => {
+          toast(messages.approveTxToConnectProfile, 1000 * 60 * 60 * 24)
+        }
         const success = await handleAuthorizeConnectDashboardWallet({
           state,
           originUrl: parsedOrigin,
           onError,
+          onWaitForWalletSignature: sendWalletSignaturePromptToast,
+          onReceivedWalletSignature: clear,
           account,
           txParams: txParams!
         })
