@@ -30,7 +30,7 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
-  it.only('can navigate to sign-in after entering email in sign-up', () => {
+  it('can navigate to sign-in after entering email in sign-up', () => {
     cy.visit('signup')
     cy.findByRole('textbox', { name: /email/i }).type(email)
     cy.findByRole('button', { name: /sign up free/i }).click()

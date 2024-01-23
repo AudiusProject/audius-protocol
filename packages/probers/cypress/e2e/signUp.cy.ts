@@ -36,7 +36,7 @@ function assertOnCreatePasswordPage(user: User) {
   cy.findByText(user.email).should('exist')
 }
 
-function testSignUp() {
+function testSignUp({ isMobile = false }) {
   const testUser = generateTestUser()
   const { email, password, handle, name } = testUser
   cy.visit('signup')
@@ -48,7 +48,7 @@ function testSignUp() {
   // Password inputs dont have a role, so we just check against label text
   // https://github.com/testing-library/dom-testing-library/issues/567#issue-616906804
   cy.findByLabelText(/^password/i).type(password)
-  cy.findByLabelText(/confirm password/i).type(password)
+  cy.findByLabelText(/confirm password/i).type(password, { force: true })
 
   cy.findByRole('button', { name: /continue/i }).click()
 
@@ -118,6 +118,12 @@ function testSignUp() {
 
   cy.findByRole('button', { name: /continue/i }).click()
 
+  if (!isMobile) {
+    cy.findByRole('heading', { name: /get the app/i }).click()
+    cy.findByText(/take audius with you/i).should('exist')
+    cy.findByRole('button', { name: /continue/i }).click()
+  }
+
   cy.findByRole('dialog', { name: /welcome to audius/i }).within(() => {
     cy.findByRole('button', { name: /start listening/i }).click()
   })
@@ -154,9 +160,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // [C-3593] - skipped until the test can be updated
-    it.skip('should create an account', () => {
-      testSignUp()
+    it('should create an account', () => {
+      testSignUp({ isMobile: false })
     })
   })
 
@@ -191,9 +196,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // [C-3593] - skipped until the test can be updated
-    it.skip('should create an account', () => {
-      testSignUp()
+    it.only('should create an account', () => {
+      testSignUp({ isMobile: false })
     })
   })
 })

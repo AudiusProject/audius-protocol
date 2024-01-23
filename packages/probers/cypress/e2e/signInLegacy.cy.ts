@@ -1,6 +1,10 @@
 import { email, password, name, handle } from '../fixtures/user.json'
 
 describe('Sign In', () => {
+  beforeEach(() => {
+    localStorage.setItem('FeatureFlagOverride:sign_up_redesign', 'disabled')
+  })
+
   it('should be able to sign in', () => {
     cy.visit('signin')
     cy.findByLabelText(/email/i).type(email)

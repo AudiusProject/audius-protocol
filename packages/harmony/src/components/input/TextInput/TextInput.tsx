@@ -141,7 +141,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={ariaLabel ?? labelText}
+          aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
           {...other}
