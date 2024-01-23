@@ -1,11 +1,14 @@
 {
   "name": "root",
-  "version": "1.5.61",
+  "version": "1.5.63",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "protocol-dashboard"
+    "protocol-dashboard",
+    "packages/ddex/server",
+    "packages/ddex/client",
+    "packages/es-indexer"
   ],
   "private": true,
   "scripts": {

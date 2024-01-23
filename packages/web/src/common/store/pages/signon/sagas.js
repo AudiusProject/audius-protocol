@@ -475,8 +475,8 @@ function* signUp() {
 
         const isNativeMobile = yield getContext('isNativeMobile')
 
-        const isSignUpRedesignEnabled = yield call(
-          getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+        const isSignUpRedesignEnabled = getFeatureEnabled(
+          FeatureFlags.SIGN_UP_REDESIGN
         )
 
         if (isNativeMobile && !isSignUpRedesignEnabled) {
@@ -640,10 +640,13 @@ function* signIn(action) {
       const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
       yield put(trackEvent)
 
-      // Reset the sign on in the background after page load as to relieve the UI loading
-      yield delay(1000)
       yield put(signOnActions.resetSignOn())
+
       const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        // Reset the sign on in the background after page load as to relieve the UI loading
+        yield delay(1000)
+      }
       if (isNativeMobile) {
         yield put(requestPushNotificationPermissions())
       } else {
@@ -713,17 +716,33 @@ function* followCollections(collectionIds, favoriteSource) {
   }
 }
 
-function* followArtists() {
+/* This saga makes sure that artists chosen in sign up get followed accordingly */
+export function* completeFollowArtists(action) {
+  const accountId = yield select(accountSelectors.getUserId)
+  if (accountId) {
+    // If account creation has finished we need to make sure followArtists gets called
+    // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
+    yield put(signOnActions.followArtists(action.userIds, true))
+  }
+  // Otherwise, Account creation still in progress and followArtists will get called already, no need to call here
+}
+
+function* followArtists(action) {
+  const { skipDefaultFollows } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { ENVIRONMENT } = yield getContext('env')
-  const defaultFollowUserIds = yield call(getDefautFollowUserIds)
+  const defaultFollowUserIds = skipDefaultFollows
+    ? []
+    : yield call(getDefautFollowUserIds)
   yield call(waitForWrite)
   try {
     // Auto-follow Hot & New Playlist
-    if (ENVIRONMENT === 'production') {
-      yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
-    } else if (ENVIRONMENT === 'staging') {
-      yield fork(followCollections, [555], FavoriteSource.SIGN_UP)
+    if (!skipDefaultFollows) {
+      if (ENVIRONMENT === 'production') {
+        yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
+      } else if (ENVIRONMENT === 'staging') {
+        yield fork(followCollections, [555], FavoriteSource.SIGN_UP)
+      }
     }
 
     const signOn = yield select(getSignOn)
@@ -775,6 +794,10 @@ function* configureMetaMask() {
   } catch (err) {
     console.error({ err })
   }
+}
+
+export function* watchCompleteFollowArtists() {
+  yield takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
 
 function* watchGetArtistsToFollow() {
@@ -848,6 +871,7 @@ function* watchSendWelcomeEmail() {
 
 export default function sagas() {
   const sagas = [
+    watchCompleteFollowArtists,
     watchFetchAllFollowArtists,
     watchFetchReferrer,
     watchCheckEmail,

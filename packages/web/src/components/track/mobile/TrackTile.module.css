@@ -137,8 +137,8 @@
 
 .text {
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .titlesSkeleton div,
@@ -149,7 +149,9 @@
 .title {
   margin-top: auto;
   padding-right: 5px;
-  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .playIcon {
@@ -170,6 +172,10 @@
   position: relative;
   display: flex;
   color: inherit;
+}
+
+.artistPopover {
+  width: 100%;
 }
 
 .skeleton {

@@ -1,0 +1,55 @@
+# Attempting to build+push locally for a Linux (stage or prod) target may hang. Use this file as a workaround:
+# 1. in packages/ddex/server: npm run build
+# 2. in packages/ddex/client: npm run build
+# 3. in docker-compose.ddex.yml, change the value of dockerfile from Dockerfile to Dockerfile.fast
+# 4. run DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push --prod "ddex"
+# 5. ssh into a stage node and edit ~/audius-docker-compose/discovery-provider/docker-compose.yml: change the ddex image to the SHA you just pushed
+
+FROM node:18-alpine AS base
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+FROM base as builder
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+WORKDIR /app
+RUN npm install turbo --global
+
+COPY . .
+RUN turbo prune --scope=@audius/ddex-server --docker
+
+# Install and build backend dist and run app
+FROM base AS runner
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
+
+RUN CI=true npm i
+
+# Build the app and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
+COPY turbo.json turbo.json
+RUN npx turbo run build --filter=@audius/ddex-server
+
+# Copy the client dist from local filesystem instead of building it in Docker, which hangs
+COPY packages/ddex/server/dist /app/packages/ddex/server/public
+
+WORKDIR /app/packages/ddex/server
+
+EXPOSE 3000
+CMD [ "node", "dist/index.js" ]

@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react'
 
 import {
   Genre,
-  ID,
   Status,
   convertGenreLabelToValue,
   useGetFeaturedArtists,
@@ -18,12 +17,19 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { addFollowArtists } from 'common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  completeFollowArtists
+} from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
+import {
+  SIGN_UP_APP_CTA_PAGE,
+  SIGN_UP_COMPLETED_REDIRECT,
+  SIGN_UP_GENRES_PAGE
+} from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -42,7 +48,7 @@ import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPrevi
 const AnimatedFlex = animated(Flex)
 
 type SelectArtistsValues = {
-  selectedArtists: ID[]
+  selectedArtists: string[]
 }
 
 const initialValues: SelectArtistsValues = {
@@ -65,7 +71,9 @@ export const SelectArtistsPage = () => {
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
-      dispatch(addFollowArtists([...selectedArtists]))
+      const artistsIDArray = [...selectedArtists].map((a) => Number(a))
+      dispatch(addFollowArtists(artistsIDArray))
+      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -118,6 +126,7 @@ export const SelectArtistsPage = () => {
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
               backButtonText={messages.backToGenres}
+              backTo={SIGN_UP_GENRES_PAGE}
               mode='viewing'
             />
             <AnimatedFlex
@@ -125,7 +134,6 @@ export const SelectArtistsPage = () => {
               mh={isMobile ? undefined : '5xl'}
               mb={isMobile ? undefined : 'xl'}
               style={styles}
-              css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Flex
                 direction='column'

@@ -2,8 +2,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 
 import { css } from '@emotion/native'
-import { Dimensions, ImageBackground, SafeAreaView } from 'react-native'
-import RadialGradient from 'react-native-radial-gradient'
+import { ImageBackground, SafeAreaView } from 'react-native'
 import Animated, {
   CurvedTransition,
   FadeIn,
@@ -18,8 +17,10 @@ import {
   Flex,
   IconAudiusLogoHorizontalColor,
   Paper,
+  RadialGradient,
   Text,
-  TextLink
+  TextLink,
+  useTheme
 } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
 
@@ -80,21 +81,14 @@ const Background = () => {
       })}
     >
       <RadialGradient
-        style={css({
-          // NOTE: Width/Height styles are mandatory for gradient to work. Otherwise it will crash the whole app 🫠
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 2
-        })}
+        style={css({ position: 'absolute', zIndex: 1 })}
         colors={[
           'rgba(91, 35, 225, 0.8)',
           'rgba(113, 41, 230, 0.64)',
           'rgba(162, 47, 235, 0.5)'
         ]}
-        stops={[0.1, 0.67, 1]}
-        radius={Dimensions.get('window').width / 1.2}
+        stops={[0, 0.67, 1]}
+        radius={100}
       />
       <ImageBackground
         source={DJBackground}
@@ -117,12 +111,17 @@ type ExpandablePanelProps = {
 const ExpandablePanel = (props: ExpandablePanelProps) => {
   const { children } = props
   const insets = useSafeAreaInsets()
+  const { cornerRadius } = useTheme()
   return (
     <AnimatedPaper
       entering={SlideInUp.duration(PANEL_EXPAND_DURATION)}
       layout={CurvedTransition}
-      borderRadius='3xl'
-      style={css({ overflow: 'hidden', paddingTop: insets.top })}
+      style={css({
+        overflow: 'hidden',
+        paddingTop: insets.top,
+        borderBottomLeftRadius: cornerRadius['3xl'],
+        borderBottomRightRadius: cornerRadius['3xl']
+      })}
     >
       <Flex gap='2xl' ph='l' pv='2xl'>
         {children}
@@ -152,7 +151,7 @@ export const SignOnScreen = (props: SignOnScreenProps) => {
     <>
       <Background />
       {isSplashScreenDismissed ? (
-        <Flex flex={1} style={css({ flexGrow: 1 })} h='100%'>
+        <Flex flex={1} style={css({ flexGrow: 1, zIndex: 2 })} h='100%'>
           <ExpandablePanel>
             <IconAudiusLogoHorizontalColor
               style={css({ alignSelf: 'center' })}
