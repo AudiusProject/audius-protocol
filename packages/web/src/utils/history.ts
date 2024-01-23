@@ -9,7 +9,7 @@ import {
 import { env } from 'services/env'
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
-const basename = env.PUBLIC_URL
+const basename = env.BASENAME
 
 let history: History
 if (USE_HASH_ROUTING) {

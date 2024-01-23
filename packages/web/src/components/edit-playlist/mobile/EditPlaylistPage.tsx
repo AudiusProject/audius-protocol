@@ -16,6 +16,7 @@ import {
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common'
+import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -43,12 +44,12 @@ const { getCollection, getCollectionTracksWithUsers } =
   cacheCollectionsSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
-const messages = {
-  editPlaylist: 'Edit Playlist',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  editPlaylist: `Edit ${capitalize(collectionType)}`,
   randomPhoto: 'Get Random Artwork',
-  placeholderName: 'My Playlist',
-  placeholderDescription: 'Give your playlist a description'
-}
+  placeholderName: `My ${collectionType}`,
+  placeholderDescription: `Give your ${collectionType} a description`
+})
 
 const initialFormFields = {
   artwork: {},
@@ -74,6 +75,7 @@ const EditPlaylistPage = g(
     const tracks = useSelector((state) =>
       getCollectionTracksWithUsers(state, { id: collectionId ?? undefined })
     )
+    const messages = getMessages(metadata?.is_album ? 'album' : 'playlist')
 
     // Close the page if the route was changed
     useHasChangedRoute(onClose)
@@ -324,7 +326,7 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [formFields, onSave]
+      [formFields.playlist_name, messages.editPlaylist, onSave]
     )
 
     useTemporaryNavContext(setters)

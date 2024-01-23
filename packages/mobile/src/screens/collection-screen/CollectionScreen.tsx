@@ -189,7 +189,9 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
-      !is_album && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
+      (!is_album || isEditAlbumsEnabled) && isOwner
+        ? OverflowAction.EDIT_PLAYLIST
+        : null,
       isOwner && !is_album && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
@@ -204,7 +206,14 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
         overflowActions
       })
     )
-  }, [dispatch, playlist_id, isOwner, is_album, is_private])
+  }, [
+    is_album,
+    isEditAlbumsEnabled,
+    isOwner,
+    is_private,
+    dispatch,
+    playlist_id
+  ])
 
   const handlePressEdit = useCallback(() => {
     navigation?.push('EditPlaylist', { id: playlist_id })

@@ -36,7 +36,7 @@ declare global {
  *
  */
 
-const basename = env.PUBLIC_URL
+const basename = env.BASENAME
 
 const fcmWebPushPublicKey = env.FCM_PUSH_PUBLIC_KEY
 const safariWebPushID = env.SAFARI_WEB_PUSH_ID

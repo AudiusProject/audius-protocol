@@ -3,8 +3,6 @@ import Config from 'react-native-config'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
-  ADROLL_AVD_ID: 'SDJ23TS7DBFPLMXRDF6JQY',
-  ADROLL_PIX_ID: 'JZSZK5GWHBFL3FQ3NRFPNY',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'https://gain.audius.co',
   AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
@@ -53,7 +51,7 @@ export const env: Env = {
   PAYMENT_ROUTER_PROGRAM_ID: 'paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa',
   PUBLIC_HOSTNAME: 'audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://audius.co',
+  BASENAME: '/',
   REACHABILITY_URL: 'https://audius.co/204',
   STRIPE_CLIENT_PUBLISHABLE_KEY:
     'pk_live_51LPsGuCJOWtpH6AEKshlCs3L8QhAfevNvhev8K9a0u92O5ku83KRjLIqCdxgf3NhitdtmMGlw0Wjf33NjZJjZUBz006A3IoSiQ',
@@ -74,7 +72,7 @@ export const env: Env = {
   SOLANA_WEB3_CLUSTER: 'mainnet-beta',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
+  TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
   TRPC_ENDPOINT: 'https://discoveryprovider3.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USER_NODE: 'https://usermetadata.audius.co',
