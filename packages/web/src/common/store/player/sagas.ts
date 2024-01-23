@@ -197,7 +197,8 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveStreamAccess = !!track?.access?.stream
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
     if (!trackId || doesUserHaveStreamAccess || isPreview) {
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))
