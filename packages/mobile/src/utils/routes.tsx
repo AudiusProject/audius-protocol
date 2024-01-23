@@ -1,10 +1,11 @@
 import type { UserCollection, User } from '@audius/common'
 import { getHash, encodeUrlName } from '@audius/common'
-import Config from 'react-native-config'
+
+import { env } from 'app/env'
 
 type UserHandle = Pick<User, 'handle'>
 
-const { AUDIUS_URL } = Config
+const { AUDIUS_URL } = env
 
 export const getTrackRoute = (
   track: { permalink: string },
