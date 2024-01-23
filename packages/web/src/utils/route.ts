@@ -1,19 +1,23 @@
-import { ID, encodeUrlName, getHash } from '@audius/common'
+import { Env, ID, encodeUrlName, getHash } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-import { env } from 'services/env'
+// TODO: Move routing to @audius/common with an injected env
+// so that it can properly handle routing to the correct environment.
+// These values are defaulted to the production context.
+const env: Partial<Env> = {
+  BASENAME: '/',
+  USE_HASH_ROUTING: false,
+  PUBLIC_PROTOCOL: 'https:',
+  PUBLIC_HOSTNAME: 'audius.co'
+}
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 // Host/protocol.
-export const BASE_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
-  env.PUBLIC_HOSTNAME || 'audius.co'
-}`
-export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL || 'https:'}//${
-  env.GA_HOSTNAME || 'audius.co'
-}`
+export const BASE_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
 export const BASENAME = env.BASENAME
 
 // External Routes

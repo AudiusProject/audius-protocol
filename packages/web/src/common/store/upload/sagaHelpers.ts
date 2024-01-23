@@ -18,11 +18,8 @@ import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
-import { env } from 'services/env'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
-
-const ENVIRONMENT = env.ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,
@@ -108,6 +105,7 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
+  const { ENVIRONMENT } = yield* getContext('env')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
