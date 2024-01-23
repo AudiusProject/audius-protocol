@@ -27,7 +27,7 @@ const initSdk = async () => {
       rewardManagerClient: rewardManagerService,
       antiAbuseOracleSelector: new AntiAbuseOracleSelector({
         endpoints: [env.AAO_ENDPOINT],
-        registeredAddresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
+        registeredAddresses: env.ORACLE_ETH_ADDRESSES.split(',') ?? []
       })
     }
   })
