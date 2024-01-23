@@ -91,8 +91,8 @@ export const SignInPage = () => {
         <ScrollView
           direction='column'
           justifyContent='space-between'
-          ph={isMobile ? 'l' : '2xl'}
-          pt='unit20'
+          ph={isMobile ? 'm' : '2xl'}
+          pt='unit14'
           pb={isMobile ? '2xl' : 'unit14'}
           gap='l'
         >
