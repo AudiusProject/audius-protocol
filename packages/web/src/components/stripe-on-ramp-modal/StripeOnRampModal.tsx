@@ -6,11 +6,12 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
 
 import styles from './StripeOnRampModal.module.css'
 
-const STRIPE_PUBLISHABLE_KEY = process.env.VITE_STRIPE_CLIENT_PUBLISHABLE_KEY
+const STRIPE_PUBLISHABLE_KEY = env.STRIPE_CLIENT_PUBLISHABLE_KEY
 
 const { getStripeModalState } = stripeModalUISelectors
 const { cancelStripeOnramp, stripeSessionStatusChanged } = stripeModalUIActions

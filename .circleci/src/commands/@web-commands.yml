@@ -51,7 +51,7 @@ web-pr-comment:
 web-build:
   parameters:
     build-type:
-      default: 'prod-source-maps'
+      default: 'prod'
       type: string
     build-directory:
       default: 'packages/web/build-production'

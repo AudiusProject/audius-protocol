@@ -4,7 +4,7 @@ import NetInfo from '@react-native-community/netinfo'
 import { debounce } from 'lodash'
 import { AppState } from 'react-native'
 
-import { env } from 'app/services/env'
+import { env } from 'app/env'
 import { dispatch } from 'app/store'
 import { setCurrentNetworkType } from 'app/store/offline-downloads/slice'
 

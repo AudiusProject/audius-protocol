@@ -1,7 +1,7 @@
 import { Amplitude } from '@amplitude/react-native'
-import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
+import { env } from 'app/env'
 import { versionInfo } from 'app/utils/appVersionWithCodepush'
 
 import packageInfo from '../../package.json'
@@ -12,8 +12,8 @@ const { version: clientVersion } = packageInfo
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
-const AmplitudeProxy = Config.AMPLITUDE_PROXY
+const AmplitudeWriteKey = env.AMPLITUDE_WRITE_KEY
+const AmplitudeProxy = env.AMPLITUDE_PROXY
 const amplitudeInstance = Amplitude.getInstance()
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
