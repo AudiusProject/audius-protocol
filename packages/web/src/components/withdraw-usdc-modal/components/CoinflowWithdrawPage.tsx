@@ -53,6 +53,7 @@ export const CoinflowWithdrawPage = () => {
   return adapter ? (
     <CoinflowWithdraw
       amount={amountCents / 100}
+      lockAmount={true}
       wallet={adapter.wallet}
       connection={adapter.connection}
       onSuccess={handleSuccess}
