@@ -81,6 +81,8 @@ export enum Name {
   CREATE_ACCOUNT_RATE_LIMIT = 'Create Account: Rate Limit',
   // When the user gets blocked by AAO during the signup path
   CREATE_ACCOUNT_BLOCKED = 'Create Account: Blocked',
+  // When the welcome modal gets shown to the user
+  CREATE_ACCOUNT_WELCOME_MODAL = 'Create Account: Welcome Modal',
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
 
@@ -608,6 +610,11 @@ type CreateAccountCompleteFollow = {
 }
 type CreateAccountCompleteCreating = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_CREATING
+  emailAddress: string
+  handle: string
+}
+type CreateAccountWelcomeModal = {
+  eventName: Name.CREATE_ACCOUNT_WELCOME_MODAL
   emailAddress: string
   handle: string
 }
@@ -2169,6 +2176,7 @@ export type AllTrackingEvents =
   | CreateAccountSelectGenre
   | CreateAccountFollowArtist
   | CreateAccountPreviewArtist
+  | CreateAccountWelcomeModal
   | CreateAccountWelcomeModalUploadTrack
   | SignInOpen
   | SignInFinish

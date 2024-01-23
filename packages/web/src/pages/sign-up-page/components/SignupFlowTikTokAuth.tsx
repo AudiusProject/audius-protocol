@@ -6,9 +6,11 @@ import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
 
 import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
 
+import { SocialPlatform } from './SocialMediaLoginOptions'
+
 type SignupFlowTikTokAuthProps = {
-  onStart: () => void
-  onFailure: (e: unknown) => void
+  onStart: (platform: SocialPlatform) => void
+  onFailure: (e: Error, platform: SocialPlatform) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
@@ -25,9 +27,13 @@ export const SignupFlowTikTokAuth = ({
 }: SignupFlowTikTokAuthProps) => {
   const setProfileFromTikTok = useSetProfileFromTikTok()
 
-  const handleError = (e: unknown) => {
+  const handleStart = () => {
+    onStart('tiktok')
+  }
+
+  const handleError = (e: Error) => {
     console.error(e)
-    onFailure(e)
+    onFailure(e, 'tiktok')
   }
 
   const handleTikTokLogin = async ({
@@ -41,7 +47,7 @@ export const SignupFlowTikTokAuth = ({
     try {
       res = await setProfileFromTikTok({ uuid, tikTokProfile: profile })
     } catch (e) {
-      handleError(e)
+      handleError(e as Error)
       return
     }
     onSuccess({
@@ -53,7 +59,7 @@ export const SignupFlowTikTokAuth = ({
 
   return (
     <TikTokAuth
-      onClick={onStart}
+      onClick={handleStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleTikTokLogin({ uuid, profile })}
     >

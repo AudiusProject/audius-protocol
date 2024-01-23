@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   Name,
@@ -56,6 +56,12 @@ export const WelcomeModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(make(Name.CREATE_ACCOUNT_WELCOME_MODAL, {}))
+    }
+  }, [dispatch, isOpen])
+
   return (
     <Root
       isOpen={isOpen}
@@ -107,7 +113,9 @@ export const WelcomeModal = () => {
             <Link
               to={UPLOAD_PAGE}
               onClick={() => {
-                dispatch(make(Name.CREATE_ACCOUNT_WELCOME_CTA_UPLOAD_TRACK, {}))
+                dispatch(
+                  make(Name.CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK, {})
+                )
               }}
             >
               {messages.upload}
