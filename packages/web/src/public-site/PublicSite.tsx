@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
+import { env } from 'services/env'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
@@ -16,7 +17,7 @@ import { AppContextProvider } from '../app/AppContextProvider'
 
 import LandingPage from './pages/landing-page/LandingPage'
 
-const BASENAME = process.env.VITE_PUBLIC_URL
+const BASENAME = env.BASENAME
 
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
