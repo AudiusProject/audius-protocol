@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { MouseEventHandler, useCallback, useState } from 'react'
 
 import {
   Genre,
@@ -44,6 +44,28 @@ export const SelectGenresPage = () => {
     [dispatch, navigate]
   )
 
+  const handleOnClick =
+    (label: string): MouseEventHandler<HTMLInputElement> =>
+    (e) => {
+      if ((e.target as HTMLInputElement).checked) {
+        // add to genres list
+        const newGenres = [...currentGenres, label as Genre]
+        dispatch(
+          make(Name.CREATE_ACCOUNT_SELECT_GENRE, {
+            genre: label,
+            selectedGenres: newGenres
+          })
+        )
+        setCurrentGenres(newGenres)
+      } else {
+        // remove from genres list
+        const newGenres = [...currentGenres]
+        const genreIndex = currentGenres.indexOf(label as Genre)
+        newGenres.splice(genreIndex, 1)
+        setCurrentGenres(newGenres)
+      }
+    }
+
   const { isMobile } = useMedia()
 
   return (
@@ -88,24 +110,7 @@ export const SelectGenresPage = () => {
                       value={value}
                       size='large'
                       type='checkbox'
-                      onClick={(e) => {
-                        if ((e.target as HTMLInputElement).checked) {
-                          dispatch(
-                            make(Name.CREATE_ACCOUNT_SELECT_GENRE, {
-                              genre: label,
-                              selectedGenres: [...currentGenres, label]
-                            })
-                          )
-                          setCurrentGenres([...currentGenres, label as Genre])
-                        } else {
-                          const newGenres = [...currentGenres]
-                          const genreIndex = currentGenres.indexOf(
-                            label as Genre
-                          )
-                          newGenres.splice(genreIndex, 1)
-                          setCurrentGenres(newGenres)
-                        }
-                      }}
+                      onClick={handleOnClick(label)}
                     />
                   )
                 })}
