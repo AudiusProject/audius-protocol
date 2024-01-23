@@ -1,6 +1,6 @@
 /* Wrapper Container */
 .container {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
@@ -11,8 +11,8 @@
 
 /* Transaction Item */
 .transactionItemContainer {
-  background: #393A54;
-  border: 1px solid #3F415B;
+  background: #393a54;
+  border: 1px solid #3f415b;
   box-sizing: border-box;
   border-radius: 8px;
   display: inline-flex;
@@ -38,7 +38,7 @@
   font-family: Avenir Next LT Pro;
   font-weight: 500;
   font-size: var(--font-m);
-  color: #9399B3;
+  color: #9399b3;
 }
 
 .transactionItemContainer .btn {
@@ -61,7 +61,6 @@
   margin-right: 32px;
 }
 
-
 .subtext {
   margin-top: 4px;
   font-family: Avenir Next LT Pro;
@@ -69,5 +68,5 @@
   font-weight: 500;
   font-size: var(--font-l);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
 }

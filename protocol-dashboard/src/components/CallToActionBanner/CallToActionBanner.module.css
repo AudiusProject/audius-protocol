@@ -1,6 +1,5 @@
 .banner {
   min-height: 56px;
-  width: 100%;
   background: linear-gradient(315deg, #7652cc 0%, #b05ce6 100%);
   display: flex;
   align-items: center;

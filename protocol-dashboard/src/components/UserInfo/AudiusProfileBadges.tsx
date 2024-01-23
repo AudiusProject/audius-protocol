@@ -2,12 +2,12 @@ import { cloneElement, ReactElement } from 'react'
 
 import { BadgeTier, badgeTiers, Nullable } from '@audius/common'
 import { User } from '@audius/sdk'
-import { IconVerified } from '@audius/stems'
 
 import IconBronzeBadgeSVG from 'assets/img/iconBronzeBadge.svg?react'
 import IconGoldBadgeSVG from 'assets/img/iconGoldBadge.svg?react'
 import IconPlatinumBadgeSVG from 'assets/img/iconPlatinumBadge.svg?react'
 import IconSilverBadgeSVG from 'assets/img/iconSilverBadge.svg?react'
+import IconVerifiedSVG from 'assets/img/iconVerified.svg?react'
 
 import cn from 'classnames'
 
@@ -57,6 +57,20 @@ const UserBadges = ({
   const tierMap = audioTierMapSVG
   const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = isVerified || audioBadge
+  const content = (
+    <>
+      {!isVerified ? null : (
+        <IconVerifiedSVG
+          className={styles.iconVerified}
+          height={badgeSize}
+          width={badgeSize}
+        />
+      )}
+      {audioBadge == null
+        ? null
+        : cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
+    </>
+  )
 
   if (inline) {
     return (
@@ -65,12 +79,7 @@ const UserBadges = ({
           [noContentClassName]: !hasContent
         })}
       >
-        {!isVerified ? null : (
-          <IconVerified height={badgeSize} width={badgeSize} />
-        )}
-        {audioBadge == null
-          ? null
-          : cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
+        {content}
       </span>
     )
   }
@@ -80,12 +89,7 @@ const UserBadges = ({
         [noContentClassName]: !hasContent
       })}
     >
-      {!isVerified ? null : (
-        <IconVerified height={badgeSize} width={badgeSize} />
-      )}
-      {audioBadge == null
-        ? null
-        : cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
+      {content}
     </div>
   )
 }

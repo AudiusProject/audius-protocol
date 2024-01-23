@@ -117,6 +117,7 @@
     "browserify-zlib": "0.2.0",
     "constants-browserify": "1.0.0",
     "crypto-browserify": "3.12.0",
+    "dotenv": "16.3.1",
     "env-cmd": "9.0.3",
     "https-browserify": "1.0.0",
     "jsdom": "22.1.0",
