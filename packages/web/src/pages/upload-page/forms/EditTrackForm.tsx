@@ -145,10 +145,10 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               ) : (
                 <ReleaseDateFieldLegacy />
               )}
-              <RemixSettingsField />
-              <SourceFilesField />
               <AccessAndSaleField isUpload />
               <AttributionField />
+              <SourceFilesField />
+              <RemixSettingsField />
             </div>
             <PreviewButton
               // Since edit form is a single component, render a different preview for each track
