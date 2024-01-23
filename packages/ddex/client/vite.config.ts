@@ -9,8 +9,8 @@ export default defineConfig({
   server: {
     proxy: isDevelopment
       ? {
-          '/api': 'http://localhost:8926', // Assuming port for ../server Express server is unchanged
-          '/trpc': 'http://localhost:8926'
+          '/api': 'http://localhost:3000', // Assuming port for ../server Express server is unchanged
+          '/trpc': 'http://localhost:3000'
         }
       : {}
   },
@@ -38,7 +38,6 @@ export default defineConfig({
       assets: '/src/assets'
     }
   },
-  base: '/ddex/',
   build: {
     commonjsOptions: {
       transformMixedEsModules: true

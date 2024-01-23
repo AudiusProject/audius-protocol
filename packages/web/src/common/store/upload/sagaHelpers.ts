@@ -21,8 +21,6 @@ import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
-const ENVIRONMENT = process.env.VITE_ENVIRONMENT
-
 export function* reportResultEvents({
   numSuccess,
   numFailure,
@@ -107,6 +105,7 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
+  const { ENVIRONMENT } = yield* getContext('env')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,

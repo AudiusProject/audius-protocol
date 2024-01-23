@@ -1,9 +1,10 @@
 import Footer from 'public-site/components/Footer'
 import NavBanner from 'public-site/components/NavBanner'
+import { env } from 'services/env'
 
 import styles from './PrivacyPolicyPage.module.css'
 
-const BASENAME = process.env.VITE_PUBLIC_URL
+const BASENAME = env.BASENAME
 
 const messages = {
   download: 'Download Privacy Policy'

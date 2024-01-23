@@ -33,7 +33,7 @@ const messages = {
   from: ' from ',
   exclamation: '!',
   twitterShare: (trackTitle: string, sellerUsername: string) =>
-    `I bought the track ${trackTitle} by ${sellerUsername} on Audius! #AudiusPremium`
+    `I bought the track ${trackTitle} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {

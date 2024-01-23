@@ -10,6 +10,7 @@ import { Transaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
@@ -17,8 +18,8 @@ import styles from './CoinflowOnrampModal.module.css'
 
 const { transactionSucceeded, transactionCanceled } = coinflowModalUIActions
 
-const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
+const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
