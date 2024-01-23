@@ -22,7 +22,8 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  getContext
+  getContext,
+  lineupRegistry
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -36,12 +37,12 @@ const {
   getIndex,
   getLength,
   getOvershot,
-  getQueueAutoplay,
   getRepeat,
   getShuffle,
   getSource,
   getUid,
-  getUndershot
+  getUndershot,
+  getCurrentArtist
 } = queueSelectors
 
 const {
@@ -88,7 +89,8 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
-    const doesUserHaveStreamAccess = !!track.access.stream
+    const doesUserHaveStreamAccess =
+      !track.is_stream_gated || !!track.access.stream
     return {
       id: track.track_id,
       uid: entry.uid,
@@ -110,9 +112,8 @@ function* handleQueueAutoplay({
   ignoreSkip: boolean
   track: any
 }) {
-  const isQueueAutoplayEnabled = yield* select(getQueueAutoplay)
   const index = yield* select(getIndex)
-  if (!isQueueAutoplayEnabled || index < 0) {
+  if (index < 0) {
     return
   }
 
@@ -165,6 +166,14 @@ export function* watchPlay() {
       )
 
       if (!playActionTrack) return
+
+      const length = yield* select(getLength)
+      const index = yield* select(getIndex)
+      const isNearEndOfQueue = index + 3 >= length
+
+      if (isNearEndOfQueue) {
+        yield* call(fetchLineupTracks)
+      }
 
       yield* call(handleQueueAutoplay, {
         skip: false,
@@ -265,6 +274,32 @@ export function* watchPlay() {
   })
 }
 
+// Fetches more lineup tracks if available. This is needed for cases
+// where the user hasn't scrolled through the lineup.
+function* fetchLineupTracks() {
+  const source = yield* select(getSource)
+  if (!source) return
+
+  const lineupEntry = lineupRegistry[source]
+  if (!lineupEntry) return
+
+  const currentArtist = yield* select(getCurrentArtist)
+  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+
+  if (lineup.hasMore) {
+    const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
+    yield* put(
+      lineupEntry.actions.fetchLineupMetadatas(
+        offset,
+        5,
+        false,
+        lineup.payload,
+        { handle: lineup.handle }
+      )
+    )
+  }
+}
+
 export function* watchPause() {
   yield* takeEvery(pause.type, function* (action: ReturnType<typeof pause>) {
     yield* put(playerActions.pause({}))
@@ -302,7 +337,8 @@ export function* watchNext() {
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
     const currentUserId = yield* select(getUserId)
-    const doesUserHaveStreamAccess = !!track?.access?.stream
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
 
     // Skip deleted, owner deactivated, or locked gated track
     if (
@@ -413,7 +449,8 @@ export function* watchPrevious() {
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
       const currentUserId = yield* select(getUserId)
-      const doesUserHaveStreamAccess = !!track?.access?.stream
+      const doesUserHaveStreamAccess =
+        !track?.is_stream_gated || !!track?.access?.stream
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.

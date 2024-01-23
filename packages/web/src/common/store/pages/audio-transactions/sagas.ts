@@ -14,8 +14,6 @@ import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 const {
   fetchAudioTransactions,
@@ -105,6 +103,7 @@ function* fetchAudioTransactionsAsync() {
   yield* takeLatest(
     fetchAudioTransactions.type,
     function* (action: ReturnType<typeof fetchAudioTransactions>): any {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const { data, signature } = yield* call([
         audiusBackendInstance,
         audiusBackendInstance.signDiscoveryNodeRequest
@@ -155,7 +154,9 @@ function* fetchTransactionMetadata() {
       if (txDetails.transactionType !== TransactionType.PURCHASE) {
         return
       }
-      yield* call(waitForLibsInit)
+      const apiClient = yield* getContext('apiClient')
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      yield* call([apiClient, apiClient.waitForLibsInit])
       const libs: AudiusLibs = yield* call(audiusBackendInstance.getAudiusLibs)
       const response = yield* call(
         [
@@ -179,6 +180,7 @@ function* fetchTransactionMetadata() {
 
 function* fetchTransactionsCount() {
   yield* takeLatest(fetchAudioTransactionsCount.type, function* () {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const { data, signature } = yield* call([
       audiusBackendInstance,
       audiusBackendInstance.signDiscoveryNodeRequest

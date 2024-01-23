@@ -65,6 +65,7 @@ const AddToCollectionModal = () => {
       (collection: Collection) =>
         // Don't allow adding to this collection if already on this collection's page.
         collection.playlist_id !== currentCollectionId &&
+        collection.playlist_owner_id === account?.user_id &&
         (searchValue
           ? collection.playlist_name
               .toLowerCase()
@@ -75,6 +76,7 @@ const AddToCollectionModal = () => {
     isAlbumType,
     account?.albums,
     account?.playlists,
+    account?.user_id,
     currentCollectionId,
     searchValue
   ])

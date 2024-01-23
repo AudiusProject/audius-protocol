@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { env } from 'services/env'
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
 enum Modifier {
@@ -36,7 +37,7 @@ export const useDevModeHotkey = (keyCode: number) => {
 
   const listener = useCallback(() => {
     if (
-      process.env.VITE_ENVIRONMENT === 'production' &&
+      env.ENVIRONMENT === 'production' &&
       (!window.localStorage ||
         !window.localStorage.getItem(ENABLE_DEV_MODE_KEY))
     )

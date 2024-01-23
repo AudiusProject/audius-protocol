@@ -226,7 +226,7 @@ export class OAuth {
     const csrfToken = generateId()
     window.localStorage.setItem(CSRF_TOKEN_KEY, csrfToken)
     const windowOptions =
-      'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=720, top=100, left=100'
+      'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=785, top=100, left=100'
     const originURISafe = encodeURIComponent(window.location.origin)
     const appIdURISafe = encodeURIComponent(
       (this.apiKey || this.config.appName)!
