@@ -26,7 +26,7 @@ export default function createApp(
   app.get('/api/env', (_req: Request, res: Response) => {
     const envData = {
       data: {
-        env: process.env.audius_discprov_env,
+        env: process.env.NODE_ENV,
         ddexKey: process.env.DDEX_KEY,
         optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY
       }
