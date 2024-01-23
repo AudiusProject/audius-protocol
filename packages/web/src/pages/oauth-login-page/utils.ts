@@ -286,6 +286,8 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   state,
   originUrl,
   onError,
+  onWaitForWalletSignature,
+  onReceivedWalletSignature,
   account,
   txParams
 }: {
@@ -300,6 +302,8 @@ export const handleAuthorizeConnectDashboardWallet = async ({
     errorMessage: string
     error?: Error
   }) => void
+  onWaitForWalletSignature: () => void
+  onReceivedWalletSignature: () => void
   account: User
   txParams: ConnectDashboardWalletParams
 }) => {
@@ -358,7 +362,9 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   )
 
   // Listen for message from origin containing wallet signature
+  onWaitForWalletSignature()
   const walletSignature = await receiveWalletSignaturePromise
+  onReceivedWalletSignature()
   window.removeEventListener('message', walletSignatureListener)
   // Send the transaction
   try {
@@ -421,7 +427,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
 }) => {
   const sdk = await audiusSdk()
   try {
-    const isCorrectUser = getIsUserConnectedToDashboardWallet({
+    const isCorrectUser = await getIsUserConnectedToDashboardWallet({
       userId: account.user_id,
       wallet: txParams.wallet
     })
@@ -430,7 +436,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
         isUserError: true,
         errorMessage: messages.disconnectDashboardWalletWrongUserError
       })
-      return
+      return false
     }
     await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
       wallet: txParams.wallet,
