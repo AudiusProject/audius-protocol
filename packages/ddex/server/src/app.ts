@@ -28,8 +28,8 @@ export default function createApp(
       data: {
         env: process.env.NODE_ENV,
         ddexKey: process.env.DDEX_KEY,
-        optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY
-      }
+        optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY,
+      },
     }
     res.json(envData)
   })
