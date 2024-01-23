@@ -6,6 +6,7 @@ import {
   TikTokProfile,
   Image
 } from '@audius/common'
+import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'
 
@@ -77,6 +78,7 @@ export const FETCH_FOLLOW_ARTISTS_FAILED = 'SIGN_ON/FETCH_FOLLOW_ARTISTS_FAILED'
 export const SET_FOLLOW_ARTIST_CATEGORY = 'SIGN_ON/SET_FOLLOW_ARTIST_CATEGORY'
 export const ADD_FOLLOW_ARTISTS = 'SIGN_ON/ADD_FOLLOW_ARTISTS'
 export const REMOVE_FOLLOW_ARTISTS = 'SIGN_ON/REMOVE_FOLLOW_ARTISTS'
+export const COMPLETE_FOLLOW_ARTISTS = 'SIGN_ON/COMPLETE_FOLLOW_ARTISTS'
 
 export const SEND_WELCOME_EMAIL = 'SIGN_ON/SEND_WELCOME_EMAIL'
 
@@ -375,8 +377,11 @@ export function setTikTokProfileError(error: string) {
  * Follows users in signup flow after user is created
  * @param userIds array of userIds to follow
  */
-export function followArtists(userIds: ID[]) {
-  return { type: FOLLOW_ARTISTS, userIds }
+export function followArtists(
+  userIds: ID[],
+  skipDefaultFollows: boolean = false
+) {
+  return { type: FOLLOW_ARTISTS, userIds, skipDefaultFollows }
 }
 
 /**
@@ -484,3 +489,9 @@ export const setReferrer = (userId: ID) => ({
   type: SET_REFERRER,
   userId
 })
+
+/*
+ * Triggers completeFollowArtists saga that determines the best way to follow artists based on
+ * the potentially ongoing account creation logic
+ */
+export const completeFollowArtists = createCustomAction(COMPLETE_FOLLOW_ARTISTS)

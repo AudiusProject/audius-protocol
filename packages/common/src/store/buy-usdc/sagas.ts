@@ -8,6 +8,7 @@ import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { PurchaseVendor } from 'models/PurchaseContent'
+import { Status } from 'models/Status'
 import {
   createPaymentRouterRouteTransaction,
   createTransferToUserBankTransaction,
@@ -44,7 +45,6 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
-import { Status } from 'models/Status'
 
 type PurchaseStepParams = {
   desiredAmount: number
