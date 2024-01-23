@@ -23,7 +23,6 @@ import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { env } from 'services/env'
 import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
@@ -152,7 +151,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
   const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
-      const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
+      const featuredContent = await fetchExploreContent()
       const ids = featuredContent.featuredPlaylists
       const playlists = audiusBackendInstance.getPlaylists(
         null,

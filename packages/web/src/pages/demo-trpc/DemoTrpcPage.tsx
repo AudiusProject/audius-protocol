@@ -5,7 +5,6 @@ import { RouterInput } from '@audius/trpc-server'
 import { useSelector } from 'react-redux'
 import { create } from 'zustand'
 
-import { env } from 'services/env'
 import { trpc } from 'utils/trpcClientWeb'
 
 // ==================== Store ====================
@@ -508,7 +507,7 @@ export function CidImage({
   }
 
   const host =
-    env.ENVIRONMENT === 'staging'
+    process.env.VITE_ENVIRONMENT === 'staging'
       ? 'https://creatornode12.staging.audius.co'
       : 'https://creatornode2.audius.co'
 

@@ -21,13 +21,16 @@ const {
 } = explorePageActions
 const { getPlaylistIds, getProfileIds } = explorePageSelectors
 
+const EXPLORE_CONTENT_URL =
+  process.env.VITE_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
+
 type ExploreContent = {
   featuredPlaylists: ID[]
   featuredProfiles: ID[]
 }
 
 export const fetchExploreContent = async (
-  exploreContentUrl: string = STATIC_EXPLORE_CONTENT_URL
+  exploreContentUrl = EXPLORE_CONTENT_URL
 ): Promise<ExploreContent> => {
   const response = await fetch(exploreContentUrl)
   return await response.json()

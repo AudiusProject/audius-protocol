@@ -8,8 +8,6 @@ import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
-import { env as APP_ENV } from './src/services/env'
-
 const fixAcceptHeader404 = () => ({
   // Fix issue with vite dev server and `wait-on`
   // https://github.com/vitejs/vite/issues/9520
@@ -29,10 +27,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
-  env.VITE_BASENAME = env.VITE_BASENAME ?? ''
+  env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
-    base: env.VITE_BASENAME || '/',
+    base: env.VITE_PUBLIC_URL || '/',
     build: {
       outDir: 'build',
       sourcemap: true,
@@ -79,21 +77,6 @@ export default defineConfig(({ mode }) => {
               code: `export default ${str}`
             }
           }
-        }
-      },
-      {
-        transformIndexHtml(html) {
-          // Replace HTML env vars with values from the system env
-          return html.replace(/%(\S+?)%/g, (text: string, key) => {
-            if (key in APP_ENV) {
-              const value = APP_ENV[key as keyof typeof APP_ENV]
-              if (value !== null) {
-                return value as string
-              }
-            }
-            console.warn(`Missing environment variable: ${key}`)
-            return text
-          })
         }
       },
       react({

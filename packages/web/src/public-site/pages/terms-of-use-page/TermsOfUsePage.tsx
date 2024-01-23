@@ -1,10 +1,9 @@
 import Footer from 'public-site/components/Footer'
 import NavBanner from 'public-site/components/NavBanner'
-import { env } from 'services/env'
 
 import styles from './TermsOfUsePage.module.css'
 
-const BASENAME = env.BASENAME
+const BASENAME = process.env.VITE_PUBLIC_URL
 
 const messages = {
   download: 'Download Terms of Use'

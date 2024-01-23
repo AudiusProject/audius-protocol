@@ -8,7 +8,6 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { env } from 'services/env'
 import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
@@ -23,8 +22,8 @@ const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
 
-const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = env.ENVIRONMENT === 'production'
+const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 export const AppInner = () => {
   const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(

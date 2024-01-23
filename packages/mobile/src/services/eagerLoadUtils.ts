@@ -5,8 +5,7 @@
 
 import { getEagerDiscprov, makeEagerRequest } from '@audius/common'
 
-import { env } from 'app/env'
-
+import { env } from './env'
 import { audiusLibs, waitForLibsInit } from './libs'
 import { localStorage } from './local-storage'
 

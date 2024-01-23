@@ -1,11 +1,10 @@
 import { FingerprintClient } from '@audius/common'
 import { FingerprintJsProAgent } from '@fingerprintjs/fingerprintjs-pro-react-native'
+import Config from 'react-native-config'
 
-import { env } from 'app/env'
-
-const apiKey = env.FINGERPRINT_PUBLIC_API_KEY || ''
-const endpoint = env.FINGERPRINT_ENDPOINT || ''
-const identityService = env.IDENTITY_SERVICE || ''
+const apiKey = Config.FINGERPRINT_PUBLIC_API_KEY || ''
+const endpoint = Config.FINGERPRINT_ENDPOINT || ''
+const identityService = Config.IDENTITY_SERVICE || ''
 
 export const fingerprintClient = new FingerprintClient<FingerprintJsProAgent>({
   apiKey,

@@ -4,12 +4,11 @@ import { accountSelectors } from '@audius/common'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'
-import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
 
 import styles from './FbSharePage.module.css'
 
-const PUBLIC_HOSTNAME = env.PUBLIC_HOSTNAME
+const PUBLIC_HOSTNAME = process.env.VITE_PUBLIC_HOSTNAME
 
 const messages = {
   share: 'Share your profile with your friends on Facebook!'

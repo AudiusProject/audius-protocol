@@ -1,24 +1,18 @@
-import { Env, ID, encodeUrlName, getHash } from '@audius/common'
+import { ID, encodeUrlName, getHash } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-// TODO: Move routing to @audius/common with an injected env
-// so that it can properly handle routing to the correct environment.
-// These values are defaulted to the production context.
-const env: Partial<Env> = {
-  BASENAME: '/',
-  USE_HASH_ROUTING: false,
-  PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_HOSTNAME: 'audius.co'
-}
-
-const USE_HASH_ROUTING = env.USE_HASH_ROUTING
+const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
 
 // Host/protocol.
-export const BASE_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
-export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
-export const BASENAME = env.BASENAME
+export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_PUBLIC_HOSTNAME || 'audius.co'
+}`
+export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_GA_HOSTNAME || 'audius.co'
+}`
+export const BASENAME = process.env.VITE_PUBLIC_URL
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
