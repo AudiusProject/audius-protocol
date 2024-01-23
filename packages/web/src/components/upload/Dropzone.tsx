@@ -1,4 +1,4 @@
-import { TextLink } from '@audius/harmony'
+import { Text, TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -18,10 +18,12 @@ type DropzoneProps = {
   className?: string
   messageClassName?: string
   titleTextClassName?: string
+  subtitleTextClassName?: string
   iconClassName?: string
   type?: 'track' | 'image' | 'stem'
   // Extra text content to be displayed inside the dropzone.
   textAboveIcon?: string
+  subtextAboveIcon?: string
   subtitle?: string
   allowMultiple?: boolean
   /**
@@ -40,10 +42,12 @@ type DropzoneProps = {
 export const Dropzone = ({
   className,
   titleTextClassName,
+  subtitleTextClassName,
   messageClassName,
   iconClassName,
   type = 'track',
   textAboveIcon,
+  subtextAboveIcon,
   allowMultiple = true,
   onDropAccepted,
   onDropRejected,
@@ -93,6 +97,11 @@ export const Dropzone = ({
             <div className={cn(styles.textAboveIcon, titleTextClassName)}>
               {textAboveIcon}
             </div>
+          ) : null}
+          {subtextAboveIcon ? (
+            <Text size='s' variant='body' className={subtitleTextClassName}>
+              {subtextAboveIcon}
+            </Text>
           ) : null}
           <IconUpload className={cn(styles.iconUpload, iconClassName)} />
           <div className={cn(styles.text, messageClassName)}>

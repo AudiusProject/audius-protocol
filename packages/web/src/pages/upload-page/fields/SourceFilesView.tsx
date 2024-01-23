@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
 import {
+  FeatureFlags,
   StemCategory,
   stemCategoryFriendlyNames,
-  StemUpload
+  StemUpload,
+  useFeatureFlag
 } from '@audius/common'
 import { IconRemove, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -18,7 +20,8 @@ import styles from './SourceFilesView.module.css'
 const MAX_ROWS = 10
 
 const messages = {
-  sourceFiles: 'SOURCE FILES',
+  additionalFiles: 'UPLOAD ADDITIONAL FILES',
+  audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
   maxCapacity: 'Reached upload limit of 10 files.'
 }
 
@@ -35,6 +38,10 @@ export const SourceFilesView = ({
   onSelectCategory,
   onDeleteStem
 }: SourceFilesViewProps) => {
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
   const renderCurrentStems = () => {
     return (
       <ul className={styles.stemListItems}>
@@ -75,7 +82,10 @@ export const SourceFilesView = ({
         iconClassName={cn(styles.dropzoneIcon, {
           [styles.dropzoneDisabled]: atCapacity
         })}
-        textAboveIcon={messages.sourceFiles}
+        textAboveIcon={messages.additionalFiles}
+        subtextAboveIcon={
+          isLosslessDownloadsEnabled ? messages.audioQuality : undefined
+        }
         onDropAccepted={onAdd}
         type='stem'
         subtitle={atCapacity ? messages.maxCapacity : undefined}

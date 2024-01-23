@@ -1,6 +1,6 @@
 import {
   AccessConditions,
-  TrackAvailabilityType,
+  StreamTrackAvailabilityType,
   collectiblesSelectors,
   useAccessAndRemixSettings
 } from '@audius/common'
@@ -56,7 +56,7 @@ export const CollectibleGatedRadioField = (
     <ModalRadioItem
       icon={<IconCollectible />}
       label={messages.collectibleGated}
-      value={TrackAvailabilityType.COLLECTIBLE_GATED}
+      value={StreamTrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={disabled}
       hintContent={disabled ? messages.noCollectibles : undefined}
       description={

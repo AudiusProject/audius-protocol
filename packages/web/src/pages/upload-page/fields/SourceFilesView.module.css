@@ -50,6 +50,10 @@
   width: 32px;
 }
 
+.dropzoneIcon g path {
+  fill: var(--neutral-light-4);
+}
+
 .deleteButton {
   margin-left: auto;
   margin-right: 22px;

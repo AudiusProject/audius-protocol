@@ -10,7 +10,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   Nullable,
-  TrackAvailabilityType,
+  StreamTrackAvailabilityType,
   USDCPurchaseConfig,
   useUSDCPurchaseConfig,
   useAccessAndRemixSettings,
@@ -123,8 +123,9 @@ export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
 export const IS_UNLISTED = 'is_unlisted'
 export const IS_STREAM_GATED = 'is_stream_gated'
 export const STREAM_CONDITIONS = 'stream_conditions'
-
-export const AVAILABILITY_TYPE = 'availability_type'
+export const IS_DOWNLOAD_GATED = 'is_download_gated'
+export const DOWNLOAD_CONDITIONS = 'download_conditions'
+export const STREAM_AVAILABILITY_TYPE = 'stream_availability_type'
 export const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const FIELD_VISIBILITY = 'field_visibility'
 export const PRICE = 'stream_conditions.usdc_purchase.price'
@@ -133,7 +134,7 @@ export const PREVIEW = 'preview_start_seconds'
 
 export type AccessAndSaleFormValues = {
   [IS_UNLISTED]: boolean
-  [AVAILABILITY_TYPE]: TrackAvailabilityType
+  [STREAM_AVAILABILITY_TYPE]: StreamTrackAvailabilityType
   [STREAM_CONDITIONS]: Nullable<AccessConditions>
   [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
   [FIELD_VISIBILITY]: FieldVisibility
@@ -156,14 +157,14 @@ export const AccessAndSaleFormSchema = (
       [PREVIEW]: z.optional(
         z.nullable(z.number({ invalid_type_error: messages.required }))
       ),
-      [AVAILABILITY_TYPE]: z.nativeEnum(TrackAvailabilityType)
+      [STREAM_AVAILABILITY_TYPE]: z.nativeEnum(StreamTrackAvailabilityType)
     })
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
         const streamConditions = formValues[STREAM_CONDITIONS]
         if (
-          formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
           isContentUSDCPurchaseGated(streamConditions)
         ) {
           const { price } = streamConditions.usdc_purchase
@@ -181,7 +182,7 @@ export const AccessAndSaleFormSchema = (
         const formValues = values as AccessAndSaleFormValues
         const streamConditions = formValues[STREAM_CONDITIONS]
         if (
-          formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
           isContentUSDCPurchaseGated(streamConditions)
         ) {
           return streamConditions.usdc_purchase.price <= maxContentPriceCents
@@ -196,7 +197,7 @@ export const AccessAndSaleFormSchema = (
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
+        if (formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
           return formValues[PREVIEW] !== undefined && formValues[PREVIEW] >= 0
         }
         return true
@@ -206,7 +207,7 @@ export const AccessAndSaleFormSchema = (
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
+        if (formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
           return (
             formValues[PREVIEW] === undefined ||
             isNaN(trackLength) ||
@@ -308,9 +309,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
 
-    let availabilityType = TrackAvailabilityType.PUBLIC
+    let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
-      availabilityType = TrackAvailabilityType.USDC_PURCHASE
+      availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
       set(
         initialValues,
         PRICE_HUMANIZED,
@@ -320,15 +321,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       )
     }
     if (isFollowGated || isTipGated) {
-      availabilityType = TrackAvailabilityType.SPECIAL_ACCESS
+      availabilityType = StreamTrackAvailabilityType.SPECIAL_ACCESS
     }
     if (isCollectibleGated) {
-      availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
+      availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
     if (isUnlisted && !isScheduledRelease) {
-      availabilityType = TrackAvailabilityType.HIDDEN
+      availabilityType = StreamTrackAvailabilityType.HIDDEN
     }
-    set(initialValues, AVAILABILITY_TYPE, availabilityType)
+    set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
     set(initialValues, PREVIEW, preview)
     set(
@@ -349,7 +350,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
-      const availabilityType = get(values, AVAILABILITY_TYPE)
+      const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
@@ -366,7 +367,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
-        case TrackAvailabilityType.USDC_PURCHASE: {
+        case StreamTrackAvailabilityType.USDC_PURCHASE: {
           setPreviewValue(preview ?? 0)
           const {
             usdc_purchase: { price }
@@ -378,7 +379,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsStreamGated(true)
           break
         }
-        case TrackAvailabilityType.SPECIAL_ACCESS: {
+        case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
             const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
@@ -389,14 +390,14 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsStreamGated(true)
           break
         }
-        case TrackAvailabilityType.COLLECTIBLE_GATED: {
+        case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
           const { nft_collection } =
             streamConditions as CollectibleGatedConditions
           setStreamConditionsValue({ nft_collection })
           setIsStreamGated(true)
           break
         }
-        case TrackAvailabilityType.HIDDEN: {
+        case StreamTrackAvailabilityType.HIDDEN: {
           setFieldVisibilityValue({
             ...(fieldVisibility ?? undefined),
             remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
@@ -404,7 +405,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsUnlistedValue(true)
           break
         }
-        case TrackAvailabilityType.PUBLIC: {
+        case StreamTrackAvailabilityType.PUBLIC: {
           setIsUnlistedValue(false)
           break
         }
@@ -563,7 +564,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   )
 
   const [availabilityField] = useField({
-    name: AVAILABILITY_TYPE
+    name: STREAM_AVAILABILITY_TYPE
   })
 
   const { noSpecialAccessGate, noSpecialAccessGateFields, noHidden } =
@@ -584,7 +585,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}
           description={messages.publicSubtitle}
-          value={TrackAvailabilityType.PUBLIC}
+          value={StreamTrackAvailabilityType.PUBLIC}
         />
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
@@ -600,7 +601,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             icon={<IconSpecialAccess />}
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
-            value={TrackAvailabilityType.SPECIAL_ACCESS}
+            value={StreamTrackAvailabilityType.SPECIAL_ACCESS}
             disabled={noSpecialAccessGate}
             checkedContent={
               <SpecialAccessFields disabled={noSpecialAccessGateFields} />
@@ -618,7 +619,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         <ModalRadioItem
           icon={<IconHidden />}
           label={messages.hidden}
-          value={TrackAvailabilityType.HIDDEN}
+          value={StreamTrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
           disabled={noHidden}
           // isInitiallyUnlisted is undefined on create

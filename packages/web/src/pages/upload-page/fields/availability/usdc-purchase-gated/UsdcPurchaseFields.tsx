@@ -13,13 +13,10 @@ import {
 import cn from 'classnames'
 import { useField } from 'formik'
 
-import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
 import { PREVIEW, PRICE } from '../../AccessAndSaleField'
-
-import styles from './UsdcPurchaseFields.module.css'
+import { BoxedTextField } from '../../BoxedTextField'
 
 const messages = {
   price: {
@@ -45,7 +42,7 @@ export enum UsdcPurchaseType {
   FOLLOW = 'follow'
 }
 
-type TrackAvailabilityFieldsProps = {
+export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
 }
 
@@ -130,25 +127,5 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
       onBlur={handlePriceBlur}
       disabled={disabled}
     />
-  )
-}
-
-type BoxedTextFieldProps = {
-  title: string
-  description: string
-} & TextFieldProps
-
-const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, ...inputProps } = props
-  return (
-    <div
-      className={cn(styles.inputContainer, layoutStyles.col, layoutStyles.gap4)}
-    >
-      <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
-        <Text variant='title'>{title}</Text>
-        <Text>{description}</Text>
-      </div>
-      <TextField inputRootClassName={styles.inputRoot} {...inputProps} />
-    </div>
   )
 }

@@ -4,7 +4,7 @@ import {
   Chain,
   collectiblesSelectors,
   isContentCollectibleGated,
-  TrackAvailabilityType
+  StreamTrackAvailabilityType
 } from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -14,7 +14,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
   AccessAndSaleFormValues,
-  AVAILABILITY_TYPE,
+  STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
 } from '../../AccessAndSaleField'
 
@@ -37,7 +37,7 @@ type CollectibleGatedFieldsProps = {
 export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   const { disabled } = props
   const [, , { setValue: setAvailabilityValue }] = useField({
-    name: AVAILABILITY_TYPE
+    name: STREAM_AVAILABILITY_TYPE
   })
   const [
     { value: streamConditionsValue },
@@ -147,7 +147,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
                 slug: value
               }
             })
-            setAvailabilityValue(TrackAvailabilityType.COLLECTIBLE_GATED)
+            setAvailabilityValue(StreamTrackAvailabilityType.COLLECTIBLE_GATED)
           } else if (solCollectionMap[value]) {
             setStreamConditionsValue({
               nft_collection: {
@@ -158,7 +158,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
                 externalLink: solCollectionMap[value].externalLink
               }
             })
-            setAvailabilityValue(TrackAvailabilityType.COLLECTIBLE_GATED)
+            setAvailabilityValue(StreamTrackAvailabilityType.COLLECTIBLE_GATED)
           }
         }}
         size='large'
