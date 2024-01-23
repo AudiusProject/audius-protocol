@@ -1,8 +1,9 @@
-import { ReactNode } from 'react'
-
 import { Flex, Text } from '@audius/harmony'
+
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
 import { messages } from '../messages'
+
 import styles from './ApproveTransactionScreen.module.css'
 
 type ApproveTransactionScreenProps = {
