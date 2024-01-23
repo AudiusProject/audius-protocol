@@ -52,6 +52,7 @@ export default interface SignOnPageState {
   verified: boolean
   useMetaMask: boolean
   accountReady: boolean
+  accountAlreadyExisted: boolean
   twitterId: string
   tikTokId: string
   instagramId: string
