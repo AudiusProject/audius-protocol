@@ -786,7 +786,9 @@ describe('discoveryNodeSelector', () => {
       })
       const nodes = await selector.getUniquelyOwnedEndpoints(3)
       expect(nodes.length).toBe(3)
-      expect(nodes.every((n) => n === HEALTHY_NODE)).toBe(true)
+      expect(nodes).toContain(healthyNodes[0])
+      expect(nodes).toContain(healthyNodes[1])
+      expect(nodes).toContain(healthyNodes[2])
     })
 
     test('filters to allowlist', async () => {
