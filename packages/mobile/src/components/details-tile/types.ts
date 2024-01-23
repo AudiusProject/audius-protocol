@@ -71,8 +71,8 @@ export type DetailsTileProps = {
   /** Is the item loaded and in a playable state */
   isPlayable?: boolean
 
-  /** Is the tile being loaded for a playlist */
-  isPlaylist?: boolean
+  /** Is the tile being loaded for a collection */
+  isCollection?: boolean
 
   /** Is the item loaded published */
   isPublished?: boolean

@@ -96,6 +96,9 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       navigation?.push('Profile', { handle })
     },
+    [OverflowAction.EDIT_ALBUM]: () => {
+      navigation?.push('EditPlaylist', { id })
+    },
     [OverflowAction.EDIT_PLAYLIST]: () => {
       navigation?.push('EditPlaylist', { id })
     },
