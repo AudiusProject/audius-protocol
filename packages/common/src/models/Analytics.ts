@@ -69,7 +69,7 @@ export enum Name {
   CREATE_ACCOUNT_SELECT_GENRE = 'CREATE_ACCOUNT_SELECT_GENRE',
   // When the user clicks follow on a specific user on the follow artists page
   CREATE_ACCOUNT_FOLLOW_ARTIST = 'Create Account: Follow Artist',
-  // When the user clicks follow on a specific user on the follow artists page
+  // When the user clicks to preview a song from an artist on the follow artists page
   CREATE_ACCOUNT_ARTIST_PREVIEWED = 'Create Account: Artist Previewed',
   // When the user continues past the follow page
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
