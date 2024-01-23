@@ -35,13 +35,19 @@ export const EditableLabel = ({
         defaultValue={value}
         onChange={handleChange}
         onBlur={handleBlur}
-        style={{ flex: '1 1 0', border: 'none', background: 'none' }}
+        style={{
+          flex: '1 1 0',
+          border: 'none',
+          background: 'none',
+          fontSize: 14,
+          fontWeight: 500
+        }}
         autoFocus
       />
     )
   }
   return (
-    <Text size='s' css={{ flex: '1 1 0' }}>
+    <Text size='s' variant='body' css={{ flex: '1 1 0' }}>
       {value}
     </Text>
   )
