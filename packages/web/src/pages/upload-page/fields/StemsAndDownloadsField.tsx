@@ -19,15 +19,15 @@ import {
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
 
-import {
-  SourceFilesView,
-  dropdownRows as stemCategories
-} from '../fields/SourceFilesView'
-import { SwitchRowField } from '../fields/SwitchRowField'
 import { useTrackField } from '../hooks'
 import { processFiles } from '../store/utils/processFiles'
 
-import styles from './SourceFilesField.module.css'
+import {
+  SourceFilesView,
+  dropdownRows as stemCategories
+} from './SourceFilesView'
+import styles from './StemsAndDownloadsField.module.css'
+import { SwitchRowField } from './SwitchRowField'
 
 const ALLOW_DOWNLOAD_BASE = 'is_downloadable'
 const ALLOW_DOWNLOAD = 'download.is_downloadable'
@@ -38,9 +38,9 @@ const CID = 'download.cid'
 const STEMS = 'stems'
 
 const messages = {
-  title: 'Stems & Source Files',
+  title: 'Stems & Downloads',
   description:
-    'Upload your stems and source files to help your fans remix your tracks!',
+    'Upload your track’s source files and customize how fans download your files.',
   previewDescription:
     'Upload stems and source files for your music, enabling others to create remixes with ease.',
   [ALLOW_DOWNLOAD]: {
@@ -65,7 +65,7 @@ export type SourceFilesFormValues = {
   [STEMS]: StemUpload[]
 }
 
-export const SourceFilesField = () => {
+export const StemsAndDownloadsField = () => {
   const [{ value: allowDownloadValue }, , { setValue: setAllowDownloadValue }] =
     useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
   const [{ value: followerGatedValue }, , { setValue: setFollowerGatedValue }] =

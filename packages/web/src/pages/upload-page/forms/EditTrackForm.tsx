@@ -24,7 +24,7 @@ import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from '../fields/RemixSettingsField'
-import { SourceFilesField } from '../fields/SourceFilesField'
+import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
@@ -147,7 +147,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               )}
               <AccessAndSaleField isUpload />
               <AttributionField />
-              <SourceFilesField />
+              <StemsAndDownloadsField />
               <RemixSettingsField />
             </div>
             <PreviewButton
