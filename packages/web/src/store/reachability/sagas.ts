@@ -1,12 +1,14 @@
-import { reachabilityActions, reachabilitySelectors } from '@audius/common'
+import {
+  reachabilityActions,
+  reachabilitySelectors,
+  getContext
+} from '@audius/common'
 import { delay, race, put, all, take, select, call } from 'typed-redux-saga'
 
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions
-
-const REACHABILITY_URL = process.env.VITE_REACHABILITY_URL
 
 // Property values borrowed from
 // https://github.com/react-native-community/react-native-netinfo
@@ -19,6 +21,7 @@ const isResponseValid = (response: Response | undefined) =>
   response && response.ok
 
 function* ping() {
+  const { REACHABILITY_URL } = yield* getContext('env')
   // If there's no reachability url available, consider ourselves reachable
   if (!REACHABILITY_URL) {
     console.warn('No reachability url provided')

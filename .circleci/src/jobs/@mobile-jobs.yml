@@ -8,13 +8,11 @@ mobile-init:
         name: copy staging env
         command: |
           cd packages/mobile
-          echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.stage
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_STAGE" >> .env.stage
     - run:
         name: copy production env
         command: |
           cd packages/mobile
-          echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
 
     - create_concatenated_patch_file:

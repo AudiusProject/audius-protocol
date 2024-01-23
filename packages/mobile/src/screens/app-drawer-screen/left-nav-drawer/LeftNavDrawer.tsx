@@ -9,7 +9,6 @@ import {
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
-import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
@@ -22,6 +21,7 @@ import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
 import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
+import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { spacing } from 'app/styles/spacing'
@@ -35,7 +35,7 @@ import { VanityMetrics } from './VanityMetrics'
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
-const isStaging = Config.ENVIRONMENT === 'staging'
+const isStaging = env.ENVIRONMENT === 'staging'
 
 const messages = {
   profile: 'Your Profile',

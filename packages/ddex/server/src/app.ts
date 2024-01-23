@@ -23,6 +23,16 @@ export default function createApp(
    * Define API routes
    */
 
+  app.get('/api/env', (_req: Request, res: Response) => {
+    const envData = {
+      data: {
+        env: process.env.NODE_ENV,
+        ddexKey: process.env.DDEX_KEY,
+        optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY,
+      },
+    }
+    res.json(envData)
+  })
   app.get('/api/releases', uploadController.getReleases(sql))
   app.get('/api/uploads', uploadController.getUploads(sql))
   app.post('/api/upload', uploadController.postUploadXml(xmlProcessorService))

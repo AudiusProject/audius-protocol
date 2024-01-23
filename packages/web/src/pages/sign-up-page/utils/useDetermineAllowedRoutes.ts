@@ -81,6 +81,9 @@ export const useDetermineAllowedRoute = () => {
     // If requested route is allowed return that, otherwise return the last step in the route stack
     const correctedPath = isAllowedRoute
       ? attemptedPath
+      : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
+      attemptedPath === '/signup'
+      ? allowedRoutes[0]
       : allowedRoutes[allowedRoutes.length - 1]
 
     if (correctedPath === SignUpPath.completedRedirect) {

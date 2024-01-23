@@ -6,12 +6,11 @@ import {
   socialMediaMessages,
   useAudiusQueryContext
 } from '@audius/common'
-import Config from 'react-native-config'
 import { useAsync } from 'react-use'
 
 import { SocialButton } from '@audius/harmony-native'
+import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
-import { env } from 'app/services/env'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 
@@ -37,8 +36,8 @@ const twitterApi = {
   credentialsType: 'same-origin' as CredentialsType,
   headers: {
     'Content-Type': 'application/json',
-    origin: Config.AUDIUS_URL!,
-    referrer: Config.AUDIUS_URL!
+    origin: env.AUDIUS_URL,
+    referrer: env.AUDIUS_URL
   }
 }
 

@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react'
 
 import {
   Genre,
-  ID,
   Status,
   convertGenreLabelToValue,
   useGetFeaturedArtists,
@@ -18,7 +17,10 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { addFollowArtists } from 'common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  completeFollowArtists
+} from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -46,7 +48,7 @@ import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPrevi
 const AnimatedFlex = animated(Flex)
 
 type SelectArtistsValues = {
-  selectedArtists: ID[]
+  selectedArtists: string[]
 }
 
 const initialValues: SelectArtistsValues = {
@@ -69,7 +71,9 @@ export const SelectArtistsPage = () => {
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
-      dispatch(addFollowArtists([...selectedArtists]))
+      const artistsIDArray = [...selectedArtists].map((a) => Number(a))
+      dispatch(addFollowArtists(artistsIDArray))
+      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {

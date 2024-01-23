@@ -8,7 +8,7 @@
 !/public/scripts/sw.js
 
 # env
-.env/.env.dev.local
+env/.env.dev.local
 
 # testing
 /coverage
