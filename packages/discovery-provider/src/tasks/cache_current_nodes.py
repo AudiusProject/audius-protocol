@@ -1,7 +1,7 @@
 import logging
 
 from src.tasks.celery_app import celery
-from src.utils.get_all_other_nodes import (
+from src.utils.get_all_nodes import (
     ALL_CONTENT_NODES_CACHE_KEY,
     ALL_DISCOVERY_NODES_CACHE_KEY,
     ALL_HEALTHY_CONTENT_NODES_CACHE_KEY,

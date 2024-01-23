@@ -60,8 +60,8 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
     ).call()
 
     ids_list = list(range(1, num_nodes + 1))
-    all_other_nodes = []
-    all_other_wallets = []
+    all_nodes = []
+    all_wallets = []
 
     # fetch all nodes' info in parallel
     async def fetch_results():
@@ -82,14 +82,14 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
             wallet = node_info[3]
             endpoint = node_info[1]
             if is_fqdn(endpoint):
-                all_other_nodes.append(endpoint)
-                all_other_wallets.append(wallet)
+                all_nodes.append(endpoint)
+                all_wallets.append(wallet)
         except Exception as e:
             logger.error(
-                f"get_all_other_nodes.py | ERROR in fetching node info {node_info} generated {e}"
+                f"get_all_nodes.py | ERROR in fetching node info {node_info} generated {e}"
             )
 
-    return all_other_nodes, all_other_wallets
+    return all_nodes, all_wallets
 
 
 def get_all_discovery_nodes() -> Tuple[List[str], List[str]]:

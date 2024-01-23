@@ -79,7 +79,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
-from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
+from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash

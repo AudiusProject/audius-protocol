@@ -24,7 +24,7 @@ from src.tasks.index_oracles import (
     oracle_addresses_key,
 )
 from src.utils.config import shared_config
-from src.utils.get_all_other_nodes import get_all_discovery_nodes_cached
+from src.utils.get_all_nodes import get_all_discovery_nodes_cached
 from src.utils.redis_connection import get_redis
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]

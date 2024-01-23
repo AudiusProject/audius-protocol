@@ -4,7 +4,7 @@ import requests
 from flask import Blueprint
 
 from src.api_helpers import success_response
-from src.utils.get_all_other_nodes import get_all_discovery_nodes_cached
+from src.utils.get_all_nodes import get_all_discovery_nodes_cached
 from src.utils.redis_cache import cache, internal_api_cache_prefix
 from src.utils.redis_connection import get_redis
 

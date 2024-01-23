@@ -11,7 +11,8 @@ from src.queries.update_historical_metrics import (
     update_historical_monthly_route_metrics,
 )
 from src.tasks.celery_app import celery
-from src.utils.get_all_other_nodes import get_all_discovery_nodes_cached
+from src.utils.config import shared_config
+from src.utils.get_all_nodes import get_all_discovery_nodes_cached
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -76,7 +77,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     and merge with this node's metrics so that this node will be aware
     of all the metrics across users hitting different providers
     """
-    all_other_nodes = get_all_discovery_nodes_cached(redis) or []
+    all_nodes = get_all_discovery_nodes_cached(redis) or []
 
     visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
@@ -126,7 +127,10 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     merge_app_metrics(new_personal_app_metrics, end_time, db)
 
     # Merge & persist metrics for other nodes
-    for node in all_other_nodes:
+    for node in all_nodes:
+        # Skip self
+        if node["delegateOwnerWallet"] == shared_config["delegate"]["owner_wallet"]:
+            continue
         start_time_str = (
             visited_node_timestamps[node["endpoint"]]
             if node["endpoint"] in visited_node_timestamps
@@ -237,8 +241,8 @@ def synchronize_all_node_metrics(self, db, redis):
     monthly_route_metrics = {}
     daily_app_metrics = {}
     monthly_app_metrics = {}
-    all_other_nodes = get_all_discovery_nodes_cached(redis) or []
-    for node in all_other_nodes:
+    all_nodes = get_all_discovery_nodes_cached(redis) or []
+    for node in all_nodes:
         historical_metrics = get_historical_metrics(node["endpoint"])
         logger.debug(
             f"got historical metrics from {node['endpoint']}: {historical_metrics}"
