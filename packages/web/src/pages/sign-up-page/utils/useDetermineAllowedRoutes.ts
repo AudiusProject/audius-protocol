@@ -2,11 +2,14 @@ import { accountSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getSignOn } from 'common/store/pages/signon/selectors'
+import {
+  getAccountAlreadyExisted,
+  getSignOn
+} from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { SignUpPath } from 'utils/route'
 
-const { getHasAccount } = accountSelectors
+const { getAccountUser } = accountSelectors
 
 /**
  * Checks against existing sign up redux state,
@@ -16,7 +19,9 @@ const { getHasAccount } = accountSelectors
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const hasAccount = useSelector(getHasAccount)
+  const user = useSelector(getAccountUser)
+  const hasAccount = !!user
+  const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
 
@@ -28,6 +33,13 @@ export const useDetermineAllowedRoute = () => {
     isAllowedRoute: boolean
     correctedRoute: string
   } => {
+    if (user?.followee_count && user?.followee_count >= 3) {
+      return {
+        allowedRoutes: [],
+        isAllowedRoute: false,
+        correctedRoute: `/trending`
+      }
+    }
     const attemptedPath = requestedRoute.replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
     let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
@@ -79,12 +91,15 @@ export const useDetermineAllowedRoute = () => {
 
     const isAllowedRoute = allowedRoutes.includes(attemptedPath)
     // If requested route is allowed return that, otherwise return the last step in the route stack
-    const correctedPath = isAllowedRoute
-      ? attemptedPath
-      : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
-      attemptedPath === '/signup'
-      ? allowedRoutes[0]
-      : allowedRoutes[allowedRoutes.length - 1]
+    const correctedPath =
+      attemptedPath === '/signup' && hasAlreadySignedUp
+        ? allowedRoutes[allowedRoutes.length - 1]
+        : isAllowedRoute
+        ? attemptedPath
+        : // IF we attempted to go to /signup directly, that means it was a link from somewhere else in the app, so we should start back at the beginning
+        attemptedPath === '/signup'
+        ? allowedRoutes[0]
+        : allowedRoutes[allowedRoutes.length - 1]
 
     if (correctedPath === SignUpPath.completedRedirect) {
       setIsWelcomeModalOpen(true)

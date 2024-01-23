@@ -382,7 +382,9 @@ function* play(lineupActions, lineupSelector, prefix, action) {
   // If preview isn't forced, check for track acccess and switch to preview
   // if the user doesn't have access but the track is previewable
   if (!isPreview && requestedPlayTrack?.is_stream_gated) {
-    const hasAccess = !!requestedPlayTrack?.access?.stream
+    const hasAccess =
+      !requestedPlayTrack?.is_stream_gated ||
+      !!requestedPlayTrack?.access?.stream
     isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
   }
 

@@ -7,7 +7,7 @@ import { matchPath } from 'react-router'
 // so that it can properly handle routing to the correct environment.
 // These values are defaulted to the production context.
 const env: Partial<Env> = {
-  BASENAME: '/',
+  BASENAME: '',
   USE_HASH_ROUTING: false,
   PUBLIC_PROTOCOL: 'https:',
   PUBLIC_HOSTNAME: 'audius.co'

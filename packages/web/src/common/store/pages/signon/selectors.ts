@@ -42,6 +42,8 @@ export const getIsSocialConnected = (state: AppState) =>
   !!state.signOn.tikTokId ||
   !!state.signOn.instagramId
 export const getAccountReady = (state: AppState) => state.signOn.accountReady
+export const getAccountAlreadyExisted = (state: AppState) =>
+  state.signOn.accountAlreadyExisted
 export const getStartedSignUpProcess = (state: AppState) =>
   state.signOn.startedSignUpProcess
 export const getFinishedSignUpProcess = (state: AppState) =>

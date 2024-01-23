@@ -11,6 +11,7 @@ from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetTransactionResp
+from solders.token.associated import get_associated_token_address
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
@@ -78,16 +79,36 @@ logger = StructuredLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
+PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
+
 USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
+
+PAYMENT_ROUTER_PUBKEY = (
+    Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
+)
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
 WAUDIO_PDA, _ = get_base_address(WAUDIO_MINT_PUBKEY, USER_BANK_KEY)
 USDC_PDA, _ = get_base_address(USDC_MINT_PUBKEY, USER_BANK_KEY)
+
+PAYMENT_ROUTER_PDA_PUBKEY, _ = get_base_address(
+    "payment_router".encode("UTF-8"), PAYMENT_ROUTER_PUBKEY
+)
+PAYMENT_ROUTER_USDC_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and USDC_MINT_PUBKEY
+    else None
+)
+PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and WAUDIO_MINT_PUBKEY
+    else None
+)
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
@@ -556,6 +577,10 @@ def process_transfer_instruction(
         logger.error(
             f"index_user_bank.py | Unknown claimableTokenPDA in transaction. Expected {str(WAUDIO_PDA)} or {str(USDC_PDA)} but got {userbank_authority_pda}"
         )
+        return
+
+    if receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS:
+        logger.info(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
         return
 
     user_id_accounts = []

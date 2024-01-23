@@ -17,7 +17,7 @@ import { TwitterButton } from '../twitter-button'
 const messages = {
   success: 'Your purchase was successful!',
   shareTwitterText: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
+    `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   viewTrack: 'View Track'
 }
 
