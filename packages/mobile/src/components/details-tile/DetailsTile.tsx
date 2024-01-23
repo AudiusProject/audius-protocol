@@ -174,7 +174,7 @@ export const DetailsTile = ({
   isPlaying,
   isPreviewing,
   isPlayable = true,
-  isPlaylist = false,
+  isCollection = false,
   isPublished = true,
   isUnlisted = false,
   onPressEdit,
@@ -431,7 +431,7 @@ export const DetailsTile = ({
                   hideRepost={hideRepost}
                   hideShare={hideShare}
                   isOwner={isOwner}
-                  isPlaylist={isPlaylist}
+                  isCollection={isCollection}
                   collectionId={collectionId}
                   isPublished={isPublished}
                   onPressEdit={onPressEdit}

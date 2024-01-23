@@ -20,12 +20,14 @@ import {
   modalsSelectors,
   queueSelectors,
   shareModalUIActions,
-  useEditPlaylistModal
+  useEditPlaylistModal,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -101,6 +103,7 @@ const ConnectedMobileOverflowModal = ({
   unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   // Create callbacks
   const { onOpen: onOpenEditPlaylist } = useEditPlaylistModal()
   const {
@@ -180,9 +183,10 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist: isAlbum
-            ? () => {}
-            : () => onOpenEditPlaylist({ collectionId: id as ID }),
+          onEditPlaylist:
+            !isAlbum || isEditAlbumsEnabled
+              ? () => onOpenEditPlaylist({ collectionId: id as ID })
+              : () => {},
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}

@@ -79,7 +79,7 @@ export const ReviewHandlePage = () => {
       validateOnMount
     >
       {({ isValid }) => (
-        <Page as={Form} transition='horizontal'>
+        <Page as={Form} transition='horizontal' centered>
           <Heading
             heading={messages.heading}
             description={messages.description}

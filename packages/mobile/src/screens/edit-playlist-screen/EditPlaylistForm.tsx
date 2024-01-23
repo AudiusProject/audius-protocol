@@ -1,8 +1,13 @@
 import { useCallback } from 'react'
 
-import { deletePlaylistConfirmationModalUIActions } from '@audius/common'
+import {
+  deletePlaylistConfirmationModalUIActions,
+  useGetCurrentUserId,
+  useGetPlaylistById
+} from '@audius/common'
 import type { EditPlaylistValues } from '@audius/common'
 import type { FormikProps } from 'formik'
+import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -28,12 +33,12 @@ import { TrackListFieldArray } from './TrackListFieldArray'
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 
-const messages = {
-  screenTitle: 'Edit Playlist',
-  deletePlaylist: 'Delete Playlist',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  screenTitle: `Edit ${capitalize(collectionType)}`,
+  deletePlaylist: `Delete ${capitalize(collectionType)}`,
   cancel: 'Cancel',
   save: 'Save'
-}
+})
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   titleContainer: {
@@ -77,6 +82,11 @@ export const EditPlaylistForm = (
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({ playlistId, currentUserId })
+  const collectionType = collection?.is_album ? 'album' : 'playlist'
+  const messages = getMessages(collectionType)
 
   const openDeleteDrawer = useCallback(() => {
     dispatch(openDeletePlaylist({ playlistId }))
