@@ -20,8 +20,6 @@ type State = {
   // Ordering of the indexes of the queue to shuffle through
   shuffleOrder: number[]
 
-  queueAutoplay: boolean
-
   // Whether or not a `next` was fired on the queue that overshoots
   // the length of the queue (`next` from the last track).
   // Reset to false on the next play.
@@ -41,7 +39,6 @@ export const initialState: State = {
   shuffle: false,
   shuffleIndex: -1,
   shuffleOrder: [],
-  queueAutoplay: true,
   overshot: false,
   undershot: false
 }
