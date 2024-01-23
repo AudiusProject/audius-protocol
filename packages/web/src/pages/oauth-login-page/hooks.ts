@@ -474,7 +474,7 @@ export const useOAuthSetup = ({
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
       if ((tx as WriteOnceTx) === 'connect_dashboard_wallet') {
         const sendWalletSignaturePromptToast = () => {
-          toast(messages.approveTxToConnectProfile, 1000 * 60 * 60 * 24)
+          toast(messages.approveTxToConnectProfile, 1000 * 60 * 60 * 24) // 24 hrs
         }
         const success = await handleAuthorizeConnectDashboardWallet({
           state,
