@@ -6,7 +6,7 @@ import Layout from './Layout'
 
 const App = () => {
   return (
-    <Router basename='/ddex'>
+    <Router>
       <Layout>
         <Routes>
           <Route path='/' element={<Ddex />} />
