@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   accountSelectors,
@@ -34,7 +34,6 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
-import { ToastContext } from 'components/toast/ToastContext'
 const { getAccountUser, getAccountStatus } = accountSelectors
 
 export const useParsedQueryParams = () => {
@@ -150,7 +149,9 @@ export const useParsedQueryParams = () => {
 }
 
 export const useOAuthSetup = ({
-  onError
+  onError,
+  onPendingTransactionApproval,
+  onReceiveTransactionApproval
 }: {
   onError: ({
     isUserError,
@@ -161,11 +162,12 @@ export const useOAuthSetup = ({
     errorMessage: string
     error?: Error
   }) => void
+  onPendingTransactionApproval: () => void
+  onReceiveTransactionApproval: () => void
 }) => {
   const record = useRecord()
   const history = useHistory()
   const dispatch = useDispatch()
-  const { toast, clear } = useContext(ToastContext)
 
   const {
     appName: queryParamAppName,
@@ -473,15 +475,12 @@ export const useOAuthSetup = ({
     } else if (scope === 'write_once') {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
       if ((tx as WriteOnceTx) === 'connect_dashboard_wallet') {
-        const sendWalletSignaturePromptToast = () => {
-          toast(messages.approveTxToConnectProfile, 1000 * 60 * 60 * 24) // 24 hrs
-        }
         const success = await handleAuthorizeConnectDashboardWallet({
           state,
           originUrl: parsedOrigin,
           onError,
-          onWaitForWalletSignature: sendWalletSignaturePromptToast,
-          onReceivedWalletSignature: clear,
+          onWaitForWalletSignature: onPendingTransactionApproval,
+          onReceivedWalletSignature: onReceiveTransactionApproval,
           account,
           txParams: txParams!
         })

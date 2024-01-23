@@ -25,6 +25,7 @@ import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
+import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
 
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
@@ -53,6 +54,9 @@ export const OAuthLoginPage = () => {
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
+  const [metaMaskTransactionStatus, setMetaMaskTransactionStatus] = useState<
+    null | 'pending' | 'approved'
+  >(null) // Only applicable when tx = connect_dashboard_wallet
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
@@ -125,7 +129,16 @@ export const OAuthLoginPage = () => {
     error?: Error
   }) => {
     setIsSubmitting(false)
+    setMetaMaskTransactionStatus(null)
     setAndLogGeneralSubmitError(isUserError, errorMessage, error)
+  }
+
+  const handlePendingTransactionApproval = () => {
+    setMetaMaskTransactionStatus('pending')
+  }
+
+  const handleReceiveTransactionApproval = () => {
+    setMetaMaskTransactionStatus('approved')
   }
 
   const {
@@ -139,7 +152,11 @@ export const OAuthLoginPage = () => {
     userEmail,
     authorize,
     txParams
-  } = useOAuthSetup({ onError: handleAuthError })
+  } = useOAuthSetup({
+    onError: handleAuthError,
+    onPendingTransactionApproval: handlePendingTransactionApproval,
+    onReceiveTransactionApproval: handleReceiveTransactionApproval
+  })
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -251,6 +268,10 @@ export const OAuthLoginPage = () => {
         </div>
       </ContentWrapper>
     )
+  }
+
+  if (metaMaskTransactionStatus != null) {
+    return <ApproveTransactionScreen status={metaMaskTransactionStatus} />
   }
 
   return (
