@@ -557,7 +557,27 @@ def populate_track_metadata(
 
 
 def _populate_gated_track_metadata(session, tracks, current_user_id):
-    if not tracks or not current_user_id:
+    if not tracks:
+        return
+    if not current_user_id:
+        for track in tracks:
+            stream_conditions = track.get("stream_conditions")
+            download_conditions = track.get("download_conditions")
+            if not stream_conditions and not download_conditions:
+                track[response_name_constants.access] = {
+                    "stream": True,
+                    "download": True,
+                }
+            elif stream_conditions:
+                track[response_name_constants.access] = {
+                    "stream": False,
+                    "download": False,
+                }
+            elif download_conditions:
+                track[response_name_constants.access] = {
+                    "stream": True,
+                    "download": False,
+                }
         return
 
     current_user_wallet = (
@@ -578,7 +598,8 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
     gated_track_access = {track["track_id"]: defaultdict() for track in tracks}
     gated_tracks = list(
         filter(
-            lambda track: track.get("stream_conditions") or track.get("download_conditions"),
+            lambda track: track.get("stream_conditions")
+            or track.get("download_conditions"),
             tracks,
         )
     )
