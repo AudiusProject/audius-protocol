@@ -3,8 +3,6 @@ import Config from 'react-native-config'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',
-  ADROLL_AVD_ID: null,
-  ADROLL_PIX_ID: null,
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
   AMPLITUDE_PROXY: 'https://gain.audius.co',
   AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
@@ -39,7 +37,7 @@ export const env: Env = {
   FINGERPRINT_ENDPOINT: 'https://fp.staging.audius.co',
   FINGERPRINT_PUBLIC_API_KEY: 'Rz2A3Y5YGSg9K80VgKPi',
   GA_HOSTNAME: 'staging.audius.co',
-  GA_MEASUREMENT_ID: null,
+  GA_MEASUREMENT_ID: 'G-CH6BY2X2WL',
   GENERAL_ADMISSION: 'https://general-admission.staging.audius.co',
   HCAPTCHA_BASE_URL: 'https://staging.audius.co',
   HCAPTCHA_SITE_KEY: '2abe61f1-af6e-4707-be19-a9a4146a9bea',
@@ -74,7 +72,7 @@ export const env: Env = {
   SOLANA_WEB3_CLUSTER: 'mainnet-beta',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
+  TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
   TRPC_ENDPOINT: 'https://discoveryprovider3.staging.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USER_NODE: 'https://usermetadata.staging.audius.co',

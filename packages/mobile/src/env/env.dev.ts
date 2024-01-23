@@ -1,9 +1,8 @@
 import type { Env } from '@audius/common'
+import Config from 'react-native-config'
 
 export const env: Env = {
   AAO_ENDPOINT: 'http://audius-protocol-anti-abuse-oracle-1',
-  ADROLL_AVD_ID: null,
-  ADROLL_PIX_ID: null,
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
   AMPLITUDE_WRITE_KEY: null,
@@ -36,7 +35,7 @@ export const env: Env = {
   FINGERPRINT_ENDPOINT: null,
   FINGERPRINT_PUBLIC_API_KEY: null,
   GA_HOSTNAME: 'staging.audius.co',
-  GA_MEASUREMENT_ID: null,
+  GA_MEASUREMENT_ID: 'G-XXXXX',
   GENERAL_ADMISSION: 'http://audius-protocol-general-admission-1',
   HCAPTCHA_BASE_URL: 'https://staging.audius.co',
   HCAPTCHA_SITE_KEY: '2abe61f1-af6e-4707-be19-a9a4146a9bea',
@@ -72,7 +71,7 @@ export const env: Env = {
   SOLANA_WEB3_CLUSTER: 'devnet',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
+  TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
   TRPC_ENDPOINT: 'http://localhost:2022/trpc',
   USDC_MINT_ADDRESS: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
   USER_NODE: 'http://audius-protocol-creator-node-1',

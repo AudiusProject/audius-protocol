@@ -84,13 +84,16 @@ export default defineConfig(({ mode }) => {
       {
         transformIndexHtml(html) {
           // Replace HTML env vars with values from the system env
-          Object.keys(APP_ENV).forEach((key) => {
-            const value = APP_ENV[key as keyof typeof APP_ENV]
-            if (value && typeof value === 'string') {
-              html = html.replace(new RegExp(`%${key}%`, 'g'), value)
+          return html.replace(/%(\S+?)%/g, (text: string, key) => {
+            if (key in APP_ENV) {
+              const value = APP_ENV[key as keyof typeof APP_ENV]
+              if (value !== null) {
+                return value as string
+              }
             }
+            console.warn(`Missing environment variable: ${key}`)
+            return text
           })
-          return html
         }
       },
       react({

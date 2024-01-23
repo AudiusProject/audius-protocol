@@ -2,8 +2,6 @@ import { Env } from '@audius/common'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
-  ADROLL_AVD_ID: 'SDJ23TS7DBFPLMXRDF6JQY',
-  ADROLL_PIX_ID: 'JZSZK5GWHBFL3FQ3NRFPNY',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'gain.audius.co',
   AMPLITUDE_WRITE_KEY: null,
