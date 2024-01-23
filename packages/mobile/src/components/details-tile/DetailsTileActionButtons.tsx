@@ -1,5 +1,11 @@
 import type { CommonState, ID } from '@audius/common'
-import { cacheCollectionsSelectors } from '@audius/common'
+import {
+  FeatureFlags,
+  cacheCollectionsSelectors,
+  useFeatureFlag,
+  useGetCurrentUserId,
+  useGetPlaylistById
+} from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -29,7 +35,7 @@ type DetailsTileActionButtonsProps = {
   hasReposted: boolean
   hasSaved: boolean
   isOwner: boolean
-  isPlaylist?: boolean
+  isCollection?: boolean
   isPublished?: boolean
   hideFavorite?: boolean
   hideOverflow?: boolean
@@ -65,7 +71,7 @@ export const DetailsTileActionButtons = ({
   collectionId,
   hasReposted,
   hasSaved,
-  isPlaylist,
+  isCollection,
   isOwner,
   isPublished,
   hideFavorite,
@@ -84,8 +90,16 @@ export const DetailsTileActionButtons = ({
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId!,
+    currentUserId
+  })
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
+  )
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
   )
 
   const repostButton = (
@@ -150,14 +164,23 @@ export const DetailsTileActionButtons = ({
     />
   )
 
-  const isPlaylistOwner = isPlaylist && isOwner
+  const isAlbum = collection.is_album
+  const isCollectionOwner = isCollection && isOwner
 
   return (
     <View style={styles.root}>
-      {isPlaylistOwner ? editButton : hideRepost ? null : repostButton}
-      {isPlaylistOwner || hideFavorite ? null : favoriteButton}
+      {isCollectionOwner
+        ? !isAlbum || isEditAlbumsEnabled
+          ? editButton
+          : null
+        : hideRepost
+        ? null
+        : repostButton}
+      {isCollectionOwner || hideFavorite ? null : favoriteButton}
       {hideShare ? null : shareButton}
-      {isPlaylistOwner && !isPublished ? publishButton : null}
+      {isCollectionOwner && !isPublished && (!isAlbum || isEditAlbumsEnabled)
+        ? publishButton
+        : null}
       {hideOverflow ? null : overflowMenu}
     </View>
   )
