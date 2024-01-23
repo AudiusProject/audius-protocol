@@ -91,10 +91,13 @@ export const DetailsTileActionButtons = ({
     getIsCollectionEmpty(state, { id: collectionId })
   )
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId!,
-    currentUserId
-  })
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: collectionId!,
+      currentUserId
+    },
+    { disabled: !collectionId || !isCollection }
+  )
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
   )
@@ -164,7 +167,7 @@ export const DetailsTileActionButtons = ({
     />
   )
 
-  const isAlbum = collection.is_album
+  const isAlbum = isCollection && collection?.is_album
   const isCollectionOwner = isCollection && isOwner
 
   return (
