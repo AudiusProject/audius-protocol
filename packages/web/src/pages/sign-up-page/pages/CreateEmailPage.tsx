@@ -115,7 +115,7 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
-        <Page as={Form} pt='unit20'>
+        <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
           <Box alignSelf='center'>
             {isMobile ? (
               <IconAudiusLogoHorizontalColor />

@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 import Web3 from 'web3'
 
-import { AudiusLibsProvider } from 'providers/AudiusLibsProvider'
 import { AudiusSdkProvider } from 'providers/AudiusSdkProvider'
 import { RemoteConfigProvider } from 'providers/RemoteConfigProvider'
 import { ThemeProvider } from 'providers/ThemeProvider'
@@ -38,13 +37,11 @@ const AppWithProviders = () => {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <RemoteConfigProvider>
-          <AudiusLibsProvider>
-            <AudiusSdkProvider>
-              <ThemeProvider>
-                <App />
-              </ThemeProvider>
-            </AudiusSdkProvider>
-          </AudiusLibsProvider>
+          <AudiusSdkProvider>
+            <ThemeProvider>
+              <App />
+            </ThemeProvider>
+          </AudiusSdkProvider>
         </RemoteConfigProvider>
       </QueryClientProvider>
     </trpc.Provider>
