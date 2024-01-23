@@ -37,6 +37,10 @@ export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
       }
 
       const trackId = track.track_id
+      const {
+        is_stream_gated: isStreamGated,
+        is_download_gated: isDownloadGated
+      } = track
       const { stream, download } = track.access ?? {}
       const hasNftAccessSignature = !!(
         trackId && nftAccessSignatureMap[trackId]
@@ -54,8 +58,8 @@ export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
 
       return {
         isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
-        hasStreamAccess: !!stream,
-        hasDownloadAccess: !!download
+        hasStreamAccess: !isStreamGated || !!stream,
+        hasDownloadAccess: !isDownloadGated || !!download
       }
     }, [track, nftAccessSignatureMap, user])
 
@@ -80,7 +84,6 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
       }
 
       const trackId = track.track_id
-      const isStreamGated = track.is_stream_gated
       const hasNftAccessSignature = !!nftAccessSignatureMap[trackId]
       const isCollectibleGated = isContentCollectibleGated(
         track.stream_conditions
@@ -94,7 +97,7 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
 
       map[trackId] = {
         isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
-        hasStreamAccess: !isStreamGated
+        hasStreamAccess: !track.is_stream_gated || !!track.access?.stream
       }
     })
 
