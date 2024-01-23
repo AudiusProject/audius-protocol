@@ -102,7 +102,8 @@ export const PickHandlePage = () => {
     handleErrorSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
-    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial,
+    page: 'pick-handle'
   })
 
   const navigate = useNavigateToPage()

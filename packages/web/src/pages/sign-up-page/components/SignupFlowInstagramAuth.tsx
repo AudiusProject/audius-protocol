@@ -1,9 +1,7 @@
 import { PropsWithChildren } from 'react'
 
-import { InstagramProfile, Name } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { InstagramProfile } from '@audius/common'
 
-import { make } from 'common/store/analytics/actions'
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 
 import { useSetProfileFromInstagram } from '../hooks/socialMediaLogin'
@@ -26,8 +24,6 @@ export const SignupFlowInstagramAuth = ({
   onSuccess,
   children
 }: SignupFlowInstagramAuthProps) => {
-  const dispatch = useDispatch()
-
   const setProfileFromInstagram = useSetProfileFromInstagram()
 
   const handleError = (e: unknown) => {
@@ -59,10 +55,7 @@ export const SignupFlowInstagramAuth = ({
   return (
     <InstagramAuth
       className={className}
-      onClick={() => {
-        onStart()
-        dispatch(make(Name.CREATE_ACCOUNT_START_INSTAGRAM, {}))
-      }}
+      onClick={onStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleInstagramLogin({ uuid, profile })}
     >

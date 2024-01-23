@@ -1,9 +1,7 @@
 import { PropsWithChildren } from 'react'
 
-import { Name, TwitterProfile } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { TwitterProfile } from '@audius/common'
 
-import { make } from 'common/store/analytics/actions'
 import TwitterAuth from 'components/twitter-auth/TwitterAuth'
 
 import { useSetProfileFromTwitter } from '../hooks/socialMediaLogin'
@@ -26,8 +24,6 @@ export const SignupFlowTwitterAuth = ({
   onStart,
   children
 }: SignupFlowTwitterAuthProps) => {
-  const dispatch = useDispatch()
-
   const setProfileFromTwitter = useSetProfileFromTwitter()
 
   const handleError = (e: unknown) => {
@@ -57,10 +53,7 @@ export const SignupFlowTwitterAuth = ({
     <TwitterAuth
       className={className}
       forceLogin
-      onClick={() => {
-        onStart()
-        dispatch(make(Name.CREATE_ACCOUNT_START_TWITTER, {}))
-      }}
+      onClick={onStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) =>
         handleTwitterLogin({ uuid, twitterProfile: profile })

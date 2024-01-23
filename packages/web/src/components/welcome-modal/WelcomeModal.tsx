@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  Name,
   SquareSizes,
   accountSelectors,
   fillString,
@@ -16,9 +17,11 @@ import {
   Box
 } from '@audius/harmony'
 import { Modal } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { make } from 'common/store/analytics/actions'
 import {
   getNameField,
   getProfileImageField
@@ -33,6 +36,7 @@ import { UPLOAD_PAGE } from 'utils/route'
 const { getUserId, getUserName } = accountSelectors
 
 export const WelcomeModal = () => {
+  const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const { value: nameField } = useSelector(getNameField)
   const accountName = useSelector(getUserName)
@@ -100,7 +104,14 @@ export const WelcomeModal = () => {
             onClick={onClose}
             asChild
           >
-            <Link to={UPLOAD_PAGE}>{messages.upload}</Link>
+            <Link
+              to={UPLOAD_PAGE}
+              onClick={() => {
+                dispatch(make(Name.CREATE_ACCOUNT_WELCOME_CTA_UPLOAD_TRACK, {}))
+              }}
+            >
+              {messages.upload}
+            </Link>
           </Button>
         </Flex>
       </Flex>

@@ -1,7 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   Genre,
+  Name,
   selectGenresPageMessages as messages,
   selectGenresSchema,
   selectableGenres
@@ -11,6 +12,7 @@ import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { make } from 'common/store/analytics/actions'
 import { setField } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
@@ -27,6 +29,7 @@ export const SelectGenresPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
+  const [currentGenres, setCurrentGenres] = useState<Genre[]>([])
   const savedGenres = useSelector(getGenres)
 
   const initialValues: SelectGenresValue = {
@@ -86,6 +89,24 @@ export const SelectGenresPage = () => {
                       value={value}
                       size='large'
                       type='checkbox'
+                      onClick={(e) => {
+                        if ((e.target as HTMLInputElement).checked) {
+                          dispatch(
+                            make(Name.CREATE_ACCOUNT_SELECT_GENRE, {
+                              genre: label,
+                              selectedGenres: [...currentGenres, label]
+                            })
+                          )
+                          setCurrentGenres([...currentGenres, label as Genre])
+                        } else {
+                          const newGenres = [...currentGenres]
+                          const genreIndex = currentGenres.indexOf(
+                            label as Genre
+                          )
+                          newGenres.splice(genreIndex, 1)
+                          setCurrentGenres(newGenres)
+                        }
+                      }}
                     />
                   )
                 })}

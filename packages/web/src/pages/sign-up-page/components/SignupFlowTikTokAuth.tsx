@@ -1,9 +1,7 @@
 import { ReactElement } from 'react'
 
-import { Name, TikTokProfile } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { TikTokProfile } from '@audius/common'
 
-import { make } from 'common/store/analytics/actions'
 import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
 
 import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
@@ -25,8 +23,6 @@ export const SignupFlowTikTokAuth = ({
   onSuccess,
   children
 }: SignupFlowTikTokAuthProps) => {
-  const dispatch = useDispatch()
-
   const setProfileFromTikTok = useSetProfileFromTikTok()
 
   const handleError = (e: unknown) => {
@@ -57,10 +53,7 @@ export const SignupFlowTikTokAuth = ({
 
   return (
     <TikTokAuth
-      onClick={() => {
-        onStart()
-        dispatch(make(Name.CREATE_ACCOUNT_START_TIKTOK, {}))
-      }}
+      onClick={onStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleTikTokLogin({ uuid, profile })}
     >
