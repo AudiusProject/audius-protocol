@@ -489,9 +489,10 @@ def populate_track_metadata(
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
-        # has current user unlocked gated tracks
-        # if so, also populate corresponding signatures
-        _populate_gated_track_metadata(session, tracks, current_user_id)
+    # has current user unlocked gated tracks?
+    # if so, also populate corresponding signatures.
+    # if no current user (guest), populate access based on track stream/download conditions
+    _populate_gated_track_metadata(session, tracks, current_user_id)
 
     for track in tracks:
         track_id = track["track_id"]
