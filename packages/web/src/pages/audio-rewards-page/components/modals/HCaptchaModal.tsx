@@ -6,13 +6,12 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { env } from 'services/env'
 
 import styles from './HCaptchaModal.module.css'
 import ModalDrawer from './ModalDrawer'
 const { setHCaptchaStatus } = audioRewardsPageActions
 
-const sitekey = env.HCAPTCHA_SITE_KEY
+const sitekey = process.env.VITE_HCAPTCHA_SITE_KEY
 
 const messages = {
   title: 'Complete Captcha Verification'

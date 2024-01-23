@@ -1,7 +1,7 @@
 import { Solana } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 
-import { env } from 'app/env'
+import { env } from '../env'
 
 export const solanaService = new Solana({
   middleware: [
@@ -13,7 +13,7 @@ export const solanaService = new Solana({
       }
     }
   ],
-  rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+  rpcEndpoint: process.env.SOLANA_CLUSTER_ENDPOINT,
   mints: {
     wAUDIO: new PublicKey(env.WAUDIO_MINT_ADDRESS!),
     USDC: new PublicKey(env.USDC_MINT_ADDRESS!)

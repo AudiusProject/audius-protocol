@@ -1,8 +1,6 @@
 import { OS } from '@audius/common'
 
-import { env } from 'services/env'
-
-const ENVIRONMENT = env.ENVIRONMENT
+const ENVIRONMENT = process.env.VITE_ENVIRONMENT
 
 let APP_DOWNLOAD_URL: string
 switch (ENVIRONMENT) {

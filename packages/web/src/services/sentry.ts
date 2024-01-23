@@ -1,8 +1,6 @@
 import { init } from '@sentry/browser'
 import { CaptureConsole } from '@sentry/integrations'
 
-import { env } from './env'
-
 const analyticsBlacklist = [
   'google-analytics',
   'stats.g',
@@ -16,7 +14,7 @@ const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = () => {
   init({
-    dsn: env.SENTRY_DSN,
+    dsn: process.env.VITE_SENTRY_DSN,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps

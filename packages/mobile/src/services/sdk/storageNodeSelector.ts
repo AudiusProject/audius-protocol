@@ -1,6 +1,6 @@
 import { makeGetStorageNodeSelector } from '@audius/common'
 
-import { env } from 'app/env'
+import { env } from '../env'
 
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'

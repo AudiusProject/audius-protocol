@@ -26,7 +26,6 @@ import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { env } from 'services/env'
 import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
@@ -63,7 +62,7 @@ const {
   getUserName
 } = accountSelectors
 
-const isStaging = env.ENVIRONMENT === 'staging'
+const isStaging = process.env.VITE_ENVIRONMENT === 'staging'
 
 const messages = {
   title: 'Settings',

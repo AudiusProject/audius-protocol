@@ -6,8 +6,6 @@ import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 
-import { env } from 'services/env'
-
 import { AMOUNT, WithdrawFormValues } from '../types'
 
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
@@ -25,8 +23,8 @@ const parseTransactionFromSuccessParams = (params: string) => {
   }
 }
 
-const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = env.ENVIRONMENT === 'production'
+const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 export const CoinflowWithdrawPage = () => {
   const adapter = useCoinflowAdapter()
