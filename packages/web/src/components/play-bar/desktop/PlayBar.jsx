@@ -476,9 +476,10 @@ const makeMapStateToProps = () => {
       if (entry.kind !== Kind.TRACKS) return false
 
       const { id } = entry
-      const { access } = getTrack(state, { id }) ?? {}
+      const { access, is_stream_gated: isStreamGated } =
+        getTrack(state, { id }) ?? {}
 
-      return !!access?.stream
+      return !isStreamGated || !!access?.stream
     })
 
     return {
