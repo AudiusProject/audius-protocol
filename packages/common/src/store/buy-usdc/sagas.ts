@@ -46,6 +46,8 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
+import { setUSDCBalance } from 'store/wallet/slice'
+import { StringUSDC } from 'models/Wallet'
 
 type PurchaseStepParams = {
   desiredAmount: number
@@ -424,6 +426,17 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    const userBankAccountInfo = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc'
+      }
+    )
+
+    const userBankInitialBalance = userBankAccountInfo?.amount ?? BigInt(0)
+
     const userBankAddress = userBank.toBase58()
 
     // Transfer all USDC from the from the root wallet to the user bank
@@ -478,6 +491,21 @@ function* recoverPurchaseIfNecessary() {
           )
         }
       }
+    )
+
+    const updatedBalance = yield* call(
+      pollForTokenBalanceChange,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc',
+        initialBalance: userBankInitialBalance,
+        maxRetryCount: TRANSACTION_RETRY_COUNT
+      }
+    )
+
+    yield* put(
+      setUSDCBalance({ amount: updatedBalance.toString() as StringUSDC })
     )
 
     yield* put(recoveryStatusChanged({ status: Status.SUCCESS }))
