@@ -47,7 +47,9 @@ export const antiAbuseMiddleware = async (
   }
 
   // fire and async update aao cache
-  detectAbuse(aaoConfig, user, ip)
+  detectAbuse(aaoConfig, user, ip).catch((e) => {
+    logger.error({ error: e }, 'AAO uncaught exception')
+  })
 
   if (!user.handle) {
     internalError(
