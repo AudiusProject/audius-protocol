@@ -450,13 +450,13 @@ function* recoverPurchaseIfNecessary() {
         )
         transferTransaction.partialSign(rootAccount)
 
-        console.debug(`Starting transfer transaction...`)
+        console.debug(`Starting root wallet USDC recovery transaction...`)
         const { res, error } = await relayTransaction(audiusBackendInstance, {
           transaction: transferTransaction
         })
 
         if (res) {
-          console.debug(`Transfer transaction succeeded: ${res}`)
+          console.debug(`Recovery transaction succeeded: ${res}`)
           return
         }
 
@@ -466,7 +466,7 @@ function* recoverPurchaseIfNecessary() {
           )}`
         )
         // Throw to retry
-        throw new Error(error ?? 'Unknown USDC user bank transfer error')
+        throw new Error(error ?? 'Unknown root wallet USDC recovery error')
       },
       {
         minTimeout: TRANSACTION_RETRY_DELAY_MS,
@@ -474,7 +474,7 @@ function* recoverPurchaseIfNecessary() {
         factor: 1,
         onRetry: (e: Error, attempt: number) => {
           console.error(
-            `Got error transferring USDC to user bank: ${e}. Attempt ${attempt}. Retrying...`
+            `Got error recovering USDC from root wallet to user bank: ${e}. Attempt ${attempt}. Retrying...`
           )
         }
       }
