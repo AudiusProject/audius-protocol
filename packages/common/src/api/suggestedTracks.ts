@@ -43,7 +43,8 @@ const skeletons = [...Array(suggestedTrackCount)].map((_, index) => ({
 
 const selectSuggestedTracks = (
   state: CommonState,
-  ids: ID[]
+  ids: ID[],
+  maxLength = suggestedTrackCount
 ): SuggestedTrack[] => {
   const suggestedTracks = ids
     .map((id) => {
@@ -56,7 +57,7 @@ const selectSuggestedTracks = (
 
   return [...suggestedTracks, ...skeletons].slice(
     0,
-    Math.min(ids.length, suggestedTrackCount)
+    Math.min(maxLength, suggestedTrackCount)
   )
 }
 
@@ -98,7 +99,8 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     (state: CommonState) =>
       selectSuggestedTracks(
         state,
-        suggestedTrackIds.slice(0, suggestedTrackCount)
+        suggestedTrackIds.slice(0, suggestedTrackCount),
+        suggestedTrackIds.length
       ),
     isEqual
   )
