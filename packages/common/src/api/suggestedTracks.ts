@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { difference, isEqual, shuffle } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
-import { useCustomCompareEffect } from 'react-use'
 
 import { usePaginatedQuery } from 'audius-query'
 import { ID } from 'models/Identifiers'
@@ -37,14 +36,15 @@ export type SuggestedTrack =
   | { isLoading: true; id: ID; key: ID }
   | { isLoading: false; id: ID; track: Track; key: ID }
 
-const skeletons = [...Array(5)].map((_, index) => ({
-  key: index + 5,
+const skeletons = [...Array(suggestedTrackCount)].map((_, index) => ({
+  key: index + suggestedTrackCount,
   isLoading: true as const
 }))
 
 const selectSuggestedTracks = (
   state: CommonState,
-  ids: ID[]
+  ids: ID[],
+  maxLength = suggestedTrackCount
 ): SuggestedTrack[] => {
   const suggestedTracks = ids
     .map((id) => {
@@ -55,7 +55,10 @@ const selectSuggestedTracks = (
     })
     .filter(removeNullable)
 
-  return [...suggestedTracks, ...skeletons].slice(0, 5)
+  return [...suggestedTracks, ...skeletons].slice(
+    0,
+    Math.min(maxLength, suggestedTrackCount)
+  )
 }
 
 const selectCollectionTrackIds = (state: CommonState, collectionId: ID) => {
@@ -79,34 +82,38 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     { disabled: !currentUserId }
   )
 
-  useCustomCompareEffect(
-    () => {
-      if (status === Status.SUCCESS && ownTracks) {
-        const suggestedTrackIds = difference(
-          shuffle(ownTracks).map((track) => track.track_id),
-          collectionTrackIds
-        )
-        setSuggestedTrackIds(suggestedTrackIds)
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    },
-    [status, ownTracks?.length],
-    isEqual
-  )
+  const reset = useCallback(() => {
+    if (status === Status.SUCCESS && ownTracks) {
+      const suggestedTrackIds = difference(
+        shuffle(ownTracks).map((track) => track.track_id),
+        collectionTrackIds
+      )
+      setSuggestedTrackIds(suggestedTrackIds)
+    }
+  }, [collectionTrackIds, ownTracks, status])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(reset, [status, ownTracks?.length])
 
   const suggestedTracks = useSelector(
     (state: CommonState) =>
       selectSuggestedTracks(
         state,
-        suggestedTrackIds.slice(0, suggestedTrackCount)
+        suggestedTrackIds.slice(0, suggestedTrackCount),
+        suggestedTrackIds.length
       ),
     isEqual
   )
 
   const handleRefresh = useCallback(() => {
+    // Reset and shuffle owned tracks if we get too close to the end
+    if (suggestedTrackIds.length <= 2 * suggestedTrackCount - 1) {
+      reset()
+      return
+    }
     setSuggestedTrackIds(suggestedTrackIds.slice(suggestedTrackCount))
     setIsRefreshing(true)
-  }, [suggestedTrackIds])
+  }, [reset, suggestedTrackIds])
 
   useEffect(() => {
     if (suggestedTracks.every((suggestedTrack) => !suggestedTrack.isLoading)) {
@@ -185,7 +192,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   }, [trendingStatus])
 
   useEffect(() => {
-    if (suggestedTrackIds.length < 5) {
+    if (suggestedTrackIds.length < suggestedTrackCount) {
       loadMore()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

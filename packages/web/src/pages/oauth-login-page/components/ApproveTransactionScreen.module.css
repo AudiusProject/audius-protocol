@@ -1,0 +1,12 @@
+.wrapper {
+  text-align: center;
+}
+
+.spinner {
+  height: var(--harmony-spacing-xl);
+  width: var(--harmony-spacing-xl);
+}
+
+.spinner g path {
+  stroke: var(--harmony-n-800);
+}

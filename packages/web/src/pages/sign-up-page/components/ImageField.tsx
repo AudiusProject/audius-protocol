@@ -25,11 +25,13 @@ type ImageFieldProps = {
   className?: string
   children: (urlValue: ImageFieldValue | null) => ReactNode | ReactNode[]
   onChange?: (image: ImageFieldValue) => void
+  onError?: (e: Error) => void
   imageResizeOptions?: Partial<ResizeImageOptions>
 }
 
 export const ImageField = (props: ImageFieldProps) => {
-  const { name, className, children, onChange, imageResizeOptions } = props
+  const { name, className, children, onChange, onError, imageResizeOptions } =
+    props
 
   const [field, , { setValue, setError }] = useField<ImageFieldValue>(name)
   const { value } = field
@@ -50,10 +52,19 @@ export const ImageField = (props: ImageFieldProps) => {
           onChange(image)
         }
       } catch (e) {
+        onError?.(e as Error)
         setError(messages[`${name}UploadError` as keyof typeof messages])
       }
     },
-    [setValue, onChange, setError, name, imageResizeOptions]
+    [
+      imageResizeOptions?.maxWidth,
+      imageResizeOptions?.square,
+      setValue,
+      onChange,
+      onError,
+      setError,
+      name
+    ]
   )
 
   return (
