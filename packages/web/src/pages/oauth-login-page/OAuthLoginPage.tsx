@@ -26,7 +26,6 @@ import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
-import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
 
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
