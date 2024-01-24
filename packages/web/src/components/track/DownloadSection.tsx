@@ -134,7 +134,8 @@ export const DownloadSection = ({
                   })
                 )}
               </Button>
-            ) : shouldDisplayPremiumDownloadUnlocked ? (
+            ) : null}
+            {shouldDisplayPremiumDownloadUnlocked ? (
               <Flex gap='s'>
                 <Flex
                   borderRadius='3xl'
@@ -182,7 +183,9 @@ export const DownloadSection = ({
                   <SegmentedControl
                     options={options}
                     selected={quality}
-                    onSelectOption={(quality) => setQuality(quality)}
+                    onSelectOption={(quality: DownloadQuality) =>
+                      setQuality(quality)
+                    }
                   />
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>

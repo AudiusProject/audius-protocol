@@ -107,7 +107,8 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
                 })
               )}
             </Button>
-          ) : shouldDisplayPremiumDownloadUnlocked ? (
+          ) : null}
+          {shouldDisplayPremiumDownloadUnlocked ? (
             <>
               <Flex
                 gap='s'
