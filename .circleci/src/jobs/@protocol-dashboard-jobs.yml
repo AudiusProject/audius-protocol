@@ -43,7 +43,7 @@ protocol-dashboard-build-staging:
   working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:
@@ -52,6 +52,7 @@ protocol-dashboard-build-staging:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1 
           npm run build:stage
     - run:
         name: armada bundle
@@ -104,7 +105,7 @@ protocol-dashboard-deploy-staging:
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   resource_class: xlarge
   steps:
     - checkout
@@ -114,6 +115,7 @@ protocol-dashboard-build-prod:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1
           npm run build:prod
     - run:
         name: zip dist
