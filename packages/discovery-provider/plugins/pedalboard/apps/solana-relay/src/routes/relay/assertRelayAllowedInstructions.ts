@@ -19,7 +19,7 @@ import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import {
   decodeAssociatedTokenAccountInstruction,
   ClaimableTokensProgram,
-  decodeRewardManagerInstruction,
+  RewardManagerProgram,
   isCreateAssociatedTokenAccountIdempotentInstruction,
   isCreateAssociatedTokenAccountInstruction
 } from '@audius/spl'
@@ -178,8 +178,9 @@ const assertAllowedRewardsManagerProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
 ) => {
-  const decodedInstruction = decodeRewardManagerInstruction(instruction)
-  const rewardManager = decodedInstruction.keys.rewardManager.pubkey.toBase58()
+  const decodedInstruction = RewardManagerProgram.decodeInstruction(instruction)
+  const rewardManager =
+    decodedInstruction.keys.rewardManagerState.pubkey.toBase58()
   if (rewardManager !== REWARD_MANAGER) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
