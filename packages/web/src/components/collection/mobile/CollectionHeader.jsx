@@ -131,7 +131,9 @@ const CollectionHeader = ({
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
       isOwner && (!isAlbum || isEditAlbumsEnabled)
-        ? OverflowAction.DELETE_PLAYLIST
+        ? isAlbum
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
         : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean)

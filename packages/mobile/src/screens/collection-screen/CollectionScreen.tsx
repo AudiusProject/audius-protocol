@@ -198,7 +198,9 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
       isOwner && (!is_album || isEditAlbumsEnabled)
-        ? OverflowAction.DELETE_PLAYLIST
+        ? is_album
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
         : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(removeNullable)
