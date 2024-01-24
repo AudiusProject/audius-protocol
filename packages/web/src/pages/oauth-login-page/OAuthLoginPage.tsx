@@ -19,13 +19,13 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './OAuthLoginPage.module.css'
+import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
 import { CTAButton } from './components/CTAButton'
 import { ContentWrapper } from './components/ContentWrapper'
 import { PermissionsSection } from './components/PermissionsSection'
 import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
-import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
 
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
