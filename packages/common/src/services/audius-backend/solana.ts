@@ -19,8 +19,7 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
-
-const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
+const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
 const RECOVERY_MEMO_STRING = 'recovery'
 
 /**
@@ -598,6 +597,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
+  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const decompiledMessage = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
@@ -608,7 +608,7 @@ export const relayVersionedTransaction = async (
       publicKey: publicKey.toBase58(),
       signature: Buffer.from(transaction.signatures[index])
     }))
-    .filter((meta) => !meta.signature.equals(PLACEHOLDER_SIGNATURE))
+    .filter((meta) => !meta.signature.equals(placeholderSignature))
   return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
     instructions: decompiledMessage.instructions,
     recentBlockhash: decompiledMessage.recentBlockhash,

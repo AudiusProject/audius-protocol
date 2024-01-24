@@ -205,3 +205,6 @@ combined-patch-file.txt
 
 # Identity
 packages/identity-service/emailCache
+
+# CloudFlare
+.wrangler

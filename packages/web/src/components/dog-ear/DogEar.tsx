@@ -10,7 +10,7 @@ import cn from 'classnames'
 import Rectangle from 'assets/img/dogEarRectangle.svg'
 import IconHidden from 'assets/img/iconHidden.svg'
 import IconStar from 'assets/img/iconStar.svg'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './DogEar.module.css'
@@ -41,13 +41,13 @@ const getIcon = (type: DogEarType) => {
 export const DogEar = (props: DogEarProps) => {
   const { type, className } = props
   const isMatrixMode = isMatrix()
-  const isMobileMode = isMobile()
+  const isMobile = useIsMobile()
   const Icon = getIcon(type)
 
   return (
     <div
       className={cn(styles.container, className, {
-        [styles.isMobile]: isMobileMode,
+        [styles.isMobile]: isMobile,
         [styles.matrix]: isMatrixMode
       })}
     >

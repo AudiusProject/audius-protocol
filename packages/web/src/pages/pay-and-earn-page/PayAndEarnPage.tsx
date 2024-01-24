@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { Status, buyUSDCActions, useUSDCBalance } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { PayAndEarnPage as DesktopPayAndEarn } from './desktop/PayAndEarnPage'
 import { PayAndEarnPage as MobilePayAndEarn } from './mobile/PayAndEarnPage'

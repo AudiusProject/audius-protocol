@@ -13,7 +13,7 @@ import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 const { toast } = toastActions
 
 const { getTrack } = cacheTracksSelectors

@@ -31,9 +31,11 @@ import {
   FeatureFlags
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
+import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
@@ -138,6 +140,7 @@ const NowPlaying = g(
     const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
     const { uid, track, user, collectible } = currentQueueItem
+    const { history } = useHistoryContext()
 
     const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
       { trackId: track?.track_id ?? 0 },
@@ -290,15 +293,18 @@ const NowPlaying = g(
     const goToTrackPage = () => {
       onClose()
       if (track) {
-        goToRoute(track.permalink)
+        goToRoute(history.location, track.permalink)
       } else {
-        goToRoute(collectibleDetailsPage(user.handle, collectible?.id ?? ''))
+        goToRoute(
+          history.location,
+          collectibleDetailsPage(user.handle, collectible?.id ?? '')
+        )
       }
     }
 
     const goToProfilePage = () => {
       onClose()
-      goToRoute(profilePage(handle))
+      goToRoute(history.location, profilePage(handle))
     }
 
     const onClickOverflow = useCallback(() => {
@@ -656,7 +662,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           overflowActionCallbacks: callbacks
         })
       ),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    goToRoute: (location: Location, route: string) =>
+      dispatch(pushRoute(location, route))
   }
 }
 

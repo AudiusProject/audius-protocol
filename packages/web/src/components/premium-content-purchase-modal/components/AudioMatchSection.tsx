@@ -1,7 +1,7 @@
 import { Flex, useTheme } from '@audius/harmony'
 
 import { Text } from 'components/typography'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 const messages = {
   earn: (amount: string) => `Earn ${amount} $AUDIO when you buy this track!`

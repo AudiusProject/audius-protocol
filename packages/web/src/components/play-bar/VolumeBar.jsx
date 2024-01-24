@@ -19,6 +19,7 @@ const getVolumeIcon = (volumeLevel) => {
 }
 
 const getSavedVolume = (defaultVolume) => {
+  if (typeof window === 'undefined') return defaultVolume
   const localStorageVolume = window.localStorage.getItem('volume')
   if (localStorageVolume === null) {
     window.localStorage.setItem('volume', defaultVolume)

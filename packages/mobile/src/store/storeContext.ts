@@ -54,5 +54,6 @@ export const storeContext: CommonStoreContext = {
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork
-  }
+  },
+  isMobile: true
 }

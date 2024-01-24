@@ -17,8 +17,8 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './NotFoundPage.module.css'
@@ -36,7 +36,8 @@ type NotFoundPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps
 
-const NotFoundPage = ({ isMobile, goToHomePage, theme }: NotFoundPageProps) => {
+const NotFoundPage = ({ goToHomePage, theme }: NotFoundPageProps) => {
+  const isMobile = useIsMobile()
   const record = useRecord()
   useEffect(() => {
     record(make(Name.NOT_FOUND_PAGE, {}))
@@ -105,7 +106,6 @@ const NotFoundPage = ({ isMobile, goToHomePage, theme }: NotFoundPageProps) => {
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile(),
     theme: getTheme(state)
   }
 }

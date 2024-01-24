@@ -17,10 +17,10 @@ const didInit = new Promise((resolve, reject) => {
   rejectCallback = reject
 })
 
-export const init = async () => {
+export const init = async (isMobile: boolean) => {
   try {
     await remoteConfigInstance.waitForRemoteConfig()
-    await amplitude.init()
+    await amplitude.init(isMobile)
     if (resolveCallback) {
       resolveCallback()
     }
@@ -69,7 +69,7 @@ export const identify = async (
 ) => {
   try {
     if (!IS_PRODUCTION_BUILD) {
-      console.info(`Amplitude | identify`, handle, traits, options)
+      console.info('Amplitude | identify', handle, traits, options)
     }
 
     await didInit

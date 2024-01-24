@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import cn from 'classnames'
 import { ParallaxProvider } from 'react-scroll-parallax'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { FanburstBanner } from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'public-site/components/Footer'
@@ -30,6 +31,7 @@ type LandingPageV2Props = {
 }
 
 const LandingPage = (props: LandingPageV2Props) => {
+  const { history } = useHistoryContext()
   useEffect(() => {
     document.documentElement.style.height = 'auto'
     return () => {
@@ -58,13 +60,13 @@ const LandingPage = (props: LandingPageV2Props) => {
       window.location.search.includes(FANBURST_UTM_SOURCE)
     ) {
       if (window.history && window.history.pushState) {
-        window.history.pushState('', '/', getPathname())
+        window.history.pushState('', '/', getPathname(history.location))
       } else {
         window.location.hash = ''
       }
       setShowFanburstBanner(true)
     }
-  }, [setShowFanburstBanner])
+  }, [setShowFanburstBanner, history])
   const onDismissFanburstBanner = () => setShowFanburstBanner(false)
 
   const [hasImageLoaded, setHasImageLoaded] = useState(false)

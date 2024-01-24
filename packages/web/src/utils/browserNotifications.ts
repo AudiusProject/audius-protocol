@@ -42,9 +42,16 @@ const fcmWebPushPublicKey = env.FCM_PUSH_PUBLIC_KEY
 const safariWebPushID = env.SAFARI_WEB_PUSH_ID
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
-  !isElectron() && 'serviceWorker' in navigator && 'PushManager' in window
+  !isElectron() &&
+  typeof navigator !== 'undefined' &&
+  'serviceWorker' in navigator &&
+  typeof window !== 'undefined' &&
+  'PushManager' in window
 export const isSafariPushAvailable =
-  !isElectron() && 'safari' in window && 'pushNotification' in window.safari
+  !isElectron() &&
+  typeof window !== 'undefined' &&
+  'safari' in window &&
+  'pushNotification' in window.safari
 export const isBrowserPushAvailable =
   isPushManagerAvailable || isSafariPushAvailable
 
