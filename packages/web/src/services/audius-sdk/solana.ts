@@ -6,8 +6,8 @@ import {
   SolanaRelayWalletAdapter
 } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
-import { env } from 'services/env'
 
+import { env } from 'services/env'
 
 const solanaRelay = new SolanaRelay(
   new Configuration({
@@ -38,8 +38,6 @@ export const claimableTokensService = new ClaimableTokensClient({
 export const rewardManagerService = new RewardManagerClient({
   programId: new PublicKey(env.REWARDS_MANAGER_PROGRAM_ID),
   rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-  rewardManagerState: new PublicKey(
-    env.REWARDS_MANAGER_PROGRAM_PDA
-  ),
+  rewardManagerState: new PublicKey(env.REWARDS_MANAGER_PROGRAM_PDA),
   solanaWalletAdapter
 })

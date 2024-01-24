@@ -103,15 +103,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   )
 
   useEffect(() => {
-    const cleanup = async () => {
-      const { state } = await TrackPlayer.getPlaybackState()
-      if (state === State.Playing) {
-        await TrackPlayer.pause()
-      }
-    }
-    return () => {
-      cleanup()
-    }
+    TrackPlayer.reset()
   }, [])
 
   return (
