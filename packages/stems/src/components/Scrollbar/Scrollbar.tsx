@@ -32,7 +32,7 @@ export const Scrollbar = forwardRef(
     const [ref] = useMeasure({ polyfill: ResizeObserver })
     const timerRef = useRef<NodeJS.Timeout | null>(null)
     const reactId = useId()
-    const elementId = useMemo(() => id || reactId, [id, reactId])
+    const elementId = id || reactId
 
     useEffect(() => {
       return () => {

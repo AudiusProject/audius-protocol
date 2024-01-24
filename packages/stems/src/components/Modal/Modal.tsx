@@ -296,9 +296,6 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   )
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
     const onResize = () => {
       setHeight(window.innerHeight)
     }
