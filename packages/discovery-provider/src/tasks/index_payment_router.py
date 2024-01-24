@@ -428,7 +428,8 @@ def attempt_index_recovery_transfer(
             and_(
                 USDCTransactionsHistory.user_bank == receiver_bank_account,
                 USDCTransactionsHistory.method == USDCTransactionMethod.send,
-                # External transfers are indexed on the owner of the token account
+                # The original transaction will be indexed with the owner account
+                # of the original recipient
                 USDCTransactionsHistory.tx_metadata == sender_account_owner,
             )
         )

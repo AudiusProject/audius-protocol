@@ -37,7 +37,7 @@ thirdPartyId = 3
 thirdPartyUserBank = "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556"
 
 # Used as the source wallet for all the mock transactions
-transactionSenderAddress = "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W"
+transactionSenderOwnerAccount = "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W"
 
 test_entries = {
     "users": [
@@ -258,7 +258,7 @@ def test_process_payment_router_tx_details_transfer_without_purchase(
         assert transaction_record.method == USDCTransactionMethod.receive
         assert transaction_record.change == 1000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert transaction_record.tx_metadata == transactionSenderAddress
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
 
 
 def test_process_payment_router_tx_details_transfer_from_user_bank_without_purchase(
@@ -350,7 +350,7 @@ def test_process_payment_router_tx_details_transfer_recovery(app):
             "method": USDCTransactionMethod.send,
             "change": -1000000,
             "balance": 0,
-            "tx_metadata": transactionSenderAddress,
+            "tx_metadata": transactionSenderOwnerAccount,
         }
     ]
 
@@ -399,7 +399,7 @@ def test_process_payment_router_tx_details_transfer_partial_recovery(
             "method": USDCTransactionMethod.send,
             "change": -2000000,
             "balance": 0,
-            "tx_metadata": transactionSenderAddress,
+            "tx_metadata": transactionSenderOwnerAccount,
         }
     ]
 
@@ -419,7 +419,9 @@ def test_process_payment_router_tx_details_transfer_partial_recovery(
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
             .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
-            .filter(USDCTransactionsHistory.tx_metadata == transactionSenderAddress)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
             .first()
         )
         # Recovery transaction was for half of the original amount, expect the difference
@@ -450,7 +452,7 @@ def test_process_payment_router_tx_details_transfer_over_recovery(
             "method": USDCTransactionMethod.send,
             "change": -500000,
             "balance": 0,
-            "tx_metadata": transactionSenderAddress,
+            "tx_metadata": transactionSenderOwnerAccount,
         }
     ]
 
@@ -470,7 +472,9 @@ def test_process_payment_router_tx_details_transfer_over_recovery(
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
             .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
-            .filter(USDCTransactionsHistory.tx_metadata == transactionSenderAddress)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
             .first()
         )
         # Recovery transaction was for more than the original amount, expect original transaction to be unchanged
@@ -481,7 +485,9 @@ def test_process_payment_router_tx_details_transfer_over_recovery(
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
             .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
-            .filter(USDCTransactionsHistory.tx_metadata == transactionSenderAddress)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
             .first()
         )
 
@@ -561,7 +567,7 @@ def test_process_payment_router_tx_details_transfer_recovery_address_mismatch(
         assert transaction_record.method == USDCTransactionMethod.receive
         assert transaction_record.change == 1000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert transaction_record.tx_metadata == transactionSenderAddress
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
 
 
 def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
@@ -794,7 +800,7 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
         third_party_transaction_record = (
             session.query(USDCTransactionsHistory)
@@ -811,7 +817,9 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
         assert third_party_transaction_record.change == 500000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+        assert (
+            third_party_transaction_record.tx_metadata == transactionSenderOwnerAccount
+        )
 
 
 # Transaction is for the correct amount, but one of the splits is missing
@@ -860,7 +868,7 @@ def test_process_payment_router_tx_details_invalid_purchase_missing_splits(app):
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 2000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
 
 def test_process_payment_router_tx_details_transfer_multiple_users_without_purchase(
@@ -909,7 +917,7 @@ def test_process_payment_router_tx_details_transfer_multiple_users_without_purch
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
         third_party_transaction_record = (
             session.query(USDCTransactionsHistory)
@@ -926,7 +934,9 @@ def test_process_payment_router_tx_details_transfer_multiple_users_without_purch
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
         assert third_party_transaction_record.change == 1000000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
-        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+        assert (
+            third_party_transaction_record.tx_metadata == transactionSenderOwnerAccount
+        )
 
 
 def test_process_payment_router_txs_details_create_challenge_events_for_purchase(app):
