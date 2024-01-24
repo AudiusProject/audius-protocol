@@ -70,10 +70,13 @@
     "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
     "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
     "pull-dev-accounts": "node ./scripts/pullDevAccounts.js",
+    "typecheck": "tsc",
     "advance-blocks": "node ./scripts/advanceBlocks.js",
     "update-build:dev": "node ./scripts/updateBuild.cjs dev",
     "update-build:stage": "node ./scripts/updateBuild.cjs stage",
-    "update-build:prod": "node ./scripts/updateBuild.cjs prod"
+    "update-build:prod": "node ./scripts/updateBuild.cjs prod",
+    "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
+    "verify": "concurrently \"npm:lint:fix\""
   },
   "eslintConfig": {
     "extends": "react-app"
