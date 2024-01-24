@@ -67,7 +67,7 @@
       // Account recovery
       try {
         const urlParams = new URLSearchParams(window.location.search)
-        const useHashRouting = '%USE_HASH_ROUTING%'
+        const useHashRouting = '%USE_HASH_ROUTING%' === 'true'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 

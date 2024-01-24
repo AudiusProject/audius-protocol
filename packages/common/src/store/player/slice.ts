@@ -57,6 +57,7 @@ type PlayPayload = Maybe<{
   uid?: Nullable<UID>
   trackId?: ID
   isPreview?: boolean
+  startTime?: number
   onEnd?: (...args: any) => any
 }>
 

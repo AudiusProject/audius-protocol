@@ -46,6 +46,7 @@ export const WelcomeModal = () => {
     userId as number,
     SquareSizes.SIZE_150_BY_150
   )
+
   const userName = nameField ?? accountName
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
@@ -93,8 +94,14 @@ export const WelcomeModal = () => {
         css={{ overflow: 'hidden' }}
       >
         <Flex direction='column' css={{ textAlign: 'center' }} gap='l'>
-          <Text variant='label' size='xl' strength='strong' id='welcome-title'>
-            {fillString(messages.welcome, userName ? `, ${userName}` : '')}
+          <Text
+            variant='label'
+            size='xl'
+            strength='strong'
+            id='welcome-title'
+            color='accent'
+          >
+            {fillString(messages.welcome, userName ? `, ${userName}` : ' ')}
           </Text>
           <Text variant='body' size='l'>
             {messages.youreIn}

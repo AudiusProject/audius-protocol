@@ -2,14 +2,15 @@ import { createContext, useCallback, useEffect, useState } from 'react'
 
 import {
   ID,
-  encodeHashId,
+  UserTrackMetadata,
+  playerActions,
   useGetUserById,
   useGetUserTracksByHandle
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 
 import { audioPlayer } from 'services/audio-player'
-import { apiClient } from 'services/audius-api-client'
 
 type PreviewContextProps = {
   isPlaying: boolean
@@ -32,7 +33,8 @@ export const SelectArtistsPreviewContextProvider = (props: {
 }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState<number>(-1)
-  const [trackId, setTrackId] = useState<string | null>(null)
+  const [track, setTrack] = useState<UserTrackMetadata | null>(null)
+  const dispatch = useDispatch()
 
   const { data: artist } = useGetUserById({
     id: nowPlayingArtistId,
@@ -41,14 +43,18 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const { data: artistTracks } = useGetUserTracksByHandle(
     {
       handle: artist?.handle,
-      currentUserId: null
+      currentUserId: null,
+      // Unlikely we cant play an artist's first 3 tracks.
+      limit: 3
     },
     { disabled: !artist?.handle }
   )
 
   useEffect(() => {
-    const trackId = artistTracks?.find((track) => track.is_available)?.track_id
-    trackId && setTrackId(encodeHashId(trackId))
+    const track = artistTracks?.find((track) => track.is_available)
+    if (track) {
+      setTrack(track)
+    }
   }, [artistTracks])
 
   const togglePlayback = useCallback(() => {
@@ -56,13 +62,13 @@ export const SelectArtistsPreviewContextProvider = (props: {
       return
     }
     if (audioPlayer.isPlaying()) {
-      audioPlayer.pause()
+      dispatch(playerActions.pause())
       setIsPlaying(false)
     } else {
-      audioPlayer.play()
+      dispatch(playerActions.play())
       setIsPlaying(true)
     }
-  }, [])
+  }, [dispatch])
 
   const stopPreview = useCallback(() => {
     if (!audioPlayer) {
@@ -70,20 +76,23 @@ export const SelectArtistsPreviewContextProvider = (props: {
     }
     audioPlayer.stop()
     setNowPlayingArtistId(-1)
-    setTrackId(null)
+    setTrack(null)
     setIsPlaying(false)
   }, [])
 
-  const playPreview = useCallback((artistId: ID) => {
-    if (!audioPlayer) {
-      return
-    }
-    if (audioPlayer.isPlaying()) {
-      audioPlayer.stop()
-    }
-    setNowPlayingArtistId(artistId)
-    setIsPlaying(true)
-  }, [])
+  const playPreview = useCallback(
+    (artistId: ID) => {
+      if (!audioPlayer) {
+        return
+      }
+      if (audioPlayer.isPlaying()) {
+        dispatch(playerActions.stop({}))
+      }
+      setNowPlayingArtistId(artistId)
+      setIsPlaying(true)
+    },
+    [dispatch]
+  )
 
   const togglePreview = useCallback(
     (artistId: ID) => {
@@ -93,27 +102,29 @@ export const SelectArtistsPreviewContextProvider = (props: {
       if (artistId === nowPlayingArtistId) {
         togglePlayback()
       } else {
-        audioPlayer.stop()
+        dispatch(playerActions.stop({}))
         setIsPlaying(false)
         setNowPlayingArtistId(artistId)
       }
     },
-    [nowPlayingArtistId, togglePlayback]
+    [nowPlayingArtistId, togglePlayback, dispatch]
   )
 
   useEffect(() => {
-    if (!trackId) return
     if (!audioPlayer) {
       return
     }
-    audioPlayer.load(
-      0,
-      stopPreview,
-      apiClient.makeUrl(`/tracks/${trackId}/stream`)
-    )
-    audioPlayer.play()
+    if (!track) return
+    const { track_id, preview_cid, duration } = track
+    const isPreview = !!preview_cid
+    const startTime = isPreview
+      ? undefined
+      : Math.min(30, Math.max(0, duration - 30))
+
+    dispatch(playerActions.play({ trackId: track_id, startTime, isPreview }))
+
     setIsPlaying(true)
-  }, [nowPlayingArtistId, stopPreview, trackId])
+  }, [nowPlayingArtistId, stopPreview, track, dispatch])
 
   useUnmount(stopPreview)
 

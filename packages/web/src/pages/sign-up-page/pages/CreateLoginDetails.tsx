@@ -93,7 +93,7 @@ export const CreateLoginDetailsPage = () => {
       validationSchema={loginDetailsFormikSchema}
     >
       {({ isValid, dirty }) => (
-        <Page as={Form} transition='horizontal'>
+        <Page as={Form} transition='horizontal' centered>
           <Heading
             heading={messages.title}
             description={messages.description}

@@ -97,8 +97,15 @@ systemctl start circleci.service
 curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
 chmod 755 /usr/local/sbin/periodic-cleanup
 
-cat <<EOT > /etc/cron.hourly/audius-ci-hourly
-#!/bin/sh
-/usr/local/sbin/periodic-cleanup | logger -t cleanup
-EOT
-chmod 755 /etc/cron.hourly/audius-ci-hourly
+cleanup_comment='# circleci runner auto-prune'
+
+# remove existing cleanup job from crontab if present
+tmpcron="$(mktemp)"
+grep -v "$cleanup_comment" /etc/crontab > "$tmpcron"
+cat "$tmpcron" > /etc/crontab
+
+# re-add cleanup job
+echo '*/10 * * * *   root    /usr/local/sbin/periodic-cleanup | logger -t cleanup  '"$cleanup_comment" >> /etc/crontab
+
+# remove deprecated hourly cleanup script
+rm /etc/cron.hourly/audius-ci-hourly || true
