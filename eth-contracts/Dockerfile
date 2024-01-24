@@ -14,8 +14,9 @@ RUN npm run postinstall
 
 RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000000
 
-ARG CONTENT_NODE_VERSION
-ARG DISCOVERY_NODE_VERSION
+# Match latest governance release
+ARG CONTENT_NODE_VERSION='0.6.0'
+ARG DISCOVERY_NODE_VERSION='0.6.0'
 
 RUN ./scripts/setup-dev.sh /usr/db 1000000000000
 
