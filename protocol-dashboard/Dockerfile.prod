@@ -1,4 +1,4 @@
-FROM node:18-alpine as base
+FROM node:18-slim as base
 
 ARG TURBO_TEAM
 ENV TURBO_TEAM=$TURBO_TEAM
@@ -9,8 +9,8 @@ ENV TURBO_TOKEN=$TURBO_TOKEN
 # First stage: Set up a minimal monorepo
 FROM base AS turbo-builder
 
-RUN apk add --no-cache libc6-compat
-RUN apk update
+RUN apt install --no-cache libc6-compat
+RUN apt update
 
 WORKDIR /app
 RUN npm install turbo --global
@@ -22,17 +22,16 @@ RUN turbo prune --scope=audius-protocol-dashboard --docker
 FROM base AS app-builder
 
 WORKDIR /app
-RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
-RUN apk update && \
-    apk add -y \
+RUN apt install g++ make py3-pip
+RUN install update && \
+    apt install \
     python3 \
     make \
     gcc \
     g++ \
-    libusb-1.0-0-dev \
-    libudev-dev \
-    libsecret-1-dev \
-    pkg-config
+    libusb \
+    pkgconfig
+RUN apt install --no-cache python3 py3-pip make g++ curl bash libc6-compat
 
 ENV DASHBOARD_BASE_URL="/dashboard/"
 
@@ -52,7 +51,7 @@ COPY turbo.json turbo.json
 RUN npm run build:prod -w audius-protocol-dashboard
 
 
-RUN apk add --no-cache findutils coreutils
+RUN apt install --no-cache findutils coreutils
 COPY ./protocol-dashboard/scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
