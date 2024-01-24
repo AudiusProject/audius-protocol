@@ -1,4 +1,4 @@
-import type { full } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { createApi } from 'audius-query'
 import { ID, Kind, StringUSDC } from 'models'
@@ -7,6 +7,7 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from 'models/USDCTransactions'
+import { getRootSolanaAccount } from 'services/audius-backend/solana'
 import { Nullable } from 'utils/typeUtils'
 
 import { Id } from './utils'
@@ -21,18 +22,24 @@ type GetUSDCTransactionListArgs = {
   method?: full.GetUSDCTransactionsMethodEnum
 }
 
-const parseTransaction = (
-  transaction: full.TransactionDetails
-): USDCTransactionDetails => {
-  const { change, balance, transactionType, method, ...rest } = transaction
-  return {
-    ...rest,
-    transactionType: transactionType as USDCTransactionType,
-    method: method as USDCTransactionMethod,
-    change: change as StringUSDC,
-    balance: balance as StringUSDC
+const makeParseTransaction =
+  (rootSolanaAccount: Nullable<string>) =>
+  (transaction: full.TransactionDetails): USDCTransactionDetails => {
+    const { change, balance, transactionType, method, metadata, ...rest } =
+      transaction
+    return {
+      ...rest,
+      metadata: !rootSolanaAccount
+        ? metadata
+        : rootSolanaAccount === metadata.toString()
+        ? `Cash (${metadata})`
+        : metadata,
+      transactionType: transactionType as USDCTransactionType,
+      method: method as USDCTransactionMethod,
+      change: change as StringUSDC,
+      balance: balance as StringUSDC
+    }
   }
-}
 
 const userApi = createApi({
   reducerPath: 'userApi',
@@ -129,8 +136,19 @@ const userApi = createApi({
           encodedDataMessage,
           encodedDataSignature
         })
+        // When fetching withdrawals, get the root account to display
+        // additional transaction context
+        if (
+          type === full.GetUSDCTransactionsTypeEnum.Transfer &&
+          method === full.GetUSDCTransactionCountMethodEnum.Send
+        ) {
+          const rootSolanaAccount = (
+            await getRootSolanaAccount(context.audiusBackend)
+          ).publicKey.toString()
 
-        return data.map(parseTransaction)
+          return data.map(makeParseTransaction(rootSolanaAccount))
+        }
+        return data.map(makeParseTransaction(null))
       },
       options: { retry: true }
     },

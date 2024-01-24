@@ -104,7 +104,7 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      {methodValue !== WithdrawMethod.MANUAL_TRANSFER ? (
+      {methodValue !== WithdrawMethod.MANUAL_TRANSFER && signature ? (
         <>
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>
