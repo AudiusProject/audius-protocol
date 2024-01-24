@@ -17,7 +17,7 @@ REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = "ServiceProviderFactory".encode("utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
 CONTENT_NODE_SERVICE_TYPE = "content-node".encode("utf-8")
-ALL_DISCOVERY_NODES_CACHE_KEY = "all-discovery-nodes"
+ALL_DISCOVERY_NODES_CACHE_KEY = "all-discovery-nodes-with-wallets"
 ALL_CONTENT_NODES_CACHE_KEY = "all-content-nodes"
 ALL_HEALTHY_CONTENT_NODES_CACHE_KEY = "all-healthy-content-nodes"
 
