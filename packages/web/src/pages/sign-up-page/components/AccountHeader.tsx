@@ -3,13 +3,10 @@ import {
   Avatar,
   Box,
   Flex,
-  IconArrowLeft,
   IconButton,
   IconCamera,
   IconVerified,
-  PlainButton,
-  Text,
-  useTheme
+  Text
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -21,7 +18,6 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
@@ -31,8 +27,6 @@ import { ImageField, ImageFieldValue } from './ImageField'
 const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
-  backButtonText?: string
-  backTo?: string
   mode: 'editing' | 'viewing'
   size?: 'small' | 'large'
   formDisplayName?: string
@@ -83,8 +77,6 @@ const ProfileImageAvatar = ({
 
 export const AccountHeader = (props: AccountHeaderProps) => {
   const {
-    backButtonText,
-    backTo,
     mode,
     formDisplayName,
     formProfileImage,
@@ -106,8 +98,6 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'
-  const { spacing } = useTheme()
-  const navigate = useNavigateToPage()
 
   const displayName = formDisplayName || displayNameField || accountDisplayName
   const handle = handleField || accountHandle
@@ -119,28 +109,6 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   return (
     <Box w='100%'>
-      {backButtonText ? (
-        <Box
-          css={{
-            position: 'absolute',
-            top: spacing.xl,
-            left: spacing.xl,
-            zIndex: 2
-          }}
-        >
-          <PlainButton
-            iconLeft={IconArrowLeft}
-            variant='inverted'
-            onClick={() => {
-              if (backTo) {
-                navigate(backTo)
-              }
-            }}
-          >
-            {backButtonText}
-          </PlainButton>
-        </Box>
-      ) : null}
       <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField
