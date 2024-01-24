@@ -457,16 +457,16 @@ function* recoverPurchaseIfNecessary() {
 
         if (res) {
           console.debug(`Recovery transaction succeeded: ${res}`)
-          return
+          return res
+        } else {
+          console.debug(
+            `Transfer transaction stringified: ${JSON.stringify(
+              transferTransaction
+            )}`
+          )
+          // Throw to retry
+          throw new Error(error ?? 'Unknown root wallet USDC recovery error')
         }
-
-        console.debug(
-          `Transfer transaction stringified: ${JSON.stringify(
-            transferTransaction
-          )}`
-        )
-        // Throw to retry
-        throw new Error(error ?? 'Unknown root wallet USDC recovery error')
       },
       {
         minTimeout: TRANSACTION_RETRY_DELAY_MS,
