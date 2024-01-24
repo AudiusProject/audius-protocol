@@ -1,5 +1,5 @@
 import { AudiusClient } from './AudiusClient'
-import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
+import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs'
 
 declare global {
   interface Window {
