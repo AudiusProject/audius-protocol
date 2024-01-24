@@ -499,7 +499,7 @@ export const createTransferToUserBankTransaction = async (
   const memoInstruction = new TransactionInstruction({
     keys: [
       {
-        pubkey: associatedTokenAccount,
+        pubkey: wallet.publicKey,
         isSigner: true,
         isWritable: true
       }
