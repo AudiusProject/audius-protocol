@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 
 import {
   MAX_DISPLAY_NAME_LENGTH,
+  Name,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -11,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { make } from 'common/store/analytics/actions'
 import {
   setField,
   setValueField,
@@ -19,6 +21,8 @@ import {
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
+  getEmailField,
+  getHandleField,
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,
@@ -77,6 +81,8 @@ export const FinishProfilePage = () => {
   const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
+  const handle = useSelector(getHandleField)
+  const email = useSelector(getEmailField)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
@@ -92,15 +98,19 @@ export const FinishProfilePage = () => {
   const setCoverPhoto = useCallback(
     (value: ImageFieldValue) => {
       dispatch(setField('coverPhoto', value))
+      dispatch(make(Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO, { handle, email }))
     },
-    [dispatch]
+    [dispatch, email, handle]
   )
 
   const setProfileImage = useCallback(
     (value: ImageFieldValue) => {
       dispatch(setField('profileImage', value))
+      dispatch(
+        make(Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO, { handle, email })
+      )
     },
-    [dispatch]
+    [dispatch, email, handle]
   )
 
   const setDisplayName = useCallback(

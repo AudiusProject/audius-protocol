@@ -1,4 +1,4 @@
-import { SquareSizes, accountSelectors } from '@audius/common'
+import { Name, SquareSizes, accountSelectors } from '@audius/common'
 import {
   Avatar,
   Box,
@@ -11,7 +11,9 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import {
   getHandleField,
   getIsVerified,
@@ -90,6 +92,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     onCoverPhotoChange,
     size
   } = props
+  const dispatch = useDispatch()
   const profileImageField = useSelector(getProfileImageField)
   const { value: displayNameField } = useSelector(getNameField)
   const { value: handleField } = useSelector(getHandleField)
@@ -142,6 +145,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         {isEditing ? (
           <ImageField
             onChange={onCoverPhotoChange}
+            onError={(error) => {
+              dispatch(
+                make(Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR, { error })
+              )
+            }}
             name='coverPhoto'
             imageResizeOptions={{ square: false }}
           >
@@ -182,6 +190,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             onChange={onProfileImageChange}
             name='profileImage'
             css={{ flex: 0 }}
+            onError={(error) => {
+              dispatch(
+                make(Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR, { error })
+              )
+            }}
           >
             {(uploadedImage) => (
               <ProfileImageAvatar
