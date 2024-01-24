@@ -6,6 +6,8 @@ import { NextFunction, Request, Response } from 'express'
 import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
 import { decodeAbi } from '../abi'
+import { readAAOState, storeAAOState } from '../redis'
+import { StatusCodes } from 'http-status-codes'
 
 type AbuseRule = {
   rule: number
@@ -13,7 +15,7 @@ type AbuseRule = {
   action: 'pass' | 'fail'
 }
 
-type AbuseStatus = {
+export type AbuseStatus = {
   blockedFromRelay: boolean
   blockedFromNotifications: boolean
   blockedFromEmails: boolean
@@ -43,35 +45,63 @@ export const antiAbuseMiddleware = async (
     next()
     return
   }
-  await detectAbuse(aaoConfig, user, ip, next)
+
+  // fire and async update aao cache
+  detectAbuse(aaoConfig, user, ip)
+
+  if (!user.handle) {
+    internalError(
+      next,
+      `user found but without handle, investigate ${JSON.stringify(user)}`
+    )
+    return
+  }
+
+  // read from cache and determine if blocked from relay
+  const userAbuseRules = await readAAOState(user.handle)
+  if (userAbuseRules === null) {
+    // first relay, allow passage
+    next()
+    return
+  }
+
+  if (userAbuseRules?.blockedFromRelay) {
+    antiAbuseError(next, 'blocked from relay')
+    return
+  }
+
+  // relay allowed from AAO perspective, advance forward
+  next()
 }
 
+// detects abuse for the queried user and stores in cache
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
   user: Users,
-  reqIp: string,
-  next: NextFunction
+  reqIp: string
 ) => {
   // if AAO is off or we don't yet have a handle, skip detecting abuse
   if (!aaoConfig.useAao || !user.handle) {
-    next()
     return
   }
   let rules: AbuseRule[]
   try {
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
-    logger.warn({ e }, 'error returned from antiabuse oracle')
-    // block requests on issues with aao
-    internalError(next, 'AAO unreachable')
+    logger.error({
+      name: 'INTERNAL_ERROR',
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'error returned from antiabuse oracle'
+    })
     return
   }
+  const userAbuseRules = determineAbuseRules(aaoConfig, rules)
   const {
     appliedRules,
     blockedFromRelay,
     blockedFromNotifications,
     blockedFromEmails
-  } = determineAbuseRules(aaoConfig, rules)
+  } = userAbuseRules
   logger.info(
     `detectAbuse: got info for handle ${user.handle}: ${JSON.stringify({
       appliedRules,
@@ -80,11 +110,7 @@ export const detectAbuse = async (
       blockedFromEmails
     })}`
   )
-  if (blockedFromRelay) {
-    antiAbuseError(next, 'blocked from relay')
-    return
-  }
-  next()
+  storeAAOState(user.handle, userAbuseRules)
 }
 
 // makes HTTP request to AAO
