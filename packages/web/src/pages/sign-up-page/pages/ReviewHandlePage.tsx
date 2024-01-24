@@ -86,7 +86,7 @@ export const ReviewHandlePage = () => {
           />
           {hasImages ? (
             <Paper gap='xl' direction='column'>
-              <AccountHeader mode='viewing' size='small' />
+              <AccountHeader mode='viewing' size='small' isPaperHeader />
               <HandleField autoFocus css={{ padding: spacing.l }} />
             </Paper>
           ) : (

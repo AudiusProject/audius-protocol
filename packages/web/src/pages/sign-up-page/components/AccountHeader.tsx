@@ -39,6 +39,8 @@ type AccountHeaderProps = {
   formProfileImage?: ImageFieldValue
   onProfileImageChange?: (value: ImageFieldValue) => void
   onCoverPhotoChange?: (value: ImageFieldValue) => void
+  // If true, the banner will be rendered as a paper header
+  isPaperHeader?: boolean
 }
 
 const ProfileImageAvatar = ({
@@ -90,7 +92,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     formProfileImage,
     onProfileImageChange,
     onCoverPhotoChange,
-    size
+    size,
+    isPaperHeader
   } = props
   const dispatch = useDispatch()
   const profileImageField = useSelector(getProfileImageField)
@@ -158,11 +161,12 @@ export const AccountHeader = (props: AccountHeaderProps) => {
                 coverPhotoUrl={uploadedImage?.url}
                 profileImageUrl={formProfileImage?.url}
                 isEditing
+                isPaperHeader={isPaperHeader}
               />
             )}
           </ImageField>
         ) : (
-          <CoverPhotoBanner />
+          <CoverPhotoBanner isPaperHeader={isPaperHeader} />
         )}
       </Box>
       <Flex
