@@ -123,7 +123,9 @@ const CollectionHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       (!isAlbum || isEditAlbumsEnabled) && isOwner
-        ? OverflowAction.EDIT_PLAYLIST
+        ? isAlbum
+          ? OverflowAction.EDIT_ALBUM
+          : OverflowAction.EDIT_PLAYLIST
         : null,
       isOwner && !isAlbum && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
