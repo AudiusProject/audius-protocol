@@ -1,6 +1,8 @@
 when: << pipeline.parameters.run-protocol-dashboard-workflow >>
 jobs:
-  - protocol-dashboard-init
+  - protocol-dashboard-init:
+      context:
+        - Vercel
   - protocol-dashboard-build-staging:
       context:
         - Vercel
