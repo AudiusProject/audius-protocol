@@ -11,6 +11,7 @@ import { PurchaseVendor } from 'models/PurchaseContent'
 import { Status } from 'models/Status'
 import {
   createPaymentRouterRouteTransaction,
+  createRootWalletRecoveryTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -53,6 +54,9 @@ type PurchaseStepParams = {
   retryDelayMs?: number
   maxRetryCount?: number
 }
+
+const TRANSACTION_RETRY_COUNT = 3
+const TRANSACTION_RETRY_DELAY_MS = 1000
 
 function* purchaseStep({
   desiredAmount,
@@ -150,14 +154,17 @@ function* transferStep({
   wallet,
   userBank,
   amount,
-  maxRetryCount = 3,
-  retryDelayMs = 1000
+  maxRetryCount = TRANSACTION_RETRY_COUNT,
+  retryDelayMs = TRANSACTION_RETRY_DELAY_MS,
+  memo
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
   maxRetryCount?: number
   retryDelayMs?: number
+  usePaymentRouter?: boolean
+  memo: string
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)
@@ -177,7 +184,7 @@ function* transferStep({
           userBank,
           mint: 'usdc',
           amount,
-          memo: 'In-App $USDC Purchase: Link by Stripe',
+          memo,
           feePayer: feePayerOverride,
           recentBlockhash
         }
@@ -290,6 +297,7 @@ function* doBuyUSDC({
         yield* call(transferStep, {
           wallet: rootAccount,
           userBank,
+          memo: 'In-App $USDC Purchase: Link by Stripe',
           amount: newBalance
         })
         break
@@ -393,7 +401,8 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    yield* call(waitForValue, getFeePayer)
+    const feePayerString: string = yield* call(waitForValue, getFeePayer)
+    const feePayerKey = new PublicKey(feePayerString)
     const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
@@ -426,11 +435,50 @@ function* recoverPurchaseIfNecessary() {
         userBank: userBankAddress
       })
     )
-    yield* call(transferStep, {
-      wallet: rootAccount,
-      userBank,
-      amount
-    })
+
+    yield* call(
+      retry,
+      async () => {
+        const transferTransaction = await createRootWalletRecoveryTransaction(
+          audiusBackendInstance,
+          {
+            wallet: rootAccount,
+            userBank,
+            amount,
+            feePayer: feePayerKey
+          }
+        )
+        transferTransaction.partialSign(rootAccount)
+
+        console.debug(`Starting root wallet USDC recovery transaction...`)
+        const { res, error } = await relayTransaction(audiusBackendInstance, {
+          transaction: transferTransaction
+        })
+
+        if (res) {
+          console.debug(`Recovery transaction succeeded: ${res}`)
+          return res
+        } else {
+          console.debug(
+            `Transfer transaction stringified: ${JSON.stringify(
+              transferTransaction
+            )}`
+          )
+          // Throw to retry
+          throw new Error(error ?? 'Unknown root wallet USDC recovery error')
+        }
+      },
+      {
+        minTimeout: TRANSACTION_RETRY_DELAY_MS,
+        retries: TRANSACTION_RETRY_COUNT,
+        factor: 1,
+        onRetry: (e: Error, attempt: number) => {
+          console.error(
+            `Got error recovering USDC from root wallet to user bank: ${e}. Attempt ${attempt}. Retrying...`
+          )
+        }
+      }
+    )
 
     yield* put(recoveryStatusChanged({ status: Status.SUCCESS }))
     yield* call(
