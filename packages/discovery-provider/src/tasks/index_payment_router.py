@@ -180,6 +180,16 @@ def get_highest_payment_router_tx_slot(session: Session):
     return slot
 
 
+def get_account_owner_from_balance_change(
+    sender_account: str, balance_changes: dict[str, BalanceChange]
+):
+    """Finds the owner of the sender account by looking at the balance changes"""
+    if sender_account in balance_changes:
+        return balance_changes[sender_account]["owner"]
+    else:
+        return None
+
+
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
 def cache_latest_sol_payment_router_db_tx(redis: Redis, tx):
@@ -397,6 +407,14 @@ def attempt_index_recovery_transfer(
             f"Recovery transfer must have exactly one receiver account. Received: {','.join([a['user_bank_account'] for a in receiver_user_accounts])}"
         )
 
+    sender_account_owner = get_account_owner_from_balance_change(
+        sender_account=sender_account, balance_changes=balance_changes
+    )
+    if sender_account_owner is None:
+        raise Exception(
+            f"Unexpectedly found no owner account for sender account {sender_account}"
+        )
+
     receiver_user_account = receiver_user_accounts[0]
     receiver_bank_account = receiver_user_account["user_bank_account"]
     receiver_balance_change = balance_changes[receiver_bank_account]
@@ -410,7 +428,9 @@ def attempt_index_recovery_transfer(
             and_(
                 USDCTransactionsHistory.user_bank == receiver_bank_account,
                 USDCTransactionsHistory.method == USDCTransactionMethod.send,
-                USDCTransactionsHistory.tx_metadata == sender_account,
+                # The original transaction will be indexed with the owner account
+                # of the original recipient
+                USDCTransactionsHistory.tx_metadata == sender_account_owner,
             )
         )
         .order_by(desc(USDCTransactionsHistory.transaction_created_at))
@@ -457,6 +477,16 @@ def index_transfer(
     timestamp: datetime,
     tx_sig: str,
 ):
+    sender_metadata_address = sender_account
+    # If sending account was a user bank, leave that as the address
+    # Otherwise, map it to an owning solana wallet
+    if sender_user_account is None:
+        sender_metadata_address = (
+            get_account_owner_from_balance_change(
+                sender_account=sender_account, balance_changes=balance_changes
+            )
+            or sender_account
+        )
     for user_account in receiver_user_accounts:
         balance_change = balance_changes[user_account["user_bank_account"]]
         usdc_tx_received = USDCTransactionsHistory(
@@ -468,7 +498,7 @@ def index_transfer(
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
             balance=Decimal(balance_change["post_balance"]),
-            tx_metadata=sender_account,
+            tx_metadata=sender_metadata_address,
         )
         session.add(usdc_tx_received)
         logger.debug(
