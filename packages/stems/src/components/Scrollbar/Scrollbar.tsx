@@ -1,12 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useMemo,
-  forwardRef,
-  Ref,
-  useCallback,
-  useId
-} from 'react'
+import { useEffect, useRef, forwardRef, Ref, useCallback, useId } from 'react'
 
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
