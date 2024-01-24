@@ -3,11 +3,12 @@ import { EventEmitter } from 'events'
 import type { AudiusSdk } from '@audius/sdk'
 import { AntiAbuseOracleSelector, sdk } from '@audius/sdk'
 
+import { env } from 'app/env'
+
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 import { claimableTokensService, rewardManagerService } from './solana'
 import { getStorageNodeSelector } from './storageNodeSelector'
-import { env } from 'app/env'
 
 let inProgress = false
 const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
