@@ -49,6 +49,8 @@ export const getFinishedSignUpProcess = (state: AppState) =>
   state.signOn.finishedSignUpProcess
 export const getReferrer = (state: AppState) => state.signOn.referrer
 
+export const getHidePreviewHint = (state: AppState) =>
+  state.signOn.hidePreviewHint
 export const getFollowArtists = (state: AppState) => state.signOn.followArtists
 export const getFollowIds = (state: AppState) =>
   state.signOn.followArtists.selectedUserIds
