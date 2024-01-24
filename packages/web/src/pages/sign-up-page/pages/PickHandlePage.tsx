@@ -33,7 +33,10 @@ import {
 import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import {
+  SocialMediaLoginOptions,
+  SocialPlatform
+} from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
@@ -47,8 +50,8 @@ type SocialMediaSectionProps = {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
-  onStart: () => void
-  onError: () => void
+  onStart: (platform: SocialPlatform) => void
+  onError: (error: Error, platform: SocialPlatform) => void
 }
 const SocialMediaSection = (props: SocialMediaSectionProps) => {
   const { onCompleteSocialMediaLogin, onStart, onError } = props
@@ -106,7 +109,8 @@ export const PickHandlePage = () => {
     handleErrorSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
-    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial,
+    page: 'pick-handle'
   })
 
   const navigate = useNavigateToPage()

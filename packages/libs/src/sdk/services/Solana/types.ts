@@ -1,71 +1,45 @@
+import type { WalletAdapterProps } from '@solana/wallet-adapter-base'
 import {
   PublicKey,
-  TransactionInstruction,
   VersionedTransaction,
-  ConnectionConfig,
   SendOptions,
-  AddressLookupTableAccount
+  Transaction
 } from '@solana/web3.js'
-import type * as runtime from '../../api/generated/default/runtime'
 import { z } from 'zod'
-import type { Prettify } from '../../utils/prettify'
-import type { Solana } from './Solana'
 
-export type SolanaConfigInternal = {
+import type { Prettify } from '../../utils/prettify'
+import { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
+
+import type { SolanaRelay } from './SolanaRelay'
+
+export type SolanaWalletAdapter = WalletAdapterProps
+
+export type SolanaConfig = {
   /**
-   * Middleware for HTTP requests to the Solana relay service.
+   * Selector that finds a healthy discovery node.
    */
-  middleware?: runtime.Middleware[]
-  /**
-   * Map from token mint name to public key address.
-   */
-  mints: Record<Mint, PublicKey>
-  /**
-   * Map from program name to program ID public key address.
-   */
-  programIds: Record<Program, PublicKey>
-  /**
-   * The endpoint to use for the RPC.
-   */
-  rpcEndpoint: string
-  /**
-   * Configuration to use for the RPC connection.
-   */
-  rpcConfig?: ConnectionConfig
+  discoveryNodeSelector: DiscoveryNodeSelectorService
 }
 
-export type SolanaConfig = Prettify<
-  Partial<Omit<SolanaConfigInternal, 'mints' | 'programIds'>> & {
-    mints?: Prettify<Partial<Record<Mint, PublicKey>>>
-    programIds?: Prettify<Partial<Record<Program, PublicKey>>>
-  }
->
-
-export type SolanaService = Solana
-
-export type Program =
-  | 'claimableTokens'
-  | 'rewardManager'
-  | 'paymentRouter'
-  | 'trackListenCount'
+export type SolanaRelayService = SolanaRelay
 
 export const MintSchema = z.enum(['wAUDIO', 'USDC']).default('wAUDIO')
 
 export type Mint = z.infer<typeof MintSchema>
 
-export const PublicKeySchema = z.custom<PublicKey>((data) => {
-  try {
-    new PublicKey(data as PublicKey)
-    return true
-  } catch {
-    return false
-  }
-})
+export const PublicKeySchema = z.union([
+  z.string().transform<PublicKey>((data) => {
+    return new PublicKey(data)
+  }),
+  z.custom<PublicKey>((data) => {
+    return data instanceof PublicKey
+  })
+])
 
 export const RelaySchema = z
   .object({
-    transaction: z.custom<VersionedTransaction>(
-      (tx) => tx instanceof VersionedTransaction
+    transaction: z.custom<VersionedTransaction | Transaction>(
+      (tx) => tx instanceof VersionedTransaction || tx instanceof Transaction
     ),
     /**
      * Confirmation options used when sending the transaction on the server.
@@ -128,34 +102,3 @@ export type RelayRequestBody = Prettify<
     transaction: string
   }
 >
-
-export const BuildTransactionSchema = z
-  .object({
-    instructions: z
-      .array(
-        z.custom<TransactionInstruction>(
-          (instr) => instr instanceof TransactionInstruction
-        )
-      )
-      .min(1),
-    recentBlockhash: z.string().optional(),
-    feePayer: PublicKeySchema.optional(),
-    /**
-     * Either the public keys or actual account data for related address lookup tables.
-     */
-    addressLookupTables: z
-      .union([
-        z.array(PublicKeySchema).default([]),
-        z
-          .array(
-            z.custom<AddressLookupTableAccount>(
-              (arg) => arg instanceof AddressLookupTableAccount
-            )
-          )
-          .default([])
-      ])
-      .optional()
-  })
-  .strict()
-
-export type BuildTransactionRequest = z.infer<typeof BuildTransactionSchema>

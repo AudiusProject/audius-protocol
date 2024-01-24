@@ -74,7 +74,8 @@ export const CreateEmailPage = () => {
     handleErrorSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: resetSignOn,
-    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial,
+    page: 'create-email'
   })
 
   const handleCompleteSocialMediaLogin = useCallback(

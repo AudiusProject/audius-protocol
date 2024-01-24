@@ -90,7 +90,8 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
-    const doesUserHaveStreamAccess = !!track.access.stream
+    const doesUserHaveStreamAccess =
+      !track.is_stream_gated || !!track.access.stream
     return {
       id: track.track_id,
       uid: entry.uid,
@@ -340,7 +341,8 @@ export function* watchNext() {
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
     const currentUserId = yield* select(getUserId)
-    const doesUserHaveStreamAccess = !!track?.access?.stream
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
 
     // Skip deleted, owner deactivated, or locked gated track
     if (
@@ -451,7 +453,8 @@ export function* watchPrevious() {
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
       const currentUserId = yield* select(getUserId)
-      const doesUserHaveStreamAccess = !!track?.access?.stream
+      const doesUserHaveStreamAccess =
+        !track?.is_stream_gated || !!track?.access?.stream
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.

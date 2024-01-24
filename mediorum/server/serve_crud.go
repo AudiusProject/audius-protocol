@@ -32,6 +32,8 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	if err != nil {
 		return c.String(500, fmt.Sprintf("Failed to query ops: %v", err))
 	}
+
+	c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=300")
 	return c.JSON(200, ops)
 }
 

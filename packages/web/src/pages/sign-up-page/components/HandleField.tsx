@@ -20,6 +20,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
+import { SocialPlatform } from './SocialMediaLoginOptions'
 
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
@@ -33,8 +34,8 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
-  onStartSocialMediaLogin?: () => void
-  onErrorSocialMediaLogin?: () => void
+  onStartSocialMediaLogin?: (platform: SocialPlatform) => void
+  onErrorSocialMediaLogin?: (error: Error, platform: SocialPlatform) => void
 }
 
 export const HandleField = forwardRef(
@@ -53,10 +54,13 @@ export const HandleField = forwardRef(
 
     const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
-    const handleVerifyHandleError = useCallback(() => {
-      toast(socialMediaMessages.verificationError)
-      onErrorSocialMediaLogin?.()
-    }, [onErrorSocialMediaLogin, toast])
+    const handleVerifyHandleError = useCallback(
+      (error: Error, platform: SocialPlatform) => {
+        toast(socialMediaMessages.verificationError)
+        onErrorSocialMediaLogin?.(error, platform)
+      },
+      [onErrorSocialMediaLogin, toast]
+    )
 
     const handleLoginSuccess = useCallback(
       ({
@@ -66,7 +70,7 @@ export const HandleField = forwardRef(
       }: {
         requiresReview: boolean
         handle: string
-        platform: 'twitter' | 'instagram' | 'tiktok'
+        platform: SocialPlatform
       }) => {
         toast(socialMediaMessages.socialMediaLoginSucess(platform))
         onCompleteSocialMediaLogin?.({

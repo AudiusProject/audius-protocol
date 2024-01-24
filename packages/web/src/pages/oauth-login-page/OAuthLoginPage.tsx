@@ -19,6 +19,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './OAuthLoginPage.module.css'
+import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
 import { CTAButton } from './components/CTAButton'
 import { ContentWrapper } from './components/ContentWrapper'
 import { PermissionsSection } from './components/PermissionsSection'
@@ -53,6 +54,9 @@ export const OAuthLoginPage = () => {
   const [generalSubmitError, setGeneralSubmitError] = useState<string | null>(
     null
   )
+  const [metaMaskTransactionStatus, setMetaMaskTransactionStatus] = useState<
+    null | 'pending' | 'approved'
+  >(null) // Only applicable when tx = connect_dashboard_wallet
 
   const clearErrors = () => {
     setGeneralSubmitError(null)
@@ -66,10 +70,16 @@ export const OAuthLoginPage = () => {
     } else {
       setSignInError(null)
       setShowOtpInput(false)
+      setOtpInput('')
     }
   }
 
   const handleEmailInputChange = (input: string) => {
+    if (
+      generalSubmitError === messages.disconnectDashboardWalletWrongUserError
+    ) {
+      setGeneralSubmitError(null)
+    }
     if (otpEmail !== input) {
       toggleOtpUI(false)
     } else if (otpEmail === input && !showOtpInput) {
@@ -119,7 +129,16 @@ export const OAuthLoginPage = () => {
     error?: Error
   }) => {
     setIsSubmitting(false)
+    setMetaMaskTransactionStatus(null)
     setAndLogGeneralSubmitError(isUserError, errorMessage, error)
+  }
+
+  const handlePendingTransactionApproval = () => {
+    setMetaMaskTransactionStatus('pending')
+  }
+
+  const handleReceiveTransactionApproval = () => {
+    setMetaMaskTransactionStatus('approved')
   }
 
   const {
@@ -133,7 +152,11 @@ export const OAuthLoginPage = () => {
     userEmail,
     authorize,
     txParams
-  } = useOAuthSetup({ onError: handleAuthError })
+  } = useOAuthSetup({
+    onError: handleAuthError,
+    onPendingTransactionApproval: handlePendingTransactionApproval,
+    onReceiveTransactionApproval: handleReceiveTransactionApproval
+  })
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -145,7 +168,7 @@ export const OAuthLoginPage = () => {
       })
     )
     clearErrors()
-    if (!emailInput || !passwordInput) {
+    if (!emailInput || !passwordInput || (showOtpInput && !otpInput)) {
       setAndLogGeneralSubmitError(true, messages.missingFieldError)
       return
     }
@@ -247,6 +270,10 @@ export const OAuthLoginPage = () => {
     )
   }
 
+  if (metaMaskTransactionStatus != null) {
+    return <ApproveTransactionScreen status={metaMaskTransactionStatus} />
+  }
+
   return (
     <ContentWrapper>
       <div className={cn(styles.centeredContent, styles.titleContainer)}>
@@ -261,107 +288,110 @@ export const OAuthLoginPage = () => {
           txParams={txParams}
         />
       )}
-      {isLoggedIn ? (
-        <div className={styles.userInfoContainer}>
-          <h3 className={styles.infoSectionTitle}>{messages.signedInAs}</h3>
-          <div className={styles.tile}>
-            <ProfileInfo
-              displayNameClassName={styles.userInfoDisplayName}
-              handleClassName={styles.userInfoHandle}
-              centered={false}
-              imgClassName={styles.profileImg}
-              className={styles.userInfo}
-              user={account}
-            />
-          </div>
-          <div className={styles.signOutButtonContainer}>
-            <button className={styles.linkButton} onClick={handleSignOut}>
-              {messages.signOut}
-            </button>
-          </div>
-          <CTAButton
-            isSubmitting={isSubmitting}
-            text={
-              userAlreadyWriteAuthorized
-                ? messages.continueButton
-                : messages.authorizeButton
-            }
-            onClick={handleAlreadySignedInAuthorizeSubmit}
-          />
-        </div>
-      ) : (
-        <div className={styles.signInFormContainer}>
-          <form onSubmit={handleSignInFormSubmit}>
-            <Input
-              placeholder='Email'
-              size='medium'
-              type='email'
-              name='email'
-              id='email-input'
-              required
-              autoComplete='username'
-              value={emailInput}
-              onChange={handleEmailInputChange}
-            />
-            <Input
-              className={styles.passwordInput}
-              placeholder='Password'
-              size='medium'
-              name='password'
-              id='password-input'
-              required
-              autoComplete='current-password'
-              value={passwordInput}
-              type='password'
-              onChange={setPasswordInput}
-            />
-            {signInError == null ? null : (
-              <div className={styles.credentialsErrorContainer}>
-                <IconValidationX
-                  width={14}
-                  height={14}
-                  className={styles.credentialsErrorIcon}
-                />
-                <span className={styles.errorText}>{signInError}</span>
-              </div>
-            )}
-            {showOtpInput ? (
-              <Input
-                placeholder='Verification Code'
-                size='medium'
-                name='otp'
-                value={otpInput}
-                characterLimit={6}
-                type='number'
-                variant={'normal'}
-                onChange={setOtpInput}
-                className={cn(styles.otpInput)}
+      <div className={styles.formArea}>
+        {isLoggedIn ? (
+          <div className={styles.userInfoContainer}>
+            <h3 className={styles.infoSectionTitle}>{messages.signedInAs}</h3>
+            <div className={styles.tile}>
+              <ProfileInfo
+                displayNameClassName={styles.userInfoDisplayName}
+                handleClassName={styles.userInfoHandle}
+                centered={false}
+                imgClassName={styles.profileImg}
+                className={styles.userInfo}
+                user={account}
               />
-            ) : null}
+            </div>
+            <div className={styles.signOutButtonContainer}>
+              <button className={styles.linkButton} onClick={handleSignOut}>
+                {messages.signOut}
+              </button>
+            </div>
             <CTAButton
               isSubmitting={isSubmitting}
-              text={messages.signInButton}
-              buttonType='submit'
               isDisabled={isSubmitDisabled}
+              text={
+                userAlreadyWriteAuthorized
+                  ? messages.continueButton
+                  : messages.authorizeButton
+              }
+              onClick={handleAlreadySignedInAuthorizeSubmit}
             />
-          </form>
-          <div className={styles.signUpButtonContainer}>
-            <a
-              className={styles.linkButton}
-              href={SIGN_UP_PAGE}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              {messages.signUp}
-            </a>
           </div>
-        </div>
-      )}
-      {generalSubmitError == null ? null : (
-        <div className={styles.generalErrorContainer}>
-          <span className={styles.errorText}>{generalSubmitError}</span>
-        </div>
-      )}
+        ) : (
+          <div className={styles.signInFormContainer}>
+            <form onSubmit={handleSignInFormSubmit}>
+              <Input
+                placeholder='Email'
+                size='medium'
+                type='email'
+                name='email'
+                id='email-input'
+                required
+                autoComplete='username'
+                value={emailInput}
+                onChange={handleEmailInputChange}
+              />
+              <Input
+                className={styles.passwordInput}
+                placeholder='Password'
+                size='medium'
+                name='password'
+                id='password-input'
+                required
+                autoComplete='current-password'
+                value={passwordInput}
+                type='password'
+                onChange={setPasswordInput}
+              />
+              {signInError == null ? null : (
+                <div className={styles.credentialsErrorContainer}>
+                  <IconValidationX
+                    width={14}
+                    height={14}
+                    className={styles.credentialsErrorIcon}
+                  />
+                  <span className={styles.errorText}>{signInError}</span>
+                </div>
+              )}
+              {showOtpInput ? (
+                <Input
+                  placeholder='Verification Code'
+                  size='medium'
+                  name='otp'
+                  value={otpInput}
+                  characterLimit={6}
+                  type='number'
+                  variant={'normal'}
+                  onChange={setOtpInput}
+                  className={cn(styles.otpInput)}
+                />
+              ) : null}
+              <CTAButton
+                isSubmitting={isSubmitting}
+                text={messages.signInButton}
+                buttonType='submit'
+                isDisabled={isSubmitDisabled}
+              />
+            </form>
+            <div className={styles.signUpButtonContainer}>
+              <a
+                className={styles.linkButton}
+                href={SIGN_UP_PAGE}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                {messages.signUp}
+              </a>
+            </div>
+          </div>
+        )}
+        {generalSubmitError == null ? null : (
+          <div className={styles.generalErrorContainer}>
+            <span className={styles.errorText}>{generalSubmitError}</span>
+          </div>
+        )}
+      </div>
     </ContentWrapper>
   )
 }

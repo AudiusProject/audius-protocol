@@ -190,12 +190,18 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
       (!is_album || isEditAlbumsEnabled) && isOwner
-        ? OverflowAction.EDIT_PLAYLIST
+        ? is_album
+          ? OverflowAction.EDIT_ALBUM
+          : OverflowAction.EDIT_PLAYLIST
         : null,
-      isOwner && !is_album && is_private
+      isOwner && (!is_album || isEditAlbumsEnabled) && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && !is_album ? OverflowAction.DELETE_PLAYLIST : null,
+      isOwner && (!is_album || isEditAlbumsEnabled)
+        ? is_album
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(removeNullable)
 

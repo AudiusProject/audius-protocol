@@ -149,7 +149,9 @@ export const useParsedQueryParams = () => {
 }
 
 export const useOAuthSetup = ({
-  onError
+  onError,
+  onPendingTransactionApproval,
+  onReceiveTransactionApproval
 }: {
   onError: ({
     isUserError,
@@ -160,10 +162,13 @@ export const useOAuthSetup = ({
     errorMessage: string
     error?: Error
   }) => void
+  onPendingTransactionApproval: () => void
+  onReceiveTransactionApproval: () => void
 }) => {
   const record = useRecord()
   const history = useHistory()
   const dispatch = useDispatch()
+
   const {
     appName: queryParamAppName,
     apiKey,
@@ -474,6 +479,8 @@ export const useOAuthSetup = ({
           state,
           originUrl: parsedOrigin,
           onError,
+          onWaitForWalletSignature: onPendingTransactionApproval,
+          onReceivedWalletSignature: onReceiveTransactionApproval,
           account,
           txParams: txParams!
         })
