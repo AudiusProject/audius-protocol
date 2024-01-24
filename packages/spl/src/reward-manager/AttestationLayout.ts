@@ -5,7 +5,6 @@ import { ethAddress } from '../layout-utils'
 
 import { Attestation } from './types'
 
-const delimiter = Buffer.from('_', 'utf-8')
 export class AttestationLayout extends Layout<Attestation> {
   constructor(property?: string) {
     super(
@@ -21,6 +20,7 @@ export class AttestationLayout extends Layout<Attestation> {
   }
 
   decode(b: Uint8Array, offset = 0): Attestation {
+    const delimiter = Buffer.from('_', 'utf-8')
     const recipientEthAddress = ethAddress().decode(b, offset)
     offset += ethAddress().span + 1
     const amount = u64().decode(b, offset)
@@ -43,6 +43,7 @@ export class AttestationLayout extends Layout<Attestation> {
   }
 
   encode(src: Attestation, b: Uint8Array, offset = 0) {
+    const delimiter = Buffer.from('_', 'utf-8')
     let layoutOffset = offset
     layoutOffset += ethAddress().encode(
       src.recipientEthAddress,
