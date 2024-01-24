@@ -351,7 +351,7 @@ def test_process_payment_router_tx_details_transfer_recovery(app):
             "method": USDCTransactionMethod.send,
             "change": -1000000,
             "balance": 0,
-            "tx_metadata": transactionSenderUsdcAccount,
+            "tx_metadata": transactionSenderAddress,
         }
     ]
 
@@ -400,7 +400,7 @@ def test_process_payment_router_tx_details_transfer_partial_recovery(
             "method": USDCTransactionMethod.send,
             "change": -2000000,
             "balance": 0,
-            "tx_metadata": transactionSenderUsdcAccount,
+            "tx_metadata": transactionSenderAddress,
         }
     ]
 
@@ -451,7 +451,7 @@ def test_process_payment_router_tx_details_transfer_over_recovery(
             "method": USDCTransactionMethod.send,
             "change": -500000,
             "balance": 0,
-            "tx_metadata": transactionSenderUsdcAccount,
+            "tx_metadata": transactionSenderAddress,
         }
     ]
 
