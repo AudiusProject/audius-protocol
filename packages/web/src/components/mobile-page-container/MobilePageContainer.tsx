@@ -2,17 +2,16 @@ import { ReactNode, useEffect, useContext } from 'react'
 
 import { playerSelectors, useInstanceVar } from '@audius/common'
 import cn from 'classnames'
-import { Helmet } from 'react-helmet'
 import { connect } from 'react-redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import { ScrollContext } from 'components/scroll-provider/ScrollProvider'
 import { AppState } from 'store/types'
 import { getPathname } from 'utils/route'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 
 import styles from './MobilePageContainer.module.css'
-import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 
 const { getHasTrack } = playerSelectors
 

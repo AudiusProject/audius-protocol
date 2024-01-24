@@ -10,17 +10,16 @@ import {
 
 import { Nullable } from '@audius/common'
 import cn from 'classnames'
-import { Helmet } from 'react-helmet'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
+import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
 
 import styles from './Page.module.css'
-import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 
 const HEADER_MARGIN_PX = 32
 // Pixels on the right side of the header to account for potential scrollbars
