@@ -274,7 +274,7 @@ def test_get_attestation_weekly_pool_exhausted(app):
 
 
 @pytest.fixture
-def patch_get_all_other_nodes():
+def patch_get_all_nodes():
     with patch(
         "src.queries.get_attestation.get_all_discovery_nodes_cached",
         return_value=[
@@ -284,7 +284,7 @@ def patch_get_all_other_nodes():
         yield
 
 
-def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
+def test_get_create_sender_attestation(app, patch_get_all_nodes):
     new_sender_address = "0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
     owner_wallet, sender_attestation = get_create_sender_attestation(new_sender_address)
 
@@ -317,7 +317,7 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
     )
 
 
-def test_get_create_sender_attestation_not_registered(app, patch_get_all_other_nodes):
+def test_get_create_sender_attestation_not_registered(app, patch_get_all_nodes):
     new_sender_address = "0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
     with pytest.raises(
         Exception,
