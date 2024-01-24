@@ -59,6 +59,13 @@ const messages = {
 
 const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
 
+const DISABLE_MODAL_CLOSE_PAGES = new Set([
+  WithdrawUSDCModalPages.PREPARE_TRANSFER,
+  WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
+  WithdrawUSDCModalPages.COINFLOW_TRANSFER,
+  WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
+])
+
 const WithdrawUSDCFormSchema = (
   userBalanceCents: number,
   minWithdrawBalanceCents: number
@@ -228,9 +235,13 @@ export const WithdrawUSDCModal = () => {
       isOpen={isOpen}
       onClose={onClose}
       onClosed={handleOnClosed}
+      dismissOnClickOutside={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
       bodyClassName={styles.modal}
     >
-      <ModalHeader onClose={onClose}>
+      <ModalHeader
+        onClose={onClose}
+        showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
+      >
         <Text
           variant='label'
           color='neutralLight2'
