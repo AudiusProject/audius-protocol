@@ -61,7 +61,9 @@ const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
 
 const DISABLE_MODAL_CLOSE_PAGES = new Set([
   WithdrawUSDCModalPages.PREPARE_TRANSFER,
-  WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
+  WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
+  WithdrawUSDCModalPages.COINFLOW_TRANSFER,
+  WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
 ])
 
 const WithdrawUSDCFormSchema = (
