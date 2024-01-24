@@ -1,6 +1,6 @@
 import { HTMLProps, useContext } from 'react'
 
-import { UserMetadata, WidthSizes } from '@audius/common'
+import { UserMetadata, WidthSizes, formatCount } from '@audius/common'
 import {
   Box,
   Divider,
@@ -163,14 +163,14 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconNote width={16} height={16} color='subdued' />
                 <Text variant='body' size='s' strength='strong'>
-                  {track_count}
+                  {formatCount(track_count)}
                 </Text>
               </Flex>
               <Divider orientation='vertical' />
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconUser width={16} height={16} color='subdued' />
                 <Text variant='body' size='s' strength='strong'>
-                  {follower_count}
+                  {formatCount(follower_count)}
                 </Text>
               </Flex>
             </Flex>
