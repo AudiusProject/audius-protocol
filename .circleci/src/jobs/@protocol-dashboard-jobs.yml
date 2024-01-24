@@ -24,6 +24,10 @@ protocol-dashboard-init:
     - save_cache:
         key: dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
         paths:
+          - node_modules
+          - packages/libs/node_modules
+          - packages/harmony/node_modules
+          - packages/common/node_modules
           - protocol-dashboard/node_modules
 
     # Lint
