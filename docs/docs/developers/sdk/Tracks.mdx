@@ -481,7 +481,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`               | The ID of the user                                                   | **Required** |
 | `metadata` | _see code block below_ | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
 
-```json
+```json title="favoriteTrack metadata payload"
 {
   isSaveOfRepost: boolean
 }
@@ -570,7 +570,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`               | The ID of the user                                                    | **Required** |
 | `metadata` | _see code block below_ | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
 
-```json
+```json title="repostTrack metadata payload"
 {
   isRepostOfRepost: boolean
 }
