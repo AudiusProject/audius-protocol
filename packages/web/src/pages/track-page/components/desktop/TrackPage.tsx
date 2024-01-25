@@ -212,6 +212,7 @@ const TrackPage = ({
       variant='flush'
       scrollableSearch
       fromOpacity={1}
+      noIndex={defaults.isUnlisted}
     >
       <div className={styles.headerWrapper}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
