@@ -1,19 +1,9 @@
-import { AudiusSdk } from '@audius/sdk'
 import { initTRPC } from '@trpc/server'
 import * as trpcExpress from '@trpc/server/adapters/express'
-import { Sql } from 'postgres'
-import { ScheduledReleaseService } from './services/scheduledReleaseService'
-import { XmlProcessorService } from './services/xmlProcessorService'
 
 // created for each request
-// TODO: add context for db and auth
-
-export type CustomContext = {
-  sql: Sql
-  audiusSdk: AudiusSdk
-  xmlProcessorService: XmlProcessorService
-  scheduledReleaseService: ScheduledReleaseService
-}
+// TODO: add context auth
+export type CustomContext = Record<string, never>
 
 export function createContext(
   options: trpcExpress.CreateExpressContextOptions,

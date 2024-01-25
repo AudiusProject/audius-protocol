@@ -6,38 +6,37 @@ const envFile = process.env.NODE_ENV === 'stage' ? '.env.stage' : '.env'
 dotenv.config({ path: path.resolve(process.cwd(), envFile) })
 
 import createApp from './app'
-import { initServices } from './initServices'
+import { dialDb } from './services/dbService'
 import { createContext, router } from './trpc'
 import * as trpcExpress from '@trpc/server/adapters/express'
-import deliveryRouter from './routers/deliveryRouter'
-import releaseRouter from './routers/releaseRouter'
+import collectionRouters from './routers/collectionRouters'
 
 // TODO: Use superjson
 const appRouter = router({
-  delivery: deliveryRouter,
-  release: releaseRouter,
+  uploads: collectionRouters['uploads'],
+  indexed: collectionRouters['indexed'],
+  parsed: collectionRouters['parsed'],
+  published: collectionRouters['published'],
 })
 
 export type AppRouter = typeof appRouter
 
-const port = process.env.DDEX_PORT || 3000
+const port = process.env.DDEX_PORT || 9000
 
 ;(async () => {
   try {
-    const services = await initServices()
+    const dbUrl =
+      process.env.DDEX_MONGODB_URL ||
+      'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin'
+    await dialDb(dbUrl)
 
-    const app = createApp(
-      services.sql,
-      services.audiusSdk,
-      services.xmlProcessorService,
-      services.scheduledReleaseService
-    )
+    const app = createApp()
 
     app.use(
       '/trpc',
       trpcExpress.createExpressMiddleware({
         router: appRouter,
-        createContext: (opts) => createContext(opts, services),
+        createContext: (opts) => createContext(opts, {}),
       })
     )
 
@@ -45,7 +44,7 @@ const port = process.env.DDEX_PORT || 3000
       console.log(`[server]: Server is running at http://localhost:${port}`)
     })
   } catch (error) {
-    console.error('Failed to initialize services:', error)
+    console.error('Failed to initialize:', error)
     process.exit(1)
   }
 })()
