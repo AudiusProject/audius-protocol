@@ -137,6 +137,7 @@ export const StemsAndDownloadsField = () => {
     set(initialValues, ALLOW_ORIGINAL, isOriginalAvailable)
     set(initialValues, CID, cid ?? null)
     set(initialValues, STEMS, stemsValue ?? [])
+    set(initialValues, STREAM_CONDITIONS, streamConditions)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(
@@ -151,6 +152,7 @@ export const StemsAndDownloadsField = () => {
     isOriginalAvailable,
     cid,
     stemsValue,
+    streamConditions,
     isDownloadGated,
     tempDownloadConditions
   ])
@@ -174,8 +176,8 @@ export const StemsAndDownloadsField = () => {
 
       // If download does not inherit from stream conditions,
       // extract the correct download conditions based on the selected availability type
-      const downloadInheritConditions = !!streamConditions
-      if (!downloadInheritConditions) {
+      const inheritConditions = !!streamConditions
+      if (!inheritConditions) {
         setIsDownloadGated(false)
         setDownloadConditions(null)
 

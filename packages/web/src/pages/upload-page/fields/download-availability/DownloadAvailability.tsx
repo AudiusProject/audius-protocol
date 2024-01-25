@@ -1,17 +1,31 @@
 import { useCallback } from 'react'
 
-import { DownloadTrackAvailabilityType } from '@audius/common'
+import {
+  AccessConditions,
+  DownloadTrackAvailabilityType,
+  Nullable,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common'
 import {
   Box,
   Flex,
   IconUserFollowing,
   IconVisibilityPublic,
   IconCart,
-  Text
+  Text,
+  TextLink,
+  IconError
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 
 import { Divider } from 'components/divider'
+import { HelpCallout } from 'components/help-callout/HelpCallout'
+import { useTrackField } from 'pages/upload-page/hooks'
+
+import { STREAM_CONDITIONS } from '../AccessAndSaleField'
 
 import { DownloadPriceField } from './DownloadPriceField'
 
@@ -20,7 +34,16 @@ const messages = {
   customize: 'Customize who has access to download your files.',
   public: 'Public',
   followers: 'Followers',
-  premium: 'Premium'
+  premium: 'Premium',
+  callout: {
+    premium:
+      "You're uploading a premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+    specialAccess:
+      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+    collectibleGated:
+      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+    accessAndSale: 'Access & Sale Settings'
+  }
 }
 
 type DownloadAvailabilityProps = {
@@ -32,6 +55,31 @@ export const DownloadAvailability = ({
   value,
   setValue
 }: DownloadAvailabilityProps) => {
+  const [{ value: streamConditions }] =
+    useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
+  const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
+  const isSpecialAccess =
+    isContentFollowGated(streamConditions) ||
+    isContentTipGated(streamConditions)
+  const isCollectibleGated = isContentCollectibleGated(streamConditions)
+  const shouldRenderCallout =
+    isUsdcGated || isSpecialAccess || isCollectibleGated
+
+  const getCalloutMessage = useCallback(() => {
+    if (isUsdcGated) {
+      return messages.callout.premium
+    }
+    if (isSpecialAccess) {
+      return messages.callout.specialAccess
+    }
+    if (isCollectibleGated) {
+      return messages.callout.collectibleGated
+    }
+    return ''
+  }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
+
+  const handleCalloutClick = useCallback(() => {}, [])
+
   const options = [
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
@@ -57,26 +105,52 @@ export const DownloadAvailability = ({
     [setValue]
   )
 
+  const textCss = shouldRenderCallout
+    ? {
+        opacity: 0.5
+      }
+    : {}
+
   return (
     <>
       <Flex direction='column'>
-        <Text variant='title' size='l'>
+        <Text variant='title' size='l' css={textCss}>
           {messages.downloadAvailability}
         </Text>
         <Box mt='s'>
-          <Text variant='body'>{messages.customize}</Text>
+          <Text variant='body' css={textCss}>
+            {messages.customize}
+          </Text>
         </Box>
       </Flex>
-      <SegmentedControl
-        onSelectOption={handleOptionSelect}
-        selected={value}
-        options={options}
-        // Matches 0.18s entry animation
-        forceRefreshAfterMs={180}
-      />
-      {value === DownloadTrackAvailabilityType.USDC_PURCHASE ? (
-        <DownloadPriceField disabled={false} />
-      ) : null}
+      {shouldRenderCallout ? (
+        <HelpCallout
+          icon={<IconError css={{ alignSelf: 'center' }} />}
+          content={
+            <Text>
+              {getCalloutMessage()}
+              &nbsp;
+              <TextLink onClick={handleCalloutClick} css={{ color: '#a30cb3' }}>
+                {messages.callout.accessAndSale}
+              </TextLink>
+              .
+            </Text>
+          }
+        />
+      ) : (
+        <>
+          <SegmentedControl
+            onSelectOption={handleOptionSelect}
+            selected={value}
+            options={options}
+            // Matches 0.18s entry animation
+            forceRefreshAfterMs={180}
+          />
+          {value === DownloadTrackAvailabilityType.USDC_PURCHASE ? (
+            <DownloadPriceField disabled={false} />
+          ) : null}
+        </>
+      )}
       <Divider />
     </>
   )
