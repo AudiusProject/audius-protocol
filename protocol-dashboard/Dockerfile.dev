@@ -33,7 +33,7 @@ COPY .gitignore .gitignore
 COPY --from=turbo-builder /app/out/json/ .
 COPY --from=turbo-builder /app/out/package-lock.json ./package-lock.json
 COPY --from=turbo-builder /app/scripts ./scripts
-RUN npm i
+RUN CI=true npm i
 # Build the app and its dependencies
 COPY --from=turbo-builder /app/out/full/ .
 COPY svgr-template.js svgr-template.js
