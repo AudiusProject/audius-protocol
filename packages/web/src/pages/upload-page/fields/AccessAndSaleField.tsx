@@ -50,18 +50,18 @@ import { Text } from 'components/typography'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
-import { HiddenAvailabilityFields } from '../fields/availability/HiddenAvailabilityFields'
-import {
-  SpecialAccessFields,
-  SpecialAccessType
-} from '../fields/availability/SpecialAccessFields'
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
 import { REMIX_OF } from './RemixSettingsField'
-import { CollectibleGatedRadioField } from './availability/collectible-gated/CollectibleGatedRadioField'
-import { UsdcPurchaseGatedRadioField } from './availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
+import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'
+import {
+  SpecialAccessFields,
+  SpecialAccessType
+} from './stream-availability/SpecialAccessFields'
+import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
+import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
 const { getUserId } = accountSelectors
 
 const messages = {

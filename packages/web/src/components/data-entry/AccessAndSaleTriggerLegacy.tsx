@@ -45,7 +45,7 @@ import {
   SPECIAL_ACCESS_TYPE,
   getCombinedDefaultGatedConditionValues
 } from 'pages/upload-page/fields/AccessAndSaleField'
-import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
+import { SpecialAccessType } from 'pages/upload-page/fields/stream-availability/SpecialAccessFields'
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'

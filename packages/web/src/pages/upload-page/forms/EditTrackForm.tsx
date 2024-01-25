@@ -26,7 +26,7 @@ import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from '../fields/RemixSettingsField'
 import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
-import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
+import { defaultHiddenFields } from '../fields/stream-availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
 import { TrackMetadataFormSchema } from '../validation'
 

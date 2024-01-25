@@ -1,10 +1,4 @@
-import {
-  ChangeEventHandler,
-  FocusEventHandler,
-  useCallback,
-  useMemo,
-  useState
-} from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   AccessConditions,
@@ -17,15 +11,10 @@ import {
   StemUpload,
   USDCPurchaseConditions,
   accountSelectors,
-  decimalIntegerToHumanReadable,
-  filterDecimalString,
-  padDecimalValue,
   removeNullable,
   stemCategoryFriendlyNames,
   useFeatureFlag
 } from '@audius/common'
-import { Box, Flex } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -48,14 +37,13 @@ import {
   STREAM_CONDITIONS,
   getCombinedDefaultGatedConditionValues
 } from './AccessAndSaleField'
-import { BoxedTextField } from './BoxedTextField'
 import {
   SourceFilesView,
   dropdownRows as stemCategories
 } from './SourceFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
-import { TrackAvailabilityFieldsProps } from './availability/usdc-purchase-gated/UsdcPurchaseFields'
+import { DownloadAvailability } from './download-availability/DownloadAvailability'
 
 const { getUserId } = accountSelectors
 
@@ -68,7 +56,6 @@ const CID_BASE = 'cid'
 const CID = 'download.cid'
 const ALLOW_ORIGINAL = 'is_original_available'
 const STEMS = 'stems'
-const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
 
 const messages = {
   title: 'Stems & Downloads',
@@ -76,8 +63,6 @@ const messages = {
     'Upload your track’s source files and customize how fans download your files.',
   menuDescription:
     'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
-  downloadAvailability: 'Download Availability',
-  customize: 'Customize who has access to download your files.',
   [ALLOW_DOWNLOAD]: {
     header: 'Allow Full Track Download',
     description: 'Allow your fans to download a copy of your full track.'
@@ -95,19 +80,7 @@ const messages = {
   values: {
     allowDownload: 'MP3 Available',
     followerGated: 'Followers Only'
-  },
-  public: 'Public',
-  followers: 'Followers',
-  premium: 'Premium',
-  price: {
-    title: 'Set a Price',
-    description:
-      'Set the price fans must pay to access your stem files (minimum price of $0.99)',
-    label: 'Cost to download',
-    placeholder: '1.00'
-  },
-  dollars: '$',
-  usdc: '(USDC)'
+  }
 }
 
 export type StemsAndDownloadsFormValues = {
@@ -392,100 +365,5 @@ const StemsAndDownloadsMenuFields = () => {
         }}
       />
     </div>
-  )
-}
-
-type DownloadAvailabilityProps = {
-  value: DownloadTrackAvailabilityType
-  setValue: (value: DownloadTrackAvailabilityType) => void
-}
-
-const DownloadAvailability = ({
-  value,
-  setValue
-}: DownloadAvailabilityProps) => {
-  const handleOptionSelect = useCallback(
-    (option: DownloadTrackAvailabilityType) => {
-      setValue(option)
-    },
-    [setValue]
-  )
-
-  return (
-    <>
-      <Flex direction='column'>
-        <Text variant='title' size='large'>
-          {messages.downloadAvailability}
-        </Text>
-        <Box mt='s'>
-          <Text>{messages.customize}</Text>
-        </Box>
-      </Flex>
-      <SegmentedControl
-        onSelectOption={handleOptionSelect}
-        selected={value}
-        options={[
-          { key: DownloadTrackAvailabilityType.PUBLIC, text: messages.public },
-          {
-            key: DownloadTrackAvailabilityType.FOLLOWERS,
-            text: messages.followers
-          },
-          {
-            key: DownloadTrackAvailabilityType.USDC_PURCHASE,
-            text: messages.premium
-          }
-        ]}
-        // Matches 0.18s entry animation
-        forceRefreshAfterMs={180}
-      />
-      {value === DownloadTrackAvailabilityType.USDC_PURCHASE ? (
-        <DownloadPriceField disabled={false} />
-      ) : null}
-      <Divider />
-    </>
-  )
-}
-
-const DownloadPriceField = (props: TrackAvailabilityFieldsProps) => {
-  const { disabled } = props
-  const [{ value }, , { setValue: setDownloadPrice }] =
-    useField<number>(DOWNLOAD_PRICE)
-  const [humanizedValue, setHumanizedValue] = useState(
-    value ? decimalIntegerToHumanReadable(value) : null
-  )
-
-  const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const { human, value } = filterDecimalString(e.target.value)
-      setHumanizedValue(human)
-      setDownloadPrice(value)
-    },
-    [setDownloadPrice, setHumanizedValue]
-  )
-
-  const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (humanizedValue === null && !e.target.value) {
-        // Do nothing if there is no value set and the user just loses focus
-        return
-      }
-      setHumanizedValue(padDecimalValue(e.target.value))
-    },
-    [humanizedValue]
-  )
-
-  return (
-    <BoxedTextField
-      {...messages.price}
-      name={DOWNLOAD_PRICE}
-      label={messages.price.label}
-      value={humanizedValue ?? undefined}
-      placeholder={messages.price.placeholder}
-      startAdornment={messages.dollars}
-      endAdornment={messages.usdc}
-      onChange={handlePriceChange}
-      onBlur={handlePriceBlur}
-      disabled={disabled}
-    />
   )
 }
