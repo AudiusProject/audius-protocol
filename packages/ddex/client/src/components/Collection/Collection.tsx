@@ -8,56 +8,7 @@ import styles from './Collection.module.css'
 
 type CollectionT = 'uploads' | 'indexed' | 'parsed' | 'published'
 
-const TableHeader = ({ collection }: { collection: CollectionT }) => {
-  switch (collection) {
-    case 'uploads':
-      return (
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Uploaded By</th>
-            <th>Uploaded At</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-      )
-    case 'indexed':
-      return (
-        <thead>
-          <tr>
-            <th>Upload ID</th>
-            <th>TODO</th>
-            <th>TODO</th>
-            <th>TODO</th>
-          </tr>
-        </thead>
-      )
-    case 'parsed':
-      return (
-        <thead>
-          <tr>
-            <th>Upload ID</th>
-            <th>TODO</th>
-            <th>TODO</th>
-            <th>TODO</th>
-          </tr>
-        </thead>
-      )
-    case 'published':
-      return (
-        <thead>
-          <tr>
-            <th>Upload ID</th>
-            <th>TODO</th>
-            <th>TODO</th>
-            <th>TODO</th>
-          </tr>
-        </thead>
-      )
-  }
-}
-
-const TableData = ({
+const Table = ({
   collection,
   data
 }: {
@@ -67,55 +18,95 @@ const TableData = ({
   switch (collection) {
     case 'uploads':
       return (
-        <tbody>
-          {data.items.map((item: any) => (
-            <tr key={item.id}>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Uploaded By</th>
+              <th>Uploaded At</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )
     case 'indexed':
       return (
-        <tbody>
-          {data.items.map((item: any) => (
-            <tr key={item.id}>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>Upload ID</th>
+              <th>TODO</th>
+              <th>TODO</th>
+              <th>TODO</th>
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )
     case 'parsed':
       return (
-        <tbody>
-          {data.items.map((item: any) => (
-            <tr key={item.id}>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>Upload ID</th>
+              <th>TODO</th>
+              <th>TODO</th>
+              <th>TODO</th>
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )
     case 'published':
       return (
-        <tbody>
-          {data.items.map((item: any) => (
-            <tr key={item.id}>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
-              <td>TODO</td>
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>Upload ID</th>
+              <th>TODO</th>
+              <th>TODO</th>
+              <th>TODO</th>
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+                <td>TODO</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )
   }
 }
@@ -174,12 +165,7 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
-          {data && (
-            <table className={styles.styledTable}>
-              <TableHeader collection={collection} />
-              <TableData collection={collection} data={data} />
-            </table>
-          )}
+          {data && <Table collection={collection} data={data} />}
 
           <Flex justifyContent='space-between'>
             <Button
