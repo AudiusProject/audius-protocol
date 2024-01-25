@@ -175,7 +175,7 @@ export const SelectArtistsPage = () => {
                       name='genre'
                       label={convertGenreLabelToValue(genre as Genre)}
                       size={isMobile ? 'small' : 'large'}
-                      value={genre}
+                      value={convertGenreLabelToValue(genre as Genre)}
                       isSelected={currentGenre === genre}
                     />
                   ))}
