@@ -25,6 +25,7 @@ const BEHIND_EARLIER_PATCH_VERSION_NODE =
 const BEHIND_MINOR_VERSION_NODE = 'https://behind-minorversion.audius.co'
 const UNHEALTHY_NODE = 'https://unhealthy.audius.co'
 const UNHEALTHY_DATA_NODE = 'https://unhealthy-data.audius.co'
+const UNHEALTHY_CHAIN_NODE = 'https://unhealth-chain.audius.co'
 const UNRESPONSIVE_NODE = 'https://unresponsive.audius.co'
 const CONTENT_NODE = 'https://contentnode.audius.co'
 
@@ -161,6 +162,19 @@ const handlers = [
     }
   ),
 
+  rest.get(`${UNHEALTHY_CHAIN_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.3',
+      block_difference: 0,
+      network: {
+        discovery_nodes: NETWORK_DISCOVERY_NODES
+      },
+      chain_health: null
+    }
+    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+  }),
+
   rest.get(`${UNHEALTHY_DATA_NODE}/health_check`, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(null))
   }),
@@ -203,7 +217,8 @@ describe('discoveryNodeSelector', () => {
         BEHIND_LARGE_BLOCKDIFF_NODE,
         BEHIND_PATCH_VERSION_NODE,
         BEHIND_MINOR_VERSION_NODE,
-        ...generateUnhealthyNodes(5)
+        UNHEALTHY_CHAIN_NODE,
+        ...generateUnhealthyNodes(6)
       ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
@@ -353,7 +368,8 @@ describe('discoveryNodeSelector', () => {
         CONTENT_NODE,
         UNHEALTHY_DATA_NODE,
         UNHEALTHY_NODE,
-        UNRESPONSIVE_NODE
+        UNRESPONSIVE_NODE,
+        UNHEALTHY_CHAIN_NODE,
       ].map(addDelegateOwnerWallets),
       healthCheckThresholds: {
         minVersion: '1.2.3'
