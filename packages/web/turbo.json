@@ -1,6 +1,11 @@
 {
   "extends": ["//"],
   "pipeline": {
+    "build": {
+      "outputs": ["build/**", "build-ssr/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
     "dist": {
       "outputs": ["dist/**"],
       "dependsOn": ["^build"],
