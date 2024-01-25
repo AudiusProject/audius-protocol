@@ -58,13 +58,10 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
+    // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
+    dispatch(finishSignUp())
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
-    } else {
-      // This call is what triggers the RootScreen to redirect to the home page (via conditional rendering)
-      dispatch(finishSignUp())
-      // This call is just for analytics event tracking purposes
-      dispatch(signUpSucceeded())
     }
   }, [accountCreationStatus, dispatch, navigation])
 

@@ -104,8 +104,7 @@ const actionsMap = {
       // even if toggling b/w sign up and sign in redirects to the right place
       routeOnCompletion: state.routeOnCompletion,
       routeOnExit: state.routeOnExit,
-      isMobileSignOnVisible: state.isMobileSignOnVisible,
-      followArtists: state.followArtists
+      isMobileSignOnVisible: state.isMobileSignOnVisible
     }
   },
   [OPEN_SIGN_ON](state, action) {
