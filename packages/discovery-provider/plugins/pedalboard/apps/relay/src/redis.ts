@@ -18,7 +18,7 @@ const getRedisConnection = async () => {
 }
 
 export const aaoStateKey = (handle: string): string =>
-  `relay:aao:blocked:${handle}`
+  `relay:aao:${handle}`
 
 // stores the AAO status of a user into redis
 export const storeAAOState = async (
