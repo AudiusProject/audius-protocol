@@ -43,7 +43,7 @@ jobs:
       filters:
         branches:
           only: /^main$/
-  - protocol-dashboard-update-prod-ga-build:
+  - protocol-dashboard-update-prod-build:
       context: Pinata
       requires:
         - protocol-dashboard-deploy-prod
@@ -53,14 +53,14 @@ jobs:
   - protocol-dashboard-publish-prod-build-cids:
       context: Audius Client
       requires:
-        - protocol-dashboard-update-prod-ga-build
+        - protocol-dashboard-update-prod-build
       filters:
         branches:
           only: /^main$/
   - protocol-dashboard-hold-update-prod-records:
       type: approval
       requires:
-        - protocol-dashboard-update-prod-ga-build
+        - protocol-dashboard-update-prod-build
       filters:
         branches:
           only: /^main$/
