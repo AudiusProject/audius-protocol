@@ -51,6 +51,8 @@ const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
 
+const ARTISTS_PER_GENRE_LIMIT = 31
+
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
@@ -83,7 +85,7 @@ export const SelectArtistsPage = () => {
 
   const { data: topArtists, status: topArtistsStatus } =
     useGetTopArtistsInGenre(
-      { genre: currentGenre },
+      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
       { disabled: isFeaturedArtists }
     )
 
@@ -120,7 +122,10 @@ export const SelectArtistsPage = () => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
-            <AccountHeader mode='viewing' />
+            <AccountHeader
+              mode='viewing'
+              backButtonText={isMobile ? undefined : messages.backToGenres}
+            />
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
