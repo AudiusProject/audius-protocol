@@ -52,6 +52,9 @@ RUN adduser --system --uid 1001 nodejs
 USER nodejs
 
 WORKDIR /app
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
 COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/server
 
