@@ -193,6 +193,13 @@ export const parseHealthStatusReason = ({
     return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
   }
 
+  if (data.chain_health?.status !== "Healthy") {
+    return {
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: 'chain'
+    }
+  }
+
   return { health: HealthCheckStatus.HEALTHY }
 }
 

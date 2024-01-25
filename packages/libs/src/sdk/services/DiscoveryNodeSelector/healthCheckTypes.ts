@@ -171,7 +171,14 @@ export type HealthCheckResponseData = DeepPartial<{
   web: {
     blockhash: string
     blocknumber: number
-  }
+  },
+  chain_health: {
+    block_number: number,
+    chain_id: number,
+    hash: string,
+    status: string
+    signers: string[]
+  } | null
 }>
 
 export type HealthCheckThresholds = {
