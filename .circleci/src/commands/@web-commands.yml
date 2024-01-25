@@ -172,7 +172,6 @@ web-deploy-cloudflare:
         name: Move build
         command: |
           cd packages/web
-          mv build-<< parameters.build-type >> build
           mv build-ssr-<< parameters.build-type >> build-ssr
     - run:
         name: Copy robots.txt
@@ -185,25 +184,6 @@ web-deploy-cloudflare:
           cd packages/web
           echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env << parameters.environment >>
           npx wrangler publish --config ./src/ssr/wrangler.toml --env << parameters.environment >>
-          npx wrangler publish --env << parameters.environment >>
-    - run:
-        name: slack announce
-        command: |
-          cd packages/web
-          deploying_version=$(jq -r '.version' package.json)
-          job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
-          environment="<< parameters.environment >>"
-          if [ "$environment" = 'production' ]; then
-            json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to web \n\" } }"
-            json_content+="]}"
-            echo "Text to send to slack: $json_content"
-
-            # Send Slack message
-            curl -f -X POST -H 'Content-type: application/json' \
-              --data "$json_content" \
-              $SLACK_DAILY_DEPLOY_WEBHOOK
-          fi
 
 web-deploy-sourcemaps-s3:
   steps:
