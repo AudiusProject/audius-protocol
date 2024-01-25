@@ -19,8 +19,7 @@ type USDCPillProps = {
 }
 
 export const USDCBalancePill = ({ className }: USDCPillProps) => {
-  const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance()
-  const isLoading = balance === null || usdcBalanceStatus === Status.LOADING
+  const { data: balance, status: usdcBalanceStatus } = useUSDCBalance()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -29,7 +28,7 @@ export const USDCBalancePill = ({ className }: USDCPillProps) => {
   return (
     <div className={cn(styles.container, className)}>
       <Icon className={styles.icon} icon={LogoUSDC} size='medium' />
-      {isLoading ? (
+      {usdcBalanceStatus === Status.LOADING ? (
         <Skeleton className={styles.skeleton} />
       ) : (
         <span className={styles.amount}>${balanceFormatted}</span>
