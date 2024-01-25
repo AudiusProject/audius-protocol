@@ -8,6 +8,7 @@ import type {
 import { useQueryClient } from '@tanstack/react-query'
 import cn from 'classnames'
 
+import { Collection } from 'components/Collection/Collection'
 import { Page } from 'pages/Page'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 
@@ -218,6 +219,7 @@ const Upload = () => {
     <Page>
       <Flex gap='xl' direction='column'>
         <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
+        <Collection collection='uploads' />
       </Flex>
     </Page>
   )
