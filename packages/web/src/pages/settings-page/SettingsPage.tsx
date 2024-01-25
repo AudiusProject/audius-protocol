@@ -1,21 +1,18 @@
 import { RefObject } from 'react'
 
-import { connect } from 'react-redux'
-
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import SettingsPageProvider from './SettingsPageProvider'
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
 import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
 
-type OwnProps = {
+type SettingsPageProps = {
   containerRef: RefObject<HTMLDivElement>
   subPage?: SubPage
 }
 
-type SettingsPageProps = ReturnType<typeof mapStateToProps> & OwnProps
-const SettingsPage = ({ isMobile, subPage }: SettingsPageProps) => {
+const SettingsPage = ({ subPage }: SettingsPageProps) => {
+  const isMobile = useIsMobile()
   const content = isMobile ? MobileSettingsPage : DesktopSettingsPage
 
   return (
@@ -23,10 +20,4 @@ const SettingsPage = ({ isMobile, subPage }: SettingsPageProps) => {
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(SettingsPage)
+export default SettingsPage

@@ -105,6 +105,9 @@ const Visualizer = ({
 
   // Rebind audio
   useEffect(() => {
+    if (!audioPlayer) {
+      return
+    }
     if (playing) {
       if (audioPlayer.audioCtx) {
         Visualizer1?.bind(audioPlayer)

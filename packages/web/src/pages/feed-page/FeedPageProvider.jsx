@@ -17,9 +17,10 @@ import {
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -39,6 +40,8 @@ const messages = {
  *  children as `FeedPageContentProps`.
  */
 class FeedPageProvider extends PureComponent {
+  static contextType = HistoryContext
+
   goToTrending = () => {
     this.props.history.push({
       pathname: TRENDING_PAGE
@@ -50,7 +53,7 @@ class FeedPageProvider extends PureComponent {
   }
 
   matchesRoute = (route) => {
-    return matchPath(getPathname(), {
+    return matchPath(getPathname(this.context.history.location), {
       path: route
     })
   }
@@ -125,8 +128,7 @@ const makeMapStateToProps = () => {
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
-    feedFilter: getFeedFilter(state),
-    isMobile: isMobile()
+    feedFilter: getFeedFilter(state)
   })
   return mapStateToProps
 }
@@ -155,6 +157,11 @@ const mapDispatchToProps = (dispatch) => ({
   pauseFeedTrack: () => dispatch(feedActions.pause())
 })
 
+const FeedPageProviderWrapper = (props) => {
+  const isMobile = useIsMobile()
+  return <FeedPageProvider isMobile={isMobile} {...props} />
+}
+
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(FeedPageProvider)
+  connect(makeMapStateToProps, mapDispatchToProps)(FeedPageProviderWrapper)
 )

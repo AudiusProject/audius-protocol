@@ -64,22 +64,8 @@ attest_parser.add_argument(
 
 @full_ns.route(attest_route)
 class FullAttest(Resource):
-    @full_ns.doc(
-        id="Get Challenge Attestation",
-        description="Produces an attestation that a given user has completed a challenge, or errors.",
-        params={
-            "challenge_id": "The challenge ID of the user challenge requiring the attestation"
-        },
-        responses={
-            200: "Success",
-            400: "The attestation request was invalid (eg. The user didn't complete that challenge yet)",
-            500: "Server error",
-        },
-    )
-    @full_ns.expect(attest_parser)
-    @full_ns.marshal_with(attestation_response)
     @cache(ttl_sec=5)
-    def get(self, challenge_id: str):
+    def _get(self, challenge_id: str):
         args = attest_parser.parse_args(strict=True)
         user_id: str = args["user_id"]
         oracle_address: str = args["oracle"]
@@ -103,11 +89,28 @@ class FullAttest(Resource):
                 abort(400, e)
                 return None
 
+    @full_ns.doc(
+        id="Get Challenge Attestation",
+        description="Produces an attestation that a given user has completed a challenge, or errors.",
+        params={
+            "challenge_id": "The challenge ID of the user challenge requiring the attestation"
+        },
+        responses={
+            200: "Success",
+            400: "The attestation request was invalid (eg. The user didn't complete that challenge yet)",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(attest_parser)
+    @full_ns.marshal_with(attestation_response)
+    def get(self, challenge_id: str):
+        self._get(challenge_id)
+
 
 @ns.route(attest_route, doc=False)
 class Attest(FullAttest):
     def get(self, challenge_id: str):
-        super(self, challenge_id)
+        super()._get(challenge_id)
 
 
 undisbursed_route = "/undisbursed"

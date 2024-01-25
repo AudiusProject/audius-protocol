@@ -25,7 +25,10 @@ export default class WebWorker {
       code();
     `
     ])
-    this.worker = new Worker(URL.createObjectURL(blob))
+    this.worker =
+      typeof Worker !== 'undefined'
+        ? new Worker(URL.createObjectURL(blob))
+        : null
     this.terminateOnResult = terminateOnResult
   }
 

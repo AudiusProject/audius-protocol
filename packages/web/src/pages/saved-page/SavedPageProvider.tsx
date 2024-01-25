@@ -33,8 +33,8 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
+import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
@@ -95,6 +95,8 @@ type SavedPageState = {
 }
 
 class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
+  static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
   state: SavedPageState = {
     filterText: '',
     sortMethod: '',
@@ -134,7 +136,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       this.state.sortMethod,
       this.state.sortDirection
     )
-    if (isMobile()) {
+    if (this.context.isMobile) {
       this.props.fetchSavedPlaylists()
     }
   }

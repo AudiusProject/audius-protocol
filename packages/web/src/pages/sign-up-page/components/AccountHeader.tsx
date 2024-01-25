@@ -3,12 +3,16 @@ import {
   Avatar,
   Box,
   Flex,
+  IconArrowLeft,
   IconButton,
   IconCamera,
   IconVerified,
-  Text
+  PlainButton,
+  Text,
+  useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import {
@@ -27,6 +31,7 @@ import { ImageField, ImageFieldValue } from './ImageField'
 const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
+  backButtonText?: string
   mode: 'editing' | 'viewing'
   size?: 'small' | 'large'
   formDisplayName?: string
@@ -79,6 +84,7 @@ const ProfileImageAvatar = ({
 
 export const AccountHeader = (props: AccountHeaderProps) => {
   const {
+    backButtonText,
     mode,
     formDisplayName,
     formProfileImage,
@@ -101,6 +107,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'
+  const { spacing } = useTheme()
+  const history = useHistory()
 
   const displayName = formDisplayName || displayNameField || accountDisplayName
   const handle = handleField || accountHandle
@@ -112,6 +120,26 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   return (
     <Box w='100%'>
+      {backButtonText ? (
+        <Box
+          css={{
+            position: 'absolute',
+            top: spacing.xl,
+            left: spacing.xl,
+            zIndex: 2
+          }}
+        >
+          <PlainButton
+            iconLeft={IconArrowLeft}
+            variant='inverted'
+            onClick={() => {
+              history.goBack()
+            }}
+          >
+            {backButtonText}
+          </PlainButton>
+        </Box>
+      ) : null}
       <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField

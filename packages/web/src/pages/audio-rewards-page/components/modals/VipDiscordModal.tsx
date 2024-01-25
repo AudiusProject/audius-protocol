@@ -3,9 +3,9 @@ import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { TitleWrapper } from 'pages/audio-rewards-page/WalletModal'
-import { isMobile } from 'utils/clientUtil'
 import { AUDIUS_DISCORD_LINK } from 'utils/route'
 
 import ClickableAddress from '../ClickableAddress'
@@ -26,8 +26,9 @@ const messages = {
 export const VipDiscordModal = () => {
   const discordCode = useSelector(getDiscordCode)
   const [isOpen, setIsOpen] = useModalState('VipDiscord')
+  const isMobile = useIsMobile()
 
-  const modalTitle = isMobile() ? (
+  const modalTitle = isMobile ? (
     <div className={styles.discordDrawerTitle}>{messages.title}</div>
   ) : (
     <TitleWrapper label={messages.title}>

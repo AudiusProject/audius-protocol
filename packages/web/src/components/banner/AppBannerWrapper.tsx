@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './AppBannerWrapper.module.css'
 
@@ -12,8 +12,11 @@ export const AppBannerWrapper = ({
   children
 }: {
   children: React.ReactNode
-}) => (
-  <div className={cn(styles.root, { [styles.isMobile]: isMobile() })}>
-    {children}
-  </div>
-)
+}) => {
+  const isMobile = useIsMobile()
+  return (
+    <div className={cn(styles.root, { [styles.isMobile]: isMobile })}>
+      {children}
+    </div>
+  )
+}

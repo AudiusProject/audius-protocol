@@ -44,7 +44,7 @@ const parseTransaction = ({
     metadata: !rootSolanaAccount
       ? metadata
       : rootSolanaAccount === metadata.toString()
-      ? `Cash (${metadata})`
+      ? 'Cash'
       : metadata,
     transactionType: transactionType as USDCTransactionType,
     method: method as USDCTransactionMethod,

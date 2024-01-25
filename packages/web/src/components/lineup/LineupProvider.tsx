@@ -17,7 +17,7 @@ import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
@@ -28,8 +28,8 @@ import {
   TrackTileSize,
   TileProps
 } from 'components/track/types'
+import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
@@ -68,20 +68,22 @@ const totalTileHeight = {
   playlist: 350
 }
 
+const innerHeight = typeof window !== 'undefined' ? window.innerHeight : 0
+
 // Load TRACKS_AHEAD x the number of tiles to be displayed on the screen
 export const getLoadMoreTrackCount = (
   variant: LineupVariant,
   multiplier: number | (() => number)
 ) =>
   Math.ceil(
-    (window.innerHeight / totalTileHeight[variant]) *
+    (innerHeight / totalTileHeight[variant]) *
       (typeof multiplier === 'function' ? multiplier() : multiplier)
   )
 
 // Call load more when the user is LOAD_MORE_PAGE_THRESHOLD of the view height
 // away from the bottom of the scrolling window.
 const getLoadMoreThreshold = () =>
-  Math.ceil(window.innerHeight * LOAD_MORE_PAGE_THRESHOLD)
+  Math.ceil(innerHeight * LOAD_MORE_PAGE_THRESHOLD)
 
 const shouldLoadMore = (
   scrollContainer: HTMLDivElement | null,
@@ -230,6 +232,8 @@ type CombinedProps = LineupProviderProps &
  * is controlled by injecting tiles conforming to `Track/Playlist/SkeletonProps interfaces.
  */
 class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
+  static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
   scrollContainer = createRef<HTMLDivElement>()
 
   constructor(props: any) {
@@ -476,7 +480,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       extraPrecedingElement,
       endOfLineup,
       lineupContainerStyles,
-      isMobile,
       showLeadingElementArtistPick = true,
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
@@ -484,6 +487,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       showFeedTipTile = false,
       rankIconCount = 0
     } = this.props
+    const isMobile = this.context.isMobile
     const status = lineup.status
     const {
       loadMoreThreshold,
@@ -791,7 +795,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile(),
     showTip: getShowTip(state),
     playing: getPlaying(state),
     playingUid: getUid(state)

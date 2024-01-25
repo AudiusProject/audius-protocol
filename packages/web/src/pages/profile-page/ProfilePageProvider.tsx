@@ -42,6 +42,7 @@ import {
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
+import { uniq } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -904,8 +905,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
       profile,
       status: profileLoadingStatus,
-      albums,
-      playlists,
+      albums: uniq(albums),
+      playlists: uniq(playlists),
       artistTracks,
       playArtistTrack,
       pauseArtistTrack,

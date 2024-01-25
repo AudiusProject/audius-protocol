@@ -3,7 +3,7 @@ import { memo, createContext, useCallback } from 'react'
 import { useInstanceVar } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { TRACK_PAGE, NOTIFICATION_PAGE } from 'utils/route'
 
 type ScrollRecords = { [route: string]: number }

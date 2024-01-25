@@ -4,6 +4,7 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import react from '@vitejs/plugin-react'
 import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
+import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
@@ -29,12 +30,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
+  const ssr = env.VITE_SSR === 'true'
   env.VITE_BASENAME = env.VITE_BASENAME ?? ''
 
   return {
     base: env.VITE_BASENAME || '/',
     build: {
-      outDir: 'build',
+      outDir: ssr ? 'build-ssr' : 'build',
       sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/],
@@ -102,6 +104,7 @@ export default defineConfig(({ mode }) => {
           plugins: ['@emotion/babel-plugin']
         }
       }),
+      ...(ssr ? [vike()] : []),
       ...((analyze
         ? [
             visualizer({
@@ -128,6 +131,7 @@ export default defineConfig(({ mode }) => {
         store: '/src/store',
         workers: '/src/workers',
         utils: '/src/utils',
+        ssr: '/src/ssr',
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),

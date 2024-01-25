@@ -31,8 +31,10 @@ import { actions as chatActions } from './slice'
 import { makeChatId } from './utils'
 
 // Attach ulid to window object for debugging DMs
-// @ts-ignore
-window.ulid = ulid
+if (typeof window !== 'undefined') {
+  // @ts-ignore
+  window.ulid = ulid
+}
 
 const {
   createChat,

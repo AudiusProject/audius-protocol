@@ -22,11 +22,11 @@ import { full } from '@audius/sdk'
 import BN from 'bn.js'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContext } from 'pages/MainContentContext'
 import { make, track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { isMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 
@@ -206,9 +206,10 @@ export const WithdrawalsTab = ({
   isEmpty,
   isLoading
 }: Omit<ReturnType<typeof useWithdrawals>, 'downloadCSV'>) => {
+  const isMobile = useIsMobile()
   const { mainContentRef } = useContext(MainContentContext)
 
-  const columns = isMobile()
+  const columns = isMobile
     ? (['date', 'amount'] as WithdrawalsTableColumn[])
     : undefined
 
