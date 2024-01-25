@@ -50,6 +50,7 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "env-cmd": "10.1.0",
     "eslint": "8.55.0",
+    "eslint-plugin-react-refresh": "0.4.5",
     "typescript": "5.0.4",
     "vite": "4.4.5",
     "vite-plugin-node-polyfills": "0.16.0",
