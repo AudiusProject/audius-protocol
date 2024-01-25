@@ -70,6 +70,9 @@ export const announceTopFiveTrending = async (
     trendingPlaylistTweet,
     trendingUndergroundTweet
   ])
+
+  await discoveryDb.destroy()
+  await identityDb.destroy()
 }
 
 export const queryTopFiveTrending = async (

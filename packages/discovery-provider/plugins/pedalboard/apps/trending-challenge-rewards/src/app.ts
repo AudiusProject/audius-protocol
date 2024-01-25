@@ -59,6 +59,8 @@ export const onDisburse = async (
     text: '```' + formattedResults + '```'
   })
 
+  await db.destroy()
+
   return new Ok(undefined)
 }
 
