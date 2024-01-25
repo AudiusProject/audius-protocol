@@ -1,6 +1,7 @@
 export type Option<T> = {
   key: T
   text: string
+  icon?: React.ReactNode
 }
 
 export type SegmentedControlProps<T extends string> = {
