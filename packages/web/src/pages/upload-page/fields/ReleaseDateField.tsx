@@ -96,7 +96,7 @@ export const ReleaseDateField = () => {
 
   const initialValues = useMemo(() => {
     return {
-      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day').toString(),
+      [RELEASE_DATE]: trackReleaseDate ?? moment().toString(),
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
         : moment().format('h:mm'),

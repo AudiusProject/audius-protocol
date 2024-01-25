@@ -50,7 +50,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     artwork: null,
     playlist_name: '',
     description: '',
-    release_date: moment().startOf('day').toString(),
+    release_date: moment().toString(),
     trackDetails: {
       genre: null,
       mood: null,
