@@ -6,7 +6,7 @@ import {
   stemCategoryFriendlyNames,
   useFeatureFlag
 } from '@audius/common'
-import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
+import { Box, FilterButton, Flex, IconCompose } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'
 
@@ -137,7 +137,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
             {isTitleEditable ? (
               <HarmonyPlainButton
-                iconRight={IconPenSquare}
+                iconRight={IconCompose}
                 onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
               />
