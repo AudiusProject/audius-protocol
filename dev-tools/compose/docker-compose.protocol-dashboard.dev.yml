@@ -1,11 +1,14 @@
-version: "3.9"
+version: '3.9'
 
 services:
   dashboard:
     container_name: dashboard
     build:
-      context: ${PROJECT_ROOT}/protocol-dashboard
+      context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/protocol-dashboard/Dockerfile.dev
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     ports:
       - 5173:5173
     deploy:

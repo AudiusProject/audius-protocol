@@ -5,6 +5,7 @@
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
+    "protocol-dashboard",
     "packages/ddex/server",
     "packages/ddex/client",
     "packages/es-indexer"

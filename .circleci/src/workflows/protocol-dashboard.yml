@@ -1,7 +1,11 @@
 when: << pipeline.parameters.run-protocol-dashboard-workflow >>
 jobs:
-  - protocol-dashboard-init
+  - protocol-dashboard-init:
+      context:
+        - Vercel
   - protocol-dashboard-build-staging:
+      context:
+        - Vercel
       requires:
         - protocol-dashboard-init
   - protocol-dashboard-pin-staging:
@@ -21,6 +25,8 @@ jobs:
         branches:
           only: /^main$/
   - protocol-dashboard-build-prod:
+      context:
+        - Vercel
       requires:
         - protocol-dashboard-init
   - protocol-dashboard-hold-deploy-prod:
