@@ -1427,7 +1427,7 @@ class FullTopGenreUsers(Resource):
         if args["genre"] is not None:
             get_top_genre_users_args["genre"] = args["genre"]
         top_users = get_top_genre_users(get_top_genre_users_args)
-        users = list(map(extend_user, top_users["users"]))
+        users = list(map(extend_user, top_users))
         return success_response(users)
 
     @full_ns.doc(
