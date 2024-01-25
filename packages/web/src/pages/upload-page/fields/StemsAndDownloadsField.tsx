@@ -78,7 +78,8 @@ const messages = {
       'Provide your fans with the Lossless files you upload in addition to an mp3.'
   },
   values: {
-    allowDownload: 'MP3 Available',
+    allowDownload: 'Full Track Available',
+    allowOriginal: 'Lossless Files Available',
     followerGated: 'Followers Only'
   }
 }
@@ -93,6 +94,10 @@ export type StemsAndDownloadsFormValues = {
 }
 
 export const StemsAndDownloadsField = () => {
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
   const [{ value: allowDownloadValue }, , { setValue: setAllowDownloadValue }] =
     useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
   const [{ value: followerGatedValue }, , { setValue: setFollowerGatedValue }] =
@@ -229,6 +234,9 @@ export const StemsAndDownloadsField = () => {
     if (followerGatedValue) {
       values.push(messages.values.followerGated)
     }
+    if (isLosslessDownloadsEnabled && isOriginalAvailable) {
+      values.push(messages.values.allowOriginal)
+    }
     const stemsCategories =
       stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
     values = [...values, ...stemsCategories]
@@ -324,6 +332,8 @@ const StemsAndDownloadsMenuFields = () => {
           allowDownloadOnChange(e)
           if (!e.target.checked) {
             followerGatedSetValue(false)
+          } else {
+            allowOriginalSetValue(true)
           }
         }}
       />
