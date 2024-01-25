@@ -37,10 +37,7 @@ import {
   STREAM_CONDITIONS,
   getCombinedDefaultGatedConditionValues
 } from './AccessAndSaleField'
-import {
-  SourceFilesView,
-  dropdownRows as stemCategories
-} from './SourceFilesView'
+import { StemFilesView, dropdownRows as stemCategories } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
@@ -385,7 +382,7 @@ const StemsAndDownloadsMenuFields = () => {
         />
       )}
       <Divider />
-      <SourceFilesView
+      <StemFilesView
         onAddStems={onAddStemsToTrack}
         stems={stemsValue}
         onSelectCategory={(category: StemCategory, index: number) => {

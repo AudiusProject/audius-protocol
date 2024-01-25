@@ -8,6 +8,7 @@ import {
 } from '@audius/common'
 import { Box, FilterButton, Flex, IconCompose } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
+import cn from 'classnames'
 import numeral from 'numeral'
 
 import iconFileAiff from 'assets/img/iconFileAiff.svg'
@@ -58,6 +59,7 @@ type TrackPreviewProps = {
   isStem?: boolean
   stemCategory?: StemCategory
   onEditStemCategory?: (stemCategory: StemCategory) => void
+  className?: string
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
@@ -76,7 +78,8 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     onEditTitle,
     isStem,
     stemCategory,
-    onEditStemCategory
+    onEditStemCategory,
+    className
   } = props
 
   const Icon = fileTypeIcon(fileType)
@@ -89,9 +92,10 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       label: stemCategoryFriendlyNames[value as StemCategory]
     })
   )
+  console.log({ stemCategories })
 
   return (
-    <div className={styles.trackPreviewNew}>
+    <div className={cn(styles.trackPreviewNew, className)}>
       {displayIndex ? (
         <Text className={styles.indexText} size='small'>
           {index + 1}

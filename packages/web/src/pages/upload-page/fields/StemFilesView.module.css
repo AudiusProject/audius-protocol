@@ -3,6 +3,7 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
+  gap: 24px;
 }
 
 .modalContainer {
@@ -81,4 +82,18 @@
 
 .dropzoneDisabled path {
   fill: var(--neutral-light-4) !important;
+}
+
+.stemPreview {
+  padding-top: var(--unit-2);
+  padding-bottom: var(--unit-2);
+  border-top: none;
+  border-bottom: 1px solid var(--border-strong);
+}
+.stemPreview:last-child {
+  border-bottom: none;
+}
+.stemPreview:hover {
+  background: var(--background-surface-1);
+  border-top: none;
 }

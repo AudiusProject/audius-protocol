@@ -5,8 +5,10 @@ import {
   StemCategory,
   stemCategoryFriendlyNames,
   StemUpload,
+  StemUploadWithFile,
   useFeatureFlag
 } from '@audius/common'
+import { Box, Flex, Text as HarmonyText } from '@audius/harmony'
 import { IconRemove, IconButton } from '@audius/stems'
 import cn from 'classnames'
 
@@ -14,33 +16,85 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
+import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 
-import styles from './SourceFilesView.module.css'
+import styles from './StemFilesView.module.css'
 
 const MAX_ROWS = 10
 
 const messages = {
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
   audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
-  maxCapacity: 'Reached upload limit of 10 files.'
+  maxCapacity: 'Reached upload limit of 10 files.',
+  stemTypeHeader: 'Select Stem Type',
+  stemTypeDescription: 'Please select a stem type for each of your files.'
 }
 
-type SourceFilesViewProps = {
+type StemFilesViewProps = {
   onAddStems: (stems: any) => void
-  stems: StemUpload[]
+  stems: StemUploadWithFile[]
   onSelectCategory: (category: StemCategory, index: number) => void
   onDeleteStem: (index: number) => void
 }
 
-export const SourceFilesView = ({
+export const StemFilesView = ({
   onAddStems,
   stems,
   onSelectCategory,
   onDeleteStem
-}: SourceFilesViewProps) => {
+}: StemFilesViewProps) => {
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
+  console.log({ stems })
+
+  const renderStemFiles = () => {
+    return (
+      <>
+        {stems.length > 0 ? (
+          <Flex direction='column'>
+            <HarmonyText variant='title' size='l'>
+              {messages.stemTypeHeader}
+            </HarmonyText>
+            <Box mt='s'>
+              <HarmonyText variant='body'>
+                {messages.stemTypeDescription}
+              </HarmonyText>
+            </Box>
+          </Flex>
+        ) : null}
+        <Flex direction='column' borderRadius='m' border='default'>
+          {stems.map((stem, i) => (
+            <TrackPreviewNew
+              className={styles.stemPreview}
+              index={i}
+              displayIndex={stems.length > 1}
+              key={`stem-${i}`}
+              trackTitle={stem.file.name}
+              fileType={stem.file.type}
+              fileSize={stem.file.size}
+              onRemove={() => onDeleteStem(i)}
+              isStem
+              stemCategory={stem.category}
+              onEditStemCategory={() => {}}
+            />
+          ))}
+        </Flex>
+      </>
+    )
+    // return (
+    //   <ul className={styles.stemListItems}>
+    //     {stems.map((stem, i) => (
+    //       <StemListItem
+    //         key={`${stem.metadata.title}-${i}`}
+    //         stem={stem}
+    //         didSelectCategory={(category) => onSelectCategory(category, i)}
+    //         onDelete={() => onDeleteStem(i)}
+    //       />
+    //     ))}
+    //   </ul>
+    // )
+  }
 
   const renderCurrentStems = () => {
     return (
@@ -96,8 +150,9 @@ export const SourceFilesView = ({
 
   return (
     <div className={styles.sourceFilesContainer}>
+      {isLosslessDownloadsEnabled ? renderStemFiles() : null}
       {useRenderDropzone()}
-      {renderCurrentStems()}
+      {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}
     </div>
   )
 }
