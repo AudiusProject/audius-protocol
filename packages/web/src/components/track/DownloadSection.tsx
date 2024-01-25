@@ -48,12 +48,17 @@ const messages = {
 
 type DownloadSectionProps = {
   trackId: ID
-  onDownload: (
-    trackId: ID,
-    category?: string,
-    original?: boolean,
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
     parentTrackId?: ID
-  ) => void
+  }) => void
 }
 
 export const DownloadSection = ({

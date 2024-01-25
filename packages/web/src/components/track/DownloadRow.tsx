@@ -27,12 +27,17 @@ type DownloadRowProps = {
   trackId: ID
   parentTrackId?: ID
   quality: DownloadQuality
-  onDownload: (
-    trackId: ID,
-    category?: string,
-    original?: boolean,
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
     parentTrackId?: ID
-  ) => void
+  }) => void
   hideDownload?: boolean
   index: number
 }
@@ -60,12 +65,12 @@ export const DownloadRow = ({
       // On mobile, show a toast instead of a tooltip
       dispatch(toast({ content: messages.followToDownload }))
     } else if (track && track.access.download) {
-      onDownload(
+      onDownload({
         trackId,
-        track.stem_of?.category,
-        quality === DownloadQuality.ORIGINAL,
+        category: track.stem_of?.category,
+        original: quality === DownloadQuality.ORIGINAL,
         parentTrackId
-      )
+      })
     }
   }, [
     isMobile,

@@ -119,7 +119,17 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void

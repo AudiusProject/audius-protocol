@@ -61,7 +61,15 @@ export type OwnProps = {
   onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   makePublic: (trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
