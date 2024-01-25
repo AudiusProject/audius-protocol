@@ -52,6 +52,7 @@
     "numeral": "2.0.6",
     "proxy-memoize": "1.2.0",
     "query-string": "8.1.0",
+    "redux-persist": "6.0.0",
     "react-redux": "8.0.5",
     "react-use": "17.4.0",
     "redux": "4.0.5",
@@ -77,6 +78,7 @@
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
     "rollup-plugin-typescript2": "0.32.1",
+    "@stripe/crypto": "0.0.4",
     "ts-patch": "3.1.1",
     "typescript-transform-paths": "3.4.4"
   },

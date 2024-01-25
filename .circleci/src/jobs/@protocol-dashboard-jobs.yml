@@ -45,6 +45,7 @@ protocol-dashboard-build-staging:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1
           npm run build:stage
     - run:
         name: armada bundle
@@ -107,6 +108,7 @@ protocol-dashboard-build-prod:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1
           npm run build:prod
     - run:
         name: zip dist
