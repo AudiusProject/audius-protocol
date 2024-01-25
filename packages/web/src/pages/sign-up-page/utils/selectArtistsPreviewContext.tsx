@@ -122,6 +122,16 @@ export const SelectArtistsPreviewContextProvider = (props: {
       : Math.min(30, Math.max(0, duration - 30))
 
     dispatch(playerActions.play({ trackId: track_id, startTime, isPreview }))
+    dispatch(
+      playerActions.play({
+        trackId: track_id,
+        startTime,
+        isPreview,
+        onEnd: () => {
+          stopPreview()
+        }
+      })
+    )
 
     setIsPlaying(true)
   }, [nowPlayingArtistId, stopPreview, track, dispatch])
