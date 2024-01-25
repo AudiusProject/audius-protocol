@@ -8,14 +8,25 @@
 
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import { renderPage } from 'vike/server'
+import { Toucan } from 'toucan-js'
 
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
+  const sentry = env.SENTRY_DSN
+    ? new Toucan({
+        dsn: env.SENTRY_DSN,
+        context,
+        request
+      })
+    : null
   try {
     event.respondWith(handleEvent(event))
   } catch (e) {
+    if (sentry) {
+      sentry.captureException(e)
+    }
     if (DEBUG) {
       return event.respondWith(
         new Response(e.message || e.toString(), {
