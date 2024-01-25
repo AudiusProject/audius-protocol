@@ -475,7 +475,10 @@ function* signUp() {
 
         const isNativeMobile = yield getContext('isNativeMobile')
 
-        const isSignUpRedesignEnabled = getFeatureEnabled(
+        yield call(waitForRemoteConfig)
+
+        const isSignUpRedesignEnabled = yield call(
+          getFeatureEnabled,
           FeatureFlags.SIGN_UP_REDESIGN
         )
 
@@ -485,8 +488,6 @@ function* signUp() {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
         }
-
-        yield call(waitForRemoteConfig)
 
         // Check feature flag to disable confirmation
         const disableSignUpConfirmation = yield call(
@@ -511,10 +512,16 @@ function* signUp() {
         yield put(signOnActions.followArtists())
         yield put(signOnActions.signUpSucceeded())
       },
-      function* ({ timeout }) {
+      function* ({ timeout, error, message }) {
         if (timeout) {
           console.debug('Timed out trying to register')
           yield put(signOnActions.signUpTimeout())
+        }
+        if (error) {
+          console.error(error)
+        }
+        if (message) {
+          console.debug(message)
         }
       },
       () => {},
