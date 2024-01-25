@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   AccessConditions,
@@ -289,6 +289,27 @@ const StemsAndDownloadsMenuFields = () => {
     useField<StemUpload[]>(STEMS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
     useTrackField<DownloadTrackAvailabilityType>(DOWNLOAD_AVAILABILITY_TYPE)
+
+  const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(false)
+
+  useEffect(() => {
+    if (
+      [
+        DownloadTrackAvailabilityType.FOLLOWERS,
+        DownloadTrackAvailabilityType.USDC_PURCHASE
+      ].includes(availabilityType) &&
+      !isAvailabilityTouched
+    ) {
+      allowDownloadSetValue(true)
+      allowOriginalSetValue(true)
+      setIsAvailabilityTouched(true)
+    }
+  }, [
+    availabilityType,
+    isAvailabilityTouched,
+    allowDownloadSetValue,
+    allowOriginalSetValue
+  ])
 
   const invalidAudioFile = (
     name: string,
