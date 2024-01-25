@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useUSDCBalance, accountSelectors, Status } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
 import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,7 +37,6 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: balance, balanceStatus, recoveryStatus } = useUSDCBalance()
   const accountHasTracks = useSelector(getAccountHasTracks)
 
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
@@ -134,17 +133,11 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       description={messages.description}
       containerClassName={styles.mobilePageContainer}
     >
-      {!tableOptions || !selectedTable || balance === null ? (
+      {!tableOptions || !selectedTable ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
-          <USDCCard
-            balance={balance}
-            refreshing={
-              balanceStatus === Status.LOADING ||
-              recoveryStatus === Status.LOADING
-            }
-          />
+          <USDCCard />
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex
