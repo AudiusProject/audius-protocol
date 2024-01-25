@@ -55,8 +55,7 @@ export const ReleaseDateTriggerLegacy = (
   const initialValues = useMemo(() => {
     return {
       [RELEASE_DATE]:
-        trackReleaseDateState ??
-        moment(trackReleaseDateState).startOf('day').toString(),
+        trackReleaseDateState ?? moment(trackReleaseDateState).toString(),
       [RELEASE_DATE_HOUR]: trackReleaseDateState
         ? moment(trackReleaseDateState).format('h:mm')
         : moment().format('h:mm'),
