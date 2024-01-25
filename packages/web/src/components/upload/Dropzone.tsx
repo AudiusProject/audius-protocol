@@ -1,4 +1,4 @@
-import { Text, TextLink } from '@audius/harmony'
+import { Flex, Text, TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -73,7 +73,7 @@ export const Dropzone = ({
     }
 
     return (
-      <Text>
+      <Flex alignItems='center'>
         {isTruncated ? (
           <IconUpload
             className={cn(styles.iconUpload, iconClassName, {
@@ -81,9 +81,13 @@ export const Dropzone = ({
             })}
           />
         ) : null}
-        {message}
-        <TextLink css={{ color: '#a30cb3' }}>&nbsp;{messages.browse}</TextLink>
-      </Text>
+        <Text>
+          {message}
+          <TextLink css={{ color: '#a30cb3' }}>
+            &nbsp;{messages.browse}
+          </TextLink>
+        </Text>
+      </Flex>
     )
   }
 

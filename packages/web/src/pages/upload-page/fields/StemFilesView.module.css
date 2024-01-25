@@ -39,6 +39,9 @@
   margin-bottom: 8px;
   box-shadow: none;
   margin-top: 16px;
+  padding: var(--unit-6);
+  background: var(--background-surface-1);
+  border: 1px solid var(--border-default);
 }
 
 .dropzoneMessage {
@@ -47,8 +50,9 @@
 }
 
 .dropzoneIcon {
-  height: 32px;
-  width: 32px;
+  margin: 24px;
+  height: 48px;
+  width: 48px;
 }
 
 .dropzoneIcon g path {
