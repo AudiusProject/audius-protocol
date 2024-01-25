@@ -14,11 +14,11 @@ const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
-  const sentry = env.SENTRY_DSN
+  const sentry = SENTRY_DSN
     ? new Toucan({
-        dsn: env.SENTRY_DSN,
-        context,
-        request
+        dsn: SENTRY_DSN,
+        context: event,
+        request: event.request
       })
     : null
   try {
