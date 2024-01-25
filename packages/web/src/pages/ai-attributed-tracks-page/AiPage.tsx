@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import AiPageProvider from './AiPageProvider'
 import AiPageDesktopContent from './components/desktop/AiPage'

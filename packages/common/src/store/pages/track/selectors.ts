@@ -60,3 +60,7 @@ export const getTrendingTrackRanks = (state: CommonState) => {
 }
 export const getSourceSelector = (state: CommonState) =>
   `${PREFIX}:${getTrackId(state)}`
+
+export const getIsInitialFetchAfterSsr = (state: CommonState) => {
+  return getBaseState(state).isInitialFetchAfterSsr
+}

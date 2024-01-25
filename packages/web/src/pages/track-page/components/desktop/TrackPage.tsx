@@ -206,10 +206,12 @@ const TrackPage = ({
     <Page
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'
       scrollableSearch
+      fromOpacity={1}
     >
       <div className={styles.headerWrapper}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />

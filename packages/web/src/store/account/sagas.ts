@@ -5,7 +5,7 @@ import {
   modalsActions,
   accountSagas as commonAccountSagas
 } from '@audius/common'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, getContext, put, select, takeEvery } from 'typed-redux-saga'
 
 import webCommonAccountSagas from 'common/store/account/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -21,7 +21,7 @@ import {
   shouldRequestBrowserPermission,
   removeHasRequestedBrowserPermission
 } from 'utils/browserNotifications'
-import { isElectron, isMobile } from 'utils/clientUtil'
+import { isElectron } from 'utils/clientUtil'
 
 const { setVisibility } = modalsActions
 const {
@@ -41,7 +41,8 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
  * Determine if the push notification modal should appear
  */
 export function* showPushNotificationConfirmation() {
-  if (isMobile() || isElectron() || !shouldRequestBrowserPermission()) return
+  const isMobile = yield* getContext('isMobile')
+  if (isMobile || isElectron() || !shouldRequestBrowserPermission()) return
   setHasRequestedBrowserPermission()
   const account = yield* select(getAccountUser)
   if (!account) return
@@ -76,7 +77,8 @@ export function* showPushNotificationConfirmation() {
 }
 
 export function* fetchBrowserPushNotificationStatus() {
-  if (isElectron() || isMobile()) return
+  const isMobile = yield* getContext('isMobile')
+  if (isElectron() || isMobile) return
   if (isPushManagerAvailable) {
     const permission = yield* call(getPushManagerPermission)
     return permission

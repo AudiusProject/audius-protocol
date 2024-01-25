@@ -6,8 +6,9 @@ import { matchPath } from 'react-router-dom'
 import { animated, useTransition } from 'react-spring'
 import { useSessionStorage } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import AppIcon from 'assets/img/appIcon240.png'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
@@ -92,6 +93,8 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     onBeforeClickApp = () => {},
     onBeforeClickDismissed = () => {}
   } = props
+  const { history } = useHistoryContext()
+  const isMobile = useIsMobile()
   const [isDismissed, setIsDismissed] = useSessionStorage(
     'app-redirect-popover',
     false
@@ -103,10 +106,10 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
   }, [])
 
   const shouldShow =
-    !matchPath(window.location.pathname, { path: '/', exact: true }) &&
+    !matchPath(history.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
-    isMobile() &&
+    isMobile &&
     !(navigator.userAgent === 'probers')
 
   useEffect(() => {
@@ -127,7 +130,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
 
   const onClick = () => {
     onBeforeClickApp()
-    const pathname = getPathname()
+    const pathname = getPathname(history.location)
     const newHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
 
     // If we're on the signup page, copy the URL to clipboard on app redirect

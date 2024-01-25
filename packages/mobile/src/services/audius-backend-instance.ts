@@ -58,7 +58,6 @@ export const audiusBackendInstance = audiusBackend({
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: false,
-  isMobile: true,
   localStorage: AsyncStorage,
   monitoringCallbacks,
   nativeMobile: true,

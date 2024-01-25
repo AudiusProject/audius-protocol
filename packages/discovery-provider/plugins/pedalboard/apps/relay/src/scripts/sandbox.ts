@@ -27,7 +27,7 @@ export const main = async () => {
   console.log(`using ${initialSelectedNode}`);
 
   const discoveryNodeSelector = new DiscoveryNodeSelector({
-    initialSelectedNode,
+    initialSelectedNode: initialSelectedNode.endpoint,
   });
 
   const entityManager = new EntityManager({

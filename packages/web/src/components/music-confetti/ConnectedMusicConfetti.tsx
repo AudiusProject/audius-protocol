@@ -9,7 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { MusicConfetti } from 'components/background-animations/MusicConfetti'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 

@@ -1,5 +1,8 @@
 import type { CommsResponse } from '../../api/chats/serverTypes'
 import type { DeepPartial } from '../../utils/deepPartial'
+import type { StorageNode } from '../StorageNodeSelector'
+
+import type { DiscoveryNode } from './types'
 
 export type FlaskFullResponse = Partial<{
   latest_chain_block: number
@@ -55,8 +58,9 @@ export type HealthCheckResponseData = DeepPartial<{
   maximum_healthy_block_difference: number
   meets_min_requirements: boolean
   network: {
-    content_nodes: Array<{ endpoint: string; delegateOwnerWallet: string }>
+    content_nodes: StorageNode[]
     discovery_nodes: string[]
+    discovery_nodes_with_owner: DiscoveryNode[]
   }
   num_users_in_immediate_balance_refresh_queue: number
   num_users_in_lazy_balance_refresh_queue: number

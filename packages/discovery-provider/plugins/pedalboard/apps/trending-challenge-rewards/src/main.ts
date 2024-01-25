@@ -1,20 +1,26 @@
+import cron from "node-cron"
 import { App } from '@pedalboard/basekit'
-import { SharedData, condition, initSharedData } from './config'
+import { SharedData, initSharedData } from './config'
 import { disburseTrendingRewards } from './app'
-import { establishSlackConnection, initSlack } from './slack'
+import { establishSlackConnection } from './slack'
 import { announceTopFiveTrending } from './trending'
 
 export const main = async () => {
-  const dataRes = await initSharedData()
-  if (dataRes.err) {
-    console.error('SETUP ERROR = ', dataRes)
-    return
-  }
-  const data = dataRes.unwrap()
+  const data = await initSharedData()
 
   await new App<SharedData>({ appData: data })
-    .cron(condition, disburseTrendingRewards)
-    .cron(condition, announceTopFiveTrending)
     .task(establishSlackConnection)
     .run()
 }
+
+// Friday at 12:05 pm PST, extra five minutes for trending to calculate
+cron.schedule('5 12 * * 5', () => {
+  initSharedData().then((data) => {
+    // make new appdata instance to satisfy types
+    const appData = new App<SharedData>({ appData: data })
+    announceTopFiveTrending(appData).catch(e => console.error("Announcement failed: ", e))
+    disburseTrendingRewards(appData).catch(e => console.error("Disbursment failed: ", e))
+  })
+}, {
+    timezone: "America/Los_Angeles"
+});

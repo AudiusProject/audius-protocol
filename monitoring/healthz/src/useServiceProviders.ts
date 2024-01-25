@@ -24,10 +24,14 @@ export function apiGatewayFetcher(
   env: string,
   type: 'content' | 'discovery'
 ) {
-  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`)
+  // abort initial ga request in 5 seconds
+  const controller = new AbortController()
+  const reqTimeout = setTimeout(() => controller.abort(), 5000)
+  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`, { signal: controller.signal })
     .then(async (resp) => {
       const data = await resp.json()
       const sps = data.data as SP[]
+      clearTimeout(reqTimeout)
 
       const hostSortKey = (sp: SP) =>
         new URL(sp.endpoint).hostname.split('.').reverse().join('.')

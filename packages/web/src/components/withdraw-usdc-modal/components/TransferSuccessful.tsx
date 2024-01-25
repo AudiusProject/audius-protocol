@@ -60,7 +60,7 @@ export const TransferSuccessful = ({
   priorBalanceCents: number
   onClickDone: () => void
 }) => {
-  const { data: balance, balanceStatus } = useUSDCBalance()
+  const { data: balance, status: balanceStatus } = useUSDCBalance()
   const signature = useSelector(getWithdrawTransaction)
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -104,7 +104,7 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      {methodValue !== WithdrawMethod.MANUAL_TRANSFER ? (
+      {methodValue !== WithdrawMethod.MANUAL_TRANSFER && signature ? (
         <>
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>

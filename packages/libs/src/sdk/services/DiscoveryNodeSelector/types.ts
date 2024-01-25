@@ -13,6 +13,7 @@ export type Decision = {
 export enum DECISION_TREE_STATE {
   CHECK_SHORT_CIRCUIT = 'Check Short Circuit',
   GET_ALL_SERVICES = 'Get All Services',
+  EXCLUDE_OWNERS = 'Exclude Owners',
   FILTER_TO_WHITELIST = 'Filter To Whitelist',
   FILTER_FROM_BLACKLIST = 'Filter From Blacklist',
   FILTER_OUT_KNOWN_UNHEALTHY = 'Filter Out Known Unhealthy',
@@ -32,6 +33,11 @@ export type BackupHealthData = {
 
 export type Backup = BackupHealthData & {
   endpoint: string
+}
+
+export type DiscoveryNode = {
+  endpoint: string
+  delegateOwnerWallet: string
 }
 
 export type DiscoveryNodeSelectorServiceConfigInternal = {
@@ -73,9 +79,8 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
   /**
    * This should be a list of registered discovery nodes that can be used to
    * initialize the selection and get the current registered list from.
-   * @example ['https://discoverynode.audius.co', 'https://disoverynode2.audius.co']
    */
-  bootstrapServices: string[]
+  bootstrapServices: DiscoveryNode[]
 
   /**
    * Logger service, defaults to console logging
@@ -95,4 +100,8 @@ export type DiscoveryNodeSelectorService =
   EventEmitterTarget<ServiceSelectionEvents> & {
     getSelectedEndpoint: () => Promise<string | null>
     createMiddleware: () => Middleware
+    getUniquelyOwnedEndpoints: (
+      n: number,
+      excludeOwners?: string[]
+    ) => Promise<string[]>
   }

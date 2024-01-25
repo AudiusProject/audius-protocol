@@ -25,6 +25,7 @@ export const VALIDATE_HANDLE = 'SIGN_ON/VALIDATE_HANDLE'
 export const VALIDATE_HANDLE_SUCCEEDED = 'SIGN_ON/VALIDATE_HANDLE_SUCCEEDED'
 export const VALIDATE_HANDLE_FAILED = 'SIGN_ON/VALIDATE_HANDLE_FAILED'
 
+export const HIDE_PREVIEW_HINT = 'SIGN_ON/HIDE_PREVIEW_HINT'
 export const FOLLOW_ARTISTS = 'SIGN_ON/FOLLOW_ARTISTS'
 export const SET_ACCOUNT_READY = 'SIGN_ON/SET_ACCOUNT_READY'
 
@@ -371,6 +372,10 @@ export function setTikTokProfile(
 
 export function setTikTokProfileError(error: string) {
   return { type: SET_TIKTOK_PROFILE_ERROR, error }
+}
+
+export function setHidePreviewHint() {
+  return { type: HIDE_PREVIEW_HINT }
 }
 
 /**

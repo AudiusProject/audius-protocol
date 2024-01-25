@@ -208,7 +208,7 @@ const actionsMap: ActionsMap<SavedPageState> = {
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const reducer = (state = initialState, action: any) => {
+export const savePageReducer = (state = initialState, action: any) => {
   const tracks = tracksLineupReducer(state.tracks as any, action)
   if (tracks !== state.tracks) return { ...state, tracks }
 
@@ -224,5 +224,5 @@ export const savedPagePersistConfig = (storage: Storage) => ({
 })
 
 export const persistedSavePageReducer = (storage: Storage) => {
-  return persistReducer(savedPagePersistConfig(storage), reducer)
+  return persistReducer(savedPagePersistConfig(storage), savePageReducer)
 }

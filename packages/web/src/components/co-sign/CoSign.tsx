@@ -4,7 +4,7 @@ import { ID } from '@audius/common'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import Check from './Check'
 import styles from './CoSign.module.css'

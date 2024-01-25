@@ -31,8 +31,12 @@ def test_skip_tx(app, mocker):
     )
 
     mocker.patch(
-        "src.queries.confirm_indexing_transaction_error.get_all_other_discovery_nodes_cached",
-        return_value=["node1", "node2", "node3"],
+        "src.queries.confirm_indexing_transaction_error.get_all_discovery_nodes_cached",
+        return_value=[
+            {"endpoint": "node1", "delegateOwnerWallet": "wallet1"},
+            {"endpoint": "node2", "delegateOwnerWallet": "wallet2"},
+            {"endpoint": "node3", "delegateOwnerWallet": "wallet3"},
+        ],
         autospec=True,
     )
 

@@ -19,8 +19,8 @@ export type AudiusQueryContextType = {
   remoteConfigInstance: RemoteConfigInstance
 }
 
-export const AudiusQueryContext = createContext<AudiusQueryContextType | null>(
-  null
+export const AudiusQueryContext = createContext<AudiusQueryContextType>(
+  null as any
 )
 
 export const useAudiusQueryContext = () => {

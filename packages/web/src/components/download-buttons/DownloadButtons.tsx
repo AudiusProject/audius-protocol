@@ -20,7 +20,7 @@ import {
 } from 'common/store/pages/signon/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DownloadButtons.module.css'
 const { toast } = toastActions

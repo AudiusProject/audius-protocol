@@ -1,12 +1,18 @@
-import { sdk, AudiusSdk, AudiusLibs } from '@audius/sdk'
+import {
+  sdk,
+  AudiusSdk,
+  AudiusLibs,
+  AntiAbuseOracleSelector
+} from '@audius/sdk'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 import { makeEntityManagerInstance } from 'services/entity-manager'
+import { env } from 'services/env'
 
 import { auth } from './auth'
-import { solanaService } from './solana'
+import { claimableTokensService, rewardManagerService } from './solana'
 
 declare global {
   interface Window {
@@ -35,7 +41,12 @@ const initSdk = async () => {
       entityManager: makeEntityManagerInstance(discoveryNodeSelector),
       auth,
       storageNodeSelector: await getStorageNodeSelector(),
-      solana: solanaService
+      claimableTokensClient: claimableTokensService,
+      rewardManagerClient: rewardManagerService,
+      antiAbuseOracleSelector: new AntiAbuseOracleSelector({
+        endpoints: [env.AAO_ENDPOINT!],
+        registeredAddresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
+      })
     }
   })
   console.debug('[audiusSdk] SDK initted.')

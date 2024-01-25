@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { Helmet } from 'react-helmet'
 import { connect } from 'react-redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { ScrollContext } from 'components/scroll-provider/ScrollProvider'
 import { AppState } from 'store/types'
 import { getPathname } from 'utils/route'
@@ -69,8 +70,9 @@ const MobilePageContainer = ({
   hasDefaultHeader = false,
   hasPlayBar
 }: MobilePageContainerProps) => {
+  const { history } = useHistoryContext()
   const { getScrollForRoute, setScrollForRoute } = useContext(ScrollContext)!
-  const [getInitialPathname] = useInstanceVar(getPathname())
+  const [getInitialPathname] = useInstanceVar(getPathname(history.location))
   const [getLastScroll, setLastScroll] = useInstanceVar(0)
 
   // On mount, restore the last scroll position
@@ -83,7 +85,7 @@ const MobilePageContainer = ({
   useEffect(() => {
     // Store Y scroll in instance var as we scroll
     const onScroll = () => {
-      const path = getPathname()
+      const path = getPathname(history.location)
       // We can stay mounted after switching
       // paths, so check for this case
       if (path === getInitialPathname()) {
@@ -98,7 +100,13 @@ const MobilePageContainer = ({
       setScrollForRoute(getInitialPathname(), getLastScroll())
       window.removeEventListener('scroll', onScroll)
     }
-  }, [setLastScroll, getInitialPathname, setScrollForRoute, getLastScroll])
+  }, [
+    setLastScroll,
+    getInitialPathname,
+    setScrollForRoute,
+    getLastScroll,
+    history
+  ])
 
   const paddingBottom = `${
     BOTTOM_BAR_HEIGHT +

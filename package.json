@@ -93,6 +93,7 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
+    "vike": "^0.4.150",
     "typescript": "5.0.4",
     "wait-on": "7.2.0"
   },

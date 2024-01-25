@@ -70,7 +70,7 @@ const RECORD_LISTEN_INTERVAL = 1000
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, isPreview, onEnd } = action.payload ?? {}
+    const { uid, trackId, isPreview, startTime, onEnd } = action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
@@ -200,6 +200,9 @@ export function* watchPlay() {
     const doesUserHaveStreamAccess =
       !track?.is_stream_gated || !!track?.access?.stream
     if (!trackId || doesUserHaveStreamAccess || isPreview) {
+      if (startTime) {
+        audioPlayer.seek(startTime)
+      }
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))
     } else {

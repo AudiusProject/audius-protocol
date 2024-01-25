@@ -28,6 +28,7 @@
     "knex": "^2.4.2",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
     "ts-results": "^3.3.0"
   },
   "devDependencies": {
@@ -37,6 +38,7 @@
     "@types/jest": "^26.0.22",
     "@types/morgan": "^1.9.2",
     "@types/node": "^15.12.2",
+    "@types/node-cron": "^3.0.11",
     "@types/node-fetch": "^2.6.4",
     "@types/supertest": "^2.0.11",
     "esbuild": "^0.14.38",

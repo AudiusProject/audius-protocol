@@ -1,8 +1,22 @@
 import fs from 'fs'
 import path from 'path'
 
+import { ClaimableTokensProgram } from '@audius/spl'
+import { DecodedTransferClaimableTokensInstruction } from '@audius/spl/dist/types/claimable-tokens/types'
 import { beforeAll, expect, jest } from '@jest/globals'
+import {
+  PublicKey,
+  Secp256k1Program,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
+} from '@solana/web3.js'
 
+import {
+  ClaimableTokensClient,
+  SolanaRelay,
+  SolanaRelayWalletAdapter
+} from '../../services'
 import { Auth } from '../../services/Auth/Auth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
@@ -12,13 +26,6 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
-import { Solana } from '../../services'
-import { ClaimableTokensProgram } from '@audius/spl'
-import {
-  PublicKey,
-  Secp256k1Program,
-  TransactionMessage
-} from '@solana/web3.js'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -61,7 +68,10 @@ describe('UsersApi', () => {
     discoveryNodeSelector,
     logger
   })
-  const solana = new Solana()
+  const solanaRelay = new SolanaRelay()
+  const claimableTokens = new ClaimableTokensClient({
+    solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+  })
 
   beforeAll(() => {
     users = new UsersApi(
@@ -71,7 +81,7 @@ describe('UsersApi', () => {
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       new Logger(),
-      solana
+      claimableTokens
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -259,10 +269,16 @@ describe('UsersApi', () => {
 
       // Turn the relay call into a bunch of assertions on the final transaction
       jest
-        .spyOn(Solana.prototype, 'relay')
+        .spyOn(SolanaRelay.prototype, 'relay')
         .mockImplementation(async ({ transaction }) => {
-          const message = TransactionMessage.decompile(transaction.message)
-          const [secp, transfer] = message.instructions
+          let instructions: TransactionInstruction[] = []
+          if (transaction instanceof VersionedTransaction) {
+            const message = TransactionMessage.decompile(transaction.message)
+            instructions = message.instructions
+          } else {
+            instructions = transaction.instructions
+          }
+          const [secp, transfer] = instructions
           expect(secp?.programId.toBase58()).toBe(
             Secp256k1Program.programId.toBase58()
           )
@@ -271,28 +287,29 @@ describe('UsersApi', () => {
           expect(ClaimableTokensProgram.isTransferInstruction(decoded)).toBe(
             true
           )
-          // Typescript hint - always true
-          if (ClaimableTokensProgram.isTransferInstruction(decoded)) {
-            expect(decoded.keys.destination.pubkey.toBase58()).toBe(
-              userBanks[receiverUserId]?.toBase58()
-            )
-            expect(decoded.keys.sourceUserBank.pubkey.toBase58()).toBe(
-              userBanks[senderUserId]?.toBase58()
-            )
-            const data =
-              ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
+          // Typescript hint - see above assert
+          const decoded2 = decoded as DecodedTransferClaimableTokensInstruction
 
-            expect(data.destination.toBase58()).toBe(
-              userBanks[receiverUserId]?.toBase58()
-            )
-            expect(data.amount).toBe(outputAmount)
-          }
+          expect(decoded2.keys.destination.pubkey.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(decoded2.keys.sourceUserBank.pubkey.toBase58()).toBe(
+            userBanks[senderUserId]?.toBase58()
+          )
+          const data =
+            ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
+
+          expect(data.destination.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(data.amount).toBe(outputAmount)
+
           return { signature: 'fake-sig' }
         })
 
       // Mock getFeePayer
       jest
-        .spyOn(Solana.prototype, 'getFeePayer')
+        .spyOn(SolanaRelay.prototype, 'getFeePayer')
         .mockImplementation(async () => {
           return feePayer
         })
@@ -321,7 +338,7 @@ describe('UsersApi', () => {
       })
 
       // Ensure relay was attempted to ensure the assertions run
-      expect(solana.relay).toHaveBeenCalledTimes(1)
+      expect(solanaRelay.relay).toHaveBeenCalledTimes(1)
     })
   })
 })

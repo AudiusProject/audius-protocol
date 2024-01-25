@@ -15,7 +15,11 @@ export type SharedData = {
   dateToRun: string
 }
 
-export const initSharedData = async (): Promise<Result<SharedData, string>> => {
+let sharedData: SharedData | undefined = undefined
+
+export const initSharedData = async (): Promise<SharedData> => {
+  if (sharedData !== undefined) return sharedData
+
   dotenv.config({ path: './tcr.env' })
 
   const libs = await initAudiusLibs()
@@ -33,15 +37,14 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
   const dateToRun = process.env.dateToRun
 
   if (oracleEthAddress === undefined)
-    return new Err('oracleEthAddress undefined')
-  if (AAOEndpoint === undefined) return new Err('AAOEndpoint undefined')
+    throw new Error('oracleEthAddress undefined')
+  if (AAOEndpoint === undefined) throw new Error('AAOEndpoint undefined')
   if (feePayerOverride === undefined)
-    return new Err('feePayerOverride undefined')
-  if (localEndpoint === undefined) return new Err('localEndpoint undefined')
-  if (dateToRun === undefined) return new Err('dateToRun undefined')
+    throw new Error('feePayerOverride undefined')
+  if (localEndpoint === undefined) throw new Error('localEndpoint undefined')
+  if (dateToRun === undefined) throw new Error('dateToRun undefined')
 
-  // @ts-ignore
-  return new Ok({
+  sharedData = {
     oracleEthAddress,
     AAOEndpoint,
     feePayerOverride,
@@ -49,7 +52,9 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
     localEndpoint,
     dryRun,
     dateToRun
-  })
+  }
+  // @ts-ignore
+  return sharedData
 }
 
 export const condition = (app: App<SharedData>): boolean => {

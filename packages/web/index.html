@@ -53,13 +53,9 @@
     <meta name="twitter:site" content="@audius" />
     <meta property="twitter:app:name:iphone" content="Audius Music" />
     <meta property="twitter:app:name:googleplay" content="Audius Music" />
+    <meta property="helmet" />
 
-    <script type="module">
-      import { Buffer } from 'buffer'
-      import processBrowser from 'process/browser'
-      window.Buffer = Buffer
-      window.process = { ...processBrowser, env: process.env }
-    </script>
+    <script id="polyfills" type="module" src="/src/polyfills.ts"></script>
 
     <script
       defer
@@ -71,7 +67,7 @@
       // Account recovery
       try {
         const urlParams = new URLSearchParams(window.location.search)
-        const useHashRouting = '%USE_HASH_ROUTING%'
+        const useHashRouting = '%USE_HASH_ROUTING%' === 'true'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 
@@ -132,28 +128,47 @@
 
     <!-- start Meta Pixel -->
     <script async type="text/javascript">
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '725806216135811');
-      fbq('track', 'PageView');
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments)
+        }
+        if (!f._fbq) f._fbq = n
+        n.push = n
+        n.loaded = !0
+        n.version = '2.0'
+        n.queue = []
+        t = b.createElement(e)
+        t.async = !0
+        t.src = v
+        s = b.getElementsByTagName(e)[0]
+        s.parentNode.insertBefore(t, s)
+      })(
+        window,
+        document,
+        'script',
+        'https://connect.facebook.net/en_US/fbevents.js'
+      )
+      fbq('init', '725806216135811')
+      fbq('track', 'PageView')
     </script>
     <!-- End Meta Pixel -->
   </head>
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
+    <script id="index" type="module" src="/src/index.tsx"></script>
     <div id="recaptcha-hidden" style="display: none"></div>
 
     <!-- start Meta Pixel -->
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=725806216135811&ev=PageView&noscript=1"
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=725806216135811&ev=PageView&noscript=1"
     /></noscript>
     <!-- End Meta Pixel -->
   </body>
