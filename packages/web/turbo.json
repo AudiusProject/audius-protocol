@@ -1,15 +1,6 @@
 {
   "extends": ["//"],
   "pipeline": {
-    "build": {
-      "outputs": [
-        "build-development/**",
-        "build-staging/**",
-        "build-production/**"
-      ],
-      "dependsOn": ["^build"],
-      "outputMode": "new-only"
-    },
     "dist": {
       "outputs": ["dist/**"],
       "dependsOn": ["^build"],
