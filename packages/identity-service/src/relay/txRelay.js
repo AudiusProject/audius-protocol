@@ -603,7 +603,14 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
 
-  const wallet = accounts.create()
+  let wallet = accounts.create()
+
+  // if config says to use a wallet, do that
+  if (process.env.ACDC_RELAY_PRIVATE_KEY) {
+    wallet = Accounts.privateKeyToAccount(process.env.ACDC_RELAY_PRIVATE_KEY)
+    console.log('asdf using ACDC_RELAY_PRIVATE_KEY', wallet.address)
+  }
+
   const privateKey = wallet.privateKey.substring(2)
   const start = new Date().getTime()
 
@@ -647,7 +654,6 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
 
     const end = new Date().getTime()
     const took = end - start
-    inFlight--
     logger.info(
       `relayToNethermind ok txhash: ${signedTx.transactionHash} num: ${myDepth} took: ${took} pending: ${inFlight}`
     )
@@ -658,6 +664,8 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     }
   } catch (err) {
     logger.info('relayToNethermind error:', err.toString())
+  } finally {
+    inFlight--
   }
 }
 
