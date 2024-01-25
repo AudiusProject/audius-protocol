@@ -82,6 +82,7 @@ const fixtures = {
         ownerId: 101,
         trackId: 201,
         title: 'Who let the dogs out',
+        genre: 'rap',
       },
       {
         ownerId: 101,
@@ -93,6 +94,7 @@ const fixtures = {
         ownerId: 101,
         trackId: 203,
         title: 'Dogs remix',
+        genre: 'rap',
       },
       {
         ownerId: 101,
