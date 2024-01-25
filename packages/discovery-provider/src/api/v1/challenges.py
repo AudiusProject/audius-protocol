@@ -104,13 +104,13 @@ class FullAttest(Resource):
     @full_ns.expect(attest_parser)
     @full_ns.marshal_with(attestation_response)
     def get(self, challenge_id: str):
-        self._get(challenge_id)
+        return self._get(challenge_id)
 
 
 @ns.route(attest_route, doc=False)
 class Attest(FullAttest):
     def get(self, challenge_id: str):
-        super()._get(challenge_id)
+        return super()._get(challenge_id)
 
 
 undisbursed_route = "/undisbursed"
