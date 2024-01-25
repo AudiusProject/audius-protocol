@@ -1,4 +1,4 @@
-import { App } from '@pedalboard/basekit'
+import { App, initializeDiscoveryDb } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { Ok, Err, Result } from 'ts-results'
 import { AudiusLibs } from '@audius/sdk'
@@ -26,7 +26,7 @@ export const onDisburse = async (
   app: App<SharedData>,
   dryRun: boolean
 ): Promise<Result<undefined, string>> => {
-  const db = app.getDnDb()
+  const db = initializeDiscoveryDb()
   const libs = app.viewAppData().libs
   const token = process.env.SLACK_BOT_TOKEN
   if (token === undefined) return new Err('SLACK_BOT_TOKEN undefined')
