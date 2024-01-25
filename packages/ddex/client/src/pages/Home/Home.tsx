@@ -5,7 +5,7 @@ import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 
 import styles from './Home.module.css'
 
-const Home = () => {
+export const Home = () => {
   const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
 
   const handleOauth = () => {
@@ -13,7 +13,7 @@ const Home = () => {
   }
 
   if (!audiusSdk) {
-    return 'loading...'
+    return <>{'Loading...'}</>
   } else if (!currentUser) {
     // Oauth screen
     return (
@@ -33,5 +33,3 @@ const Home = () => {
     return <Upload />
   }
 }
-
-export default Home

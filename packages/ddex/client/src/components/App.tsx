@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
-import Home from 'pages/Home/Home'
+import { Home } from 'pages/Home/Home'
 import { Indexed } from 'pages/Indexed'
 import { Parsed } from 'pages/Parsed'
 import { Published } from 'pages/Published'

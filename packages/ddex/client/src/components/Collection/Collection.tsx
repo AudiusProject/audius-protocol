@@ -68,7 +68,7 @@ const TableData = ({
     case 'uploads':
       return (
         <tbody>
-          {data.items.map((item) => (
+          {data.items.map((item: any) => (
             <tr key={item.id}>
               <td>TODO</td>
               <td>TODO</td>
@@ -81,7 +81,7 @@ const TableData = ({
     case 'indexed':
       return (
         <tbody>
-          {data.items.map((item) => (
+          {data.items.map((item: any) => (
             <tr key={item.id}>
               <td>TODO</td>
               <td>TODO</td>
@@ -94,7 +94,7 @@ const TableData = ({
     case 'parsed':
       return (
         <tbody>
-          {data.items.map((item) => (
+          {data.items.map((item: any) => (
             <tr key={item.id}>
               <td>TODO</td>
               <td>TODO</td>
@@ -107,7 +107,7 @@ const TableData = ({
     case 'published':
       return (
         <tbody>
-          {data.items.map((item) => (
+          {data.items.map((item: any) => (
             <tr key={item.id}>
               <td>TODO</td>
               <td>TODO</td>

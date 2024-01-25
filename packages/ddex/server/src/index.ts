@@ -21,7 +21,8 @@ const port = process.env.DDEX_PORT || 3000
 ;(async () => {
   try {
     const dbUrl =
-      process.env.audius_db_url || 'mongodb://localhost:27017/ddex?authSource=admin'
+      process.env.audius_db_url ||
+      'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin'
     await dialDb(dbUrl)
 
     const app = createApp()
