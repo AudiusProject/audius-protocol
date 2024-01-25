@@ -31,6 +31,7 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
+import { FeatureFlags } from '@audius/common'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
@@ -640,10 +641,12 @@ export function* watchUnsetArtistPick() {
 
 function* downloadTrack({
   track,
-  filename
+  filename,
+  original
 }: {
   track: Track
-  filename: string
+  filename?: string
+  original?: boolean
 }) {
   try {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -659,6 +662,7 @@ function* downloadTrack({
       nftAccessSignature
     })) as unknown as QueryParams
     queryParams.filename = filename
+    queryParams.original = original
 
     const encodedTrackId = encodeHashId(trackId)
     const url = apiClient.makeUrl(
@@ -680,6 +684,7 @@ function* watchDownloadTrack() {
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
       yield* call(waitForRead)
+      const { trackId, original, stemName } = action
 
       // Check if there is a logged in account and if not,
       // wait for one so we can trigger the download immediately after
@@ -689,24 +694,41 @@ function* watchDownloadTrack() {
         yield* call(waitForValue, getUserId)
       }
 
-      const track = yield* select(getTrack, { id: action.trackId })
+      const track = yield* select(getTrack, { id: trackId })
       if (!track) return
 
       const userId = track.owner_id
       const user = yield* select(getUser, { id: userId })
       if (!user) return
 
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isLosslessDownloadsEnabled = getFeatureEnabled(
+        FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+      )
       let filename
-      if (track.stem_of?.parent_track_id) {
-        const parentTrack = yield* select(getTrack, {
-          id: track.stem_of?.parent_track_id
-        })
-        filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
+      if (!isLosslessDownloadsEnabled) {
+        if (track.stem_of?.parent_track_id) {
+          const parentTrack = yield* select(getTrack, {
+            id: track.stem_of?.parent_track_id
+          })
+          filename = `${parentTrack?.title} - ${stemName} - ${user.name} (Audius).mp3`
+        } else {
+          filename = `${track.title} - ${user.name} (Audius).mp3`
+        }
       } else {
-        filename = `${track.title} - ${user.name} (Audius).mp3`
+        if (original) {
+          filename = `${track.orig_filename}`
+        } else {
+          const dotIndex = track.orig_filename.lastIndexOf('.')
+          filename =
+            dotIndex !== -1
+              ? track.orig_filename.substring(0, dotIndex)
+              : filename
+          filename += '.mp3'
+        }
       }
 
-      yield* call(downloadTrack, { track, filename })
+      yield* call(downloadTrack, { track, filename, original })
     }
   )
 }

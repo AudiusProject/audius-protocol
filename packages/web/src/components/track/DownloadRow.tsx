@@ -25,14 +25,22 @@ const messages = {
 
 type DownloadRowProps = {
   trackId: ID
+  parentTrackId?: ID
   quality: DownloadQuality
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: (
+    trackId: ID,
+    category?: string,
+    original?: boolean,
+    parentTrackId?: ID
+  ) => void
   hideDownload?: boolean
   index: number
 }
 
 export const DownloadRow = ({
   trackId,
+  parentTrackId,
+  quality,
   onDownload,
   hideDownload,
   index
@@ -52,15 +60,22 @@ export const DownloadRow = ({
       // On mobile, show a toast instead of a tooltip
       dispatch(toast({ content: messages.followToDownload }))
     } else if (track && track.access.download) {
-      onDownload(trackId, track.stem_of?.category, trackId)
+      onDownload(
+        trackId,
+        track.stem_of?.category,
+        quality === DownloadQuality.ORIGINAL,
+        parentTrackId
+      )
     }
   }, [
-    dispatch,
     isMobile,
-    onDownload,
     shouldDisplayDownloadFollowGated,
     track,
-    trackId
+    dispatch,
+    onDownload,
+    trackId,
+    quality,
+    parentTrackId
   ])
 
   const downloadButton = () => (

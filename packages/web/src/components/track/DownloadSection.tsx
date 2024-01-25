@@ -8,7 +8,8 @@ import {
   DownloadQuality,
   useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
-  ModalSource
+  ModalSource,
+  Track
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -48,7 +49,12 @@ const messages = {
 
 type DownloadSectionProps = {
   trackId: ID
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: (
+    trackId: ID,
+    category?: string,
+    original?: boolean,
+    parentTrackId?: ID
+  ) => void
 }
 
 export const DownloadSection = ({
@@ -211,9 +217,10 @@ export const DownloadSection = ({
                 hideDownload={shouldHideDownload}
               />
             ) : null}
-            {stemTracks.map((s, i) => (
+            {stemTracks.map((s: Track, i: number) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={onDownload}
                 quality={quality}
