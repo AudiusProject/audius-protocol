@@ -123,25 +123,33 @@ const TableData = ({
 export const Collection = ({ collection }: { collection: CollectionT }) => {
   const [nextId, setNextId] = useState<number | undefined>(undefined)
   const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  let query
+  let data: any, error, isLoading
   switch (collection) {
     case 'uploads':
-      query = trpc.uploads
+      ;({ data, error, isLoading } = trpc.uploads.listCollection.useQuery({
+        nextId,
+        prevId
+      }))
       break
     case 'indexed':
-      query = trpc.indexed
+      ;({ data, error, isLoading } = trpc.indexed.listCollection.useQuery({
+        nextId,
+        prevId
+      }))
       break
     case 'parsed':
-      query = trpc.parsed
+      ;({ data, error, isLoading } = trpc.parsed.listCollection.useQuery({
+        nextId,
+        prevId
+      }))
       break
     case 'published':
-      query = trpc.published
+      ;({ data, error, isLoading } = trpc.published.listCollection.useQuery({
+        nextId,
+        prevId
+      }))
       break
   }
-  const { data, error, isLoading } = query.listCollection.useQuery({
-    nextId,
-    prevId
-  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {

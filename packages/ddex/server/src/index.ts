@@ -12,7 +12,12 @@ import * as trpcExpress from '@trpc/server/adapters/express'
 import collectionRouters from './routers/collectionRouters'
 
 // TODO: Use superjson
-const appRouter = router(collectionRouters)
+const appRouter = router({
+  uploads: collectionRouters['uploads'],
+  indexed: collectionRouters['indexed'],
+  parsed: collectionRouters['parsed'],
+  published: collectionRouters['published'],
+})
 
 export type AppRouter = typeof appRouter
 
