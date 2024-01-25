@@ -9,8 +9,8 @@ export default defineConfig({
   server: {
     proxy: isDevelopment
       ? {
-          '/api': 'http://localhost:3000', // Assuming port for ../server Express server is unchanged
-          '/trpc': 'http://localhost:3000'
+          '/api': 'http://localhost:3001', // Assuming port for ../server Express server is unchanged
+          '/trpc': 'http://localhost:3001'
         }
       : {}
   },
