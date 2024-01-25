@@ -1413,7 +1413,7 @@ TOP_GENRE_ROUTE = "/genre/top"
 
 @full_ns.route(TOP_GENRE_ROUTE)
 class FullTopGenreUsers(Resource):
-    @cache(ttl_sec=60 * 60 * 24)
+    @cache(ttl_sec=60 * 60 * 24, swr=True)
     def _get(self):
         args = top_genre_users_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)

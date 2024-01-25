@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import time
 from typing import Any, List  # pylint: disable=C0302
 
 from flask.globals import request
@@ -90,7 +91,7 @@ def set_json_cached_key(redis, key, obj, ttl=None):
     """
     # Default converts datetime and other unparseables to str.
     serialized = json.dumps(obj, default=str)
-    redis.set(key, serialized, ttl)
+    redis.set(key, serialized, ex=ttl)
 
 
 def cache(**kwargs):
@@ -106,6 +107,8 @@ def cache(**kwargs):
         cache_prefix_override: optional,the prefix for the cache key to use
             currently the cache decorator function has a default prefix for public API routes
             this param allows us to override the prefix for the internal API routes and avoid confusion
+        swr: optional,boolean Sets the method of caching be stale with revalidate. You will always get the last
+            cached value in the response, but it may be stale and will async trigger a refresh
 
     Usage Notes:
         If the wrapped function returns a tuple, the transform function will not
@@ -128,6 +131,7 @@ def cache(**kwargs):
     """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
+    swr = kwargs["swr"] if "swr" in kwargs else False
     cache_prefix_override = (
         kwargs["cache_prefix_override"] if "cache_prefix_override" in kwargs else None
     )
@@ -144,10 +148,18 @@ def cache(**kwargs):
             if not has_user_id:
                 cached_resp = get_json_cached_key(redis, key)
                 if cached_resp:
-                    if transform is not None:
-                        return transform(cached_resp)
+                    if swr:
+                        cached_resp, swr_ttl = cached_resp
+                        if not swr_ttl or int(time.time()) < swr_ttl:
+                            if transform is not None:
+                                return transform(cached_resp)
 
-                    return cached_resp, 200
+                            return cached_resp, 200
+                    else:
+                        if transform is not None:
+                            return transform(cached_resp)
+
+                        return cached_resp, 200
 
             response = func(*args, **kwargs)
 
@@ -155,12 +167,18 @@ def cache(**kwargs):
                 resp, status_code = response
                 # only cache responses w/o user id because only those are read
                 if status_code < 400 and not has_user_id:
-                    set_json_cached_key(redis, key, resp, ttl_sec)
+                    if swr:
+                        set_json_cached_key(redis, key, [resp, ttl_sec])
+                    else:
+                        set_json_cached_key(redis, key, resp, ttl_sec)
 
                 return resp, status_code
             # only cache responses w/o user id because only those are read
             if not has_user_id:
-                set_json_cached_key(redis, key, response, ttl_sec)
+                if swr:
+                    set_json_cached_key(redis, key, [response, ttl_sec])
+                else:
+                    set_json_cached_key(redis, key, response, ttl_sec)
 
             return transform(response)
 
