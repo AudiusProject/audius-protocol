@@ -9,6 +9,7 @@ import {
   Nullable,
   StemCategory,
   StemUpload,
+  StemUploadWithFile,
   USDCPurchaseConditions,
   accountSelectors,
   removeNullable,
@@ -283,7 +284,7 @@ const StemsAndDownloadsMenuFields = () => {
     { setValue: allowOriginalSetValue }
   ] = useField(ALLOW_ORIGINAL)
   const [{ value: stemsValue }, , { setValue: setStems }] =
-    useField<StemUpload[]>(STEMS)
+    useField<StemUploadWithFile[]>(STEMS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
     useTrackField<DownloadTrackAvailabilityType>(DOWNLOAD_AVAILABILITY_TYPE)
 
@@ -318,15 +319,26 @@ const StemsAndDownloadsMenuFields = () => {
 
   const onAddStemsToTrack = useCallback(
     async (selectedStems: File[]) => {
+      const detectCategory = (filename: string): StemCategory => {
+        const lowerCaseFilename = filename.toLowerCase()
+        return (
+          stemCategories.find((category) =>
+            lowerCaseFilename.includes(category.toString().toLowerCase())
+          ) ?? StemCategory.OTHER
+        )
+      }
       const processedFiles = processFiles(selectedStems, invalidAudioFile)
       const newStems = (await Promise.all(processedFiles))
         .filter(removeNullable)
-        .map((processedFile) => ({
-          ...processedFile,
-          category: stemCategories[0],
-          allowDelete: true,
-          allowCategorySwitch: true
-        }))
+        .map((processedFile) => {
+          const category = detectCategory(processedFile.file.name)
+          return {
+            ...processedFile,
+            category,
+            allowDelete: true,
+            allowCategorySwitch: true
+          }
+        })
       setStems([...stemsValue, ...newStems])
     },
     [setStems, stemsValue]

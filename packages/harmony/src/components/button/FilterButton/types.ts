@@ -36,7 +36,7 @@ export type FilterButtonProps = {
   /**
    * The selected value
    */
-  selection?: string
+  selection?: string | null
 
   /**
    * The button size

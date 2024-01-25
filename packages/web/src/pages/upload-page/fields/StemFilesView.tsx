@@ -46,23 +46,20 @@ export const StemFilesView = ({
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
-  console.log({ stems })
 
   const renderStemFiles = () => {
-    return (
+    return stems.length > 0 ? (
       <>
-        {stems.length > 0 ? (
-          <Flex direction='column'>
-            <HarmonyText variant='title' size='l'>
-              {messages.stemTypeHeader}
+        <Flex direction='column'>
+          <HarmonyText variant='title' size='l'>
+            {messages.stemTypeHeader}
+          </HarmonyText>
+          <Box mt='s'>
+            <HarmonyText variant='body'>
+              {messages.stemTypeDescription}
             </HarmonyText>
-            <Box mt='s'>
-              <HarmonyText variant='body'>
-                {messages.stemTypeDescription}
-              </HarmonyText>
-            </Box>
-          </Flex>
-        ) : null}
+          </Box>
+        </Flex>
         <Flex direction='column' borderRadius='m' border='default'>
           {stems.map((stem, i) => (
             <TrackPreviewNew
@@ -74,26 +71,14 @@ export const StemFilesView = ({
               fileType={stem.file.type}
               fileSize={stem.file.size}
               onRemove={() => onDeleteStem(i)}
-              isStem
               stemCategory={stem.category}
-              onEditStemCategory={() => {}}
+              onEditStemCategory={(category) => onSelectCategory(category, i)}
+              isStem
             />
           ))}
         </Flex>
       </>
-    )
-    // return (
-    //   <ul className={styles.stemListItems}>
-    //     {stems.map((stem, i) => (
-    //       <StemListItem
-    //         key={`${stem.metadata.title}-${i}`}
-    //         stem={stem}
-    //         didSelectCategory={(category) => onSelectCategory(category, i)}
-    //         onDelete={() => onDeleteStem(i)}
-    //       />
-    //     ))}
-    //   </ul>
-    // )
+    ) : null
   }
 
   const renderCurrentStems = () => {

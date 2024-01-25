@@ -19,6 +19,7 @@ import iconFileOgg from 'assets/img/iconFileOgg.svg'
 import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
 import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
+import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
 import styles from './TrackPreview.module.css'
@@ -83,6 +84,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
   } = props
 
   const Icon = fileTypeIcon(fileType)
+  const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
 
@@ -92,7 +94,6 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       label: stemCategoryFriendlyNames[value as StemCategory]
     })
   )
-  console.log({ stemCategories })
 
   return (
     <div className={cn(styles.trackPreviewNew, className)}>
@@ -101,7 +102,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           {index + 1}
         </Text>
       ) : null}
-      <Icon className={styles.trackPreviewImage} />
+      <Icon className={styles.trackPreviewImage} style={iconStyle} />
       {isLosslessDownloadsEnabled && isTitleEditable && onEditTitle ? (
         <EditableLabel
           isEditing={isEditingTitle}
@@ -126,7 +127,8 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
                 horizontal: 'right'
               }}
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
-              selection={stemCategory?.toString()}
+              selection={stemCategory?.toString() ?? null}
+              popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
             />
           </Box>
         ) : null}

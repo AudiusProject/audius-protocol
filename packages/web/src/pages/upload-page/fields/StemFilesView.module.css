@@ -88,7 +88,7 @@
   padding-top: var(--unit-2);
   padding-bottom: var(--unit-2);
   border-top: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-default);
 }
 .stemPreview:last-child {
   border-bottom: none;
