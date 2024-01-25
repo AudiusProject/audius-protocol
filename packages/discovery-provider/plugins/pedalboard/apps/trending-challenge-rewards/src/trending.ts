@@ -1,4 +1,4 @@
-import { App } from '@pedalboard/basekit'
+import { App, initializeDiscoveryDb, initializeIdentityDb } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { SharedData } from './config'
 import { intoResult } from './utils'
@@ -21,13 +21,8 @@ export const announceTopFiveTrending = async (
   app: App<SharedData>,
   maybeWeek?: string
 ) => {
-  const identityDbRes = await intoResult(async () => app.getIdDb())
-  if (identityDbRes.err) {
-    console.error('Identity connection error: ', identityDbRes)
-    return
-  }
-  const identityDb = identityDbRes.unwrap()
-  const discoveryDb = app.getDnDb()
+  const identityDb = initializeIdentityDb()
+  const discoveryDb = initializeDiscoveryDb()
 
   const week = maybeWeek || moment().format('YYYY-MM-DD')
 
