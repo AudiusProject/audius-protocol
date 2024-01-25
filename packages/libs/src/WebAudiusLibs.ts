@@ -293,7 +293,6 @@ export class AudiusLibs {
   isServer: boolean
   isDebug: boolean
   logger: Logger
-  deleteLater: null
 
   AudiusABIDecoder: AudiusABIDecoder
   Utils: Utils
@@ -372,7 +371,6 @@ export class AudiusLibs {
     this.isServer = isServer
     this.isDebug = isDebug
     this.logger = logger
-    this.deleteLater = null
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
