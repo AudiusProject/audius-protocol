@@ -23,7 +23,7 @@ const createCollectionRouter = (collection: string) => {
           throw new Error('Invalid pagination parameters')
         }
 
-        let query
+        let query: Record<string, any> = {} // No pagination, fetch the first `limit` items
         let sort: Sort = { _id: 1 } // Ascending
         let flipResults = false
 
@@ -33,8 +33,6 @@ const createCollectionRouter = (collection: string) => {
           query = { _id: { $lt: new mongoose.Types.ObjectId(prevId) } } // IDs less than prevId
           sort = { _id: -1 } // Descending
           flipResults = true
-        } else {
-          query = {} // No pagination, fetch the first `limit` items
         }
 
         const items = await mongoose.connection.db
