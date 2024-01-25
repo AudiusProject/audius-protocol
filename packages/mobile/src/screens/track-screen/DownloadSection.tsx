@@ -186,6 +186,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         {stemTracks?.map((s, i) => (
           <DownloadRow
             trackId={s.id}
+            parentTrackId={trackId}
             key={s.id}
             index={
               i +

@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.parse
 from typing import Optional, TypedDict
 
@@ -114,7 +115,11 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     is_original = args.get("is_original", False)
     filename = args.get("filename")
     if not filename:
-        filename = track.get("orig_filename", title) if is_original else f"{title}.mp3"
+        orig_filename = track.get("orig_filename", title)
+        orig_name_without_extension = os.path.splitext(orig_filename)[0]
+        filename = (
+            orig_filename if is_original else f"{orig_name_without_extension}.mp3"
+        )
     user_data = args["user_data"]
     user_signature = args["user_signature"]
     nft_access_signature = args["nft_access_signature"]

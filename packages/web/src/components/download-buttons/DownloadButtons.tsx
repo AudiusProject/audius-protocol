@@ -136,7 +136,17 @@ const DownloadButton = ({
 
 type DownloadButtonsProps = {
   trackId: ID
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   isOwner: boolean
   following: boolean
   hasDownloadAccess: boolean
