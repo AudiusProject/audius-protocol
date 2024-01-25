@@ -10,7 +10,7 @@ const runMigrations = async () => {
   for (const collection of collections) {
     if (!existingCollectionNames.includes(collection)) {
       await mongoose.connection.db.createCollection(collection)
-      console.log(`Collection ${collection} is created!`)
+      console.log(`Created collection ${collection}!`)
     } else {
       console.log(`Collection ${collection} already exists.`)
     }

@@ -162,6 +162,8 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
         <Text variant='heading' color='heading'>
           {collection.charAt(0).toUpperCase() + collection.slice(1)}
         </Text>
+        {/* TODO resolve "div cannot appear as a descendent of p" error by removing this
+          Text div after harmony fixes font styling */}
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
