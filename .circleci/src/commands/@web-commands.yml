@@ -171,6 +171,7 @@ web-deploy-cloudflare:
     - run:
         name: Move build
         command: |
+          cd packages/web
           mv build-<< parameters.build-type >> build
           mv build-ssr-<< parameters.build-type >> build-ssr
     - run:
