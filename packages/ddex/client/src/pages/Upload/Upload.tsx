@@ -8,11 +8,10 @@ import type {
 import { useQueryClient } from '@tanstack/react-query'
 import cn from 'classnames'
 
-import Releases from 'components/admin/Releases'
-import Uploads from 'components/admin/Uploads'
+import { Page } from 'pages/Page'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 
-import styles from './DDEX.module.css'
+import styles from './Upload.module.css'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -27,38 +26,6 @@ const validXmlFile = (file: File) => {
     return false
   }
   return true
-}
-
-const ManageAudiusAccount = ({
-  currentUser,
-  isAdmin,
-  onChangeUser,
-  oauthError
-}: {
-  currentUser: DecodedUserToken
-  isAdmin: boolean
-  onChangeUser: () => void
-  oauthError: string | null
-}) => {
-  return (
-    <Flex justifyContent='space-between' alignItems='center'>
-      <Flex gap='m' alignItems='center'>
-        <Text
-          variant='body'
-          color='default'
-        >{`Logged in as @${currentUser.handle}`}</Text>
-        {isAdmin && (
-          <Text variant='label' color='subdued' className={styles.adminBadge}>
-            ADMIN
-          </Text>
-        )}
-      </Flex>
-      <Button variant='secondary' onClick={onChangeUser}>
-        Switch users
-      </Button>
-      {oauthError && <div className='text-red-600'>{oauthError}</div>}
-    </Flex>
-  )
 }
 
 const XmlImporter = ({
@@ -128,8 +95,6 @@ const XmlImporter = ({
     if (!validXmlFile(selectedFile)) {
       return
     }
-
-    // TODO more extensive sanitation + schema validation
 
     setUploadSucceeded(false)
     setIsUploading(true)
@@ -246,84 +211,16 @@ const XmlImporter = ({
   }
 }
 
-const Ddex = () => {
-  const { audiusSdk, currentUser, isAdmin, oauthError } = useAudiusSdk()
-
-  const handleOauth = () => {
-    audiusSdk!.oauth!.login({ scope: 'read' })
-  }
-
-  // Use this if you want to skip the oauth flow but still show the UI for a user
-  // const fakeUser = {
-  //   userId: '1',
-  //   email: '1',
-  //   name: 'theo',
-  //   handle: 'theo',
-  //   verified: false,
-  //   profilePicture: undefined,
-  //   sub: '1',
-  //   iat: '',
-  // }
+const Upload = () => {
+  const { audiusSdk, currentUser } = useAudiusSdk()
 
   return (
-    <Box>
-      <Flex gap='xs' direction='column'>
-        {!audiusSdk ? (
-          'loading...'
-        ) : !currentUser ? (
-          <Flex
-            p='xl'
-            gap='m'
-            direction='column'
-            justifyContent='center'
-            alignItems='center'
-          >
-            <Button onClick={handleOauth}>Login with Audius</Button>
-            {oauthError && <div className={styles.errorText}>{oauthError}</div>}
-          </Flex>
-        ) : (
-          <Flex direction='column'>
-            <Box p='xl'>
-              <ManageAudiusAccount
-                currentUser={currentUser}
-                isAdmin={isAdmin}
-                onChangeUser={handleOauth}
-                oauthError={oauthError}
-              />
-            </Box>
-            <Box
-              p='xl'
-              backgroundColor='surface2'
-              borderTop='strong'
-              className={styles.page}
-            >
-              <Flex gap='xl' direction='column'>
-                <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
-                {/* <ManageAudiusAccount
-                  currentUser={currentUser || fakeUser}
-                  isAdmin={true}
-                  onChangeUser={handleOauth}
-                  oauthError={oauthError}
-                />
-                <XmlImporter audiusSdk={audiusSdk}  uploader={fakeUser} /> */}
-
-                {isAdmin && (
-                  <>
-                    <Flex direction='column' gap='s'>
-                      <Uploads />
-                    </Flex>
-                    <Flex direction='column' gap='s'>
-                      <Releases />
-                    </Flex>
-                  </>
-                )}
-              </Flex>
-            </Box>
-          </Flex>
-        )}
+    <Page>
+      <Flex gap='xl' direction='column'>
+        <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
       </Flex>
-    </Box>
+    </Page>
   )
 }
 
-export default Ddex
+export default Upload

@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
-import Ddex from '../pages/DDEX/DDEX'
+import Home from 'pages/Home/Home'
 
 import Layout from './Layout'
 
@@ -9,7 +9,7 @@ const App = () => {
     <Router>
       <Layout>
         <Routes>
-          <Route path='/' element={<Ddex />} />
+          <Route path='/' element={<Home />} />
         </Routes>
       </Layout>
     </Router>
