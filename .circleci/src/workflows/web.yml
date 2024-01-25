@@ -27,7 +27,23 @@ jobs:
         - Vercel
       requires:
         - web-init
+
+  - web-build-ssr-staging:
+      context:
+        - Vercel
+      requires:
+        - web-init
+
   - web-build-production:
+      context:
+        - Vercel
+      requires:
+        - web-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - web-build-ssr-production:
       context:
         - Vercel
       requires:
@@ -55,6 +71,7 @@ jobs:
         - slack-secrets
       requires:
         - web-build-staging
+        - web-build-ssr-staging
       filters:
         branches:
           only: /^main$/
@@ -64,6 +81,7 @@ jobs:
       requires:
         - web-init
         - web-build-production
+        - web-build-ssr-production
       filters:
         branches:
           only: /(^release.*)$/
@@ -73,6 +91,7 @@ jobs:
       requires:
         - web-init
         - web-build-staging
+        - web-build-ssr-staging
       filters:
         branches:
           only: /(^release.*)$/
@@ -82,6 +101,7 @@ jobs:
       type: approval
       requires:
         - web-build-production
+        - web-build-ssr-production
       filters:
         branches:
           only: /(^release.*)$/
