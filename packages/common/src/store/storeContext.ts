@@ -1,4 +1,5 @@
 import type { AudiusSdk } from '@audius/sdk'
+import { Location } from 'history'
 
 import {
   AllTrackingEvents,
@@ -31,7 +32,7 @@ export type CommonStoreContext = {
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean>
   analytics: {
-    init: () => Promise<void>
+    init: (isMobile: boolean) => Promise<void>
     track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
     identify: (
       handle: string,
@@ -58,7 +59,9 @@ export type CommonStoreContext = {
   explore: Explore
   // A helper that returns the appropriate lineup selector for the current
   // route or screen.
-  getLineupSelectorForRoute?: () => (state: CommonState) => LineupState<Track>
+  getLineupSelectorForRoute?: (
+    location: Location
+  ) => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
   solanaClient: SolanaClient
   sentry: {
@@ -77,4 +80,5 @@ export type CommonStoreContext = {
       urls: string[]
     ) => Promise<{ file: File; url: string }>
   }
+  isMobile: boolean
 }

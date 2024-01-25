@@ -76,6 +76,17 @@ web-build-staging:
         build-directory: packages/web/build-staging
         build-name: build-staging
 
+web-build-ssr-staging:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - web-build:
+        build-type: ssr:stage
+        build-directory: packages/web/build-ssr-staging
+        build-name: build-ssr-staging
+
 web-test-staging:
   working_directory: ~/audius-protocol
   resource_class: large
@@ -107,6 +118,17 @@ web-build-production:
         build-type: prod
         build-directory: packages/web/build-production
         build-name: build-production
+
+web-build-ssr-production:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - web-build:
+        build-type: ssr:prod
+        build-directory: packages/web/build-ssr-production
+        build-name: build-ssr-production
 
 web-deploy-demo:
   working_directory: ~/audius-protocol

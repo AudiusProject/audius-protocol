@@ -1,22 +1,22 @@
 import { PropsWithChildren } from 'react'
 
-import { InstagramProfile, Name } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { InstagramProfile } from '@audius/common'
 
-import { make } from 'common/store/analytics/actions'
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 
 import { useSetProfileFromInstagram } from '../hooks/socialMediaLogin'
 
+import { SocialPlatform } from './SocialMediaLoginOptions'
+
 type SignupFlowInstagramAuthProps = PropsWithChildren<{
   className?: string
-  onFailure: (e: unknown) => void
+  onFailure: (e: Error, platform: SocialPlatform) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
     platform: 'instagram'
   }) => void
-  onStart: () => void
+  onStart: (platform: SocialPlatform) => void
 }>
 
 export const SignupFlowInstagramAuth = ({
@@ -26,13 +26,15 @@ export const SignupFlowInstagramAuth = ({
   onSuccess,
   children
 }: SignupFlowInstagramAuthProps) => {
-  const dispatch = useDispatch()
-
   const setProfileFromInstagram = useSetProfileFromInstagram()
 
-  const handleError = (e: unknown) => {
+  const handleStart = () => {
+    onStart('instagram')
+  }
+
+  const handleError = (e: Error) => {
     console.error(e)
-    onFailure(e)
+    onFailure(e, 'instagram')
   }
 
   const handleInstagramLogin = async ({
@@ -46,7 +48,7 @@ export const SignupFlowInstagramAuth = ({
     try {
       res = await setProfileFromInstagram({ uuid, instagramProfile: profile })
     } catch (e) {
-      handleError(e)
+      handleError(e as Error)
       return
     }
     onSuccess({
@@ -59,10 +61,7 @@ export const SignupFlowInstagramAuth = ({
   return (
     <InstagramAuth
       className={className}
-      onClick={() => {
-        onStart()
-        dispatch(make(Name.CREATE_ACCOUNT_START_INSTAGRAM, {}))
-      }}
+      onClick={handleStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleInstagramLogin({ uuid, profile })}
     >

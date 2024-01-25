@@ -33,10 +33,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const USDCBalancePill = () => {
   const styles = useStyles()
-  const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
-    useUSDCBalance()
-  const isUsdcBalanceLoading =
-    usdcBalance === null || usdcBalanceStatus === Status.LOADING
+  const { data: usdcBalance, status: usdcBalanceStatus } = useUSDCBalance()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (usdcBalance ?? new BN(0)) as BNUSDC
   )
@@ -44,7 +41,7 @@ export const USDCBalancePill = () => {
   return (
     <View style={styles.root}>
       <LogoUSDC height={spacing(5)} width={spacing(5)} />
-      {isUsdcBalanceLoading ? (
+      {usdcBalanceStatus === Status.LOADING ? (
         <Skeleton
           style={styles.amount}
           height={spacing(4.5)}

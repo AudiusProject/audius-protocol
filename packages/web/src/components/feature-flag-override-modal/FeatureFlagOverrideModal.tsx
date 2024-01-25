@@ -29,10 +29,12 @@ const messages = {
   title: 'Feature Flag Override Settings'
 }
 
-const getOverrideSetting = (flag: string) =>
-  localStorage.getItem(
+const getOverrideSetting = (flag: string) => {
+  if (typeof localStorage === 'undefined') return null
+  return localStorage.getItem(
     `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
   ) as OverrideSetting
+}
 
 const setOverrideSetting = (flag: string, val: OverrideSetting) => {
   const flagKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`

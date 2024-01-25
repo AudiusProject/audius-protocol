@@ -10,7 +10,7 @@ import {
 import { useInstanceVar } from '@audius/common'
 import { useHistory } from 'react-router-dom'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 type HeaderContextProps = {
   header: ReactNode
@@ -25,8 +25,9 @@ export const HeaderContext = createContext<HeaderContextProps>({
 export const HeaderContextProvider = memo(
   (props: { children: JSX.Element }) => {
     const [header, setHeader] = useState<ReactNode>(null)
+    const isMobile = useIsMobile()
 
-    if (useIsMobile()) {
+    if (isMobile) {
       return (
         <HeaderContext.Provider
           value={{

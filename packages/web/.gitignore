@@ -23,6 +23,7 @@ env/.env.dev.local
 /build-ci
 /build-production
 /build-mobile-production
+/build-ssr
 /storybook-static
 /build-ipfs-staging
 /build-ipfs-staging.zip

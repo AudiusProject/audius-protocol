@@ -4,6 +4,7 @@ import cn from 'classnames'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useSsrContext } from 'ssr/SsrContext'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
@@ -20,6 +21,7 @@ type UserLinkProps = Omit<LinkProps, 'to'> & {
 }
 
 export const UserLink = (props: UserLinkProps) => {
+  const { isServerSide } = useSsrContext()
   const {
     userId,
     textAs = 'span',
@@ -50,7 +52,7 @@ export const UserLink = (props: UserLinkProps) => {
     </Link>
   )
 
-  return popover && handle ? (
+  return !isServerSide && popover && handle ? (
     <ArtistPopover handle={handle}>{linkElement}</ArtistPopover>
   ) : (
     linkElement

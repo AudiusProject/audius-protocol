@@ -27,8 +27,6 @@ import styles from './SuggestedTracks.module.css'
 
 const { getUser } = cacheUsersSelectors
 
-const contentHeight = 423
-
 const messages = {
   title: 'Add some tracks',
   addTrack: 'Add',
@@ -107,6 +105,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
 
   const divider = <Divider className={styles.trackDivider} />
 
+  const contentHeight = 66 + suggestedTracks.length * 74
   const contentStyles = useSpring({
     height: isExpanded ? contentHeight : 0
   })

@@ -1,3 +1,4 @@
+import { ChallengeId } from './api/challenges/types'
 import { developmentConfig, productionConfig, stagingConfig } from './config'
 import { sdk } from './sdk'
 import { DiscoveryNodeSelector } from './services'
@@ -14,3 +15,4 @@ import { ParseRequestError } from './utils/parseParams'
 ;(window as any).audiusSdk.ParseRequestError = ParseRequestError
 ;(window as any).audiusSdk.Genre = Genre
 ;(window as any).audiusSdk.Mood = Mood
+;(window as any).audiusSdk.ChallengeId = ChallengeId

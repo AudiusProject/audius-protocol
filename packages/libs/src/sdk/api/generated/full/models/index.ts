@@ -2,6 +2,8 @@
 /* eslint-disable */
 export * from './Access';
 export * from './ActivityFull';
+export * from './Attestation';
+export * from './AttestationReponse';
 export * from './CollectionActivityFull';
 export * from './CollectionLibraryResponseFull';
 export * from './CoverArt';

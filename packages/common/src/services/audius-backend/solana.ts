@@ -19,8 +19,8 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
-
-const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
+const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
+const RECOVERY_MEMO_STRING = 'recovery'
 
 /**
  * Memo program V1
@@ -416,6 +416,55 @@ export const findAssociatedTokenAddress = async (
   ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
 }
 
+export const createRootWalletRecoveryTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    userBank,
+    wallet,
+    amount,
+    feePayer
+  }: {
+    userBank: PublicKey
+    wallet: Keypair
+    amount: bigint
+    feePayer?: PublicKey
+    usePaymentRouter?: boolean
+  }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const solanaWeb3Manager = libs.solanaWeb3Manager!
+
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(RECOVERY_MEMO_STRING)
+  })
+
+  const [transferInstruction, routeInstruction] =
+    // All the memo related parameters are ignored
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+      id: 0, // ignored
+      type: 'track', // ignored
+      blocknumber: 0, // ignored
+      splits: { [userBank.toString()]: new BN(amount.toString()) },
+      purchaserUserId: 0, // ignored
+      senderAccount: wallet.publicKey
+    })
+
+  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+
+  const tx = new Transaction({ recentBlockhash, feePayer })
+  tx.add(memoInstruction, transferInstruction, routeInstruction)
+  return tx
+}
+
 export const createTransferToUserBankTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
@@ -548,6 +597,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
+  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const decompiledMessage = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
@@ -558,7 +608,7 @@ export const relayVersionedTransaction = async (
       publicKey: publicKey.toBase58(),
       signature: Buffer.from(transaction.signatures[index])
     }))
-    .filter((meta) => !meta.signature.equals(PLACEHOLDER_SIGNATURE))
+    .filter((meta) => !meta.signature.equals(placeholderSignature))
   return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
     instructions: decompiledMessage.instructions,
     recentBlockhash: decompiledMessage.recentBlockhash,

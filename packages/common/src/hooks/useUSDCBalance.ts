@@ -55,6 +55,7 @@ export const useUSDCBalance = ({
     }
   }, [audiusBackend, setData])
 
+  // Refresh balance on mount
   useEffect(() => {
     refresh()
   }, [refresh])
@@ -69,5 +70,13 @@ export const useUSDCBalance = ({
     clearInterval(id)
   }, [id])
 
-  return { balanceStatus, recoveryStatus, data, refresh, cancelPolling }
+  // If we haven't loaded the balance yet for the first time or we're
+  // actively recovering, then we will be in loading state.
+  const status =
+    balanceStatus === Status.IDLE ||
+    (balanceStatus === Status.LOADING && data === null) ||
+    recoveryStatus === Status.LOADING
+      ? Status.LOADING
+      : balanceStatus
+  return { status, data, refresh, cancelPolling }
 }

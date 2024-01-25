@@ -1,5 +1,8 @@
+import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
+
+import { SsrPageProps } from 'models/SsrPageProps'
 
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
@@ -46,7 +49,10 @@ import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import { persistedSavePageReducer } from './pages/saved-page/reducer'
+import {
+  savePageReducer,
+  persistedSavePageReducer
+} from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -55,10 +61,10 @@ import smartCollection from './pages/smart-collection/slice'
 import tokenDashboardSlice from './pages/token-dashboard/slice'
 import track from './pages/track/reducer'
 import TrackPageState from './pages/track/types'
-import trending from './pages/trending/reducer'
-import { TrendingPageState } from './pages/trending/types'
 import trendingPlaylists from './pages/trending-playlists/slice'
 import trendingUnderground from './pages/trending-underground/slice'
+import trending from './pages/trending/reducer'
+import { TrendingPageState } from './pages/trending/types'
 import { PlaybackPositionState } from './playback-position'
 import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
@@ -139,7 +145,12 @@ import wallet from './wallet/slice'
  * A function that creates common reducers.
  * @returns an object of all reducers to be used with `combineReducers`
  */
-export const reducers = (storage: Storage) => ({
+export const reducers = (
+  storage: Storage,
+  ssrPageProps?: SsrPageProps,
+  isServerSide?: boolean,
+  history?: History
+) => ({
   account,
 
   api: apiReducer,
@@ -157,10 +168,10 @@ export const reducers = (storage: Storage) => ({
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
-  tracks: asCache(tracksReducer, Kind.TRACKS),
+  tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
   // TODO: Fix type error
   // @ts-ignore
-  users: asCache(usersReducer, Kind.USERS),
+  users: asCache(usersReducer(ssrPageProps), Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
 
@@ -238,11 +249,13 @@ export const reducers = (storage: Storage) => ({
     historyPage: historyPageReducer,
     profile: profileReducer,
     smartCollection,
-    savedPage: persistedSavePageReducer(storage),
+    savedPage: isServerSide
+      ? savePageReducer
+      : persistedSavePageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
-    track,
-    trending,
+    track: track(ssrPageProps),
+    trending: trending(history),
     trendingPlaylists,
     trendingUnderground,
     settings,

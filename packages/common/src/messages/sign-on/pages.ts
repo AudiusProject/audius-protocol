@@ -122,9 +122,9 @@ export const selectArtstsPageMessages = {
 }
 
 export const welcomeModalMessages = {
-  welcome: 'Welcome to Audius! 🎉',
+  welcome: 'Welcome to Audius%0! 🎉',
   startListening: 'Start Listening',
   upload: 'Upload',
   youreIn:
-    'You’re in! Discover music from our talented DJs, producers, and artists.'
+    "You're in! Discover music from our talented DJs, producers, and artists."
 }

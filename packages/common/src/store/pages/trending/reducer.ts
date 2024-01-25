@@ -1,5 +1,7 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
+import { History } from 'history'
+
 import { asLineup } from 'store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,
@@ -21,21 +23,6 @@ import {
   trendingAllTime,
   makeInitialState
 } from './lineup/reducer'
-
-const urlParams = new URLSearchParams(window.location.search)
-const genre = urlParams.get('genre')
-const timeRange = urlParams.get('timeRange')
-
-const initialState = {
-  trendingTimeRange: Object.values(TimeRange).includes(timeRange)
-    ? timeRange
-    : TimeRange.WEEK,
-  trendingGenre: Object.values(GENRES).includes(genre) ? genre : null,
-  lastFetchedTrendingGenre: null,
-  trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
-  trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
-  trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
-}
 
 const actionsMap = {
   [SET_TRENDING_TIME_RANGE](state, action) {
@@ -65,7 +52,30 @@ const trendingAllTimeReducer = asLineup(
   trendingAllTime
 )
 
-const reducer = (state = initialState, action) => {
+const reducer = (history?: History) => (state, action) => {
+  if (!state) {
+    const initialState = {
+      lastFetchedTrendingGenre: null,
+      trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
+      trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
+      trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
+    }
+
+    if (history) {
+      const urlParams = new URLSearchParams(history.location.search)
+      const genre = urlParams.get('genre')
+      const timeRange = urlParams.get('timeRange')
+      return {
+        ...initialState,
+        trendingTimeRange: Object.values(TimeRange).includes(timeRange)
+          ? timeRange
+          : TimeRange.WEEK,
+        trendingGenre: Object.values(GENRES).includes(genre) ? genre : null
+      }
+    }
+
+    return initialState
+  }
   const trendingWeek = trendingWeekReducer(state.trendingWeek, action)
   if (trendingWeek !== state.trendingWeek) return { ...state, trendingWeek }
 

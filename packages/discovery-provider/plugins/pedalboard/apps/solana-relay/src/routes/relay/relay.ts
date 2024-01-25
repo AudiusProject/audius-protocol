@@ -105,6 +105,7 @@ export const relay = async (
     })
     logger.info('Sending transaction...')
     const serializedTx = transaction.serialize()
+    logger.info(`Serialized: ${Buffer.from(serializedTx).toString('base64')}`)
 
     const signature = await connection.sendRawTransaction(
       serializedTx,

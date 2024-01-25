@@ -3,8 +3,12 @@ import { env } from 'services/env'
 const PUBLIC_PROTOCOL = env.PUBLIC_PROTOCOL
 const PUBLIC_HOSTNAME = env.PUBLIC_HOSTNAME
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+const isIOS =
+  typeof navigator !== 'undefined' &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent)
+const isSafari =
+  typeof navigator !== 'undefined' &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
 // Pulled from: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
 export const copyToClipboard = (str: string) => {
@@ -35,6 +39,8 @@ export const copyToClipboard = (str: string) => {
  * The protocol will change depending on the context (electron vs. mobile vs. web)
  */
 export const getCopyableLink = (link: string) => {
+  if (typeof window === 'undefined') return link
+
   const protocol = window.location.protocol
   const hostname = window.location.host // host instead of hostname to work with ports besides 80
 
@@ -53,4 +59,5 @@ export const copyLinkToClipboard = (link: string) => {
 }
 
 // @ts-ignore: Navigator's share exists on newer browsers
-export const isShareToastDisabled = !!navigator.share
+export const isShareToastDisabled =
+  typeof navigator !== 'undefined' && !!navigator.share

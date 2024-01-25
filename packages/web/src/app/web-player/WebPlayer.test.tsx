@@ -3,14 +3,14 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { describe, it, vitest } from 'vitest'
 
-import { store } from 'store/configureStore'
-import history from 'utils/history'
+import { configureStore } from 'store/configureStore'
+import { createHistory } from 'utils/history'
 
 import WebPlayer from './WebPlayer'
 
 vitest.mock('jimp/es', () => null)
 vitest.mock('./visualizer/Visualizer', () => () => null)
-vitest.mock('react-spring/renderprops', () => ({
+vitest.mock('react-spring/renderprops.cjs', () => ({
   Spring: () => null,
   Transition: () => null
 }))
@@ -28,7 +28,9 @@ vitest.mock('services/solana-client/SolanaClient', () => ({
 
 describe('smoke test', () => {
   it('renders without crashing', () => {
+    const history = createHistory()
     const rootNode = document.createElement('div')
+    const store = configureStore(history, false, {}, false)
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>

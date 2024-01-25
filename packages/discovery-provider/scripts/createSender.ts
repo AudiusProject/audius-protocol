@@ -1,15 +1,12 @@
-import { createSenderInstruction, ethAddress } from '@audius/spl'
+import { RewardManagerProgram, ethAddress } from '@audius/spl'
 
 import {
   VersionedTransaction,
   TransactionMessage,
   Connection,
   Keypair,
-  PublicKey,
-  Secp256k1Program
+  PublicKey
 } from '@solana/web3.js'
-import keccak256 from 'keccak256'
-import secp256k1 from 'secp256k1'
 
 import { program } from 'commander'
 
@@ -75,26 +72,15 @@ const main = async (id: number) => {
     rewardManagerProgramId
   )
 
-  const createSender = createSenderInstruction(
+  const createSender = RewardManagerProgram.createSenderInstruction({
     senderEthAddress,
-    senderEthAddress,
-    rewardManager,
-    owner.publicKey,
+    operatorEthAddress: senderEthAddress,
+    rewardManagerState: rewardManager,
+    manager: owner.publicKey,
     authority,
-    payer.publicKey,
+    payer: payer.publicKey,
     sender,
     rewardManagerProgramId
-  )
-
-  const signResult = secp256k1.ecdsaSign(
-    Uint8Array.from(keccak256(Buffer.from(createSender.data))),
-    Buffer.from(senderEthPrivateKey, 'hex')
-  )
-  const secpInstruction = Secp256k1Program.createInstructionWithEthAddress({
-    ethAddress: senderEthAddress,
-    message: Buffer.from(createSender.data),
-    signature: signResult.signature,
-    recoveryId: signResult.recid
   })
 
   const { blockhash, lastValidBlockHeight } =
@@ -103,7 +89,7 @@ const main = async (id: number) => {
   const message = new TransactionMessage({
     payerKey: payer.publicKey,
     recentBlockhash: blockhash,
-    instructions: [secpInstruction, createSender]
+    instructions: [createSender]
   }).compileToLegacyMessage()
   const tx = new VersionedTransaction(message)
   tx.sign([payer, owner])

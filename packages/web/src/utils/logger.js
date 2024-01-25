@@ -2,7 +2,9 @@ import { env } from 'services/env'
 
 /* eslint-disable no-console */
 const preserveLogs =
-  window.localStorage && window.localStorage.getItem('preserve-logs')
+  typeof window !== 'undefined' &&
+  window.localStorage &&
+  window.localStorage.getItem('preserve-logs')
 
 export const storeLogger = (store) => {
   if (env.ENVIRONMENT === 'production' && !preserveLogs) {

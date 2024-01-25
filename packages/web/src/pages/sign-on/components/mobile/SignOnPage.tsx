@@ -12,7 +12,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
