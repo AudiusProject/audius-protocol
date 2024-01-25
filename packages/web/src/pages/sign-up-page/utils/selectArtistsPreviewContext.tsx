@@ -115,7 +115,10 @@ export const SelectArtistsPreviewContextProvider = (props: {
       return
     }
     if (!track) return
+
     const { track_id, preview_cid, duration } = track
+    // Sometimes we rerender before the next track starts playing, so we need to double check the track matches the artist
+    if (track.user.user_id !== nowPlayingArtistId) return
     const isPreview = !!preview_cid
     const startTime = isPreview
       ? undefined
