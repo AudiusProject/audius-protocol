@@ -1,7 +1,7 @@
-import { App, initializeDiscoveryDb, initializeIdentityDb } from '@pedalboard/basekit'
+import { App } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { SharedData } from './config'
-import { intoResult } from './utils'
+import { discoveryDb, identityDb, intoResult } from './utils'
 import { WebClient } from '@slack/web-api'
 import moment from 'moment'
 import { Table, TrendingResults } from '@pedalboard/storage'
@@ -21,8 +21,6 @@ export const announceTopFiveTrending = async (
   app: App<SharedData>,
   maybeWeek?: string
 ) => {
-  const identityDb = initializeIdentityDb()
-  const discoveryDb = initializeDiscoveryDb()
 
   const week = maybeWeek || moment().format('YYYY-MM-DD')
 
@@ -70,9 +68,6 @@ export const announceTopFiveTrending = async (
     trendingPlaylistTweet,
     trendingUndergroundTweet
   ])
-
-  await discoveryDb.destroy()
-  await identityDb.destroy()
 }
 
 export const queryTopFiveTrending = async (
