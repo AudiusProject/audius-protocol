@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-PRUNE_THRESHOLD=70
+PRUNE_THRESHOLD=60
 FULL_PRUNE_THRESHOLD=50
 
 function disk_usage_above_threshold() {
@@ -14,9 +14,9 @@ function disk_usage_above_threshold() {
 
 if disk_usage_above_threshold $PRUNE_THRESHOLD; then
     echo "Exceeded threshold %$PRUNE_THRESHOLD, running docker system prune..."
-    docker system prune -f
+    docker system prune -f --filter "until=20m"
     if disk_usage_above_threshold $FULL_PRUNE_THRESHOLD; then
         echo "Still exceeded threshold %$FULL_PRUNE_THRESHOLD, running docker system prune -a..."
-        docker system prune -af
+        docker system prune -af --filter "until=20m"
     fi
 fi
