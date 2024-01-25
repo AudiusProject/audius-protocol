@@ -18,7 +18,8 @@ import {
   encodeHashId,
   getQueryParams,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  FeatureFlags
 } from '@audius/common'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -31,7 +32,6 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-import { FeatureFlags } from '@audius/common'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
@@ -645,7 +645,7 @@ function* downloadTrack({
   original
 }: {
   track: Track
-  filename?: string
+  filename: string
   original?: boolean
 }) {
   try {
@@ -718,13 +718,15 @@ function* watchDownloadTrack() {
       } else {
         if (original) {
           filename = `${track.orig_filename}`
-        } else {
+        } else if (track.orig_filename) {
           const dotIndex = track.orig_filename.lastIndexOf('.')
           filename =
             dotIndex !== -1
-              ? track.orig_filename.substring(0, dotIndex)
-              : filename
-          filename += '.mp3'
+              ? track.orig_filename.substring(0, dotIndex) + '.mp3'
+              : track.orig_filename + '.mp3'
+        } else {
+          // Failsafe - this should never happen
+          filename = `${track.title} - ${user.name} (Audius).mp3`
         }
       }
 
