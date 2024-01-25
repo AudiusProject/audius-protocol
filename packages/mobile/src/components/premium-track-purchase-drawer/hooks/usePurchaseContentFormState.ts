@@ -1,10 +1,7 @@
-import { useEffect } from 'react'
-
 import {
-  purchaseContentSelectors,
   isContentPurchaseInProgress,
-  useUSDCBalance,
-  Status
+  purchaseContentSelectors,
+  useUSDCBalance
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
