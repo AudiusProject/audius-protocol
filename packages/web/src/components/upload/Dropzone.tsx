@@ -8,9 +8,9 @@ import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 import styles from './Dropzone.module.css'
 
 const messages = {
-  track: 'Drag-and-drop your files here, or ',
-  image: 'Drag-and-drop an image here, or ',
-  stem: 'Drag-and-drop audio files here, or ',
+  track: 'Drag-and-drop your files here, or',
+  image: 'Drag-and-drop an image here, or',
+  stem: 'Drag-and-drop audio files here, or',
   browse: 'browse to upload'
 }
 
@@ -37,6 +37,7 @@ type DropzoneProps = {
   onDropRejected?: (files: File[]) => void
   disabled?: boolean
   disableClick?: boolean
+  isTruncated?: boolean
 }
 
 export const Dropzone = ({
@@ -53,7 +54,8 @@ export const Dropzone = ({
   onDropRejected,
   subtitle,
   disabled = false,
-  disableClick
+  disableClick,
+  isTruncated
 }: DropzoneProps) => {
   const getMessage = () => {
     if (subtitle) return subtitle
@@ -72,8 +74,15 @@ export const Dropzone = ({
 
     return (
       <>
+        {isTruncated ? (
+          <IconUpload
+            className={cn(styles.iconUpload, iconClassName, {
+              [styles.truncated]: isTruncated
+            })}
+          />
+        ) : null}
         {message}
-        <TextLink css={{ color: '#a30cb3' }}>{messages.browse}</TextLink>
+        <TextLink css={{ color: '#a30cb3' }}>&nbsp;{messages.browse}</TextLink>
       </>
     )
   }
@@ -83,7 +92,9 @@ export const Dropzone = ({
       multiple={allowMultiple}
       onDropAccepted={onDropAccepted}
       onDropRejected={onDropRejected}
-      className={cn(styles.dropzone, className)}
+      className={cn(styles.dropzone, className, {
+        [styles.truncated]: isTruncated
+      })}
       disabled={disabled}
       disableClick={disabled || disableClick}
       accept={
@@ -93,17 +104,21 @@ export const Dropzone = ({
     >
       <div className={styles.hoverBoundingBox}>
         <span className={styles.contentWrapper}>
-          {textAboveIcon ? (
-            <div className={cn(styles.textAboveIcon, titleTextClassName)}>
-              {textAboveIcon}
-            </div>
+          {!isTruncated ? (
+            <>
+              {textAboveIcon ? (
+                <div className={cn(styles.textAboveIcon, titleTextClassName)}>
+                  {textAboveIcon}
+                </div>
+              ) : null}
+              {subtextAboveIcon ? (
+                <Text size='s' variant='body' className={subtitleTextClassName}>
+                  {subtextAboveIcon}
+                </Text>
+              ) : null}
+              <IconUpload className={cn(styles.iconUpload, iconClassName)} />
+            </>
           ) : null}
-          {subtextAboveIcon ? (
-            <Text size='s' variant='body' className={subtitleTextClassName}>
-              {subtextAboveIcon}
-            </Text>
-          ) : null}
-          <IconUpload className={cn(styles.iconUpload, iconClassName)} />
           <div className={cn(styles.text, messageClassName)}>
             {getMessage()}
           </div>

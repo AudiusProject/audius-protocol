@@ -129,6 +129,7 @@ export const StemFilesView = ({
         type='stem'
         subtitle={atCapacity ? messages.maxCapacity : undefined}
         disableClick={atCapacity}
+        isTruncated={stems.length > 0}
       />
     )
   }
