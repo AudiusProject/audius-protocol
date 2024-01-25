@@ -329,6 +329,9 @@ export const WalletManagementTile = () => {
     primaryProvider === OnRampProvider.COINBASE
       ? OnRampProvider.STRIPE
       : OnRampProvider.COINBASE
+  const isAnyProviderAllowed =
+    onRampProviders[primaryProvider].isAllowed ||
+    onRampProviders[secondaryProvider].isAllowed
 
   const onClickOpen = useCallback(() => {
     setOpen(true)
@@ -367,7 +370,7 @@ export const WalletManagementTile = () => {
         </div>
       </div>
       <div className={styles.container}>
-        {!isMobileWeb() ? (
+        {!isMobileWeb() && isAnyProviderAllowed ? (
           <>
             <div className={styles.header}>
               <img
@@ -401,7 +404,8 @@ export const WalletManagementTile = () => {
           hideText={messages.hideAdvanced}
         >
           <div className={styles.moreOptions}>
-            {onRampProviders[secondaryProvider].isEnabled ? (
+            {onRampProviders[secondaryProvider].isEnabled &&
+            isAnyProviderAllowed ? (
               <div className={styles.moreOptionsSection}>
                 <div className={styles.subtitle}>
                   {messages.additionalPaymentMethods}
