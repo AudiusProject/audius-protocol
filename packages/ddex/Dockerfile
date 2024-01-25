@@ -58,5 +58,5 @@ RUN apk update
 COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/server
 
-EXPOSE 3001
+EXPOSE 9000
 CMD ["node", "dist/index.js"]

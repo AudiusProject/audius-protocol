@@ -21,7 +21,7 @@ const appRouter = router({
 
 export type AppRouter = typeof appRouter
 
-const port = process.env.DDEX_PORT || 3001
+const port = process.env.DDEX_PORT || 9000
 
 ;(async () => {
   try {
