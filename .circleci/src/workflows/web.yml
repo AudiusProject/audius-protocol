@@ -72,9 +72,9 @@ jobs:
       requires:
         - web-build-staging
         - web-build-ssr-staging
-      # filters:
-      #   branches:
-      #     only: /^main$/
+      filters:
+        branches:
+          only: /^main$/
 
   - web-deploy-release-candidate:
       context: Audius Client
