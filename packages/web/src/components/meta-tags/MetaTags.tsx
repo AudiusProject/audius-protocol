@@ -90,11 +90,11 @@ export const MetaTags = (props: MetaTagsProps) => {
       <meta property='og:type' content='website' />
       <meta name='twitter:card' content='summary' />
 
-      {structuredData && (
+      {structuredData ? (
         <script type='application/ld+json'>
           {JSON.stringify(structuredData)}
         </script>
-      )}
+      ) : null}
     </>
   )
 }

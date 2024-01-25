@@ -147,19 +147,19 @@ export const Page = (props: PageProps) => {
     }
   }
 
+  const metaTagsProps = {
+    title,
+    description,
+    ogDescription,
+    image,
+    canonicalUrl,
+    structuredData,
+    noIndex
+  }
+
   return (
     <>
-      <MetaTags
-        {...{
-          title,
-          description,
-          ogDescription,
-          image,
-          canonicalUrl,
-          structuredData,
-          noIndex
-        }}
-      />
+      <MetaTags {...metaTagsProps} />
       <Spring
         from={{ opacity: fromOpacity }}
         to={{ opacity: 1 }}

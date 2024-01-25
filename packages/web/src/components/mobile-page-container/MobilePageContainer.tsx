@@ -110,19 +110,19 @@ const MobilePageContainer = (props: MobilePageContainerProps) => {
   }px`
   const style = { paddingBottom }
 
+  const metaTagsProps = {
+    title,
+    description,
+    ogDescription,
+    image,
+    canonicalUrl,
+    structuredData,
+    noIndex
+  }
+
   return (
     <>
-      <MetaTags
-        {...{
-          title,
-          description,
-          ogDescription,
-          image,
-          canonicalUrl,
-          structuredData,
-          noIndex
-        }}
-      />
+      <MetaTags {...metaTagsProps} />
       <div
         className={cn(styles.container, className, containerClassName, {
           [styles.hasDefaultHeader]: hasDefaultHeader
