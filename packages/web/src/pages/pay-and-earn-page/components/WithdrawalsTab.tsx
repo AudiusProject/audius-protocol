@@ -212,7 +212,6 @@ export const WithdrawalsTab = ({
     ? (['date', 'amount'] as WithdrawalsTableColumn[])
     : undefined
 
-  // TODO: Loading spinner while USDC balance is loading, probably has to be done at parent component
   return (
     <div className={styles.container}>
       {isEmpty ? (

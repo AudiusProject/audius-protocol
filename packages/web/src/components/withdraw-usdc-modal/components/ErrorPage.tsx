@@ -28,8 +28,6 @@ const messages = {
   tryAgain: 'Try Again?'
 }
 
-// TODO: If we fail after moving to the root account, the useUSDC hook will trigger a refresh and
-// show zero balance?
 export const ErrorPage = () => {
   const { setData } = useWithdrawUSDCModal()
   const { data: balance } = useUSDCBalance()
