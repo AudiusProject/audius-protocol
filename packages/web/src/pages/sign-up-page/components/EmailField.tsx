@@ -53,7 +53,6 @@ export const NewEmailField = () => {
   return (
     <>
       <EmailField
-        debouncedValidationMs={500}
         // Don't show red error message when emailInUse
         helperText={emailInUse ? '' : undefined}
       />
