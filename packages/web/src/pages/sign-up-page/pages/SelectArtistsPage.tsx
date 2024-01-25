@@ -25,11 +25,7 @@ import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import {
-  SIGN_UP_APP_CTA_PAGE,
-  SIGN_UP_COMPLETED_REDIRECT,
-  SIGN_UP_GENRES_PAGE
-} from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -54,6 +50,8 @@ type SelectArtistsValues = {
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
+
+const ARTISTS_PER_GENRE_LIMIT = 31
 
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -87,7 +85,7 @@ export const SelectArtistsPage = () => {
 
   const { data: topArtists, status: topArtistsStatus } =
     useGetTopArtistsInGenre(
-      { genre: currentGenre },
+      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
       { disabled: isFeaturedArtists }
     )
 
@@ -125,9 +123,8 @@ export const SelectArtistsPage = () => {
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
-              backButtonText={messages.backToGenres}
-              backTo={SIGN_UP_GENRES_PAGE}
               mode='viewing'
+              backButtonText={isMobile ? undefined : messages.backToGenres}
             />
             <AnimatedFlex
               direction='column'

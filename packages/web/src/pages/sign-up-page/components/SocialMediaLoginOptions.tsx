@@ -74,8 +74,8 @@ export const SocialMediaLoginOptions = ({
         >
           <SocialButton
             type='button'
-            fullWidth
             socialType='twitter'
+            css={{ width: '100%' }}
             aria-label={socialMediaMessages.signUpTwitter}
           />
         </SignupFlowTwitterAuth>
@@ -89,9 +89,8 @@ export const SocialMediaLoginOptions = ({
         >
           <SocialButton
             type='button'
-            fullWidth
             socialType='instagram'
-            css={{ flex: 1 }}
+            css={{ width: '100%' }}
             aria-label={socialMediaMessages.signUpInstagram}
           />
         </SignupFlowInstagramAuth>
@@ -105,8 +104,8 @@ export const SocialMediaLoginOptions = ({
           >
             <SocialButton
               type='button'
-              fullWidth
               socialType='tiktok'
+              css={{ width: '100%' }}
               aria-label={socialMediaMessages.signUpTikTok}
             />
           </SignupFlowTikTokAuth>

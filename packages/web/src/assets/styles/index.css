@@ -19,3 +19,10 @@ h5,
 h6 {
   color: var(--neutral);
 }
+
+body {
+  background: var(--background);
+  backface-visibility: hidden;
+  /** Turn off user select so the web app behaves more like "an app" */
+  user-select: none;
+}

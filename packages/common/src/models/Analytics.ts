@@ -66,7 +66,7 @@ export enum Name {
   // When the user has an error uploading their cover photo
   CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR = 'Create Account: Upload Cover Photo Error',
   // When the user selects a genre
-  CREATE_ACCOUNT_SELECT_GENRE = 'CREATE_ACCOUNT_SELECT_GENRE',
+  CREATE_ACCOUNT_SELECT_GENRE = 'Create Account: Select Genre',
   // When the user clicks follow on a specific user on the follow artists page
   CREATE_ACCOUNT_FOLLOW_ARTIST = 'Create Account: Follow Artist',
   // When the user clicks to preview a song from an artist on the follow artists page

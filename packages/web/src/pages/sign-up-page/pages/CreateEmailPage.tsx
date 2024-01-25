@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   emailSchema,
-  createEmailPageMessages as messages
+  createEmailPageMessages as messages,
+  useAudiusQueryContext
 } from '@audius/common'
 import {
   Box,
@@ -19,7 +20,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   resetSignOn,
@@ -48,8 +48,6 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
-const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
-
 export type SignUpEmailValues = {
   email: string
 }
@@ -60,6 +58,11 @@ export const CreateEmailPage = () => {
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
+  const audiusQueryContext = useAudiusQueryContext()
+  const EmailSchema = useMemo(
+    () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   const initialValues = {
     email: existingEmailValue.value ?? ''

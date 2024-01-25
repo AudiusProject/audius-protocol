@@ -13,18 +13,17 @@ import cn from 'classnames'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
 import { env } from 'services/env'
-import { isMobile as getIsMobile } from 'utils/clientUtil'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
 const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
-const isMobile = getIsMobile()
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You',
@@ -96,6 +95,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const setLoading = useCallback(() => setIsLoading(true), [setIsLoading])
   const { toast } = useContext(ToastContext)
+  const isMobile = useIsMobile()
 
   const onToggleCompleteProfileWithSocial = useCallback(() => {
     setShowCompleteProfileWithSocial((show) => !show)

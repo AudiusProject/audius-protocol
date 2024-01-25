@@ -12,6 +12,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import {
@@ -21,7 +22,6 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
@@ -32,13 +32,14 @@ const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
-  backTo?: string
   mode: 'editing' | 'viewing'
   size?: 'small' | 'large'
   formDisplayName?: string
   formProfileImage?: ImageFieldValue
   onProfileImageChange?: (value: ImageFieldValue) => void
   onCoverPhotoChange?: (value: ImageFieldValue) => void
+  // If true, the banner will be rendered as a paper header
+  isPaperHeader?: boolean
 }
 
 const ProfileImageAvatar = ({
@@ -84,13 +85,13 @@ const ProfileImageAvatar = ({
 export const AccountHeader = (props: AccountHeaderProps) => {
   const {
     backButtonText,
-    backTo,
     mode,
     formDisplayName,
     formProfileImage,
     onProfileImageChange,
     onCoverPhotoChange,
-    size
+    size,
+    isPaperHeader
   } = props
   const dispatch = useDispatch()
   const profileImageField = useSelector(getProfileImageField)
@@ -107,7 +108,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()
-  const navigate = useNavigateToPage()
+  const history = useHistory()
 
   const displayName = formDisplayName || displayNameField || accountDisplayName
   const handle = handleField || accountHandle
@@ -132,9 +133,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             iconLeft={IconArrowLeft}
             variant='inverted'
             onClick={() => {
-              if (backTo) {
-                navigate(backTo)
-              }
+              history.goBack()
             }}
           >
             {backButtonText}
@@ -158,11 +157,12 @@ export const AccountHeader = (props: AccountHeaderProps) => {
                 coverPhotoUrl={uploadedImage?.url}
                 profileImageUrl={formProfileImage?.url}
                 isEditing
+                isPaperHeader={isPaperHeader}
               />
             )}
           </ImageField>
         ) : (
-          <CoverPhotoBanner />
+          <CoverPhotoBanner isPaperHeader={isPaperHeader} />
         )}
       </Box>
       <Flex

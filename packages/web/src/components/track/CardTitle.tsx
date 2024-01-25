@@ -26,7 +26,7 @@ const messages = {
 }
 
 type CardTitleProps = {
-  className: string
+  className?: string
   isUnlisted: boolean
   isScheduledRelease: boolean
   isRemix: boolean
