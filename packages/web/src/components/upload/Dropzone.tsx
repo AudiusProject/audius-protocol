@@ -73,7 +73,7 @@ export const Dropzone = ({
     }
 
     return (
-      <>
+      <Text>
         {isTruncated ? (
           <IconUpload
             className={cn(styles.iconUpload, iconClassName, {
@@ -83,7 +83,7 @@ export const Dropzone = ({
         ) : null}
         {message}
         <TextLink css={{ color: '#a30cb3' }}>&nbsp;{messages.browse}</TextLink>
-      </>
+      </Text>
     )
   }
 
