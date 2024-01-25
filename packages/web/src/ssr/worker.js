@@ -7,8 +7,10 @@
  */
 
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
-import { renderPage } from 'vike/server'
 import { Toucan } from 'toucan-js'
+import { renderPage } from 'vike/server'
+
+/* globals SENTRY_DSN */
 
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
