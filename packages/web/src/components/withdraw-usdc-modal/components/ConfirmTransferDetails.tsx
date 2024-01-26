@@ -39,6 +39,7 @@ const messages = {
     'I have carefully reviewed the accuracy of this information and I understand transfers are final and cannot be reversed.',
   goBack: 'Go Back',
   confirm: 'Confirm Transfer',
+  continue: 'Continue Transfer',
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
   cashTransferDescription:
     'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
@@ -136,7 +137,9 @@ export const ConfirmTransferDetails = () => {
           {messages.goBack}
         </Button>
         <Button variant='secondary' onClick={handleContinue}>
-          {messages.confirm}
+          {methodValue === WithdrawMethod.COINFLOW
+            ? messages.continue
+            : messages.confirm}
         </Button>
       </div>
     </div>
