@@ -1,4 +1,4 @@
-# Audius DDEX
+# Audius DDEX Web App
 
 tRPC server and client for the Audius DDEX control layer (UI for suppliers to do OAuth and to view and manage uploads).
 
