@@ -4,7 +4,6 @@ import { Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
-import { env } from 'services/env'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
