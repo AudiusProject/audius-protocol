@@ -47,14 +47,14 @@ RUN find packages -path '*/node_modules/*' -prune -o -name 'src' -type d -exec r
 # Final stage: Create a runnable image
 FROM node:18-alpine AS runner
 
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
 USER nodejs
 
 WORKDIR /app
-RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
-RUN apk update
-
 COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/server
 
