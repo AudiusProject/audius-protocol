@@ -20,6 +20,7 @@ import {
   IconError
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
+import { useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
@@ -55,6 +56,7 @@ export const DownloadAvailability = ({
   value,
   setValue
 }: DownloadAvailabilityProps) => {
+  const { submitForm } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
@@ -78,7 +80,9 @@ export const DownloadAvailability = ({
     return ''
   }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
 
-  const handleCalloutClick = useCallback(() => {}, [])
+  const handleCalloutClick = useCallback(() => {
+    submitForm()
+  }, [])
 
   const options = [
     {
