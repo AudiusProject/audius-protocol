@@ -3,8 +3,7 @@ import { useState } from 'react'
 import {
   FeatureFlags,
   StemCategory,
-  stemCategoryFriendlyNames,
-  useFeatureFlag
+  stemCategoryFriendlyNames
 } from '@audius/common'
 import { Box, FilterButton, Flex, IconCompose } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
@@ -19,6 +18,7 @@ import iconFileOgg from 'assets/img/iconFileOgg.svg'
 import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
 import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
@@ -64,7 +64,7 @@ type TrackPreviewProps = {
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 

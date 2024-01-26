@@ -82,7 +82,7 @@ export const DownloadAvailability = ({
 
   const handleCalloutClick = useCallback(() => {
     submitForm()
-  }, [])
+  }, [submitForm])
 
   const options = [
     {

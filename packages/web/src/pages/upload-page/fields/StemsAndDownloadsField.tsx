@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   AccessConditions,
@@ -7,18 +7,15 @@ import {
   FeatureFlags,
   FollowGatedConditions,
   Nullable,
-  StemCategory,
   StemUpload,
-  StemUploadWithFile,
   USDCPurchaseConditions,
   accountSelectors,
-  removeNullable,
   stemCategoryFriendlyNames,
-  useFeatureFlag
+  useUSDCPurchaseConfig
 } from '@audius/common'
-import { useField } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconSourceFiles from 'assets/img/iconSourceFiles.svg'
 import {
@@ -26,55 +23,39 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { useTrackField } from '../hooks'
-import { processFiles } from '../store/utils/processFiles'
 
 import {
   DOWNLOAD_CONDITIONS,
   IS_DOWNLOAD_GATED,
-  STREAM_CONDITIONS,
-  getCombinedDefaultGatedConditionValues
+  getCombinedDefaultGatedConditionValues,
+  STREAM_CONDITIONS
 } from './AccessAndSaleField'
-import { StemFilesView, dropdownRows as stemCategories } from './StemFilesView'
-import styles from './StemsAndDownloadsField.module.css'
-import { SwitchRowField } from './SwitchRowField'
-import { DownloadAvailability } from './download-availability/DownloadAvailability'
+import {
+  ALLOW_DOWNLOAD,
+  DOWNLOAD_AVAILABILITY_TYPE,
+  FOLLOWER_GATED,
+  IS_DOWNLOADABLE,
+  IS_ORIGINAL_AVAILABLE,
+  STEMS,
+  StemsAndDownloadsFormValues,
+  StemsAndDownloadsMenuFields,
+  stemsAndDownloadsSchema
+} from './StemsAndDownloadsMenuFields'
 
 const { getUserId } = accountSelectors
 
-const DOWNLOAD_AVAILABILITY_TYPE = 'download_availability_type'
 const ALLOW_DOWNLOAD_BASE = 'is_downloadable'
-const ALLOW_DOWNLOAD = 'download.is_downloadable'
 const FOLLOWER_GATED_BASE = 'requires_follow'
-const FOLLOWER_GATED = 'download.requires_follow'
 const CID_BASE = 'cid'
 const CID = 'download.cid'
-const ALLOW_ORIGINAL = 'is_original_available'
-const STEMS = 'stems'
 
 const messages = {
   title: 'Stems & Downloads',
   description:
     'Upload your track’s source files and customize how fans download your files.',
-  menuDescription:
-    'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
-  [ALLOW_DOWNLOAD]: {
-    header: 'Allow Full Track Download',
-    description: 'Allow your fans to download a copy of your full track.'
-  },
-  [FOLLOWER_GATED]: {
-    header: 'Available Only to Followers',
-    description:
-      'Make your stems and source files available only to your followers'
-  },
-  [ALLOW_ORIGINAL]: {
-    header: 'Provide Lossless Files',
-    description:
-      'Provide your fans with the Lossless files you upload in addition to an mp3.'
-  },
   values: {
     allowDownload: 'Full Track Available',
     allowOriginal: 'Lossless Files Available',
@@ -82,19 +63,11 @@ const messages = {
   }
 }
 
-export type StemsAndDownloadsFormValues = {
-  [DOWNLOAD_AVAILABILITY_TYPE]: DownloadTrackAvailabilityType
-  [DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
-  [ALLOW_DOWNLOAD]: boolean
-  [FOLLOWER_GATED]: boolean
-  [ALLOW_ORIGINAL]: boolean
-  [STEMS]: StemUpload[]
-}
-
 export const StemsAndDownloadsField = () => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
+  const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   const [{ value: allowDownloadValue }, , { setValue: setAllowDownloadValue }] =
     useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
@@ -102,11 +75,13 @@ export const StemsAndDownloadsField = () => {
     useTrackField<Download[typeof FOLLOWER_GATED_BASE]>(FOLLOWER_GATED)
   const [{ value: cid }, , { setValue: setCidValue }] =
     useTrackField<Download[typeof CID_BASE]>(CID)
+  const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
+    useTrackField<boolean>(IS_DOWNLOADABLE)
   const [
     { value: isOriginalAvailable },
     ,
     { setValue: setisOriginalAvailable }
-  ] = useTrackField<boolean>(ALLOW_ORIGINAL)
+  ] = useTrackField<boolean>(IS_ORIGINAL_AVAILABLE)
   const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
     useTrackField<boolean>(IS_DOWNLOAD_GATED)
   const [
@@ -135,14 +110,15 @@ export const StemsAndDownloadsField = () => {
 
   const initialValues = useMemo(() => {
     const initialValues = {}
-    set(initialValues, ALLOW_DOWNLOAD, allowDownloadValue)
-    set(initialValues, FOLLOWER_GATED, followerGatedValue)
-    set(initialValues, ALLOW_ORIGINAL, isOriginalAvailable)
+    set(initialValues, ALLOW_DOWNLOAD, allowDownloadValue ?? false)
+    set(initialValues, FOLLOWER_GATED, followerGatedValue ?? false)
     set(initialValues, CID, cid ?? null)
     set(initialValues, STEMS, stemsValue ?? [])
-    set(initialValues, STREAM_CONDITIONS, streamConditions)
+    set(initialValues, IS_DOWNLOADABLE, isDownloadable)
+    set(initialValues, IS_ORIGINAL_AVAILABLE, isOriginalAvailable)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
+    set(initialValues, STREAM_CONDITIONS, streamConditions)
     set(
       initialValues,
       DOWNLOAD_AVAILABILITY_TYPE,
@@ -152,6 +128,7 @@ export const StemsAndDownloadsField = () => {
   }, [
     allowDownloadValue,
     followerGatedValue,
+    isDownloadable,
     isOriginalAvailable,
     cid,
     stemsValue,
@@ -165,14 +142,18 @@ export const StemsAndDownloadsField = () => {
       const availabilityType = get(values, DOWNLOAD_AVAILABILITY_TYPE)
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
 
-      setAllowDownloadValue(
+      // note that there is some redundancy with the is_downloadable field
+      // this will go away once we remove the download object from track
+      // and only keep the top level fields
+      const allowsDownload =
         get(values, ALLOW_DOWNLOAD) ?? allowDownloadValue ?? false
-      )
+      setAllowDownloadValue(allowsDownload)
+      setIsDownloadable(allowsDownload)
       setFollowerGatedValue(
         get(values, FOLLOWER_GATED) ?? followerGatedValue ?? false
       )
       setisOriginalAvailable(
-        get(values, ALLOW_ORIGINAL) ?? isOriginalAvailable ?? false
+        get(values, IS_ORIGINAL_AVAILABLE) ?? isOriginalAvailable ?? false
       )
       setStemsValue(get(values, STEMS))
       setCidValue(null)
@@ -201,6 +182,7 @@ export const StemsAndDownloadsField = () => {
               downloadConditions as FollowGatedConditions
             setDownloadConditions({ follow_user_id })
             setIsDownloadGated(true)
+            setFollowerGatedValue(true)
             break
           }
           case DownloadTrackAvailabilityType.PUBLIC: {
@@ -216,6 +198,7 @@ export const StemsAndDownloadsField = () => {
       streamConditions,
       setAllowDownloadValue,
       setFollowerGatedValue,
+      setIsDownloadable,
       setisOriginalAvailable,
       setStemsValue,
       setCidValue,
@@ -226,7 +209,7 @@ export const StemsAndDownloadsField = () => {
 
   const renderValue = () => {
     let values = []
-    if (allowDownloadValue) {
+    if (allowDownloadValue || isDownloadable) {
       values.push(messages.values.allowDownload)
     }
     if (followerGatedValue) {
@@ -258,154 +241,10 @@ export const StemsAndDownloadsField = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       renderValue={renderValue}
+      validationSchema={toFormikValidationSchema(
+        stemsAndDownloadsSchema(usdcPurchaseConfig)
+      )}
       menuFields={<StemsAndDownloadsMenuFields />}
     />
-  )
-}
-
-const StemsAndDownloadsMenuFields = () => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
-  const [
-    { onChange: allowDownloadOnChange },
-    ,
-    { setValue: allowDownloadSetValue }
-  ] = useField(ALLOW_DOWNLOAD)
-  const [
-    { onChange: followerGatedOnChange },
-    ,
-    { setValue: followerGatedSetValue }
-  ] = useField(FOLLOWER_GATED)
-  const [
-    { onChange: allowOriginalOnChange },
-    ,
-    { setValue: allowOriginalSetValue }
-  ] = useField(ALLOW_ORIGINAL)
-  const [{ value: stemsValue }, , { setValue: setStems }] =
-    useField<StemUploadWithFile[]>(STEMS)
-  const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
-    useTrackField<DownloadTrackAvailabilityType>(DOWNLOAD_AVAILABILITY_TYPE)
-
-  const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(false)
-
-  useEffect(() => {
-    if (
-      [
-        DownloadTrackAvailabilityType.FOLLOWERS,
-        DownloadTrackAvailabilityType.USDC_PURCHASE
-      ].includes(availabilityType) &&
-      !isAvailabilityTouched
-    ) {
-      allowDownloadSetValue(true)
-      allowOriginalSetValue(true)
-      setIsAvailabilityTouched(true)
-    }
-  }, [
-    availabilityType,
-    isAvailabilityTouched,
-    allowDownloadSetValue,
-    allowOriginalSetValue
-  ])
-
-  const invalidAudioFile = (
-    name: string,
-    reason: 'corrupted' | 'size' | 'type'
-  ) => {
-    console.error('Invalid Audio File', { name, reason })
-    // TODO: show file error
-  }
-
-  const onAddStemsToTrack = useCallback(
-    async (selectedStems: File[]) => {
-      const detectCategory = (filename: string): StemCategory => {
-        const lowerCaseFilename = filename.toLowerCase()
-        return (
-          stemCategories.find((category) =>
-            lowerCaseFilename.includes(category.toString().toLowerCase())
-          ) ?? StemCategory.OTHER
-        )
-      }
-      const processedFiles = processFiles(selectedStems, invalidAudioFile)
-      const newStems = (await Promise.all(processedFiles))
-        .filter(removeNullable)
-        .map((processedFile) => {
-          const category = detectCategory(processedFile.file.name)
-          return {
-            ...processedFile,
-            category,
-            allowDelete: true,
-            allowCategorySwitch: true
-          }
-        })
-      setStems([...stemsValue, ...newStems])
-    },
-    [setStems, stemsValue]
-  )
-
-  return (
-    <div className={styles.fields}>
-      <Text>{messages.menuDescription}</Text>
-      <Divider />
-      {isLosslessDownloadsEnabled ? (
-        <DownloadAvailability
-          value={availabilityType}
-          setValue={setAvailabilityType}
-        />
-      ) : null}
-      <SwitchRowField
-        name={ALLOW_DOWNLOAD}
-        header={messages[ALLOW_DOWNLOAD].header}
-        description={messages[ALLOW_DOWNLOAD].description}
-        onChange={(e) => {
-          allowDownloadOnChange(e)
-          if (!e.target.checked) {
-            followerGatedSetValue(false)
-          } else {
-            allowOriginalSetValue(true)
-          }
-        }}
-      />
-      <Divider />
-      {isLosslessDownloadsEnabled ? (
-        <SwitchRowField
-          name={ALLOW_ORIGINAL}
-          header={messages[ALLOW_ORIGINAL].header}
-          description={messages[ALLOW_ORIGINAL].description}
-          onChange={(e) => {
-            allowOriginalOnChange(e)
-            if (e.target.checked) {
-              allowOriginalSetValue(true)
-            }
-          }}
-        />
-      ) : (
-        <SwitchRowField
-          name={FOLLOWER_GATED}
-          header={messages[FOLLOWER_GATED].header}
-          description={messages[FOLLOWER_GATED].description}
-          onChange={(e) => {
-            followerGatedOnChange(e)
-            if (e.target.checked) {
-              allowDownloadSetValue(true)
-            }
-          }}
-        />
-      )}
-      <Divider />
-      <StemFilesView
-        onAddStems={onAddStemsToTrack}
-        stems={stemsValue}
-        onSelectCategory={(category: StemCategory, index: number) => {
-          stemsValue[index].category = category
-          setStems(stemsValue)
-        }}
-        onDeleteStem={(index) => {
-          stemsValue.splice(index, 1)
-          setStems(stemsValue)
-        }}
-      />
-    </div>
   )
 }

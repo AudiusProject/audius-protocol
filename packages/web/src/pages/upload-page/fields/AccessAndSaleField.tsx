@@ -142,14 +142,14 @@ export type AccessAndSaleFormValues = {
   [PREVIEW]?: number
 }
 
-type AccessAndSaleRemoteConfig = Pick<
+export type USDCPurchaseRemoteConfig = Pick<
   USDCPurchaseConfig,
   'minContentPriceCents' | 'maxContentPriceCents'
 >
 
 export const AccessAndSaleFormSchema = (
   trackLength: number,
-  { minContentPriceCents, maxContentPriceCents }: AccessAndSaleRemoteConfig
+  { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig
 ) =>
   z
     .object({

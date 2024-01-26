@@ -26,7 +26,7 @@ const messages = {
   usdc: '(USDC)'
 }
 
-const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
+export const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
 
 type TrackAvailabilityFieldsProps = {
   disabled?: boolean
