@@ -37,6 +37,8 @@ local.properties
 *.iml
 *.hprof
 .cxx/
+android/.bundle/
+android/vendor/
 
 # Visual Studio Code
 #
