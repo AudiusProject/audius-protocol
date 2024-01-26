@@ -19,3 +19,5 @@ steps:
   - run:
       name: Merge and push new tag manifest
       command: . ~/.profile; audius-compose push-arm --prod "<< parameters.service >>"
+  - docker-prune:
+      when: always

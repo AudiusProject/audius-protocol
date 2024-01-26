@@ -20,6 +20,8 @@ steps:
       when: always
       name: Log out of Docker
       command: docker logout
+  - docker-prune:
+      when: always
   - run:
       when: on_fail
       name: Alert Slack of failure

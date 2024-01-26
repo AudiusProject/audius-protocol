@@ -1,0 +1,31 @@
+docker-prune:
+  description: 'Perform docker system prune based on disk usage'
+  parameters:
+    prune-threshold:
+      default: '70'
+      type: string
+    full-prune-threshold:
+      default: '50'
+      type: string
+  steps:
+    - run:
+        name: 'Prune docker cache if disk usage exceeds threshold'
+        command: |
+          PRUNE_THRESHOLD=<< parameters.prune-threshold >>
+          FULL_PRUNE_THRESHOLD=<< parameters.full-prune-threshold >>
+
+          function disk_usage_above_threshold() {
+            threshold="$1"
+            disk_usage_pct="$(df | grep /dev/root | awk '{print $5}' | grep -oP "^\d+")"
+            echo "Disk usage at ${disk_usage_pct}%"
+            [ "$disk_usage_pct" -gt "$threshold" ]
+          }
+
+          if disk_usage_above_threshold $PRUNE_THRESHOLD; then
+            echo "Exceeded threshold %$PRUNE_THRESHOLD, running docker system prune..."
+            docker system prune -f --filter "until=20m"
+            if disk_usage_above_threshold $FULL_PRUNE_THRESHOLD; then
+              echo "Still exceeded threshold %$FULL_PRUNE_THRESHOLD, running docker system prune -a..."
+              docker system prune -af --filter "until=20m"
+            fi
+          fi
