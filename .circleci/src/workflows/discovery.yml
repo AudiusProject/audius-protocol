@@ -85,9 +85,9 @@ jobs:
         branches:
           only: main
   - push-docker-image:
-      name: push-ddex
+      name: push-ddex-web
       context: [Vercel, dockerhub]
-      service: ddex
+      service: ddex-web
       filters:
         branches:
           only: main
@@ -209,14 +209,14 @@ jobs:
         - push-uptime
 
   - push-arm-image:
-      name: push-ddex-arm
+      name: push-ddex-web-arm
       context: [Vercel, dockerhub]
       service: ddex
       filters:
         branches:
           only: main
       requires:
-        - push-ddex
+        - push-ddex-web
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
@@ -236,7 +236,7 @@ jobs:
         - push-protocol-dashboard
         - push-uptime
         - push-healthz
-        - push-ddex
+        - push-ddex-web
         # uncomment when arm builds are stable
         # - push-discovery-provider-arm
         # - push-discovery-provider-notifications-arm
@@ -248,7 +248,7 @@ jobs:
         # - push-protocol-dashboard-arm
         # - push-healthz-arm
         # - push-uptime-arm
-        # - push-ddex-arm
+        # - push-ddex-web-arm
 
       filters:
         branches:
