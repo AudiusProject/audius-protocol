@@ -10,6 +10,8 @@ import {
   StemUpload,
   USDCPurchaseConditions,
   accountSelectors,
+  isContentFollowGated,
+  isContentUSDCPurchaseGated,
   stemCategoryFriendlyNames,
   useUSDCPurchaseConfig
 } from '@audius/common'
@@ -44,6 +46,7 @@ import {
   StemsAndDownloadsMenuFields,
   stemsAndDownloadsSchema
 } from './StemsAndDownloadsMenuFields'
+import { DOWNLOAD_PRICE_HUMANIZED } from './download-availability/DownloadPriceField'
 
 const { getUserId } = accountSelectors
 
@@ -119,13 +122,29 @@ export const StemsAndDownloadsField = () => {
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
-    set(
-      initialValues,
-      DOWNLOAD_AVAILABILITY_TYPE,
-      DownloadTrackAvailabilityType.PUBLIC
-    )
+
+    let availabilityType = DownloadTrackAvailabilityType.PUBLIC
+    const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
+    const isFollowGated = isContentFollowGated(savedDownloadConditions)
+    if (isUsdcGated) {
+      availabilityType = DownloadTrackAvailabilityType.USDC_PURCHASE
+      set(
+        initialValues,
+        DOWNLOAD_PRICE_HUMANIZED,
+        tempDownloadConditions.usdc_purchase.price
+          ? (Number(tempDownloadConditions.usdc_purchase.price) / 100).toFixed(
+              2
+            )
+          : undefined
+      )
+    }
+    if (isFollowGated) {
+      availabilityType = DownloadTrackAvailabilityType.FOLLOWERS
+    }
+    set(initialValues, DOWNLOAD_AVAILABILITY_TYPE, availabilityType)
     return initialValues as StemsAndDownloadsFormValues
   }, [
+    savedDownloadConditions,
     allowDownloadValue,
     followerGatedValue,
     isDownloadable,

@@ -27,6 +27,7 @@ const messages = {
 }
 
 export const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
+export const DOWNLOAD_PRICE_HUMANIZED = 'download_price_humanized'
 
 type TrackAvailabilityFieldsProps = {
   disabled?: boolean
