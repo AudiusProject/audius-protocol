@@ -8,7 +8,10 @@ import {
   DownloadQuality,
   useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
-  ModalSource
+  useWaitForDownloadModal,
+  ModalSource,
+  tracksSocialActions as socialTracksActions,
+  toastActions
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -21,16 +24,18 @@ import {
   IconLockUnlocked
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
-import { shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { DownloadRow } from './DownloadRow'
 
 const { getTrack } = cacheTracksSelectors
+const { toast } = toastActions
 
 const ORIGINAL_TRACK_INDEX = 1
 const STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK = 1
@@ -43,7 +48,8 @@ const messages = {
   original: 'Original',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
-  purchased: 'purchased'
+  purchased: 'purchased',
+  followToDownload: 'Must follow artist to download.'
 }
 
 type DownloadSectionProps = {
@@ -65,6 +71,8 @@ export const DownloadSection = ({
   trackId,
   onDownload
 }: DownloadSectionProps) => {
+  const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -85,6 +93,7 @@ export const DownloadSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
@@ -97,6 +106,22 @@ export const DownloadSection = ({
       { source: ModalSource.TrackDetails }
     )
   }, [])
+
+  const handleDownloadAll = useAuthenticatedClickCallback(() => {
+    if (isMobile && shouldDisplayDownloadFollowGated) {
+      // On mobile, show a toast instead of a tooltip
+      dispatch(toast({ content: messages.followToDownload }))
+    } else if (track && track.access.download) {
+      openWaitForDownloadModal({ contentId: trackId })
+      dispatch(
+        socialTracksActions.downloadAll({
+          trackIds: stemTracks.map((t) => t.id),
+          parentTrackId: trackId,
+          original: quality === DownloadQuality.ORIGINAL
+        })
+      )
+    }
+  }, [quality])
 
   const options = [
     {
@@ -205,6 +230,11 @@ export const DownloadSection = ({
                       variant='secondary'
                       size='small'
                       iconLeft={IconReceive}
+                      onClick={handleDownloadAll}
+                      disabled={
+                        shouldDisplayDownloadFollowGated ||
+                        shouldDisplayPremiumDownloadLocked
+                      }
                     >
                       {messages.downloadAll}
                     </Button>
@@ -241,7 +271,16 @@ export const DownloadSection = ({
             because the download all button will not be displayed at the top right. */}
             {!track?.is_original_available && shouldDisplayDownloadAll ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
-                <Button variant='secondary' size='small' iconLeft={IconReceive}>
+                <Button
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconReceive}
+                  onClick={handleDownloadAll}
+                  disabled={
+                    shouldDisplayDownloadFollowGated ||
+                    shouldDisplayPremiumDownloadLocked
+                  }
+                >
                   {messages.downloadAll}
                 </Button>
               </Flex>

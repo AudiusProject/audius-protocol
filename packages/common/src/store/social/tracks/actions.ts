@@ -24,6 +24,7 @@ export const UNSET_ARTIST_PICK = 'SOCIAL/UNSET_ARTIST_PICK'
 
 export const RECORD_LISTEN = 'SOCIAL/RECORD_LISTEN'
 export const DOWNLOAD_TRACK = 'SOCIAL/DOWNLOAD_TRACK'
+export const DOWNLOAD_ALL = 'SOCIAL/DOWNLOAD_ALL'
 
 export const SHARE_TRACK = 'SOCIAL/SHARE_TRACK'
 
@@ -94,9 +95,40 @@ export const recordListen = createCustomAction(
 
 export const downloadTrack = createCustomAction(
   DOWNLOAD_TRACK,
-  (trackId: ID, stemName?: string, original?: boolean) => ({
+  ({
     trackId,
     stemName,
+    original
+  }: {
+    trackId: ID
+    stemName?: string
+    original?: boolean
+  }) => ({
+    trackId,
+    stemName,
+    original
+  })
+)
+
+/**
+ * Downloads all tracks in the given list.
+ * @param trackIds - The list of track IDs to download excluding the parent track.
+ * @param parentTrackId - The parent track ID.
+ * @param original - True if the tracks should be downloaded in original quality, false for mp3.
+ */
+export const downloadAll = createCustomAction(
+  DOWNLOAD_ALL,
+  ({
+    trackIds,
+    parentTrackId,
+    original
+  }: {
+    trackIds: ID[]
+    parentTrackId: ID
+    original?: boolean
+  }) => ({
+    trackIds,
+    parentTrackId,
     original
   })
 )

@@ -1,0 +1,35 @@
+.modal {
+  width: 720px;
+}
+
+.modalRoot.mobile {
+  height: 100%;
+}
+
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.title {
+  align-items: center;
+  display: flex;
+  gap: var(--unit-2);
+  justify-content: center;
+  letter-spacing: 0.5px;
+}
+
+.content {
+  padding: 0 0;
+}
+
+.spinner {
+  width: var(--unit-8);
+  height: var(--unit-8);
+}
+
+.mobileWrapper {
+  height: 100%;
+  padding: 0px 0px;
+}

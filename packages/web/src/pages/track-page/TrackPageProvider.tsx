@@ -609,7 +609,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
       original?: boolean
       parentTrackId?: ID
     }) => {
-      dispatch(socialTracksActions.downloadTrack(trackId, category, original))
+      dispatch(
+        socialTracksActions.downloadTrack({
+          trackId,
+          stemName: category,
+          original
+        })
+      )
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
         id: trackId,
         category,

@@ -19,7 +19,8 @@ import {
   getQueryParams,
   confirmerActions,
   confirmTransaction,
-  FeatureFlags
+  FeatureFlags,
+  modalsActions
 } from '@audius/common'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -36,6 +37,7 @@ const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
+const { setVisibility } = modalsActions
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -639,6 +641,35 @@ export function* watchUnsetArtistPick() {
 
 /* DOWNLOAD TRACK */
 
+const getFileName = ({
+  track,
+  user,
+  original
+}: {
+  track: Track
+  user: User
+  original?: boolean
+}) => {
+  let filename
+  const hasCategory = !!track.stem_of?.category
+
+  // Fallback case - should not occur
+  if (!track.orig_filename) {
+    filename = `${track.title} ${
+      hasCategory ? `- ${track.stem_of?.category}` : null
+    } - ${user.name} (Audius) ${original ? '.wav' : '.mp3'}`
+  } else if (original) {
+    filename = `${track.orig_filename}`
+  } else {
+    const dotIndex = track.orig_filename.lastIndexOf('.')
+    filename =
+      dotIndex !== -1
+        ? track.orig_filename.substring(0, dotIndex) + '.mp3'
+        : track.orig_filename + '.mp3'
+  }
+  return filename
+}
+
 function* downloadTrack({
   track,
   filename,
@@ -670,9 +701,59 @@ function* downloadTrack({
       queryParams
     )
     yield* call(trackDownload.downloadTrack, { url, filename })
+    yield* put(setVisibility({ modal: 'WaitForDownloadModal', visible: false }))
   } catch (e) {
     console.error(
       `Could not download track ${track.track_id}: ${
+        (e as Error).message
+      }. Error: ${e}`
+    )
+  }
+}
+
+function* downloadAll({
+  trackIds,
+  parentTrackId,
+  filenames,
+  zipFilename,
+  original
+}: {
+  trackIds: ID[]
+  parentTrackId: ID
+  filenames: string[]
+  zipFilename: string
+  original?: boolean
+}) {
+  try {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const apiClient = yield* getContext('apiClient')
+    const trackDownload = yield* getContext('trackDownload')
+    let queryParams: QueryParams = {}
+
+    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+    const nftAccessSignature = nftAccessSignatureMap[parentTrackId]
+    queryParams = (yield* call(getQueryParams, {
+      audiusBackendInstance,
+      nftAccessSignature
+    })) as unknown as QueryParams
+    queryParams.original = original
+
+    const encodedTrackIds = trackIds.map((trackId) => encodeHashId(trackId))
+    const urls = encodedTrackIds.map((encodedTrackId, i) => {
+      queryParams.filename = filenames[i]
+      return apiClient.makeUrl(
+        `/tracks/${encodedTrackId}/download`,
+        queryParams
+      )
+    })
+    yield* call(trackDownload.downloadAll, {
+      files: urls.map((u, i) => ({ url: u, filename: filenames[i] })),
+      zipFilename
+    })
+    yield* put(setVisibility({ modal: 'WaitForDownloadModal', visible: false }))
+  } catch (e) {
+    console.error(
+      `Could not download all files for track ${parentTrackId}: ${
         (e as Error).message
       }. Error: ${e}`
     )
@@ -705,7 +786,7 @@ function* watchDownloadTrack() {
       const isLosslessDownloadsEnabled = getFeatureEnabled(
         FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
       )
-      let filename
+      let filename = ''
       if (!isLosslessDownloadsEnabled) {
         if (track.stem_of?.parent_track_id) {
           const parentTrack = yield* select(getTrack, {
@@ -716,21 +797,51 @@ function* watchDownloadTrack() {
           filename = `${track.title} - ${user.name} (Audius).mp3`
         }
       } else {
-        if (original) {
-          filename = `${track.orig_filename}`
-        } else if (track.orig_filename) {
-          const dotIndex = track.orig_filename.lastIndexOf('.')
-          filename =
-            dotIndex !== -1
-              ? track.orig_filename.substring(0, dotIndex) + '.mp3'
-              : track.orig_filename + '.mp3'
-        } else {
-          // Failsafe - this should never happen
-          filename = `${track.title} - ${user.name} (Audius).mp3`
-        }
+        getFileName({ track, user, original })
       }
 
       yield* call(downloadTrack, { track, filename, original })
+    }
+  )
+}
+
+function* watchDownloadAll() {
+  yield* takeEvery(
+    socialActions.DOWNLOAD_ALL,
+    function* (action: ReturnType<typeof socialActions.downloadAll>) {
+      yield* call(waitForRead)
+      const { trackIds, parentTrackId, original } = action
+      const trackIdsToFetch = [...trackIds, parentTrackId]
+
+      // Check if there is a logged in account and if not,
+      // wait for one so we can trigger the download immediately after
+      // logging in.
+      const accountUserId = yield* select(getUserId)
+      if (!accountUserId) {
+        yield* call(waitForValue, getUserId)
+      }
+
+      const parentTrack = yield* select(getTrack, { id: parentTrackId })
+      if (!parentTrack) return
+      const zipFilename = parentTrack.title
+      const userId = parentTrack.owner_id
+      const user = yield* select(getUser, { id: userId })
+      if (!user) return
+
+      const filenames: string[] = []
+      for (const trackId of trackIdsToFetch) {
+        const track = yield* select(getTrack, { id: trackId })
+        if (!track) return
+        filenames.push(getFileName({ track, user, original }))
+      }
+
+      yield* call(downloadAll, {
+        trackIds: trackIdsToFetch,
+        parentTrackId,
+        filenames,
+        original,
+        zipFilename
+      })
     }
   )
 }
@@ -774,6 +885,7 @@ const sagas = () => {
     watchSetArtistPick,
     watchUnsetArtistPick,
     watchDownloadTrack,
+    watchDownloadAll,
     watchShareTrack,
     watchTrackErrors
   ]

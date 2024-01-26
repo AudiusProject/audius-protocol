@@ -14,6 +14,7 @@ import { Modals, ModalsState } from './types'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
+import { waitForDownloadModalReducer } from './wait-for-download-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 
@@ -45,6 +46,7 @@ const combinedReducers = combineReducers({
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
   CoinflowOnramp: coinflowOnrampModalReducer,
   CoinflowWithdraw: coinflowWithdrawModalReducer
+  WaitForDownloadModal: waitForDownloadModalReducer
 })
 
 /**
