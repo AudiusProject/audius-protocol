@@ -24,7 +24,6 @@ import {
   IconNotification,
   IconSignOut,
   IconVerified,
-  IconSettings,
   IconMessage,
   SegmentedControl,
   IconDesktop,
