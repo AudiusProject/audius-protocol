@@ -18,7 +18,7 @@ const { getCoinflowState } = withdrawUSDCSelectors
 const messages = {
   holdOn: 'Hold on!',
   preparingTransfer:
-    "We're preparing your transfer. This could take a few moments. Please do not close your browser."
+    "We're getting your transfer ready. This could take a few moments, Please don't leave this page."
 }
 
 export const PrepareTransfer = () => {
@@ -36,7 +36,8 @@ export const PrepareTransfer = () => {
       justifyContent='center'
       alignItems='center'
       gap='m'
-      p='m'
+      pv='m'
+      ph='2xl'
     >
       <Flex alignItems='center' justifyContent='center'>
         <LoadingSpinner className={styles.spinner} />
@@ -47,7 +48,7 @@ export const PrepareTransfer = () => {
           {messages.holdOn}
         </Text>
       </Flex>
-      <Text variant='body' size='m'>
+      <Text variant='body' size='m' textAlign='center'>
         {messages.preparingTransfer}
       </Text>
     </Flex>

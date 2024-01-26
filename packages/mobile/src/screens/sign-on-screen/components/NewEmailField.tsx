@@ -24,7 +24,6 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
         {...props}
         error={emailInUse ? false : undefined}
         helperText={emailInUse ? false : undefined}
-        debouncedValidationMs={500}
       />
       {emailInUse || (hadError && isValidating) ? (
         <EmailInUseHint onChangeScreen={onChangeScreen} />

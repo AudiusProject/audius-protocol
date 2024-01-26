@@ -21,7 +21,8 @@ import {
   ProgressBar,
   IconCheck,
   IconVerified,
-  IconTwitterBird
+  IconTwitterBird,
+  ModalContent
 } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -524,7 +525,9 @@ export const ChallengeRewardsModal = () => {
       showDismissButton={!isHCaptchaModalOpen}
       dismissOnClickOutside={!isHCaptchaModalOpen}
     >
-      <ChallengeRewardsBody dismissModal={onClose} />
+      <ModalContent>
+        <ChallengeRewardsBody dismissModal={onClose} />
+      </ModalContent>
     </ModalDrawer>
   )
 }
