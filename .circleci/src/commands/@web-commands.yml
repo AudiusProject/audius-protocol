@@ -77,8 +77,7 @@ web-build:
         no_output_timeout: 30m
         command: |
           cd packages/web
-          CI=false npm run build:<< parameters.build-type >>
-          cp package.json << parameters.build-name >>
+          npm run build:<< parameters.build-type >>
     - persist_to_workspace:
         root: ./
         paths:
