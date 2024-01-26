@@ -13,8 +13,6 @@ ENV TURBO_TOKEN=$TURBO_TOKEN
 
 FROM base AS builder
 
-RUN echo "building ${APP_NAME}"
-
 RUN apk add --no-cache libc6-compat
 RUN apk update
 
@@ -40,15 +38,13 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/scripts ./scripts
 
-RUN echo "installing deps for ${APP_NAME}"
 RUN CI=true npm i
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-RUN echo "building ${APP_NAME}"
-RUN turbo run build "--filter=@pedalboard/${APP_NAME}"...
+RUN turbo run build "--filter=@pedalboard/${APP_NAME}"
 
 # RUN
 FROM base AS runner
