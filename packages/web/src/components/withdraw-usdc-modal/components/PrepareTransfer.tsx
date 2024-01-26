@@ -36,7 +36,8 @@ export const PrepareTransfer = () => {
       justifyContent='center'
       alignItems='center'
       gap='m'
-      p='m'
+      pv='m'
+      ph='2xl'
     >
       <Flex alignItems='center' justifyContent='center'>
         <LoadingSpinner className={styles.spinner} />
