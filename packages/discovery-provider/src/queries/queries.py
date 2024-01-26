@@ -556,7 +556,7 @@ def get_top_genre_users_route():
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     users = get_top_genre_users(args)
-    return api_helpers.success_response({ "user_ids": users })
+    return api_helpers.success_response({"user_ids": users})
 
 
 # Get the tracks that are 'children' remixes of the requested track
