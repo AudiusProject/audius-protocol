@@ -34,6 +34,7 @@ import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
@@ -56,7 +57,6 @@ import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
-import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo

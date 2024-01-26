@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { formatOtp } from '@audius/common'
 import {
   Box,
   Button,
@@ -17,17 +18,16 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { Formik, FormikHelpers, useField, useFormikContext } from 'formik'
 import { useAsync } from 'react-use'
 
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { ModalForm } from 'components/modal-form/ModalForm'
+import { ToastContext } from 'components/toast/ToastContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import styles from './ChangeEmailModal.module.css'
-import { Formik, FormikHelpers, useField, useFormikContext } from 'formik'
-import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
-import { ModalForm } from 'components/modal-form/ModalForm'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { formatOtp } from '@audius/common'
-import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   title: 'Change Email',
@@ -99,7 +99,7 @@ const NewEmailPage = () => {
       <TextInput
         {...newEmailField}
         error={!!error}
-        helperText={error ? error : null}
+        helperText={error}
         label={messages.newEmail}
       />
     </Flex>
@@ -108,7 +108,7 @@ const NewEmailPage = () => {
 
 const VerifyEmailPage = () => {
   const [{ value: newEmail }] = useField('newEmail')
-  const [otpField, { error }, { setValue }] = useField('otp')
+  const [otpField, { error }] = useField('otp')
   const [isSending, setIsSending] = useState(false)
   const { toast } = useContext(ToastContext)
 
@@ -120,7 +120,7 @@ const VerifyEmailPage = () => {
       toast(messages.resentToast)
     }
     fn()
-  }, [setValue])
+  }, [toast, newEmail])
 
   return (
     <Flex direction='column' gap='xl'>
@@ -129,7 +129,7 @@ const VerifyEmailPage = () => {
         {...otpField}
         label={messages.code}
         error={!!error}
-        helperText={error ? error : null}
+        helperText={error}
         onChange={(e) => {
           e.target.value = formatOtp(e.target.value)
           otpField.onChange(e)
@@ -174,7 +174,7 @@ const ChangeEmailModalForm = ({
     if (emailRequest.value) {
       setEmail(emailRequest.value)
     }
-  }, [emailRequest.loading, setEmail])
+  }, [emailRequest.loading, emailRequest.value, setEmail])
 
   const isSuccessPage = page === ChangeEmailPage.Success
 
