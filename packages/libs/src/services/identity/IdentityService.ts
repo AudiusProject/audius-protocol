@@ -181,6 +181,14 @@ export class IdentityService {
     }
   }
 
+  async checkAuth({ lookupKey }: { lookupKey: string }) {
+    return await this._makeRequest({
+      url: '/authentication/check',
+      method: 'GET',
+      params: { lookupKey }
+    })
+  }
+
   /**
    * Associates a user with a twitter uuid.
    * @param uuid from the Twitter API

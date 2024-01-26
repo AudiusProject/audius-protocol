@@ -40,7 +40,7 @@ function* handleChangePassword(action: ReturnType<typeof changePassword>) {
   yield* call(waitForWrite)
   try {
     yield* call(
-      audiusBackendInstance.changePassword,
+      audiusBackendInstance.changeAuthCredentials,
       email,
       password,
       oldPassword

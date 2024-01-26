@@ -1067,7 +1067,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function getUserEmail() {
+  async function getUserEmail(): Promise<string> {
     await waitForLibsInit()
     const { email } = await audiusLibs.Account.getUserEmail()
     return email
@@ -1680,18 +1680,47 @@ export const audiusBackend = ({
     return audiusLibs.Account.resetPassword(email, password)
   }
 
-  async function changePassword(
+  async function changeAuthCredentials(
     email: string,
     password: string,
-    oldpassword: string
+    oldpassword: string,
+    oldusername?: string
   ) {
     await waitForLibsInit()
-    return audiusLibs.Account.changePassword(email, password, oldpassword)
+    return audiusLibs.Account.changePassword(
+      email,
+      password,
+      oldpassword,
+      oldusername
+    )
   }
 
-  async function confirmCredentials(email: string, password: string) {
+  async function changeEmail(email: string, otp?: string) {
+    const { signature, data } = await signData()
+    return await fetch(`${identityServiceUrl}/user/email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        [AuthHeaders.Signature]: signature,
+        [AuthHeaders.Message]: data
+      },
+      body: JSON.stringify({ email, otp })
+    })
+  }
+
+  async function confirmCredentials(
+    email: string,
+    password: string,
+    otp?: string,
+    checkAuthOnly = false
+  ) {
     await waitForLibsInit()
-    return audiusLibs.Account.confirmCredentials(email, password)
+    return audiusLibs.Account.confirmCredentials(
+      email,
+      password,
+      otp,
+      checkAuthOnly
+    )
   }
 
   async function sendRecoveryEmail() {
@@ -3264,7 +3293,8 @@ export const audiusBackend = ({
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
-    changePassword,
+    changeEmail,
+    changeAuthCredentials,
     clearNotificationBadges,
     confirmCredentials,
     createPlaylist,

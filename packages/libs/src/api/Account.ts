@@ -228,8 +228,20 @@ export class Account extends Base {
     return await this.hedgehog.changePassword(email, newpassword, oldpassword)
   }
 
-  async confirmCredentials(email: string, password: string) {
-    return await this.hedgehog.confirmCredentials(email, password)
+  async confirmCredentials(
+    email: string,
+    password: string,
+    otp?: string,
+    checkAuthOnly = false
+  ) {
+    return await this.hedgehog.confirmCredentials(
+      email,
+      password,
+      // @ts-ignore - hedgehog.confirmCredentials is overridden
+      otp,
+      // @ts-ignore - hedgehog.confirmCredentials is overridden
+      checkAuthOnly
+    )
   }
 
   /**

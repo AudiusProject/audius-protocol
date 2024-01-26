@@ -3,7 +3,8 @@ const {
   handleResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseForbidden
+  errorResponseForbidden,
+  errorResponseUnauthorized
 } = require('../apiHelpers')
 const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
 
@@ -69,6 +70,29 @@ module.exports = function (app) {
         return errorResponseBadRequest(
           'Missing one of the required fields: iv, cipherText, lookupKey'
         )
+    })
+  )
+
+  /**
+   * Checks to see if a given lookup key exists in the authentications table.
+   * Does not log a user in. Does not return credential information. Does not
+   * send OTP emails.
+   */
+  app.get(
+    '/authentication/check',
+    handleResponse(async (req, _res, _next) => {
+      const { lookupKey } = req.query
+      if (!lookupKey) {
+        return errorResponseBadRequest('Missing lookupKey')
+      }
+
+      const existingUser = await models.Authentication.findOne({
+        where: { lookupKey }
+      })
+      if (!existingUser) {
+        return errorResponseUnauthorized('Invalid credentials')
+      }
+      return successResponse()
     })
   )
 

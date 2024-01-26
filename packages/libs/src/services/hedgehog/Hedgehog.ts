@@ -93,6 +93,53 @@ export class Hedgehog {
       }
     }
 
+    hedgehog.confirmCredentials = async (
+      email: string,
+      password: string,
+      otp?: string,
+      checkAuthOnly = false
+    ) => {
+      const existingEntropy = await WalletManager.getEntropyFromLocalStorage(
+        hedgehog.localStorage
+      )
+      if (!existingEntropy) return false // not logged in yet
+
+      const lookupKey = await WalletManager.createAuthLookupKey(
+        email,
+        password,
+        hedgehog.createKey
+      )
+
+      if (checkAuthOnly) {
+        try {
+          // Just check if combo exists
+          await this.identityService.checkAuth({ lookupKey })
+          return true
+        } catch (e) {
+          return false
+        }
+      }
+      const data = await this.getFn({ lookupKey, username: email, otp })
+
+      if (data && data.iv && data.cipherText) {
+        const { walletObj, entropy } =
+          await WalletManager.decryptCipherTextAndRetrieveWallet(
+            password,
+            data.iv,
+            data.cipherText,
+            hedgehog.createKey
+          )
+
+        // test against current entropy in localStorage and current wallet
+        return (
+          entropy === existingEntropy &&
+          hedgehog.wallet !== null &&
+          hedgehog.wallet.getAddressString() === walletObj.getAddressString()
+        )
+      }
+      return false
+    }
+
     /**
      * Generate secure credentials to allow login
      */
