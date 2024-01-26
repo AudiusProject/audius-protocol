@@ -1,5 +1,6 @@
 import json
 import logging  # pylint: disable=C0302
+from datetime import datetime
 from typing import List
 
 from web3 import Web3
@@ -545,6 +546,9 @@ def test_index_invalid_tracks(app, mocker):
             "is_original_available": False,
         },
         "QmInvalidUnlistTrack1Update": {"is_unlisted": True},
+        "QmInvalidRescheduleReleaseDate": {
+            "release_date": "Fri Jan 26 2100 00:00:00 GMT+0000"
+        },
         "InvalidTrackIdUpdate": {"track_id": 1234, "bogus_field": "bogus"},
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
@@ -874,7 +878,11 @@ def test_index_invalid_tracks(app, mocker):
             {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
         ],
         "tracks": [
-            {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
+            {
+                "track_id": TRACK_ID_OFFSET,
+                "owner_id": 1,
+                "release_date": datetime(2019, 6, 17),
+            },
         ],
         "developer_apps": [
             {
@@ -924,6 +932,7 @@ def test_index_invalid_tracks(app, mocker):
         current_track: List[Track] = (
             session.query(Track).filter(Track.is_current == True).first()
         )
+        assert current_track.release_date == datetime(2019, 6, 17)
         assert current_track.track_id == TRACK_ID_OFFSET
 
 
