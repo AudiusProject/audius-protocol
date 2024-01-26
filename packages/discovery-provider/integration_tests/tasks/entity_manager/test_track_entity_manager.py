@@ -1991,3 +1991,148 @@ def test_remixability(app, mocker):
 
         track3 = all_tracks[2]
         assert track3.track_id == TRACK_ID_OFFSET + 3
+
+
+def test_release_date(app, mocker):
+    "Tests track release dates"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    default_metadata = {
+        "cover_art": None,
+        "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+        "tags": "realmagic,rickyreed,theroom",
+        "genre": "R&B/Soul",
+        "mood": "Empowering",
+        "credits_splits": None,
+        "created_at": "2020-07-11 08:22:15",
+        "create_date": None,
+        "updated_at": "2020-07-11 08:22:15",
+        "release_date": "2020-07-11 08:22:15",
+        "file_type": None,
+        "title": "title",
+        "is_playlist_upload": True,
+        "track_segments": [
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+            }
+        ],
+        "has_current_user_reposted": False,
+        "is_current": True,
+        "is_unlisted": False,
+        "field_visibility": {
+            "mood": True,
+            "tags": True,
+            "genre": True,
+            "share": True,
+            "play_count": True,
+            "remixes": True,
+        },
+        "remix_of": None,
+        "repost_count": 12,
+        "save_count": 21,
+        "description": "some description",
+        "license": "All rights reserved",
+        "isrc": None,
+        "iswc": None,
+        "track_id": 77955,
+        "stem_of": None,
+        "ai_attribution_user_id": None,
+        "orig_file_cid": "original-file-cid",
+        "orig_filename": "original-filename",
+        "is_original_available": False,
+    }
+
+    metadatas = {
+        "PublicTrackFutureReleaseDate": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET,
+            "release_date": "Fri Jan 26 2100 00:00:00 GMT+0000",
+            "owner_id": 1,
+        },
+        "UpdatePublicTrackFutureReleaseDate": {
+            **default_metadata,
+            "track_id": TRACK_ID_OFFSET,
+            "title": "updated",
+            "release_date": "Fri Jan 26 2100 00:00:00 GMT+0000",
+            "owner_id": 1,
+        },
+    }
+
+    public_track_future_release_date = json.dumps(
+        metadatas["PublicTrackFutureReleaseDate"]
+    )
+    update_public_track_future_release_date = json.dumps(
+        metadatas["UpdatePublicTrackFutureReleaseDate"]
+    )
+
+    tx_receipts = {
+        "PublicTrackFutureReleaseDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {public_track_future_release_date}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "UpdatePublicTrackFutureReleaseDate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {update_public_track_future_release_date}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+    }
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs=[
+                AttributeDict(
+                    {"transactionHash": update_task.web3.to_bytes(text=tx_receipt)}
+                )
+                for tx_receipt in tx_receipts
+            ],
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        all_tracks: List[Track] = session.query(Track).all()
+        assert len(all_tracks) == 1
+        all_tracks[0].release_date != datetime(2100, 1, 26, 0, 0)
+        all_tracks[0].title == "update"
