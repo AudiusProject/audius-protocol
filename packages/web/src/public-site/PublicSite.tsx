@@ -18,8 +18,6 @@ import { AppContextProvider } from '../app/AppContextProvider'
 import LandingPage from './pages/landing-page/LandingPage'
 import { useHistoryContext } from 'app/HistoryProvider'
 
-const BASENAME = env.BASENAME
-
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
 )
