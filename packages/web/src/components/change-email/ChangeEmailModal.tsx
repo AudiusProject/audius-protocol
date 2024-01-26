@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import {
   Box,
@@ -6,9 +6,9 @@ import {
   Flex,
   IconArrowRight,
   IconKey,
-  PlainButton,
   Text,
-  TextInput
+  TextInput,
+  TextLink
 } from '@audius/harmony'
 import {
   Modal,
@@ -27,6 +27,7 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import { ModalForm } from 'components/modal-form/ModalForm'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { formatOtp } from '@audius/common'
+import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   title: 'Change Email',
@@ -39,11 +40,12 @@ const messages = {
   invalidCredentials: 'Invalid credentials.',
   somethingWrong: 'Something went wrong.',
   verifyEmailHelp: 'Enter the verification code sent to your new email.',
-  resendHelp: 'Didn’t get an email?',
+  resendHelp: 'Didn’t get an email? ',
   resend: 'Resend code.',
   code: 'Code',
   success: (email: string) => `Email successfully updated from ${email} to `,
-  done: 'Done'
+  done: 'Done',
+  resentToast: 'Verification code resent.'
 }
 
 enum ChangeEmailPage {
@@ -62,7 +64,7 @@ const ConfirmPasswordPage = () => {
   const [{ value: email }] = useField('email')
   return (
     <Flex direction='column' gap='xl'>
-      <Text>{messages.confirmPasswordHelp}</Text>
+      <Text variant='body'>{messages.confirmPasswordHelp}</Text>
       <Box>
         <Text variant='label' size={'xs'}>
           {messages.currentEmail}
@@ -85,7 +87,7 @@ const NewEmailPage = () => {
   const [{ value: email }, { error }] = useField('email')
   return (
     <Flex direction='column' gap='xl'>
-      <Text>{messages.newEmailHelp}</Text>
+      <Text variant='body'>{messages.newEmailHelp}</Text>
       <Box>
         <Text variant='label' size={'xs'}>
           {messages.currentEmail}
@@ -107,15 +109,22 @@ const NewEmailPage = () => {
 const VerifyEmailPage = () => {
   const [{ value: newEmail }] = useField('newEmail')
   const [otpField, { error }, { setValue }] = useField('otp')
+  const [isSending, setIsSending] = useState(false)
+  const { toast } = useContext(ToastContext)
+
   const resend = useCallback(() => {
+    setIsSending(true)
     const fn = async () => {
       await audiusBackendInstance.changeEmail(newEmail)
+      setIsSending(false)
+      toast(messages.resentToast)
     }
     fn()
   }, [setValue])
+
   return (
     <Flex direction='column' gap='xl'>
-      <Text>{messages.verifyEmailHelp}</Text>
+      <Text variant='body'>{messages.verifyEmailHelp}</Text>
       <TextInput
         {...otpField}
         label={messages.code}
@@ -126,9 +135,11 @@ const VerifyEmailPage = () => {
           otpField.onChange(e)
         }}
       />
-      <Text>
+      <Text variant='body'>
         {messages.resendHelp}
-        <PlainButton onClick={resend}>{messages.resend}</PlainButton>
+        <TextLink variant='visible' disabled={isSending} onClick={resend}>
+          {messages.resend}
+        </TextLink>
       </Text>
     </Flex>
   )
