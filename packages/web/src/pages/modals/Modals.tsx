@@ -44,6 +44,7 @@ import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modal
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
 
 import { AppModal } from './AppModal'
 
@@ -108,7 +109,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  AddFundsModal
+  AddFundsModal,
+  CoinflowWithdraw: CoinflowWithdrawModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
