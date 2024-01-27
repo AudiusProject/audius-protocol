@@ -1,6 +1,8 @@
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import styles from './CoinflowWithdrawPage.module.css'
 import { Flex } from '@audius/harmony'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
+import styles from './CoinflowWithdrawPage.module.css'
 
 export const CoinflowWithdrawPage = () => {
   return (

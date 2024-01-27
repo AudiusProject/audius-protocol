@@ -45,7 +45,6 @@ import {
   getRootSolanaAccount,
   ROOT_ACCOUNT_SIZE
 } from 'services/solana/solana'
-import { Action } from 'redux'
 
 const {
   beginWithdrawUSDC,
