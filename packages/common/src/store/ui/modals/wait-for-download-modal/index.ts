@@ -7,7 +7,7 @@ export type WaitForDownloadModalState = {
 }
 
 const waitForDownloadModal = createModal<WaitForDownloadModalState>({
-  reducerPath: 'WaitForDownloadmodal',
+  reducerPath: 'WaitForDownloadModal',
   initialState: {
     isOpen: false,
     contentId: -1

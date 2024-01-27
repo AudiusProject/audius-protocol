@@ -2,6 +2,7 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
+import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
@@ -16,7 +17,6 @@ import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
 import { waitForDownloadModalReducer } from './wait-for-download-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
-import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 
 /**
  * Create a bunch of reducers that do nothing, so that the state is maintained and not lost through the child reducers
@@ -45,7 +45,7 @@ const combinedReducers = combineReducers({
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
   CoinflowOnramp: coinflowOnrampModalReducer,
-  CoinflowWithdraw: coinflowWithdrawModalReducer
+  CoinflowWithdraw: coinflowWithdrawModalReducer,
   WaitForDownloadModal: waitForDownloadModalReducer
 })
 
