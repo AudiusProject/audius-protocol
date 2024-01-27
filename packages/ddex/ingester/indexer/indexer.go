@@ -11,12 +11,13 @@ import (
 func Run() {
 	mongoUrl := os.Getenv("DDEX_MONGODB_URL")
 	if mongoUrl == "" {
-		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin"
+		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0"
 	}
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoUrl))
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Indexer: connected to mongo")
 	defer client.Disconnect(context.Background())
 
 	coll := client.Database("ddex").Collection("uploads")
@@ -24,6 +25,7 @@ func Run() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Indexer: watching collection 'uploads'")
 	defer changeStream.Close(context.Background())
 
 	for changeStream.Next(context.Background()) {
