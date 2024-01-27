@@ -75,6 +75,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     color: palette.staticWhite
   },
   dateContainer: {
+    zIndex: -1,
     marginTop: spacing(2),
     marginBottom: spacing(6)
   },
