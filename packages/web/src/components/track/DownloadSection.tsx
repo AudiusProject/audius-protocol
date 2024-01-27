@@ -29,7 +29,10 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import {
+  useAuthenticatedCallback,
+  useAuthenticatedClickCallback
+} from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { DownloadRow } from './DownloadRow'
@@ -107,21 +110,49 @@ export const DownloadSection = ({
     )
   }, [])
 
-  const handleDownloadAll = useAuthenticatedClickCallback(() => {
-    if (isMobile && shouldDisplayDownloadFollowGated) {
-      // On mobile, show a toast instead of a tooltip
-      dispatch(toast({ content: messages.followToDownload }))
-    } else if (track && track.access.download) {
-      openWaitForDownloadModal({ contentId: trackId })
-      dispatch(
-        socialTracksActions.downloadAll({
-          trackIds: stemTracks.map((t) => t.id),
-          parentTrackId: trackId,
-          original: quality === DownloadQuality.ORIGINAL
-        })
-      )
-    }
-  }, [quality])
+  const handleDownload = useAuthenticatedCallback(
+    ({
+      idToDownload,
+      downloadAll = false
+    }: {
+      idToDownload: ID
+      downloadAll?: boolean
+    }) => {
+      if (isMobile && shouldDisplayDownloadFollowGated) {
+        // On mobile, show a toast instead of a tooltip
+        dispatch(toast({ content: messages.followToDownload }))
+      } else if (track && track.access.download) {
+        openWaitForDownloadModal({ contentId: idToDownload })
+        if (downloadAll) {
+          dispatch(
+            socialTracksActions.downloadAll({
+              trackIds: stemTracks.map((t) => t.id),
+              parentTrackId: idToDownload,
+              original: quality === DownloadQuality.ORIGINAL
+            })
+          )
+        } else {
+          onDownload({
+            trackId: idToDownload,
+            category: track.stem_of?.category,
+            original: quality === DownloadQuality.ORIGINAL,
+            parentTrackId: trackId
+          })
+        }
+      }
+    },
+    [
+      dispatch,
+      isMobile,
+      onDownload,
+      openWaitForDownloadModal,
+      quality,
+      shouldDisplayDownloadFollowGated,
+      stemTracks,
+      track,
+      trackId
+    ]
+  )
 
   const options = [
     {
@@ -230,7 +261,12 @@ export const DownloadSection = ({
                       variant='secondary'
                       size='small'
                       iconLeft={IconReceive}
-                      onClick={handleDownloadAll}
+                      onClick={() =>
+                        handleDownload({
+                          idToDownload: trackId,
+                          downloadAll: true
+                        })
+                      }
                       disabled={
                         shouldDisplayDownloadFollowGated ||
                         shouldDisplayPremiumDownloadLocked
@@ -245,7 +281,7 @@ export const DownloadSection = ({
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
-                onDownload={onDownload}
+                onDownload={handleDownload}
                 quality={quality}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
@@ -256,7 +292,7 @@ export const DownloadSection = ({
                 trackId={s.id}
                 parentTrackId={trackId}
                 key={s.id}
-                onDownload={onDownload}
+                onDownload={handleDownload}
                 quality={quality}
                 hideDownload={shouldHideDownload}
                 index={
@@ -275,7 +311,12 @@ export const DownloadSection = ({
                   variant='secondary'
                   size='small'
                   iconLeft={IconReceive}
-                  onClick={handleDownloadAll}
+                  onClick={() =>
+                    handleDownload({
+                      idToDownload: trackId,
+                      downloadAll: true
+                    })
+                  }
                   disabled={
                     shouldDisplayDownloadFollowGated ||
                     shouldDisplayPremiumDownloadLocked
