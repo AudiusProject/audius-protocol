@@ -91,6 +91,27 @@ jobs:
       filters:
         branches:
           only: main
+  - push-docker-image:
+      name: push-ddex-crawler
+      context: [Vercel, dockerhub]
+      service: ddex-crawler
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-ddex-indexer
+      context: [Vercel, dockerhub]
+      service: ddex-indexer
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-ddex-parser
+      context: [Vercel, dockerhub]
+      service: ddex-parser
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -211,12 +232,39 @@ jobs:
   - push-arm-image:
       name: push-ddex-web-arm
       context: [Vercel, dockerhub]
-      service: ddex
+      service: ddex-web
       filters:
         branches:
           only: main
       requires:
         - push-ddex-web
+  - push-arm-image:
+      name: push-ddex-crawler-arm
+      context: [Vercel, dockerhub]
+      service: ddex-crawler
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-ddex-crawler
+  - push-arm-image:
+      name: push-ddex-indexer-arm
+      context: [Vercel, dockerhub]
+      service: ddex-indexer
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-ddex-indexer
+  - push-arm-image:
+      name: push-ddex-parser-arm
+      context: [Vercel, dockerhub]
+      service: ddex-parser
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-ddex-parser
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
@@ -237,6 +285,9 @@ jobs:
         - push-uptime
         - push-healthz
         - push-ddex-web
+        - push-ddex-crawler
+        - push-ddex-indexer
+        - push-ddex-parser
         # uncomment when arm builds are stable
         # - push-discovery-provider-arm
         # - push-discovery-provider-notifications-arm
@@ -249,6 +300,9 @@ jobs:
         # - push-healthz-arm
         # - push-uptime-arm
         # - push-ddex-web-arm
+        # - push-ddex-crawler-arm
+        # - push-ddex-indexer-arm
+        # - push-ddex-parser-arm
 
       filters:
         branches:

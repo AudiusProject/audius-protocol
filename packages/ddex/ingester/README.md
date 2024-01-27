@@ -11,6 +11,6 @@ chmod 400 packages/ddex/ingester/mongo-keyfile
 ```
 2. Run the services: `docker-compose -f ./dev-tools/compose/docker-compose.ddex.yml --profile ddex up`
 
-If this is your first time running ddex-mongo, you will need to manually initiate the replica set by doing `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin --eval 'rs.initiate({_id:"rs0", members:[{_id:0, host:"ddex-mongo:27017"}]})'`
+If this is your first time running ddex-mongo, you will need to manually initiate the replica set by doing `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin --eval 'rs.initiate({_id:"rs0", members:[{_id:0, host:"ddex-mongo:27017"}]})'`. The other containers will be blocked from starting until you complete this.
 
 To access the ddex db via the mongo shell for testing/development, run `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin` then `use ddex`
