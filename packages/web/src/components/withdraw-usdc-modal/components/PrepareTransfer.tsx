@@ -4,12 +4,16 @@ import {
   CoinflowWithdrawState,
   withdrawUSDCSelectors,
   WithdrawUSDCModalPages,
-  useWithdrawUSDCModal
+  useWithdrawUSDCModal,
+  useCoinflowWithdrawModal
 } from '@audius/common'
 import { Flex, Text } from '@audius/harmony'
+import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
+import { WithdrawFormValues, AMOUNT } from '../types'
 
 import styles from './PrepareTransfer.module.css'
 
@@ -23,13 +27,17 @@ const messages = {
 
 export const PrepareTransfer = () => {
   const coinflowState = useSelector(getCoinflowState)
+  const { onOpen } = useCoinflowWithdrawModal()
   const { setData } = useWithdrawUSDCModal()
+  const [{ value: amountCents }] =
+    useField<WithdrawFormValues[typeof AMOUNT]>(AMOUNT)
 
   useEffect(() => {
     if (coinflowState === CoinflowWithdrawState.READY_FOR_WITHDRAWAL) {
       setData({ page: WithdrawUSDCModalPages.COINFLOW_TRANSFER })
+      onOpen({ amount: amountCents / 100.0 })
     }
-  }, [coinflowState, setData])
+  }, [coinflowState, setData, onOpen, amountCents])
   return (
     <Flex
       direction='column'
