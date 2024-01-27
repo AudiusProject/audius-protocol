@@ -72,7 +72,12 @@ def get_database_connection_info(**kwargs):
         )
 
         result = session.execute(q).fetchall()
-        connection_info = [dict(row) for row in result]
+        connection_info = []
+        for row in result:
+            formatted = dict(row)
+            if "query" in formatted:
+                formatted["query"] = formatted["query"][:1000]
+            connection_info.append(formatted)
         return json.dumps(connection_info)
 
 
