@@ -1,12 +1,12 @@
 import {
   ID,
   User,
-  AccountImage,
   InstagramProfile,
   TwitterProfile,
-  NativeAccountImage,
-  TikTokProfile
+  TikTokProfile,
+  Image
 } from '@audius/common'
+import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'
 
@@ -25,6 +25,7 @@ export const VALIDATE_HANDLE = 'SIGN_ON/VALIDATE_HANDLE'
 export const VALIDATE_HANDLE_SUCCEEDED = 'SIGN_ON/VALIDATE_HANDLE_SUCCEEDED'
 export const VALIDATE_HANDLE_FAILED = 'SIGN_ON/VALIDATE_HANDLE_FAILED'
 
+export const HIDE_PREVIEW_HINT = 'SIGN_ON/HIDE_PREVIEW_HINT'
 export const FOLLOW_ARTISTS = 'SIGN_ON/FOLLOW_ARTISTS'
 export const SET_ACCOUNT_READY = 'SIGN_ON/SET_ACCOUNT_READY'
 
@@ -78,6 +79,7 @@ export const FETCH_FOLLOW_ARTISTS_FAILED = 'SIGN_ON/FETCH_FOLLOW_ARTISTS_FAILED'
 export const SET_FOLLOW_ARTIST_CATEGORY = 'SIGN_ON/SET_FOLLOW_ARTIST_CATEGORY'
 export const ADD_FOLLOW_ARTISTS = 'SIGN_ON/ADD_FOLLOW_ARTISTS'
 export const REMOVE_FOLLOW_ARTISTS = 'SIGN_ON/REMOVE_FOLLOW_ARTISTS'
+export const COMPLETE_FOLLOW_ARTISTS = 'SIGN_ON/COMPLETE_FOLLOW_ARTISTS'
 
 export const SEND_WELCOME_EMAIL = 'SIGN_ON/SEND_WELCOME_EMAIL'
 
@@ -230,9 +232,10 @@ export const signUpFailed = ({
  * Attemp sign-in to the account
  * @param email account email
  * @param password account password
+ * @param? otp account otp
  */
-export function signIn(email: string, password: string) {
-  return { type: SIGN_IN, email, password }
+export function signIn(email: string, password: string, otp?: string) {
+  return { type: SIGN_IN, email, password, otp }
 }
 
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
@@ -321,8 +324,8 @@ export function setFinishedPhase1(finished: boolean) {
 export function setTwitterProfile(
   twitterId: string,
   profile: TwitterProfile,
-  profileImage?: AccountImage | NativeAccountImage | null,
-  coverPhoto?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null,
+  coverPhoto?: Image | null
 ) {
   return {
     type: SET_TWITTER_PROFILE,
@@ -340,7 +343,7 @@ export function setTwitterProfileError(error: string) {
 export function setInstagramProfile(
   instagramId: string,
   profile: InstagramProfile,
-  profileImage?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null
 ) {
   return {
     type: SET_INSTAGRAM_PROFILE,
@@ -357,7 +360,7 @@ export function setInstagramProfileError(error: string) {
 export function setTikTokProfile(
   tikTokId: string,
   profile: TikTokProfile,
-  profileImage?: AccountImage | NativeAccountImage | null
+  profileImage?: Image | null
 ) {
   return {
     type: SET_TIKTOK_PROFILE,
@@ -371,12 +374,19 @@ export function setTikTokProfileError(error: string) {
   return { type: SET_TIKTOK_PROFILE_ERROR, error }
 }
 
+export function setHidePreviewHint() {
+  return { type: HIDE_PREVIEW_HINT }
+}
+
 /**
  * Follows users in signup flow after user is created
  * @param userIds array of userIds to follow
  */
-export function followArtists(userIds: ID[]) {
-  return { type: FOLLOW_ARTISTS, userIds }
+export function followArtists(
+  userIds: ID[],
+  skipDefaultFollows: boolean = false
+) {
+  return { type: FOLLOW_ARTISTS, userIds, skipDefaultFollows }
 }
 
 /**
@@ -484,3 +494,9 @@ export const setReferrer = (userId: ID) => ({
   type: SET_REFERRER,
   userId
 })
+
+/*
+ * Triggers completeFollowArtists saga that determines the best way to follow artists based on
+ * the potentially ongoing account creation logic
+ */
+export const completeFollowArtists = createCustomAction(COMPLETE_FOLLOW_ARTISTS)

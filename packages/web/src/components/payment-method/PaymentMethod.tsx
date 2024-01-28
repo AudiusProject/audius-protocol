@@ -21,7 +21,7 @@ import BN from 'bn.js'
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
 const messages = {
@@ -34,6 +34,7 @@ const messages = {
 type PaymentMethodProps = {
   selectedMethod: Nullable<PurchaseMethod>
   setSelectedMethod: (method: PurchaseMethod) => void
+  selectedVendor: Nullable<PurchaseVendor>
   setSelectedVendor: (vendor: PurchaseVendor) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
@@ -44,20 +45,21 @@ type PaymentMethodProps = {
 export const PaymentMethod = ({
   selectedMethod,
   setSelectedMethod,
+  selectedVendor,
   setSelectedVendor,
   balance,
   isExistingBalanceDisabled,
   showExistingBalance,
   isCoinflowEnabled
 }: PaymentMethodProps) => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const vendorOptions = [
-    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
-    { label: PurchaseVendor.STRIPE }
+    ...(isCoinflowEnabled ? [{ value: PurchaseVendor.COINFLOW }] : []),
+    { value: PurchaseVendor.STRIPE }
   ]
 
   const handleSelectVendor = useCallback(
@@ -95,17 +97,17 @@ export const PaymentMethod = ({
       icon: IconCreditCard,
       value:
         vendorOptions.length > 1 ? (
-          mobile ? (
+          isMobile ? (
             <MobileFilterButton
               onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
+              selection={selectedVendor?.toString()}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
             <FilterButton
               onSelect={handleSelectVendor}
-              initialSelectionIndex={0}
+              selection={selectedVendor?.toString()}
               variant='replaceLabel'
               options={vendorOptions}
               popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
@@ -129,7 +131,7 @@ export const PaymentMethod = ({
 
   const renderBody = () => {
     const getFlexProps = (id: PurchaseMethod) => {
-      if (mobile && id === PurchaseMethod.CARD) {
+      if (isMobile && id === PurchaseMethod.CARD) {
         return {
           direction: 'column' as CSSProperties['flexDirection'],
           justifyContent: 'center',
@@ -177,7 +179,7 @@ export const PaymentMethod = ({
             </Flex>
             <Text
               css={{
-                width: mobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
+                width: isMobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
               }}
             >
               {value}

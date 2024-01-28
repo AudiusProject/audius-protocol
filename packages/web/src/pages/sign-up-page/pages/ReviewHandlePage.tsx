@@ -43,8 +43,8 @@ export const ReviewHandlePage = () => {
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const { value: handle } = useSelector(getHandleField)
 
-  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
   const hasImages = coverPhoto || profileImage
 
   const audiusQueryContext = useAudiusQueryContext()
@@ -79,14 +79,14 @@ export const ReviewHandlePage = () => {
       validateOnMount
     >
       {({ isValid }) => (
-        <Page as={Form} transition='horizontal'>
+        <Page as={Form} transition='horizontal' centered>
           <Heading
             heading={messages.heading}
             description={messages.description}
           />
           {hasImages ? (
             <Paper gap='xl' direction='column'>
-              <AccountHeader mode='viewing' size='small' />
+              <AccountHeader mode='viewing' size='small' isPaperHeader />
               <HandleField autoFocus css={{ padding: spacing.l }} />
             </Paper>
           ) : (

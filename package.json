@@ -1,10 +1,13 @@
 {
   "name": "root",
-  "version": "1.5.59",
+  "version": "1.5.63",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
+    "protocol-dashboard",
+    "packages/ddex/server",
+    "packages/ddex/client",
     "packages/es-indexer"
   ],
   "private": true,
@@ -91,6 +94,7 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
+    "vike": "^0.4.150",
     "typescript": "5.0.4",
     "wait-on": "7.2.0"
   },

@@ -5,10 +5,10 @@ import {
   accountSelectors,
   getContext,
   getUSDCUserBank,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentUSDCPurchaseGated,
-  isPremiumContentTipGated,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentUSDCPurchaseGated,
+  isContentTipGated,
   TrackMetadata
 } from '@audius/common'
 import { PublicKey } from '@solana/web3.js'
@@ -20,8 +20,6 @@ import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
-
-const ENVIRONMENT = process.env.VITE_ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,
@@ -73,24 +71,27 @@ export function* reportResultEvents({
 export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   const events = tracks.reduce<ReturnType<typeof make>[]>(
     (out, trackOrMetadata) => {
-      const { is_premium: isPremium, premium_conditions: premiumConditions } =
+      const {
+        is_stream_gated: isStreamGated,
+        stream_conditions: streamConditions
+      } =
         'metadata' in trackOrMetadata
           ? trackOrMetadata.metadata
           : trackOrMetadata
-      if (isPremium && premiumConditions) {
-        if (isPremiumContentCollectibleGated(premiumConditions)) {
+      if (isStreamGated && streamConditions) {
+        if (isContentCollectibleGated(streamConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_COLLECTIBLE_GATED, { kind: 'tracks' })
           )
-        } else if (isPremiumContentFollowGated(premiumConditions)) {
+        } else if (isContentFollowGated(streamConditions)) {
           out.push(make(Name.TRACK_UPLOAD_FOLLOW_GATED, { kind: 'tracks' }))
-        } else if (isPremiumContentTipGated(premiumConditions)) {
+        } else if (isContentTipGated(streamConditions)) {
           out.push(make(Name.TRACK_UPLOAD_TIP_GATED, { kind: 'tracks' }))
-        } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+        } else if (isContentUSDCPurchaseGated(streamConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_USDC_GATED, {
               kind: 'tracks',
-              price: premiumConditions.usdc_purchase.price / 100
+              price: streamConditions.usdc_purchase.price / 100
             })
           )
         }
@@ -104,6 +105,7 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
+  const { ENVIRONMENT } = yield* getContext('env')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
@@ -121,11 +123,11 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
   }
 
   tracks.forEach((track) => {
-    const premium_conditions = track.metadata.premium_conditions
-    if (isPremiumContentUSDCPurchaseGated(premium_conditions)) {
-      const priceCents = premium_conditions.usdc_purchase.price
+    const streamConditions = track.metadata.stream_conditions
+    if (isContentUSDCPurchaseGated(streamConditions)) {
+      const priceCents = streamConditions.usdc_purchase.price
       const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-      premium_conditions.usdc_purchase = {
+      streamConditions.usdc_purchase = {
         price: priceCents,
         splits: {
           [ownerUserbank?.toString() ?? '']: priceWei

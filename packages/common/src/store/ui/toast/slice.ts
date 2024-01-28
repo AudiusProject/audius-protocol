@@ -35,6 +35,7 @@ const slice = createSlice({
       )
       // NOTE: Set the toast timeout to 0 so that the Toast component animates out and dismissed the toast
       // Used for mobile toasts
+      if (!state.toasts[toastIdx]) return
       state.toasts[toastIdx].timeout = 0
     },
     dismissToast: (state, action: DissmissToastAction) => {

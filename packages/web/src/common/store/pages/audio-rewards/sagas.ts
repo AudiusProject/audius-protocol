@@ -34,6 +34,7 @@ import {
   delay
 } from 'typed-redux-saga'
 
+import { isElectron } from 'utils/clientUtil'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
@@ -264,6 +265,7 @@ function* claimChallengeRewardAsync(
       }))
       .filter(({ amount }) => amount > 0) // We shouldn't have any 0 amount challenges, but just in case.
 
+    const isMobile = yield* getContext('isMobile')
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
       {
@@ -277,7 +279,8 @@ function* claimChallengeRewardAsync(
         AAOEndpoint,
         parallelization,
         feePayerOverride,
-        isFinalAttempt: !retryOnFailure
+        isFinalAttempt: !retryOnFailure,
+        source: isMobile ? 'mobile' : isElectron() ? 'electron' : 'web'
       }
     )
     if (response.error) {

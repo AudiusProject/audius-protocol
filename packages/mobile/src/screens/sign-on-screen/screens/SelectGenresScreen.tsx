@@ -96,22 +96,17 @@ export const SelectGenresScreen = () => {
       validateOnChange
       validationSchema={toFormikValidationSchema(selectGenresSchema)}
     >
-      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
-        <Page noGutter>
-          <ReadOnlyAccountHeader />
-          <Flex ph={gutterSize} gap='2xl' flex={1}>
-            <Heading
-              heading={messages.header}
-              description={messages.description}
-            />
-            <SelectGenresFieldArray />
-          </Flex>
-          <PageFooter
-            buttonProps={{ disabled: !(dirty && isValid) }}
-            onSubmit={triggerSubmit}
+      <Page noGutter>
+        <ReadOnlyAccountHeader />
+        <Flex ph={gutterSize} gap='2xl' flex={1}>
+          <Heading
+            heading={messages.header}
+            description={messages.description}
           />
-        </Page>
-      )}
+          <SelectGenresFieldArray />
+        </Flex>
+        <PageFooter />
+      </Page>
     </Formik>
   )
 }

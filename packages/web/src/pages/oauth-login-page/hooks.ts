@@ -15,6 +15,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -25,9 +26,13 @@ import {
   getDeveloperApp,
   getIsAppAuthorized,
   getIsRedirectValid,
+  getIsUserConnectedToDashboardWallet,
+  handleAuthorizeConnectDashboardWallet,
+  handleAuthorizeDisconnectDashboardWallet,
   isValidApiKey,
   validateWriteOnceParams,
-  WriteOnceParams
+  WriteOnceParams,
+  WriteOnceTx
 } from './utils'
 const { getAccountUser, getAccountStatus } = accountSelectors
 
@@ -112,7 +117,8 @@ export const useParsedQueryParams = () => {
       const { error: writeOnceParamsError, txParams: txParamsRes } =
         validateWriteOnceParams({
           tx,
-          params: rest
+          params: rest,
+          willUsePostMessage: parsedRedirectUri === 'postmessage'
         })
       txParams = txParamsRes
 
@@ -142,10 +148,27 @@ export const useParsedQueryParams = () => {
   }
 }
 
-export const useOAuthSetup = () => {
+export const useOAuthSetup = ({
+  onError,
+  onPendingTransactionApproval,
+  onReceiveTransactionApproval
+}: {
+  onError: ({
+    isUserError,
+    errorMessage,
+    error
+  }: {
+    isUserError: boolean
+    errorMessage: string
+    error?: Error
+  }) => void
+  onPendingTransactionApproval: () => void
+  onReceiveTransactionApproval: () => void
+}) => {
   const record = useRecord()
   const history = useHistory()
   const dispatch = useDispatch()
+
   const {
     appName: queryParamAppName,
     apiKey,
@@ -257,25 +280,38 @@ export const useOAuthSetup = () => {
     }
   }, [history, isLoggedIn, dispatch])
 
+  useEffect(() => {
+    const verifyValidWalletIfApplicable = async () => {
+      if (
+        txParams?.wallet &&
+        (tx === 'disconnect_dashboard_wallet' ||
+          tx === 'connect_dashboard_wallet')
+      ) {
+        const sdk = await audiusSdk()
+        const res = await sdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
+          wallets: [txParams.wallet]
+        })
+        const walletHasConnectedUser = res.data?.length === 1
+        if (walletHasConnectedUser && tx === 'connect_dashboard_wallet') {
+          setQueryParamsError(messages.connectWalletAlreadyConnectedError)
+        } else if (
+          !walletHasConnectedUser &&
+          tx === 'disconnect_dashboard_wallet'
+        ) {
+          setQueryParamsError(messages.disconnectWalletNotConnectedError)
+        }
+      }
+    }
+    verifyValidWalletIfApplicable()
+  }, [tx, txParams?.wallet])
+
   const formResponseAndRedirect = useCallback(
     async ({
       account,
-      grantCreated,
-      onError,
-      txSignature
+      grantCreated
     }: {
       account: User
       grantCreated?: boolean | undefined
-      onError: ({
-        isUserError,
-        errorMessage,
-        error
-      }: {
-        isUserError: boolean
-        errorMessage: string
-        error?: Error
-      }) => void
-      txSignature?: { message: string; signature: string }
     }) => {
       const jwt = await formOAuthResponse({
         account,
@@ -288,8 +324,7 @@ export const useOAuthSetup = () => {
               shouldRedirect: true
             })
           )
-        },
-        txSignature
+        }
       })
       if (jwt == null) {
         onError({ isUserError: false, errorMessage: messages.miscError })
@@ -342,7 +377,8 @@ export const useOAuthSetup = () => {
       apiKey,
       appName,
       scope,
-      dispatch
+      dispatch,
+      onError
     ]
   )
 
@@ -385,23 +421,30 @@ export const useOAuthSetup = () => {
     dispatch
   ])
 
-  const authorize = async ({
-    account,
-    onError
-  }: {
-    account: User
-    onError: ({
-      isUserError,
-      errorMessage,
-      error
-    }: {
-      isUserError: boolean
-      errorMessage: string
-      error?: Error
-    }) => void
-  }) => {
+  useEffect(() => {
+    const verifyDisconnectWalletUser = async () => {
+      if (
+        account?.user_id != null &&
+        txParams?.wallet != null &&
+        tx === 'disconnect_dashboard_wallet'
+      ) {
+        const isCorrectUser = await getIsUserConnectedToDashboardWallet({
+          userId: account?.user_id,
+          wallet: txParams.wallet
+        })
+        if (!isCorrectUser) {
+          onError({
+            isUserError: true,
+            errorMessage: messages.disconnectDashboardWalletWrongUserError
+          })
+        }
+      }
+    }
+    verifyDisconnectWalletUser()
+  }, [account?.user_id, onError, tx, txParams?.wallet])
+
+  const authorize = async ({ account }: { account: User }) => {
     let shouldCreateWriteGrant = false
-    let txSignature: { message: string; signature: string } | undefined
 
     if (scope === 'write') {
       try {
@@ -431,20 +474,34 @@ export const useOAuthSetup = () => {
       }
     } else if (scope === 'write_once') {
       // Note: Tx = 'connect_dashboard_wallet' since that's the only option available right now for write_once scope
-      const message = `Connecting Audius protocol dashboard wallet ${
-        txParams!.wallet
-      } at ${Math.round(new Date().getTime() / 1000)}`
-      // Make signature and return
-      const { signature } =
-        await audiusBackendInstance.signDiscoveryNodeRequest(message)
-      txSignature = { message, signature }
+      if ((tx as WriteOnceTx) === 'connect_dashboard_wallet') {
+        const success = await handleAuthorizeConnectDashboardWallet({
+          state,
+          originUrl: parsedOrigin,
+          onError,
+          onWaitForWalletSignature: onPendingTransactionApproval,
+          onReceivedWalletSignature: onReceiveTransactionApproval,
+          account,
+          txParams: txParams!
+        })
+        if (!success) {
+          return
+        }
+      } else if ((tx as WriteOnceTx) === 'disconnect_dashboard_wallet') {
+        const success = await handleAuthorizeDisconnectDashboardWallet({
+          account,
+          txParams: txParams!,
+          onError
+        })
+        if (!success) {
+          return
+        }
+      }
     }
 
     await formResponseAndRedirect({
       account,
-      grantCreated: shouldCreateWriteGrant,
-      onError,
-      txSignature
+      grantCreated: shouldCreateWriteGrant
     })
   }
 

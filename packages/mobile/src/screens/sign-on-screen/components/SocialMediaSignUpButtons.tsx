@@ -5,7 +5,7 @@ import { useToast } from 'app/hooks/useToast'
 import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
 import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
 
-import { SignUpFlowTikTokAuth } from './SignupFlowTikTokAuth'
+import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
 
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {

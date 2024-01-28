@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 
+import sample from 'lodash/sample'
 import sampleSize from 'lodash/sampleSize'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import semver from 'semver'
@@ -11,6 +12,7 @@ import type {
   RequestContext,
   ResponseContext
 } from '../../api/generated/default'
+import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
 import type { LoggerService } from '../Logger'
@@ -30,27 +32,15 @@ import {
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelectorServiceConfig,
   DiscoveryNodeSelectorServiceConfigInternal,
-  ServiceSelectionEvents
+  ServiceSelectionEvents,
+  DiscoveryNode
 } from './types'
-
-const getPathFromUrl = (url: string) => {
-  const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/
-
-  const match = url.match(pathRegex)
-
-  if (match?.[3]) {
-    const path = match[3]
-    return path
-  } else {
-    throw new Error(`Invalid URL, couldn't get path.`)
-  }
-}
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * List of services to select from
    */
-  private services: string[]
+  private services: DiscoveryNode[]
 
   /**
    * Currently selected discovery node
@@ -227,7 +217,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           const userError = response !== undefined && response.status < 500
 
           if (userError) {
-            this.logger.warn(`status code ${response.status} below 500, not reselecting`, endpoint, context)
+            this.logger.warn(
+              `status code ${response.status} below 500, not reselecting`,
+              endpoint,
+              context
+            )
             return response
           }
           return await this.reselectAndRetry({ context, endpoint })
@@ -237,7 +231,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       onError: async (context: ErrorContext) => {
         const endpoint = await this.getSelectedEndpoint()
         const response = context.response
-        
+
         if (!endpoint) {
           await this.select(endpoint)
         } else {
@@ -259,10 +253,152 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     return await this.select(null)
   }
 
+  public async getUniquelyOwnedEndpoints(
+    nodeCount: number,
+    excludeOwners: string[] = []
+  ) {
+    const decisionTree: Decision[] = []
+
+    // Get all services
+    let services = await this.getServices()
+    decisionTree.push({
+      stage: DECISION_TREE_STATE.GET_ALL_SERVICES,
+      val: services
+    })
+
+    if (excludeOwners) {
+      services = services.filter(
+        (s) => !excludeOwners.includes(s.delegateOwnerWallet)
+      )
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.EXCLUDE_OWNERS,
+        val: services
+      })
+    }
+
+    // If a whitelist is provided, filter down to it
+    if (this.config.allowlist) {
+      services = services.filter((s) => this.config.allowlist?.has(s.endpoint))
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
+        val: services
+      })
+    }
+
+    // if a blacklist is provided, filter out services in the list
+    if (this.config.blocklist) {
+      services = services.filter((s) => !this.config.blocklist?.has(s.endpoint))
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
+        val: services
+      })
+    }
+
+    // Filter out anything we know is already unhealthy
+    const filteredServices = services.filter(
+      (s) => !this.unhealthyServices.has(s.endpoint)
+    )
+    decisionTree.push({
+      stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
+      val: filteredServices
+    })
+
+    // Group services by owner
+    const endpointsByOwner = filteredServices.reduce<Record<string, string[]>>(
+      (acc, cur) => {
+        if (cur.delegateOwnerWallet in acc) {
+          acc[cur.delegateOwnerWallet]!.push(cur.endpoint)
+        } else {
+          acc[cur.delegateOwnerWallet] = [cur.endpoint]
+        }
+        return acc
+      },
+      {}
+    )
+
+    // Find nodeCount healthy nodes from unique owners
+    const ownersToTry = new Set(Object.keys(endpointsByOwner))
+    if (ownersToTry.size < nodeCount) {
+      this.logger.error('Not enough unique owners to choose from', {
+        decisionTree
+      })
+      throw new Error('Not enough unique owners to choose from')
+    }
+
+    const selectedNodes: string[] = []
+    while (ownersToTry.size > 0 && selectedNodes.length < nodeCount) {
+      // Get an unattempted owner
+      const sampledOwner = sample([...ownersToTry])
+      ownersToTry.delete(sampledOwner!)
+
+      // Get the owner's services
+      const servicesToTry = new Set(endpointsByOwner[sampledOwner!])
+
+      // Find a healthy node from this owner
+      let healthyService: string | null = null
+      let attemptedServicesCount = 0
+      while (healthyService === null && servicesToTry.size > 0) {
+        // Get a round to select from
+        const round = sampleSize(
+          [...servicesToTry],
+          this.config.maxConcurrentRequests
+        )
+        round.forEach((s) => servicesToTry.delete(s))
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.GET_SELECTION_ROUND,
+          val: round
+        })
+        attemptedServicesCount += round.length
+        healthyService = await this.anyHealthyEndpoint(round)
+        if (!healthyService) {
+          decisionTree.push({
+            stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
+          })
+          this.logger.debug(
+            'No healthy services found. Attempting another round...',
+            {
+              attemptedServicesCount
+            }
+          )
+        }
+      }
+      if (healthyService === null) {
+        // Don't try backups, just go to the next owner
+        this.logger.error(
+          `No healthy services for owner ${sampledOwner}. Trying new owner...`
+        )
+      } else {
+        // Add the healthy node to the result
+        selectedNodes.push(healthyService)
+      }
+    }
+
+    if (selectedNodes.length < nodeCount) {
+      // Reset if we fail
+      this.unhealthyServices = new Set([])
+      this.backupServices = {}
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
+      })
+      throw new Error('Not enough healthy services to choose from')
+    }
+
+    // Trigger a cleanup event for all of the unhealthy and backup services,
+    // so they can get retried in the future
+    this.triggerCleanup()
+
+    return selectedNodes
+  }
+
   /**
    * Gets the list of services
    */
-  public getServices() {
+  public async getServices() {
+    const selected = await this.getSelectedEndpoint()
+    if (selected) {
+      // refresh the list
+      await this.refreshServiceList(selected)
+    }
     return this.services
   }
 
@@ -296,7 +432,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       // If a whitelist is provided, filter down to it
       if (this.config.allowlist) {
-        services = services.filter((s) => this.config.allowlist?.has(s))
+        services = services.filter((s) =>
+          this.config.allowlist?.has(s.endpoint)
+        )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
           val: services
@@ -305,7 +443,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       // if a blacklist is provided, filter out services in the list
       if (this.config.blocklist) {
-        services = services.filter((s) => !this.config.blocklist?.has(s))
+        services = services.filter(
+          (s) => !this.config.blocklist?.has(s.endpoint)
+        )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
           val: services
@@ -319,7 +459,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       while (selectedService === null) {
         // Filter out anything we know is already unhealthy
         const filteredServices = services.filter(
-          (s) => !this.unhealthyServices.has(s)
+          (s) => !this.unhealthyServices.has(s.endpoint)
         )
         decisionTree.push({
           stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
@@ -365,7 +505,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         })
 
         // Race this "round" of services to find the quickest healthy node
-        selectedService = await this.anyHealthyEndpoint(round)
+        selectedService = await this.anyHealthyEndpoint(
+          round.map((s) => s.endpoint)
+        )
         attemptedServicesCount += round.length
 
         // Retry if none were found
@@ -449,17 +591,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
-        if (
-          data?.network?.discovery_nodes &&
-          data.network.discovery_nodes.length > 0
-        ) {
-          this.services = data.network.discovery_nodes
-        } else {
-          this.logger.warn(
-            "Couldn't load new service list from healthy service",
-            endpoint
-          )
-        }
+        await this.refreshServiceList(
+          endpoint,
+          data?.network?.discovery_nodes_with_owner
+        )
         return endpoint
       }
     })
@@ -469,6 +604,25 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     } catch (e) {
       this.logger.error('No healthy nodes', e)
       return null
+    }
+  }
+
+  private async refreshServiceList(endpoint: string, nodes?: DiscoveryNode[]) {
+    if (!nodes) {
+      const { data } = await getDiscoveryNodeHealthCheck({
+        endpoint,
+        healthCheckThresholds: this.config.healthCheckThresholds
+      })
+      nodes = data?.network?.discovery_nodes_with_owner
+    }
+    if (nodes && nodes.length > 0) {
+      this.logger.debug(`Refreshed service list with ${nodes.length} nodes.`)
+      this.services = nodes
+    } else {
+      this.logger.warn(
+        "Couldn't load new service list from healthy service",
+        endpoint
+      )
     }
   }
 

@@ -2,26 +2,26 @@ import {
   BrowserHistoryBuildOptions,
   createBrowserHistory,
   createHashHistory,
-  HashHistoryBuildOptions,
-  History
+  HashHistoryBuildOptions
 } from 'history'
 
-const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
-const basename = process.env.VITE_PUBLIC_URL
+import { env } from 'services/env'
 
-let history: History
-if (USE_HASH_ROUTING) {
-  const config: HashHistoryBuildOptions = {}
-  if (basename) {
-    config.basename = basename
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
+const basename = env.BASENAME
+
+export const createHistory = () => {
+  if (USE_HASH_ROUTING) {
+    const config: HashHistoryBuildOptions = {}
+    if (basename) {
+      config.basename = basename
+    }
+    return createHashHistory(config)
+  } else {
+    const config: BrowserHistoryBuildOptions = {}
+    if (basename) {
+      config.basename = basename
+    }
+    return createBrowserHistory(config)
   }
-  history = createHashHistory(config)
-} else {
-  const config: BrowserHistoryBuildOptions = {}
-  if (basename) {
-    config.basename = basename
-  }
-  history = createBrowserHistory(config)
 }
-
-export default history

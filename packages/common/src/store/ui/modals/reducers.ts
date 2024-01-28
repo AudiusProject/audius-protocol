@@ -15,6 +15,7 @@ import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
+import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 
 /**
  * Create a bunch of reducers that do nothing, so that the state is maintained and not lost through the child reducers
@@ -42,7 +43,8 @@ const combinedReducers = combineReducers({
   AddFundsModal: addFundsModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
-  CoinflowOnramp: coinflowOnrampModalReducer
+  CoinflowOnramp: coinflowOnrampModalReducer,
+  CoinflowWithdraw: coinflowWithdrawModalReducer
 })
 
 /**

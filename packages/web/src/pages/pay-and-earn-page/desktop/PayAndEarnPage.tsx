@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useUSDCBalance, accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import {
   Button,
   Flex,
@@ -42,7 +42,6 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: balance } = useUSDCBalance()
   const accountHasTracks = useSelector(getAccountHasTracks)
 
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
@@ -135,11 +134,11 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!tableOptions || !selectedTable || balance === null ? (
+      {!tableOptions || !selectedTable ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
-          <USDCCard balance={balance} />
+          <USDCCard />
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex

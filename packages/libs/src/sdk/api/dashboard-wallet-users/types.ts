@@ -11,7 +11,7 @@ export const CreateDashboardWalletUser = z
     userId: HashId,
     walletSignature: z
       .object({
-        /** Message should be of the form: "Connecting Audius user id a93jl at 39823489" */
+        /** Message should be of the form: "Connecting Audius user id a93jl at 39823489" OR "Connecting Audius user @jill1990 at 39823489" */
         message: z.string(),
         signature: z.string()
       })

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import dayjs from 'utils/dayjs'
 
@@ -43,7 +43,17 @@ type LabeledStem = Omit<Stem, 'category'> & { label: string }
 type UseDownloadTrackButtonsArgs = {
   following: boolean
   isOwner: boolean
-  onDownload: (trackID: number, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: number
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onNotLoggedInClick?: () => void
 }
 
@@ -62,13 +72,7 @@ const doesRequireFollow = (
   track: Track
 ) => !isOwner && !following && track.download?.requires_follow
 
-const useCurrentStems = ({
-  trackId,
-  useSelector
-}: {
-  trackId: ID
-  useSelector: typeof reduxUseSelector
-}) => {
+export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -93,13 +97,7 @@ const useCurrentStems = ({
   return { stemTracks, track }
 }
 
-const useUploadingStems = ({
-  trackId,
-  useSelector
-}: {
-  trackId: ID
-  useSelector: typeof reduxUseSelector
-}) => {
+const useUploadingStems = ({ trackId }: { trackId: ID }) => {
   const currentUploads = useSelector(
     (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
@@ -177,7 +175,7 @@ const getStemButtons = ({
           if (!isLoggedIn) {
             onNotLoggedInClick?.()
           }
-          onDownload(id, u.label, parentTrackId)
+          onDownload({ trackId: id, category: u.label, parentTrackId })
         }
       } else {
         return undefined
@@ -235,7 +233,7 @@ const useMakeDownloadOriginalButton = ({
         if (!isLoggedIn) {
           onNotLoggedInClick?.()
         }
-        onDownload(track.track_id)
+        onDownload({ trackId: track.track_id })
       }
     }
   }, [
@@ -253,19 +251,17 @@ export const useDownloadTrackButtons = ({
   isOwner,
   onDownload,
   onNotLoggedInClick,
-  trackId,
-  useSelector
+  trackId
 }: UseDownloadTrackButtonsArgs & {
   trackId: ID
-  useSelector: typeof reduxUseSelector
 }) => {
   const isLoggedIn = useSelector(getHasAccount)
 
   // Get already uploaded stems and parent track
-  const { stemTracks, track } = useCurrentStems({ trackId, useSelector })
+  const { stemTracks, track } = useCurrentStems({ trackId })
 
   // Get the currently uploading stems
-  const { uploadingTracks } = useUploadingStems({ trackId, useSelector })
+  const { uploadingTracks } = useUploadingStems({ trackId })
 
   // Combine uploaded and uploading stems
   const combinedStems = [...stemTracks, ...uploadingTracks] as Stem[]

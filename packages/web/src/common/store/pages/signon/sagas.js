@@ -20,7 +20,8 @@ import {
   confirmTransaction,
   IntKeys,
   parseHandleReservedStatusFromSocial,
-  isValidEmailString
+  isValidEmailString,
+  waitForAccount
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -352,31 +353,26 @@ function* validateEmail(action) {
 function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  const isNativeMobile = yield getContext('isNativeMobile')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
   yield call(waitForWrite)
 
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
-  const createUserMetadata = {
-    name: signOn.name.value.trim(),
-    handle: signOn.handle.value,
-    profilePicture: isNativeMobile
-      ? signOn.profileImage
-      : (signOn.profileImage && signOn.profileImage.file) || null,
-    coverPhoto: isNativeMobile
-      ? signOn.coverPhoto
-      : (signOn.coverPhoto && signOn.coverPhoto.file) || null,
-    isVerified: signOn.verified,
-    location
-  }
   const name = signOn.name.value.trim()
   const email = signOn.email.value
   const password = signOn.password.value
   const handle = signOn.handle.value
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
+  const createUserMetadata = {
+    name,
+    handle,
+    profilePicture: signOn.profileImage?.file || null,
+    coverPhoto: signOn.coverPhoto?.file || null,
+    isVerified: signOn.verified,
+    location
+  }
 
   yield call(audiusBackendInstance.setUserHandleForRelay, handle)
 
@@ -478,14 +474,20 @@ function* signUp() {
         yield put(signOnActions.signUpSucceededWithId(userId))
 
         const isNativeMobile = yield getContext('isNativeMobile')
-        if (isNativeMobile) {
+
+        yield call(waitForRemoteConfig)
+
+        const isSignUpRedesignEnabled = yield call(
+          getFeatureEnabled,
+          FeatureFlags.SIGN_UP_REDESIGN
+        )
+
+        if (isNativeMobile && !isSignUpRedesignEnabled) {
           yield put(requestPushNotificationPermissions())
         } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
         }
-
-        yield call(waitForRemoteConfig)
 
         // Check feature flag to disable confirmation
         const disableSignUpConfirmation = yield call(
@@ -510,10 +512,16 @@ function* signUp() {
         yield put(signOnActions.followArtists())
         yield put(signOnActions.signUpSucceeded())
       },
-      function* ({ timeout }) {
+      function* ({ timeout, error, message }) {
         if (timeout) {
           console.debug('Timed out trying to register')
           yield put(signOnActions.signUpTimeout())
+        }
+        if (error) {
+          console.error(error)
+        }
+        if (message) {
+          console.debug(message)
         }
       },
       () => {},
@@ -522,8 +530,70 @@ function* signUp() {
   )
 }
 
+/**
+ * Repairs broken signups from #flare-206
+ */
+function* repairSignUp() {
+  try {
+    const audiusBackendInstance = yield getContext('audiusBackendInstance')
+    yield call(waitForAccount)
+    const audiusLibs = yield call([
+      audiusBackendInstance,
+      audiusBackendInstance.getAudiusLibs
+    ])
+
+    // Need at least a name, handle, and wallet to repair
+    const metadata = yield select(getAccountUser)
+    if (!metadata || !(metadata.name && metadata.handle && metadata.wallet)) {
+      return
+    }
+
+    const User = audiusLibs.User
+    const dnUser = yield call(
+      [User, User.getUsers],
+      1, // limit
+      0, // offset
+      [metadata.user_id], // userIds
+      null, // walletAddress
+      null, // handle
+      null // minBlockNumber
+    )
+    if (dnUser && dnUser.length > 0) {
+      return
+    }
+    yield put(
+      confirmerActions.requestConfirmation(
+        metadata.handle,
+        function* () {
+          console.info('Repairing user')
+          yield put(make(Name.SIGN_UP_REPAIR_START))
+          yield call([User, User.repairEntityManagerUserV2], metadata)
+        },
+        function* () {
+          console.info('Successfully repaired user')
+          yield put(make(Name.SIGN_UP_REPAIR_SUCCESS))
+          yield put(signOnActions.sendWelcomeEmail(metadata.name))
+          yield call(fetchAccountAsync, { isSignUp: true })
+        },
+        function* ({ timeout }) {
+          console.error('Failed to repair user')
+          yield put(Name.SIGN_UP_REPAIR_FAILURE)
+          if (timeout) {
+            console.debug('Timed out trying to fix registration')
+            yield put(signOnActions.signUpTimeout())
+          }
+        },
+        () => {},
+        SIGN_UP_TIMEOUT_MILLIS
+      )
+    )
+  } catch (e) {
+    console.error('Failed to repair account', e)
+  }
+}
+
 function* signIn(action) {
-  const { email, password } = action
+  const { email, password, otp } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForRead)
   try {
@@ -531,7 +601,8 @@ function* signIn(action) {
     const signInResponse = yield call(
       audiusBackendInstance.signIn,
       email ?? signOn.email.value,
-      password ?? signOn.password.value
+      password ?? signOn.password.value,
+      otp ?? signOn.otp.value
     )
     if (
       !signInResponse.error &&
@@ -576,10 +647,13 @@ function* signIn(action) {
       const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
       yield put(trackEvent)
 
-      // Reset the sign on in the background after page load as to relieve the UI loading
-      yield delay(1000)
       yield put(signOnActions.resetSignOn())
+
       const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        // Reset the sign on in the background after page load as to relieve the UI loading
+        yield delay(1000)
+      }
       if (isNativeMobile) {
         yield put(requestPushNotificationPermissions())
       } else {
@@ -649,17 +723,33 @@ function* followCollections(collectionIds, favoriteSource) {
   }
 }
 
-function* followArtists() {
+/* This saga makes sure that artists chosen in sign up get followed accordingly */
+export function* completeFollowArtists(action) {
+  const accountId = yield select(accountSelectors.getUserId)
+  if (accountId) {
+    // If account creation has finished we need to make sure followArtists gets called
+    // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
+    yield put(signOnActions.followArtists(action.userIds, true))
+  }
+  // Otherwise, Account creation still in progress and followArtists will get called already, no need to call here
+}
+
+function* followArtists(action) {
+  const { skipDefaultFollows } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { ENVIRONMENT } = yield getContext('env')
-  const defaultFollowUserIds = yield call(getDefautFollowUserIds)
+  const defaultFollowUserIds = skipDefaultFollows
+    ? []
+    : yield call(getDefautFollowUserIds)
   yield call(waitForWrite)
   try {
     // Auto-follow Hot & New Playlist
-    if (ENVIRONMENT === 'production') {
-      yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
-    } else if (ENVIRONMENT === 'staging') {
-      yield fork(followCollections, [555], FavoriteSource.SIGN_UP)
+    if (!skipDefaultFollows) {
+      if (ENVIRONMENT === 'production') {
+        yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
+      } else if (ENVIRONMENT === 'staging') {
+        yield fork(followCollections, [555], FavoriteSource.SIGN_UP)
+      }
     }
 
     const signOn = yield select(getSignOn)
@@ -711,6 +801,10 @@ function* configureMetaMask() {
   } catch (err) {
     console.error({ err })
   }
+}
+
+export function* watchCompleteFollowArtists() {
+  yield takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
 
 function* watchGetArtistsToFollow() {
@@ -784,6 +878,7 @@ function* watchSendWelcomeEmail() {
 
 export default function sagas() {
   const sagas = [
+    watchCompleteFollowArtists,
     watchFetchAllFollowArtists,
     watchFetchReferrer,
     watchCheckEmail,
@@ -797,7 +892,8 @@ export default function sagas() {
     watchShowToast,
     watchOpenSignOn,
     watchSignOnError,
-    watchSendWelcomeEmail
+    watchSendWelcomeEmail,
+    repairSignUp
   ]
   return sagas
 }

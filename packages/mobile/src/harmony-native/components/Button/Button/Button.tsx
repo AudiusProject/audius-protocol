@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import type { IconColors } from '@audius/harmony'
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
-import type { TextStyle } from 'react-native/types'
+import type { TextStyle, ViewStyle } from 'react-native'
 import {
   interpolateColor,
   useAnimatedStyle,
@@ -24,6 +24,7 @@ export const Button = (props: ButtonProps) => {
     variant = 'primary',
     size = 'default',
     disabled,
+    style,
     ...baseProps
   } = props
   const { isLoading } = baseProps
@@ -85,10 +86,11 @@ export const Button = (props: ButtonProps) => {
     hexColor ?? (color ? themeColors.special[color] : null)
 
   const primaryStyles: ReactNativeStyle = {
-    ...(isDisabled && {
-      backgroundColor: themeColors.neutral.n150
-    })
+    backgroundColor: isDisabled
+      ? themeColors.neutral.n150
+      : themeColors.primary.primary
   }
+
   const primaryDynamicStyles = {
     default: {
       background: primaryOverrideColor ?? themeColors.primary.primary,
@@ -197,26 +199,12 @@ export const Button = (props: ButtonProps) => {
       ? destructiveDynamicStyles
       : primaryDynamicStyles
 
-  const buttonCss: ReactNativeStyle = useAnimatedStyle(() => ({
+  const buttonStyles: ViewStyle = {
     borderWidth: 0,
     borderRadius: cornerRadius.s,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadows.near,
-
-    ...(!isDisabled && {
-      borderColor: interpolateColor(
-        pressed.value,
-        [0, 1],
-        [dynamicStyles.default.border, dynamicStyles.press.border]
-      ),
-      backgroundColor: interpolateColor(
-        pressed.value,
-        [0, 1],
-        [dynamicStyles.default.background, dynamicStyles.press.background]
-      )
-    }),
-
     ...(variant === 'secondary'
       ? secondaryStyles
       : variant === 'tertiary'
@@ -232,23 +220,43 @@ export const Button = (props: ButtonProps) => {
       : defaultStyles),
 
     ...(isDisabled && { shadowColor: 'transparent' })
-  }))
+  }
 
-  const textCss: TextStyle = useAnimatedStyle(() => ({
-    ...(!isDisabled && {
+  const animatedButtonStyles = useAnimatedStyle(() => {
+    return {
+      borderColor: disabled
+        ? buttonStyles.borderColor
+        : interpolateColor(
+            pressed.value,
+            [0, 1],
+            [dynamicStyles.default.border, dynamicStyles.press.border]
+          ),
+      backgroundColor: disabled
+        ? buttonStyles.backgroundColor
+        : interpolateColor(
+            pressed.value,
+            [0, 1],
+            [dynamicStyles.default.background, dynamicStyles.press.background]
+          )
+    }
+  }, [disabled])
+
+  const textStyles =
+    size === 'small'
+      ? smallTextStyles
+      : size === 'large'
+      ? largeTextStyles
+      : defaultTextStyles
+
+  const animatedTextStyles = useAnimatedStyle(() => {
+    return {
       color: interpolateColor(
         pressed.value,
         [0, 1],
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
-    }),
-
-    ...(size === 'small'
-      ? smallTextStyles
-      : size === 'large'
-      ? largeTextStyles
-      : defaultTextStyles)
-  }))
+    }
+  }, [disabled])
 
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
@@ -292,10 +300,10 @@ export const Button = (props: ButtonProps) => {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={isDisabled}
-      style={buttonCss}
+      style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}
       styles={{
-        text: textCss
+        text: [textStyles, animatedTextStyles]
       }}
       innerProps={{
         text: {

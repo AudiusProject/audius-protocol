@@ -1,6 +1,8 @@
 import type { AppRouter } from '@audius/trpc-server'
-import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
-import Config from 'react-native-config'
+import { httpBatchLink } from '@trpc/client'
+import { createTRPCReact } from '@trpc/react-query'
+
+import { env } from 'app/env'
 
 export const trpc = createTRPCReact<AppRouter>()
 
@@ -25,11 +27,5 @@ export function createAudiusTrpcClient(currentUserId: number | null) {
 // since tRPC server is deployed manually atm.
 // in the future some tRPC middleware can set host to currently selected DN per request
 function getTrpcEndpoint() {
-  switch (Config.ENVIRONMENT) {
-    case 'production':
-      return 'https://discoveryprovider3.audius.co/trpc/trpc'
-    case 'staging':
-      return 'https://discoveryprovider3.staging.audius.co/trpc/trpc'
-  }
-  return 'http://localhost:2022/trpc'
+  return env.TRPC_ENDPOINT
 }

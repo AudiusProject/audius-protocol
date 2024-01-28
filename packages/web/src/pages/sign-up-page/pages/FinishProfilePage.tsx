@@ -1,6 +1,8 @@
 import { useCallback, useRef } from 'react'
 
 import {
+  MAX_DISPLAY_NAME_LENGTH,
+  Name,
   finishProfileSchema,
   finishProfilePageMessages as messages
 } from '@audius/common'
@@ -10,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { make } from 'common/store/analytics/actions'
 import {
   setField,
   setValueField,
@@ -18,6 +21,8 @@ import {
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
+  getEmailField,
+  getHandleField,
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,
@@ -34,7 +39,7 @@ import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
 
 export type FinishProfileValues = {
-  profileImage: ImageFieldValue
+  profileImage?: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string
 }
@@ -76,30 +81,36 @@ export const FinishProfilePage = () => {
   const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
+  const handle = useSelector(getHandleField)
+  const email = useSelector(getEmailField)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
-  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
-  const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
+  const savedCoverPhoto = useSelector(getCoverPhotoField)
+  const savedProfileImage = useSelector(getProfileImageField)
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
-    profileImage: savedProfileImage,
-    coverPhoto: savedCoverPhoto,
+    profileImage: savedProfileImage || undefined,
+    coverPhoto: savedCoverPhoto || undefined,
     displayName: savedDisplayName || ''
   }
 
   const setCoverPhoto = useCallback(
     (value: ImageFieldValue) => {
-      dispatch(setField('coverPhoto', { value }))
+      dispatch(setField('coverPhoto', value))
+      dispatch(make(Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO, { handle, email }))
     },
-    [dispatch]
+    [dispatch, email, handle]
   )
 
   const setProfileImage = useCallback(
     (value: ImageFieldValue) => {
-      dispatch(setField('profileImage', { value }))
+      dispatch(setField('profileImage', value))
+      dispatch(
+        make(Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO, { handle, email })
+      )
     },
-    [dispatch]
+    [dispatch, email, handle]
   )
 
   const setDisplayName = useCallback(
@@ -112,9 +123,9 @@ export const FinishProfilePage = () => {
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', { value: profileImage }))
+      dispatch(setField('profileImage', profileImage))
       if (coverPhoto) {
-        dispatch(setField('coverPhoto', { value: coverPhoto }))
+        dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
@@ -149,7 +160,7 @@ export const FinishProfilePage = () => {
             description={messages.description}
             centered={!isMobile}
           />
-          <Paper direction='column'>
+          <Paper direction='column' style={{ flexShrink: 0 }}>
             <AccountHeader
               mode='editing'
               formDisplayName={values.displayName}
@@ -163,8 +174,7 @@ export const FinishProfilePage = () => {
               name='displayName'
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
-              required
-              maxLength={32}
+              maxLength={MAX_DISPLAY_NAME_LENGTH}
               onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
                 padding: theme.spacing.l
@@ -174,6 +184,7 @@ export const FinishProfilePage = () => {
           {isMobile ? null : <UploadProfilePhotoHelperText />}
           <PageFooter
             centered
+            sticky
             buttonProps={{ disabled: !isValid }}
             prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
             postfix={

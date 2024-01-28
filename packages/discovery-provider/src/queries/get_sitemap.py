@@ -110,6 +110,7 @@ def get_max_track_count(session: Session) -> int:
         .filter(
             Track.is_current == True,
             Track.stem_of == None,
+            Track.is_unlisted == False,
             Track.is_available == True,
             User.is_current == True,
             TrackRoute.is_current == True,
@@ -201,6 +202,7 @@ def get_track_slugs(session: Session, limit: int, offset: int):
             Track.is_current == True,
             Track.stem_of == None,
             Track.is_available == True,
+            Track.is_unlisted == False,
             User.is_current == True,
             TrackRoute.is_current == True,
         )

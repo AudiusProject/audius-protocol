@@ -7,10 +7,12 @@ declare global {
   }
 }
 
-const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-const IS_UI_WEBVIEW = /(iPhone|iPod|iPad).*AppleWebKit/i.test(
-  navigator.userAgent
-)
+const IS_SAFARI =
+  typeof navigator !== 'undefined' &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+const IS_UI_WEBVIEW =
+  typeof navigator !== 'undefined' &&
+  /(iPhone|iPod|iPad).*AppleWebKit/i.test(navigator.userAgent)
 
 const FADE_IN_EVENT = new Event('fade-in')
 const FADE_OUT_EVENT = new Event('fade-out')
@@ -20,7 +22,9 @@ const FADE_IN_TIME_MILLISECONDS = 320
 const FADE_OUT_TIME_MILLISECONDS = 400
 
 const IS_CHROME_LIKE =
-  /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+  typeof navigator !== 'undefined' &&
+  /Chrome/.test(navigator.userAgent) &&
+  /Google Inc/.test(navigator.vendor)
 
 export enum AudioError {
   AUDIO = 'AUDIO'

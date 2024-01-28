@@ -2,13 +2,9 @@ import { ReactNode, useCallback, useState } from 'react'
 
 import { Flex, IconCaretDown, IconComponent, useTheme } from '@audius/harmony'
 import { ColorValue } from '@audius/stems'
-import { ResizeObserver } from '@juggle/resize-observer'
-import cn from 'classnames'
-import useMeasure from 'react-use-measure'
 
+import { Expandable } from 'components/expandable/Expandable'
 import { Text } from 'components/typography'
-
-import styles from './SummaryTable.module.css'
 
 export type SummaryTableItem = {
   id: string
@@ -16,32 +12,6 @@ export type SummaryTableItem = {
   icon?: IconComponent
   value?: ReactNode
   disabled?: boolean
-}
-
-const Expandable = ({
-  expanded,
-  children
-}: {
-  expanded: boolean
-  children: React.ReactNode
-}) => {
-  const [ref, bounds] = useMeasure({
-    polyfill: ResizeObserver,
-    offsetSize: true
-  })
-
-  return (
-    <Flex
-      direction='column'
-      alignSelf='stretch'
-      className={styles.expandableContainer}
-      style={{ height: expanded ? bounds.height : 0 }}
-    >
-      <Flex direction='column' ref={ref}>
-        {children}
-      </Flex>
-    </Flex>
-  )
 }
 
 export type SummaryTableProps = {
@@ -79,13 +49,16 @@ export const SummaryTable = ({
         justifyContent='space-between'
         pv='m'
         ph='xl'
-        css={{ backgroundColor: color.background.surface1 }}
+        css={{ backgroundColor: color.background.surface1, cursor: 'pointer' }}
+        onClick={onToggleExpand}
       >
         <Flex gap='s'>
           {collapsible ? (
             <IconCaretDown
-              onClick={onToggleExpand}
-              className={cn(styles.expander, { [styles.expanded]: expanded })}
+              css={{
+                transition: 'transform var(--harmony-expressive)',
+                transform: `rotate(${expanded ? -180 : 0}deg)`
+              }}
               size='m'
               color='default'
             />
@@ -164,7 +137,7 @@ export const SummaryTable = ({
       direction='column'
       border='default'
       borderRadius='xs'
-      className={styles.container}
+      css={{ overflow: 'hidden' }}
     >
       {renderHeader()}
       {collapsible ? (

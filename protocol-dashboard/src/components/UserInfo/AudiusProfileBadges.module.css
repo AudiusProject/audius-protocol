@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  overflow: visible;
+}
+
+.container svg,
+.inlineContainer svg {
+  margin-right: var(--unit-1) !important;
+}
+
+.inlineContainer {
+  display: inline-flex;
+}

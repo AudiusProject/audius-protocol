@@ -7,8 +7,9 @@ export const isOAuthScopeValid = (scope: string[]) => {
 
 export const isWriteOnceParams = (object: any): object is WriteOnceParams => {
   return (
-    'tx' in object &&
-    object.tx === 'connect_dashboard_wallet' &&
-    'wallet' in object
+    ('tx' in object &&
+      object.tx === 'connect_dashboard_wallet' &&
+      'wallet' in object) ||
+    (object.tx === 'disconnect_dashboard_wallet' && 'wallet' in object)
   )
 }

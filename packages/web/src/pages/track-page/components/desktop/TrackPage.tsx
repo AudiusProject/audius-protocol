@@ -5,7 +5,7 @@ import {
   User,
   trackPageLineupActions,
   QueueItem,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -61,7 +61,15 @@ export type OwnProps = {
   onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   makePublic: (trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
@@ -112,9 +120,9 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(heroTrack)
-  const loading = !heroTrack || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+    useGatedContentAccess(heroTrack)
+  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -162,9 +170,12 @@ const TrackPage = ({
       badge={badge}
       isUnlisted={defaults.isUnlisted}
       isScheduledRelease={defaults.isScheduledRelease}
-      isPremium={defaults.isPremium}
-      premiumConditions={defaults.premiumConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      isStreamGated={defaults.isStreamGated}
+      streamConditions={defaults.streamConditions}
+      isDownloadGated={defaults.isDownloadGated}
+      downloadConditions={defaults.downloadConditions}
+      hasStreamAccess={hasStreamAccess}
+      hasDownloadAccess={hasDownloadAccess}
       isRemix={!!defaults.remixParentTrackId}
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}
@@ -203,10 +214,13 @@ const TrackPage = ({
     <Page
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'
       scrollableSearch
+      fromOpacity={1}
+      noIndex={defaults.isUnlisted}
     >
       <div className={styles.headerWrapper}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />

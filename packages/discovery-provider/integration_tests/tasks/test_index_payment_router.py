@@ -1,20 +1,22 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
 
-from payment_router_mock_transactions import (
+from integration_tests.tasks.payment_router_mock_transactions import (
     mock_failed_track_purchase_single_recipient_tx,
     mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx,
     mock_invalid_track_purchase_insufficient_split_tx,
     mock_invalid_track_purchase_missing_split_tx,
     mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_valid_track_purchase_from_user_bank_single_recipient_tx,
     mock_valid_track_purchase_multi_recipient_pay_extra_tx,
     mock_valid_track_purchase_multi_recipient_tx,
     mock_valid_track_purchase_single_recipient_pay_extra_tx,
     mock_valid_track_purchase_single_recipient_tx,
+    mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
+    mock_valid_transfer_single_recipient_recovery_tx,
     mock_valid_transfer_without_purchase_multi_recipient_tx,
     mock_valid_transfer_without_purchase_single_recipient_tx,
 )
-
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -33,8 +35,9 @@ trackBuyerId = 2
 trackBuyerUserBank = "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX"
 thirdPartyId = 3
 thirdPartyUserBank = "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556"
+
 # Used as the source wallet for all the mock transactions
-transactionSenderAddress = "G231EZsMoCNBiQKP5quEeAM3oG516Zspirjnh7ywP71i"
+transactionSenderOwnerAccount = "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W"
 
 test_entries = {
     "users": [
@@ -143,7 +146,73 @@ def test_process_payment_router_tx_details_valid_purchase(app):
         assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
-def test_process_payment_router_tx_details_transfer_transfer_without_purchase(
+def test_process_payment_router_tx_details_valid_purchase_from_user_bank(app):
+    tx_response = mock_valid_track_purchase_from_user_bank_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == 1
+        assert purchase.buyer_user_id == 2
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
+
+        seller_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert seller_transaction_record is not None
+        assert (
+            seller_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert seller_transaction_record.method == USDCTransactionMethod.receive
+        assert seller_transaction_record.change == 1000000
+        assert seller_transaction_record.tx_metadata == str(trackBuyerId)
+
+        buyer_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .first()
+        )
+        assert buyer_transaction_record is not None
+        assert (
+            buyer_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert buyer_transaction_record.method == USDCTransactionMethod.send
+        assert buyer_transaction_record.change == -1000000
+        assert buyer_transaction_record.tx_metadata == str(trackOwnerId)
+
+
+def test_process_payment_router_tx_details_transfer_without_purchase(
     app,
 ):
     tx_response = mock_valid_transfer_without_purchase_single_recipient_tx
@@ -188,8 +257,317 @@ def test_process_payment_router_tx_details_transfer_transfer_without_purchase(
         assert transaction_record.transaction_type == USDCTransactionType.transfer
         assert transaction_record.method == USDCTransactionMethod.receive
         assert transaction_record.change == 1000000
-        # For transfers, the metadata is the source address
-        assert transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
+
+
+def test_process_payment_router_tx_details_transfer_from_user_bank_without_purchase(
+    app,
+):
+    tx_response = (
+        mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx
+    )
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # We do still expect the transfers to get indexed, but as regular transfers
+        receiver_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert receiver_transaction_record is not None
+        assert receiver_transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert (
+            receiver_transaction_record.transaction_type == USDCTransactionType.transfer
+        )
+        assert receiver_transaction_record.method == USDCTransactionMethod.receive
+        assert receiver_transaction_record.change == 1000000
+        assert receiver_transaction_record.tx_metadata == trackBuyerUserBank
+
+        sender_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .first()
+        )
+        assert sender_transaction_record is not None
+        # Regular transfer, not a purchase
+        assert (
+            sender_transaction_record.transaction_type == USDCTransactionType.transfer
+        )
+        assert sender_transaction_record.method == USDCTransactionMethod.send
+        assert sender_transaction_record.change == -1000000
+        assert sender_transaction_record.tx_metadata == trackOwnerUserBank
+
+
+# Should revert the most recent outbound transaction to the sending address
+# of the recovery transaction
+def test_process_payment_router_tx_details_transfer_recovery(app):
+    tx_response = mock_valid_transfer_single_recipient_recovery_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_with_transaction = test_entries.copy()
+    test_entries_with_transaction["usdc_transactions_history"] = [
+        {
+            "user_bank": trackOwnerUserBank,
+            "signature": "existingWithdrawal",
+            "transaction_type": USDCTransactionType.transfer,
+            "method": USDCTransactionMethod.send,
+            "change": -1000000,
+            "balance": 0,
+            "tx_metadata": transactionSenderOwnerAccount,
+        }
+    ]
+
+    populate_mock_db(db, test_entries_with_transaction)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect original transaction to have been removed
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert transaction_record is None
+
+
+# Recovery transaction is for less than the original, should update original
+# to be the difference
+def test_process_payment_router_tx_details_transfer_partial_recovery(
+    app,
+):
+    tx_response = mock_valid_transfer_single_recipient_recovery_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_with_transaction = test_entries.copy()
+    test_entries_with_transaction["usdc_transactions_history"] = [
+        {
+            "user_bank": trackOwnerUserBank,
+            "signature": "existingWithdrawal",
+            "transaction_type": USDCTransactionType.transfer,
+            "method": USDCTransactionMethod.send,
+            "change": -2000000,
+            "balance": 0,
+            "tx_metadata": transactionSenderOwnerAccount,
+        }
+    ]
+
+    populate_mock_db(db, test_entries_with_transaction)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect original transaction to be modified
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
+            .first()
+        )
+        # Recovery transaction was for half of the original amount, expect the difference
+        assert transaction_record.change == -1000000
+        assert transaction_record.balance == 1000000
+
+
+def test_process_payment_router_tx_details_transfer_over_recovery(
+    # Recovery transaction is for more than the original, should index as a new transfer
+    app,
+):
+    tx_response = mock_valid_transfer_single_recipient_recovery_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_with_transaction = test_entries.copy()
+    test_entries_with_transaction["usdc_transactions_history"] = [
+        {
+            "user_bank": trackOwnerUserBank,
+            "signature": "existingWithdrawal",
+            "transaction_type": USDCTransactionType.transfer,
+            "method": USDCTransactionMethod.send,
+            "change": -500000,
+            "balance": 0,
+            "tx_metadata": transactionSenderOwnerAccount,
+        }
+    ]
+
+    populate_mock_db(db, test_entries_with_transaction)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect original transaction to be modified
+        existing_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
+            .first()
+        )
+        # Recovery transaction was for more than the original amount, expect original transaction to be unchanged
+        assert existing_transaction_record.change == -500000
+
+        # Expect new transaction to have been added
+        new_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(
+                USDCTransactionsHistory.tx_metadata == transactionSenderOwnerAccount
+            )
+            .first()
+        )
+
+        assert new_transaction_record is not None
+        assert new_transaction_record.method == USDCTransactionMethod.receive
+        assert new_transaction_record.transaction_type == USDCTransactionType.transfer
+        assert new_transaction_record.change == 1000000
+        assert new_transaction_record.balance == 1000000
+
+
+# Recovery transaction doesn't match the most recent outbound transfer (different addresses). Should index
+# as a regular inbound transfer
+def test_process_payment_router_tx_details_transfer_recovery_address_mismatch(
+    app,
+):
+    tx_response = mock_valid_transfer_single_recipient_recovery_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_with_transaction = test_entries.copy()
+    test_entries_with_transaction["usdc_transactions_history"] = [
+        {
+            "user_bank": trackOwnerUserBank,
+            "signature": "existingWithdrawal",
+            "transaction_type": USDCTransactionType.transfer,
+            "method": USDCTransactionMethod.send,
+            "change": -1000000,
+            "balance": 0,
+            "tx_metadata": "randomOtherAccount",
+        }
+    ]
+
+    populate_mock_db(db, test_entries_with_transaction)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Original transaction should remain unchanged
+        existing_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == "existingWithdrawal")
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.tx_metadata == "randomOtherAccount")
+            .first()
+        )
+        assert existing_transaction_record is not None
+        assert existing_transaction_record.change == -1000000
+        assert existing_transaction_record.balance == 0
+        assert existing_transaction_record.method == USDCTransactionMethod.send
+        assert (
+            existing_transaction_record.transaction_type == USDCTransactionType.transfer
+        )
+
+        # Expect new transaction to have been added
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert transaction_record.transaction_type == USDCTransactionType.transfer
+        assert transaction_record.method == USDCTransactionMethod.receive
+        assert transaction_record.change == 1000000
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
 
 
 def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
@@ -421,8 +799,8 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
         assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
-        # For transfers, the metadata is the source address
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
         third_party_transaction_record = (
             session.query(USDCTransactionsHistory)
@@ -438,8 +816,10 @@ def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
         )
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
         assert third_party_transaction_record.change == 500000
-        # For transfers, the metadata is the source address
-        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert (
+            third_party_transaction_record.tx_metadata == transactionSenderOwnerAccount
+        )
 
 
 # Transaction is for the correct amount, but one of the splits is missing
@@ -487,8 +867,8 @@ def test_process_payment_router_tx_details_invalid_purchase_missing_splits(app):
         assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 2000000
-        # For transfers, the metadata is the source address
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
 
 def test_process_payment_router_tx_details_transfer_multiple_users_without_purchase(
@@ -536,8 +916,8 @@ def test_process_payment_router_tx_details_transfer_multiple_users_without_purch
         assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
-        # For transfers, the metadata is the source address
-        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert owner_transaction_record.tx_metadata == transactionSenderOwnerAccount
 
         third_party_transaction_record = (
             session.query(USDCTransactionsHistory)
@@ -553,8 +933,10 @@ def test_process_payment_router_tx_details_transfer_multiple_users_without_purch
         )
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
         assert third_party_transaction_record.change == 1000000
-        # For transfers, the metadata is the source address
-        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+        # For transfers, source is the owning wallet unless it's a transfer from a user bank
+        assert (
+            third_party_transaction_record.tx_metadata == transactionSenderOwnerAccount
+        )
 
 
 def test_process_payment_router_txs_details_create_challenge_events_for_purchase(app):

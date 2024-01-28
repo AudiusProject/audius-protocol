@@ -26,6 +26,12 @@ var mediorumMigrationTable = `
 	);
 `
 
+var qmSyncTable = `
+create table if not exists qm_sync (
+	"host" text primary key
+);
+`
+
 func Migrate(db *sql.DB, myHost string) {
 	mustExec(db, mediorumMigrationTable)
 
@@ -37,6 +43,8 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, `create index if not exists uploads_ts_idx on uploads(created_at, transcoded_at)`)
 
 	runMigration(db, `drop table if exists "Files", "ClockRecords", "Tracks", "AudiusUsers", "CNodeUsers", "SessionTokens", "ContentBlacklists", "Playlists", "SequelizeMeta", blobs, cid_lookup, cid_log cascade`)
+
+	runMigration(db, qmSyncTable)
 }
 
 func runMigration(db *sql.DB, ddl string) {

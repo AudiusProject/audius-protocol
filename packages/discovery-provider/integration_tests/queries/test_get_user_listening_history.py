@@ -355,9 +355,9 @@ def test_track_top_listeners(app):
     with db.scoped_session() as session:
         top_listeners = _get_top_listeners_for_track(session, {"track_id": 2})
         assert len(top_listeners) == 2
-        assert top_listeners[0]["user"]["user_id"] == 2
+        assert top_listeners[0]["user"]["user_id"] == 1
         assert top_listeners[0]["count"] == 1
-        assert top_listeners[1]["user"]["user_id"] == 1
+        assert top_listeners[1]["user"]["user_id"] == 2
         assert top_listeners[1]["count"] == 1
 
         top_listeners = _get_top_listeners_for_track(session, {"track_id": 1})

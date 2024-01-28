@@ -1,6 +1,6 @@
 module github.com/AudiusProject/audius-protocol/mediorum
 
-go 1.20
+go 1.21.0
 
 require (
 	github.com/disintegration/imaging v1.6.2
@@ -12,18 +12,18 @@ require (
 	github.com/ipfs/go-cid v0.3.2
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/labstack/echo/v4 v4.10.0
-	github.com/lib/pq v1.10.9
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/oklog/ulid/v2 v2.1.0
+	github.com/orandin/slog-gorm v1.1.0
 	github.com/spf13/cast v1.5.0
 	github.com/storyicon/sigverify v1.1.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	gocloud.dev v0.34.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/sync v0.3.0
 	gorm.io/driver/postgres v1.5.0
-	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
+	gorm.io/gorm v1.25.5
 )
 
 require (

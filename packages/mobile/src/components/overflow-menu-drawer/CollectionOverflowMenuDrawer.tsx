@@ -96,13 +96,17 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       navigation?.push('Profile', { handle })
     },
+    [OverflowAction.EDIT_ALBUM]: () => {
+      navigation?.push('EditPlaylist', { id })
+    },
     [OverflowAction.EDIT_PLAYLIST]: () => {
       navigation?.push('EditPlaylist', { id })
     },
+    [OverflowAction.DELETE_ALBUM]: () =>
+      dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.DELETE_PLAYLIST]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.PUBLISH_PLAYLIST]: () => {
-      if (is_album) return () => {}
       return dispatch(openPublishConfirmation({ playlistId: Number(id) }))
     }
   }

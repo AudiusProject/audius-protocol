@@ -177,7 +177,7 @@ def get_top_trending_to_notify(db):
     with db.scoped_session() as session:
         trending_tracks = _get_trending_tracks_with_session(
             session,
-            {"time": "week", "exclude_premium": True},
+            {"time": "week", "exclude_gated": True},
             trending_strategy_factory.get_strategy(TrendingType.TRACKS),
         )
         top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]

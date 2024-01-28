@@ -1,4 +1,4 @@
-import type { full } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { createApi } from 'audius-query'
 import { ID, Kind, StringUSDC } from 'models'
@@ -7,6 +7,7 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from 'models/USDCTransactions'
+import { getRootSolanaAccount } from 'services/audius-backend/solana'
 import { Nullable } from 'utils/typeUtils'
 
 import { Id } from './utils'
@@ -21,12 +22,30 @@ type GetUSDCTransactionListArgs = {
   method?: full.GetUSDCTransactionsMethodEnum
 }
 
-const parseTransaction = (
+/**
+ * Parser to reformat transactions as they come back from the API.
+ * @param transaction the transaction to parse
+ * @param rootSolanaAccount? Optionally a root solana account can be passed
+ *  to reformat the metadata field to include specific contextual information.
+ *  In the case of withdrawals, this is useful in recognizing a "self-send",
+ *  which is a cash transfer out.
+ */
+const parseTransaction = ({
+  transaction,
+  rootSolanaAccount
+}: {
   transaction: full.TransactionDetails
-): USDCTransactionDetails => {
-  const { change, balance, transactionType, method, ...rest } = transaction
+  rootSolanaAccount?: string
+}): USDCTransactionDetails => {
+  const { change, balance, transactionType, method, metadata, ...rest } =
+    transaction
   return {
     ...rest,
+    metadata: !rootSolanaAccount
+      ? metadata
+      : rootSolanaAccount === metadata.toString()
+      ? 'Cash'
+      : metadata,
     transactionType: transactionType as USDCTransactionType,
     method: method as USDCTransactionMethod,
     change: change as StringUSDC,
@@ -68,7 +87,6 @@ const userApi = createApi({
         return apiUser?.[0]
       },
       options: {
-        idArgKey: 'handle',
         kind: Kind.USERS,
         schemaKey: 'user'
       }
@@ -80,6 +98,28 @@ const userApi = createApi({
         return await audiusBackend.getCreators(ids)
       },
       options: { idListArgKey: 'ids', kind: Kind.USERS, schemaKey: 'users' }
+    },
+    getTracksByUser: {
+      fetch: async (
+        { userId, currentUserId }: { userId: ID; currentUserId: Nullable<ID> },
+        audiusQueryContext
+      ) => {
+        const { apiClient } = audiusQueryContext
+        const { handle } = await userApiFetch.getUserById(
+          { id: userId, currentUserId },
+          audiusQueryContext
+        )
+        const tracks = await apiClient.getUserTracksByHandle({
+          handle,
+          currentUserId,
+          getUnlisted: userId === currentUserId
+        })
+        return tracks
+      },
+      options: {
+        kind: Kind.TRACKS,
+        schemaKey: 'tracks'
+      }
     },
     getUSDCTransactions: {
       fetch: async (
@@ -109,7 +149,18 @@ const userApi = createApi({
           encodedDataSignature
         })
 
-        return data.map(parseTransaction)
+        let rootSolanaAccount: string
+        if (
+          type === full.GetUSDCTransactionsTypeEnum.Transfer &&
+          method === full.GetUSDCTransactionCountMethodEnum.Send
+        ) {
+          rootSolanaAccount = (
+            await getRootSolanaAccount(context.audiusBackend)
+          ).publicKey.toString()
+        }
+        return data.map((transaction) =>
+          parseTransaction({ transaction, rootSolanaAccount })
+        )
       },
       options: { retry: true }
     },
@@ -142,6 +193,8 @@ const userApi = createApi({
 export const {
   useGetUserById,
   useGetUsersByIds,
+  useGetUserByHandle,
+  useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount
 } = userApi.hooks

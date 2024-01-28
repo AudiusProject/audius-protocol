@@ -1,3 +1,4 @@
+import { Name, SquareSizes, accountSelectors } from '@audius/common'
 import {
   Avatar,
   Box,
@@ -10,8 +11,10 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
+import { make } from 'common/store/analytics/actions'
 import {
   getHandleField,
   getIsVerified,
@@ -19,10 +22,13 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
+
+const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
@@ -32,6 +38,8 @@ type AccountHeaderProps = {
   formProfileImage?: ImageFieldValue
   onProfileImageChange?: (value: ImageFieldValue) => void
   onCoverPhotoChange?: (value: ImageFieldValue) => void
+  // If true, the banner will be rendered as a paper header
+  isPaperHeader?: boolean
 }
 
 const ProfileImageAvatar = ({
@@ -57,7 +65,7 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'pointer',
+        ...(isEditing && { cursor: 'pointer' }),
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >
@@ -82,20 +90,33 @@ export const AccountHeader = (props: AccountHeaderProps) => {
     formProfileImage,
     onProfileImageChange,
     onCoverPhotoChange,
-    size
+    size,
+    isPaperHeader
   } = props
-  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
-  const { value: storedDisplayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
+  const dispatch = useDispatch()
+  const profileImageField = useSelector(getProfileImageField)
+  const { value: displayNameField } = useSelector(getNameField)
+  const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
+  const userId = useSelector(getUserId) ?? {}
+  const accountProfilePic = useProfilePicture(
+    userId as number,
+    SquareSizes.SIZE_150_BY_150
+  )
+  const accountHandle = useSelector(getUserHandle)
+  const accountDisplayName = useSelector(getUserName)
+
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()
   const history = useHistory()
 
-  const displayName = formDisplayName ?? storedDisplayName
+  const displayName = formDisplayName || displayNameField || accountDisplayName
+  const handle = handleField || accountHandle
 
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile || size === 'small'
+
+  const savedProfileImage = profileImageField?.url ?? accountProfilePic
 
   return (
     <Box w='100%'>
@@ -111,7 +132,9 @@ export const AccountHeader = (props: AccountHeaderProps) => {
           <PlainButton
             iconLeft={IconArrowLeft}
             variant='inverted'
-            onClick={history.goBack}
+            onClick={() => {
+              history.goBack()
+            }}
           >
             {backButtonText}
           </PlainButton>
@@ -121,6 +144,11 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         {isEditing ? (
           <ImageField
             onChange={onCoverPhotoChange}
+            onError={(error) => {
+              dispatch(
+                make(Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR, { error })
+              )
+            }}
             name='coverPhoto'
             imageResizeOptions={{ square: false }}
           >
@@ -129,11 +157,12 @@ export const AccountHeader = (props: AccountHeaderProps) => {
                 coverPhotoUrl={uploadedImage?.url}
                 profileImageUrl={formProfileImage?.url}
                 isEditing
+                isPaperHeader={isPaperHeader}
               />
             )}
           </ImageField>
         ) : (
-          <CoverPhotoBanner />
+          <CoverPhotoBanner isPaperHeader={isPaperHeader} />
         )}
       </Box>
       <Flex
@@ -161,17 +190,22 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             onChange={onProfileImageChange}
             name='profileImage'
             css={{ flex: 0 }}
+            onError={(error) => {
+              dispatch(
+                make(Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR, { error })
+              )
+            }}
           >
             {(uploadedImage) => (
               <ProfileImageAvatar
-                imageUrl={uploadedImage?.url ?? profileImage?.url}
+                imageUrl={uploadedImage?.url ?? savedProfileImage}
                 isEditing
                 size={size}
               />
             )}
           </ImageField>
         ) : (
-          <ProfileImageAvatar imageUrl={profileImage?.url} size={size} />
+          <ProfileImageAvatar imageUrl={savedProfileImage} size={size} />
         )}
         <Flex
           direction='column'

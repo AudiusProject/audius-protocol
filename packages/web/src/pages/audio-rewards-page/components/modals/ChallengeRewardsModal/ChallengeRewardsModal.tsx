@@ -21,7 +21,8 @@ import {
   ProgressBar,
   IconCheck,
   IconVerified,
-  IconTwitterBird
+  IconTwitterBird,
+  ModalContent
 } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -36,9 +37,9 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
-import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
@@ -226,7 +227,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
-  const displayMobileContent = isMobile()
+  const isMobile = useIsMobile()
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
@@ -388,7 +389,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     />
   ) : (
     <div className={wm(styles.container)}>
-      {displayMobileContent ? (
+      {isMobile ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>
@@ -524,7 +525,9 @@ export const ChallengeRewardsModal = () => {
       showDismissButton={!isHCaptchaModalOpen}
       dismissOnClickOutside={!isHCaptchaModalOpen}
     >
-      <ChallengeRewardsBody dismissModal={onClose} />
+      <ModalContent>
+        <ChallengeRewardsBody dismissModal={onClose} />
+      </ModalContent>
     </ModalDrawer>
   )
 }

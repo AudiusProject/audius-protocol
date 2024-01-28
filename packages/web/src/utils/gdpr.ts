@@ -1,6 +1,7 @@
 import { Nullable } from '@audius/common'
 
 import { getLocation } from 'services/Location'
+import { env } from 'services/env'
 import { localStorage } from 'services/local-storage'
 
 const DISMISSED_COOKIE_BANNER_KEY = 'dismissCookieBanner'
@@ -26,7 +27,7 @@ export const getIsInEU = async () => {
 }
 
 export const shouldShowCookieBanner = async (): Promise<boolean> => {
-  if (process.env.VITE_ENVIRONMENT === 'production') {
+  if (env.ENVIRONMENT === 'production') {
     const isDimissed = await localStorage.getItem(DISMISSED_COOKIE_BANNER_KEY)
     if (isDimissed) return false
     const isInEU = await getIsInEU()

@@ -7,7 +7,9 @@ import {
   OAuthScope,
   IsWriteAccessGrantedSchema,
   IsWriteAccessGrantedRequest,
-  WriteOnceParams
+  WriteOnceParams,
+  OAuthEnv,
+  OAUTH_URL
 } from './types'
 
 export type LoginSuccessCallback = (profile: DecodedUserToken) => void
@@ -109,12 +111,6 @@ const generateAudiusLogoSvg = (size: 'small' | 'medium' | 'large') => {
 }
 
 const CSRF_TOKEN_KEY = 'audiusOauthState'
-
-type OAuthEnv = 'production' | 'staging'
-const OAUTH_URL = {
-  production: 'https://audius.co/oauth/auth',
-  staging: 'https://staging.audius.co/oauth/auth'
-} as Record<OAuthEnv, string>
 
 type OAuthConfig = {
   appName?: string
@@ -230,7 +226,7 @@ export class OAuth {
     const csrfToken = generateId()
     window.localStorage.setItem(CSRF_TOKEN_KEY, csrfToken)
     const windowOptions =
-      'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=720, top=100, left=100'
+      'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=785, top=100, left=100'
     const originURISafe = encodeURIComponent(window.location.origin)
     const appIdURISafe = encodeURIComponent(
       (this.apiKey || this.config.appName)!
@@ -313,6 +309,10 @@ export class OAuth {
     return await this.config.usersApi.verifyIDToken({ token })
   }
 
+  getCsrfToken() {
+    return window.localStorage.getItem(CSRF_TOKEN_KEY)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   _surfaceError(errorMessage: string) {
@@ -346,7 +346,7 @@ export class OAuth {
       }
       this.activePopupWindow = null
     }
-    if (window.localStorage.getItem(CSRF_TOKEN_KEY) !== event.data.state) {
+    if (this.getCsrfToken() !== event.data.state) {
       this._surfaceError('State mismatch.')
     }
     // Verify token and decode

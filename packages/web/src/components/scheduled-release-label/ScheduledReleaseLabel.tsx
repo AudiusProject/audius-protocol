@@ -3,7 +3,7 @@ import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
-import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
+import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
 
 import styles from './ScheduledReleaseLabel.module.css'
 
@@ -22,7 +22,7 @@ export const ScheduledReleaseLabel = ({
   return (
     <div
       className={cn(
-        premiumContentLabelStyles.labelContainer,
+        gatedContentLabelStyles.labelContainer,
         styles.scheduledReleaseLabel
       )}
     >
@@ -48,7 +48,7 @@ export const ScheduledReleaseGiantLabel = ({
   return (
     <div
       className={cn(
-        premiumContentLabelStyles.labelContainer,
+        gatedContentLabelStyles.labelContainer,
         styles.scheduledReleaseLabel
       )}
     >

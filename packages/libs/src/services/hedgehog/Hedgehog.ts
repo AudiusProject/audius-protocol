@@ -58,9 +58,9 @@ export class Hedgehog {
       createKey
     )
 
-    // we override the login function here because getFn needs both lookupKey and email
-    // in identity service, but hedgehog only sends lookupKey
-    hedgehog.login = async (email: string, password: string) => {
+    // we override the login function here because getFn needs lookupKey, email, and otp
+    // for identity service.
+    hedgehog.login = async (email: string, password: string, otp?: string) => {
       const lookupKey = await WalletManager.createAuthLookupKey(
         email,
         password,
@@ -68,7 +68,7 @@ export class Hedgehog {
       )
 
       // hedgehog property is called username so being consistent instead of calling it email
-      const data = await this.getFn({ lookupKey, username: email })
+      const data = await this.getFn({ lookupKey, username: email, otp })
 
       if (data?.iv && data.cipherText) {
         const { walletObj, entropy } =

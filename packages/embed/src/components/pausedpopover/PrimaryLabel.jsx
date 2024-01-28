@@ -5,9 +5,9 @@ const messages = {
   buy: 'Buy The Full Track On Audius'
 }
 
-const PrimaryLabel = ({ premiumConditions }) => {
+const PrimaryLabel = ({ streamConditions }) => {
   const isPurchaseable =
-    premiumConditions && 'usdc_purchase' in premiumConditions
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Text color='default' variant='heading' size='s'>

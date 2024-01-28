@@ -51,7 +51,7 @@ web-pr-comment:
 web-build:
   parameters:
     build-type:
-      default: 'prod-source-maps'
+      default: 'prod'
       type: string
     build-directory:
       default: 'packages/web/build-production'
@@ -153,12 +153,6 @@ web-distribute:
               $SLACK_DAILY_DEPLOY_WEBHOOK
           fi
 
-web-install-wrangler:
-  steps:
-    - run:
-        name: install wrangler
-        command: 'cd packages/web && npm install @cloudflare/wrangler'
-
 web-deploy-cloudflare:
   parameters:
     build-type:
@@ -174,20 +168,12 @@ web-deploy-cloudflare:
     - checkout
     - attach_workspace:
         at: ./
-    - web-install-wrangler
-    # - run:
-    #     name: Move sourcemaps
-    #     command: |
-    #       cd packages/web
-    #       mkdir -p sourcemaps/static/js
-    #       mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
     - run:
-        name: Set up workers site
+        name: Move build
         command: |
-          cd packages/web/scripts/workers-site
-          npm i
-          cd ../../
+          cd packages/web
           mv build-<< parameters.build-type >> build
+          mv build-ssr-<< parameters.build-type >> build-ssr
     - run:
         name: Copy robots.txt
         command: |
@@ -198,6 +184,7 @@ web-deploy-cloudflare:
         command: |
           cd packages/web
           echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env << parameters.environment >>
+          npx wrangler publish --config ./src/ssr/wrangler.toml --env << parameters.environment >>
           npx wrangler publish --env << parameters.environment >>
     - run:
         name: slack announce

@@ -1,7 +1,8 @@
-import { Environment, ErrorLevel, remoteConfig } from '@audius/common'
+import { ErrorLevel, remoteConfig } from '@audius/common'
 import optimizely, { Config } from '@optimizely/optimizely-sdk'
 import { isEmpty } from 'lodash'
 
+import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
 
@@ -63,7 +64,5 @@ export const remoteConfigInstance = remoteConfig({
       id.toString()
     ),
   setLogLevel: () => optimizely.setLogLevel('warn'),
-  environment: process.env.VITE_ENVIRONMENT as Environment
+  environment: env.ENVIRONMENT
 })
-
-remoteConfigInstance.init()

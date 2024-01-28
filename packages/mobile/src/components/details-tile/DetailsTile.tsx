@@ -4,13 +4,13 @@ import type { CommonState, Track } from '@audius/common'
 import {
   FeatureFlags,
   Genre,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   squashNewLines,
   accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
+  isContentUSDCPurchaseGated,
   dayjs
 } from '@audius/common'
 import moment from 'moment'
@@ -174,7 +174,7 @@ export const DetailsTile = ({
   isPlaying,
   isPreviewing,
   isPlayable = true,
-  isPlaylist = false,
+  isCollection = false,
   isPublished = true,
   isUnlisted = false,
   onPressEdit,
@@ -198,7 +198,7 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const { doesUserHaveAccess } = usePremiumContentAccess(
+  const { hasStreamAccess } = useGatedContentAccess(
     track ? (track as unknown as Track) : null
   )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -208,8 +208,7 @@ export const DetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
-  const { track_id: trackId, premium_conditions: premiumConditions } =
-    track ?? {}
+  const { track_id: trackId, stream_conditions: streamConditions } = track ?? {}
 
   const styles = useStyles()
   const navigation = useNavigation()
@@ -223,15 +222,14 @@ export const DetailsTile = ({
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
-  const isUSDCPurchaseGated =
-    isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
   const isUnpublishedScheduledRelease =
     track?.is_scheduled_release && track?.is_unlisted
   const showPreviewButton =
-    isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && onPressPreview
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -256,7 +254,7 @@ export const DetailsTile = ({
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      premiumConditions,
+      streamConditions,
       isUnlisted: isUnlisted && !isUnpublishedScheduledRelease
     })
     return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
@@ -380,16 +378,13 @@ export const DetailsTile = ({
                 <DetailsProgressInfo track={track} />
               ) : null}
               <View style={styles.buttonSection}>
-                {!doesUserHaveAccess &&
-                !isOwner &&
-                premiumConditions &&
-                trackId ? (
+                {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
                   <DetailsTileNoAccess
                     trackId={trackId}
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                   />
                 ) : null}
-                {doesUserHaveAccess || isOwner ? (
+                {hasStreamAccess || isOwner ? (
                   <Button
                     styles={{
                       text: styles.playButtonText,
@@ -404,9 +399,9 @@ export const DetailsTile = ({
                     fullWidth
                   />
                 ) : null}
-                {(doesUserHaveAccess || isOwner) && premiumConditions ? (
+                {(hasStreamAccess || isOwner) && streamConditions ? (
                   <DetailsTileHasAccess
-                    premiumConditions={premiumConditions}
+                    streamConditions={streamConditions}
                     isOwner={isOwner}
                     trackArtist={user}
                   />
@@ -436,7 +431,7 @@ export const DetailsTile = ({
                   hideRepost={hideRepost}
                   hideShare={hideShare}
                   isOwner={isOwner}
-                  isPlaylist={isPlaylist}
+                  isCollection={isCollection}
                   collectionId={collectionId}
                   isPublished={isPublished}
                   onPressEdit={onPressEdit}

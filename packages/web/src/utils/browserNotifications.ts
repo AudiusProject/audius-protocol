@@ -1,5 +1,6 @@
 import { AudiusBackend } from '@audius/common'
 
+import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 
 export enum Permission {
@@ -35,15 +36,22 @@ declare global {
  *
  */
 
-const basename = process.env.VITE_PUBLIC_URL
+const basename = env.BASENAME
 
-const fcmWebPushPublicKey = process.env.VITE_FCM_PUSH_PUBLIC_KEY as string
-const safariWebPushID = process.env.VITE_SAFARI_WEB_PUSH_ID
+const fcmWebPushPublicKey = env.FCM_PUSH_PUBLIC_KEY
+const safariWebPushID = env.SAFARI_WEB_PUSH_ID
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
-  !isElectron() && 'serviceWorker' in navigator && 'PushManager' in window
+  !isElectron() &&
+  typeof navigator !== 'undefined' &&
+  'serviceWorker' in navigator &&
+  typeof window !== 'undefined' &&
+  'PushManager' in window
 export const isSafariPushAvailable =
-  !isElectron() && 'safari' in window && 'pushNotification' in window.safari
+  !isElectron() &&
+  typeof window !== 'undefined' &&
+  'safari' in window &&
+  'pushNotification' in window.safari
 export const isBrowserPushAvailable =
   isPushManagerAvailable || isSafariPushAvailable
 
@@ -66,7 +74,7 @@ function urlB64ToUint8Array(base64String: string) {
 // Subscribes the browser to the push api
 export const subscribePushManagerBrowser = async () => {
   try {
-    if (isPushManagerAvailable) {
+    if (isPushManagerAvailable && applicationServerPublicKey) {
       if (!isServiceWorkerRegistered()) {
         const isRegistered = await registerServiceWorker()
         if (!isRegistered) return null

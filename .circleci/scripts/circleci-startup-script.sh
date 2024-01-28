@@ -92,13 +92,15 @@ EOT
 systemctl enable circleci.service
 systemctl start circleci.service
 
+cleanup_comment='# circleci runner auto-prune'
 
-# Periodically clean up local docker registry
-curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
-chmod 755 /usr/local/sbin/periodic-cleanup
+# remove existing cleanup job from crontab if present
+tmpcron="$(mktemp)"
+grep -v "$cleanup_comment" /etc/crontab > "$tmpcron"
+cat "$tmpcron" > /etc/crontab
 
-cat <<EOT > /etc/cron.hourly/audius-ci-hourly
-#!/bin/sh
-/usr/local/sbin/periodic-cleanup | logger -t cleanup
-EOT
-chmod 755 /etc/cron.hourly/audius-ci-hourly
+# remove deprecated hourly cleanup script
+rm /etc/cron.hourly/audius-ci-hourly || true
+
+# remove deprecated periodic-cleanup script
+rm /usr/local/sbin/periodic-cleanup || true

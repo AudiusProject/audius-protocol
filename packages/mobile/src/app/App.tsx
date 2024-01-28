@@ -1,7 +1,6 @@
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
-import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   SafeAreaProvider,
@@ -18,6 +17,7 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
+import { env } from 'app/env'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
@@ -37,7 +37,7 @@ import { ThemeProvider } from './ThemeProvider'
 import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
-  dsn: Config.SENTRY_DSN
+  dsn: env.SENTRY_DSN
 })
 
 const Airplay = Platform.select({
@@ -64,7 +64,7 @@ const App = () => {
   useEffectOnce(() => {
     setLibs(null)
     subscribeToNetworkStatusUpdates()
-    TrackPlayer.setupPlayer()
+    TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
   useEnterForeground(() => {

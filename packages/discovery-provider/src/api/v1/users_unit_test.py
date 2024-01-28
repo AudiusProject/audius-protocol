@@ -31,29 +31,29 @@ def test_user_listen_counts_monthly_get_formats_correctly(
     mock_decoder, mock_success_response, mock_get_user_listen_counts_monthly
 ):
     expected_formatted_listen_counts = {
-        "2022-02-01T00:00:00 Z": {
+        "2022-02-01T00:00:00Z": {
             "totalListens": 18,
             "trackIds": [4, 5],
             "listenCounts": [
                 {
                     "trackId": 4,
-                    "date": "2022-02-01T00:00:00 Z",
+                    "date": "2022-02-01T00:00:00Z",
                     "listens": 10,
                 },
                 {
                     "trackId": 5,
-                    "date": "2022-02-01T00:00:00 Z",
+                    "date": "2022-02-01T00:00:00Z",
                     "listens": 8,
                 },
             ],
         },
-        "2022-01-01T00:00:00 Z": {
+        "2022-01-01T00:00:00Z": {
             "totalListens": 7,
             "trackIds": [1],
             "listenCounts": [
                 {
                     "trackId": 1,
-                    "date": "2022-01-01T00:00:00 Z",
+                    "date": "2022-01-01T00:00:00Z",
                     "listens": 7,
                 }
             ],

@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { css } from '@emotion/native'
-import { Dimensions, ImageBackground, SafeAreaView } from 'react-native'
-import RadialGradient from 'react-native-radial-gradient'
+import { ImageBackground, SafeAreaView } from 'react-native'
 import Animated, {
   CurvedTransition,
   FadeIn,
   FadeOut,
   SlideInUp
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { usePrevious } from 'react-use'
 
 import type { TextProps } from '@audius/harmony-native'
@@ -17,12 +17,15 @@ import {
   Flex,
   IconAudiusLogoHorizontalColor,
   Paper,
-  Text
+  RadialGradient,
+  Text,
+  TextLink,
+  useTheme
 } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
 
 import { AudiusValues } from '../components/AudiusValues'
-import { PANEL_EXPAND_DELAY } from '../constants'
+import { PANEL_EXPAND_DURATION } from '../constants'
 
 import { CreateEmailScreen } from './CreateEmailScreen'
 import { SignInScreen } from './SignInScreen'
@@ -48,18 +51,16 @@ const CreateAccountLink = (props: TextProps) => {
     >
       <SafeAreaView>
         <Text
+          variant='title'
+          strength='weak'
           textAlign='center'
           color='staticWhite'
           style={{ justifyContent: 'flex-end' }}
         >
           {messages.newToAudius}{' '}
-          <Text
-            color='staticWhite'
-            style={css({ textDecorationLine: 'underline' })}
-            onPress={onPress}
-          >
+          <TextLink variant='inverted' showUnderline onPress={onPress}>
             {messages.createAccount}
-          </Text>
+          </TextLink>
         </Text>
       </SafeAreaView>
     </AnimatedFlex>
@@ -80,21 +81,14 @@ const Background = () => {
       })}
     >
       <RadialGradient
-        style={css({
-          // NOTE: Width/Height styles are mandatory for gradient to work. Otherwise it will crash the whole app 🫠
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 2
-        })}
+        style={css({ position: 'absolute', zIndex: 1 })}
         colors={[
           'rgba(91, 35, 225, 0.8)',
           'rgba(113, 41, 230, 0.64)',
           'rgba(162, 47, 235, 0.5)'
         ]}
-        stops={[0.1, 0.67, 1]}
-        radius={Dimensions.get('window').width / 1.2}
+        stops={[0, 0.67, 1]}
+        radius={100}
       />
       <ImageBackground
         source={DJBackground}
@@ -116,18 +110,22 @@ type ExpandablePanelProps = {
 
 const ExpandablePanel = (props: ExpandablePanelProps) => {
   const { children } = props
+  const insets = useSafeAreaInsets()
+  const { cornerRadius } = useTheme()
   return (
     <AnimatedPaper
-      entering={SlideInUp.duration(880).delay(PANEL_EXPAND_DELAY)}
+      entering={SlideInUp.duration(PANEL_EXPAND_DURATION)}
       layout={CurvedTransition}
-      borderRadius='3xl'
-      style={css({ overflow: 'hidden' })}
+      style={css({
+        overflow: 'hidden',
+        paddingTop: insets.top,
+        borderBottomLeftRadius: cornerRadius['3xl'],
+        borderBottomRightRadius: cornerRadius['3xl']
+      })}
     >
-      <SafeAreaView>
-        <Flex gap='2xl' ph='l' pv='2xl'>
-          {children}
-        </Flex>
-      </SafeAreaView>
+      <Flex gap='2xl' ph='l' pv='2xl'>
+        {children}
+      </Flex>
     </AnimatedPaper>
   )
 }
@@ -136,41 +134,43 @@ export type SignOnScreenParams = {
   screen: SignOnScreenType
 }
 
+type SignOnScreenProps = {
+  isSplashScreenDismissed: boolean
+}
+
 /*
  * Manages the container for sign-up and sign-in flow
  * Not using navigation for this due to transition between sign-in and sign-up
  */
-export const SignOnScreen = ({ route }) => {
-  const { params } = route
-  const [screen, setScreen] = useState<SignOnScreenType>(params.screen)
+export const SignOnScreen = (props: SignOnScreenProps) => {
+  const { isSplashScreenDismissed } = props
+  const [screen, setScreen] = useState<SignOnScreenType>('sign-up')
   const previousScreen = usePrevious(screen)
-
-  useEffect(() => {
-    setScreen(params.screen)
-  }, [params])
-
-  const screenProps = {
-    onChangeScreen: setScreen
-  }
 
   return (
     <>
       <Background />
-      <Flex flex={1} style={css({ flexGrow: 1 })} h='100%'>
-        <ExpandablePanel>
-          <IconAudiusLogoHorizontalColor style={css({ alignSelf: 'center' })} />
+      {isSplashScreenDismissed ? (
+        <Flex flex={1} style={css({ flexGrow: 1, zIndex: 2 })} h='100%'>
+          <ExpandablePanel>
+            <IconAudiusLogoHorizontalColor
+              style={css({ alignSelf: 'center' })}
+            />
+            {screen === 'sign-up' ? (
+              <CreateEmailScreen onChangeScreen={setScreen} />
+            ) : (
+              <SignInScreen />
+            )}
+          </ExpandablePanel>
           {screen === 'sign-up' ? (
-            <CreateEmailScreen {...screenProps} />
+            <AudiusValues
+              isPanelExpanded={previousScreen && previousScreen !== screen}
+            />
           ) : (
-            <SignInScreen {...screenProps} />
+            <CreateAccountLink onPress={() => setScreen('sign-up')} />
           )}
-        </ExpandablePanel>
-        {screen === 'sign-up' ? (
-          <AudiusValues isPanelExpanded={!!previousScreen} />
-        ) : (
-          <CreateAccountLink onPress={() => setScreen('sign-up')} />
-        )}
-      </Flex>
+        </Flex>
+      ) : null}
     </>
   )
 }

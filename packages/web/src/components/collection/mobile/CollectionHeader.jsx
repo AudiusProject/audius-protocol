@@ -6,7 +6,8 @@ import {
   formatCount,
   formatSecondsAsText,
   formatDate,
-  OverflowAction
+  OverflowAction,
+  FeatureFlags
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
@@ -17,6 +18,7 @@ import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useFlag } from 'hooks/useRemoteConfig'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import StatsButtonRow from 'pages/track-page/components/mobile/StatsButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
@@ -106,6 +108,7 @@ const CollectionHeader = ({
   const onSaveCollection = () => {
     if (!isOwner) onSave()
   }
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -119,11 +122,19 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      !isAlbum && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
-      isOwner && !isAlbum && !isPublished
+      (!isAlbum || isEditAlbumsEnabled) && isOwner
+        ? isAlbum
+          ? OverflowAction.EDIT_ALBUM
+          : OverflowAction.EDIT_PLAYLIST
+        : null,
+      isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && !isAlbum ? OverflowAction.DELETE_PLAYLIST : null,
+      isOwner && (!isAlbum || isEditAlbumsEnabled)
+        ? isAlbum
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean)
 

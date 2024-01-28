@@ -30,13 +30,22 @@ import { ProgressHeader } from './ProgressHeader'
 
 export const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
+  const matchSignIn = useRouteMatch<{ currentPath: string }>(
+    '/signin/:currentPath'
+  )
   const determineAllowedRoute = useDetermineAllowedRoute()
+
   if (match?.params.currentPath) {
     const { allowedRoutes } = determineAllowedRoute(match?.params.currentPath)
     const currentRouteIndex = allowedRoutes.indexOf(match.params.currentPath)
     const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
     return isBackAllowed
   }
+
+  if (matchSignIn?.params.currentPath) {
+    return true
+  }
+
   return false
 }
 
@@ -56,7 +65,13 @@ const HeaderRoot = (props: HeaderRootProps) => {
       borderBottom={isBackAllowed ? 'default' : undefined}
       alignItems='center'
       backgroundColor='white'
-      css={{ minHeight: spacing['3xl'], zIndex: 1 }}
+      css={{
+        minHeight: spacing['3xl'],
+        zIndex: 1,
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0
+      }}
       {...other}
     >
       {children}

@@ -10,7 +10,7 @@ import {
   tracksSocialActions,
   playerSelectors,
   queueSelectors,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
@@ -66,6 +66,9 @@ const PlayBar = ({
 
   useEffect(() => {
     const seekInterval = setInterval(async () => {
+      if (!audioPlayer) {
+        return
+      }
       const duration = await audioPlayer.getDuration()
       const pos = await audioPlayer.getPosition()
       if (duration === undefined || pos === undefined) return
@@ -87,12 +90,12 @@ const PlayBar = ({
     collectible?.frameUrl ??
     collectible?.gifUrl
 
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
-    (!doesUserHaveAccess || isPreviewing)
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
+    (!hasStreamAccess || isPreviewing)
 
   if (((!uid || !track) && !collectible) || !user) return null
 

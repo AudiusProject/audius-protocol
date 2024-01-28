@@ -5,7 +5,7 @@ services:
     container_name: ddex
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/Dockerfile.ddex
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/Dockerfile
       args:
         app_name: ddex
         TURBO_TEAM: '${TURBO_TEAM}'

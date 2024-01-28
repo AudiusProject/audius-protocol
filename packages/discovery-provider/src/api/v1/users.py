@@ -365,7 +365,7 @@ class TrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            exclude_premium=True,
+            exclude_gated=True,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -426,7 +426,7 @@ class FullTrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            exclude_premium=False,
+            exclude_gated=False,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -1413,7 +1413,7 @@ TOP_GENRE_ROUTE = "/genre/top"
 
 @full_ns.route(TOP_GENRE_ROUTE)
 class FullTopGenreUsers(Resource):
-    @cache(ttl_sec=60 * 60 * 24)
+    @cache(ttl_sec=60 * 60 * 1)
     def _get(self):
         args = top_genre_users_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
@@ -1427,7 +1427,7 @@ class FullTopGenreUsers(Resource):
         if args["genre"] is not None:
             get_top_genre_users_args["genre"] = args["genre"]
         top_users = get_top_genre_users(get_top_genre_users_args)
-        users = list(map(extend_user, top_users["users"]))
+        users = list(map(extend_user, top_users))
         return success_response(users)
 
     @full_ns.doc(
@@ -1466,7 +1466,7 @@ TOP_ROUTE = "/top"
 
 @full_ns.route(TOP_ROUTE)
 class FullTopUsers(Resource):
-    @cache(ttl_sec=60 * 60 * 24)
+    @cache(ttl_sec=60 * 60 * 1)
     def _get(self):
         args = pagination_with_current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)

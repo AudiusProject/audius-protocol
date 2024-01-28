@@ -8,7 +8,7 @@ import {
   trackPageLineupActions,
   QueueItem,
   OverflowAction,
-  usePremiumContentAccess
+  useGatedContentAccess
 } from '@audius/common'
 
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -63,7 +63,15 @@ export type OwnProps = {
   ) => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
   currentQueueItem: QueueItem
@@ -124,9 +132,9 @@ const TrackPage = ({
   const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
   const isFollowing = user ? user.does_current_user_follow : false
 
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(heroTrack)
-  const loading = !heroTrack || isUserAccessTBD
+  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+    useGatedContentAccess(heroTrack)
+  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -159,8 +167,10 @@ const TrackPage = ({
     <MobilePageContainer
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      noIndex={defaults.isUnlisted}
     >
       <div className={styles.trackContent}>
         <TrackPageHeader
@@ -196,9 +206,10 @@ const TrackPage = ({
           onRepost={onRepost}
           onDownload={onDownloadTrack}
           isUnlisted={defaults.isUnlisted}
-          isPremium={defaults.isPremium}
-          premiumConditions={defaults.premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
+          isStreamGated={defaults.isStreamGated}
+          streamConditions={defaults.streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          hasDownloadAccess={hasDownloadAccess}
           isRemix={!!defaults.remixParentTrackId}
           fieldVisibility={defaults.fieldVisibility}
           aiAttributedUserId={defaults.aiAttributionUserId}

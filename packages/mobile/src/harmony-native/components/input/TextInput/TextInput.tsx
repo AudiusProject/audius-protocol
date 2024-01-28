@@ -9,7 +9,10 @@ import type {
 } from 'react-native'
 import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
+import InsetShadow from 'react-native-inset-shadow'
 import Animated, {
+  FadeIn,
+  FadeOut,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
@@ -26,12 +29,16 @@ import type { TextColors, TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
+import { TextInputAccessoryView } from './TextInputAccessoryView'
 import { TextInputSize, type TextInputProps } from './types'
 
+const inputAccessoryViewID = 'harmonyInputAccessoryView'
 const AnimatedText = Animated.createAnimatedComponent(Text)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 export type TextInputRef = Ref<RNTextInput>
+export type TextInputChangeEvent =
+  NativeSyntheticEvent<TextInputChangeEventData>
 
 export const TextInput = forwardRef(
   (props: TextInputProps, ref: TextInputRef) => {
@@ -58,10 +65,12 @@ export const TextInput = forwardRef(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      IconProps,
       endAdornment: endAdornmentProp,
       _incorrectError,
       _isFocused,
       _disablePointerEvents,
+      style,
       ...other
     } = props
 
@@ -74,11 +83,11 @@ export const TextInput = forwardRef(
 
     const innerInputRef = useRef<RNTextInput>(null)
 
-    const { typography, color, motion } = useTheme()
+    const { typography, color, motion, cornerRadius } = useTheme()
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' />
+      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -86,21 +95,24 @@ export const TextInput = forwardRef(
     }
 
     const focused = useSharedValue(_isFocused ? 1 : 0)
+    const focusedLabel = useSharedValue(_isFocused ? 1 : 0)
 
     const handleFocus = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      (e: TextInputChangeEvent) => {
         focused.value = withTiming(1, motion.press)
+        focusedLabel.value = withTiming(1, motion.expressive)
         onFocusProp?.(e)
       },
-      [focused, motion.press, onFocusProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onFocusProp]
     )
 
     const handleBlur = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         focused.value = withTiming(0, motion.press)
+        focusedLabel.value = withTiming(0, motion.expressive)
         onBlurProp?.(e)
       },
-      [focused, motion.press, onBlurProp]
+      [focused, focusedLabel, motion.expressive, motion.press, onBlurProp]
     )
 
     const [isFocusedState, onFocus, onBlur] = useFocusState(
@@ -200,140 +212,169 @@ export const TextInput = forwardRef(
       fontSize: hasValue
         ? typography.size.s
         : interpolate(
-            focused.value,
+            focusedLabel.value,
             [0, 1],
             [typography.size.m, typography.size.s]
           ),
       transform: [
         {
-          translateY: hasValue ? 0 : interpolate(focused.value, [0, 1], [13, 0])
+          translateY: hasValue
+            ? 0
+            : interpolate(focusedLabel.value, [0, 1], [13, 0])
         }
       ]
     }))
 
     return (
-      <Flex direction='column' gap='xs' alignItems='flex-start' w='100%'>
+      <Flex
+        direction='column'
+        gap='xs'
+        alignItems='flex-start'
+        w='100%'
+        style={style}
+      >
         <Pressable
           onPress={handlePressRoot}
           pointerEvents={disabled || _disablePointerEvents ? 'none' : undefined}
         >
           <GestureDetector gesture={tap}>
-            <AnimatedFlex
-              h={isSmall ? 34 : 64}
-              w='100%'
-              direction='row'
-              alignItems='center'
-              border='default'
-              borderRadius='s'
-              backgroundColor='surface1'
-              ph='l'
-              gap={isSmall ? 's' : 'm'}
-              style={animatedRootStyles}
+            <InsetShadow
+              containerStyle={css({
+                width: '100%',
+                height: isSmall ? 34 : 64,
+                borderRadius: cornerRadius.s
+              })}
+              shadowOpacity={0.05}
+              shadowColor='#000000'
+              shadowRadius={4}
             >
-              {StartIcon ? <StartIcon size='m' color='subdued' /> : null}
-              <Flex
-                direction='column'
-                gap='xs'
-                justifyContent='center'
-                flex={1}
+              <AnimatedFlex
+                h='100%'
+                w='100%'
+                direction='row'
+                alignItems='center'
+                border={disabled ? 'default' : 'strong'}
+                borderRadius='s'
+                backgroundColor='surface1'
+                ph='l'
+                gap={isSmall ? 's' : 'm'}
+                style={animatedRootStyles}
               >
-                {shouldShowLabel ? (
+                {StartIcon ? (
+                  <StartIcon size='m' color='subdued' {...IconProps} />
+                ) : null}
+                <Flex
+                  direction='column'
+                  gap='xs'
+                  justifyContent='center'
+                  flex={1}
+                >
+                  {shouldShowLabel ? (
+                    <Flex
+                      direction='row'
+                      alignItems='center'
+                      justifyContent='space-between'
+                      gap='s'
+                    >
+                      <AnimatedText
+                        nativeID={id}
+                        variant='body'
+                        color='subdued'
+                        style={[
+                          css({ overflow: 'hidden', zIndex: 2 }),
+                          animatedLabelStyle
+                        ]}
+                        ellipsizeMode='tail'
+                      >
+                        {labelText}
+                      </AnimatedText>
+                      {shouldShowMaxLengthText ? (
+                        <Text
+                          variant='body'
+                          size='xs'
+                          color={maxLengthTextColor}
+                        >
+                          {characterCount}/{maxLength}
+                        </Text>
+                      ) : null}
+                    </Flex>
+                  ) : null}
+
                   <Flex
                     direction='row'
                     alignItems='center'
                     justifyContent='space-between'
-                    gap='s'
+                    gap='2xs'
                   >
-                    <AnimatedText
-                      nativeID={id}
-                      variant='body'
-                      color='subdued'
-                      style={[
-                        css({ overflow: 'hidden', zIndex: 2 }),
-                        animatedLabelStyle
-                      ]}
-                      ellipsizeMode='tail'
-                    >
-                      {labelText}
-                    </AnimatedText>
-                    {shouldShowMaxLengthText ? (
-                      <Text variant='body' size='xs' color={maxLengthTextColor}>
-                        {characterCount}/{maxLength}
+                    {startAdornmentText && shouldShowAdornments ? (
+                      <Text
+                        variant='label'
+                        size='l'
+                        color='subdued'
+                        style={css({ lineHeight: 0 })}
+                      >
+                        {startAdornmentText}
+                      </Text>
+                    ) : null}
+                    <RNTextInput
+                      ref={mergeRefs([innerInputRef, ref])}
+                      value={value}
+                      accessibilityLabel={
+                        Platform.OS === 'ios' ? labelProp : undefined
+                      }
+                      accessibilityLabelledBy={
+                        Platform.OS === 'android' ? id : undefined
+                      }
+                      maxLength={maxLength}
+                      placeholder={
+                        shouldShowPlaceholder ? placeholderText : undefined
+                      }
+                      placeholderTextColor={color.text.subdued}
+                      underlineColorAndroid='transparent'
+                      aria-label={ariaLabel ?? labelText}
+                      style={css({
+                        flex: 1,
+                        fontSize: typography.size[isSmall ? 's' : 'l'],
+                        fontFamily: typography.fontByWeight.medium,
+                        color: color.text[disabled ? 'subdued' : 'default']
+                      })}
+                      onChange={handleChange}
+                      onFocus={onFocus}
+                      onBlur={onBlur}
+                      selectionColor={color.secondary.secondary}
+                      inputAccessoryViewID={inputAccessoryViewID}
+                      {...other}
+                    />
+                    {endAdornmentText && shouldShowAdornments ? (
+                      <Text
+                        variant='label'
+                        size='l'
+                        color='subdued'
+                        style={css({ lineHeight: 0 })}
+                      >
+                        {endAdornmentText}
                       </Text>
                     ) : null}
                   </Flex>
-                ) : null}
-
-                <Flex
-                  direction='row'
-                  alignItems='center'
-                  justifyContent='space-between'
-                >
-                  {startAdornmentText && shouldShowAdornments ? (
-                    <Text
-                      variant='label'
-                      size='l'
-                      color='subdued'
-                      style={css({ lineHeight: 0 })}
-                    >
-                      {startAdornmentText}
-                    </Text>
-                  ) : null}
-                  <RNTextInput
-                    ref={mergeRefs([innerInputRef, ref])}
-                    value={value}
-                    accessibilityLabel={
-                      Platform.OS === 'ios' ? labelProp : undefined
-                    }
-                    accessibilityLabelledBy={
-                      Platform.OS === 'android' ? id : undefined
-                    }
-                    maxLength={maxLength}
-                    placeholder={
-                      shouldShowPlaceholder ? placeholderText : undefined
-                    }
-                    placeholderTextColor={
-                      color.text[disabled ? 'subdued' : 'default']
-                    }
-                    underlineColorAndroid='transparent'
-                    aria-label={ariaLabel ?? labelText}
-                    style={css({
-                      flex: 1,
-                      fontSize: typography.size[isSmall ? 's' : 'l'],
-                      color: color.text[disabled ? 'subdued' : 'default']
-                    })}
-                    onChange={handleChange}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                    selectionColor={color.secondary.secondary}
-                    {...other}
-                  />
-                  {endAdornmentText && shouldShowAdornments ? (
-                    <Text
-                      variant='label'
-                      size='l'
-                      color='subdued'
-                      style={css({ lineHeight: 0 })}
-                    >
-                      {endAdornmentText}
-                    </Text>
-                  ) : null}
                 </Flex>
-              </Flex>
-              {endAdornment}
-            </AnimatedFlex>
+                {endAdornment}
+              </AnimatedFlex>
+            </InsetShadow>
           </GestureDetector>
         </Pressable>
         {helperText ? (
-          <Text
+          <AnimatedText
+            entering={FadeIn}
+            exiting={FadeOut}
             variant='body'
             size={helperTextSize}
             strength='default'
             color={statusColor ?? 'default'}
           >
             {helperText}
-          </Text>
+          </AnimatedText>
         ) : null}
+        <TextInputAccessoryView nativeID={inputAccessoryViewID} />
       </Flex>
     )
   }

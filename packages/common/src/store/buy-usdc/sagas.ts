@@ -8,8 +8,10 @@ import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { PurchaseVendor } from 'models/PurchaseContent'
+import { Status } from 'models/Status'
 import {
   createPaymentRouterRouteTransaction,
+  createRootWalletRecoveryTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -44,6 +46,8 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
+import { setUSDCBalance } from 'store/wallet/slice'
+import { StringUSDC } from 'models/Wallet'
 
 type PurchaseStepParams = {
   desiredAmount: number
@@ -52,6 +56,9 @@ type PurchaseStepParams = {
   retryDelayMs?: number
   maxRetryCount?: number
 }
+
+const TRANSACTION_RETRY_COUNT = 3
+const TRANSACTION_RETRY_DELAY_MS = 1000
 
 function* purchaseStep({
   desiredAmount,
@@ -149,14 +156,17 @@ function* transferStep({
   wallet,
   userBank,
   amount,
-  maxRetryCount = 3,
-  retryDelayMs = 1000
+  maxRetryCount = TRANSACTION_RETRY_COUNT,
+  retryDelayMs = TRANSACTION_RETRY_DELAY_MS,
+  memo
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
   maxRetryCount?: number
   retryDelayMs?: number
+  usePaymentRouter?: boolean
+  memo: string
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)
@@ -176,7 +186,7 @@ function* transferStep({
           userBank,
           mint: 'usdc',
           amount,
-          memo: 'In-App $USDC Purchase: Link by Stripe',
+          memo,
           feePayer: feePayerOverride,
           recentBlockhash
         }
@@ -289,6 +299,7 @@ function* doBuyUSDC({
         yield* call(transferStep, {
           wallet: rootAccount,
           userBank,
+          memo: 'In-App $USDC Purchase: Link by Stripe',
           amount: newBalance
         })
         break
@@ -392,7 +403,8 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    yield* call(waitForValue, getFeePayer)
+    const feePayerString: string = yield* call(waitForValue, getFeePayer)
+    const feePayerKey = new PublicKey(feePayerString)
     const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
@@ -414,10 +426,21 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    const userBankAccountInfo = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc'
+      }
+    )
+
+    const userBankInitialBalance = userBankAccountInfo?.amount ?? BigInt(0)
+
     const userBankAddress = userBank.toBase58()
 
     // Transfer all USDC from the from the root wallet to the user bank
-    yield* put(recoveryStatusChanged({ status: 'in-progress' }))
+    yield* put(recoveryStatusChanged({ status: Status.LOADING }))
     yield* call(
       track,
       make({
@@ -425,13 +448,67 @@ function* recoverPurchaseIfNecessary() {
         userBank: userBankAddress
       })
     )
-    yield* call(transferStep, {
-      wallet: rootAccount,
-      userBank,
-      amount
-    })
 
-    yield* put(recoveryStatusChanged({ status: 'success' }))
+    yield* call(
+      retry,
+      async () => {
+        const transferTransaction = await createRootWalletRecoveryTransaction(
+          audiusBackendInstance,
+          {
+            wallet: rootAccount,
+            userBank,
+            amount,
+            feePayer: feePayerKey
+          }
+        )
+        transferTransaction.partialSign(rootAccount)
+
+        console.debug(`Starting root wallet USDC recovery transaction...`)
+        const { res, error } = await relayTransaction(audiusBackendInstance, {
+          transaction: transferTransaction
+        })
+
+        if (res) {
+          console.debug(`Recovery transaction succeeded: ${res}`)
+          return res
+        } else {
+          console.debug(
+            `Transfer transaction stringified: ${JSON.stringify(
+              transferTransaction
+            )}`
+          )
+          // Throw to retry
+          throw new Error(error ?? 'Unknown root wallet USDC recovery error')
+        }
+      },
+      {
+        minTimeout: TRANSACTION_RETRY_DELAY_MS,
+        retries: TRANSACTION_RETRY_COUNT,
+        factor: 1,
+        onRetry: (e: Error, attempt: number) => {
+          console.error(
+            `Got error recovering USDC from root wallet to user bank: ${e}. Attempt ${attempt}. Retrying...`
+          )
+        }
+      }
+    )
+
+    const updatedBalance = yield* call(
+      pollForTokenBalanceChange,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc',
+        initialBalance: userBankInitialBalance,
+        maxRetryCount: TRANSACTION_RETRY_COUNT
+      }
+    )
+
+    yield* put(
+      setUSDCBalance({ amount: updatedBalance.toString() as StringUSDC })
+    )
+
+    yield* put(recoveryStatusChanged({ status: Status.SUCCESS }))
     yield* call(
       track,
       make({
@@ -440,7 +517,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
-    yield* put(recoveryStatusChanged({ status: 'failure' }))
+    yield* put(recoveryStatusChanged({ status: Status.ERROR }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error: e as Error

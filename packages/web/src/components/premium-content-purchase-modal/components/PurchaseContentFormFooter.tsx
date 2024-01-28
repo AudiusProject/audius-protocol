@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  PurchasableTrackMetadata,
+  PurchaseableTrackMetadata,
   PurchaseContentError,
   PurchaseContentStage,
   formatPrice,
@@ -33,7 +33,7 @@ const messages = {
   purchasing: 'Purchasing',
   shareButtonContent: 'I just purchased a track on Audius!',
   shareTwitterText: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
+    `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
@@ -61,7 +61,7 @@ type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
   'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
 > & {
-  track: PurchasableTrackMetadata
+  track: PurchaseableTrackMetadata
   onViewTrackClicked: () => void
 }
 

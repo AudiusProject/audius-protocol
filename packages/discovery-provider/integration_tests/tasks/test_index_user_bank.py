@@ -1,8 +1,10 @@
 from datetime import datetime
 from unittest.mock import call, create_autospec
-from src.models.users.user_bank import USDCUserBankAccount
 
-from user_bank_mock_transactions import (
+from integration_tests.tasks.payment_router_mock_transactions import (
+    mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
+)
+from integration_tests.tasks.user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
     RECIPIENT_ACCOUNT_ADDRESS,
     SENDER_ACCOUNT_ADDRESS,
@@ -16,7 +18,6 @@ from user_bank_mock_transactions import (
     mock_valid_track_purchase_tx,
     mock_valid_transfer_without_purchase_tx,
 )
-
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -26,6 +27,7 @@ from src.models.users.usdc_transactions_history import (
     USDCTransactionsHistory,
     USDCTransactionType,
 )
+from src.models.users.user_bank import USDCUserBankAccount
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_user_bank import process_user_bank_tx_details
 from src.utils.db_session import get_db
@@ -630,6 +632,53 @@ def test_process_user_bank_txs_details_skip_unknown_instructions(app):
             .first()
         )
         assert transaction_record is None
+
+
+def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):
+    # Payment router transaction, should be ignored by user bank indexer
+    tx_response = (
+        mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx
+    )
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # We expect no transactions to be logged for sender or receiver
+        receiver_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert receiver_transaction_record is None
+
+        sender_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .first()
+        )
+        assert sender_transaction_record is None
 
 
 # TODO: https://linear.app/audius/issue/PAY-2314/add-user-bank-indexer-tests-for-audio-operations

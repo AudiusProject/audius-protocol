@@ -1,4 +1,3 @@
-import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import {
   selectPlaylistsCamel,
@@ -6,17 +5,14 @@ import {
   selectUsersCamel,
   sql
 } from '../db'
-import { AggregateUserRow, AggregateUserTipRow } from '../db-tables'
+import { AggregateUserTipRow } from '../db-tables'
 import { publicProcedure, router } from '../trpc'
 
 export const userRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const user = await ctx.loaders.userLoader.load(parseInt(input))
     if (!user) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: `user ${input} not found`
-      })
+      return null;
     }
     return user
   }),

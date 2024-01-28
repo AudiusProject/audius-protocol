@@ -477,7 +477,7 @@ export const Table = ({
 
       prepareRow(row)
       const rowProps = { ...row.getRowProps({ style }) }
-      const isPremium = (row.original as TrackMetadata).is_premium
+      const isStreamGated = (row.original as TrackMetadata).is_stream_gated
 
       if (isEmptyRow(row)) {
         return renderSkeletonRow(row, key, rowProps)
@@ -485,8 +485,8 @@ export const Table = ({
       if (isReorderable) {
         return renderReorderableRow(row, key, rowProps)
       }
-      // Cannot drag premium tracks
-      if (isTracksTable && !isPremium) {
+      // Cannot drag stream gated tracks
+      if (isTracksTable && !isStreamGated) {
         return renderDraggableRow(row, key, rowProps)
       }
       return renderTableRow(row, key, rowProps)
@@ -510,13 +510,13 @@ export const Table = ({
       prepareRow(row)
 
       const rowProps = { ...row.getRowProps() }
-      const isPremium = (row.original as TrackMetadata).is_premium
+      const isStreamGated = (row.original as TrackMetadata).is_stream_gated
 
       if (isReorderable) {
         return renderReorderableRow(row, row.id, rowProps)
       }
-      // Cannot drag premium tracks
-      if (isTracksTable && !isPremium) {
+      // Cannot drag stream gated tracks
+      if (isTracksTable && !isStreamGated) {
         return renderDraggableRow(row, row.id, rowProps)
       }
       return renderTableRow(row, row.id, rowProps)

@@ -75,25 +75,25 @@ platform :ios do
     if options[:bundle_id] === AUDIUSMUSIC_ID
       appId = AUDIUSMUSIC_ID
       provisioningProfile = AUDIUSMUSIC_PROFILE
-      environment = 'production'
+      environment = 'prod'
       scheme = 'AudiusReactNative'
       configuration = 'Release'
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
       appId = AUDIUSMUSIC_STAGING_ID
       provisioningProfile = AUDIUSMUSIC_STAGING_PROFILE
-      environment = 'staging'
+      environment = 'stage'
       scheme = 'Staging'
       configuration = 'Staging.Release'
     elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
       appId = AUDIUSMUSIC_RELEASECANDIDATE_ID
       provisioningProfile = AUDIUSMUSIC_RELEASECANDIDATE_PROFILE
-      environment = 'production'
+      environment = 'prod'
       scheme = 'AudiusReactNative'
       configuration = 'ReleaseCandidate'
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       appId = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       provisioningProfile = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE
-      environment = 'staging'
+      environment = 'stage'
       scheme = 'Staging'
       configuration = 'Staging.ReleaseCandidate'
     end
@@ -110,11 +110,8 @@ platform :ios do
       :DEVELOPMENT_TEAM => TEAM
     }
 
-    if ENV["IS_PRODUCTION"] == "true"
-      ENV["ENVFILE"]=".env.#{environment}"
-      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
-      puts "ENVFILE: #{ENV['ENVFILE']}"
-    end
+    ENV["ENVFILE"]=".env.#{environment}"
+    puts "ENVFILE: #{ENV['ENVFILE']}"
 
     plistVersionNumber = options[:plist_version] ? (options[:plist_version]) : (Gem::Version.new get_version_number_from_plist(
       scheme: scheme

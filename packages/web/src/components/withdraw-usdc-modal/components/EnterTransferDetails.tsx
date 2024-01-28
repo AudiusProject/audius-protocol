@@ -14,27 +14,25 @@ import {
   filterDecimalString,
   padDecimalValue,
   decimalIntegerToHumanReadable,
-  Name
+  Name,
+  WithdrawMethod,
+  FeatureFlags,
+  useFeatureFlag
 } from '@audius/common'
-import { Button, IconQuestionCircle } from '@audius/harmony'
+import { Button } from '@audius/harmony'
+import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { Text } from 'components/typography'
-import {
-  ADDRESS,
-  AMOUNT
-} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { make, track } from 'services/analytics'
 
-import styles from './EnterTransferDetails.module.css'
-import { Hint } from './Hint'
-import { TextRow } from './TextRow'
+import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 
-const LEARN_MORE_LINK =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+import styles from './EnterTransferDetails.module.css'
+import { TextRow } from './TextRow'
 
 const messages = {
   currentBalance: 'Current Balance',
@@ -45,15 +43,28 @@ const messages = {
   solanaWallet: 'USDC Wallet (Solana)',
   amountInputLabel: 'Amount of USDC to withdraw',
   continue: 'Continue',
-  notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
-  guide: 'Guide to USDC Transfers on Audius',
   dollars: '$',
+  transferMethod: 'Transfer Method',
+  cash: 'Cash',
+  crypto: 'Crypto',
+  cashTransferDescription:
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
   usdc: '(USDC)'
 }
 
+const WithdrawMethodOptions = [
+  { key: WithdrawMethod.COINFLOW, text: messages.cash },
+  { key: WithdrawMethod.MANUAL_TRANSFER, text: messages.crypto }
+]
+
 export const EnterTransferDetails = () => {
+  const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
+
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.COINFLOW_OFFRAMP_ENABLED
+  )
 
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -63,9 +74,11 @@ export const EnterTransferDetails = () => {
 
   const [
     { value },
-    { error: amountError },
+    _ignoredAmountMeta,
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
+  const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
+    useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(value || balanceNumber)
   )
@@ -80,21 +93,20 @@ export const EnterTransferDetails = () => {
   const handleAmountBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       setHumanizedValue(padDecimalValue(e.target.value))
-      setAmountTouched(true)
     },
-    [setHumanizedValue, setAmountTouched]
+    [setHumanizedValue]
   )
 
-  const [{ value: address }, { error: addressError }] = useField(ADDRESS)
+  const [
+    { value: address },
+    _ignoredAddressMeta,
+    { setTouched: setAddressTouched }
+  ] = useField(ADDRESS)
 
-  const handleClickHelpGuide = useCallback(() => {
-    track(
-      make({
-        eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED,
-        currentBalance: analyticsBalance
-      })
-    )
-  }, [analyticsBalance])
+  const disableContinue =
+    methodValue === WithdrawMethod.COINFLOW
+      ? !!balance?.isZero()
+      : !address || !!balance?.isZero()
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -110,19 +122,20 @@ export const EnterTransferDetails = () => {
     [analyticsBalance]
   )
 
-  const handleContinue = useCallback(() => {
-    setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
-  }, [setData])
+  const handleContinue = useCallback(async () => {
+    try {
+      setAmountTouched(true)
+      if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
+        setAddressTouched(true)
+      }
+      const errors = await validateForm()
+      if (errors[AMOUNT] || errors[ADDRESS]) return
+      setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
+    } catch {}
+  }, [setData, methodValue, validateForm, setAmountTouched, setAddressTouched])
 
   return (
     <div className={styles.root}>
-      <Hint
-        onClick={handleClickHelpGuide}
-        text={messages.notSure}
-        link={LEARN_MORE_LINK}
-        icon={IconQuestionCircle}
-        linkText={messages.guide}
-      />
       <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
@@ -145,28 +158,42 @@ export const EnterTransferDetails = () => {
         />
       </div>
       <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <div className={styles.destinationText}>
-          <TextRow left={messages.destinationAddress} />
-          <Text variant='body' size='medium' strength='default'>
-            {messages.destinationDetails}
-          </Text>
-        </div>
-        <TextField
-          title={messages.destinationAddress}
-          onPaste={handlePasteAddress}
-          label={messages.solanaWallet}
-          aria-label={messages.destinationAddress}
-          name={ADDRESS}
-          placeholder=''
+      {isCoinflowEnabled ? (
+        <SegmentedControl
+          fullWidth
+          label={messages.transferMethod}
+          options={WithdrawMethodOptions}
+          onSelectOption={setMethod}
+          selected={methodValue}
         />
-      </div>
+      ) : null}
+      {methodValue === WithdrawMethod.COINFLOW ? (
+        <Text variant='body' size='medium'>
+          {messages.cashTransferDescription}
+        </Text>
+      ) : (
+        <div className={styles.destination}>
+          <div className={styles.destinationText}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {messages.destinationDetails}
+            </Text>
+          </div>
+          <TextField
+            title={messages.destinationAddress}
+            onPaste={handlePasteAddress}
+            label={messages.solanaWallet}
+            aria-label={messages.destinationAddress}
+            name={ADDRESS}
+            placeholder=''
+          />
+        </div>
+      )}
+
       <Button
         variant='secondary'
         fullWidth
-        disabled={
-          !!(amountError || addressError || !address || balance?.isZero())
-        }
+        disabled={disableContinue}
         onClick={handleContinue}
       >
         {messages.continue}

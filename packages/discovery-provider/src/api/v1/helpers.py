@@ -21,7 +21,7 @@ from src.queries.query_helpers import (
 )
 from src.queries.reactions import ReactionResponse
 from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
-from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
+from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
 from src.utils.rendezvous import RendezvousHash
@@ -382,7 +382,7 @@ def extend_track(track):
             duration += float(segment["duration"])
         track["duration"] = round(duration)
 
-    downloadable = (
+    downloadable = track.get("is_downloadable") or (
         "download" in track
         and track["download"]
         and track["download"]["is_downloadable"]
@@ -931,7 +931,7 @@ def get_default_max(value, default, max=None):
 def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[]):
     formatted_response_data = {}
     for aggregate_monthly_play in aggregate_monthly_plays_for_user:
-        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%S Z")
+        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%SZ")
         if month not in formatted_response_data:
             formatted_response_data[month] = {}
             formatted_response_by_month = formatted_response_data[month]

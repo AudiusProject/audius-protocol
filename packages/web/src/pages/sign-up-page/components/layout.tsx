@@ -108,8 +108,8 @@ export const Page = (props: PageProps) => {
           {...layoutProps}
           {...other}
           alignSelf='center'
-          css={!isMobile && { maxWidth: 610 }}
           style={styles}
+          flex={1}
         >
           {childrenArray}
         </AnimatedFlex>
@@ -193,8 +193,12 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
-  // On the MobileCTAPage we use this footer outside a formik context
-  const { isSubmitting } = useFormikContext() ?? { isSubmitting: false }
+  // On the MobileCTAPage we use this footer outside a formik context, hence the default values
+  const { isSubmitting, touched, isValid } = useFormikContext() ?? {
+    isSubmitting: false,
+    touched: true,
+    isValid: true
+  }
 
   return (
     <Paper
@@ -208,10 +212,9 @@ export const PageFooter = (props: PageFooterProps) => {
       backgroundColor='white'
       css={{
         overflow: 'unset',
-        position: sticky ? 'sticky' : 'absolute',
-        bottom: 0,
-        left: 0,
+        flexShrink: 0,
         zIndex: 1,
+        ...(sticky && { position: 'sticky', bottom: 0 }),
         borderBottomRightRadius: 0,
         borderBottomLeftRadius: 0
       }}
@@ -224,6 +227,7 @@ export const PageFooter = (props: PageFooterProps) => {
         fullWidth
         isLoading={isSubmitting}
         css={!isMobile && centered && { width: 343 }}
+        disabled={!touched || !isValid}
         {...buttonProps}
       >
         {messages.continue}

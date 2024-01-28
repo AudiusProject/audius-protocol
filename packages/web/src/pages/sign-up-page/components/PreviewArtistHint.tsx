@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
 import { IconCloseAlt, IconPlay, Paper, Text } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
+
+import { setHidePreviewHint } from 'common/store/pages/signon/actions'
+import { getHidePreviewHint } from 'common/store/pages/signon/selectors'
+import { useSelector } from 'utils/reducer'
 
 const messages = {
   previewNotice: "Click the artist's photo to preview their music."
@@ -8,9 +13,10 @@ const messages = {
 
 export const PreviewArtistHint = () => {
   const [isOpen, setIsOpen] = useState(true)
+  const hidePreviewHint = useSelector(getHidePreviewHint)
+  const dispatch = useDispatch()
 
-  // TODO: add transition
-  if (!isOpen) return null
+  if (!isOpen || hidePreviewHint) return null
 
   return (
     <Paper
@@ -30,7 +36,10 @@ export const PreviewArtistHint = () => {
         role='button'
         color='staticWhite'
         size='m'
-        onClick={() => setIsOpen(false)}
+        onClick={() => {
+          setIsOpen(false)
+          dispatch(setHidePreviewHint())
+        }}
       />
     </Paper>
   )

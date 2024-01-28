@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
 import { selectArtstsPageMessages as messages } from '@audius/common'
-import {
-  finishSignUp,
-  signUpSucceeded
-} from 'audius-client/src/common/store/pages/signon/actions'
+import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {
   getFollowIds,
@@ -58,13 +55,10 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
+    // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
+    dispatch(finishSignUp())
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
-    } else {
-      // This call is what triggers the RootScreen to redirect to the home page (via conditional rendering)
-      dispatch(finishSignUp())
-      // This call is just for analytics event tracking purposes
-      dispatch(signUpSucceeded())
     }
   }, [accountCreationStatus, dispatch, navigation])
 
@@ -88,8 +82,10 @@ export const SelectArtistsScreen = () => {
           ))}
         </Tab.Navigator>
         <PageFooter
-          onSubmit={handleSubmit}
-          buttonProps={{ disabled: selectedArtists.length < 3 }}
+          buttonProps={{
+            disabled: selectedArtists.length < 3,
+            onPress: handleSubmit
+          }}
           postfix={
             <Text variant='body'>
               {messages.selected} {selectedArtists.length || 0}/3

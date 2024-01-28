@@ -1,0 +1,32 @@
+.labelContainer {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--unit);
+  color: var(--neutral-light-4);
+}
+
+.icon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.icon path {
+  fill: var(--neutral-light-4);
+}
+
+.gatedContent {
+  color: var(--accent-blue);
+}
+
+.gatedContent .icon path {
+  fill: var(--accent-blue);
+}
+
+.premiumContent {
+  color: var(--special-light-green);
+}
+
+.premiumContent .icon path {
+  fill: var(--special-light-green);
+}

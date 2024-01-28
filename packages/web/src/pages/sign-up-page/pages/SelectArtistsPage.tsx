@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react'
 
 import {
   Genre,
-  ID,
   Status,
   convertGenreLabelToValue,
   useGetFeaturedArtists,
@@ -18,7 +17,10 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { addFollowArtists } from 'common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  completeFollowArtists
+} from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -42,12 +44,14 @@ import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPrevi
 const AnimatedFlex = animated(Flex)
 
 type SelectArtistsValues = {
-  selectedArtists: ID[]
+  selectedArtists: string[]
 }
 
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
+
+const ARTISTS_PER_GENRE_LIMIT = 31
 
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -65,7 +69,9 @@ export const SelectArtistsPage = () => {
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
-      dispatch(addFollowArtists([...selectedArtists]))
+      const artistsIDArray = [...selectedArtists].map((a) => Number(a))
+      dispatch(addFollowArtists(artistsIDArray))
+      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -79,7 +85,7 @@ export const SelectArtistsPage = () => {
 
   const { data: topArtists, status: topArtistsStatus } =
     useGetTopArtistsInGenre(
-      { genre: currentGenre },
+      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
       { disabled: isFeaturedArtists }
     )
 
@@ -117,8 +123,8 @@ export const SelectArtistsPage = () => {
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
-              backButtonText={messages.backToGenres}
               mode='viewing'
+              backButtonText={isMobile ? undefined : messages.backToGenres}
             />
             <AnimatedFlex
               direction='column'

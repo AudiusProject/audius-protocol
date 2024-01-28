@@ -59,7 +59,8 @@ export const initialState: BasicModalsState = {
   USDCManualTransferModal: { isOpen: false },
   CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
-  Welcome: { isOpen: false }
+  Welcome: { isOpen: false },
+  CoinflowWithdraw: { isOpen: false }
 }
 
 const slice = createSlice({

@@ -94,9 +94,10 @@ export const recordListen = createCustomAction(
 
 export const downloadTrack = createCustomAction(
   DOWNLOAD_TRACK,
-  (trackId: ID, stemName?: string) => ({
+  (trackId: ID, stemName?: string, original?: boolean) => ({
     trackId,
-    stemName
+    stemName,
+    original
   })
 )
 

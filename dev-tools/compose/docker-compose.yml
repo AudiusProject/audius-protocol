@@ -41,7 +41,7 @@ services:
   db:
     image: postgres:11.4
     shm_size: 2g
-    command: postgres -c shared_buffers=2GB
+    command: postgres -c shared_buffers=2GB -c max_connections=300
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -128,6 +128,12 @@ services:
     extends:
       file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: discovery-provider
+    <<: *common
+
+  discovery-provider-openresty:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: discovery-provider-openresty
     <<: *common
 
   comms:
