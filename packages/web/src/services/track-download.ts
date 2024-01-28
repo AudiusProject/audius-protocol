@@ -1,4 +1,7 @@
-import { TrackDownload as TrackDownloadBase } from '@audius/common'
+import {
+  TrackDownload as TrackDownloadBase,
+  type DownloadTrackArgs
+} from '@audius/common'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
@@ -11,65 +14,60 @@ function isMobileSafari() {
   )
 }
 
+function browserDownload({
+  url,
+  filename
+}: {
+  url: string
+  filename?: string
+}) {
+  if (document) {
+    const link = document.createElement('a')
+    link.href = url
+    // taget=_blank does not work on ios safari and will cause the download to be
+    // unresponsive.
+    if (!isMobileSafari()) {
+      link.target = '_blank'
+    }
+    link.click()
+    console.log('REED filename for root', filename)
+    link.download = filename ?? ''
+    link.remove()
+  } else {
+    throw new Error('No document found')
+  }
+}
 class TrackDownload extends TrackDownloadBase {
-  async downloadAll({
-    files,
-    zipFilename
-  }: {
-    files: { url: string; filename: string }[]
-    zipFilename: string
-  }) {
-    const responsesAsync = files.map(async (f) => await window.fetch(f.url))
-    const responses = await Promise.all(responsesAsync)
+  async downloadTrack({ files, rootDirectoryName }: DownloadTrackArgs) {
+    const responsePromises = files.map(
+      async ({ url }) => await window.fetch(url)
+    )
+    const responses = await Promise.all(responsePromises)
     if (!responses.every((response) => response.ok)) {
       throw new Error('Download unsuccessful')
     }
-
-    if (document) {
-      const link = document.createElement('a')
-      const blob = await downloadZip(
-        responses.map((r, i) => ({
-          name: zipFilename + '/' + files[i].filename,
-          input: r
-        }))
-      ).blob()
-      link.href = URL.createObjectURL(blob)
-      // taget=_blank does not work on ios safari and will cause the download to be
-      // unresponsive.
-      if (!isMobileSafari()) {
-        link.target = '_blank'
-      }
-      link.download = zipFilename
-      link.click()
-      link.remove()
+    let url
+    if (files.length === 1) {
+      url = responses[0].url
     } else {
-      throw new Error('No document found')
+      if (!rootDirectoryName)
+        throw new Error(
+          'rootDirectory must be supplied when downloading multiple files'
+        )
+      const filenames = files.map(({ filename }) => filename)
+      const blob = await downloadZip(
+        responses.map((r, i) => {
+          console.log('REED filenames[i]', filenames[i])
+          return {
+            name: rootDirectoryName + '/' + filenames[i],
+            input: r
+          }
+        })
+      ).blob()
+      url = URL.createObjectURL(blob)
+      console.log('REED url', url)
     }
-  }
-
-  async downloadTrack({ url, filename }: { url: string; filename: string }) {
-    const response = await window.fetch(url)
-    if (!response.ok) {
-      throw new Error('Download unsuccessful')
-    }
-
-    const downloadURL = (url: string, filename: string) => {
-      if (document) {
-        const link = document.createElement('a')
-        link.href = url
-        // taget=_blank does not work on ios safari and will cause the download to be
-        // unresponsive.
-        if (!isMobileSafari()) {
-          link.target = '_blank'
-        }
-        link.download = filename
-        link.click()
-        link.remove()
-      } else {
-        throw new Error('No document found')
-      }
-    }
-    downloadURL(response.url, filename)
+    browserDownload({ url, filename: rootDirectoryName })
   }
 }
 

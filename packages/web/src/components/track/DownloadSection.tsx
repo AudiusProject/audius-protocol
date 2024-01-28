@@ -11,7 +11,8 @@ import {
   useWaitForDownloadModal,
   ModalSource,
   tracksSocialActions as socialTracksActions,
-  toastActions
+  toastActions,
+  Name
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -34,6 +35,7 @@ import {
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { make } from 'services/analytics'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -111,46 +113,34 @@ export const DownloadSection = ({
   }, [])
 
   const handleDownload = useAuthenticatedCallback(
-    ({
-      idToDownload,
-      downloadAll = false
-    }: {
-      idToDownload: ID
-      downloadAll?: boolean
-    }) => {
+    ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
       } else if (track && track.access.download) {
-        openWaitForDownloadModal({ contentId: idToDownload })
-        if (downloadAll) {
-          dispatch(
-            socialTracksActions.downloadAll({
-              trackIds: stemTracks.map((t) => t.id),
-              parentTrackId: idToDownload,
-              original: quality === DownloadQuality.ORIGINAL
-            })
-          )
-        } else {
-          onDownload({
-            trackId: idToDownload,
-            category: track.stem_of?.category,
-            original: quality === DownloadQuality.ORIGINAL,
-            parentTrackId: trackId
+        console.log('REED trackIds', trackIds)
+        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
+        dispatch(
+          socialTracksActions.downloadTrack({
+            trackIds,
+            parentTrackId,
+            original: quality === DownloadQuality.ORIGINAL
           })
-        }
+        )
+        // const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
+        //   id: parentTrackId ?? trackIds[0],
+        //   parent_track_id: parentTrackId
+        // })
+        // dispatch(trackEvent)
       }
     },
     [
       dispatch,
       isMobile,
-      onDownload,
       openWaitForDownloadModal,
       quality,
       shouldDisplayDownloadFollowGated,
-      stemTracks,
-      track,
-      trackId
+      track
     ]
   )
 
@@ -263,8 +253,8 @@ export const DownloadSection = ({
                       iconLeft={IconReceive}
                       onClick={() =>
                         handleDownload({
-                          idToDownload: trackId,
-                          downloadAll: true
+                          trackIds: stemTracks.map((s) => s.id),
+                          parentTrackId: trackId
                         })
                       }
                       disabled={
@@ -282,7 +272,6 @@ export const DownloadSection = ({
               <DownloadRow
                 trackId={trackId}
                 onDownload={handleDownload}
-                quality={quality}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
               />
@@ -290,10 +279,8 @@ export const DownloadSection = ({
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
-                parentTrackId={trackId}
                 key={s.id}
                 onDownload={handleDownload}
-                quality={quality}
                 hideDownload={shouldHideDownload}
                 index={
                   i +
@@ -313,8 +300,8 @@ export const DownloadSection = ({
                   iconLeft={IconReceive}
                   onClick={() =>
                     handleDownload({
-                      idToDownload: trackId,
-                      downloadAll: true
+                      trackIds: stemTracks.map((s) => s.id),
+                      parentTrackId: trackId
                     })
                   }
                   disabled={

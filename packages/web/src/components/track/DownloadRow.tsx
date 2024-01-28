@@ -20,17 +20,13 @@ const messages = {
 
 type DownloadRowProps = {
   trackId: ID
-  parentTrackId?: ID
-  quality: DownloadQuality
-  onDownload: (args: { idToDownload: ID; downloadAll?: boolean }) => void
+  onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   hideDownload?: boolean
   index: number
 }
 
 export const DownloadRow = ({
   trackId,
-  parentTrackId,
-  quality,
   onDownload,
   hideDownload,
   index
@@ -47,7 +43,7 @@ export const DownloadRow = ({
     <PlainButton
       onClick={() =>
         onDownload({
-          idToDownload: trackId
+          trackIds: [trackId]
         })
       }
       disabled={shouldDisplayDownloadFollowGated}

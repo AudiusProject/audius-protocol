@@ -599,26 +599,23 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
     downloadTrack: ({
-      trackId,
-      category,
+      trackIds,
       original,
       parentTrackId
     }: {
-      trackId: ID
-      category?: string
+      trackIds: ID[]
       original?: boolean
       parentTrackId?: ID
     }) => {
       dispatch(
         socialTracksActions.downloadTrack({
-          trackId,
-          stemName: category,
+          trackIds,
+          parentTrackId,
           original
         })
       )
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
-        id: trackId,
-        category,
+        id: parentTrackId ?? trackIds[0],
         parent_track_id: parentTrackId
       })
       dispatch(trackEvent)

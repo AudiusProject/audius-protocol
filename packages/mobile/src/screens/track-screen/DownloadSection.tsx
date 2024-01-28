@@ -6,7 +6,8 @@ import {
   cacheTracksSelectors,
   useCurrentStems,
   useDownloadableContentAccess,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  useWaitForDownloadModal
 } from '@audius/common'
 import type { ID, CommonState } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
@@ -24,6 +25,7 @@ import {
 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
+import { useToast } from 'app/hooks/useToast'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -45,8 +47,10 @@ const messages = {
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { color } = useTheme()
+  const { toast } = useToast()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [isExpanded, setIsExpanded] = useState(false)
   const { stemTracks } = useCurrentStems({ trackId })
@@ -76,6 +80,22 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
       { source: ModalSource.TrackDetails }
     )
   }, [trackId, openPremiumContentPurchaseModal])
+
+  const handleDownloadAll = useCallback(() => {
+    if (shouldDisplayDownloadFollowGated) {
+      // On mobile, show a toast instead of a tooltip
+      toast({ content: messages.followToDownload })
+    } else if (track && track.access.download) {
+      openWaitForDownloadModal({ contentId: trackId })
+      dispatch(
+        socialTracksActions.downloadAll({
+          trackIds: stemTracks.map((t) => t.id),
+          parentTrackId: trackId,
+          original: quality === DownloadQuality.ORIGINAL
+        })
+      )
+    }
+  }, [quality])
 
   const renderHeader = () => {
     return (
