@@ -961,6 +961,8 @@ mock_invalid_track_purchase_bad_splits_tx = GetTransactionResp.from_json(
     )
 )
 
+# Mock purchase that fails with an instruction error.
+# Used to make sure that indexing can handle errors gracefully.
 mock_failed_track_purchase_tx = GetTransactionResp.from_json(
     json.dumps(
         {
@@ -1534,6 +1536,7 @@ mock_valid_create_audio_token_account_tx = GetTransactionResp.from_json(
     )
 )
 
+# 100 wAudio transfer between user banks (tipping)
 mock_valid_waudio_transfer_between_user_banks = GetTransactionResp.from_json(
     json.dumps(
         {
@@ -1697,6 +1700,8 @@ mock_valid_waudio_transfer_between_user_banks = GetTransactionResp.from_json(
     )
 )
 
+# Transfer of 100 wAudio user bank to an external source.
+# Counts as audio_transaction_history, but not as a tip.
 mock_valid_waudio_transfer_from_user_bank_to_external_address = GetTransactionResp.from_json(
     json.dumps(
         {
