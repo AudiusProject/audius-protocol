@@ -36,6 +36,7 @@ function browserDownload({
     throw new Error('No document found')
   }
 }
+
 class TrackDownload extends TrackDownloadBase {
   async downloadTrack({ files, rootDirectoryName }: DownloadTrackArgs) {
     const responsePromises = files.map(
