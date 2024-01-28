@@ -28,6 +28,7 @@ import { SegmentedControl } from '@audius/stems'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 import {
@@ -35,7 +36,6 @@ import {
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { make } from 'services/analytics'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -59,23 +59,9 @@ const messages = {
 
 type DownloadSectionProps = {
   trackId: ID
-  onDownload: ({
-    trackId,
-    category,
-    original,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    original?: boolean
-    parentTrackId?: ID
-  }) => void
 }
 
-export const DownloadSection = ({
-  trackId,
-  onDownload
-}: DownloadSectionProps) => {
+export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const track = useSelector(
@@ -118,7 +104,6 @@ export const DownloadSection = ({
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
       } else if (track && track.access.download) {
-        console.log('REED trackIds', trackIds)
         openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
         dispatch(
           socialTracksActions.downloadTrack({
@@ -127,11 +112,11 @@ export const DownloadSection = ({
             original: quality === DownloadQuality.ORIGINAL
           })
         )
-        // const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
-        //   id: parentTrackId ?? trackIds[0],
-        //   parent_track_id: parentTrackId
-        // })
-        // dispatch(trackEvent)
+        const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
+          id: parentTrackId ?? trackIds[0],
+          parent_track_id: parentTrackId
+        })
+        dispatch(trackEvent)
       }
     },
     [

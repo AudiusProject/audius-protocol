@@ -392,8 +392,7 @@ class TrackPageProvider extends Component<
       previewing,
       buffering,
       userId,
-      pause,
-      downloadTrack
+      pause
     } = this.props
     const heroPlaying =
       playing &&
@@ -473,7 +472,6 @@ class TrackPageProvider extends Component<
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
       onSaveTrack: this.onSaveTrack,
-      onDownloadTrack: downloadTrack,
       onClickMobileOverflow: this.props.clickOverflow,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
       goToFavoritesPage: this.goToFavoritesPage,
@@ -598,28 +596,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
-    downloadTrack: ({
-      trackIds,
-      original,
-      parentTrackId
-    }: {
-      trackIds: ID[]
-      original?: boolean
-      parentTrackId?: ID
-    }) => {
-      dispatch(
-        socialTracksActions.downloadTrack({
-          trackIds,
-          parentTrackId,
-          original
-        })
-      )
-      const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
-        id: parentTrackId ?? trackIds[0],
-        parent_track_id: parentTrackId
-      })
-      dispatch(trackEvent)
-    },
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
         open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })

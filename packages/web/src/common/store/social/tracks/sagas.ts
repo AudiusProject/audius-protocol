@@ -761,7 +761,6 @@ function* watchDownloadTrack() {
           filename: getFileName({ track, user, original })
         })
       }
-      console.log('REED tracks saga', tracks)
 
       yield* call(downloadTracks, {
         tracks,

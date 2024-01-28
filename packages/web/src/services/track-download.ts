@@ -29,9 +29,8 @@ function browserDownload({
     if (!isMobileSafari()) {
       link.target = '_blank'
     }
-    link.click()
-    console.log('REED filename for root', filename)
     link.download = filename ?? ''
+    link.click()
     link.remove()
   } else {
     throw new Error('No document found')
@@ -57,7 +56,6 @@ class TrackDownload extends TrackDownloadBase {
       const filenames = files.map(({ filename }) => filename)
       const blob = await downloadZip(
         responses.map((r, i) => {
-          console.log('REED filenames[i]', filenames[i])
           return {
             name: rootDirectoryName + '/' + filenames[i],
             input: r
@@ -65,7 +63,6 @@ class TrackDownload extends TrackDownloadBase {
         })
       ).blob()
       url = URL.createObjectURL(blob)
-      console.log('REED url', url)
     }
     browserDownload({ url, filename: rootDirectoryName })
   }
