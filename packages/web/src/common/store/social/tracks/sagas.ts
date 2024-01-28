@@ -717,7 +717,7 @@ function* downloadTracks({
     yield* put(setVisibility({ modal: 'WaitForDownloadModal', visible: false }))
   } catch (e) {
     console.error(
-      `Could not download all files for track ${parentTrackId}: ${
+      `Could not download files for track ${parentTrackId}: ${
         (e as Error).message
       }. Error: ${e}`
     )

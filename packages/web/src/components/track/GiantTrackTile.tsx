@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 
 import {
   getCanonicalName,
@@ -755,7 +755,9 @@ export const GiantTrackTile = ({
           {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
           {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
-              <DownloadSection trackId={trackId} onDownload={onDownload} />
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
             </Box>
           ) : null}
         </ClientOnly>

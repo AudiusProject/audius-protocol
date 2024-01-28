@@ -140,6 +140,25 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     }
   ]
 
+  const downloadAllButton = () => (
+    <Button
+      variant='secondary'
+      size='small'
+      iconLeft={IconReceive}
+      onClick={() =>
+        handleDownload({
+          trackIds: stemTracks.map((s) => s.id),
+          parentTrackId: trackId
+        })
+      }
+      disabled={
+        shouldDisplayDownloadFollowGated || shouldDisplayPremiumDownloadLocked
+      }
+    >
+      {messages.downloadAll}
+    </Button>
+  )
+
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
       <Flex direction='column'>
@@ -231,25 +250,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>
                   <Text>size</Text>
-                  {shouldDisplayDownloadAll ? (
-                    <Button
-                      variant='secondary'
-                      size='small'
-                      iconLeft={IconReceive}
-                      onClick={() =>
-                        handleDownload({
-                          trackIds: stemTracks.map((s) => s.id),
-                          parentTrackId: trackId
-                        })
-                      }
-                      disabled={
-                        shouldDisplayDownloadFollowGated ||
-                        shouldDisplayPremiumDownloadLocked
-                      }
-                    >
-                      {messages.downloadAll}
-                    </Button>
-                  ) : null}
+                  {shouldDisplayDownloadAll ? downloadAllButton() : null}
                 </Flex>
               </Flex>
             ) : null}
@@ -279,23 +280,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             because the download all button will not be displayed at the top right. */}
             {!track?.is_original_available && shouldDisplayDownloadAll ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
-                <Button
-                  variant='secondary'
-                  size='small'
-                  iconLeft={IconReceive}
-                  onClick={() =>
-                    handleDownload({
-                      trackIds: stemTracks.map((s) => s.id),
-                      parentTrackId: trackId
-                    })
-                  }
-                  disabled={
-                    shouldDisplayDownloadFollowGated ||
-                    shouldDisplayPremiumDownloadLocked
-                  }
-                >
-                  {messages.downloadAll}
-                </Button>
+                {downloadAllButton()}
               </Flex>
             ) : null}
           </Box>

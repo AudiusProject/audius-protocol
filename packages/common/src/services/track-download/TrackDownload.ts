@@ -17,7 +17,7 @@ export class TrackDownload {
   }
 
   /**
-   * Download one or multiple tracks. parentFilename must be supplied
+   * Download one or multiple tracks. rootDirectoryName must be supplied
    * if downloading multiple tracks.
    */
   async downloadTrack(_args: DownloadTrackArgs) {
