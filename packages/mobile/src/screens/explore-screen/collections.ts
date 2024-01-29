@@ -7,7 +7,7 @@ import {
   IconCart,
   IconCassette,
   IconExploreDJ,
-  IconExploreTopAlbums,
+  IconTurntable,
   IconPlaylists
 } from '@audius/harmony-native'
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
@@ -84,7 +84,7 @@ export const TOP_ALBUMS: ExploreCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(177,0,253)',
   shadowOpacity: 0.25,
-  icon: IconExploreTopAlbums
+  icon: IconTurntable
 }
 
 export const TRENDING_PLAYLISTS: ExploreCollection = {
