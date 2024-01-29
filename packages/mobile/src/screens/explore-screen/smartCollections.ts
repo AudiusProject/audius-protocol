@@ -17,7 +17,7 @@ import {
   IconExploreNewReleases,
   IconExploreRemixables,
   IconExploreRotation,
-  IconExploreUnderRadar
+  IconRadar
 } from '@audius/harmony-native'
 
 export type SmartCollectionScreen =
@@ -81,7 +81,7 @@ export const UNDER_THE_RADAR: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(255,47,39)',
   shadowOpacity: 0.25,
-  icon: IconExploreUnderRadar,
+  icon: IconRadar,
   link: EXPLORE_UNDER_THE_RADAR_PAGE
 }
 
