@@ -15,7 +15,7 @@ import { useAsync } from 'react-use'
 
 import {
   IconCareers,
-  IconContact,
+  IconMessage,
   IconDiscord,
   IconInstagram,
   IconTwitter
@@ -93,7 +93,7 @@ export const AboutScreen = () => {
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CONTACT_EMAIL_LINK}>
-          <SettingsRowLabel label={messages.contact} icon={IconContact} />
+          <SettingsRowLabel label={messages.contact} icon={IconMessage} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CAREERS_LINK}>
           <SettingsRowLabel label={messages.careers} icon={IconCareers} />
