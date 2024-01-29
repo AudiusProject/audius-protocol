@@ -30,7 +30,7 @@ import {
   IconDrag,
   IconKebabHorizontal,
   IconLock,
-  IconRemoveTrack
+  IconRemove
 } from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
@@ -479,7 +479,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ) : null}
           {trackItemAction === 'remove' ? (
             <IconButton
-              icon={IconRemoveTrack}
+              icon={IconRemove}
               styles={{
                 root: styles.iconContainer,
                 icon: styles.removeIcon
