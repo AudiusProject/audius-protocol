@@ -9,7 +9,7 @@ import {
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { IconTikTok, IconTikTokInverted } from '@audius/harmony-native'
+import { IconTikTok, IconTikTok } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -170,7 +170,7 @@ export const ShareToTikTokDrawer = () => {
             style={styles.button}
             disabled={isButtonDisabled}
             onPress={handleShareButtonClick}
-            icon={<IconTikTokInverted />}
+            icon={<IconTikTok />}
             title={messages.shareButton}
           />
         </View>

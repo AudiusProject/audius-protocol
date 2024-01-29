@@ -14,7 +14,7 @@ import {
   IconDonate,
   IconInstagram,
   IconLink,
-  IconTikTokInverted,
+  IconTikTok,
   IconTwitter
 } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
@@ -126,7 +126,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
           name='tiktok_handle'
           label='TikTok Handle'
           prefix='@'
-          icon={IconTikTokInverted}
+          icon={IconTikTok}
         />
         <ProfileTextField name='website' label='Website' icon={IconLink} />
         <ProfileTextField name='donation' label='Donation' icon={IconDonate} />
