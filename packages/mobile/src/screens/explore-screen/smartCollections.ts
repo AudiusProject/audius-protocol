@@ -12,7 +12,7 @@ import {
 } from 'utils/route'
 
 import {
-  IconExploreFeelingLucky,
+  IconQuestionCircle,
   IconBoxHeart,
   IconStars,
   IconRemix,
@@ -123,6 +123,6 @@ export const FEELING_LUCKY: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(95,249,103)',
   shadowOpacity: 0.25,
-  icon: IconExploreFeelingLucky,
+  icon: IconQuestionCircle,
   link: EXPLORE_FEELING_LUCKY_PAGE
 }
