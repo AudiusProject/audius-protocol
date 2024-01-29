@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import { IconQuestionMark } from '@audius/harmony-native'
+import { IconQuestionCircle } from '@audius/harmony-native'
 import { NativeDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -110,7 +110,7 @@ export const ForgotPasswordDrawer = () => {
     <NativeDrawer drawerName='ForgotPassword'>
       <View style={styles.mainView}>
         <View style={styles.headerView}>
-          <IconQuestionMark
+          <IconQuestionCircle
             fill={neutral}
             style={styles.questionMarkIcon}
             height={20}
