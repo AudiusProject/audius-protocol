@@ -9,7 +9,7 @@ import {
   IconDownloadFailed,
   IconDownloadInactive,
   IconCloudDownloadQueued,
-  IconDownloaded
+  IconCloudDownload
 } from '@audius/harmony-native'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -26,7 +26,7 @@ const useStyles = makeStyles(({ palette }) => ({
   IconCloudDownloadQueued: {
     fill: palette.neutralLight4
   },
-  iconDownloaded: {
+  IconCloudDownload: {
     fill: palette.secondary
   },
   iconDownloadFailed: {
@@ -50,8 +50,8 @@ export const DownloadStatusIndicator = (
     // since we only show the user successfully downloaded things.
     if (!isReachable && status !== OfflineDownloadStatus.INACTIVE) {
       return (
-        <IconDownloaded
-          fill={styles.iconDownloaded.fill}
+        <IconCloudDownload
+          fill={styles.IconCloudDownload.fill}
           height={size}
           width={size}
         />
@@ -78,8 +78,8 @@ export const DownloadStatusIndicator = (
         )
       case OfflineDownloadStatus.SUCCESS:
         return (
-          <IconDownloaded
-            fill={styles.iconDownloaded.fill}
+          <IconCloudDownload
+            fill={styles.IconCloudDownload.fill}
             height={size}
             width={size}
           />
