@@ -33,7 +33,7 @@ function browserDownload({ url, filename }: DownloadFile) {
 }
 
 class TrackDownload extends TrackDownloadBase {
-  async downloadTrack({ files, rootDirectoryName }: DownloadTrackArgs) {
+  async downloadTracks({ files, rootDirectoryName }: DownloadTrackArgs) {
     const responsePromises = files.map(
       async ({ url }) => await window.fetch(url)
     )
@@ -41,6 +41,7 @@ class TrackDownload extends TrackDownloadBase {
     if (!responses.every((response) => response.ok)) {
       throw new Error('Download unsuccessful')
     }
+    const filename = rootDirectoryName ?? files[0].filename
     let url
     if (files.length === 1) {
       url = responses[0].url
@@ -59,7 +60,7 @@ class TrackDownload extends TrackDownloadBase {
       ).blob()
       url = URL.createObjectURL(blob)
     }
-    browserDownload({ url, filename: rootDirectoryName })
+    browserDownload({ url, filename })
   }
 }
 

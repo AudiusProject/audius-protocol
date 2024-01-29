@@ -6,6 +6,7 @@ import {
   formatSeconds,
   Genre,
   FeatureFlags,
+  tracksSocialActions as socialTracksActions,
   Nullable,
   Remix,
   CoverArtSizes,
@@ -16,7 +17,8 @@ import {
   isContentUSDCPurchaseGated,
   publishTrackConfirmationModalUIActions,
   CommonState,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  Name
 } from '@audius/common'
 import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
@@ -34,6 +36,7 @@ import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import IconRobot from 'assets/img/robot.svg'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
@@ -126,17 +129,6 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: ({
-    trackId,
-    category,
-    original,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    original?: boolean
-    parentTrackId?: ID
-  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -186,7 +178,6 @@ export const GiantTrackTile = ({
   mood,
   onClickFavorites,
   onClickReposts,
-  onDownload,
   onFollow,
   onMakePublic,
   onPlay,
@@ -238,6 +229,33 @@ export const GiantTrackTile = ({
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
+  )
+
+  const handleDownload = useCallback(
+    ({
+      trackId,
+      category,
+      parentTrackId
+    }: {
+      trackId: ID
+      category?: string
+      parentTrackId?: ID
+    }) => {
+      dispatch(
+        socialTracksActions.downloadTrack({
+          trackIds: [trackId],
+          stemName: category,
+          parentTrackId
+        })
+      )
+      const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
+        id: trackId,
+        category,
+        parent_track_id: parentTrackId
+      })
+      dispatch(trackEvent)
+    },
+    [dispatch]
   )
 
   const renderCardTitle = (className: string) => {
@@ -537,7 +555,7 @@ export const GiantTrackTile = ({
         isOwner={isOwner}
         following={following}
         hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
+        onDownload={handleDownload}
       />
     )
   }
