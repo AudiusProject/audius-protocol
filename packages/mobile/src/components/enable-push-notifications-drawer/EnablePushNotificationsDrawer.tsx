@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import {
   IconCoSign,
-  IconFollow,
+  IconUserFollow,
   IconNotification,
   IconHeart,
   IconMessage,
@@ -46,7 +46,7 @@ const actions = [
   },
   {
     label: messages.followers,
-    icon: IconFollow
+    icon: IconUserFollow
   },
   {
     label: messages.coSigns,
