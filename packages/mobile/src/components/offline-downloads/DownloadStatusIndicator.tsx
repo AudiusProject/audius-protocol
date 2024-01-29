@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import Rive from 'rive-react-native'
 
 import {
-  IconDownloadFailed,
+  IconCloudDownloadError,
   IconCloudDownloadInactive,
   IconCloudDownloadQueued,
   IconCloudDownload
@@ -87,7 +87,7 @@ export const DownloadStatusIndicator = (
       case OfflineDownloadStatus.ERROR:
       case OfflineDownloadStatus.ABANDONED:
         return (
-          <IconDownloadFailed
+          <IconCloudDownloadError
             fill={styles.iconDownloadFailed.fill}
             height={size}
             width={size}
