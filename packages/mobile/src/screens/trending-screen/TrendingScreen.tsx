@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 
 import {
   IconAllTime,
-  IconDay,
+  IconCalendarDay,
   IconCalendarMonth,
   IconTrending
 } from '@audius/harmony-native'
@@ -38,7 +38,7 @@ const trendingScreens = [
   {
     name: 'ThisWeek',
     label: 'This Week',
-    Icon: IconDay,
+    Icon: IconCalendarDay,
     component: ThisWeekTab
   },
   {
