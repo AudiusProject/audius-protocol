@@ -6,10 +6,10 @@ import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
 import {
-  IconBronzeBadge,
+  IconTokenBronze,
   IconTokenGold,
-  IconPlatinumBadge,
-  IconSilverBadge
+  IconTokenPlatinum,
+  IconTokenSilver
 } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
@@ -32,19 +32,19 @@ const messages = {
 
 const tierInfoMap = {
   none: {
-    icon: IconBronzeBadge,
+    icon: IconTokenBronze,
     label: 'None',
     amount: 0,
     twitterIcon: ''
   },
   bronze: {
-    icon: IconBronzeBadge,
+    icon: IconTokenBronze,
     label: 'Bronze',
     amount: 10,
     twitterIcon: '🥉'
   },
   silver: {
-    icon: IconSilverBadge,
+    icon: IconTokenSilver,
     label: 'Silver',
     amount: 100,
     twitterIcon: '🥈'
@@ -56,7 +56,7 @@ const tierInfoMap = {
     twitterIcon: '🥇'
   },
   platinum: {
-    icon: IconPlatinumBadge,
+    icon: IconTokenPlatinum,
     label: 'Platinum',
     amount: 100000,
     twitterIcon: '🥇'

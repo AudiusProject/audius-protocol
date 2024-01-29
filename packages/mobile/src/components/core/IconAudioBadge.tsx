@@ -4,19 +4,19 @@ import { Image } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'
 import {
-  IconBronzeBadge,
+  IconTokenBronze,
   IconTokenGold,
-  IconPlatinumBadge,
-  IconSilverBadge,
+  IconTokenPlatinum,
+  IconTokenSilver,
   IconNoTierBadge
 } from '@audius/harmony-native'
 
 const audioTierMap = {
   none: null,
-  bronze: IconBronzeBadge,
-  silver: IconSilverBadge,
+  bronze: IconTokenBronze,
+  silver: IconTokenSilver,
   gold: IconTokenGold,
-  platinum: IconPlatinumBadge
+  platinum: IconTokenPlatinum
 }
 
 type IconBadgeProps = IconProps & {
