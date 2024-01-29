@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { signInErrorMessages, signInSchema } from '@audius/common'
+import { signInPageMessages } from '@audius/common/messages'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -33,7 +34,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
-import { signInPageMessages } from '@audius/common/messages'
 
 const SignInSchema = toFormikValidationSchema(signInSchema)
 

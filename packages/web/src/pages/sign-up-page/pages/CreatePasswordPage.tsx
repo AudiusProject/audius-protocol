@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import { passwordSchema } from '@audius/common'
+import { createPasswordPageMessages } from '@audius/common/messages'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,7 +16,6 @@ import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
-import { createPasswordPageMessages } from '@audius/common/messages'
 
 const initialValues = {
   password: '',

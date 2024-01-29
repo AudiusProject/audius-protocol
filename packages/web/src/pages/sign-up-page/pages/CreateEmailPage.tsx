@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { emailSchema, useAudiusQueryContext } from '@audius/common'
+import { createEmailPageMessages } from '@audius/common/messages'
 import {
   Box,
   Button,
@@ -43,7 +44,6 @@ import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
-import { createEmailPageMessages } from '@audius/common/messages'
 
 export type SignUpEmailValues = {
   email: string

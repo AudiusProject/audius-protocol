@@ -6,6 +6,7 @@ import {
   selectGenresSchema,
   selectableGenres
 } from '@audius/common'
+import { selectGenresPageMessages } from '@audius/common/messages'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,7 +22,6 @@ import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
-import { selectGenresPageMessages } from '@audius/common/messages'
 
 type SelectGenresValue = { genres: Genre[] }
 

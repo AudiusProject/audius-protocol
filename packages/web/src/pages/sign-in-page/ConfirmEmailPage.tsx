@@ -5,6 +5,7 @@ import {
   confirmEmailSchema,
   formatOtp
 } from '@audius/common'
+import { confirmEmailMessages } from '@audius/common/messages'
 import { Text, TextLink } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -21,7 +22,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { Heading, Page, PageFooter } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
-import { confirmEmailMessages } from '@audius/common/messages'
 
 const initialValues = {
   otp: ''
