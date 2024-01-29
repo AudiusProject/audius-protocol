@@ -17,7 +17,8 @@ import {
   FollowGatedConditions,
   TipGatedConditions,
   ID,
-  AccessConditions
+  AccessConditions,
+  Download
 } from '@audius/common'
 import {
   IconCart,
@@ -47,6 +48,11 @@ import { SingleTrackEditValues } from '../types'
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
 import { REMIX_OF } from './RemixSettingsField'
+import {
+  DOWNLOAD,
+  DOWNLOAD_REQUIRES_FOLLOW,
+  IS_DOWNLOADABLE
+} from './StemsAndDownloadsMenuFields'
 import { SpecialAccessType } from './stream-availability/SpecialAccessFields'
 
 const { getUserId } = accountSelectors
@@ -254,6 +260,28 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: preview }, , { setValue: setPreviewValue }] =
     useTrackField<SingleTrackEditValues[typeof PREVIEW]>(PREVIEW)
 
+  const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
+    useTrackField<SingleTrackEditValues[typeof IS_DOWNLOAD_GATED]>(
+      IS_DOWNLOAD_GATED
+    )
+  const [
+    { value: downloadConditions },
+    ,
+    { setValue: setDownloadConditionsValue }
+  ] =
+    useTrackField<SingleTrackEditValues[typeof DOWNLOAD_CONDITIONS]>(
+      DOWNLOAD_CONDITIONS
+    )
+  const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
+    useField(IS_DOWNLOADABLE)
+  const [
+    { value: downloadRequiresFollow },
+    ,
+    { setValue: setDownloadRequiresFollow }
+  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
+  const [{ value: download }, , { setValue: setDownload }] =
+    useTrackField<Download>(DOWNLOAD)
+
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   /**
@@ -280,6 +308,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
+    set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
+    set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
+    set(initialValues, IS_DOWNLOADABLE, isDownloadable)
+    set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
+    set(initialValues, DOWNLOAD, download)
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -315,6 +348,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isUnlisted,
     isStreamGated,
     tempStreamConditions,
+    isDownloadGated,
+    downloadConditions,
+    isDownloadable,
+    downloadRequiresFollow,
+    download,
     fieldVisibility,
     preview,
     isScheduledRelease
@@ -340,33 +378,69 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
-          setPreviewValue(preview ?? 0)
-          const {
-            usdc_purchase: { price }
-          } = streamConditions as USDCPurchaseConditions
-          setStreamConditionsValue({
-            // @ts-ignore fully formed in saga (validated + added splits)
-            usdc_purchase: { price: Math.round(price) }
-          })
+          // type cast because the object is fully formed in saga (validated + added splits)
+          const conditions = {
+            usdc_purchase: {
+              price: Math.round(
+                (streamConditions as USDCPurchaseConditions).usdc_purchase.price
+              )
+            }
+          } as USDCPurchaseConditions
           setIsStreamGated(true)
+          setStreamConditionsValue(conditions)
+          setPreviewValue(preview ?? 0)
+          setIsDownloadGated(true)
+          setDownloadConditionsValue(conditions)
+          setIsDownloadable(true)
+          setDownloadRequiresFollow(false)
+          setDownload({
+            cid: null,
+            is_downloadable: true,
+            requires_follow: false
+          })
           break
         }
         case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
             const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
+            setDownloadConditionsValue({ follow_user_id })
+            setDownloadRequiresFollow(true)
+            setDownload({
+              cid: null,
+              is_downloadable: true,
+              requires_follow: true
+            })
           } else {
             const { tip_user_id } = streamConditions as TipGatedConditions
             setStreamConditionsValue({ tip_user_id })
+            setDownloadConditionsValue({ tip_user_id })
+            setDownloadRequiresFollow(false)
+            setDownload({
+              cid: null,
+              is_downloadable: true,
+              requires_follow: false
+            })
           }
           setIsStreamGated(true)
+          setIsDownloadGated(true)
+          setIsDownloadable(true)
           break
         }
         case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
           const { nft_collection } =
             streamConditions as CollectibleGatedConditions
-          setStreamConditionsValue({ nft_collection })
           setIsStreamGated(true)
+          setStreamConditionsValue({ nft_collection })
+          setIsDownloadGated(true)
+          setDownloadConditionsValue({ nft_collection })
+          setIsDownloadable(true)
+          setDownloadRequiresFollow(false)
+          setDownload({
+            cid: null,
+            is_downloadable: true,
+            requires_follow: false
+          })
           break
         }
         case StreamTrackAvailabilityType.HIDDEN: {
@@ -388,6 +462,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated,
       setIsUnlistedValue,
       setStreamConditionsValue,
+      setIsDownloadGated,
+      setDownloadConditionsValue,
+      setIsDownloadable,
+      setDownloadRequiresFollow,
+      setDownload,
       setPreviewValue,
       isUnlisted
     ]

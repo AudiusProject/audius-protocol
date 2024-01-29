@@ -38,7 +38,7 @@ const messages = {
   premium: 'Premium',
   callout: {
     premium:
-      "You're uploading a premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
     specialAccess:
       "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
     collectibleGated:
