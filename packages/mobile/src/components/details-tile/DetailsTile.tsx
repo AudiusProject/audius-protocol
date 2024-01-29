@@ -22,7 +22,7 @@ import {
   IconCalendarMonth,
   IconPause,
   IconPlay,
-  IconRepeat
+  IconRepeatOff
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
@@ -313,7 +313,7 @@ export const DetailsTile = ({
     isNewPodcastControlsEnabled &&
     playbackPositionInfo?.status === 'COMPLETED' &&
     !isCurrentTrack
-      ? IconRepeat
+      ? IconRepeatOff
       : IconPlay
 
   const PreviewButton = () => (
