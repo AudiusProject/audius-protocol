@@ -5,7 +5,7 @@ import { Platform } from 'react-native'
 
 import {
   IconLink,
-  IconArrow,
+  IconArrowRight,
   IconCheck,
   IconUpload
 } from '@audius/harmony-native'
@@ -82,7 +82,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'trending'
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     },
@@ -184,7 +184,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
           screen: 'explore',
           params: { screen: 'PremiumTracks' }
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     },
@@ -194,7 +194,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'Upload'
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     }

@@ -2,7 +2,7 @@ import { AUDIUS_API_LINK } from 'audius-client/src/utils/route'
 import type { ImageStyle } from 'react-native'
 import { Image, View } from 'react-native'
 
-import { IconArrow } from '@audius/harmony-native'
+import { IconArrowRight } from '@audius/harmony-native'
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import { Button, GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
@@ -71,7 +71,7 @@ export const ApiRewardsDrawer = () => {
         <Button
           variant='primary'
           size='large'
-          icon={IconArrow}
+          icon={IconArrowRight}
           title={messages.button}
           url={AUDIUS_API_LINK}
           styles={{ button: styles.button, text: styles.buttonText }}

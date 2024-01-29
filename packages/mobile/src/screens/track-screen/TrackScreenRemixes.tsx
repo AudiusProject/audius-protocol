@@ -1,7 +1,7 @@
 import type { ID } from '@audius/common'
 import { View } from 'react-native'
 
-import { IconArrow, IconRemix } from '@audius/harmony-native'
+import { IconArrowRight, IconRemix } from '@audius/harmony-native'
 import { Button, Tile, GradientText } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -82,7 +82,7 @@ export const TrackScreenRemixes = ({
       </View>
       <Button
         title={messages.viewAll(count)}
-        icon={IconArrow}
+        icon={IconArrowRight}
         variant='primary'
         size='medium'
         onPress={onPressGoToRemixes}

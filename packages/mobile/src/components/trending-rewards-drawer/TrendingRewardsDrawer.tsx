@@ -11,7 +11,7 @@ import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrow } from '@audius/harmony-native'
+import { IconArrowRight } from '@audius/harmony-native'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
@@ -264,7 +264,7 @@ export const TrendingRewardsDrawer = (titleIcon) => {
             <Button
               variant='primary'
               size='large'
-              icon={IconArrow}
+              icon={IconArrowRight}
               iconPosition='right'
               fullWidth
               title={textMap[modalType].button}

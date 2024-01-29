@@ -25,7 +25,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrow, IconValidationX } from '@audius/harmony-native'
+import { IconArrowRight, IconValidationX } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { make, track } from 'app/services/analytics'
@@ -229,7 +229,7 @@ const ContinueButton = ({
         isWorking ? (
           <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
         ) : (
-          <IconArrow style={styles.arrowIcon} fill='white' />
+          <IconArrowRight style={styles.arrowIcon} fill='white' />
         )
       }
     />

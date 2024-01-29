@@ -8,7 +8,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrow } from '@audius/harmony-native'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
@@ -107,7 +107,7 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
         }}
         fullWidth
         onPress={onSubmit}
-        icon={status === Status.LOADING ? LoadingSpinner : IconArrow}
+        icon={status === Status.LOADING ? LoadingSpinner : IconArrowRight}
         iconPosition='right'
         title={messages.buttonText}
       />

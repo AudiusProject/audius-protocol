@@ -24,7 +24,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { IconArrow, IconCheck, IconValidationX } from '@audius/harmony-native'
+import {
+  IconArrowRight,
+  IconCheck,
+  IconValidationX
+} from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
@@ -434,7 +438,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
           isWorking ? (
             <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
           ) : (
-            <IconArrow style={styles.arrowIcon} fill='white' />
+            <IconArrowRight style={styles.arrowIcon} fill='white' />
           )
         }
       />

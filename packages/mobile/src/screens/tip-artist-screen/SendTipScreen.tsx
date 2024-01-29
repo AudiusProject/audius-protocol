@@ -15,7 +15,7 @@ import BN from 'bn.js'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrow, IconRemove } from '@audius/harmony-native'
+import { IconArrowRight, IconRemove } from '@audius/harmony-native'
 import { Button, ErrorText } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -141,7 +141,7 @@ export const SendTipScreen = () => {
         size='large'
         title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
         onPress={handleSendTip}
-        icon={IconArrow}
+        icon={IconArrowRight}
         iconPosition='right'
         fullWidth
         disabled={

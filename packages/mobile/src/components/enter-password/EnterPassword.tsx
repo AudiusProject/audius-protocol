@@ -3,7 +3,7 @@ import { useState } from 'react'
 import commonPasswordList from 'fxa-common-password-list'
 import { View } from 'react-native'
 
-import { IconArrow } from '@audius/harmony-native'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
@@ -228,7 +228,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
         fullWidth
         disabled={!isValid || isLoading}
         onPress={handleSubmit}
-        icon={isLoading ? LoadingSpinner : IconArrow}
+        icon={isLoading ? LoadingSpinner : IconArrowRight}
         iconPosition='right'
         title={submitButtonText}
       />

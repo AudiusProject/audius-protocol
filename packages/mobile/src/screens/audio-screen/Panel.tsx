@@ -11,7 +11,7 @@ import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { IconArrow, IconCheck } from '@audius/harmony-native'
+import { IconArrowRight, IconCheck } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
@@ -246,7 +246,7 @@ export const Panel = ({
             variant={buttonType}
             iconPosition='right'
             size='medium'
-            icon={hasDisbursed ? undefined : IconArrow}
+            icon={hasDisbursed ? undefined : IconArrowRight}
             onPress={onPress}
             style={[styles.button, hasDisbursed ? styles.disbursed : null]}
           />
