@@ -3,11 +3,7 @@ import { useCallback, useState } from 'react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import {
-  IconInstagram,
-  IconTikTok,
-  IconTwitterBird
-} from '@audius/harmony-native'
+import { IconInstagram, IconTikTok, IconTwitter } from '@audius/harmony-native'
 import type { LinkProps, IconButtonProps } from 'app/components/core'
 import { Text, Link, Hyperlink } from 'app/components/core'
 import Skeleton from 'app/components/skeleton'
@@ -157,7 +153,7 @@ export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
     <SocialLink
       url={`https://twitter.com/${twitter_handle}`}
       text={twitter_handle ? `@${twitter_handle}` : twitter_handle}
-      icon={IconTwitterBird}
+      icon={IconTwitter}
       analytics={make({
         eventName: EventNames.PROFILE_PAGE_CLICK_TWITTER,
         handle: sanitizedHandle,

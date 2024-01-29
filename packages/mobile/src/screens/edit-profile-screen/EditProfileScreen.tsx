@@ -15,7 +15,7 @@ import {
   IconInstagram,
   IconLink,
   IconTikTokInverted,
-  IconTwitterBird
+  IconTwitter
 } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
@@ -112,7 +112,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
           name='twitter_handle'
           label='Twitter Handle'
           prefix='@'
-          icon={IconTwitterBird}
+          icon={IconTwitter}
         />
         <ProfileTextField
           editable={!isInstagramVerified}

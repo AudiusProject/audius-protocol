@@ -22,7 +22,7 @@ import {
   IconMessage,
   IconShare,
   IconSnapchat,
-  IconTwitterBird,
+  IconTwitter,
   IconTikTok
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -193,7 +193,7 @@ export const ShareDrawer = () => {
     }
 
     const shareToTwitterAction = {
-      icon: <IconTwitterBird fill={secondary} height={20} width={26} />,
+      icon: <IconTwitter fill={secondary} height={20} width={26} />,
       text: messages.twitter,
       callback: performActionAndClose(handleShareToTwitter)
     }
