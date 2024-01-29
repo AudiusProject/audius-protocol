@@ -8,7 +8,7 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconUpload } from '@audius/harmony-native'
 import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'

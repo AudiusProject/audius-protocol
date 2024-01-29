@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import {
   SegmentedControl,
   Text,

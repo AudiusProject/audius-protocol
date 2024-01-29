@@ -11,7 +11,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'

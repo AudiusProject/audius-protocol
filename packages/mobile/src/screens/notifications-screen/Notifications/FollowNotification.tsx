@@ -7,7 +7,7 @@ import {
   notificationsSelectors
 } from '@audius/common'
 
-import IconUser from 'app/assets/images/iconUser.svg'
+import { IconUser } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

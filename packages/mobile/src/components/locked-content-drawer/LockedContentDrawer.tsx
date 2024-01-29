@@ -8,7 +8,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconLock from 'app/assets/images/iconLock.svg'
+import { IconLock } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { DetailsTileGatedAccess } from 'app/components/details-tile/DetailsTilePremiumAccess'
 import { NativeDrawer } from 'app/components/drawer'

@@ -4,7 +4,7 @@ import type { CastMethod } from '@audius/common'
 import { accountSelectors, castSelectors, castActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconVolume2 from 'app/assets/images/iconVolume2.svg'
+import { IconVolume2 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 
 import { SettingsRowLabel } from './SettingRowLabel'

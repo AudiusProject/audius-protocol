@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 
 import HeaderLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
+import { IconCaretLeft } from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

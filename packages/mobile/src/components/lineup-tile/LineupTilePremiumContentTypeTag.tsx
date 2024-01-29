@@ -8,9 +8,9 @@ import {
 } from '@audius/common'
 import { View } from 'react-native'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import { IconCart } from '@audius/harmony-native'
+import { IconCollectible } from '@audius/harmony-native'
+import { IconSpecialAccess } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered } from 'app/styles'

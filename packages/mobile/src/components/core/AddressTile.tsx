@@ -4,7 +4,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { View, TouchableOpacity } from 'react-native'
 
 import { Text } from '@audius/harmony-native'
-import IconCopy2 from 'app/assets/images/iconCopy2.svg'
+import { IconCopy2 } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'

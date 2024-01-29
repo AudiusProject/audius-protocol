@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { View } from 'react-native'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { GradientText, Shadow, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

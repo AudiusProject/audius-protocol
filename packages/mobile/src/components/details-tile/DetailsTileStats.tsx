@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 
-import IconFavorite from 'app/assets/images/iconHeart.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import { IconFavorite } from '@audius/harmony-native'
+import { IconRepost } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'

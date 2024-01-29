@@ -2,7 +2,7 @@ import type { AnnouncementNotification as AnnouncementNotificationType } from '@
 import { View } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 
-import IconAudius from 'app/assets/images/iconAudius.svg'
+import { IconAudius } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import {

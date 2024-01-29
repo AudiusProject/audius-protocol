@@ -10,7 +10,7 @@ import { useField } from 'formik'
 import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconImage from 'app/assets/images/iconImage.svg'
+import { IconImage } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'

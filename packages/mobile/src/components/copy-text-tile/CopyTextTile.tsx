@@ -4,7 +4,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
+import { IconCopy } from '@audius/harmony-native'
 import { Tile, Text } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'

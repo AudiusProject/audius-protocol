@@ -3,7 +3,7 @@ import type { ImageStyle } from 'react-native'
 import { Image, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { Button, GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'

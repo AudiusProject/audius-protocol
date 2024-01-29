@@ -1,8 +1,8 @@
 import type { StyleProp, ViewStyle } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 
-import IconPause from 'app/assets/images/pbIconPause.svg'
-import IconPlay from 'app/assets/images/pbIconPlay.svg'
+import { IconPause } from '@audius/harmony-native'
+import { IconPlay } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 type TablePlayButtonProps = {

@@ -6,7 +6,7 @@ import type {
 } from '@audius/common'
 import { Platform } from 'react-native'
 
-import IconAudius from 'app/assets/images/iconAudius.svg'
+import { IconAudius } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { User } from '@audius/common'
 import { Platform, TouchableOpacity, View } from 'react-native'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTip } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'

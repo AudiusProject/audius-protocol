@@ -8,7 +8,7 @@ import type {
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconCrownSource from 'app/assets/images/crown2x.png'
+import { IconCrownSource } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 

@@ -8,7 +8,7 @@ import {
   useProxySelector
 } from '@audius/common'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { Tile, TextButton } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'

@@ -6,7 +6,7 @@ import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
 import type { Options } from 'react-native-image-crop-picker'
 
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconUpload } from '@audius/harmony-native'
 import { DynamicImage } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'

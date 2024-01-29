@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 
-import IconCoSign from 'app/assets/images/iconCoSign.svg'
+import { IconCoSign } from '@audius/harmony-native'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Size } from './types'

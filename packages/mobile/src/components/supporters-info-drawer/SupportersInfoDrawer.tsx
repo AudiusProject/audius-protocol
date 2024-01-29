@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
+import { IconQuestionCircle } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { flexRowCentered, makeStyles } from 'app/styles'

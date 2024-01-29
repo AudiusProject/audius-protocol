@@ -4,7 +4,7 @@ import { chatActions } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconTrash from 'app/assets/images/iconTrash.svg'
+import { IconTrash } from '@audius/harmony-native'
 import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'

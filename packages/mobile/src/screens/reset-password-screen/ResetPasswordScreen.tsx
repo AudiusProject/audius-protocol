@@ -10,7 +10,7 @@ import RNRestart from 'react-native-restart'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import { IconRemove } from '@audius/harmony-native'
 import { ModalScreen, Screen, Text } from 'app/components/core'
 import { EnterPassword } from 'app/components/enter-password'
 import { ENTROPY_KEY } from 'app/constants/storage-keys'

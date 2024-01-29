@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconAudius from 'app/assets/images/iconAudius.svg'
+import { IconAudius } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

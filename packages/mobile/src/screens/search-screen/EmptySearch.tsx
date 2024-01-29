@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconBigSearch from 'app/assets/images/iconBigSearch.svg'
+import { IconBigSearch } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'

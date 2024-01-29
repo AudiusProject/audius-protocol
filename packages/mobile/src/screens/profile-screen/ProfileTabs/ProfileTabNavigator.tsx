@@ -3,10 +3,10 @@ import type { ReactNode } from 'react'
 import type { Animated } from 'react-native'
 
 import { IconAlbum } from '@audius/harmony-native'
-import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
-import IconNote from 'app/assets/images/iconNote.svg'
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import { IconCollectibles } from '@audius/harmony-native'
+import { IconNote } from '@audius/harmony-native'
+import { IconPlaylists } from '@audius/harmony-native'
+import { IconRepost } from '@audius/harmony-native'
 import {
   collapsibleTabScreen,
   CollapsibleTabNavigator

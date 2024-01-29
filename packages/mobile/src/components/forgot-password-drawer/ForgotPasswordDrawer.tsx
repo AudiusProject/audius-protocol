@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconQuestionMark from 'app/assets/images/iconQuestionMark.svg'
+import { IconQuestionMark } from '@audius/harmony-native'
 import { NativeDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

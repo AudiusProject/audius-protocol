@@ -5,7 +5,7 @@ import { useUIAudio, notificationsSelectors } from '@audius/common'
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTip } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 

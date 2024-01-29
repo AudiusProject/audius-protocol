@@ -3,7 +3,7 @@ import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconDiscord from 'app/assets/images/iconDiscord.svg'
+import { IconDiscord } from '@audius/harmony-native'
 import { CopyTextTile } from 'app/components/copy-text-tile'
 import { Text, Button } from 'app/components/core'
 import Drawer, { useDrawerState } from 'app/components/drawer'

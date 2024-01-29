@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
-import IconDownload from 'app/assets/images/iconDownload.svg'
+import { IconDownload } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { makeStyles } from 'app/styles'

@@ -1,7 +1,7 @@
 import { convertGenreLabelToValue, GENRES } from '@audius/common'
 import { useField } from 'formik'
 
-import IconGenre from 'app/assets/images/iconGenre.svg'
+import { IconGenre } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 
 import { ListSelectionScreen } from './ListSelectionScreen'

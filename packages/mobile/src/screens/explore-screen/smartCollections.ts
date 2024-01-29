@@ -11,12 +11,12 @@ import {
   EXPLORE_REMIXABLES_PAGE
 } from 'utils/route'
 
-import IconExploreFeelingLucky from 'app/assets/images/iconExploreFeelingLucky.svg'
-import IconExploreMostLoved from 'app/assets/images/iconExploreMostLoved.svg'
-import IconExploreNewReleases from 'app/assets/images/iconExploreNewReleases.svg'
-import IconExploreRemixables from 'app/assets/images/iconExploreRemixables.svg'
-import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
-import IconExploreUnderRadar from 'app/assets/images/iconExploreUnderRadar.svg'
+import { IconExploreFeelingLucky } from '@audius/harmony-native'
+import { IconExploreMostLoved } from '@audius/harmony-native'
+import { IconExploreNewReleases } from '@audius/harmony-native'
+import { IconExploreRemixables } from '@audius/harmony-native'
+import { IconExploreRotation } from '@audius/harmony-native'
+import { IconExploreUnderRadar } from '@audius/harmony-native'
 
 export type SmartCollectionScreen =
   | 'UnderTheRadar'

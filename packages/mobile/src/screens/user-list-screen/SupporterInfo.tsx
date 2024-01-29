@@ -6,8 +6,8 @@ import {
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconTrending from 'app/assets/images/iconTrending.svg'
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrending } from '@audius/harmony-native'
+import { IconTrophy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

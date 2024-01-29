@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 
-import IconDonate from 'app/assets/images/iconDonate.svg'
-import IconLink from 'app/assets/images/iconLink.svg'
+import { IconDonate } from '@audius/harmony-native'
+import { IconLink } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'

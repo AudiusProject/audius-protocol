@@ -15,8 +15,8 @@ import { useEffectOnce } from 'react-use'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import IconShare from 'app/assets/images/iconShare.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconShare } from '@audius/harmony-native'
+import { IconUpload } from '@audius/harmony-native'
 import { Text, TextButton, Tile, Button } from 'app/components/core'
 import {
   LineupTileSkeleton,

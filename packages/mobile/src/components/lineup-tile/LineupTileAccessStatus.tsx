@@ -12,7 +12,7 @@ import {
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconLock from 'app/assets/images/iconLock.svg'
+import { IconLock } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'

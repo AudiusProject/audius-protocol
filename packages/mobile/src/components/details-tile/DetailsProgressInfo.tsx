@@ -7,7 +7,7 @@ import {
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconCheck from 'app/assets/images/iconCheck.svg'
+import { IconCheck } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

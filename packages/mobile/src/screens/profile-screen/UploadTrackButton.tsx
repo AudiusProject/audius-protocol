@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { View } from 'react-native'
 
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconUpload } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'

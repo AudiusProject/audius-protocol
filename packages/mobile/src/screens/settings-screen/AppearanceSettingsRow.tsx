@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconAppearance from 'app/assets/images/iconAppearance.svg'
+import { IconAppearance } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { env } from 'app/env'
 import { make, track } from 'app/services/analytics'

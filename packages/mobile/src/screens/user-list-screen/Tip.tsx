@@ -2,7 +2,7 @@ import type { StringWei } from '@audius/common'
 import { formatWei, stringWeiToBN } from '@audius/common'
 import { View } from 'react-native'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTip } from '@audius/harmony-native'
 import { AudioText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

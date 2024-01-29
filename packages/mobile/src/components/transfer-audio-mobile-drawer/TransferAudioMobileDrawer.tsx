@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 
-import IconGold from 'app/assets/images/IconGoldBadge.svg'
+import { IconGold } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'

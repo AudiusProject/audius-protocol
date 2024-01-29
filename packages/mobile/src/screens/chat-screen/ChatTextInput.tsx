@@ -4,7 +4,7 @@ import { chatActions, playerSelectors } from '@audius/common'
 import { Platform, Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconSend from 'app/assets/images/iconSend.svg'
+import { IconSend } from '@audius/harmony-native'
 import { TextInput } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

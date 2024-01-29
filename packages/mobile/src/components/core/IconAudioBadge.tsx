@@ -3,11 +3,11 @@ import type { ImageStyle } from 'react-native'
 import { Image } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'
-import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
-import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
-import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
-import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
-import IconNoTierBadge from 'app/assets/images/tokenBadgeNoTier.png'
+import { IconBronzeBadge } from '@audius/harmony-native'
+import { IconGoldBadge } from '@audius/harmony-native'
+import { IconPlatinumBadge } from '@audius/harmony-native'
+import { IconSilverBadge } from '@audius/harmony-native'
+import { IconNoTierBadge } from '@audius/harmony-native'
 
 const audioTierMap = {
   none: null,

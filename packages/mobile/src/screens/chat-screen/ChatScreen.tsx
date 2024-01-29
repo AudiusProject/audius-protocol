@@ -30,8 +30,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
+import { IconKebabHorizontal } from '@audius/harmony-native'
+import { IconMessage } from '@audius/harmony-native'
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import {
   KeyboardAvoidingView,

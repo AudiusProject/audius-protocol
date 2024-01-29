@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { IconTwitterBird } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'

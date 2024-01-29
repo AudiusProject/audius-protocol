@@ -25,7 +25,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'

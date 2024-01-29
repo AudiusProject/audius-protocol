@@ -32,7 +32,7 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import backgImage from 'app/assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color-Deprecated.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import signupCTA from 'app/assets/images/signUpCTA.png'
 import Button from 'app/components/button'

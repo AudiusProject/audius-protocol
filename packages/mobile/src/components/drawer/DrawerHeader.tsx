@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ImageSourcePropType } from 'react-native'
 import { TouchableOpacity, View, Image } from 'react-native'
 
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import { IconRemove } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'

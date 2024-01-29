@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconDownload from 'app/assets/images/iconDownload.svg'
+import { IconDownload } from '@audius/harmony-native'
 import { Button, GradientText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

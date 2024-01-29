@@ -8,7 +8,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'

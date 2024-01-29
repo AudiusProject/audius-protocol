@@ -8,7 +8,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrophy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'

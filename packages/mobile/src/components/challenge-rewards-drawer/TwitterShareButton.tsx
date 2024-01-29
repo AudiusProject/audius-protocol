@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { makeTwitterShareUrl } from '@audius/common'
 import { Linking } from 'react-native'
 
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { IconTwitterBird } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import { makeStyles } from 'app/styles'
 

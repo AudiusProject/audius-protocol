@@ -4,7 +4,7 @@ import type { User } from '@audius/common'
 import { profilePageSelectors, profilePageActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNotification from 'app/assets/images/iconNotification.svg'
+import { IconNotification } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

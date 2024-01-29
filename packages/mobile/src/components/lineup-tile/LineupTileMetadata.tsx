@@ -5,7 +5,7 @@ import type { Remix, User } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconVolume from 'app/assets/images/iconVolume.svg'
+import { IconVolume } from '@audius/harmony-native'
 import { Text, FadeInView } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import commonPasswordList from 'fxa-common-password-list'
 import { View } from 'react-native'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrow } from '@audius/harmony-native'
 import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'

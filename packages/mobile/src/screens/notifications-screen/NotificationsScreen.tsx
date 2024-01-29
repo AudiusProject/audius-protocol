@@ -4,7 +4,7 @@ import { notificationsActions, notificationsSelectors } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNotification from 'app/assets/images/iconNotification.svg'
+import { IconNotification } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
