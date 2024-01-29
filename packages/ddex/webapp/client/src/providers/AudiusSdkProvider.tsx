@@ -100,6 +100,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
 
   const initSdk = () => {
     if (!window.Web3 || !didInit) {
+      console.error(`Skipping sdk initialization: web3: ${window.Web3}, didInit: ${didInit}`)
       return
     }
 
@@ -120,6 +121,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       // Get keys
       if (!envVars.ddexKey) {
         setIsLoading(false)
+        console.error(`Skipping sdk initialization: ddexKey missing from env: ${JSON.stringify(envVars)}`)
         return
       }
 
@@ -166,6 +168,9 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
         }
       })
       setAudiusSdk(sdkInst as AudiusSdkType)
+      console.log(`initialized SDK!`)
+    } else {
+      console.log(`sdk already initialized: ${audiusSdk}`)
     }
 
     setIsLoading(false)
