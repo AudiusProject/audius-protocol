@@ -11,7 +11,7 @@ import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  IconNext,
+  IconSkipNext,
   IconPodcastBack,
   IconPodcastForward,
   IconSkipPrevious
@@ -166,7 +166,7 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onNext}
-        icon={isLongFormContent ? IconPodcastForward : IconNext}
+        icon={isLongFormContent ? IconPodcastForward : IconSkipNext}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )
