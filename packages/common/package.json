@@ -6,16 +6,10 @@
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
   "license": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
     "./messages": "./src/messages/index.ts"
   },
-  "files": [
-    "src"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AudiusProject/audius-client.git"
