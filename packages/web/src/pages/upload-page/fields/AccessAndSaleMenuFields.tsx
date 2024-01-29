@@ -22,15 +22,12 @@ import { useFlag } from 'hooks/useRemoteConfig'
 
 import { SingleTrackEditValues } from '../types'
 
-import {
-  STREAM_AVAILABILITY_TYPE,
-  STREAM_CONDITIONS
-} from './AccessAndSaleField'
 import styles from './AccessAndSaleField.module.css'
 import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'
 import { SpecialAccessFields } from './stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
+import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from './types'
 
 const messages = {
   title: 'Access & Sale',

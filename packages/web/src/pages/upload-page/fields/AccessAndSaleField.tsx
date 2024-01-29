@@ -8,7 +8,6 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  Nullable,
   StreamTrackAvailabilityType,
   USDCPurchaseConfig,
   useUSDCPurchaseConfig,
@@ -16,8 +15,6 @@ import {
   USDCPurchaseConditions,
   FollowGatedConditions,
   TipGatedConditions,
-  ID,
-  AccessConditions,
   Download
 } from '@audius/common'
 import {
@@ -48,12 +45,26 @@ import { SingleTrackEditValues } from '../types'
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
 import { REMIX_OF } from './RemixSettingsField'
+import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
+  AccessAndSaleFormValues,
   DOWNLOAD,
+  DOWNLOAD_CONDITIONS,
   DOWNLOAD_REQUIRES_FOLLOW,
-  IS_DOWNLOADABLE
-} from './StemsAndDownloadsMenuFields'
-import { SpecialAccessType } from './stream-availability/SpecialAccessFields'
+  FIELD_VISIBILITY,
+  IS_DOWNLOADABLE,
+  IS_DOWNLOAD_GATED,
+  IS_SCHEDULED_RELEASE,
+  IS_STREAM_GATED,
+  IS_UNLISTED,
+  PREVIEW,
+  PRICE,
+  PRICE_HUMANIZED,
+  SPECIAL_ACCESS_TYPE,
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS,
+  SpecialAccessType
+} from './types'
 
 const { getUserId } = accountSelectors
 
@@ -95,29 +106,6 @@ const messages = {
     }
   },
   required: 'Required'
-}
-
-export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
-export const IS_UNLISTED = 'is_unlisted'
-export const IS_STREAM_GATED = 'is_stream_gated'
-export const STREAM_CONDITIONS = 'stream_conditions'
-export const IS_DOWNLOAD_GATED = 'is_download_gated'
-export const DOWNLOAD_CONDITIONS = 'download_conditions'
-export const STREAM_AVAILABILITY_TYPE = 'stream_availability_type'
-export const SPECIAL_ACCESS_TYPE = 'special_access_type'
-export const FIELD_VISIBILITY = 'field_visibility'
-export const PRICE = 'stream_conditions.usdc_purchase.price'
-export const PRICE_HUMANIZED = 'price_humanized'
-export const PREVIEW = 'preview_start_seconds'
-
-export type AccessAndSaleFormValues = {
-  [IS_UNLISTED]: boolean
-  [STREAM_AVAILABILITY_TYPE]: StreamTrackAvailabilityType
-  [STREAM_CONDITIONS]: Nullable<AccessConditions>
-  [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
-  [FIELD_VISIBILITY]: FieldVisibility
-  [PRICE_HUMANIZED]: string
-  [PREVIEW]?: number
 }
 
 export type USDCPurchaseRemoteConfig = Pick<
@@ -198,21 +186,6 @@ export const AccessAndSaleFormSchema = (
       },
       { message: messages.errors.preview.tooLate, path: [PREVIEW] }
     )
-
-/**
- * Allows us to store all the user selections in the Access & Sale modal
- * so that their previous selections is remembered as they change between the radio button options.
- * On submit (saving the changes in the Access & Sale modal), we only save the corresponding
- * stream conditions based on the availability type they have currently selected.
- */
-export const getCombinedDefaultGatedConditionValues = (
-  userId: Nullable<ID>
-) => ({
-  usdc_purchase: { price: null },
-  follow_user_id: userId,
-  tip_user_id: userId,
-  nft_collection: undefined
-})
 
 type AccessAndSaleFieldProps = {
   isUpload?: boolean

@@ -32,24 +32,24 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useTrackField } from '../hooks'
 
 import {
-  DOWNLOAD_CONDITIONS,
-  IS_DOWNLOAD_GATED,
-  getCombinedDefaultGatedConditionValues,
-  STREAM_CONDITIONS
-} from './AccessAndSaleField'
-import {
-  CID,
-  DOWNLOAD,
-  DOWNLOAD_AVAILABILITY_TYPE,
-  DOWNLOAD_REQUIRES_FOLLOW,
-  IS_DOWNLOADABLE,
-  IS_ORIGINAL_AVAILABLE,
-  STEMS,
   StemsAndDownloadsFormValues,
   StemsAndDownloadsMenuFields,
   stemsAndDownloadsSchema
 } from './StemsAndDownloadsMenuFields'
-import { DOWNLOAD_PRICE_HUMANIZED } from './download-availability/DownloadPriceField'
+import { getCombinedDefaultGatedConditionValues } from './helpers'
+import {
+  IS_DOWNLOAD_GATED,
+  DOWNLOAD_CONDITIONS,
+  STREAM_CONDITIONS,
+  CID,
+  DOWNLOAD,
+  DOWNLOAD_AVAILABILITY_TYPE,
+  DOWNLOAD_PRICE_HUMANIZED,
+  DOWNLOAD_REQUIRES_FOLLOW,
+  IS_DOWNLOADABLE,
+  IS_ORIGINAL_AVAILABLE,
+  STEMS
+} from './types'
 
 const { getUserId } = accountSelectors
 

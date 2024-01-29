@@ -21,25 +21,23 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { processFiles } from '../store/utils/processFiles'
 
-import {
-  DOWNLOAD_CONDITIONS,
-  IS_DOWNLOAD_GATED,
-  STREAM_CONDITIONS,
-  USDCPurchaseRemoteConfig
-} from './AccessAndSaleField'
+import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
 import { StemFilesView, dropdownRows as stemCategories } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
-import { DOWNLOAD_PRICE } from './download-availability/DownloadPriceField'
-
-export const IS_DOWNLOADABLE = 'is_downloadable'
-export const IS_ORIGINAL_AVAILABLE = 'is_original_available'
-export const DOWNLOAD_REQUIRES_FOLLOW = 'download_requires_follow'
-export const STEMS = 'stems'
-export const DOWNLOAD = 'download'
-export const CID = 'download.cid'
-export const DOWNLOAD_AVAILABILITY_TYPE = 'download_availability_type'
+import {
+  IS_DOWNLOAD_GATED,
+  DOWNLOAD_CONDITIONS,
+  STREAM_CONDITIONS,
+  CID,
+  DOWNLOAD_AVAILABILITY_TYPE,
+  DOWNLOAD_REQUIRES_FOLLOW,
+  IS_DOWNLOADABLE,
+  IS_ORIGINAL_AVAILABLE,
+  STEMS,
+  DOWNLOAD_PRICE
+} from './types'
 
 const messages = {
   description:

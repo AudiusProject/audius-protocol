@@ -21,8 +21,8 @@ import { useField } from 'formik'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 
-import { PREVIEW, PRICE, DOWNLOAD_CONDITIONS } from '../../AccessAndSaleField'
 import { BoxedTextField } from '../../BoxedTextField'
+import { DOWNLOAD_CONDITIONS, PREVIEW, PRICE } from '../../types'
 
 const messages = {
   price: {

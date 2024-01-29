@@ -22,7 +22,7 @@ import {
   DOWNLOAD_CONDITIONS,
   STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
-} from '../../AccessAndSaleField'
+} from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
 

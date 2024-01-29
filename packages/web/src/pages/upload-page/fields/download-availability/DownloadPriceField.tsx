@@ -13,6 +13,7 @@ import {
 import { useField } from 'formik'
 
 import { BoxedTextField } from '../BoxedTextField'
+import { DOWNLOAD_PRICE } from '../types'
 
 const messages = {
   price: {
@@ -25,9 +26,6 @@ const messages = {
   dollars: '$',
   usdc: '(USDC)'
 }
-
-export const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
-export const DOWNLOAD_PRICE_HUMANIZED = 'download_price_humanized'
 
 type TrackAvailabilityFieldsProps = {
   disabled?: boolean

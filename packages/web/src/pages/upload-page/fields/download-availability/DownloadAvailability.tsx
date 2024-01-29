@@ -27,7 +27,7 @@ import { Divider } from 'components/divider'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { useTrackField } from 'pages/upload-page/hooks'
 
-import { STREAM_CONDITIONS } from '../AccessAndSaleField'
+import { STREAM_CONDITIONS } from '../types'
 
 import { DownloadPriceField } from './DownloadPriceField'
 

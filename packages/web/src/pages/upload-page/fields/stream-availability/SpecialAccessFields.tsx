@@ -19,8 +19,9 @@ import { Text } from 'components/typography'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
-  STREAM_CONDITIONS
-} from '../AccessAndSaleField'
+  STREAM_CONDITIONS,
+  SpecialAccessType
+} from '../types'
 
 import styles from './SpecialAccessFields.module.css'
 
@@ -32,11 +33,6 @@ const messages = {
   supportersInfo: 'Supporters are users who have sent you a tip.',
   premiumDownloads:
     'Setting your track to Special Access will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
-}
-
-export enum SpecialAccessType {
-  TIP = 'tip',
-  FOLLOW = 'follow'
 }
 
 type TrackAvailabilityFieldsProps = {
