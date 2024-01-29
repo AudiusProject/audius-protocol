@@ -4,11 +4,11 @@ import type { Nullable } from '@audius/common'
 import type { SvgProps } from 'react-native-svg'
 
 import {
-  IconAllowAttribution,
-  IconCreativeCommons,
-  IconNonCommercialUse,
-  IconNoDerivatives,
-  IconShareAlike
+  IconCcBy,
+  IconCcCC,
+  IconCcNC,
+  IconCcND,
+  IconCcSA
 } from '@audius/harmony-native'
 
 export const computeLicenseIcons = (
@@ -18,12 +18,12 @@ export const computeLicenseIcons = (
 ) => {
   if (!allowAttribution) return null
   const icons: [Icon: ComponentType<SvgProps>, key: string][] = [
-    [IconCreativeCommons, 'cc'],
-    [IconAllowAttribution, 'by']
+    [IconCcCC, 'cc'],
+    [IconCcBy, 'by']
   ]
-  if (!commercialUse) icons.push([IconNonCommercialUse, 'nc'])
-  if (derivativeWorks === true) icons.push([IconShareAlike, 'sa'])
-  else if (derivativeWorks === false) icons.push([IconNoDerivatives, 'nd'])
+  if (!commercialUse) icons.push([IconCcNC, 'nc'])
+  if (derivativeWorks === true) icons.push([IconCcSA, 'sa'])
+  else if (derivativeWorks === false) icons.push([IconCcND, 'nd'])
 
   return icons
 }
