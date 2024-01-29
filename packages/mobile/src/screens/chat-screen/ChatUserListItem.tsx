@@ -14,7 +14,7 @@ import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
-  IconBlockMessages,
+  IconMessageBlock,
   IconKebabHorizontal,
   IconUser
 } from '@audius/harmony-native'
@@ -256,7 +256,7 @@ export const ChatUserListItem = ({
                   </>
                 ) : (
                   <View style={styles.ctaContainer}>
-                    <IconBlockMessages
+                    <IconMessageBlock
                       fill={styles.iconBlock.fill}
                       width={styles.iconBlock.width}
                       height={styles.iconBlock.height}
