@@ -4,7 +4,7 @@ import type { OptimisticUserChallenge } from '@audius/common'
 import { ChallengeName, ClaimStatus, formatNumberCommas } from '@audius/common'
 import { ScrollView, View } from 'react-native'
 
-import { IconArrowRight, IconUpload } from '@audius/harmony-native'
+import { IconArrowRight, IconCloudUpload } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -61,7 +61,7 @@ const ctaButtonProps: {
     title: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
-    icon: IconUpload,
+    icon: IconCloudUpload,
     iconPosition: 'left',
     title: messages.uploadTrack
   }

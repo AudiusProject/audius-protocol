@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
-import { IconShare, IconUpload } from '@audius/harmony-native'
+import { IconShare, IconCloudUpload } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import { Text, TextButton, Tile, Button } from 'app/components/core'
 import {
@@ -119,7 +119,7 @@ export const UploadCompleteScreen = () => {
   return (
     <FormScreen
       title={messages.title}
-      icon={IconUpload}
+      icon={IconCloudUpload}
       variant='secondary'
       topbarLeft={null}
       url='/upload-complete'

@@ -7,7 +7,7 @@ import {
   IconLink,
   IconArrowRight,
   IconCheck,
-  IconUpload
+  IconCloudUpload
 } from '@audius/harmony-native'
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
 import Cart from 'app/assets/images/emojis/cart.png'
@@ -104,7 +104,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     'track-upload': {
       icon: MultipleMusicalNotes,
       buttonInfo: {
-        renderIcon: (color) => <IconUpload fill={color} />,
+        renderIcon: (color) => <IconCloudUpload fill={color} />,
         iconPosition: 'right'
       }
     },

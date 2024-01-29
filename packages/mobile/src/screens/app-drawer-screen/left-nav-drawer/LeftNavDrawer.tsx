@@ -18,7 +18,7 @@ import {
   IconListeningHistory,
   IconMessage,
   IconSettings,
-  IconUpload,
+  IconCloudUpload,
   IconUser
 } from '@audius/harmony-native'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
@@ -109,7 +109,7 @@ const WrappedLeftNavDrawer = () => {
         <AudioBalancePill />
       </LeftNavLink>
       <LeftNavLink
-        icon={IconUpload}
+        icon={IconCloudUpload}
         iconProps={{
           height: spacing(8),
           width: spacing(8),

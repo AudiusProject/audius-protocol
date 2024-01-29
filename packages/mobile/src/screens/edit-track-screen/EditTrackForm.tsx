@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 import {
   IconArrowRight,
   IconCaretLeft,
-  IconUpload
+  IconCloudUpload
 } from '@audius/harmony-native'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
@@ -104,7 +104,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     <>
       <FormScreen
         title={title}
-        icon={IconUpload}
+        icon={IconCloudUpload}
         topbarLeft={
           <TopBarIconButton
             icon={IconCaretLeft}

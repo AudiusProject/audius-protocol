@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import DocumentPicker from 'react-native-document-picker'
 import { useAsyncFn } from 'react-use'
 
-import { IconRemove, IconUpload } from '@audius/harmony-native'
+import { IconRemove, IconCloudUpload } from '@audius/harmony-native'
 import {
   Button,
   ErrorText,
@@ -100,7 +100,7 @@ export const SelectTrackScreen = () => {
   return (
     <Screen
       title={messages.title}
-      icon={IconUpload}
+      icon={IconCloudUpload}
       variant='secondary'
       topbarLeft={
         <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
@@ -109,7 +109,7 @@ export const SelectTrackScreen = () => {
     >
       <ScreenContent>
         <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
-          <IconUpload
+          <IconCloudUpload
             fill={neutralLight4}
             height={spacing(20)}
             width={spacing(20)}
