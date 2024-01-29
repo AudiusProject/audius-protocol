@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 import {
   IconCart,
   IconCloudDownload,
-  IconFavorite,
+  IconHeart,
   IconRepost
 } from '@audius/harmony-native'
 import { Button, Switch, Text } from 'app/components/core'
@@ -156,7 +156,7 @@ export const OfflineListeningDrawer = () => {
         </Text>
         <OfflineListeningOptionToggle
           title={messages.favorites}
-          icon={IconFavorite}
+          icon={IconHeart}
           value={isFavoritesOn}
           onValueChange={handleToggleFavorites}
         />
