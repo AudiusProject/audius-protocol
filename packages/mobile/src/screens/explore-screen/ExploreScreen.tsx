@@ -5,7 +5,7 @@ import { useEffectOnce } from 'react-use'
 import {
   IconExplore,
   IconForYou,
-  IconMoods,
+  IconMood,
   IconPlaylists,
   IconUser
 } from '@audius/harmony-native'
@@ -34,7 +34,7 @@ const exploreScreens = [
   },
   {
     name: 'moods',
-    Icon: IconMoods,
+    Icon: IconMood,
     component: MoodsTab
   },
   {
