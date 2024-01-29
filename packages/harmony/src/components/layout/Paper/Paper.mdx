@@ -1,15 +1,12 @@
-import {
-  Meta,
-  Title,
-  Subtitle,
-  Description,
-  Primary,
-  Controls
-} from '@storybook/blocks'
+import { Meta, Title, Description, Primary, Controls } from '@storybook/blocks'
 
-import { Box, Flex } from 'components'
+import { Box } from 'components'
 import paperExampleGood from 'storybook/assets/paperExampleGood.png'
-import { ComponentRules, RelatedComponents } from 'storybook/components'
+import {
+  ComponentRules,
+  Heading,
+  RelatedComponents
+} from 'storybook/components'
 
 import * as PaperStories from './Paper.stories'
 
@@ -22,10 +19,10 @@ import * as PaperStories from './Paper.stories'
 - [Use cases and examples](#use-cases-and-examples)
 - [Do's and dont's](#dos-and-donts)
 
-## Overview
-
-<Subtitle />
-<Description />
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
 <Primary />
 
 ## Props
@@ -48,11 +45,7 @@ _Note: Paper also accepts layout props from [Flex](?path=/docs/components-layout
       positive: {
         description:
           'Use paper to create spin-off component in your local library.',
-        component: (
-          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
-            <img src={paperExampleGood} />
-          </Flex>
-        )
+        component: <img src={paperExampleGood} />
       },
       negative: {
         description:

@@ -1,61 +1,150 @@
-import { ReactNode } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 
+import { Flex, IconCaretDown, IconComponent, useTheme } from '@audius/harmony'
 import { ColorValue } from '@audius/stems'
-import cn from 'classnames'
 
+import { Expandable } from 'components/expandable/Expandable'
 import { Text } from 'components/typography'
-
-import styles from './SummaryTable.module.css'
 
 export type SummaryTableItem = {
   id: string
   label: ReactNode
-  value: ReactNode
+  icon?: IconComponent
+  value?: ReactNode
+  disabled?: boolean
 }
 
 export type SummaryTableProps = {
+  /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
+  collapsible?: boolean
   items: SummaryTableItem[]
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
   summaryLabelColor?: ColorValue
   summaryValueColor?: ColorValue
+  renderBody?: (items: SummaryTableItem[]) => ReactNode
 }
 
 export const SummaryTable = ({
+  collapsible = false,
   items,
   summaryItem,
   title,
   secondaryTitle,
   summaryLabelColor,
-  summaryValueColor = 'secondary'
+  summaryValueColor = 'secondary',
+  renderBody: renderBodyProp
 }: SummaryTableProps) => {
+  const { color } = useTheme()
+  // Collapsible is collapsed by default
+  const [expanded, setExpanded] = useState(!collapsible)
+  const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+
+  const renderHeader = () => {
+    return (
+      <Flex
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        css={{ backgroundColor: color.background.surface1, cursor: 'pointer' }}
+        onClick={onToggleExpand}
+      >
+        <Flex gap='s'>
+          {collapsible ? (
+            <IconCaretDown
+              css={{
+                transition: 'transform var(--harmony-expressive)',
+                transform: `rotate(${expanded ? -180 : 0}deg)`
+              }}
+              size='m'
+              color='default'
+            />
+          ) : null}
+          <Text variant='title'>{title}</Text>
+        </Flex>
+        <Text variant='title'>{secondaryTitle}</Text>
+      </Flex>
+    )
+  }
+
+  const renderSummaryItem = () => {
+    if (summaryItem === undefined) return null
+    return (
+      <Flex
+        css={{ backgroundColor: color.background.surface1 }}
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        borderTop='default'
+      >
+        <Text variant='title' size='medium' color={summaryLabelColor}>
+          {summaryItem.label}
+        </Text>
+        <Text variant='title' size='medium' color={summaryValueColor}>
+          {summaryItem.value}
+        </Text>
+      </Flex>
+    )
+  }
+
+  const renderContent = () => {
+    return (
+      <>
+        {renderBodyProp
+          ? renderBodyProp(items)
+          : items.map(({ id, label, icon: Icon, value, disabled }) => (
+              <Flex
+                key={id}
+                alignItems='center'
+                alignSelf='stretch'
+                justifyContent='space-between'
+                pv='m'
+                ph='xl'
+                css={{ opacity: disabled ? 0.5 : 1 }}
+                borderTop='default'
+              >
+                <Flex
+                  css={{ cursor: 'pointer' }}
+                  alignItems='center'
+                  justifyContent='space-between'
+                  gap='s'
+                >
+                  {Icon ? (
+                    <Flex alignItems='center' ml='s'>
+                      <Icon color='default' />
+                    </Flex>
+                  ) : null}
+                  <Text>{label}</Text>
+                </Flex>
+                <Text>{value}</Text>
+              </Flex>
+            ))}
+        {renderSummaryItem()}
+      </>
+    )
+  }
+
   return (
-    <div className={styles.container}>
-      <div className={styles.row}>
-        <Text variant='title' size='large'>
-          {title}
-        </Text>
-        <Text variant='title' size='large'>
-          {secondaryTitle}
-        </Text>
-      </div>
-      {items.map(({ id, label, value }) => (
-        <div key={id} className={styles.row}>
-          <Text>{label}</Text>
-          <Text>{value}</Text>
-        </div>
-      ))}
-      {summaryItem !== undefined ? (
-        <div className={cn(styles.row, styles.rowGrayBackground)}>
-          <Text variant='title' size='medium' color={summaryLabelColor}>
-            {summaryItem.label}
-          </Text>
-          <Text variant='title' size='medium' color={summaryValueColor}>
-            {summaryItem.value}
-          </Text>
-        </div>
-      ) : null}
-    </div>
+    <Flex
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='center'
+      direction='column'
+      border='default'
+      borderRadius='xs'
+      css={{ overflow: 'hidden' }}
+    >
+      {renderHeader()}
+      {collapsible ? (
+        <Expandable expanded={expanded}>{renderContent()}</Expandable>
+      ) : (
+        renderContent()
+      )}
+    </Flex>
   )
 }

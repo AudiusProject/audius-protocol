@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, func, or_
+from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.sql.functions import coalesce, max
 
@@ -175,10 +175,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         base_query = base_query.order_by(
             sort_fn(
                 coalesce(
-                    func.to_date_safe(
-                        TrackWithAggregates.release_date,
-                        "Dy Mon DD YYYY HH24:MI:SS",
-                    ),
+                    TrackWithAggregates.release_date,
                     TrackWithAggregates.created_at,
                 )
             )

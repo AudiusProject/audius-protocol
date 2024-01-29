@@ -3,7 +3,6 @@ import { useCallback, memo, MouseEvent } from 'react'
 import {
   ID,
   UID,
-  Name,
   Collection,
   CoverPhotoSizes,
   ProfilePictureSizes,
@@ -14,7 +13,8 @@ import {
   ProfilePageTabs,
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
-  useSelectTierInfo
+  useSelectTierInfo,
+  CreatePlaylistSource
 } from '@audius/common'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
@@ -22,7 +22,6 @@ import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import IconReposts from 'assets/img/iconRepost.svg'
-import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/desktop/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -40,13 +39,7 @@ import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUser
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
-import {
-  collectionPage,
-  UPLOAD_PAGE,
-  UPLOAD_ALBUM_PAGE,
-  UPLOAD_PLAYLIST_PAGE,
-  profilePage
-} from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
@@ -134,7 +127,6 @@ export type ProfilePageProps = {
     tracks: number,
     isPrivate?: boolean
   ) => string
-  createPlaylist: () => void
   updateProfile: (metadata: any) => void
   updateProfilePicture: (
     selectedFiles: any,
@@ -177,7 +169,6 @@ const ProfilePage = ({
   formatCardSecondaryText,
   loadMoreUserFeed,
   loadMoreArtistTracks,
-  createPlaylist,
   updateProfile,
 
   onFollow,
@@ -250,19 +241,6 @@ const ProfilePage = ({
   const renderProfileCompletionCard = () => {
     return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
   }
-  const record = useRecord()
-  const onClickUploadAlbum = useCallback(() => {
-    goToRoute(UPLOAD_ALBUM_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
-  const onClickUploadPlaylist = useCallback(() => {
-    goToRoute(UPLOAD_PLAYLIST_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
-  const onClickUploadTrack = useCallback(() => {
-    goToRoute(UPLOAD_PAGE)
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
-  }, [goToRoute, record])
 
   const { tierNumber } = useSelectTierInfo(userId ?? 0)
   const profileHasCollectiblesTierRequirement =
@@ -335,8 +313,8 @@ const ProfilePage = ({
           key='upload-chip'
           type='album'
           variant='card'
-          onClick={onClickUploadAlbum}
           isFirst={albumCards.length === 0}
+          source={CreatePlaylistSource.PROFILE_PAGE}
         />
       )
     }
@@ -389,9 +367,8 @@ const ProfilePage = ({
           key='upload-chip'
           type='playlist'
           variant='card'
-          onClick={onClickUploadPlaylist}
-          isArtist={isArtist}
           isFirst={playlistCards.length === 0}
+          source={CreatePlaylistSource.PROFILE_PAGE}
         />
       )
     }
@@ -401,7 +378,7 @@ const ProfilePage = ({
         key='upload-chip'
         type='track'
         variant='tile'
-        onClick={onClickUploadTrack}
+        source='profile'
       />
     ) : null
 
@@ -594,7 +571,7 @@ const ProfilePage = ({
       <UploadChip
         type='playlist'
         variant='card'
-        onClick={createPlaylist}
+        source={CreatePlaylistSource.PROFILE_PAGE}
         isFirst={playlistCards.length === 0}
       />
     )
@@ -753,13 +730,9 @@ const ProfilePage = ({
           onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
-          goToRoute={goToRoute}
         />
         <CoverPhoto
           userId={userId}
-          coverPhotoSizes={
-            profile && profile.is_deactivated ? null : coverPhotoSizes
-          }
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
           loading={profileLoadingStatus === Status.LOADING}

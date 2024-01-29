@@ -8,4 +8,4 @@ ENV APP_NAME=${app_name}
 
 WORKDIR /app/packages/discovery-provider/plugins/pedalboard/apps/${APP_NAME}
 
-CMD npm run start
+CMD sh ../../docker/startup.sh

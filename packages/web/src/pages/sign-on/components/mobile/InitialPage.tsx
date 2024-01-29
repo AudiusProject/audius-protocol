@@ -7,10 +7,11 @@ import {
   KeyboardEvent
 } from 'react'
 
+import { Flex } from '@audius/harmony'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops'
+import { Spring } from 'react-spring/renderprops.cjs'
 
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
 import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
@@ -40,6 +41,7 @@ const errorMessages = {
 
 const signInErrorMessages = {
   inUse: 'Invalid password',
+  requiresOtp: 'Enter the verification code sent to your email',
   default: 'Invalid Credentials'
 }
 
@@ -68,10 +70,16 @@ type SignInProps = {
     error: string
     status: Status
   }
+  otp: {
+    value: string
+    error: string
+    status: Status
+  }
   onViewSignUp: () => void
   onSubmitSignIn: (email: string, password: string) => void
   onEmailChange: (email: string) => void
   onPasswordChange: (password: string) => void
+  onOtpChange: (otp: string) => void
   isLoading: boolean
   didSucceed: boolean
 }
@@ -137,11 +145,13 @@ const SignUpEmail = ({
 
   return (
     <div className={styles.topContainer}>
-      <PreloadImage
-        src={audiusLogoHorizontal}
-        className={styles.logo}
-        alt='Audius Colored Logo'
-      />
+      <Flex>
+        <PreloadImage
+          src={audiusLogoHorizontal}
+          className={styles.logo}
+          alt='Audius Colored Logo'
+        />
+      </Flex>
       <h1 className={cn(styles.title)}>{messages.title}</h1>
       <div className={cn(styles.header)}>
         <h2 className={styles.text}>{messages.header1}</h2>
@@ -182,22 +192,24 @@ const SignUpEmail = ({
           )}
         </Spring>
       ) : null}
-      <Button
-        text={messages.signUp}
-        name='continue'
-        rightIcon={
-          isSubmitting && shouldShowLoadingSpinner ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : (
-            <IconArrow />
-          )
-        }
-        type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-        onClick={onSubmitEmail}
-        className={styles.signUpButton}
-        textClassName={styles.signUpButtonText}
-        isDisabled={isSubmitting}
-      />
+      <Flex justifyContent='center'>
+        <Button
+          text={messages.signUp}
+          name='continue'
+          rightIcon={
+            isSubmitting && shouldShowLoadingSpinner ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <IconArrow />
+            )
+          }
+          type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
+          onClick={onSubmitEmail}
+          className={styles.signUpButton}
+          textClassName={styles.signUpButtonText}
+          isDisabled={isSubmitting}
+        />
+      </Flex>
     </div>
   )
 }
@@ -205,17 +217,27 @@ const SignUpEmail = ({
 const SignIn = ({
   email,
   password,
+  otp,
   onSubmitSignIn,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   isLoading,
   didSucceed,
   hasAccount
 }: SignInProps) => {
   const { setStackReset } = useContext(RouterContext)
   const signInError = password.error
-  const errorMessage =
-    signInErrorMessages[email.error === 'inUse' ? 'inUse' : 'default']
+  const requiresOtp = signInError.includes('403')
+
+  let errorMessage: string
+  if (email.error === 'inUse') {
+    errorMessage = signInErrorMessages.inUse
+  } else if (requiresOtp) {
+    errorMessage = signInErrorMessages.requiresOtp
+  } else {
+    errorMessage = signInErrorMessages.default
+  }
 
   const onValidateEmailChange = (email: string) => {
     onEmailChange(email)
@@ -228,11 +250,13 @@ const SignIn = ({
 
   return (
     <div className={styles.topContainer}>
-      <PreloadImage
-        src={audiusLogoHorizontal}
-        className={styles.logo}
-        alt='Audius Colored Logo'
-      />
+      <Flex>
+        <PreloadImage
+          src={audiusLogoHorizontal}
+          className={styles.logo}
+          alt='Audius Colored Logo'
+        />
+      </Flex>
       <select style={{ display: 'none' }} />
       <h1 className={styles.signInDescription}>{messages.signinDescription}</h1>
       <Input
@@ -273,20 +297,35 @@ const SignIn = ({
           )}
         </Spring>
       )}
-      <Button
-        text='Sign In'
-        rightIcon={
-          isLoading || (didSucceed && !hasAccount) ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : (
-            <IconArrow />
-          )
-        }
-        type={ButtonType.PRIMARY_ALT}
-        onClick={onSignIn}
-        className={styles.signInButton}
-        textClassName={styles.signInButtonText}
-      />
+      {requiresOtp ? (
+        <Input
+          placeholder='Verification Code'
+          size='medium'
+          name='otp'
+          value={otp.value}
+          characterLimit={6}
+          type='number'
+          variant={'normal'}
+          onChange={onOtpChange}
+          className={cn(styles.signInInput, styles.inputField)}
+        />
+      ) : null}
+      <Flex justifyContent='center'>
+        <Button
+          text='Sign In'
+          rightIcon={
+            isLoading || (didSucceed && !hasAccount) ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <IconArrow />
+            )
+          }
+          type={ButtonType.PRIMARY_ALT}
+          onClick={onSignIn}
+          className={styles.signInButton}
+          textClassName={styles.signInButtonText}
+        />
+      </Flex>
     </div>
   )
 }
@@ -294,11 +333,13 @@ const SignIn = ({
 export const InitialPage = ({
   isSignIn,
   email,
+  otp,
   password,
   isLoading,
   didSucceed,
   onEmailChange,
   onPasswordChange,
+  onOtpChange,
   onViewSignIn,
   onSubmitSignIn,
   onViewSignUp,
@@ -323,6 +364,7 @@ export const InitialPage = ({
         <div className={styles.topSectionTransition} ref={topAreaRef}>
           {isSignIn ? (
             <SignIn
+              otp={otp}
               hasAccount={hasAccount}
               didSucceed={didSucceed}
               isLoading={isLoading}
@@ -330,6 +372,7 @@ export const InitialPage = ({
               password={password}
               onSubmitSignIn={onSubmitSignIn}
               onPasswordChange={onPasswordChange}
+              onOtpChange={onOtpChange}
               onEmailChange={onEmailChange}
               onViewSignUp={onViewSignUp}
             />
@@ -353,7 +396,7 @@ export const InitialPage = ({
           <div style={{ backgroundImage: `url(${signupCtaImage})` }} />
         </div>
         <div className={styles.switchView}>
-          <div ref={bottomLinkRef}>
+          <Flex ref={bottomLinkRef} justifyContent='center'>
             {isSignIn ? (
               <div className={styles.hasAccount}>
                 New to Audius?{' '}
@@ -369,7 +412,7 @@ export const InitialPage = ({
                 </span>
               </div>
             )}
-          </div>
+          </Flex>
         </div>
       </div>
     </div>

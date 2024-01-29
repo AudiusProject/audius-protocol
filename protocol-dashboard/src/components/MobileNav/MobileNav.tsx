@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
-import { useMatch } from 'react-router-dom'
 import clsx from 'clsx'
 import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { matchPath, useNavigate, useLocation } from 'react-router-dom'
 
 import styles from './MobileNav.module.css'
-import * as routes from 'utils/routes'
+import { AUDIUS_DAPP_URL, navRoutes } from 'utils/routes'
 import { Button, ButtonType, IconRemove } from '@audius/stems'
 import useOpenLink from 'hooks/useOpenLink'
 
@@ -14,39 +13,26 @@ const messages = {
   name: 'PROTOCOL DASHBOARD'
 }
 
-const navRoutes = [
-  { matchParams: { path: routes.HOME, exact: true }, text: 'OVERVIEW' },
-  { matchParams: { path: routes.ANALYTICS, exact: true }, text: 'ANALYTICS' },
-  { matchParams: { path: `${routes.SERVICES}*` }, text: 'SERVICES' },
-  { matchParams: { path: `${routes.GOVERNANCE}*` }, text: 'GOVERNANCE' }
-]
+const MobileNavButton = ({
+  baseRoute,
+  matchParams,
+  text,
+  pushRoute,
+  onClose
+}) => {
+  const location = useLocation()
 
-type MobileNavButtonProps = {
-  matchParams: {
-    path: string
-    exact?: boolean
-  }
-  pathname: string
-  text: string
-  pushRoute: (path: string) => void
-  onClose: () => void
-}
-
-const MobileNavButton = (props: MobileNavButtonProps) => {
-  const {
-    pushRoute,
-    matchParams: { path },
-    onClose
-  } = props
-  const isActiveRoute = !!useMatch(props.matchParams)
+  const isActiveRoute = matchParams.some(
+    matchParam => !!matchPath(matchParam, location.pathname)
+  )
   const onButtonClick = useCallback(() => {
     onClose()
-    pushRoute(path)
-  }, [onClose, path, pushRoute])
+    pushRoute(baseRoute)
+  }, [baseRoute, pushRoute, onClose])
 
   return (
     <Button
-      text={props.text}
+      text={text}
       type={ButtonType.GLASS}
       className={clsx(styles.navButton, { [styles.active]: isActiveRoute })}
       textClassName={clsx(styles.navButtonText)}
@@ -57,7 +43,7 @@ const MobileNavButton = (props: MobileNavButtonProps) => {
 
 type LaunchTheAppButtonProps = {}
 const LaunchTheAppButton = (props: LaunchTheAppButtonProps) => {
-  const goToApp = useOpenLink(routes.AUDIUS_DAPP_URL)
+  const goToApp = useOpenLink(AUDIUS_DAPP_URL)
   return (
     <Button
       text={messages.launchApp}
@@ -74,7 +60,6 @@ type MobileNavProps = {
 }
 
 const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
-  const location = useLocation()
   const navigate = useNavigate()
 
   return (
@@ -96,7 +81,6 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
             <MobileNavButton
               {...route}
               onClose={onClose}
-              pathname={location.pathname}
               pushRoute={path => navigate(path)}
             />
           </div>

@@ -23,13 +23,14 @@ import {
   playerSelectors,
   queueSelectors,
   getContext,
-  doesUserHaveTrackAccess
+  lineupRegistry
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { isPreview } from 'common/utils/isPreview'
+import { getLocation } from 'store/routing/selectors'
 
 const {
   getCollectible,
@@ -37,12 +38,12 @@ const {
   getIndex,
   getLength,
   getOvershot,
-  getQueueAutoplay,
   getRepeat,
   getShuffle,
   getSource,
   getUid,
-  getUndershot
+  getUndershot,
+  getCurrentArtist
 } = queueSelectors
 
 const {
@@ -89,11 +90,13 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
+    const doesUserHaveStreamAccess =
+      !track.is_stream_gated || !!track.access.stream
     return {
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreview(track, currentUserId)
+      isPreview: isPreview(track, currentUserId) && !doesUserHaveStreamAccess
     }
   }
 }
@@ -110,9 +113,8 @@ function* handleQueueAutoplay({
   ignoreSkip: boolean
   track: any
 }) {
-  const isQueueAutoplayEnabled = yield* select(getQueueAutoplay)
   const index = yield* select(getIndex)
-  if (!isQueueAutoplayEnabled || index < 0) {
+  if (index < 0) {
     return
   }
 
@@ -123,7 +125,7 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
-  const isCloseToEndOfQueue = index + 9 >= length
+  const isCloseToEndOfQueue = index + 2 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
@@ -165,6 +167,14 @@ export function* watchPlay() {
       )
 
       if (!playActionTrack) return
+
+      const length = yield* select(getLength)
+      const index = yield* select(getIndex)
+      const isNearEndOfQueue = index + 3 >= length
+
+      if (isNearEndOfQueue) {
+        yield* call(fetchLineupTracks)
+      }
 
       yield* call(handleQueueAutoplay, {
         skip: false,
@@ -220,9 +230,12 @@ export function* watchPlay() {
           'getLineupSelectorForRoute'
         )
         if (!getLineupSelectorForRoute) return
+
+        const location = yield* select(getLocation)
+
         // @ts-ignore todo
         const lineup: LineupState<{ id: number }> = yield* select(
-          getLineupSelectorForRoute()
+          getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
@@ -265,6 +278,32 @@ export function* watchPlay() {
   })
 }
 
+// Fetches more lineup tracks if available. This is needed for cases
+// where the user hasn't scrolled through the lineup.
+function* fetchLineupTracks() {
+  const source = yield* select(getSource)
+  if (!source) return
+
+  const lineupEntry = lineupRegistry[source]
+  if (!lineupEntry) return
+
+  const currentArtist = yield* select(getCurrentArtist)
+  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+
+  if (lineup.hasMore) {
+    const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
+    yield* put(
+      lineupEntry.actions.fetchLineupMetadatas(
+        offset,
+        5,
+        false,
+        lineup.payload,
+        { handle: lineup.handle }
+      )
+    )
+  }
+}
+
 export function* watchPause() {
   yield* takeEvery(pause.type, function* (action: ReturnType<typeof pause>) {
     yield* put(playerActions.pause({}))
@@ -302,17 +341,15 @@ export function* watchNext() {
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
     const currentUserId = yield* select(getUserId)
-    const doesUserHaveAccess = yield* call(
-      doesUserHaveTrackAccess,
-      track ?? null
-    )
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
 
-    // Skip deleted, owner deactivated, or locked premium track
+    // Skip deleted, owner deactivated, or locked gated track
     if (
       track &&
       (track.is_delete ||
         user?.is_deactivated ||
-        (!doesUserHaveAccess && !track.preview_cid))
+        (!doesUserHaveStreamAccess && !track.preview_cid))
     ) {
       yield* put(next({ skip }))
     } else {
@@ -329,7 +366,7 @@ export function* watchNext() {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
         const isTrackPreview =
-          isPreview(track, currentUserId) && !doesUserHaveAccess
+          isPreview(track, currentUserId) && !doesUserHaveStreamAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
@@ -416,10 +453,8 @@ export function* watchPrevious() {
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
       const currentUserId = yield* select(getUserId)
-      const doesUserHaveAccess = yield* call(
-        doesUserHaveTrackAccess,
-        track ?? null
-      )
+      const doesUserHaveStreamAccess =
+        !track?.is_stream_gated || !!track?.access?.stream
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.
@@ -427,7 +462,7 @@ export function* watchPrevious() {
         track &&
         (track.is_delete ||
           user?.is_deactivated ||
-          (!doesUserHaveAccess && !track.preview_cid))
+          (!doesUserHaveStreamAccess && !track.preview_cid))
       ) {
         yield* put(previous())
       } else {
@@ -438,7 +473,8 @@ export function* watchPrevious() {
               uid,
               trackId: id,
               source,
-              isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
+              isPreview:
+                isPreview(track, currentUserId) && !doesUserHaveStreamAccess
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {

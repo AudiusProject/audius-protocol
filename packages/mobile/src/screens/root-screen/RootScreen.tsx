@@ -8,10 +8,14 @@ import {
   Status
 } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import {
+  getHasCompletedAccount,
+  getStartedSignUpProcess
+} from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
@@ -25,8 +29,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
 import { ResetPasswordModalScreen } from '../reset-password-screen'
-import { SignInScreen } from '../sign-in-screen'
-import { SignUpRootScreen } from '../sign-up-screen'
+import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
 
@@ -56,11 +59,15 @@ export const RootScreen = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
   const showHomeStack = useSelector(getHasCompletedAccount)
+  const startedSignUp = useSelector(getStartedSignUpProcess)
+  const [welcomeModalShown, setWelcomeModalShown] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
+
+  const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
   useAppState(
     () => dispatch(enterForeground()),
@@ -95,6 +102,21 @@ export const RootScreen = () => {
     setIsSplashScreenDismissed(true)
   }, [])
 
+  useEffect(() => {
+    if (isSignUpRedesignEnabled) {
+      if (showHomeStack && startedSignUp && !welcomeModalShown) {
+        openWelcomeDrawer()
+        setWelcomeModalShown(true)
+      }
+    }
+  }, [
+    isSignUpRedesignEnabled,
+    openWelcomeDrawer,
+    showHomeStack,
+    startedSignUp,
+    welcomeModalShown
+  ])
+
   return (
     <>
       <SplashScreen
@@ -118,13 +140,18 @@ export const RootScreen = () => {
                   : UpdateRequiredScreen
               }
             />
-          ) : showHomeStack ? (
+          ) : null}
+
+          {showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : isSignUpRedesignEnabled ? (
-            <Stack.Group>
-              <Stack.Screen name='SignUp' component={SignUpRootScreen} />
-              <Stack.Screen name='SignIn' component={SignInScreen} />
-            </Stack.Group>
+            <Stack.Screen name='SignOnStackNew'>
+              {() => (
+                <SignOnStack
+                  isSplashScreenDismissed={isSplashScreenDismissed}
+                />
+              )}
+            </Stack.Screen>
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}

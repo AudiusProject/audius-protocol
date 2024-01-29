@@ -6,6 +6,7 @@
   font-weight: var(--font-heavy);
   color: var(--neutral-light-2);
 }
+
 .modalHeader.mobile {
   margin: 0;
   padding: 0;
@@ -26,10 +27,6 @@
   height: var(--unit-5);
 }
 
-.modalTitleIcon path {
-  fill: var(--neutral-light-2);
-}
-
 .modalContent {
   align-self: stretch;
   display: flex;
@@ -37,17 +34,17 @@
   gap: var(--unit-6);
 }
 
-.premiumTrackSectionWrapper {
+.gatedTrackSectionWrapper {
   margin: 0;
   padding: 0;
   border: none;
 }
 
-.premiumTrackSection {
+.gatedTrackSection {
   flex-direction: column;
   gap: var(--unit-6);
 }
 
-.premiumTrackSectionButton {
+.gatedTrackSectionButton {
   width: 100%;
 }

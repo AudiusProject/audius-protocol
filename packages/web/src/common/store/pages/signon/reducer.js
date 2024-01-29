@@ -1,4 +1,3 @@
-import { isMobile } from 'utils/clientUtil'
 import { FEED_PAGE } from 'utils/route'
 
 import {
@@ -20,6 +19,7 @@ import {
   OPEN_SIGN_ON,
   NEXT_PAGE,
   PREVIOUS_PAGE,
+  UNSET_SOCIAL_PROFILE,
   GO_TO_PAGE,
   SET_STATUS,
   SIGN_UP,
@@ -36,7 +36,10 @@ import {
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
   REMOVE_FOLLOW_ARTISTS,
-  SET_REFERRER
+  SET_REFERRER,
+  SET_LINKED_SOCIAL_ON_FIRST_PAGE,
+  SET_FINISHED_PHASE_1,
+  HIDE_PREVIEW_HINT
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -53,7 +56,10 @@ const initialState = {
   email: createTextField(),
   name: createTextField(),
   password: createTextField(),
+  otp: createTextField(),
   handle: createTextField(),
+  /** Whether the user linked their social media account on the first page (email page) of the sign up flow */
+  linkedSocialOnFirstPage: false,
   accountAlreadyExisted: false,
   verified: false,
   useMetaMask: false,
@@ -70,12 +76,17 @@ const initialState = {
   toastText: null,
   page: Pages.EMAIL,
   startedSignUpProcess: false,
+  /** @deprecated */
   finishedSignUpProcess: false,
+  /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
+  finishedPhase1: false,
+  hidePreviewHint: false,
   followArtists: {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
     selectedUserIds: []
   },
+  genres: [],
   referrer: null
 }
 
@@ -93,8 +104,7 @@ const actionsMap = {
       // even if toggling b/w sign up and sign in redirects to the right place
       routeOnCompletion: state.routeOnCompletion,
       routeOnExit: state.routeOnExit,
-      isMobileSignOnVisible: state.isMobileSignOnVisible,
-      followArtists: state.followArtists
+      isMobileSignOnVisible: state.isMobileSignOnVisible
     }
   },
   [OPEN_SIGN_ON](state, action) {
@@ -104,7 +114,7 @@ const actionsMap = {
       page: action.page || state.page
     }
   },
-  [NEXT_PAGE](state) {
+  [NEXT_PAGE](state, action) {
     let newPage
     switch (state.page) {
       case Pages.EMAIL:
@@ -117,7 +127,7 @@ const actionsMap = {
         newPage = Pages.FOLLOW
         break
       case Pages.FOLLOW: {
-        if (!isMobile()) {
+        if (!action.isMobile) {
           newPage = Pages.APP_CTA
         } else {
           newPage = Pages.LOADING
@@ -193,6 +203,18 @@ const actionsMap = {
       }
     }
   },
+  [SET_FINISHED_PHASE_1](state, action) {
+    return {
+      ...state,
+      finishedPhase1: action.finishedPhase1
+    }
+  },
+  [SET_LINKED_SOCIAL_ON_FIRST_PAGE](state, action) {
+    return {
+      ...state,
+      linkedSocialOnFirstPage: action.linkedSocialOnFirstPage
+    }
+  },
   [SET_TWITTER_PROFILE](state, action) {
     return {
       ...state,
@@ -247,6 +269,23 @@ const actionsMap = {
       tikTokScreenName: action.profile.display_name,
       profileImage: action.profileImage || null,
       verified: action.profile.is_verified
+    }
+  },
+  [UNSET_SOCIAL_PROFILE](state) {
+    return {
+      ...state,
+      tikTokId: initialState.tikTokId,
+      tikTokProfile: initialState.tikTokProfile,
+      tikTokScreenName: initialState.tikTokScreenName,
+      instagramId: initialState.instagramId,
+      instagramScreenName: initialState.instagramScreenName,
+      twitterId: initialState.twitterId,
+      coverPhoto: initialState.coverPhoto,
+      twitterScreenName: initialState.twitterScreenName,
+      name: initialState.name,
+      handle: initialState.handle,
+      profileImage: initialState.profileImage,
+      verified: initialState.verified
     }
   },
   [VALIDATE_EMAIL](state, action) {
@@ -363,7 +402,8 @@ const actionsMap = {
         ...state.password,
         status: 'failure',
         error: action.error
-      }
+      },
+      otp: createTextField()
     }
   },
   [SET_TOAST](state, action) {
@@ -432,6 +472,12 @@ const actionsMap = {
     return {
       ...state,
       referrer: action.userId
+    }
+  },
+  [HIDE_PREVIEW_HINT](state) {
+    return {
+      ...state,
+      hidePreviewHint: true
     }
   }
 }

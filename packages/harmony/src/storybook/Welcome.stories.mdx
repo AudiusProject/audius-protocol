@@ -1,4 +1,4 @@
-import { Meta, Title, Unstyled } from '@storybook/blocks'
+import { Meta, Title } from '@storybook/blocks'
 
 import {
   Flex,
@@ -10,6 +10,7 @@ import {
   Paper
 } from 'components'
 import { IconNote } from 'icons'
+import { Heading, InformationBox, Subtitle } from 'storybook/components'
 
 import IconConsistency from './assets/Consistency.svg'
 import IconFigma from './assets/Figma.svg'
@@ -18,150 +19,161 @@ import IconReusable from './assets/Reusable.svg'
 import IconScalable from './assets/Scalable.svg'
 import IconUnity from './assets/Unity.svg'
 import openSource from './assets/openSource.png'
-import { InformationBox } from './components'
 
 <Meta title='Welcome' />
 
-<Title>Harmony Desgin System</Title>
+<Title>Harmony Design System</Title>
 
-Dive into our design guidelines, component documentation, and streamlined resources for building apps with Harmony.
+<Subtitle>
+  Dive into our design guidelines, component documentation, and streamlined
+  resources for building apps with Harmony.
+</Subtitle>
 
-## What's inside
+<Heading>
+## What's Inside
 
 Collaborative tools for designers and developers.
 
-<Unstyled>
-  <Flex gap='3xl' mv='3xl'>
-    <InformationBox
-      css={{
-        background: `url(${openSource})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-      title='Open Source Library'
-      description='Our Audius Protocol Harmony package on Github'
-      href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
-    />
-    <InformationBox
-      title='Foundations'
-      description="Harmony's core essence: type, color, spacing, shadows, and more."
-      href='/?path=/docs/foundations-welcome--documentation'
-      component={
-        <Flex alignItems='center' gap='xl'>
-          <Text variant='display' size='s'>
-            Ag
-          </Text>
-          <Flex
-            h={32}
-            w={32}
-            alignItems='center'
-            justifyContent='center'
-            css={{ background: 'rgba(90, 73, 202, 0.10)' }}
-          >
-            <Text>32</Text>
-          </Flex>
-          <Flex direction='column'>
-            <Box
-              h={24}
-              w={24}
-              css={(theme) => ({ background: theme.color.neutral.neutral })}
-            />
-            <Box
-              h={24}
-              w={24}
-              css={(theme) => ({ background: theme.color.neutral.n400 })}
-            />
-            <Box
-              h={24}
-              w={24}
-              css={(theme) => ({ background: theme.color.neutral.n150 })}
-            />
-          </Flex>
-          <Flex direction='column' gap='m'>
-            <Paper h={24} w={24} shadow='near' borderRadius='xs' />
-            <Paper h={24} w={24} shadow='near' borderRadius='s' />
-            <Paper h={24} w={24} shadow='near' borderRadius='2xl' />
-          </Flex>
-          <IconNote color='default' />
-        </Flex>
+</Heading>
 
-      }
-    />
-    <InformationBox
-      title='Components'
-      description='Detailed information and guidelines on each component.'
-      href='/?path=/docs/components-welcome--documentation'
-      css={{ overflow: 'hidden' }}
-      component={
+<Flex gap='3xl'>
+  <InformationBox
+    css={{
+      background: `url(${openSource})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}
+    title='Open Source Library'
+    description='Our Audius Protocol Harmony package on Github'
+    to={{ href: 'https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony' }}
+  />
+  <InformationBox
+    title='Foundations'
+    description="Harmony's core essence: type, color, spacing, shadows, and more."
+    to={{kind: 'foundations', story: 'documentation'}}
+    component={
+      <Flex alignItems='center' gap='xl'>
+        <Text variant='display' size='s'>
+          Ag
+        </Text>
         <Flex
-          gap='l'
+          h={32}
+          w={32}
           alignItems='center'
-          wrap='wrap'
+          justifyContent='center'
+          css={{ background: 'rgba(90, 73, 202, 0.10)' }}
         >
-          <Button size='small' variant='primary'>
-            Button
-          </Button>
-          <SelectablePill label='Pill' size='large' />
-          <TextInput
-            label='Display name'
-            placeholder='express yourself ✨'
-            _isFocused
+          <Text>32</Text>
+        </Flex>
+        <Flex direction='column'>
+          <Box
+            h={24}
+            w={24}
+            css={(theme) => ({ background: theme.color.neutral.neutral })}
+          />
+          <Box
+            h={24}
+            w={24}
+            css={(theme) => ({ background: theme.color.neutral.n400 })}
+          />
+          <Box
+            h={24}
+            w={24}
+            css={(theme) => ({ background: theme.color.neutral.n150 })}
           />
         </Flex>
-      }
-    />
+        <Flex direction='column' gap='m'>
+          <Paper h={24} w={24} shadow='near' borderRadius='xs' />
+          <Paper h={24} w={24} shadow='near' borderRadius='s' />
+          <Paper h={24} w={24} shadow='near' borderRadius='2xl' />
+        </Flex>
+        <IconNote color='default' />
+      </Flex>
+    }
+  />
 
-  </Flex>
-</Unstyled>
+  <InformationBox
+    title='Components'
+    description='Detailed information and guidelines on each component.'
+    to={{kind: 'components', story: 'documentation'}}
+    css={{ overflow: 'hidden' }}
+    component={
+      <Flex gap='l' alignItems='center' wrap='wrap'>
+        <Button size='small' variant='primary'>
+          Button
+        </Button>
+        <SelectablePill label='Pill' size='large' />
+        <TextInput
+          label='Display name'
+          placeholder='express yourself ✨'
+          _isFocused
+        />
+      </Flex>
+    }
+  />
+</Flex>
 
 ## Our Principles
 
-<Unstyled>
-  <Flex gap='3xl' mv='3xl'>
-    <InformationBox
-      title='Unity'
-      description='Uniting designers & developers with a unified language'
-      component={<IconUnity />}
-    />
-    <InformationBox
-      title='Consistency'
-      description='Create a reliable and consistent experience.'
-      component={<IconConsistency />}
-    />
-    <InformationBox
-      title='Reusable'
-      description='Aim to increases production and speed.'
-      component={<IconReusable />}
-    />
-    <InformationBox
-      title='Scalable'
-      description='Work should be created and replicated quickly.'
-      component={<IconScalable />}
-    />
-  </Flex>
-</Unstyled>
+<Flex gap='3xl'>
+  <InformationBox
+    title='Unity'
+    description='Uniting designers & developers with a unified language'
+    component={<IconUnity />}
+  />
+  <InformationBox
+    title='Consistency'
+    description='Create a reliable and consistent experience.'
+    component={<IconConsistency />}
+  />
+  <InformationBox
+    title='Reusable'
+    description='Aim to increases production and speed.'
+    component={<IconReusable />}
+  />
+  <InformationBox
+    title='Scalable'
+    description='Work should be created and replicated quickly.'
+    component={<IconScalable />}
+  />
+</Flex>
 
+<Heading>
 ## For Designers & Developers
 
 Empowering creativity with streamlined resources. Dive into our collaborative tools.
 
-<Unstyled>
-  <Flex gap='3xl' mv='3xl'>
-    <InformationBox
-      title='Figma'
-      description='Our public Figma library on Community.'
-      component={<IconFigma css={{ width: 50 }} />}
-      href='https://www.figma.com/files/1105962599171830714/team/1167502323345567390/Team?fuid=1060287303847875173'
-    />
-    <InformationBox
-      title='Github'
-      description='Our open-source library on GitHub'
-      component={<img css={{ width: 200 }} src={IconGitHub} />}
-      href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
-    />
-  </Flex>
-</Unstyled>
+</Heading>
 
+<Flex gap='3xl'>
+  <InformationBox
+    title='Figma'
+    description='Our public Figma library on Community.'
+    component={<IconFigma css={{ width: 50 }} />}
+    to={{
+      href: 'https://www.figma.com/files/1105962599171830714/team/1167502323345567390/Team?fuid=1060287303847875173'
+    }}
+  />
+  <InformationBox
+    title='Github'
+    description='Our open-source library on GitHub'
+    component={<img css={{ width: 200 }} src={IconGitHub} />}
+    to={{
+      href: 'https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    }}
+  />
+</Flex>
+
+<Heading>
 ## Feedback
 
-Help us improve this pattern by providing feedback, asking questions, and leaving any other comments in our Slack channel #feature-harmony.
+Help us improve this pattern by providing feedback, asking questions, and leaving any other comments in our Slack channel [#feature-harmony](https://audius-internal.slack.com/archives/C05MUGKK4AG).
+
+</Heading>
+
+<Heading>
+## Contributing
+
+Curious about adding a component to Harmony? Read our [contributing guide](https://www.notion.so/audiusproject/Submitting-for-Design-Updates-52a8bc3bb68747818a96d2721bace27f?pvs=4).
+
+</Heading>

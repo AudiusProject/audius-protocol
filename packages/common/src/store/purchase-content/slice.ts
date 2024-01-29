@@ -1,10 +1,12 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 
 import {
   ContentType,
   PurchaseContentError,
+  PurchaseContentPage,
   PurchaseContentStage
 } from './types'
 
@@ -14,6 +16,7 @@ type OnSuccess = {
 }
 
 type PurchaseContentState = {
+  page: PurchaseContentPage
   stage: PurchaseContentStage
   contentType: ContentType
   contentId: ID
@@ -23,15 +26,20 @@ type PurchaseContentState = {
   extraAmountPreset?: string
   error?: PurchaseContentError
   onSuccess?: OnSuccess
+  purchaseMethod: PurchaseMethod
+  purchaseVendor?: PurchaseVendor
 }
 
 const initialState: PurchaseContentState = {
+  page: PurchaseContentPage.PURCHASE,
   contentType: ContentType.TRACK,
   contentId: -1,
   extraAmount: undefined,
   extraAmountPreset: undefined,
   error: undefined,
-  stage: PurchaseContentStage.START
+  stage: PurchaseContentStage.IDLE,
+  purchaseMethod: PurchaseMethod.BALANCE,
+  purchaseVendor: undefined
 }
 
 const slice = createSlice({
@@ -43,11 +51,14 @@ const slice = createSlice({
       action: PayloadAction<{
         extraAmount?: number
         extraAmountPreset?: string
+        purchaseMethod: PurchaseMethod
+        purchaseVendor?: PurchaseVendor
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
       }>
     ) => {
+      state.page = PurchaseContentPage.PURCHASE
       state.stage = PurchaseContentStage.START
       state.error = undefined
       state.extraAmount = action.payload.extraAmount
@@ -55,6 +66,8 @@ const slice = createSlice({
       state.contentId = action.payload.contentId
       state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
+      state.purchaseMethod = action.payload.purchaseMethod
+      state.purchaseVendor = action.payload.purchaseVendor
     },
     buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
@@ -62,6 +75,9 @@ const slice = createSlice({
     usdcBalanceSufficient: (state) => {
       state.stage = PurchaseContentStage.PURCHASING
     },
+    coinflowPurchaseSucceeded: (_state) => {},
+    coinflowPurchaseFailed: (_state) => {},
+    coinflowPurchaseCanceled: (_state) => {},
     purchaseCanceled: (state) => {
       state.stage = PurchaseContentStage.CANCELED
     },
@@ -76,6 +92,12 @@ const slice = createSlice({
       }>
     ) => {
       state.stage = PurchaseContentStage.FINISH
+    },
+    setPurchasePage: (
+      state,
+      action: PayloadAction<{ page: PurchaseContentPage }>
+    ) => {
+      state.page = action.payload.page
     },
     purchaseContentFlowFailed: (
       state,

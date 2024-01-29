@@ -1,30 +1,19 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext } from 'react'
 
-import type { User, BNWei } from '@audius/common'
-import {
-  formatWei,
-  walletSelectors,
-  accountSelectors,
-  useSelectTierInfo,
-  isNullOrUndefined
-} from '@audius/common'
-import BN from 'bn.js'
+import type { User } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Text } from 'app/components/core'
-import { Skeleton } from 'app/components/skeleton'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 
 const { getAccountUser } = accountSelectors
-const { getAccountTotalBalance } = walletSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -53,58 +42,19 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   handle: {
     paddingRight: spacing(3)
-  },
-  tokens: {
-    position: 'absolute',
-    flexDirection: 'row',
-    alignItems: 'center',
-    right: spacing(4)
-  },
-  tokenBadge: {
-    marginRight: spacing(1)
   }
 }))
-
-/**
- * Pulls balances from account and wallet selectors. Will prefer the wallet
- * balance once it has loaded. Otherwise, will return the account balance if
- * available. Falls back to 0 if neither wallet or account balance are available.
- */
-const useTotalBalanceWithFallback = () => {
-  const account = useSelector(getAccountUser)
-  const walletTotalBalance = useSelector(getAccountTotalBalance)
-
-  return useMemo(() => {
-    if (!isNullOrUndefined(walletTotalBalance)) {
-      return walletTotalBalance
-    } else if (
-      !isNullOrUndefined(account) &&
-      !isNullOrUndefined(account.total_balance)
-    ) {
-      return new BN(account.total_balance) as BNWei
-    }
-
-    return null
-  }, [account, walletTotalBalance])
-}
 
 export const AccountDetails = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
-  const { user_id, name, handle } = accountUser
-  const { tier } = useSelectTierInfo(user_id)
-  const totalBalance = useTotalBalanceWithFallback()
+  const { name, handle } = accountUser
 
   const navigation = useAppDrawerNavigation()
 
   const handlePressAccount = useCallback(() => {
     navigation.push('Profile', { handle: 'accountUser' })
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
-
-  const handlePressRewards = useCallback(() => {
-    navigation.push('AudioScreen')
     drawerHelpers.closeDrawer()
   }, [navigation, drawerHelpers])
 
@@ -130,22 +80,6 @@ export const AccountDetails = () => {
         >
           @{handle}
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.tokens} onPress={handlePressRewards}>
-        <IconAudioBadge
-          tier={tier}
-          showNoTier
-          style={styles.tokenBadge}
-          height={spacing(7)}
-          width={spacing(7)}
-        />
-        {isNullOrUndefined(totalBalance) ? (
-          <Skeleton height={18} width={25} />
-        ) : (
-          <Text fontSize='large' weight='heavy'>
-            {formatWei(totalBalance, true, 0)}
-          </Text>
-        )}
       </TouchableOpacity>
     </View>
   )

@@ -1,0 +1,22 @@
+parameters:
+  service:
+    description: 'Service to push'
+    type: string
+machine: true
+resource_class: audiusproject/gcp-t2a-standard-4
+steps:
+  - checkout:
+      path: '~/audius-protocol'
+  - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+  - run:
+      name: Docker login
+      command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - run:
+      name: Install buildx if nonexistent
+      command: docker buildx version &> /dev/null || (docker buildx create --name ci-builder --use && echo "buildx installed")
+  - run: docker buildx version && docker buildx ls
+  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
+  - run:
+      name: Merge and push new tag manifest
+      command: . ~/.profile; audius-compose push-arm --prod "<< parameters.service >>"
+  - docker-prune

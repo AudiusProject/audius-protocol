@@ -1,75 +1,94 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { IconCampfire } from 'icons'
-
-import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
+import { Box, Flex } from 'components/layout'
+import { IconCaretDown, IconNote, IconUserFollowing } from 'icons'
 
 import { PlainButton } from './PlainButton'
 
-const baseProps: PlainButtonProps = {
-  iconLeft: IconCampfire,
-  iconRight: IconCampfire,
-  children: 'Click Me'
-}
-
-type StoryArgs = {
-  props: Partial<PlainButtonProps>
-  dark?: boolean
-}
-
-const meta: Meta<StoryArgs> = {
-  title: 'Components/Buttons/PlainButton',
-  component: ({ props }) => <PlainButton {...baseProps} {...props} />,
-  render: ({ dark, props }) => (
-    <div
-      style={{
-        background: dark ? '#878787' : undefined,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        padding: '16px',
-        justifyContent: 'center',
-        alignItems: 'flex-start'
-      }}
-    >
-      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-        <PlainButton {...baseProps} size={PlainButtonSize.DEFAULT} {...props} />
-        <PlainButton {...baseProps} size={PlainButtonSize.LARGE} {...props} />
-      </div>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-        <PlainButton
-          {...baseProps}
-          size={PlainButtonSize.DEFAULT}
-          {...props}
-          disabled
-        />
-        <PlainButton
-          {...baseProps}
-          size={PlainButtonSize.LARGE}
-          {...props}
-          disabled
-        />
-      </div>
-    </div>
-  )
+const meta: Meta<typeof PlainButton> = {
+  title: 'Buttons/PlainButton [beta]',
+  component: PlainButton
 }
 
 export default meta
 
-type Story = StoryObj<StoryArgs>
+type Story = StoryObj<typeof PlainButton>
+
+// Overview Story
+export const Primary: Story = {
+  render: () => (
+    <Flex
+      pv='2xl'
+      justifyContent='space-around'
+      borderRadius='s'
+      css={({ color }) => ({ backgroundColor: color.background.default })}
+    >
+      <PlainButton iconLeft={IconNote}>Button</PlainButton>
+      <PlainButton variant='subdued' iconLeft={IconNote}>
+        Button
+      </PlainButton>
+      <PlainButton variant='inverted' iconLeft={IconNote}>
+        Button
+      </PlainButton>
+    </Flex>
+  )
+}
 
 // Default
-export const Default: Story = {}
+export const Default: Story = {
+  render: () => <PlainButton iconLeft={IconNote}>Button</PlainButton>
+}
 
 // Subdued
 export const Subdued: Story = {
-  args: { props: { variant: PlainButtonType.SUBDUED } }
+  render: () => (
+    <PlainButton variant='subdued' iconLeft={IconNote}>
+      Button
+    </PlainButton>
+  )
 }
 
 // Inverted
 export const Inverted = {
-  args: {
-    dark: true,
-    props: { variant: PlainButtonType.INVERTED }
-  }
+  render: () => (
+    <Box pv='l' css={{ backgroundColor: '#888' }}>
+      <PlainButton variant='inverted' iconLeft={IconNote}>
+        Button
+      </PlainButton>
+    </Box>
+  )
+}
+
+// Config stories
+export const Sizes: Story = {
+  render: () => (
+    <Flex pv='2xl' alignItems='center' gap='xl'>
+      <PlainButton size='large' iconLeft={IconNote}>
+        Button
+      </PlainButton>
+      <PlainButton iconLeft={IconNote}>Button</PlainButton>
+    </Flex>
+  )
+}
+
+export const LeadingIcons: Story = {
+  render: () => (
+    <Flex pv='2xl' alignItems='center' gap='xl'>
+      <PlainButton iconLeft={IconUserFollowing}>Mutuals</PlainButton>
+      <PlainButton variant='subdued' iconLeft={IconUserFollowing}>
+        Mutuals
+      </PlainButton>
+    </Flex>
+  )
+}
+
+export const TrailingIcons: Story = {
+  render: () => (
+    <Flex pv='2xl' alignItems='center' gap='xl'>
+      <PlainButton size='large' iconRight={IconCaretDown}>
+        See More
+      </PlainButton>
+      <PlainButton iconRight={IconCaretDown}>See More</PlainButton>
+    </Flex>
+  )
 }

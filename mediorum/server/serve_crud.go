@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -32,7 +33,24 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	if err != nil {
 		return c.String(500, fmt.Sprintf("Failed to query ops: %v", err))
 	}
-	return c.JSON(200, ops)
+
+	// some peers can't talk to each other, so we do some gossip
+	// before we'd send all ops to all peers gossip style
+	// but this is a bit excessive what with the bandwidth
+	// so we only forward ops for which we are an orig upload mirror
+	// thus using rendezvous for gossip forwarding
+	filteredOps := make([]*crudr.Op, 0, len(ops)/2)
+	myHost := []byte(ss.Config.Self.Host)
+	for _, op := range ops {
+		// if our host doesn't appear in the record, we are not a mirror
+		if op.Table == "uploads" && !bytes.Contains(op.Data, myHost) {
+			continue
+		}
+		filteredOps = append(filteredOps, op)
+	}
+
+	c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=300")
+	return c.JSON(200, filteredOps)
 }
 
 func (ss *MediorumServer) serveCrudPush(c echo.Context) error {

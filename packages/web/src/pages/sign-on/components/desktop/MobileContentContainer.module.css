@@ -1,0 +1,5 @@
+.root {
+  background-color: var(--harmony-white);
+  text-align: left;
+  height: max-content;
+}

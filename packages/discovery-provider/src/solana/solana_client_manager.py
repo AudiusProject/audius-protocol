@@ -163,13 +163,15 @@ class SolanaClientManager:
             "solana_client_manager.py | get_slot | All requests failed to fetch",
         )
 
-    def get_token_accounts_by_owner(self, owner: Pubkey, retries=DEFAULT_MAX_RETRIES):
-        def _get_token_accounts_by_owner(client: Client, index):
+    def get_token_accounts_by_owner_json_parsed(
+        self, owner: Pubkey, retries=DEFAULT_MAX_RETRIES
+    ):
+        def _get_token_accounts_by_owner_json_parsed(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
-                    response = client.get_token_accounts_by_owner(
+                    response = client.get_token_accounts_by_owner_json_parsed(
                         owner,
                         TokenAccountOpts(
                             program_id=SPL_TOKEN_ID_PK, encoding="jsonParsed"
@@ -178,53 +180,27 @@ class SolanaClientManager:
                     return response.value
                 except Exception as e:
                     logger.error(
-                        f"solana_client_manager.py | get_token_accounts_by_owner, {e}",
+                        f"solana_client_manager.py | get_token_accounts_by_owner_json_parsed, {e}",
                         exc_info=True,
                     )
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | get_token_accounts_by_owner | Retrying with endpoint {endpoint}"
+                    f"solana_client_manager.py | get_token_accounts_by_owner_json_parsed | Retrying with endpoint {endpoint}"
                 )
             raise Exception(
-                f"solana_client_manager.py | get_token_accounts_by_owner | Failed with endpoint {endpoint}"
+                f"solana_client_manager.py | get_token_accounts_by_owner_json_parsed | Failed with endpoint {endpoint}"
             )
 
         return _try_all(
             self.clients,
-            _get_token_accounts_by_owner,
-            "solana_client_manager.py | get_token_accounts_by_owner | All requests failed to fetch",
+            _get_token_accounts_by_owner_json_parsed,
+            "solana_client_manager.py | get_token_accounts_by_owner_json_parsed | All requests failed to fetch",
         )
 
-    def get_account_info(self, account: Pubkey, retries=DEFAULT_MAX_RETRIES):
-        def _get_account_info(client: Client, index):
-            endpoint = self.endpoints[index]
-            num_retries = retries
-            while num_retries > 0:
-                try:
-                    response = client.get_account_info(account)
-                    return response.value
-                except Exception as e:
-                    logger.error(
-                        f"solana_client_manager.py | get_account_info, {e}",
-                        exc_info=True,
-                    )
-                num_retries -= 1
-                time.sleep(DELAY_SECONDS)
-                logger.error(
-                    f"solana_client_manager.py | get_account_info | Retrying with endpoint {endpoint}"
-                )
-            raise Exception(
-                f"solana_client_manager.py | get_account_info | Failed with endpoint {endpoint}"
-            )
-
-        return _try_all(
-            self.clients,
-            _get_account_info,
-            "solana_client_manager.py | get_account_info | All requests failed to fetch",
-        )
-
-    def get_account_info_json_parsed(self, account: Pubkey, retries=DEFAULT_MAX_RETRIES):
+    def get_account_info_json_parsed(
+        self, account: Pubkey, retries=DEFAULT_MAX_RETRIES
+    ):
         def _get_account_info_json_parsed(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries

@@ -1,3 +1,4 @@
+compatibility_date = "2023-11-06"
 type = "webpack"
 account_id = "3811365464a8e56b2b27a5590e328e49"
 workers_dev = true
@@ -5,6 +6,11 @@ workers_dev = true
 [site]
 bucket = "./build"
 entry-point = "workers-site"
+
+[env.test]
+name = "test"
+route = "test.audius.co/*"
+vars = { GA = "https://general-admission.audius.co" }
 
 [env.staging]
 name = "embed-staging"

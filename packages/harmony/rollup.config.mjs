@@ -1,16 +1,23 @@
+import { createRequire } from 'node:module'
+
 import svgr from '@svgr/rollup'
 import json from 'rollup-plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
-import typescript from 'typescript'
 import alias from '@rollup/plugin-alias'
 
 import pkg from './package.json' assert { type: 'json' }
 
+const cjsRequire = createRequire(import.meta.url)
+const tspCompiler = cjsRequire('ts-patch/compiler')
+
 const external = [
   ...Object.keys(pkg.devDependencies),
   ...Object.keys(pkg.peerDependencies),
-  '@emotion/react/jsx-runtime'
+  '@emotion/react/jsx-runtime',
+  '@emotion/cache',
+  '@emotion/is-prop-valid',
+  '@emotion/css'
 ]
 
 export default {
@@ -37,8 +44,8 @@ export default {
     }),
     svgr(),
     rollupTypescript({
-      clean: true,
-      typescript
+      typescript: tspCompiler,
+      clean: true
     })
   ],
   external

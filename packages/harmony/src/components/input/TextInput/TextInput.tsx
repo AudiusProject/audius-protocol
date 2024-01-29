@@ -3,6 +3,7 @@ import { ReactNode, forwardRef, useId } from 'react'
 import cn from 'classnames'
 
 import { Text, TextSize } from 'components/text'
+import type { TextColors } from 'foundations'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -10,9 +11,13 @@ import { useFocusState } from '../useFocusState'
 import styles from './TextInput.module.css'
 import { TextInputSize, type TextInputProps } from './types'
 
+/**
+ * An input is a field where users can enter and edit text and  enables the user to provide input in the form of plain text.
+ */
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props, ref) => {
     const {
+      'aria-label': ariaLabel,
       required,
       className,
       inputRootClassName,
@@ -36,13 +41,18 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      IconProps,
       endAdornment: endAdornmentProp,
+      _incorrectError,
+      _isHovered,
+      _isFocused,
+      _disablePointerEvents,
       ...other
     } = props
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' />
+      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -53,10 +63,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
      * Since Firefox doesn't support the :has() pseudo selector,
      * manually track the focused state and use classes for focus, required, and disabled
      */
-    const [isFocused, handleFocus, handleBlur] = useFocusState(
+    const [isFocusedState, handleFocus, handleBlur] = useFocusState(
       onFocusProp,
       onBlurProp
     )
+
+    const isFocused = _isFocused ?? isFocusedState
 
     // For focus behavior and accessiblity, <label> needs to have a htmlFor={} provided to an id matching the input
     const backupId = useId()
@@ -81,8 +93,15 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       maxLength &&
       characterCount >= showMaxLengthThreshold * maxLength
     // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
-    const showMaxlengthWarningColor =
-      maxLength && characterCount >= maxLengthWarningThreshold * maxLength
+    let maxLengthTextColor: TextColors = 'default'
+    if (maxLength && characterCount > maxLength) {
+      maxLengthTextColor = 'danger'
+    } else if (
+      maxLength &&
+      characterCount >= maxLengthWarningThreshold * maxLength
+    ) {
+      maxLengthTextColor = 'warning'
+    }
 
     // Styles for the root of the input
     const inputRootStyle = {
@@ -90,9 +109,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       [styles.small]: size === TextInputSize.SMALL,
       [styles.warning]: warningProp,
       [styles.error]: error,
-      [styles.focused]: isFocused,
+      [styles.focused]: isFocused || _isFocused,
       [styles.disabled]: disabled,
-      [styles.required]: required
+      [styles.required]: required,
+      [styles.hover]: _isHovered,
+      [styles.incorrectError]: _incorrectError,
+      [styles.disablePointerEvents]: _disablePointerEvents
     }
 
     // Styles for the input element itself
@@ -119,9 +141,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={props['aria-label'] ?? labelText}
+          aria-label={ariaLabel ?? labelText}
           aria-required={required}
-          role='textbox'
           id={id}
           {...other}
         />
@@ -151,7 +172,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          {StartIcon ? <StartIcon size='m' /> : null}
+          {StartIcon ? (
+            <StartIcon size='m' color='subdued' {...IconProps} />
+          ) : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex
@@ -184,7 +207,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                     variant='body'
                     size='xs'
                     tag='span'
-                    color={showMaxlengthWarningColor ? 'warning' : 'default'}
+                    color={maxLengthTextColor}
                   >
                     {characterCount}/{maxLength}
                   </Text>
@@ -200,7 +223,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             variant='body'
             size={helperTextSize}
             strength='default'
-            color={error ? 'danger' : 'default'}
+            color={error ? 'danger' : _incorrectError ? 'warning' : 'default'}
           >
             {helperText}
           </Text>

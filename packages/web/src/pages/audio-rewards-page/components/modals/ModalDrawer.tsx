@@ -2,7 +2,7 @@ import { Modal, ModalProps } from '@audius/stems'
 import cn from 'classnames'
 
 import Drawer, { DrawerProps } from 'components/drawer/Drawer'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './ModalDrawer.module.css'
 
@@ -16,7 +16,8 @@ type ModalDrawerProps = ModalProps &
  */
 const ModalDrawer = (props: ModalDrawerProps) => {
   const gradientTitle = props.useGradientTitle ?? true
-  if (isMobile()) {
+  const isMobile = useIsMobile()
+  if (isMobile) {
     return (
       <Drawer
         isOpen={props.isOpen}
@@ -28,7 +29,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
         zIndex={props.zIndex}
         shouldClose={props.shouldClose}
       >
-        <div className={styles.drawer}>
+        <div className={cn(styles.drawer, props.wrapperClassName)}>
           <div className={styles.titleContainer}>
             <span
               className={cn({

@@ -10,7 +10,8 @@ import {
   CollectionTrack,
   CollectionPageTrackRecord,
   CollectionsPageType,
-  DogEarType
+  DogEarType,
+  FeatureFlags
 } from '@audius/common'
 
 import {
@@ -20,9 +21,10 @@ import {
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
-import { SuggestedTracks } from 'components/suggested-tracks'
+import { SuggestedCollectionTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -118,6 +120,8 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
     tracks.status === Status.SUCCESS
@@ -264,19 +268,20 @@ const CollectionPage = ({
                 userId !== null &&
                 userId === playlistOwnerId &&
                 allowReordering &&
-                !isAlbum
+                (!isAlbum || isEditAlbumsEnabled)
               }
               removeText={`${messages.remove} ${
                 isAlbum ? messages.type.album : messages.type.playlist
               }`}
+              isAlbumPage={isAlbum}
             />
           </div>
         )}
       </Tile>
-      {isOwner && !isAlbum && !isNftPlaylist ? (
+      {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
         <>
           <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedTracks collectionId={playlistId} />
+          <SuggestedCollectionTracks collectionId={playlistId} />
         </>
       ) : null}
     </Page>

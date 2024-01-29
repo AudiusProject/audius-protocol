@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common'
+import { Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
@@ -37,6 +38,8 @@ export type DynamicImageProps = {
   useSkeleton?: boolean
   // Whether or not to use the default placeholder
   usePlaceholder?: boolean
+  // Whether or not to blur the background image
+  useBlur?: boolean
 } & ComponentPropsWithoutRef<'div'>
 
 const moveBehind = (ref: RefObject<HTMLDivElement>) => {
@@ -101,6 +104,7 @@ const DynamicImage = (props: DynamicImageProps) => {
     onClick,
     usePlaceholder = true,
     useSkeleton = true,
+    useBlur = false,
     ...other
   } = props
   const first = useRef<HTMLDivElement>(null)
@@ -154,7 +158,28 @@ const DynamicImage = (props: DynamicImageProps) => {
     immediate
   ])
   return (
-    <div className={cn(styles.wrapper, wrapperClassName)} {...other} role='img'>
+    <Box
+      className={cn(styles.wrapper, wrapperClassName)}
+      {...other}
+      role='img'
+      css={{
+        '&:before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: '100%',
+          ...(useBlur
+            ? {
+                backdropFilter: 'blur(25px)',
+                zIndex: 3
+              }
+            : undefined)
+        },
+        overflow: 'hidden'
+      }}
+    >
       {useSkeleton && displayImage === placeholder ? (
         <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
       ) : null}
@@ -171,7 +196,7 @@ const DynamicImage = (props: DynamicImageProps) => {
         onClick={onClick}
       />
       {children && <div className={styles.children}>{children}</div>}
-    </div>
+    </Box>
   )
 }
 

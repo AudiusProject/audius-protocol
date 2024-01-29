@@ -1,14 +1,13 @@
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import DesktopCollectionPage from '../collection-page/components/desktop/CollectionPage'
 import MobileCollectionPage from '../collection-page/components/mobile/CollectionPage'
 
 import { CollectiblesPlaylistPageProvider } from './CollectiblesPlaylistPageProvider'
 
-const isMobileClient = isMobile()
-
 export const CollectiblesPlaylistPage = () => {
-  const content = isMobileClient ? MobileCollectionPage : DesktopCollectionPage
+  const isMobile = useIsMobile()
+  const content = isMobile ? MobileCollectionPage : DesktopCollectionPage
 
   return (
     <CollectiblesPlaylistPageProvider>

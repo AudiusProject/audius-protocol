@@ -102,7 +102,7 @@ function poll_chain_health {
 
 
 function deploy_entity_manager {
-    cd ../../contracts
+    cd ../../../contracts
     npm i
     export NETHERMIND_DEPLOYER_PRIVATE_KEY
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run

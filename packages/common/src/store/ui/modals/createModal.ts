@@ -3,9 +3,29 @@ import { useCallback } from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { BaseModalState, CommonState } from 'store/index'
+import { ModalSource } from 'models/Analytics'
+import { CommonState } from 'store/index'
 
 import { actions } from './parentSlice'
+
+export type BaseModalState = {
+  isOpen: boolean | 'closing'
+}
+
+type BaseCreateModalConfig<T> = {
+  reducerPath: string
+  initialState: T & BaseModalState
+  sliceSelector?: (state: CommonState) => Record<string, any>
+}
+
+type ModalTrackingConfig<T> =
+  | { enableTracking?: false; getTrackingData?: never }
+  | {
+      enableTracking: true
+      getTrackingData: (state: T) => Record<string, any>
+    }
+
+type CreateModalConfig<T> = BaseCreateModalConfig<T> & ModalTrackingConfig<T>
 
 /**
  * Creates the necessary actions/reducers/selectors for a modal,
@@ -18,13 +38,7 @@ export const createModal = <T>({
   sliceSelector,
   enableTracking = false,
   getTrackingData
-}: {
-  reducerPath: string
-  initialState: T & BaseModalState
-  sliceSelector?: (state: CommonState) => Record<string, any>
-  enableTracking?: boolean
-  getTrackingData?: (state: T) => Record<string, any>
-}) => {
+}: CreateModalConfig<T>) => {
   const slice = createSlice({
     name: `modals/${reducerPath}`,
     initialState,
@@ -77,7 +91,10 @@ export const createModal = <T>({
     const dispatch = useDispatch()
 
     const onOpen = useCallback(
-      (state?: T) => {
+      (
+        state?: T,
+        { source }: { source: ModalSource } = { source: ModalSource.Unknown }
+      ) => {
         if (!state) {
           dispatch(open({ ...initialState, isOpen: true }))
         } else {
@@ -87,7 +104,11 @@ export const createModal = <T>({
           const trackingData =
             state && getTrackingData ? getTrackingData(state) : undefined
           dispatch(
-            actions.trackModalOpened({ name: reducerPath, trackingData })
+            actions.trackModalOpened({
+              name: reducerPath,
+              trackingData,
+              source
+            })
           )
         }
       },

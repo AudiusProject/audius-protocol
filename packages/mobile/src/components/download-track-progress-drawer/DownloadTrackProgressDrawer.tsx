@@ -1,16 +1,12 @@
 import { useCallback } from 'react'
 
-import { Platform, View } from 'react-native'
+import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
-import {
-  getDownloadedPercentage,
-  getFileName,
-  getFetchCancel
-} from 'app/store/download/selectors'
+import { getFileName, getFetchCancel } from 'app/store/download/selectors'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -50,12 +46,6 @@ const useStyles = makeStyles(({ palette }) => ({
     height: 40,
     alignSelf: 'flex-start',
     marginRight: 10
-  },
-
-  downloadPercent: {
-    fontSize: 40,
-    color: palette.neutral,
-    lineHeight: 46
   }
 }))
 
@@ -64,7 +54,6 @@ const messages = {
 }
 
 export const DownloadTrackProgressDrawer = () => {
-  const downloadPercentage = useSelector(getDownloadedPercentage)
   const fetchCancel = useSelector(getFetchCancel)
   const fileName = useSelector(getFileName)
 
@@ -86,11 +75,6 @@ export const DownloadTrackProgressDrawer = () => {
         </Text>
         <View style={styles.downloadContainer}>
           <LoadingSpinner style={styles.loadingIcon} color={spinnerColor} />
-          {Platform.OS === 'ios' ? (
-            <Text style={styles.downloadPercent} weight='heavy'>
-              {Math.round(downloadPercentage)}%
-            </Text>
-          ) : null}
         </View>
       </View>
     </NativeDrawer>

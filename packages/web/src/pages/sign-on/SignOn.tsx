@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import { useEffect, useState } from 'react'
 
 import { accountSelectors } from '@audius/common'
@@ -9,8 +10,8 @@ import { Dispatch } from 'redux'
 import * as signOnAction from 'common/store/pages/signon/actions'
 import { getPage } from 'common/store/pages/signon/selectors'
 import { Pages } from 'common/store/pages/signon/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 import { TRENDING_PAGE } from 'utils/route'
 
 import SignOnProvider from './SignOnProvider'
@@ -32,7 +33,6 @@ type SignOnContentProps = ReturnType<typeof mapStateToProps> &
 
 const SignOn = ({
   hasAccount,
-  isMobile,
   fetchReferrer,
   replaceRoute,
   location,
@@ -40,6 +40,7 @@ const SignOn = ({
   page,
   initialPage
 }: SignOnContentProps) => {
+  const isMobile = useIsMobile()
   const content = isMobile ? SignOnMobilePage : SignOnDesktopPage
   const [isInitialRender, setIsInitialRender] = useState(true)
 
@@ -76,7 +77,6 @@ const SignOn = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile(),
     hasAccount: getHasAccount(state),
     page: getPage(state)
   }
@@ -91,5 +91,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-// @ts-ignore
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignOn))
+export default withRouter(
+  // @ts-ignore
+  connect(mapStateToProps, mapDispatchToProps)(SignOn)
+) as unknown as ComponentType<{ signIn: boolean }>

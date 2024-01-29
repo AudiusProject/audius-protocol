@@ -3,15 +3,15 @@ import { useCallback } from 'react'
 import {
   FeatureFlags,
   Name,
-  PremiumConditions,
+  AccessConditions,
   TrackAvailabilityType,
-  useAccessAndRemixSettings
+  useAccessAndRemixSettings,
+  useFeatureFlag
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
@@ -32,38 +32,31 @@ const messages = {
 type UsdcPurchaseGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
-  initialPremiumConditions?: PremiumConditions
+  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
-  isScheduledRelease?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const {
-    isRemix,
-    isUpload,
-    initialPremiumConditions,
-    isInitiallyUnlisted,
-    isScheduledRelease
-  } = props
+  const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
+    props
 
   const handleClickWaitListLink = useCallback(() => {
     track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
   }, [])
 
-  const { isEnabled: isUsdcUploadEnabled } = useFlag(
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
   const { noUsdcGate } = useAccessAndRemixSettings({
     isUpload: !!isUpload,
     isRemix,
-    initialPremiumConditions: initialPremiumConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted,
-    isScheduledRelease: !!isScheduledRelease
+    initialStreamConditions: initialStreamConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted
   })
-  const disabled = noUsdcGate || !isUsdcUploadEnabled || isScheduledRelease
+  const disabled = noUsdcGate || !isUsdcUploadEnabled
 
   const helpContent = (
     <div className={styles.helpContent}>

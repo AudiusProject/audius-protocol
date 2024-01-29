@@ -1,14 +1,19 @@
-import cn from 'classnames'
-import { h } from 'preact'
-
-import styles from './PrimaryLabel.module.css'
+import { Text } from '@audius/harmony'
 
 const messages = {
-  label: 'Looking for more like this?'
+  more: 'Looking for more like this?',
+  buy: 'Buy The Full Track On Audius'
 }
 
-const PrimaryLabel = ({ className }) => {
-  return <div className={cn(styles.container, className)}>{messages.label}</div>
+const PrimaryLabel = ({ streamConditions }) => {
+  const isPurchaseable =
+    streamConditions && 'usdc_purchase' in streamConditions
+
+  return (
+    <Text color='default' variant='heading' size='s'>
+      {isPurchaseable ? messages.buy : messages.more}
+    </Text>
+  )
 }
 
 export default PrimaryLabel

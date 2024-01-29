@@ -224,6 +224,8 @@ services:
       - tests
       - notifications
 
+  # todo: this will need es-indexer container running for tests to pass..
+  # unless we just skip all the search tests for now
   test-discovery-provider:
     extends:
       file: docker-compose.yml
@@ -237,10 +239,8 @@ services:
       audius_redis_url: 'redis://discovery-provider-redis:6379/00'
 
       audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
-      audius_elasticsearch_run_indexer: 'true'
     volumes:
       - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
-      - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -292,7 +292,7 @@ services:
     build:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
-    command: discovery-migrations
+    command: comms discovery-migrations
     environment:
       audius_db_url: 'postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable'
     depends_on:

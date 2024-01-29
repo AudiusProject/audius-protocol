@@ -1,5 +1,4 @@
-import { h } from 'preact'
-import { useState, useContext, useCallback, useEffect } from 'preact/hooks'
+import { useState, useContext, useCallback, useEffect } from 'react'
 
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'

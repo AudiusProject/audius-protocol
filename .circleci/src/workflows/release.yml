@@ -21,6 +21,11 @@ jobs:
       service: discovery-provider-notifications
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-discovery-provider-openresty
+      context: [Vercel, dockerhub]
+      service: discovery-provider-openresty
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [Vercel, dockerhub, slack-secrets]
       service: trending-challenge-rewards
@@ -41,6 +46,11 @@ jobs:
       service: comms
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub, slack-secrets]
+      service: es-indexer
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc
@@ -55,6 +65,96 @@ jobs:
       context: [GCP, dockerhub, slack-secrets]
       service: dashboard
       notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex
+      notify_slack_on_failure: true
+
+  - push-arm-image:
+      name: push-discovery-provider-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider
+      requires:
+        - push-discovery-provider
+  - push-arm-image:
+      name: push-discovery-provider-notifications-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider-notifications
+      requires:
+        - push-discovery-provider-notifications
+  - push-arm-image:
+      name: push-pedalboard-trending-challenge-rewards-arm
+      context: [Vercel, dockerhub]
+      service: trending-challenge-rewards
+      requires:
+        - push-pedalboard-trending-challenge-rewards
+  - push-arm-image:
+      name: push-pedalboard-relay-arm
+      context: [Vercel, dockerhub]
+      service: relay
+      requires:
+        - push-pedalboard-relay
+
+  - push-arm-image:
+      name: push-pedalboard-sla-auditor-arm
+      context: [Vercel, dockerhub]
+      service: sla-auditor
+      requires:
+        - push-pedalboard-sla-auditor
+  - push-arm-image:
+      name: push-comms-arm
+      context: [Vercel, dockerhub]
+      service: comms
+      requires:
+        - push-comms
+  - push-arm-image:
+      name: push-trpc-arm
+      context: [Vercel, dockerhub]
+      service: trpc
+      requires:
+        - push-trpc
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      requires:
+        - push-protocol-dashboard
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      requires:
+        - push-healthz
+  - push-arm-image:
+      name: push-identity-service-arm
+      context: [Vercel, dockerhub]
+      service: identity-service
+      requires:
+        - push-identity-service
+  - push-arm-image:
+      name: push-mediorum-arm
+      context: [Vercel, dockerhub]
+      service: mediorum
+      requires:
+        - push-mediorum
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      requires:
+        - push-uptime
+  - push-arm-image:
+      name: push-ddex-arm
+      context: [Vercel, dockerhub]
+      service: ddex
+      requires:
+        - push-ddex
 
   - release-github-draft-trigger:
       type: approval
@@ -85,6 +185,7 @@ jobs:
         - push-identity-service
         - push-mediorum
         - push-discovery-provider
+        - push-discovery-provider-openresty
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
@@ -93,6 +194,22 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        - push-uptime
+        - push-ddex
+        # uncomment these when arm builds are stable
+        # - push-identity-service-arm
+        # - push-mediorum-arm
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-healthz-arm
+        # - push-protocol-dashboard-arm
+        # - push-uptime-arm
+        # - push-ddex-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

@@ -298,7 +298,7 @@ Upload the specified tracks and combine them into a new playlist.
 
 A playlist is a living thing that can change and grow over time. Playlists can contain a user's own tracks, as well as tracks uploaded by others.
 
-See [uploadAlbum](developers/write-albums) to upload an album instead of a playlist.
+See [uploadAlbum](/developers/sdk/Albums#uploadAlbum) to upload an album instead of a playlist.
 
 Example:
 

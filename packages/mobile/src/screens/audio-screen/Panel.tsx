@@ -191,7 +191,9 @@ export const Panel = ({
     >
       <View style={styles.pillContainer}>
         {needsDisbursement ? (
-          <Text style={styles.pillMessage}>{messages.readyToClaim}</Text>
+          <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
+            {messages.readyToClaim}
+          </Text>
         ) : showNewChallengePill ? (
           <LinearGradient
             useAngle={true}

@@ -19,15 +19,12 @@ import assert from 'assert'
 import { assertRelayAllowedInstructions } from '../../src/typed-routes/solana/solanaRelayChecks'
 import config from '../../src/config'
 import audiusLibsWrapper from '../../src/audiusLibsInstance'
+import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
 import {
-  createClaimableTokenAccountInstruction,
-  createTransferClaimableTokenInstruction,
-  createEvaluateAttestationsInstruction,
-  createSenderPublicInstruction,
-  createSubmitAttestationInstruction,
+  ClaimableTokensProgram,
+  RewardManagerProgram,
   RewardManagerInstruction
 } from '@audius/spl'
-import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(
   config.get('solanaClaimableTokenProgramAddress')
@@ -292,77 +289,77 @@ describe('Solana Relay', function () {
 
   describe('Reward Manager Program', function () {
     it('should allow public instructions with valid reward manager', async function () {
-      const transferId = 'some:id:thing'
+      const disbursementId = 'some:id:thing'
       // Some dummy eth addresses to make the encoder happy
       const senderEthAddress = '0x1dc3070311552fce47e06db9f4f1328187f14c85'
       const operatorEthAddress = '0x430ef095e4c5ac71a465b30d566bab0bb0985346'
-      const destinationEthAddress = '0x7311c8ec02f087cba0fdbb056d4cebc86519d871'
-      const verifiedMessages = getRandomPublicKey()
+      const recipientEthAddress = '0x7311c8ec02f087cba0fdbb056d4cebc86519d871'
+      const attestations = getRandomPublicKey()
       const authority = getRandomPublicKey()
       const payer = getRandomPublicKey()
       const sender = getRandomPublicKey()
       const rewardManagerTokenSource = getRandomPublicKey()
-      const destinationUserbank = getRandomPublicKey()
-      const transferAccount = getRandomPublicKey()
-      const antiAbuse = getRandomPublicKey()
+      const destinationUserBank = getRandomPublicKey()
+      const disbursementAccount = getRandomPublicKey()
+      const antiAbuseOracle = getRandomPublicKey()
       const existingSenders = [
         getRandomPublicKey(),
         getRandomPublicKey(),
         getRandomPublicKey()
       ]
       await assertRelayAllowedInstructions([
-        createSenderPublicInstruction(
+        RewardManagerProgram.createSenderPublicInstruction({
           senderEthAddress,
           operatorEthAddress,
-          REWARD_MANAGER_ACCOUNT,
+          rewardManagerState: REWARD_MANAGER_ACCOUNT,
           authority,
           payer,
           sender,
           existingSenders,
-          REWARD_MANAGER_PROGRAM_ID
-        ),
-        createSubmitAttestationInstruction(
-          transferId,
-          verifiedMessages,
-          REWARD_MANAGER_ACCOUNT,
+          rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+        }),
+        RewardManagerProgram.createSubmitAttestationInstruction({
+          disbursementId,
+          attestations,
+          rewardManagerState: REWARD_MANAGER_ACCOUNT,
           authority,
           payer,
           sender,
-          REWARD_MANAGER_PROGRAM_ID
-        ),
-        createEvaluateAttestationsInstruction(
-          transferId,
-          destinationEthAddress,
-          100n,
-          verifiedMessages,
-          REWARD_MANAGER_ACCOUNT,
+          rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+        }),
+        RewardManagerProgram.createEvaluateAttestationsInstruction({
+          disbursementId,
+          recipientEthAddress,
+          amount: 100n,
+          attestations,
+          rewardManagerState: REWARD_MANAGER_ACCOUNT,
           authority,
           rewardManagerTokenSource,
-          destinationUserbank,
-          transferAccount,
-          antiAbuse,
+          destinationUserBank,
+          disbursementAccount,
+          antiAbuseOracle,
           payer,
-          TOKEN_PROGRAM_ID,
-          REWARD_MANAGER_PROGRAM_ID
-        )
+          tokenProgramId: TOKEN_PROGRAM_ID,
+          rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+        })
       ])
     })
 
     it('should not allow public instructions with invalid reward manager', async function () {
-      const transferId = 'some:id:thing'
+      const disbursementId = 'some:id:thing'
       // Some dummy eth addresses to make the encoder happy
       const senderEthAddress = '0x1dc3070311552fce47e06db9f4f1328187f14c85'
       const operatorEthAddress = '0x430ef095e4c5ac71a465b30d566bab0bb0985346'
-      const destinationEthAddress = '0x7311c8ec02f087cba0fdbb056d4cebc86519d871'
-      const verifiedMessages = getRandomPublicKey()
+      const recipientEthAddress = '0x7311c8ec02f087cba0fdbb056d4cebc86519d871'
+      const attestations = getRandomPublicKey()
       const authority = getRandomPublicKey()
       const payer = getRandomPublicKey()
       const sender = getRandomPublicKey()
-      const rewardManager = getRandomPublicKey()
+      const rewardManagerState = getRandomPublicKey()
       const rewardManagerTokenSource = getRandomPublicKey()
-      const destinationUserbank = getRandomPublicKey()
-      const transferAccount = getRandomPublicKey()
-      const antiAbuse = getRandomPublicKey()
+      const destinationUserBank = getRandomPublicKey()
+      const disbursementAccount = getRandomPublicKey()
+      const antiAbuseOracle = getRandomPublicKey()
       const existingSenders = [
         getRandomPublicKey(),
         getRandomPublicKey(),
@@ -371,16 +368,16 @@ describe('Solana Relay', function () {
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            createSenderPublicInstruction(
+            RewardManagerProgram.createSenderPublicInstruction({
               senderEthAddress,
               operatorEthAddress,
-              rewardManager,
+              rewardManagerState,
               authority,
               payer,
               sender,
               existingSenders,
-              REWARD_MANAGER_PROGRAM_ID
-            )
+              rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+            })
           ]),
         InvalidRelayInstructionError,
         'invalid reward manager for createSenderPublic'
@@ -389,15 +386,15 @@ describe('Solana Relay', function () {
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            createSubmitAttestationInstruction(
-              transferId,
-              verifiedMessages,
-              rewardManager,
+            RewardManagerProgram.createSubmitAttestationInstruction({
+              disbursementId,
+              attestations,
+              rewardManagerState,
               authority,
               payer,
               sender,
-              REWARD_MANAGER_PROGRAM_ID
-            )
+              rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+            })
           ]),
         InvalidRelayInstructionError,
         'invalid reward manager for submitAttestation'
@@ -405,21 +402,21 @@ describe('Solana Relay', function () {
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            createEvaluateAttestationsInstruction(
-              transferId,
-              destinationEthAddress,
-              100n,
-              verifiedMessages,
-              rewardManager,
+            RewardManagerProgram.createEvaluateAttestationsInstruction({
+              disbursementId,
+              recipientEthAddress,
+              amount: 100n,
+              attestations,
+              rewardManagerState,
               authority,
               rewardManagerTokenSource,
-              destinationUserbank,
-              transferAccount,
-              antiAbuse,
+              destinationUserBank,
+              disbursementAccount,
+              antiAbuseOracle,
               payer,
-              TOKEN_PROGRAM_ID,
-              REWARD_MANAGER_PROGRAM_ID
-            )
+              tokenProgramId: TOKEN_PROGRAM_ID,
+              rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
+            })
           ]),
         InvalidRelayInstructionError,
         'invalid reward manager for evaluateAttestations'
@@ -427,16 +424,29 @@ describe('Solana Relay', function () {
     })
 
     it('should not allow non-public instructions', async function () {
+      // Some dummy eth addresses to make the encoder happy
+      const senderEthAddress = '0x1dc3070311552fce47e06db9f4f1328187f14c85'
+      const operatorEthAddress = '0x430ef095e4c5ac71a465b30d566bab0bb0985346'
+      const authority = getRandomPublicKey()
+      const payer = getRandomPublicKey()
+      const sender = getRandomPublicKey()
+      const rewardManagerState = getRandomPublicKey()
+      const manager = getRandomPublicKey()
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            new TransactionInstruction({
-              programId: REWARD_MANAGER_PROGRAM_ID,
-              keys: [],
-              data: Buffer.from([RewardManagerInstruction.Init])
+            RewardManagerProgram.createSenderInstruction({
+              senderEthAddress,
+              operatorEthAddress,
+              rewardManagerState,
+              manager,
+              authority,
+              payer,
+              sender,
+              rewardManagerProgramId: REWARD_MANAGER_PROGRAM_ID
             })
           ]),
-        'reward manager init'
+        'reward manager create sender'
       )
       await assert.rejects(
         async () =>
@@ -455,10 +465,10 @@ describe('Solana Relay', function () {
             new TransactionInstruction({
               programId: REWARD_MANAGER_PROGRAM_ID,
               keys: [],
-              data: Buffer.from([RewardManagerInstruction.CreateSender])
+              data: Buffer.from([RewardManagerInstruction.Init])
             })
           ]),
-        'non public create sender'
+        'reward manager init'
       )
       await assert.rejects(
         async () =>
@@ -480,50 +490,40 @@ describe('Solana Relay', function () {
       const wallet = '0xe42b199d864489387bf64262874fc6472bcbc151'
       const payer = getRandomPublicKey()
       const mint = getRandomPublicKey()
-      const userbank = getRandomPublicKey()
+      const userBank = getRandomPublicKey()
       const destination = getRandomPublicKey()
       const nonceAccount = getRandomPublicKey()
       const instructions = [
-        createClaimableTokenAccountInstruction(
-          wallet,
+        ClaimableTokensProgram.createAccountInstruction({
+          ethAddress: wallet,
           payer,
           mint,
-          usdcClaimableTokenAuthority,
-          userbank,
-          TOKEN_PROGRAM_ID,
-          CLAIMABLE_TOKEN_PROGRAM_ID
-        ),
-        createTransferClaimableTokenInstruction(
+          authority: usdcClaimableTokenAuthority,
+          userBank
+        }),
+        ClaimableTokensProgram.createTransferInstruction({
           payer,
-          userbank,
+          sourceEthAddress: wallet,
+          sourceUserBank: userBank,
           destination,
           nonceAccount,
-          0n,
-          usdcClaimableTokenAuthority,
-          1n,
-          TOKEN_PROGRAM_ID,
-          CLAIMABLE_TOKEN_PROGRAM_ID
-        ),
-        createClaimableTokenAccountInstruction(
-          wallet,
+          authority: usdcClaimableTokenAuthority
+        }),
+        ClaimableTokensProgram.createAccountInstruction({
+          ethAddress: wallet,
           payer,
           mint,
-          audioClaimableTokenAuthority,
-          userbank,
-          TOKEN_PROGRAM_ID,
-          CLAIMABLE_TOKEN_PROGRAM_ID
-        ),
-        createTransferClaimableTokenInstruction(
+          authority: audioClaimableTokenAuthority,
+          userBank
+        }),
+        ClaimableTokensProgram.createTransferInstruction({
           payer,
-          userbank,
+          sourceEthAddress: wallet,
+          sourceUserBank: userBank,
           destination,
           nonceAccount,
-          0n,
-          audioClaimableTokenAuthority,
-          1n,
-          TOKEN_PROGRAM_ID,
-          CLAIMABLE_TOKEN_PROGRAM_ID
-        )
+          authority: audioClaimableTokenAuthority
+        })
       ]
       await assertRelayAllowedInstructions(instructions)
     })
@@ -534,38 +534,33 @@ describe('Solana Relay', function () {
       const payer = getRandomPublicKey()
       const mint = getRandomPublicKey()
       const authority = getRandomPublicKey()
-      const userbank = getRandomPublicKey()
+      const userBank = getRandomPublicKey()
       const destination = getRandomPublicKey()
       const nonceAccount = getRandomPublicKey()
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            createClaimableTokenAccountInstruction(
-              wallet,
+            ClaimableTokensProgram.createAccountInstruction({
+              ethAddress: wallet,
               payer,
               mint,
               authority,
-              userbank,
-              TOKEN_PROGRAM_ID,
-              CLAIMABLE_TOKEN_PROGRAM_ID
-            )
+              userBank
+            })
           ]),
         'Invalid authority for create user bank'
       )
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions([
-            createTransferClaimableTokenInstruction(
+            ClaimableTokensProgram.createTransferInstruction({
               payer,
-              userbank,
+              sourceEthAddress: wallet,
+              sourceUserBank: userBank,
               destination,
               nonceAccount,
-              0n,
-              authority,
-              1n,
-              TOKEN_PROGRAM_ID,
-              CLAIMABLE_TOKEN_PROGRAM_ID
-            )
+              authority
+            })
           ]),
         InvalidRelayInstructionError,
         'Invalid authority for transfer user bank'

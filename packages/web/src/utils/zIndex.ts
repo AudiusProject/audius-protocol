@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+
 /**
  * Standardize the use of zIndex across the application
  *
@@ -8,7 +10,7 @@ export enum zIndex {
   // These are still set in css, added here for reference
   // TODO: use these enums
 
-  PREMIUM_TRACK_TILE_CORNER_TAG = 3,
+  GATED_TRACK_TILE_CORNER_TAG = 3,
 
   // FROSTED_HEADER_BACKGROUND = 10,
   // HEADER_CONTAINER = 13,
@@ -33,7 +35,12 @@ export enum zIndex {
   MUSIC_CONFETTI = 10000,
   WEB3_WALLET_CONNECT_MODAL = 10002,
   MODAL_OVERFLOW_MENU_POPUP = 10002,
-  USDC_MANUAL_TRANSFER_MODAL = 10002,
+  PREMIUM_CONTENT_PURCHASE_MODAL = 10002,
+  ADD_FUNDS_MODAL = 10003,
+  ADD_FUNDS_VENDOR_SELECTION_DRAWER = 10004,
+  USDC_MANUAL_TRANSFER_MODAL = 10004,
+  USDC_ADD_FUNDS_FILTER_BUTTON_POPUP = 10005,
+  COINFLOW_ONRAMP_MODAL = 10006,
   ARTIST_POPOVER_POPUP = 20000,
   PLAY_BAR_POPUP_MENU = 20001,
   FEATURE_FLAG_OVERRIDE_MODAL = 30000,

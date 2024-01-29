@@ -44,7 +44,7 @@ const messages = {
 const EditPlaylistModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, data } = useEditPlaylistModal()
-  const { collectionId, isCollectionViewed, initialFocusedField } = data
+  const { collectionId, isCollectionViewed } = data
   const collection = useSelector((state) =>
     getCollectionWithUser(state, { id: collectionId ?? undefined })
   )
@@ -75,16 +75,6 @@ const EditPlaylistModal = () => {
     isAlbum ? messages.title.album : messages.title.playlist
   }`
 
-  const [isArtworkPopupOpen, setIsArtworkPopupOpen] = useState(false)
-
-  const onOpenArtworkPopup = useCallback(() => {
-    setIsArtworkPopupOpen(true)
-  }, [setIsArtworkPopupOpen])
-
-  const onCloseArtworkPopup = useCallback(() => {
-    setIsArtworkPopupOpen(false)
-  }, [setIsArtworkPopupOpen])
-
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)
     onClose()
@@ -98,7 +88,6 @@ const EditPlaylistModal = () => {
       <Modal
         bodyClassName={styles.modalBody}
         modalKey='editplaylist'
-        dismissOnClickOutside={!isArtworkPopupOpen}
         isOpen={isOpen}
         onClose={onClose}
         zIndex={zIndex.EDIT_PLAYLIST_MODAL}
@@ -111,10 +100,6 @@ const EditPlaylistModal = () => {
             <LoadingSpinner className={styles.spinner} />
           ) : (
             <PlaylistForm
-              isEditMode
-              initialFocusedField={initialFocusedField}
-              onCloseArtworkPopup={onCloseArtworkPopup}
-              onOpenArtworkPopup={onOpenArtworkPopup}
               metadata={collection}
               isAlbum={isAlbum}
               onDelete={onClickDelete}

@@ -172,7 +172,7 @@ export const getSingleOtherChatUser = (
  * Gets a list of the users the current user has chats with.
  * Note that this only takes the first user of each chat that doesn't match the current one,
  * so this will need to be adjusted when we do group chats.
- */
+ **/
 export const getUserList = createSelector(
   [getUserId, getChats, getHasMoreChats, getChatsStatus],
   (currentUserId, chats, hasMore, chatsStatus) => {
@@ -303,20 +303,12 @@ export const getCanCreateChat = createSelector(
     if (!canCreateChat) {
       if (!userPermissions) {
         action = ChatPermissionAction.WAIT
-      } else if (
-        userPermissions.permits === ChatPermission.NONE ||
-        blockers.includes(user.user_id)
-      ) {
-        action = ChatPermissionAction.NONE
-      } else if (
-        userPermissions.permits === ChatPermission.FOLLOWEES &&
-        !user?.does_follow_current_user
-      ) {
-        action = ChatPermissionAction.NONE
       } else if (blockees.includes(user.user_id)) {
         action = ChatPermissionAction.UNBLOCK
       } else if (userPermissions.permits === ChatPermission.TIPPERS) {
         action = ChatPermissionAction.TIP
+      } else {
+        action = ChatPermissionAction.NONE
       }
     }
     return {

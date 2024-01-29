@@ -1,0 +1,56 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+
+import { useScreenOptions } from 'app/app/navigation'
+
+import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
+import { ConfirmEmailScreen } from './screens/ConfirmEmailScreen'
+import { CreateLoginDetailsScreen } from './screens/CreateLoginDetailsScreen'
+import { CreatePasswordScreen } from './screens/CreatePasswordScreen'
+import { FinishProfileScreen } from './screens/FinishProfileScreen'
+import { PickHandleScreen } from './screens/PickHandleScreen'
+import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
+import { SelectArtistsScreen } from './screens/SelectArtistScreen'
+import { SelectGenresScreen } from './screens/SelectGenresScreen'
+import { SignOnScreen } from './screens/SignOnScreen'
+
+const Stack = createNativeStackNavigator()
+const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
+
+type SignOnStackProps = {
+  isSplashScreenDismissed: boolean
+}
+
+export const SignOnStack = (props: SignOnStackProps) => {
+  const { isSplashScreenDismissed } = props
+  const screenOptions = useScreenOptions(screenOptionsOverrides)
+
+  return (
+    <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
+      <Stack.Group>
+        <Stack.Screen name='SignOn' options={{ headerShown: false }}>
+          {() => (
+            <SignOnScreen isSplashScreenDismissed={isSplashScreenDismissed} />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name='ConfirmEmail' component={ConfirmEmailScreen} />
+      </Stack.Group>
+      <Stack.Group>
+        <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
+        <Stack.Screen name='PickHandle' component={PickHandleScreen} />
+        <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
+        <Stack.Screen
+          name='CreateLoginDetails'
+          component={CreateLoginDetailsScreen}
+        />
+        <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
+        <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
+        <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
+        <Stack.Screen
+          name='AccountLoading'
+          component={AccountLoadingScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Group>
+    </Stack.Navigator>
+  )
+}

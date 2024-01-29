@@ -1,12 +1,6 @@
 /* globals Jimp */
 
-import { logError } from '../logError'
-
 export default () => {
-  const script = `${process.env.PREACT_APP_HOST_PREFIX}/assets/scripts/jimp.min.js`
-  // eslint-disable-next-line
-  importWorkerScript(script)
-
   /**
    * Returns a jpeg of a gif
    * @param {string} key identifies this computation
@@ -17,12 +11,8 @@ export default () => {
       url: imageUrl
     })
       .then((img) => {
-        if (
-          process.env.PREACT_APP_ENVIRONMENT !== 'production' ||
-          process.env.SHOW_ERROR_LOGS
-        ) {
-          self.console.log(imageUrl, img)
-        }
+        // eslint-disable-next-line
+        self.console.log(imageUrl, img)
         const mimeType = 'image/jpeg'
         img.getBufferAsync(mimeType).then((buffer) => {
           // eslint-disable-next-line
@@ -32,14 +22,14 @@ export default () => {
         })
       })
       .catch((err) => {
-        logError(imageUrl, err)
+        console.error(imageUrl, err)
         // eslint-disable-next-line
         postMessage({ key, result: new Blob() })
       })
   }
 
   // eslint-disable-next-line
-  self.addEventListener('message', (e) => {
+  self.addEventListener('message', e => {
     if (!e) return
     gifPreview(JSON.parse(e.data))
   })

@@ -7,6 +7,7 @@
   background: var(--white);
   margin-bottom: 0px;
   padding-top: 0px;
+  overflow: hidden;
 
   user-select: none;
   touch-action: none;
@@ -18,8 +19,7 @@
 .fullDrawer {
   top: 0px;
   height: 100vh;
-  overflow-x: hidden;
-  overflow-y: scroll;
+  overflow: hidden;
   touch-action: auto;
 }
 

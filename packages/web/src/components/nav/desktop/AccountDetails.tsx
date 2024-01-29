@@ -1,13 +1,12 @@
 import { accountSelectors } from '@audius/common'
 
-import { Avatar } from 'components/avatar'
+import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { Link, UserLink } from 'components/link'
 import { Text } from 'components/typography'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import styles from './AccountDetails.module.css'
-import NavAudio from './NavAudio'
 
 const { getAccountUser } = accountSelectors
 
@@ -24,7 +23,7 @@ export const AccountDetails = () => {
   return (
     <div className={styles.userHeader}>
       <div className={styles.accountWrapper}>
-        <Avatar userId={account?.user_id} />
+        <AvatarLegacy userId={account?.user_id} />
         <div className={styles.userInfo}>
           {account ? (
             <>
@@ -59,7 +58,6 @@ export const AccountDetails = () => {
           )}
         </div>
       </div>
-      <NavAudio />
     </div>
   )
 }

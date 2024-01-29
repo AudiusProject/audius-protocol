@@ -47,7 +47,9 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP]: 0,
   [IntKeys.CACHE_ENTRY_TTL]: DEFAULT_ENTRY_TTL,
   [IntKeys.HANDLE_VERIFICATION_TIMEOUT_MILLIS]:
-    DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS
+    DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS,
+  [IntKeys.COINFLOW_MAXIMUM_CENTS]: 1000,
+  [IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS]: 500
 }
 
 export const remoteConfigStringDefaults: {
@@ -89,8 +91,8 @@ export const remoteConfigStringDefaults: {
   [StringKeys.COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER]: '',
   [StringKeys.STRIPE_ALLOWED_COUNTRIES_2_LETTER]: '',
   [StringKeys.AUDIO_FEATURES_DEGRADED_TEXT]: null,
-  [StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS]: '100,500,1000',
-  [StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS]: ''
+  [StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS]: '200,500,1000',
+  [StringKeys.EXPLORE_PREMIUM_DENIED_USERS]: ''
 }
 
 export const remoteConfigDoubleDefaults: {
@@ -113,7 +115,6 @@ export const remoteConfigBooleanDefaults: {
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK]: true,
   [BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM]: true,
   [BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK]: false,
-  [BooleanKeys.USE_AMPLITUDE]: true,
   [BooleanKeys.AUDIO_TRANSACTIONS_ENABLED]: false,
   [BooleanKeys.ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS]: false
 }

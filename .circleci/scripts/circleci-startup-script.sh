@@ -4,8 +4,15 @@ set -ex
 # See https://circleci.com/docs/runner-installation-linux/
 # Self-hosted runners should link to this file as the startup script.
 
+# Stop circleci if it exists and is running
+systemctl stop circleci.service &>/dev/null || true
+systemctl disable circleci.service &>/dev/null || true
+
+
+# set platform used for circleci installer and token
 export platform="linux/amd64"
 gcp_key="circleci-auth-token"
+cpus="$(lscpu | grep -E '^CPU\(s\)\:\s+[0-9]+$' | awk '{print $2}')"
 
 case "$(uname -m)" in
     "arm64" | "aarch64" | "arm")
@@ -14,16 +21,27 @@ case "$(uname -m)" in
         ;;
     "x86_64" | *)
         platform="linux/amd64"
-        gcp_key="circleci-auth-token"
+        case "$cpus" in
+            8)
+            gcp_key="circleci-auth-token-gcp-n2-standard-8"
+            ;;
+            4 | *)
+            gcp_key="circleci-auth-token"
+            ;;
+        esac
         ;;
 esac
 
+
+# install basic dependencies
 apt install -y git coreutils curl
+
 
 # download and run circleci agent installer script
 curl -L https://raw.githubusercontent.com/CircleCI-Public/runner-installation-files/main/download-launch-agent.sh -o download-launch-agent.sh
 sh ./download-launch-agent.sh
 rm download-launch-agent.sh
+
 
 # setup user and dirs
 id -u circleci &>/dev/null || adduser --disabled-password --gecos GECOS circleci
@@ -33,11 +51,12 @@ mkdir -p /var/opt/circleci
 chmod 0750 /var/opt/circleci
 chown -R circleci /var/opt/circleci /opt/circleci
 
+
 # setup config
 mkdir -p /etc/opt/circleci && touch /etc/opt/circleci/launch-agent-config.yaml
 chown -R circleci: /etc/opt/circleci
 chmod 600 /etc/opt/circleci/launch-agent-config.yaml
-cat <<EOT >> /etc/opt/circleci/launch-agent-config.yaml
+cat <<EOT > /etc/opt/circleci/launch-agent-config.yaml
 api:
   auth_token: $(gcloud secrets versions access 1 --secret=$gcp_key)
 
@@ -47,14 +66,17 @@ runner:
   cleanup_working_directory: true
 EOT
 
-# allow sudo
-echo "circleci ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 
-# enable circleci systemd service
+# allow sudo
+echo "circleci ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/circleci
+chmod 440 /etc/sudoers.d/circleci
+
+
+# setup circleci systemd service
 touch /usr/lib/systemd/system/circleci.service
 chown root: /usr/lib/systemd/system/circleci.service
 chmod 755 /usr/lib/systemd/system/circleci.service
-cat <<EOT >> /usr/lib/systemd/system/circleci.service
+cat <<EOT > /usr/lib/systemd/system/circleci.service
 [Unit]
 Description=CircleCI Runner
 After=network.target
@@ -70,6 +92,15 @@ EOT
 systemctl enable circleci.service
 systemctl start circleci.service
 
-# Periodically clean up local docker registry
-# Runs every hour, checks if disk usage exceeds 80%, then runs docker system prune
-echo '5 * * * * root [ $(df | grep /dev/root | awk '"'"'{print $5}'"'"' | grep -oP "^\d+") -gt 80 ] && docker system prune -f | logger -t dockerprune' >> /etc/crontab
+cleanup_comment='# circleci runner auto-prune'
+
+# remove existing cleanup job from crontab if present
+tmpcron="$(mktemp)"
+grep -v "$cleanup_comment" /etc/crontab > "$tmpcron"
+cat "$tmpcron" > /etc/crontab
+
+# remove deprecated hourly cleanup script
+rm /etc/cron.hourly/audius-ci-hourly || true
+
+# remove deprecated periodic-cleanup script
+rm /usr/local/sbin/periodic-cleanup || true

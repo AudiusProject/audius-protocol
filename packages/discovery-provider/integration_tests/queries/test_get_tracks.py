@@ -14,7 +14,7 @@ def populate_tracks(db):
                 "track_id": 1,
                 "title": "track 1",
                 "owner_id": 1287289,
-                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 20),
                 "created_at": datetime(2018, 5, 17),
             },
             {
@@ -27,7 +27,7 @@ def populate_tracks(db):
                 "track_id": 3,
                 "title": "track 3",
                 "owner_id": 1287289,
-                "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 18),
                 "created_at": datetime(2020, 5, 17),
                 "ai_attribution_user_id": 1287289,
             },
@@ -35,42 +35,42 @@ def populate_tracks(db):
                 "track_id": 4,
                 "title": "track 4",
                 "owner_id": 1287289,
-                "release_date": "",
+                "release_date": None,
                 "created_at": datetime(2018, 5, 19),
             },
             {
                 "track_id": 5,
                 "title": "track 5",
                 "owner_id": 1287289,
-                "release_date": "garbage-should-not-parse",
+                "release_date": None,
                 "created_at": datetime(2018, 5, 20),
             },
             {
                 "track_id": 6,
                 "title": "track 6",
                 "owner_id": 4,
-                "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 18),
                 "created_at": datetime(2020, 5, 17),
             },
             {
                 "track_id": 7,
                 "title": "track 7",
                 "owner_id": 4,
-                "release_date": "",
+                "release_date": None,
                 "created_at": datetime(2018, 5, 19),
             },
             {
                 "track_id": 8,
                 "title": "track 8",
                 "owner_id": 4,
-                "release_date": "garbage-should-not-parse",
+                "release_date": None,
                 "created_at": datetime(2018, 5, 20),
             },
             {
                 "track_id": 9,
                 "title": "track 9",
                 "owner_id": 4,
-                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 25),
                 "created_at": datetime(2018, 5, 20),
                 "is_unlisted": True,
             },
@@ -78,7 +78,7 @@ def populate_tracks(db):
                 "track_id": 10,
                 "title": "track 10",
                 "owner_id": 4,
-                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 25),
                 "created_at": datetime(2018, 5, 21),
                 "is_delete": True,
             },
@@ -86,7 +86,7 @@ def populate_tracks(db):
                 "track_id": 11,
                 "title": "track 11",
                 "owner_id": 1287289,
-                "release_date": "Fri Dec 19 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 19),
                 "created_at": datetime(2018, 5, 17),
                 "is_unlisted": True,
             },
@@ -94,7 +94,7 @@ def populate_tracks(db):
                 "track_id": 12,
                 "title": "track 12",
                 "owner_id": 5,
-                "release_date": "Fri Jun 19 2020 12:00:00 GMT-0800",
+                "release_date": datetime(2020, 6, 19),
                 "created_at": datetime(2018, 5, 21),
                 "ai_attribution_user_id": 1287289,
             },
@@ -102,29 +102,29 @@ def populate_tracks(db):
                 "track_id": 13,
                 "title": "track 13",
                 "owner_id": 5,
-                "release_date": "Fri Oct 7 2022 12:00:00 GMT-0800",
+                "release_date": datetime(2022, 10, 7),
                 "created_at": datetime(2018, 5, 17),
             },
             {
                 "track_id": 14,
                 "title": "track 14",
                 "owner_id": 5,
-                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 25),
                 "created_at": datetime(2020, 5, 17),
             },
             {
                 "track_id": 15,
                 "title": "track 15",
                 "owner_id": 1287289,
-                "release_date": "",
-                "created_at": datetime(2017, 5, 19, 1),
+                "release_date": None,
+                "created_at": datetime(2017, 5, 19),
             },
             {
                 "track_id": 16,
                 "title": "track 16",
                 "owner_id": 1287289,
-                "release_date": "Fri May 19 2017 12:00:00 GMT-0800",
-                "created_at": datetime(2017, 5, 19, 10),
+                "release_date": datetime(2017, 5, 19),
+                "created_at": datetime(2017, 5, 19),
             },
         ],
         "track_routes": [
@@ -188,8 +188,8 @@ def test_get_tracks_by_date(app):
 
         # tracks created on the same day, with one missing 'release_date`
         # should fall back to sorting by id
-        assert tracks[5]["track_id"] == 16
-        assert tracks[6]["track_id"] == 15
+        assert tracks[5]["track_id"] == 15
+        assert tracks[6]["track_id"] == 16
 
         assert tracks[0]["permalink"] == "/some-test-user/track-1"
         assert tracks[4]["permalink"] == "/some-test-user/track-2"

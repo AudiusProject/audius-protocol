@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ID, User, UserListStoreState, CommonState } from '@audius/common'
 import {
@@ -7,6 +7,7 @@ import {
   userListSelectors
 } from '@audius/common'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
+import { range } from 'lodash'
 import { View } from 'react-native'
 import type { Selector } from 'react-redux'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,9 +17,22 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
+import { UserListItemSkeleton } from './UserListItemSkeleton'
 const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset, setLoading } = userListActions
 const { getUsers } = cacheUsersSelectors
+
+const keyExtractor = (item: User) => item.user_id.toString()
+
+const skeletonData = range(6).map((index) => ({
+  _loading: true,
+  user_id: `skeleton ${index}`
+}))
+
+// Currently there is a lot of complex data that can change in users.
+// This is a nearly static list, with only follow/unfollow actions
+// The follow/unfollow action is handled by the follow button
+const MemoizedUserListItem = memo(UserListItem, () => true)
 
 const useStyles = makeStyles(({ spacing }) => ({
   spinner: {
@@ -115,10 +129,24 @@ export const UserList = (props: UserListProps) => {
     }
   }, [hasMore, isFocused, dispatch, tag])
 
-  const data =
-    isEmpty || isRefreshing || loading || !isFocused
-      ? cachedUsers.current
-      : users
+  const shouldUseCachedData = isEmpty || isRefreshing || loading || !isFocused
+  const showSkeletons = hasMore || loading
+
+  const data = useMemo(() => {
+    const userData = shouldUseCachedData ? cachedUsers.current : users
+    return [...userData, ...(showSkeletons ? skeletonData : [])]
+  }, [shouldUseCachedData, users, showSkeletons])
+
+  const renderItem = useCallback(
+    ({ item }) =>
+      '_loading' in item ? (
+        <UserListItemSkeleton tag={tag} />
+      ) : (
+        <MemoizedUserListItem user={item} tag={tag} />
+      ),
+
+    [tag]
+  )
 
   const loadingSpinner = (
     <LoadingSpinner
@@ -126,20 +154,17 @@ export const UserList = (props: UserListProps) => {
     />
   )
 
-  if ((loading || isRefreshing) && data.length === 0) {
-    return loadingSpinner
-  }
-
   const footer = <View style={styles.footer} />
 
   return (
     <FlatList
       style={styles.list}
       data={data}
-      renderItem={({ item }) => <UserListItem user={item} tag={tag} />}
-      keyExtractor={(item) => item.user_id.toString()}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}
       onEndReached={handleEndReached}
+      onEndReachedThreshold={3}
       ListFooterComponent={loading || isRefreshing ? loadingSpinner : footer}
     />
   )

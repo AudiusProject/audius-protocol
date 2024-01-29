@@ -1,0 +1,47 @@
+.root {
+  font-family: var(--harmony-font-family);
+  position: absolute;
+}
+
+.popup {
+  background-color: var(--harmony-white);
+  border-radius: var(--harmony-unit-2);
+  border: 1px solid var(--harmony-neutral-light-7);
+  box-shadow: 0 16px 20px 0 var(--harmony-tile-shadow-1-alt);
+  user-select: none;
+}
+
+.header {
+  border: none;
+  margin-bottom: var(--harmony-unit-1);
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header::after {
+  content: '';
+  width: var(--harmony-unit-2);
+  padding-right: var(--harmony-unit-half);
+}
+
+.header.noAfter::after {
+  content: none !important;
+}
+
+.title {
+  margin: 0 auto;
+  justify-self: center;
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-neutral);
+}
+
+.iconRemove {
+  cursor: pointer;
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
+  padding-left: var(--harmony-unit-half);
+  transition: all var(--harmony-quick);
+}

@@ -9,10 +9,10 @@
 import { accountSagas } from 'store/account'
 import { buyUSDCSagas } from 'store/buy-usdc'
 import { sagas as castSagas } from 'store/cast/sagas'
+import { gatedContentSagas } from 'store/gated-content'
 import { chatSagas } from 'store/pages/chat'
 import { playbackPositionSagas } from 'store/playback-position'
 import { playerSagas } from 'store/player'
-import { premiumContentSagas } from 'store/premium-content'
 import { purchaseContentSagas } from 'store/purchase-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
 import {
@@ -25,6 +25,7 @@ import {
   shareModalUISagas,
   stripeModalUISagas,
   uploadConfirmationModalUISagas,
+  publishTrackConfirmationModalUISagas,
   modalsSagas
 } from 'store/ui'
 
@@ -50,7 +51,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
-  premiumContent: premiumContentSagas,
+  gatedContent: gatedContentSagas,
   purchaseContent: purchaseContentSagas,
   chat: chatSagas,
   searchUsers: searchUsersModalSagas,
@@ -62,6 +63,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,
+  publishTrackConfirmationModalUI: publishTrackConfirmationModalUISagas,
   publishPlaylistConfirmationModalUI: publishPlaylistConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
@@ -74,7 +76,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // once AudiusBackend and dependencies are migrated
   // ./pages/explore/exploreCollections/sagas.ts
   // ./pages/explore/sagas.ts
-  // components/add-to-playlist/store/sagas.ts
+  // components/add-to-collection/store/sagas.ts
   // components/share-sound-to-tiktok-modal/store/sagas.ts
   // store/social/tracks/sagas.ts
   // store/social/users/sagas.ts

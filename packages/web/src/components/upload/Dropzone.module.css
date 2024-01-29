@@ -35,12 +35,15 @@
   width: 40px;
   height: 36px;
 }
+
 .iconUpload g path {
   fill: var(--neutral);
 }
+
 .text > span {
-  color: var(--primary);
+  color: var(--primary-dark-2);
 }
+
 .text > span:hover {
   border-bottom: 1px solid var(--primary);
 }
@@ -49,9 +52,11 @@
 .iconUpload g path {
   transition: all 0.2s ease-out !important;
 }
+
 .hoverBoundingBox:hover .iconUpload {
   transform: scale3d(1.2, 1.2, 1.2);
 }
+
 .hoverBoundingBox:hover .iconUpload g path {
   fill: var(--neutral-light-2);
 }

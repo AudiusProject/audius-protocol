@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import BN from 'bn.js'
 import { sampleSize } from 'lodash'
 
-import { WAUDIO_DECMIALS } from '../constants'
+import { WAUDIO_DECIMALS } from '../constants'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
 import { RewardsManagerError } from '../services/solana/errors'
 import type { AttestationMeta } from '../services/solana/rewards'
@@ -133,7 +133,7 @@ type CreateSenderPublicConfig = {
 }
 
 const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
-const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
+const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECIMALS
 
 export class Rewards extends Base {
   ServiceProvider: ServiceProvider
@@ -574,26 +574,19 @@ export class Rewards extends Base {
       const response: AxiosResponse<{
         result: string
         errorCode?: number
-        needs: keyof typeof GetAttestationError
       }> = await axios(request)
       // if attestation is successful, 'result' represents a signature
       // otherwise, 'result' is false
       // - there may or may not be a value for `needs` if the attestation fails
       // - depending on whether the user can take an action to attempt remediation
-      const { result, errorCode, needs } = response.data
+      const { result, errorCode } = response.data
 
       if (!result) {
-        logger.error(
-          `Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`
-        )
-        const mappedErr = needs
-          ? GetAttestationError[needs] ||
-            GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
-          : GetAttestationError.AAO_ATTESTATION_REJECTION
+        logger.error('Failed to get AAO attestation')
         return {
           success: null,
           aaoErrorCode: errorCode,
-          error: mappedErr
+          error: GetAttestationError.AAO_ATTESTATION_REJECTION
         }
       }
 

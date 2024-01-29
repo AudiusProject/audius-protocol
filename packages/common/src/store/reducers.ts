@@ -1,5 +1,8 @@
+import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
+
+import { SsrPageProps } from 'models/SsrPageProps'
 
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
@@ -21,6 +24,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -45,7 +49,10 @@ import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import { persistedSavePageReducer } from './pages/saved-page/reducer'
+import {
+  savePageReducer,
+  persistedSavePageReducer
+} from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -66,7 +73,6 @@ import {
   PlaylistLibraryState
 } from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
-import premiumContent from './premium-content/slice'
 import { purchaseContentReducer } from './purchase-content'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
@@ -86,10 +92,11 @@ import {
   TransactionDetailsState,
   withdrawUSDCReducer
 } from './ui'
-import addToPlaylistReducer, {
-  AddToPlaylistState
-} from './ui/add-to-playlist/reducer'
+import addToCollectionReducer, {
+  AddToCollectionState
+} from './ui/add-to-collection/reducer'
 import buyAudioReducer from './ui/buy-audio/slice'
+import coinflowModalReducer from './ui/coinflow-modal/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from './ui/collectible-details/slice'
@@ -103,6 +110,8 @@ import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import publishPlaylistConfirmationReducer from './ui/publish-playlist-confirmation-modal/slice'
 import { PublishPlaylistConfirmationModalState } from './ui/publish-playlist-confirmation-modal/types'
+import publishTrackConfirmationReducer from './ui/publish-track-confirmation-modal/slice'
+import { PublishTrackConfirmationModalState } from './ui/publish-track-confirmation-modal/types'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import relatedArtistsReducer from './ui/related-artists/slice'
 import { RelatedArtistsState } from './ui/related-artists/types'
@@ -136,7 +145,12 @@ import wallet from './wallet/slice'
  * A function that creates common reducers.
  * @returns an object of all reducers to be used with `combineReducers`
  */
-export const reducers = (storage: Storage) => ({
+export const reducers = (
+  storage: Storage,
+  ssrPageProps?: SsrPageProps,
+  isServerSide?: boolean,
+  history?: History
+) => ({
   account,
 
   api: apiReducer,
@@ -154,10 +168,10 @@ export const reducers = (storage: Storage) => ({
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
-  tracks: asCache(tracksReducer, Kind.TRACKS),
+  tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
   // TODO: Fix type error
   // @ts-ignore
-  users: asCache(usersReducer, Kind.USERS),
+  users: asCache(usersReducer(ssrPageProps), Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
 
@@ -181,7 +195,7 @@ export const reducers = (storage: Storage) => ({
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
-    addToPlaylist: addToPlaylistReducer,
+    addToCollection: addToCollectionReducer,
     buyAudio: buyAudioReducer,
 
     relatedArtists: relatedArtistsReducer,
@@ -199,10 +213,12 @@ export const reducers = (storage: Storage) => ({
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
+    coinflowModal: coinflowModalReducer,
     searchUsersModal: searchUsersModalReducer,
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     uploadConfirmationModal: uploadConfirmationReducer,
+    publishTrackConfirmationModal: publishTrackConfirmationReducer,
     userList: combineReducers({
       followers: followersUserListReducer,
       following: followingUserListReducer,
@@ -233,11 +249,13 @@ export const reducers = (storage: Storage) => ({
     historyPage: historyPageReducer,
     profile: profileReducer,
     smartCollection,
-    savedPage: persistedSavePageReducer(storage),
+    savedPage: isServerSide
+      ? savePageReducer
+      : persistedSavePageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
-    track,
-    trending,
+    track: track(ssrPageProps),
+    trending: trending(history),
     trendingPlaylists,
     trendingUnderground,
     settings,
@@ -253,10 +271,10 @@ export const reducers = (storage: Storage) => ({
   // Tipping
   tipping: tippingReducer,
 
-  // Premium content
+  // Gated content
   buyUSDC: buyUSDCReducer,
   buyCrypto: buyCryptoReducer,
-  premiumContent,
+  gatedContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
 
@@ -310,7 +328,7 @@ export type CommonState = {
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
-    addToPlaylist: AddToPlaylistState
+    addToCollection: AddToCollectionState
     changePassword: ChangePasswordState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
@@ -330,6 +348,7 @@ export type CommonState = {
     toast: ToastState
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
+    publishTrackConfirmationModal: PublishTrackConfirmationModalState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
@@ -381,9 +400,9 @@ export type CommonState = {
   // Tipping
   tipping: ReturnType<typeof tippingReducer>
 
-  // Premium content
+  // Gated content
   purchaseContent: ReturnType<typeof purchaseContentReducer>
-  premiumContent: ReturnType<typeof premiumContent>
+  gatedContent: ReturnType<typeof gatedContent>
   withdrawUSDC: ReturnType<typeof withdrawUSDCReducer>
 
   // Collectibles

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Audius</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://audius.co/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://audius.co/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://audius.co/favicons/favicon-16x16.png">
+
+    <script>
+      if (global === undefined) {
+        var global = window;
+      }
+    </script>
+
+    <!-- start Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
+    ></script>
+    <script>
+      try {
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          dataLayer.push(arguments)
+        }
+        gtag('js', new Date())
+        gtag('config', 'G-V6N1ZTVGS5')
+      } catch (e) {}
+    </script>
+    <!-- end Google Analytics -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
+</html>

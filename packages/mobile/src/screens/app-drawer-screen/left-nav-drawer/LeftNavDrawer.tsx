@@ -9,20 +9,21 @@ import {
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
-import { View } from 'react-native'
-import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
+import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconEmbed from 'app/assets/images/iconEmbed.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
+import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
+import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
@@ -34,12 +35,13 @@ import { VanityMetrics } from './VanityMetrics'
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
-const isStaging = Config.ENVIRONMENT === 'staging'
+const isStaging = env.ENVIRONMENT === 'staging'
 
 const messages = {
-  profile: 'Profile',
-  audio: '$AUDIO & Rewards',
-  upload: 'Upload a Track',
+  profile: 'Your Profile',
+  payAndEarn: 'Pay & Earn',
+  rewards: 'Rewards',
+  upload: 'Upload',
   listeningHistory: 'Listening History',
   settings: 'Settings',
   featureFlags: 'Feature Flags'
@@ -49,16 +51,6 @@ type AccountDrawerProps = DrawerContentComponentProps & {
   gesturesDisabled: boolean
   setGesturesDisabled: (disabled: boolean) => void
 }
-
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  notificationBubble: {
-    height: spacing(3),
-    width: spacing(3),
-    borderRadius: spacing(3),
-    backgroundColor: palette.secondary,
-    marginLeft: spacing(2)
-  }
-}))
 
 export const LeftNavDrawer = (props: AccountDrawerProps) => {
   const { navigation: drawerHelpers, ...other } = props
@@ -73,7 +65,6 @@ export const LeftNavDrawer = (props: AccountDrawerProps) => {
 }
 
 const WrappedLeftNavDrawer = () => {
-  const styles = useStyles()
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const hasUnreadMessages = useSelector(getHasUnreadMessages)
@@ -86,12 +77,6 @@ const WrappedLeftNavDrawer = () => {
     <DrawerContentScrollView>
       <AccountDetails />
       <VanityMetrics />
-      <LeftNavLink
-        icon={IconUser}
-        label={messages.profile}
-        to='Profile'
-        params={{ handle: 'accountUser' }}
-      />
       {isChatEnabled ? (
         <LeftNavLink
           icon={IconMessage}
@@ -101,21 +86,25 @@ const WrappedLeftNavDrawer = () => {
           onPress={() => {
             track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'navmenu' }))
           }}
-        >
-          {hasUnreadMessages ? (
-            <View style={styles.notificationBubble} />
-          ) : null}
-        </LeftNavLink>
+          showNotificationBubble={hasUnreadMessages}
+        />
       ) : null}
       <LeftNavLink
-        icon={IconCrown}
-        label={messages.audio}
-        to='AudioScreen'
+        icon={IconDonate}
+        label={messages.payAndEarn}
+        to='PayAndEarnScreen'
         params={null}
       >
-        {hasClaimableRewards ? (
-          <View style={styles.notificationBubble} />
-        ) : null}
+        <USDCBalancePill />
+      </LeftNavLink>
+      <LeftNavLink
+        icon={IconCrown}
+        label={messages.rewards}
+        to='AudioScreen'
+        params={null}
+        showNotificationBubble={hasClaimableRewards}
+      >
+        <AudioBalancePill />
       </LeftNavLink>
       <LeftNavLink
         icon={IconUpload}
@@ -133,6 +122,12 @@ const WrappedLeftNavDrawer = () => {
         label={messages.listeningHistory}
         to='ListeningHistoryScreen'
         params={null}
+      />
+      <LeftNavLink
+        icon={IconUser}
+        label={messages.profile}
+        to='Profile'
+        params={{ handle: 'accountUser' }}
       />
       <LeftNavLink
         icon={IconSettings}

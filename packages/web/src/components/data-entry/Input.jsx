@@ -153,11 +153,7 @@ Input.propTypes = {
   isRequired: PropTypes.bool,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
-  inputRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
-  ])
+  onBlur: PropTypes.func
 }
 
 Input.defaultProps = {

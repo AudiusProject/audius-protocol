@@ -6,7 +6,7 @@ The program derives a PDA to own tokens as an intermediary before paying out.
 
 This program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
-Here is the [deployed program](https://explorer.solana.com/address/6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp).
+Here is the [deployed program](https://explorer.solana.com/address/paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa).
 
 ## Versions
 
@@ -72,16 +72,20 @@ For example,
 
 ### Testing the PDA creation
 
-Note that the PDA has already been created, so attempting to create it again will fail. Here is [the PDA account](https://explorer.solana.com/address/67EAQXgyWFzWWDuxwkZjV4FdH4rQ2AidBp5iB4M4kWth).
+Note that the PDA has already been created, so attempting to create it again will fail. Here is [the PDA account](https://explorer.solana.com/address/8L2FL5g9y9CzAFY1471tLAXBUsupdp1kNeFuP648mqxR).
 
 ```
 ./scripts/testCreatePaymentRouterBalancePda.sh
 ```
 
-### Testing the Wormhole transfer
+### Testing the Routing
 
-This will send 0.00001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
+The following scripts will respectively send 0.0001 AUDIO / USDC tokens from the fee payer to the payment router, which will distribute it across the given recipients.
 
 ```
-./scripts/testRoute.sh
+./scripts/testRouteAudio.sh
+```
+
+```
+./scripts/testRouteUsdc.sh
 ```

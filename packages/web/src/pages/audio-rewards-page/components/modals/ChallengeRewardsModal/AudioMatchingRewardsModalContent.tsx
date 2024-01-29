@@ -15,15 +15,13 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import { ProgressDescription } from './ProgressDescription'
@@ -31,8 +29,6 @@ import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 const { getOptimisticUserChallenges } = challengesSelectors
-
-dayjs.extend(utc)
 
 const messages = {
   rewardMapping: {
@@ -47,7 +43,7 @@ const messages = {
   },
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
-  totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
+  totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
   audio: '$AUDIO'
@@ -94,6 +90,7 @@ export const AudioMatchingRewardsModalContent = ({
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
@@ -126,8 +123,8 @@ export const AudioMatchingRewardsModalContent = ({
   const progressStatusLabel =
     userChallenge && userChallenge?.disbursed_amount > 0 ? (
       <div className={styles.audioMatchingTotalContainer}>
-        <Text variant='label' size='l' strength='strong' color='subdued'>
-          {messages.totalEarned(
+        <Text variant='label' size='l' strength='strong'>
+          {messages.totalClaimed(
             formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
         </Text>
@@ -145,7 +142,7 @@ export const AudioMatchingRewardsModalContent = ({
 
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
-      {isMobile() ? (
+      {isMobile ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>

@@ -15,7 +15,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   accountListItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -31,6 +31,17 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   label: {
     marginTop: spacing(1)
+  },
+  notificationBubble: {
+    position: 'absolute',
+    top: spacing(-1),
+    right: spacing(2),
+    height: spacing(4),
+    width: spacing(4),
+    borderRadius: spacing(3),
+    borderWidth: spacing(0.5),
+    borderColor: palette.white,
+    backgroundColor: palette.secondary
   }
 }))
 
@@ -45,6 +56,7 @@ type LeftNavLinkProps<Screen extends keyof AppTabScreenParamList> = {
   labelProps?: TextProps
   children?: ReactNode
   onPress?: () => void
+  showNotificationBubble?: boolean
 }
 
 export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
@@ -58,7 +70,8 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
     label,
     labelProps,
     children,
-    onPress
+    onPress,
+    showNotificationBubble
   } = props
   const styles = useStyles()
   const { neutral } = useThemeColors()
@@ -82,6 +95,9 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
           {...iconProps}
           style={[styles.accountListItemIcon, iconProps?.style]}
         />
+        {showNotificationBubble ? (
+          <View style={styles.notificationBubble} />
+        ) : null}
       </View>
       <Text
         fontSize='large'

@@ -1,9 +1,9 @@
-import { h } from 'preact'
-
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
 import ShareButton from '../button/ShareButton'
+import { DogEar } from '../dog-ear/DogEar'
 import PlayButton from '../playbutton/PlayButton'
+import { Preview } from '../preview/Preview'
 import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 import Titles from '../titles/Titles'
 
@@ -22,8 +22,12 @@ const TrackPlayerCompact = ({
   position,
   duration,
   seekTo,
-  backgroundColor
+  backgroundColor,
+  streamConditions
 }) => {
+  const isPurchaseable =
+    streamConditions && 'usdc_purchase' in streamConditions
+
   return (
     <div
       className={styles.container}
@@ -44,14 +48,18 @@ const TrackPlayerCompact = ({
         />
       </div>
       <div className={styles.trackInfo}>
+        {isPurchaseable ? <DogEar size='s' /> : null}
         <div className={styles.topSection}>
-          <BedtimeScrubber
-            mediaKey={`title-${mediaKey}`}
-            playingState={playingState}
-            seekTo={seekTo}
-            duration={duration}
-            elapsedSeconds={position}
-          />
+          {isPurchaseable ? <Preview /> : null}
+          <div className={styles.scrubber}>
+            <BedtimeScrubber
+              mediaKey={`title-${mediaKey}`}
+              playingState={playingState}
+              seekTo={seekTo}
+              duration={duration}
+              elapsedSeconds={position}
+            />
+          </div>
           <div className={styles.logo}>
             <AudiusLogoButton />
           </div>

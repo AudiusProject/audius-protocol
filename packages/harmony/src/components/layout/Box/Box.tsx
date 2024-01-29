@@ -1,9 +1,11 @@
 import styled from '@emotion/styled'
 
+import type { SpacingOptions } from 'foundations/spacing'
+
 import type { BoxProps } from './types'
 
 /** Base layout component used as a building block for creating pages and other components. */
-export const Box = styled.div(
+export const Box = styled.div<BoxProps>(
   ({
     h,
     w,
@@ -21,12 +23,23 @@ export const Box = styled.div(
     ml,
     mr,
     mb,
+    backgroundColor,
     border,
+    borderTop,
+    borderRight,
+    borderBottom,
+    borderLeft,
     borderRadius,
+    borderTopRightRadius,
+    borderBottomRightRadius,
+    borderBottomLeftRadius,
+    borderTopLeftRadius,
     shadow,
     flex,
-    alignSelf
-  }: BoxProps) => {
+    alignSelf,
+    theme
+  }) => {
+    const { shadows, spacing, color, cornerRadius } = theme
     const padT = pt ?? pv ?? p
     const padB = pb ?? pv ?? p
     const padL = pl ?? ph ?? p
@@ -40,20 +53,33 @@ export const Box = styled.div(
     return {
       position: 'relative',
       boxSizing: 'border-box',
-      height: h,
-      width: w,
-      boxShadow: shadow && `var(--harmony-shadow-${shadow})`,
-      paddingTop: padT && `var(--harmony-spacing-${padT})`,
-      paddingLeft: padL && `var(--harmony-spacing-${padL})`,
-      paddingRight: padR && `var(--harmony-spacing-${padR})`,
-      paddingBottom: padB && `var(--harmony-spacing-${padB})`,
-      marginTop: marginT && `var(--harmony-spacing-${marginT})`,
-      marginLeft: marginL && `var(--harmony-spacing-${marginL})`,
-      marginRight: marginR && `var(--harmony-spacing-${marginR})`,
-      marginBottom: marginB && `var(--harmony-spacing-${marginB})`,
-      border: border && `1px solid var(--harmony-border-${border})`,
-      borderRadius:
-        borderRadius && `var(--harmony-border-radius-${borderRadius})`,
+      height: spacing[h as SpacingOptions] ?? h,
+      width: spacing[w as SpacingOptions] ?? w,
+      boxShadow: shadow && shadows[shadow],
+      paddingTop: padT && spacing[padT],
+      paddingLeft: padL && spacing[padL],
+      paddingRight: padR && spacing[padR],
+      paddingBottom: padB && spacing[padB],
+      marginTop: marginT && spacing[marginT],
+      marginLeft: marginL && spacing[marginL],
+      marginRight: marginR && spacing[marginR],
+      marginBottom: marginB && spacing[marginB],
+      backgroundColor:
+        backgroundColor && theme.color.background[backgroundColor],
+      border: border && `1px solid ${color.border[border]}`,
+      borderTop: borderTop && `1px solid ${color.border[borderTop]}`,
+      borderRight: borderRight && `1px solid ${color.border[borderRight]}`,
+      borderBottom: borderBottom && `1px solid ${color.border[borderBottom]}`,
+      borderLeft: borderLeft && `1px solid ${color.border[borderLeft]}`,
+      borderRadius: borderRadius && cornerRadius[borderRadius],
+      borderTopRightRadius:
+        borderTopRightRadius && cornerRadius[borderTopRightRadius],
+      borderBottomRightRadius:
+        borderBottomRightRadius && cornerRadius[borderBottomRightRadius],
+      borderBottomLeftRadius:
+        borderBottomLeftRadius && cornerRadius[borderBottomLeftRadius],
+      borderTopLeftRadius:
+        borderTopLeftRadius && cornerRadius[borderTopLeftRadius],
       flex,
       alignSelf
     }

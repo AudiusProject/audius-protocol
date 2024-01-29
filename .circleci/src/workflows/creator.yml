@@ -15,6 +15,15 @@ jobs:
       name: test-mediorum-unittests
       context: Vercel
       service: mediorum-unittests
+  - push-arm-image:
+      name: push-mediorum-arm
+      context: [Vercel, dockerhub]
+      service: mediorum
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-mediorum
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:

@@ -75,7 +75,7 @@ export class File extends Base {
     callback: Nullable<(url: string) => void> = null,
     responseType: ResponseType = 'blob',
     trackId = null,
-    premiumContentHeaders = {}
+    gatedContentHeaders = {}
   ) {
     try {
       const replicaSetAttempt = await this.fetchCIDInternal(
@@ -84,7 +84,7 @@ export class File extends Base {
         callback,
         responseType,
         trackId,
-        premiumContentHeaders
+        gatedContentHeaders
       )
       return replicaSetAttempt
     } catch (e) {
@@ -102,7 +102,7 @@ export class File extends Base {
         callback,
         responseType,
         trackId,
-        premiumContentHeaders,
+        gatedContentHeaders,
         0
       )
       return allNodesAttempt
@@ -115,7 +115,7 @@ export class File extends Base {
     callback: Nullable<(url: string) => void> = null,
     responseType: ResponseType = 'blob',
     trackId = null,
-    premiumContentHeaders = {},
+    gatedContentHeaders = {},
     retries = 3
   ) {
     const urls: string[] = []
@@ -136,7 +136,7 @@ export class File extends Base {
             {
               method: 'get',
               responseType,
-              ...premiumContentHeaders
+              ...gatedContentHeaders
             },
             /* timeout */ null
           )
@@ -174,7 +174,7 @@ export class File extends Base {
                 {
                   method: 'get',
                   responseType,
-                  ...premiumContentHeaders
+                  ...gatedContentHeaders
                 },
                 /* timeout */ null
               )

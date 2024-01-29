@@ -116,3 +116,26 @@ export const usePageTitle = () => {
 export const isCryptoPage = (route: string) => {
   return route.startsWith(GOVERNANCE) || route.startsWith(SERVICES)
 }
+
+export const navRoutes = [
+  {
+    baseRoute: HOME,
+    matchParams: [{ path: HOME, exact: true }],
+    text: 'OVERVIEW'
+  },
+  {
+    baseRoute: ANALYTICS,
+    matchParams: [{ path: ANALYTICS, exact: true }, { path: API }],
+    text: 'ANALYTICS'
+  },
+  {
+    baseRoute: SERVICES,
+    matchParams: [{ path: `${SERVICES}*` }],
+    text: 'SERVICES'
+  },
+  {
+    baseRoute: GOVERNANCE,
+    matchParams: [{ path: `${GOVERNANCE}*` }],
+    text: 'GOVERNANCE'
+  }
+]

@@ -36,6 +36,8 @@ import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
 import type { OfflineDownloadsState } from './offline-downloads/slice'
 import offlineDownloads from './offline-downloads/slice'
+import type { PurchaseVendorState } from './purchase-vendor/slice'
+import purchaseVendor from './purchase-vendor/slice'
 import rootSaga from './sagas'
 import type { SearchState } from './search/searchSlice'
 import search from './search/searchSlice'
@@ -64,6 +66,7 @@ export type AppState = CommonState & {
   search: SearchState
   walletConnect: WalletConnectState
   shareToStoryProgress: ShareToStoryProgressState
+  purchaseVendor: PurchaseVendorState
 }
 
 const messages = {
@@ -123,7 +126,8 @@ const rootReducer = combineReducers({
   remoteConfig,
   search,
   walletConnect,
-  shareToStoryProgress
+  shareToStoryProgress,
+  purchaseVendor
 })
 
 const sagaMiddleware = createSagaMiddleware({
@@ -132,11 +136,6 @@ const sagaMiddleware = createSagaMiddleware({
 })
 
 const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk), thunk]
-
-if (__DEV__) {
-  const createDebugger = require('redux-flipper').default
-  middlewares.push(createDebugger())
-}
 
 export const store = createStore(
   rootReducer,

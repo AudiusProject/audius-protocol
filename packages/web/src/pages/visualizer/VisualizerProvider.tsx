@@ -105,6 +105,9 @@ const Visualizer = ({
 
   // Rebind audio
   useEffect(() => {
+    if (!audioPlayer) {
+      return
+    }
     if (playing) {
       if (audioPlayer.audioCtx) {
         Visualizer1?.bind(audioPlayer)
@@ -176,7 +179,7 @@ const Visualizer = ({
           artistUserId={user.user_id}
           isVerified={user.is_verified}
           isTrackUnlisted={track.is_unlisted}
-          isPremium={track.is_premium}
+          isStreamGated={track.is_stream_gated}
           onClickTrackTitle={() => {
             goToTrackPage()
             onClose()

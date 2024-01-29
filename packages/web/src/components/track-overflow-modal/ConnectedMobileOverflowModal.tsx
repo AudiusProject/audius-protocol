@@ -12,7 +12,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
-  addToPlaylistUIActions,
+  addToCollectionUIActions,
   deletePlaylistConfirmationModalUIActions,
   OverflowSource,
   mobileOverflowMenuUISelectors,
@@ -20,12 +20,14 @@ import {
   modalsSelectors,
   queueSelectors,
   shareModalUIActions,
-  useEditPlaylistModal
+  useEditPlaylistModal,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -42,7 +44,7 @@ const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
-const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
@@ -90,7 +92,7 @@ const ConnectedMobileOverflowModal = ({
   unrepostCollection,
   saveCollection,
   unsaveCollection,
-  addToPlaylist,
+  addToCollection,
   deletePlaylist,
   publishPlaylist,
   visitTrackPage,
@@ -101,6 +103,7 @@ const ConnectedMobileOverflowModal = ({
   unfollow,
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   // Create callbacks
   const { onOpen: onOpenEditPlaylist } = useEditPlaylistModal()
   const {
@@ -109,6 +112,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite,
     onUnfavorite,
     onShare,
+    onAddToAlbum,
     onAddToPlaylist,
     onEditPlaylist,
     onPublishPlaylist,
@@ -125,6 +129,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite?: () => void
     onUnfavorite?: () => void
     onShare?: () => void
+    onAddToAlbum?: () => void
     onAddToPlaylist?: () => void
     onEditPlaylist?: () => void
     onPublishPlaylist?: () => void
@@ -145,7 +150,8 @@ const ConnectedMobileOverflowModal = ({
           onUnrepost: () => unrepostTrack(id as ID),
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
-          onAddToPlaylist: () => addToPlaylist(id as ID, title),
+          onAddToAlbum: () => addToCollection('album', id as ID, title),
+          onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
             visitCollectiblePage(handle, id as string)
           },
@@ -177,9 +183,10 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist: isAlbum
-            ? () => {}
-            : () => onOpenEditPlaylist({ collectionId: id as ID }),
+          onEditPlaylist:
+            !isAlbum || isEditAlbumsEnabled
+              ? () => onOpenEditPlaylist({ collectionId: id as ID })
+              : () => {},
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}
@@ -209,6 +216,7 @@ const ConnectedMobileOverflowModal = ({
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
+      onAddToAlbum={onAddToAlbum}
       onAddToPlaylist={onAddToPlaylist}
       onVisitTrackPage={onVisitTrackPage}
       onEditPlaylist={onEditPlaylist}
@@ -355,8 +363,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       )
     },
     // Routes
-    addToPlaylist: (trackId: ID, title: string) =>
-      dispatch(openAddToPlaylist(trackId, title)),
+    addToCollection: (
+      collectionType: 'album' | 'playlist',
+      trackId: ID,
+      title: string
+    ) => dispatch(openAddToCollection(collectionType, trackId, title)),
     visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
     visitArtistPage: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),

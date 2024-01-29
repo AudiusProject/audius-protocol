@@ -1,13 +1,10 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { PurchaseVendor } from 'models/PurchaseContent'
+import { Status } from 'models/Status'
 import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
 
-import {
-  BuyUSDCStage,
-  USDCOnRampProvider,
-  PurchaseInfo,
-  BuyUSDCError
-} from './types'
+import { BuyUSDCStage, PurchaseInfo, BuyUSDCError } from './types'
 
 type StripeSessionStatus =
   | 'initialized'
@@ -21,21 +18,19 @@ type OnSuccess = {
   message?: string
 }
 
-type RecoveryStatus = 'idle' | 'in-progress' | 'success' | 'failure'
-
 type BuyUSDCState = {
   stage: BuyUSDCStage
   error?: BuyUSDCError
-  provider: USDCOnRampProvider
+  vendor?: PurchaseVendor
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
-  recoveryStatus: RecoveryStatus
+  recoveryStatus: Status
 }
 
 const initialState: BuyUSDCState = {
-  provider: USDCOnRampProvider.UNKNOWN,
+  vendor: undefined,
   stage: BuyUSDCStage.START,
-  recoveryStatus: 'idle'
+  recoveryStatus: Status.IDLE
 }
 
 const slice = createSlice({
@@ -46,12 +41,12 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         purchaseInfo: PurchaseInfo
-        provider: USDCOnRampProvider
+        vendor: PurchaseVendor
       }>
     ) => {
       state.stage = BuyUSDCStage.START
       state.error = undefined
-      state.provider = action.payload.provider
+      state.vendor = action.payload.vendor
     },
     purchaseStarted: (state) => {
       state.stage = BuyUSDCStage.PURCHASING
@@ -90,7 +85,7 @@ const slice = createSlice({
     },
     recoveryStatusChanged: (
       state,
-      action: PayloadAction<{ status: RecoveryStatus }>
+      action: PayloadAction<{ status: Status }>
     ) => {
       state.recoveryStatus = action.payload.status
     },

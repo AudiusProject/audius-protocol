@@ -5,8 +5,44 @@ import { Text } from 'components/text'
 
 import type { SelectablePillProps } from './types'
 
-const SelectablePillRoot = styled.button<SelectablePillProps>((props) => {
-  const { theme, isSelected, size } = props
+const InputRoot = styled.input({
+  cursor: 'inherit',
+  position: 'absolute',
+  opacity: 0,
+  width: '100%',
+  height: '100%',
+  top: 0,
+  left: 0,
+  margin: 0,
+  padding: 0,
+  zIndex: 1
+})
+
+export const SelectablePill = (props: SelectablePillProps) => {
+  const {
+    isSelected,
+    size = 'small',
+    _isHovered,
+    label,
+    icon: Icon,
+    ...other
+  } = props
+
+  const { disabled, type } = other
+
+  const theme = useTheme()
+  const { spacing } = theme
+
+  const hoverCss: CSSObject = {
+    backgroundColor: theme.color.secondary.s200,
+    color: theme.color.static.white,
+    border: `1px solid ${theme.color.secondary.secondary}`,
+    ...(size === 'large' && {
+      backgroundColor: theme.color.secondary.s100,
+      border: `1px solid ${theme.color.secondary.s200}`,
+      boxShadow: 'none'
+    })
+  }
 
   const activeCss: CSSObject = {
     backgroundColor: theme.color.secondary.s400,
@@ -18,65 +54,79 @@ const SelectablePillRoot = styled.button<SelectablePillProps>((props) => {
     })
   }
 
-  return {
+  const rootCss: CSSObject = {
     display: 'inline-flex',
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
-    height: theme.spacing.unit6,
-    backgroundColor: theme.color.special.white,
-    paddingInline: theme.spacing.unit3,
-    color: theme.color.text.subdued,
+    color: theme.color.text.default,
+    backgroundColor: theme.color.background.white,
     cursor: 'pointer',
     userSelect: 'none',
     transition: 'all 0.12s ease-out',
+    textWrap: 'nowrap',
     border: `1px solid ${theme.color.border.strong}`,
     borderRadius: theme.cornerRadius['2xl'],
-
+    ...(size === 'small' && {
+      height: theme.spacing.xl,
+      paddingInline: theme.spacing.m
+    }),
     ...(size === 'large' && {
-      height: theme.spacing.unit8,
-      paddingInline: theme.spacing.unit4,
-      color: theme.color.text.default,
+      height: theme.spacing['2xl'],
+      paddingInline: theme.spacing.l,
       boxShadow: theme.shadows.near
     }),
-
+    ...(disabled && { opacity: 0.45 }),
+    ...(_isHovered && hoverCss),
     ...(isSelected && activeCss),
-
-    ':hover': {
-      backgroundColor: theme.color.secondary.s200,
-      color: theme.color.static.white,
-      border: `1px solid ${theme.color.secondary.secondary}`,
-      ...(size === 'large' && {
-        backgroundColor: theme.color.secondary.s100,
-        border: `1px solid ${theme.color.secondary.s200})`,
-        boxShadow: 'none'
-      })
-    },
-
+    ...((disabled || _isHovered) && {
+      pointerEvents: 'none'
+    }),
+    ':hover': hoverCss,
     ':active': activeCss
   }
-})
-
-export const SelectablePill = (props: SelectablePillProps) => {
-  const { label, icon: Icon } = props
-  const { spacing } = useTheme()
 
   const iconCss = {
-    marginRight: spacing.unit1,
-    width: spacing.unit4,
-    height: spacing.unit4,
+    marginRight: spacing.xs,
+    width: spacing.l,
+    height: spacing.l,
 
     '& path': {
       fill: 'currentColor'
     }
   }
 
-  return (
-    <SelectablePillRoot {...props}>
+  const pillContent = (
+    <>
       {Icon ? <Icon css={iconCss} /> : null}
       <Text variant='body' tag='span'>
         {label}
       </Text>
-    </SelectablePillRoot>
+    </>
   )
+
+  switch (type) {
+    case 'checkbox':
+    case 'radio': {
+      const { checked, ...rest } = other
+
+      return (
+        <label css={rootCss}>
+          {pillContent}
+          <InputRoot {...rest} checked={checked ?? isSelected} />
+        </label>
+      )
+    }
+    case 'button':
+    case 'reset':
+    case 'submit':
+    default: {
+      return (
+        <button css={rootCss} {...other}>
+          {pillContent}
+        </button>
+      )
+    }
+  }
 }

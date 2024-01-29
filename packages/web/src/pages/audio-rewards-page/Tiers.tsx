@@ -20,8 +20,8 @@ import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'
@@ -228,7 +228,7 @@ const Tiers = () => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   return (
     <div className={styles.container}>
@@ -245,7 +245,7 @@ const Tiers = () => {
             isActive={tier === t}
             key={t}
             onClickDiscord={onClickDiscord}
-            isCompact={mobile}
+            isCompact={isMobile}
           />
         ))}
       </div>

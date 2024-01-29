@@ -1,35 +1,52 @@
-import type { ReactElement } from 'react'
+import type { ReactNode } from 'react'
 
-import { Flex, Link, Paper, Text } from 'components'
+import { Unstyled } from '@storybook/blocks'
+import { useTheme } from '@storybook/theming'
+
+import { Flex, Paper, Text } from 'components'
+
+import { Link } from './Link'
 
 type InformationBoxProps = {
   className?: string
-  component: ReactElement
+  component: ReactNode
   title: string
   description: string
-  href?: string
+  to?: { kind: string; story: string } | { href: string }
 }
 
 export const InformationBox = (props: InformationBoxProps) => {
-  const { component = null, title, description, href, className } = props
+  const { component = null, title, description, to, className } = props
+  const theme = useTheme()
+  const titleCss = { fontSize: '24px !important' }
 
   return (
-    <Paper as='section' direction='column' flex={1} gap='m'>
+    <Paper as='section' direction='column' flex={1} pb='l'>
       <Flex
-        p='xl'
+        h={144}
+        ph='xl'
         alignItems='center'
         justifyContent='center'
         className={className}
         css={(theme) => ({
           backgroundColor: theme.color.background.default,
-          height: 147
+          flexGrow: 0,
+          WebkitFlexGrow: 0
         })}
       >
-        {component}
+        <Unstyled>{component}</Unstyled>
       </Flex>
       <Flex direction='column' pv='xl' ph='l' gap='s'>
-        {href ? <Link href={href}>{title}</Link> : <Text>{title}</Text>}
-        <Text tag='section'>{description}</Text>
+        {to ? (
+          <Link {...to} css={titleCss}>
+            {title}
+          </Link>
+        ) : (
+          <p css={[titleCss, { color: `${theme.color.primary} !important` }]}>
+            {title}
+          </p>
+        )}
+        <Text>{description}</Text>
       </Flex>
     </Paper>
   )

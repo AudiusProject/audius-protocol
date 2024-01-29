@@ -17,6 +17,7 @@ class UndisbursedChallengeResponse(TypedDict):
     handle: str
     wallet: str
     created_at: str
+    cooldown_days: Optional[int]
 
 
 def to_challenge_response(
@@ -34,6 +35,7 @@ def to_challenge_response(
         "handle": handle,
         "wallet": wallet,
         "created_at": str(user_challenge.created_at),
+        "cooldown_days": challenge.cooldown_days,
     }
 
 

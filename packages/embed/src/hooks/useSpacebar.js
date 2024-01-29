@@ -1,4 +1,4 @@
-import { useEffect } from 'preact/hooks'
+import { useEffect } from 'react'
 
 // Calls `onSpaceBar` on spacebar press
 export const useSpacebar = (onSpaceBar, enabled) => {

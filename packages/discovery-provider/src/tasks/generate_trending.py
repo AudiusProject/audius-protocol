@@ -5,11 +5,12 @@ from urllib.parse import unquote
 from sqlalchemy import desc, func
 
 from src.models.social.aggregate_plays import AggregatePlay
-from src.models.social.follow import Follow
 from src.models.social.play import Play
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     get_genre_list,
@@ -127,15 +128,18 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         record["track_id"]: record["created_at"] for record in listen_counts
     }
 
-    # Query repost counts
-    repost_counts = get_repost_counts(session, False, True, track_ids, None)
+    agg_track_rows = (
+        session.query(
+            AggregateTrack.track_id,
+            AggregateTrack.save_count,
+            AggregateTrack.repost_count,
+        )
+        .filter(AggregateTrack.track_id.in_(track_ids))
+        .all()
+    )
 
     # Generate track_id --> repost_count mapping
-    track_repost_counts = {
-        repost_item_id: repost_count
-        for (repost_item_id, repost_count, repost_type) in repost_counts
-        if repost_type == RepostType.track
-    }
+    track_repost_counts = {r["track_id"]: r["repost_count"] for r in agg_track_rows}
 
     # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
     track_repost_counts_for_time = get_repost_counts(
@@ -165,15 +169,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     # Generate list of owner ids
     track_owner_list = [owner_id for (track_id, owner_id) in track_owners_query]
 
-    # build dict of owner_id --> follower_count
     follower_counts = (
-        session.query(Follow.followee_user_id, func.count(Follow.followee_user_id))
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.followee_user_id.in_(track_owner_list),
-        )
-        .group_by(Follow.followee_user_id)
+        session.query(AggregateUser.user_id, AggregateUser.follower_count)
+        .filter(AggregateUser.user_id.in_(track_owner_list))
         .all()
     )
     follower_count_dict = {
@@ -183,13 +181,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     # Query save counts
-    save_counts = get_save_counts(session, False, True, track_ids, None)
+
     # Generate track_id --> save_count mapping
-    track_save_counts = {
-        save_item_id: save_count
-        for (save_item_id, save_count, save_type) in save_counts
-        if save_type == SaveType.track
-    }
+    track_save_counts = {r["track_id"]: r["save_count"] for r in agg_track_rows}
 
     # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
     save_counts_for_time = get_save_counts(

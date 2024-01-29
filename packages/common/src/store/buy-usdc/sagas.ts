@@ -1,11 +1,17 @@
+import { USDC } from '@audius/fixed-decimal'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import retry from 'async-retry'
+import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
+import { PurchaseVendor } from 'models/PurchaseContent'
+import { Status } from 'models/Status'
 import {
+  createPaymentRouterRouteTransaction,
+  createRootWalletRecoveryTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -17,6 +23,12 @@ import {
 import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
+import {
+  transactionCanceled as coinflowTransactionCanceled,
+  transactionFailed as coinflowTransactionFailed,
+  transactionSucceeded as coinflowTransactionSucceeded
+} from 'store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 import { waitForValue } from 'utils'
@@ -32,21 +44,26 @@ import {
   startRecoveryIfNecessary,
   recoveryStatusChanged
 } from './slice'
-import { BuyUSDCError, BuyUSDCErrorCode, USDCOnRampProvider } from './types'
+import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
+import { setUSDCBalance } from 'store/wallet/slice'
+import { StringUSDC } from 'models/Wallet'
 
 type PurchaseStepParams = {
   desiredAmount: number
   wallet: PublicKey
-  provider: USDCOnRampProvider
+  vendor: PurchaseVendor
   retryDelayMs?: number
   maxRetryCount?: number
 }
 
+const TRANSACTION_RETRY_COUNT = 3
+const TRANSACTION_RETRY_DELAY_MS = 1000
+
 function* purchaseStep({
   desiredAmount,
   wallet,
-  provider,
+  vendor,
   retryDelayMs,
   maxRetryCount
 }: PurchaseStepParams) {
@@ -82,7 +99,7 @@ function* purchaseStep({
   if (result.canceled) {
     yield* call(
       track,
-      make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, provider })
+      make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, vendor })
     )
     return {}
   } else if (result.failure) {
@@ -94,7 +111,7 @@ function* purchaseStep({
       track,
       make({
         eventName: Name.BUY_USDC_ON_RAMP_FAILURE,
-        provider,
+        vendor,
         error: errorString
       })
     )
@@ -107,10 +124,7 @@ function* purchaseStep({
     }
     throw new BuyUSDCError(BuyUSDCErrorCode.OnrampError, errorString)
   }
-  yield* call(
-    track,
-    make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, provider })
-  )
+  yield* call(track, make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, vendor }))
 
   // Wait for the funds to come through
   const newBalance = yield* call(
@@ -142,14 +156,17 @@ function* transferStep({
   wallet,
   userBank,
   amount,
-  maxRetryCount = 3,
-  retryDelayMs = 1000
+  maxRetryCount = TRANSACTION_RETRY_COUNT,
+  retryDelayMs = TRANSACTION_RETRY_DELAY_MS,
+  memo
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
   maxRetryCount?: number
   retryDelayMs?: number
+  usePaymentRouter?: boolean
+  memo: string
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)
@@ -169,7 +186,7 @@ function* transferStep({
           userBank,
           mint: 'usdc',
           amount,
-          memo: 'In-App $USDC Purchase: Link by Stripe',
+          memo,
           feePayer: feePayerOverride,
           recentBlockhash
         }
@@ -209,7 +226,7 @@ function* transferStep({
 
 function* doBuyUSDC({
   payload: {
-    provider,
+    vendor,
     purchaseInfo: { desiredAmount }
   }
 }: ReturnType<typeof onrampOpened>) {
@@ -222,13 +239,6 @@ function* doBuyUSDC({
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
-    if (provider !== USDCOnRampProvider.STRIPE) {
-      throw new BuyUSDCError(
-        BuyUSDCErrorCode.OnrampError,
-        'USDC Purchase is only supported via Stripe'
-      )
-    }
-
     if (desiredAmount < config.minUSDCPurchaseAmountCents) {
       throw new BuyUSDCError(
         BuyUSDCErrorCode.MinAmountNotMet,
@@ -242,52 +252,113 @@ function* doBuyUSDC({
         `Maximum USDC purchase amount is ${config.maxUSDCPurchaseAmountCents} cents`
       )
     }
+    switch (vendor) {
+      case PurchaseVendor.STRIPE: {
+        yield* put(
+          initializeStripeModal({
+            // stripe expects amount in dollars, not cents
+            amount: (desiredAmount / 100).toString(),
+            destinationCurrency: 'usdc',
+            destinationWallet: rootAccount.publicKey.toString(),
+            onrampCanceled,
+            onrampFailed,
+            onrampSucceeded
+          })
+        )
 
-    yield* put(
-      initializeStripeModal({
-        // stripe expects amount in dollars, not cents
-        amount: (desiredAmount / 100).toString(),
-        destinationCurrency: 'usdc',
-        destinationWallet: rootAccount.publicKey.toString(),
-        onrampCanceled,
-        onrampFailed,
-        onrampSucceeded
-      })
-    )
+        yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
 
-    yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
+        // Record start
+        yield* call(
+          track,
+          make({ eventName: Name.BUY_USDC_ON_RAMP_OPENED, vendor })
+        )
 
-    // Record start
-    yield* call(
-      track,
-      make({ eventName: Name.BUY_USDC_ON_RAMP_OPENED, provider })
-    )
+        // Get config
+        const { retryDelayMs, maxRetryCount } = yield* call(
+          getBuyUSDCRemoteConfig
+        )
 
-    // Get config
-    const { retryDelayMs, maxRetryCount } = yield* call(getBuyUSDCRemoteConfig)
+        // Wait for purchase
+        // Have to do some typescript finangling here due to the "race" effect in purchaseStep
+        // See https://github.com/agiledigital/typed-redux-saga/issues/43
+        const { newBalance } = (yield* call(purchaseStep, {
+          vendor,
+          desiredAmount,
+          wallet: rootAccount.publicKey,
+          retryDelayMs,
+          maxRetryCount
+        }) as unknown as ReturnType<typeof purchaseStep>)!
 
-    // Wait for purchase
-    // Have to do some typescript finangling here due to the "race" effect in purchaseStep
-    // See https://github.com/agiledigital/typed-redux-saga/issues/43
-    const { newBalance } = (yield* call(purchaseStep, {
-      provider,
-      desiredAmount,
-      wallet: rootAccount.publicKey,
-      retryDelayMs,
-      maxRetryCount
-    }) as unknown as ReturnType<typeof purchaseStep>)!
+        // If the user canceled the purchase, stop the flow
+        if (newBalance === undefined) {
+          return
+        }
 
-    // If the user canceled the purchase, stop the flow
-    if (newBalance === undefined) {
-      return
+        // Transfer from the root wallet to the userbank
+        yield* call(transferStep, {
+          wallet: rootAccount,
+          userBank,
+          memo: 'In-App $USDC Purchase: Link by Stripe',
+          amount: newBalance
+        })
+        break
+      }
+      case PurchaseVendor.COINFLOW: {
+        const feePayerAddress = yield* select(getFeePayer)
+        if (!feePayerAddress) {
+          throw new Error('Missing feePayer unexpectedly')
+        }
+        const rootAccount = yield* call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )
+
+        const amount = desiredAmount / 100.0
+        // Send the USDC through the payment router, sans purchase memo, and
+        // route everything to the user's user bank.
+        // Required as only the payment router program is allowed via coinflow.
+        const coinflowTransaction = yield* call(
+          createPaymentRouterRouteTransaction,
+          audiusBackendInstance,
+          {
+            sender: rootAccount.publicKey,
+            splits: {
+              [userBank.toBase58()]: new BN(USDC(amount).value.toString())
+            }
+          }
+        )
+        const serializedTransaction = coinflowTransaction
+          .serialize({ requireAllSignatures: false, verifySignatures: false })
+          .toString('base64')
+        yield* put(
+          coinflowOnrampModalActions.open({
+            amount,
+            serializedTransaction
+          })
+        )
+
+        const result = yield* race({
+          succeeded: take(coinflowTransactionSucceeded),
+          failed: take(coinflowTransactionFailed),
+          canceled: take(coinflowTransactionCanceled)
+        })
+
+        // Return early for failure or cancellation
+        if (result.canceled) {
+          throw new Error('Canceled Coinflow purchase')
+        }
+        if (result.failed) {
+          throw new Error('Coinflow transaction failed')
+        }
+        break
+      }
+      default:
+        throw new BuyUSDCError(
+          BuyUSDCErrorCode.OnrampError,
+          'Unsupported vendor'
+        )
     }
-
-    // Transfer from the root wallet to the userbank
-    yield* call(transferStep, {
-      wallet: rootAccount,
-      userBank,
-      amount: newBalance
-    })
 
     yield* put(buyUSDCFlowSucceeded())
 
@@ -296,7 +367,7 @@ function* doBuyUSDC({
       track,
       make({
         eventName: Name.BUY_USDC_SUCCESS,
-        provider,
+        vendor,
         requestedAmount: desiredAmount
       })
     )
@@ -315,7 +386,7 @@ function* doBuyUSDC({
       track,
       make({
         eventName: Name.BUY_USDC_FAILURE,
-        provider,
+        vendor,
         requestedAmount: desiredAmount,
         error: error.message
       })
@@ -332,7 +403,8 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    yield* call(waitForValue, getFeePayer)
+    const feePayerString: string = yield* call(waitForValue, getFeePayer)
+    const feePayerKey = new PublicKey(feePayerString)
     const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
@@ -354,10 +426,21 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    const userBankAccountInfo = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc'
+      }
+    )
+
+    const userBankInitialBalance = userBankAccountInfo?.amount ?? BigInt(0)
+
     const userBankAddress = userBank.toBase58()
 
     // Transfer all USDC from the from the root wallet to the user bank
-    yield* put(recoveryStatusChanged({ status: 'in-progress' }))
+    yield* put(recoveryStatusChanged({ status: Status.LOADING }))
     yield* call(
       track,
       make({
@@ -365,13 +448,67 @@ function* recoverPurchaseIfNecessary() {
         userBank: userBankAddress
       })
     )
-    yield* call(transferStep, {
-      wallet: rootAccount,
-      userBank,
-      amount
-    })
 
-    yield* put(recoveryStatusChanged({ status: 'success' }))
+    yield* call(
+      retry,
+      async () => {
+        const transferTransaction = await createRootWalletRecoveryTransaction(
+          audiusBackendInstance,
+          {
+            wallet: rootAccount,
+            userBank,
+            amount,
+            feePayer: feePayerKey
+          }
+        )
+        transferTransaction.partialSign(rootAccount)
+
+        console.debug(`Starting root wallet USDC recovery transaction...`)
+        const { res, error } = await relayTransaction(audiusBackendInstance, {
+          transaction: transferTransaction
+        })
+
+        if (res) {
+          console.debug(`Recovery transaction succeeded: ${res}`)
+          return res
+        } else {
+          console.debug(
+            `Transfer transaction stringified: ${JSON.stringify(
+              transferTransaction
+            )}`
+          )
+          // Throw to retry
+          throw new Error(error ?? 'Unknown root wallet USDC recovery error')
+        }
+      },
+      {
+        minTimeout: TRANSACTION_RETRY_DELAY_MS,
+        retries: TRANSACTION_RETRY_COUNT,
+        factor: 1,
+        onRetry: (e: Error, attempt: number) => {
+          console.error(
+            `Got error recovering USDC from root wallet to user bank: ${e}. Attempt ${attempt}. Retrying...`
+          )
+        }
+      }
+    )
+
+    const updatedBalance = yield* call(
+      pollForTokenBalanceChange,
+      audiusBackendInstance,
+      {
+        tokenAccount: userBank,
+        mint: 'usdc',
+        initialBalance: userBankInitialBalance,
+        maxRetryCount: TRANSACTION_RETRY_COUNT
+      }
+    )
+
+    yield* put(
+      setUSDCBalance({ amount: updatedBalance.toString() as StringUSDC })
+    )
+
+    yield* put(recoveryStatusChanged({ status: Status.SUCCESS }))
     yield* call(
       track,
       make({
@@ -380,7 +517,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
-    yield* put(recoveryStatusChanged({ status: 'failure' }))
+    yield* put(recoveryStatusChanged({ status: Status.ERROR }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error: e as Error

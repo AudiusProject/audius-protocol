@@ -1,11 +1,14 @@
 {
-  "extends": "@tsconfig/node18-strictest/tsconfig.json",
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
     "lib": ["ES2020", "dom"],
+    "target": "es5",
     "checkJs": false,
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "downlevelIteration": true,
+    "isolatedModules": false,
     "typeRoots": [
       "./types",
       "./node_modules/@types",
@@ -14,7 +17,7 @@
     "exactOptionalPropertyTypes": false,
     "declaration": true,
     "outDir": "dist",
-    "declarationDir": "./",
+    "declarationDir": "dist",
     "noPropertyAccessFromIndexSignature": false
   },
   "exclude": ["dist"],

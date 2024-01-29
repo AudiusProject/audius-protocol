@@ -11,6 +11,7 @@ from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetTransactionResp
+from solders.token.associated import get_associated_token_address
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
@@ -66,6 +67,7 @@ from src.utils.helpers import (
     has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
@@ -77,16 +79,36 @@ logger = StructuredLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
+PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
+
 USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
+
+PAYMENT_ROUTER_PUBKEY = (
+    Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
+)
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
 WAUDIO_PDA, _ = get_base_address(WAUDIO_MINT_PUBKEY, USER_BANK_KEY)
 USDC_PDA, _ = get_base_address(USDC_MINT_PUBKEY, USER_BANK_KEY)
+
+PAYMENT_ROUTER_PDA_PUBKEY, _ = get_base_address(
+    "payment_router".encode("UTF-8"), PAYMENT_ROUTER_PUBKEY
+)
+PAYMENT_ROUTER_USDC_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and USDC_MINT_PUBKEY
+    else None
+)
+PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and WAUDIO_MINT_PUBKEY
+    else None
+)
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
@@ -241,68 +263,88 @@ class PurchaseMetadataDict(TypedDict):
     splits: dict[str, int]
     type: PurchaseType
     id: int
+    purchaser_user_id: Optional[int]
 
 
 def get_purchase_metadata_from_memo(
     session: Session, memos: List[str], timestamp: datetime
 ) -> Union[PurchaseMetadataDict, None]:
-    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
+    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     for memo in memos:
         try:
             content_metadata = memo.split(":")
             if len(content_metadata) == 3:
                 type_str, id_str, blocknumber_str = content_metadata
-                type = PurchaseType[type_str.lower()]
-                id = int(id_str)
-                blocknumber = int(blocknumber_str)
-
-                # TODO: Wait for blocknumber to be indexed by ACDC
-                logger.debug(
-                    f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}"
-                )
-                price = None
-                splits = None
-                if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                    result = (
-                        query.filter(
-                            TrackPriceHistory.track_id == id,
-                        )
-                        .order_by(desc(TrackPriceHistory.block_timestamp))
-                        .first()
-                    )
-                    if result is not None:
-                        price = result.total_price_cents
-                        splits = result.splits
-                else:
-                    logger.error(f"index_user_bank.py | Unknown content type {type}")
-                if (
-                    price is not None
-                    and splits is not None
-                    and isinstance(splits, dict)
-                ):
-                    return {
-                        "type": type,
-                        "id": id,
-                        "price": price * USDC_PER_USD_CENT,
-                        "splits": splits,
-                    }
-                else:
-                    logger.error(
-                        f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
-                    )
+                purchaser_user_id_str = None
+            elif len(content_metadata) == 4:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                ) = content_metadata
             else:
                 logger.debug(
                     f"index_user_bank.py | Ignoring memo, no content metadata found: {memo}"
                 )
+                continue
+
+            type = PurchaseType[type_str.lower()]
+            id = int(id_str)
+            blocknumber = int(blocknumber_str)
+            purchaser_user_id = (
+                int(purchaser_user_id_str) if purchaser_user_id_str else None
+            )
+
+            # TODO: Wait for blocknumber to be indexed by ACDC
+            logger.debug(
+                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}"
+            )
+
+            price = None
+            splits = None
+            if type == PurchaseType.track:
+                env = shared_config["discprov"]["env"]
+                query = session.query(TrackPriceHistory)
+                if env != "dev":
+                    # In local stack, the blocktime of solana-test-validator is offset.
+                    # The start time of the validator is baked into the prebuilt container.
+                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
+                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
+                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
+                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        TrackPriceHistory.track_id == id,
+                    )
+                    .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            else:
+                logger.error(f"index_user_bank.py | Unknown content type {type}")
+                continue
+
+            if price is not None and splits is not None and isinstance(splits, dict):
+                purchase_metadata: PurchaseMetadataDict = {
+                    "type": type,
+                    "id": id,
+                    "price": price * USDC_PER_USD_CENT,
+                    "splits": splits,
+                    "purchaser_user_id": purchaser_user_id,
+                }
+                logger.error(
+                    f"index_user_bank.py | Got purchase metadata {content_metadata}"
+                )
+                return purchase_metadata
+            else:
+                logger.error(
+                    f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
+                )
+                continue
+
         except (ValueError, KeyError) as e:
             logger.debug(
                 f"index_user_bank.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
@@ -312,26 +354,22 @@ def get_purchase_metadata_from_memo(
 
 
 def validate_purchase(
-    purchase_metadata: PurchaseMetadataDict,
-    balance_changes: dict[str, BalanceChange],
-    sender_account: str,
+    purchase_metadata: PurchaseMetadataDict, balance_changes: dict[str, BalanceChange]
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    is_valid = True
-    # Check the sender paid full price
-    if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
-        logger.error(
-            f"index_user_bank.py | Purchase price exceeds sent amount. sent={balance_changes[sender_account]['change']} price={purchase_metadata['price']}"
-        )
-        is_valid = False
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
+        if account not in balance_changes:
+            logger.error(
+                f"index_payment_router.py | No split given to account={account}, expected={split}"
+            )
+            return False
         if balance_changes[account]["change"] < split:
             logger.error(
-                f"index_user_bank.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
+                f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
-            is_valid = False
-    return is_valid
+            return False
+    return True
 
 
 def index_purchase(
@@ -412,9 +450,7 @@ def validate_and_index_purchase(
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
     if purchase_metadata is not None and validate_purchase(
-        purchase_metadata=purchase_metadata,
-        balance_changes=balance_changes,
-        sender_account=sender_account,
+        purchase_metadata=purchase_metadata, balance_changes=balance_changes
     ):
         index_purchase(
             session=session,
@@ -515,6 +551,7 @@ def index_user_tip(
 
 
 def process_transfer_instruction(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     instruction: CompiledInstruction,
@@ -526,8 +563,6 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
-    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
-
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
     sender_account = account_keys[sender_idx]
@@ -542,6 +577,13 @@ def process_transfer_instruction(
         logger.error(
             f"index_user_bank.py | Unknown claimableTokenPDA in transaction. Expected {str(WAUDIO_PDA)} or {str(USDC_PDA)} but got {userbank_authority_pda}"
         )
+        return
+
+    if (
+        receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS
+        or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
+    ):
+        logger.info(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
         return
 
     user_id_accounts = []
@@ -605,8 +647,13 @@ def process_transfer_instruction(
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
         receiver_account_pubkey = Pubkey.from_string(receiver_account)
-        receiver_account_info = solana_client_manager.get_account_info_json_parsed(receiver_account_pubkey)
-        receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
+        receiver_account_info = solana_client_manager.get_account_info_json_parsed(
+            receiver_account_pubkey
+        )
+        if receiver_account_info:
+            receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
+        else:
+            receiver_account_owner = receiver_account
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
@@ -699,6 +746,7 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
 
 
 def process_user_bank_tx_details(
+    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     tx_info: GetTransactionResp,
@@ -753,6 +801,7 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         process_transfer_instruction(
+            solana_client_manager=solana_client_manager,
             session=session,
             redis=redis,
             instruction=instruction,
@@ -767,10 +816,15 @@ def process_user_bank_tx_details(
 
 
 def get_sol_tx_info(
-    solana_client_manager: SolanaClientManager,
-    tx_sig: str,
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
     try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_user_bank.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return (tx_info, tx_sig)
+        logger.info(f"index_user_bank.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -893,9 +947,7 @@ def process_user_bank_txs() -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        get_sol_tx_info,
-                        solana_client_manager,
-                        str(tx_sig),
+                        get_sol_tx_info, solana_client_manager, str(tx_sig), redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
@@ -934,7 +986,13 @@ def process_user_bank_txs() -> None:
                 )
 
                 process_user_bank_tx_details(
-                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                    solana_client_manager=solana_client_manager,
+                    session=session,
+                    redis=redis,
+                    tx_info=tx_info,
+                    tx_sig=tx_sig,
+                    timestamp=parsed_timestamp,
+                    challenge_event_bus=challenge_bus,
                 )
                 session.add(
                     UserBankTx(

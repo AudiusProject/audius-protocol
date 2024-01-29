@@ -1,11 +1,6 @@
 import { useContext } from 'react'
 
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCloudUpload
-} from '@audius/harmony'
+import { Button, IconCloudUpload } from '@audius/harmony'
 
 import { UploadFormScrollContext } from '../UploadFormScrollContext'
 
@@ -21,8 +16,8 @@ export const AnchoredSubmitRow = () => {
     <>
       <div className={styles.buttonRow}>
         <Button
-          variant={ButtonType.PRIMARY}
-          size={ButtonSize.DEFAULT}
+          variant='primary'
+          size='default'
           iconRight={IconCloudUpload}
           onClick={scrollToTop}
           type='submit'

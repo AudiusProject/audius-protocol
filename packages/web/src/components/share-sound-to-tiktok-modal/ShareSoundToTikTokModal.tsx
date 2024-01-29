@@ -19,8 +19,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './ShareSoundToTikTokModal.module.css'
 const { getStatus, getTrack } = shareSoundToTiktokModalSelectors
@@ -49,7 +49,7 @@ const fileRequirementErrorMessages = {
 }
 
 const ShareSoundToTikTokModal = () => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const [isOpen, setIsOpen] = useModalState('ShareSoundToTikTok')
   const dispatch = useDispatch()
@@ -148,7 +148,7 @@ const ShareSoundToTikTokModal = () => {
     }
   }
 
-  return mobile ? (
+  return isMobile ? (
     <Drawer onClose={handleClose} isOpen={isOpen}>
       <div className={cn(styles.modalContent, styles.mobile)}>
         <div className={cn(styles.modalHeader, styles.mobile)}>

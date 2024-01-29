@@ -16,12 +16,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "downlevelIteration": true,
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client"],
     "paths": {
       "@audius/common": ["../../common/src/index.ts"],
-      "@audius/common/*": ["../../common/src/*"]
+      "@audius/common/*": ["../../common/src/*"],
+      "@audius/trpc-server": ["../trpc-server/src/index.ts"],
     }
   },
   "include": ["src", "src/**/*.css"]

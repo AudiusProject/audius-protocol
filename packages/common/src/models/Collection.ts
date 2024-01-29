@@ -52,12 +52,14 @@ export type CollectionMetadata = {
   repost_count: number
   save_count: number
   upc?: string | null
+  created_at: string
   updated_at: string
   activity_timestamp?: string
   playlist_image_multihash?: string
   playlist_image_sizes_multihash?: string
   offline?: OfflineCollectionMetadata
   local?: boolean
+  release_date?: string
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }

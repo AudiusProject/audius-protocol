@@ -8,13 +8,11 @@ mobile-init:
         name: copy staging env
         command: |
           cd packages/mobile
-          echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.stage
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_STAGE" >> .env.stage
     - run:
         name: copy production env
         command: |
           cd packages/mobile
-          echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
 
     - create_concatenated_patch_file:
@@ -140,6 +138,7 @@ mobile-build-upload-production-ios-if-full-release:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
+        slack-notify: false
 
 mobile-deploy-codepush-production-ios-if-ota-release:
   working_directory: ~/audius-protocol
@@ -289,6 +288,7 @@ mobile-build-upload-production-android-if-full-release:
         build-directory: 'build-mobile-production'
         upload-type: 'prod'
         track: 'alpha'
+        slack-notify: false
 
 mobile-deploy-codepush-production-android-if-ota-release:
   working_directory: ~/audius-protocol

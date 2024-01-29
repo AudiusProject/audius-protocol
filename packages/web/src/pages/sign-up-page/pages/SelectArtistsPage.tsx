@@ -1,43 +1,66 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 
 import {
-  ID,
+  Genre,
   Status,
+  convertGenreLabelToValue,
   useGetFeaturedArtists,
-  useGetTopArtistsInGenre
+  useGetTopArtistsInGenre,
+  selectArtstsPageMessages as messages,
+  selectArtistsSchema
 } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
+import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
+import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { addFollowArtists } from 'common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  completeFollowArtists
+} from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
-const messages = {
-  header: 'Follow At Least 3 Artists',
-  description:
-    'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
-  genresLabel: 'Selected genres',
-  continue: 'Continue',
-  pickArtists: (genre: string) => `Pick ${genre} Artists`
-}
+import { AccountHeader } from '../components/AccountHeader'
+import {
+  FollowArtistCard,
+  FollowArtistTileSkeleton
+} from '../components/FollowArtistCard'
+import { PreviewArtistHint } from '../components/PreviewArtistHint'
+import {
+  Heading,
+  HiddenLegend,
+  PageFooter,
+  ScrollView
+} from '../components/layout'
+import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
+
+const AnimatedFlex = animated(Flex)
 
 type SelectArtistsValues = {
-  artists: ID[]
+  selectedArtists: string[]
 }
 
 const initialValues: SelectArtistsValues = {
-  artists: []
+  selectedArtists: []
 }
 
+const ARTISTS_PER_GENRE_LIMIT = 31
+
 export const SelectArtistsPage = () => {
-  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const { color } = useTheme()
+  const headerContainerRef = useRef<HTMLDivElement | null>(null)
+  const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
@@ -45,19 +68,24 @@ export const SelectArtistsPage = () => {
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
-      const { artists } = values
-      dispatch(addFollowArtists(artists))
-      // TODO: trigger CTA modal on trending page
-      navigate(TRENDING_PAGE)
+      const { selectedArtists } = values
+      const artistsIDArray = [...selectedArtists].map((a) => Number(a))
+      dispatch(addFollowArtists(artistsIDArray))
+      dispatch(completeFollowArtists())
+      if (isMobile) {
+        navigate(SIGN_UP_COMPLETED_REDIRECT)
+      } else {
+        navigate(SIGN_UP_APP_CTA_PAGE)
+      }
     },
-    [dispatch, navigate]
+    [dispatch, isMobile, navigate]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'
 
   const { data: topArtists, status: topArtistsStatus } =
     useGetTopArtistsInGenre(
-      { genre: currentGenre },
+      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
       { disabled: isFeaturedArtists }
     )
 
@@ -68,65 +96,140 @@ export const SelectArtistsPage = () => {
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
   const isLoading =
-    (isFeaturedArtists ? topArtistsStatus : featuredArtistsStatus) ===
+    (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
 
+  const ArtistsList = isMobile ? Flex : Paper
+
+  const styles = useSpring({
+    from: {
+      opacity: 0,
+      transform: 'translateX(100%)'
+    },
+    to: {
+      opacity: 1,
+      transform: 'translateX(0%)'
+    }
+  })
+
   return (
-    <div>
-      <h1>{messages.header}</h1>
-      <p>{messages.description}</p>
-      <div role='radiogroup' aria-label={messages.genresLabel}>
-        {genres.map((genre) => (
-          <label key={genre}>
-            <input
-              type='radio'
-              value={genre}
-              checked={genre === currentGenre}
-              onChange={handleChangeGenre}
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
+    >
+      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
+        const { selectedArtists } = values
+        return (
+          <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
+            <AccountHeader
+              mode='viewing'
+              backButtonText={isMobile ? undefined : messages.backToGenres}
             />
-            {genre}
-          </label>
-        ))}
-      </div>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues }) => {
-          const { artists: selectedArtists } = values
-          const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            const { checked, name } = e.target
-            const userId = parseInt(name, 10)
-            const newArtists = checked
-              ? [userId, ...selectedArtists]
-              : selectedArtists.filter((value) => value !== userId)
+            <AnimatedFlex
+              direction='column'
+              mh={isMobile ? undefined : '5xl'}
+              mb={isMobile ? undefined : 'xl'}
+              style={styles}
+            >
+              <Flex
+                direction='column'
+                gap='xl'
+                pt={isMobile ? '2xl' : undefined}
+                pb='xl'
+                shadow={isMobile ? 'mid' : undefined}
+                css={{
+                  ...(isMobile && {
+                    zIndex: 2,
+                    backgroundColor: color.background.white,
+                    position: 'sticky',
+                    top: headerContainerRef?.current
+                      ? -(32 + headerContainerRef.current.clientHeight)
+                      : undefined
+                  })
+                }}
+              >
+                <Heading
+                  ref={headerContainerRef}
+                  ph={isMobile ? 'l' : undefined}
+                  heading={messages.header}
+                  description={messages.description}
+                  centered={!isMobile}
+                />
+                <ScrollView
+                  orientation='horizontal'
+                  w='100%'
+                  gap='s'
+                  ph={isMobile ? 'l' : undefined}
+                  justifyContent={isMobile ? 'flex-start' : 'center'}
+                  role='radiogroup'
+                  onChange={handleChangeGenre}
+                  aria-label={messages.genresLabel}
+                  disableScroll={!isMobile}
+                >
+                  {artistGenres.map((genre) => (
+                    // TODO: max of 6, kebab overflow
+                    <SelectablePill
+                      key={genre}
+                      type='radio'
+                      name='genre'
+                      label={convertGenreLabelToValue(genre as Genre)}
+                      size={isMobile ? 'small' : 'large'}
+                      value={genre}
+                      isSelected={currentGenre === genre}
+                    />
+                  ))}
+                </ScrollView>
+              </Flex>
+              <SelectArtistsPreviewContextProvider>
+                <ArtistsList
+                  as='fieldset'
+                  backgroundColor='default'
+                  pv='xl'
+                  ph={isMobile ? 'l' : 'xl'}
+                  css={{
+                    minHeight: 500,
+                    minWidth: !isMobile ? 530 : undefined
+                  }}
+                  direction='column'
+                >
+                  <HiddenLegend>
+                    {messages.pickArtists(currentGenre)}
+                  </HiddenLegend>
 
-            setValues({ artists: newArtists })
-          }
-          return (
-            <Form>
-              <fieldset>
-                <legend>{messages.pickArtists(currentGenre)}</legend>
-                {isLoading
-                  ? null
-                  : artists?.map((user) => {
-                      const { user_id, name } = user
-
-                      return (
-                        <label key={user_id}>
-                          <input
-                            type='checkbox'
-                            name={String(user_id)}
-                            onChange={handleChange}
-                            checked={selectedArtists.includes(user_id)}
-                          />
-                          {name}
-                        </label>
-                      )
-                    })}
-              </fieldset>
-              <Button type='submit'>{messages.continue}</Button>
-            </Form>
-          )
-        }}
-      </Formik>
-    </div>
+                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
+                  <Flex
+                    gap={isMobile ? 's' : 'm'}
+                    wrap='wrap'
+                    justifyContent='center'
+                  >
+                    {isLoading
+                      ? range(9).map((index) => (
+                          <FollowArtistTileSkeleton key={index} />
+                        ))
+                      : artists?.map((user) => (
+                          <FollowArtistCard key={user.user_id} user={user} />
+                        ))}
+                  </Flex>
+                </ArtistsList>
+              </SelectArtistsPreviewContextProvider>
+            </AnimatedFlex>
+            <PageFooter
+              centered
+              sticky
+              buttonProps={{
+                disabled: !dirty || !isValid || isSubmitting,
+                isLoading: isSubmitting || isValidating
+              }}
+              postfix={
+                <Text variant='body'>
+                  {messages.selected} {selectedArtists.length || 0}/3
+                </Text>
+              }
+            />
+          </ScrollView>
+        )
+      }}
+    </Formik>
   )
 }

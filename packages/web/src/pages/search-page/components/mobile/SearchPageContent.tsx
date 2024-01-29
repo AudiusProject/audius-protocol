@@ -13,6 +13,7 @@ import {
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import IconNote from 'assets/img/iconNote.svg'
@@ -130,6 +131,7 @@ const TracksSearchPage = ({
   containerRef,
   isTagSearch
 }: SearchPageContentProps) => {
+  const { history } = useHistoryContext()
   const numTracks = Object.keys(tracks.entries).length
   const loadingStatus = (() => {
     // We need to account for the odd case where search.status === success but
@@ -169,7 +171,7 @@ const TracksSearchPage = ({
             loadMore={(offset: number, limit: number) =>
               dispatch(
                 tracksActions.fetchLineupMetadatas(offset, limit, false, {
-                  category: getCategory(),
+                  category: getCategory(history.location),
                   query: trimToAlphaNumeric(searchText),
                   isTagSearch
                 })

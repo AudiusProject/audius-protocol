@@ -63,7 +63,6 @@ export type UserMetadata = {
   secondary_ids: number[]
 
   // Only present on the "current" account
-  does_follow_current_user?: boolean
   track_save_count?: number
   twitter_handle?: string
   instagram_handle?: string
@@ -90,7 +89,7 @@ export interface Download {
 
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-export type PremiumConditionsEthNFTCollection = {
+export type EthCollectibleGatedConditions = {
   chain: 'eth'
   standard: TokenStandard
   address: string
@@ -100,7 +99,7 @@ export type PremiumConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type PremiumConditionsSolNFTCollection = {
+export type SolCollectibleGatedConditions = {
   chain: 'sol'
   address: string
   name: string
@@ -108,18 +107,18 @@ export type PremiumConditionsSolNFTCollection = {
   externalLink: Nullable<string>
 }
 
-export type PremiumConditions = {
-  nft_collection?:
-    | PremiumConditionsEthNFTCollection
-    | PremiumConditionsSolNFTCollection
-  follow_user_id?: number
-  tip_user_id?: number
+type USDCPurchaseConditions = {
+  usdc_purchase?: {
+    price: number
+    splits: Record<ID, number>
+  }
 }
 
-export type PremiumContentSignature = {
-  data: string
-  signature: string
-}
+export type GatedConditions = {
+  nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
+  follow_user_id?: number
+  tip_user_id?: number
+} & USDCPurchaseConditions
 
 export type TrackMetadata = {
   blocknumber: number
@@ -127,7 +126,11 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   track_cid: string
-  preview_cid: Nullable<string>
+  preview_cid: Nullable<CID>
+  orig_file_cid: CID
+  orig_filename: string
+  is_downloadable: boolean
+  is_original_available: boolean
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
@@ -151,9 +154,10 @@ export type TrackMetadata = {
   cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   is_available: boolean
-  is_premium: boolean
-  premium_conditions: Nullable<PremiumConditions>
-  premium_content_signature: Nullable<PremiumContentSignature>
+  is_stream_gated: boolean
+  stream_conditions: Nullable<GatedConditions>
+  is_download_gated: boolean
+  download_conditions: Nullable<GatedConditions>
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>

@@ -1,11 +1,10 @@
 {
-  "extends": "@tsconfig/node18-strictest/tsconfig.json",
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
     "lib": ["ES2020", "dom"],
     "module": "esnext",
     "sourceMap": true,
     "checkJs": false,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
@@ -14,7 +13,29 @@
     "exactOptionalPropertyTypes": false,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": "./src",
+    "baseUrl": "./",
+    // TODO: enable after react-native migration [C-3548]
+    "isolatedModules": false,
+    "paths": {
+      "foundations": ["src/foundations/index.ts"],
+      "foundations/*": ["src/foundations/*"],
+      "components": ["src/components/index.ts"],
+      "components/*": ["src/components/*"],
+      "hooks": ["src/hooks/index.ts"],
+      "hooks/*": ["src/hooks/*"],
+      "utils": ["src/utils/index.ts"],
+      "utils/*": ["src/utils/*"],
+      "icons": ["src/icons/index.ts"],
+      "icons/*": ["src/icons/*"],
+      "assets": ["src/assets/index.ts"],
+      "assets/*": ["src/assets/*"],
+      "storybook": ["src/storybook/index.ts"],
+      "storybook/*": ["src/storybook/*"]
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
     "outDir": "build",
     "declarationDir": "./",
     "noPropertyAccessFromIndexSignature": false,

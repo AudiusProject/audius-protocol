@@ -1,9 +1,17 @@
 import { z } from 'zod'
 
+import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
+import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
 import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
 import type { LoggerService } from './services/Logger'
+import type {
+  RewardManagerClient,
+  ClaimableTokensClient,
+  SolanaRelayService,
+  SolanaWalletAdapter
+} from './services/Solana'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 
@@ -37,6 +45,36 @@ export type ServicesContainer = {
    * Service used to log and set a desired log level
    */
   logger: LoggerService
+
+  /**
+   * Service used to interact with the Solana relay
+   */
+  solanaRelay: SolanaRelayService
+
+  /**
+   * Service used to interact with the Solana blockchain
+   */
+  solanaWalletAdapter: SolanaWalletAdapter
+
+  /**
+   * Claimable Tokens Program client for Solana
+   */
+  claimableTokensClient: ClaimableTokensClient
+
+  /**
+   * Reward Manager Program client for Solana
+   */
+  rewardManagerClient: RewardManagerClient
+
+  /**
+   * Service used to choose a healthy Anti Abuse Oracle
+   */
+  antiAbuseOracleSelector: AntiAbuseOracleSelectorService
+
+  /**
+   * Service used to interact with Anti Abuse Oracle
+   */
+  antiAbuseOracle: AntiAbuseOracleService
 }
 
 const DevAppSchema = z.object({

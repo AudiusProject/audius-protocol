@@ -1,12 +1,14 @@
-import { Fragment, useCallback } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 
-import type { User } from '@audius/common'
+import type { CommonState, ID, User } from '@audius/common'
 import {
   FollowSource,
   usersSocialActions,
   relatedArtistsUISelectors,
-  relatedArtistsUIActions
+  relatedArtistsUIActions,
+  cacheUsersSelectors
 } from '@audius/common'
+import { isEmpty } from 'lodash'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
@@ -24,6 +26,7 @@ import { EventNames } from 'app/types/analytics'
 import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
+const { getUsers } = cacheUsersSelectors
 const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchRelatedArtists } = relatedArtistsUIActions
 const { followUser, unfollowUser } = usersSocialActions
@@ -103,16 +106,25 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     )
   })
 
+  const [idsToFollow, setIdsToFollow] = useState<ID[] | null>(null)
+  const artistsToFollow = useSelector<CommonState, User[]>((state) =>
+    Object.values(getUsers(state, { ids: idsToFollow }))
+  )
   const suggestedArtists = useSelector((state) =>
     selectSuggestedFollowsUsers(state, { id: user_id })
   )
+  useEffect(() => {
+    if (!isEmpty(suggestedArtists)) {
+      setIdsToFollow(suggestedArtists.map((user) => user.user_id).slice(0, 5))
+    }
+  }, [suggestedArtists])
 
-  const isFollowingAllArtists = suggestedArtists.every(
+  const isFollowingAllArtists = artistsToFollow.every(
     (artist) => artist.does_current_user_follow
   )
 
   const handlePressFollow = useCallback(() => {
-    suggestedArtists.forEach((artist) => {
+    artistsToFollow.forEach((artist) => {
       if (isFollowingAllArtists) {
         dispatch(
           unfollowUser(
@@ -126,7 +138,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         )
       }
     })
-  }, [suggestedArtists, isFollowingAllArtists, dispatch])
+  }, [artistsToFollow, isFollowingAllArtists, dispatch])
 
   const handlePressArtist = useCallback(
     (artist: User) => () => {
@@ -135,9 +147,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     [navigation]
   )
 
-  const suggestedArtistNames = suggestedArtists.slice(0, 3)
+  const suggestedArtistNames = artistsToFollow.slice(0, 3)
 
-  if (suggestedArtists.length === 0) {
+  if (artistsToFollow.length === 0) {
     return null
   }
 
@@ -157,7 +169,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         </View>
       </View>
       <View style={styles.suggestedArtistsPhotos} pointerEvents='box-none'>
-        {suggestedArtists.map((artist) => (
+        {artistsToFollow.map((artist) => (
           <TouchableOpacity
             onPress={handlePressArtist(artist)}
             key={artist.user_id}
@@ -181,7 +193,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         ))}
         <View pointerEvents='none'>
           <Text variant='body1'>{`and ${
-            suggestedArtists.length - suggestedArtistNames.length
+            artistsToFollow.length - suggestedArtistNames.length
           } others`}</Text>
         </View>
       </View>

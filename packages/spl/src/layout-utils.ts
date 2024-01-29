@@ -26,7 +26,7 @@ export class EthereumAddress extends Layout<string> {
    * converts the buffer to hex and prepends '0x'.
    * @override
    * */
-  decode(b: Uint8Array, offset = 0): string {
+  decode(b: Uint8Array, offset = 0) {
     const buffer = this.blob.decode(b, offset)
     return '0x' + Buffer.from(buffer).toString('hex')
   }
@@ -36,7 +36,7 @@ export class EthereumAddress extends Layout<string> {
    * proxies the encoding to the underlying Blob.
    * @override
    * */
-  encode(src: string, b: Uint8Array, offset: number): number {
+  encode(src: string, b: Uint8Array, offset = 0) {
     const strippedEthAddress = src.replace('0x', '')
     // Need to pad the array to length 20 - otherwise, hex eth keys starting with '0' would
     // result in truncated arrays, while eth spec is always 20 bytes
@@ -51,13 +51,13 @@ export class EthereumAddress extends Layout<string> {
  * Wrapper that encodes strings the way Borsh does, with the length prepended
  */
 export class BorshString extends Layout<string> {
-  constructor(maxLength: number, property?: string) {
-    super(u32().span + maxLength, property)
+  constructor(private readonly maxLength: number, property?: string) {
+    super(-1, property)
   }
 
   getSpan(b: Uint8Array, offset = 0): number {
     if (!b) {
-      return this.span
+      return this.maxLength
     }
     const length = u32().decode(b, offset)
     return u32().span + length
@@ -71,7 +71,7 @@ export class BorshString extends Layout<string> {
 
   encode(src: string, b: Uint8Array, offset: number): number {
     const srcb = Buffer.from(src, 'utf-8')
-    if (srcb.length > this.span) {
+    if (srcb.length > this.maxLength) {
       throw new RangeError('text exceeds maxLength')
     }
     if (offset + srcb.length > b.length) {

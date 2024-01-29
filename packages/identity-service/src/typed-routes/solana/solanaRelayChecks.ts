@@ -5,7 +5,8 @@ import {
   decodeInstruction,
   isCloseAccountInstruction,
   isTransferCheckedInstruction,
-  isSyncNativeInstruction
+  isSyncNativeInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
@@ -22,11 +23,7 @@ import {
   isCreateAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction
 } from './programs/associatedToken'
-import {
-  decodeClaimableTokenInstruction,
-  isTransferClaimableTokenInstruction,
-  decodeRewardManagerInstruction
-} from '@audius/spl'
+import { ClaimableTokensProgram, RewardManagerProgram } from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -35,6 +32,9 @@ const CLAIMABLE_TOKEN_PROGRAM_ID: string = config.get(
 )
 const REWARDS_MANAGER_PROGRAM_ID: string = config.get(
   'solanaRewardsManagerProgramId'
+)
+const PAYMENT_ROUTER_PROGRAM_ID: string = config.get(
+  'solanaPaymentRouterProgramId'
 )
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
@@ -53,6 +53,17 @@ const claimableTokenAuthorities = [audioMintAddress, usdcMintAddress].reduce(
     )[0]
   }),
   {} as Record<string, PublicKey>
+)
+
+const [paymentRouterPda, _] = PublicKey.findProgramAddressSync(
+  [Buffer.from('payment_router')],
+  new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
+)
+
+const paymentRouterUSDCTokenAccount = getAssociatedTokenAddressSync(
+  new PublicKey(usdcMintAddress),
+  paymentRouterPda,
+  true
 )
 
 /**
@@ -144,7 +155,12 @@ const assertAllowedTokenProgramInstruction = async (
     const userbank = await (
       await audiusLibsWrapper.getAudiusLibsAsync()
     ).solanaWeb3Manager!.deriveUserBank({ ethAddress: wallet, mint: 'usdc' })
-    if (!destination.equals(userbank)) {
+
+    // Check that destination is either a userbank or a payment router token account
+    if (
+      !destination.equals(userbank) &&
+      !destination.equals(paymentRouterUSDCTokenAccount)
+    ) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
         `Invalid destination account: ${destination.toBase58()}`
@@ -169,8 +185,9 @@ const assertAllowedRewardsManagerProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
 ) => {
-  const decodedInstruction = decodeRewardManagerInstruction(instruction)
-  const rewardManager = decodedInstruction.keys.rewardManager.pubkey.toBase58()
+  const decodedInstruction = RewardManagerProgram.decodeInstruction(instruction)
+  const rewardManager =
+    decodedInstruction.keys.rewardManagerState.pubkey.toBase58()
   if (rewardManager !== REWARD_MANAGER) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
@@ -189,7 +206,8 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   user?: { blockchainUserId?: number; handle?: string },
   socialProofEnabled = false
 ) => {
-  const decodedInstruction = decodeClaimableTokenInstruction(instruction)
+  const decodedInstruction =
+    ClaimableTokensProgram.decodeInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
   if (
     !authority.equals(claimableTokenAuthorities[usdcMintAddress]) &&
@@ -207,7 +225,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   // https://linear.app/audius/issue/PAY-1941/clean-up-or-re-add-social-proof
   if (
     socialProofEnabled &&
-    isTransferClaimableTokenInstruction(decodedInstruction)
+    ClaimableTokensProgram.isTransferInstruction(decodedInstruction)
   ) {
     if (!user) {
       throw new InvalidRelayInstructionError(
@@ -418,6 +436,7 @@ export const assertRelayAllowedInstructions = async (
         )
         break
       case Secp256k1Program.programId.toBase58():
+      case PAYMENT_ROUTER_PROGRAM_ID:
       case MEMO_PROGRAM_ID:
         // All instructions of these programs are allowed
         break

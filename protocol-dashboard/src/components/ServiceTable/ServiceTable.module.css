@@ -5,13 +5,32 @@
   width: 100%;
 }
 
-.colEndpoint {
+.colVersion {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: right;
   margin-right: 8px;
+}
+
+.colEndpoint {
+  flex: 2;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.colUptime {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
 .rowCol {
@@ -24,6 +43,8 @@
 }
 
 .error {
+  display: inline-flex;
+  justify-content: flex-end;
   height: 20px;
   width: 20px;
 }

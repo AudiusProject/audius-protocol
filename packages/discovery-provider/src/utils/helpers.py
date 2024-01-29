@@ -70,7 +70,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9])|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9])|(audius-protocol-discovery-provider-[0-9])|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 

@@ -1,0 +1,47 @@
+# TODO: Consolidate comms container here (used to push in CI) with the ones in docker-compose.comms.yml
+version: '3.9'
+
+services:
+  discovery-provider-redis:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-redis
+
+  discovery-provider-notifications:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-notifications
+
+  comms:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: comms
+
+  es-indexer:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: es-indexer
+
+  trpc:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: trpc
+
+  discovery-provider-elasticsearch:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-elasticsearch
+
+  discovery-provider-openresty:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-openresty
+
+  discovery-provider:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app

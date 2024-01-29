@@ -75,6 +75,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     color: palette.staticWhite
   },
   dateContainer: {
+    zIndex: -1,
     marginTop: spacing(2),
     marginBottom: spacing(6)
   },
@@ -111,23 +112,23 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     transform: [{ scaleX: -1 }]
   },
   reaction: {
-    height: spacing(8),
-    width: spacing(8)
+    height: spacing(16),
+    width: spacing(16)
   },
   reactionContainer: {
     position: 'relative',
     display: 'flex',
     flexDirection: 'row-reverse',
     justifyContent: 'flex-end',
-    bottom: spacing(4),
-    gap: -spacing(4),
+    bottom: spacing(8),
+    gap: -spacing(12),
     height: 0
   },
   reactionContainerIsAuthor: {
-    right: spacing(4)
+    right: spacing(8)
   },
   reactionContainerOtherUser: {
-    left: spacing(4),
+    left: spacing(8),
     flexDirection: 'row'
   },
   reactionMarginBottom: {

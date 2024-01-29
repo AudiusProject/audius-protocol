@@ -19,7 +19,7 @@ const StoryRender = (props: PasswordInputProps) => {
 }
 
 const meta: Meta<typeof PasswordInput> = {
-  title: 'Components/Input/TextInput/PasswordInput',
+  title: 'Inputs/PasswordInput',
   component: PasswordInput,
   parameters: {
     docs: {

@@ -53,13 +53,15 @@ const FullCollectionList = (props: FullCollectionListProps) => {
     ...other
   } = props
 
-  const renderCard = useCallback(
-    ({ item }: { item: Collection | CreateCard }) =>
+  const renderCard: ListRenderItem<Collection | CreateCard> = useCallback(
+    ({ item }) =>
       '_create' in item ? (
         <AddCollectionCard
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
+          // TODO: support album type (we don't have use case currently)
+          collectionType='playlist'
         />
       ) : (
         <CollectionCard
@@ -105,13 +107,15 @@ const CollectionIDList = (props: CollectionIdListProps) => {
     ...other
   } = props
 
-  const renderCard = useCallback(
-    ({ item }: { item: IDCardListItem | CreateCard }) =>
+  const renderCard: ListRenderItem<IDCardListItem | CreateCard> = useCallback(
+    ({ item }) =>
       '_create' in item ? (
         <AddCollectionCard
           source={createPlaylistSource!}
           sourceTrackId={createPlaylistTrackId}
           onCreate={createPlaylistCallback}
+          // TODO: support album type (we don't have use case currently)
+          collectionType='playlist'
         />
       ) : (
         <CollectionCard collectionId={item.id} />

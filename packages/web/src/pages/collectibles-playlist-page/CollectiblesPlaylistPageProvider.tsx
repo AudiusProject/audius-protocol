@@ -71,7 +71,10 @@ const chainLabelMap: Record<Chain, string> = {
 }
 
 const hasAudio = (video: HTMLMediaElement) => {
-  if (typeof video.webkitAudioDecodedByteCount || video.mozHasAudio) {
+  if (
+    typeof video.webkitAudioDecodedByteCount !== 'undefined' ||
+    video.mozHasAudio
+  ) {
     if (
       video.webkitAudioDecodedByteCount > 0 ||
       video.mozHasAudio ||

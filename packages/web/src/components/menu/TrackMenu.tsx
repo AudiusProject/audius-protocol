@@ -12,7 +12,7 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   tracksSocialActions,
-  addToPlaylistUIActions,
+  addToCollectionUIActions,
   Genre,
   FeatureFlags,
   CommonState,
@@ -28,8 +28,9 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
-const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+import { albumPage, profilePage } from 'utils/route'
+import { trpc } from 'utils/trpcClientWeb'
+const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
@@ -39,7 +40,7 @@ const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
-  addToNewPlaylist: 'Add to New Playlist',
+  addToAlbum: 'Add to Album',
   addToPlaylist: 'Add to Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
   embed: 'Embed',
@@ -53,6 +54,7 @@ const messages = {
   unreposted: 'Un-Reposted!',
   unsetArtistPick: 'Unset as Artist Pick',
   visitArtistPage: 'Visit Artist Page',
+  visitAlbumPage: 'Visit Album Page',
   visitTrackPage: 'Visit Track Page',
   visitEpisodePage: 'Visit Episode Page',
   markAsPlayed: 'Mark as Played',
@@ -65,6 +67,7 @@ export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element
   extraMenuItems?: PopupMenuItem[]
   handle: string
+  includeAddToAlbum?: boolean
   includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
   includeEdit?: boolean
@@ -72,6 +75,7 @@ export type OwnProps = {
   includeFavorite?: boolean
   includeRepost?: boolean
   includeShare?: boolean
+  includeAlbumPage?: boolean
   includeTrackPage?: boolean
   isArtistPick?: boolean
   isDeleted?: boolean
@@ -100,6 +104,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -110,6 +115,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       extraMenuItems,
       goToRoute,
       handle,
+      includeAddToAlbum,
       includeAddToPlaylist,
       includeArtistPick,
       includeEdit,
@@ -117,6 +123,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeFavorite,
       includeRepost,
       includeShare,
+      includeAlbumPage,
       includeTrackPage,
       isArtistPick,
       isDeleted,
@@ -125,7 +132,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       isOwnerDeactivated,
       isReposted,
       isUnlisted,
-      openAddToPlaylistModal,
+      openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
       saveTrack,
@@ -140,6 +147,10 @@ const TrackMenu = (props: TrackMenuProps) => {
       unsetArtistPick
     } = props
 
+    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+      { trackId },
+      { enabled: !!trackId }
+    )
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
@@ -175,7 +186,24 @@ const TrackMenu = (props: TrackMenuProps) => {
     const addToPlaylistMenuItem = {
       text: messages.addToPlaylist,
       onClick: () => {
-        openAddToPlaylistModal(trackId, trackTitle, isUnlisted ?? false)
+        openAddToCollectionModal(
+          'playlist',
+          trackId,
+          trackTitle,
+          isUnlisted ?? false
+        )
+      }
+    }
+
+    const addToAlbumMenuItem = {
+      text: messages.addToAlbum,
+      onClick: () => {
+        openAddToCollectionModal(
+          'album',
+          trackId,
+          trackTitle,
+          isUnlisted ?? false
+        )
       }
     }
 
@@ -209,11 +237,14 @@ const TrackMenu = (props: TrackMenuProps) => {
       }
     }
 
-    // TODO: Add back go to album when we have better album linking.
-    // const albumPageMenuItem = {
-    //   text: 'Visit Album Page',
-    //   onClick: () => goToRoute(albumPage(handle, albumName, albumId))
-    // }
+    const albumPageMenuItem = {
+      text: messages.visitAlbumPage,
+      onClick: () =>
+        albumInfo &&
+        goToRoute(
+          albumPage(handle, albumInfo?.playlist_name, albumInfo?.playlist_id)
+        )
+    }
 
     const artistPageMenuItem = {
       text: messages.visitArtistPage,
@@ -248,6 +279,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeFavorite && !isOwner && (!isDeleted || isFavorited)) {
       menu.items.push(favoriteMenuItem)
     }
+    if (isEditAlbumsEnabled && includeAddToAlbum && !isDeleted && isOwner) {
+      menu.items.push(addToAlbumMenuItem)
+    }
     if (includeAddToPlaylist && !isDeleted) {
       menu.items.push(addToPlaylistMenuItem)
     }
@@ -265,10 +299,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)
     }
-    // TODO: Add back go to album when we have better album linking.
-    // if (albumId && albumName) {
-    //   menu.items.push(albumPageMenuItem)
-    // }
+    if (albumInfo && includeAlbumPage && isEditAlbumsEnabled) {
+      menu.items.push(albumPageMenuItem)
+    }
     if (handle && !isOwnerDeactivated) {
       menu.items.push(artistPageMenuItem)
     }
@@ -315,8 +348,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setArtistPick: (trackId: ID) =>
       dispatch(showSetAsArtistPickConfirmation(trackId)),
     unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
-    openAddToPlaylistModal: (trackId: ID, title: string, isUnlisted: boolean) =>
-      dispatch(openAddToPlaylist(trackId, title, isUnlisted)),
+    openAddToCollectionModal: (
+      collectionType: 'album' | 'playlist',
+      trackId: ID,
+      title: string,
+      isUnlisted: boolean
+    ) =>
+      dispatch(openAddToCollection(collectionType, trackId, title, isUnlisted)),
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
@@ -330,7 +368,9 @@ TrackMenu.defaultProps = {
   includeEdit: true,
   includeEmbed: true,
   includeFavorite: true,
+  includeAlbumPage: true,
   includeTrackPage: true,
+  includeAddToAlbum: true,
   includeAddToPlaylist: true,
   includeArtistPick: true,
   extraMenuItems: []

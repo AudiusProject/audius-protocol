@@ -1,15 +1,16 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ComponentPropsWithoutRef } from 'react'
 
-import type { BorderColors } from 'foundations/color'
+import type { BackgroundColors, BorderColors } from 'foundations/color'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
 import type { SpacingOptions } from 'foundations/spacing'
 
-export type BoxProps = {
+// Custom box props without HTML <div> properties
+export type BaseBoxProps = {
   /** Height */
-  h?: CSSProperties['height']
+  h?: SpacingOptions | CSSProperties['height']
   /** Width */
-  w?: CSSProperties['width']
+  w?: SpacingOptions | CSSProperties['width']
 
   /** Padding */
   p?: SpacingOptions
@@ -40,11 +41,28 @@ export type BoxProps = {
   mr?: SpacingOptions
   /** Margin Bottom */
   mb?: SpacingOptions
-
+  /** Background Color */
+  backgroundColor?: BackgroundColors
   /** Border */
   border?: BorderColors
+  /** Border Top */
+  borderTop?: BorderColors
+  /** Border Right */
+  borderRight?: BorderColors
+  /** Border Bottom */
+  borderBottom?: BorderColors
+  /** Border Left */
+  borderLeft?: BorderColors
   /** Border Radius */
   borderRadius?: CornerRadiusOptions
+  /** Border Top Right Radius */
+  borderTopRightRadius?: CornerRadiusOptions
+  /** Border Bottom Right Radius */
+  borderBottomRightRadius?: CornerRadiusOptions
+  /** Border Bottom Left Radius */
+  borderBottomLeftRadius?: CornerRadiusOptions
+  /** Border Top Left Radius */
+  borderTopLeftRadius?: CornerRadiusOptions
 
   /** Elevation Shadow */
   shadow?: ShadowOptions
@@ -52,3 +70,5 @@ export type BoxProps = {
   flex?: CSSProperties['flex']
   alignSelf?: CSSProperties['alignSelf']
 }
+
+export type BoxProps = BaseBoxProps & ComponentPropsWithoutRef<'div'>

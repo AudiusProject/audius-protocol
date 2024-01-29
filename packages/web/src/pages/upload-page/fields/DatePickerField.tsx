@@ -1,10 +1,10 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import { Popup } from '@audius/stems'
+import { Origin } from '@audius/stems/dist/components/Popup/types'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -14,7 +14,6 @@ import {
 } from 'react-dates'
 
 import IconCalendar from 'assets/img/iconCalendar.svg'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
 
@@ -22,16 +21,20 @@ type DatePickerFieldProps = {
   name: string
   label: string
   style?: string
+  shouldFocus?: boolean
+  isInitiallyUnlisted?: boolean
 }
 
 export const DatePickerField = (props: DatePickerFieldProps) => {
-  const { name, label, style } = props
+  const { name, label, style, shouldFocus, isInitiallyUnlisted } = props
   const [field, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
+
+  useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
+
+  const anchorOrigin: Origin = { vertical: 'top', horizontal: 'center' }
+
   return (
     <>
       <div
@@ -61,18 +64,23 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         anchorRef={anchorRef}
         isVisible={isFocused}
         onClose={() => setIsFocused(false)}
+        anchorOrigin={anchorOrigin}
       >
         <div className={cn(styles.datePicker, style)}>
           <DayPickerSingleDateController
             // @ts-ignore todo: upgrade moment
             date={moment(field.value)}
-            onDateChange={(value) => helpers.setValue(value?.toString())}
-            isOutsideRange={(day) =>
-              isScheduledReleasesEnabled
-                ? false
-                : // @ts-ignore mismatched moment versions; shouldn't be relevant here
-                  !isInclusivelyBeforeDay(day, moment())
-            }
+            onDateChange={(value) => {
+              helpers.setValue(value?.toString())
+            }}
+            isOutsideRange={(day) => {
+              if (isInitiallyUnlisted) {
+                return !isInclusivelyBeforeDay(day, moment().add(1, 'year'))
+              } else {
+                // @ts-ignore mismatched moment versions; shouldn't be relevant here
+                return !isInclusivelyBeforeDay(day, moment())
+              }
+            }}
             focused={isFocused}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}

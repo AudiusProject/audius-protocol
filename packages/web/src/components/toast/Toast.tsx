@@ -122,13 +122,17 @@ class Toast extends PureComponent<ToastProps, ToastState> {
           triggerNode.parentNode as HTMLElement
         break
       case MountPlacement.PAGE: {
-        const page = document.getElementById('page')
+        const page =
+          typeof document !== 'undefined' && document.getElementById('page')
         if (page) popupContainer = () => page || undefined
         break
       }
       case MountPlacement.BODY:
       default:
-        popupContainer = () => document.body as HTMLElement
+        popupContainer =
+          typeof document !== 'undefined'
+            ? () => document.body as HTMLElement
+            : undefined
     }
 
     return (

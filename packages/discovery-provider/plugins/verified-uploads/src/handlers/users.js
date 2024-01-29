@@ -69,16 +69,11 @@ export default async ({ user_id, blocknumber }) => {
             .catch(console.error)
 
           if (Object.keys(data).length === 0) {
-            // wait for identity to load
-            await new Promise((resolve) => {
-              setTimeout(resolve, 5000)
-            })
             throw new Error('social handles not in identity yet')
           }
 
           return data
         },
-        { retries: 100 }
       )
       const { twitterVerified, instagramVerified, tikTokVerified } = data
 

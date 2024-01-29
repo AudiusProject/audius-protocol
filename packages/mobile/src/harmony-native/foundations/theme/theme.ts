@@ -1,29 +1,63 @@
-import type { ColorTheme } from '../color'
-import { colorTheme } from '../color'
-import type { Theme } from '../types'
-import type { Typography } from '../typography'
-import { typography } from '../typography'
+import { themes as harmonyThemes } from '@audius/harmony'
+import { mapValues } from 'lodash'
 
-export type HarmonyTheme = {
-  type: Theme
-  color: ColorTheme[keyof ColorTheme]
-  typography: Typography
+import { colorTheme } from '../color/color'
+import { motion } from '../motion/motion'
+import { shadows } from '../shadows/shadows'
+
+const typographyOverrides = {
+  fontByWeight: {
+    ultraLight: 'AvenirNextLTPro-UltLt',
+    thin: 'AvenirNextLTPro-Thin',
+    light: 'AvenirNextLTPro-Light',
+    regular: 'AvenirNextLTPro-Regular',
+    medium: 'AvenirNextLTPro-Medium',
+    demiBold: 'AvenirNextLTPro-DemiBold',
+    bold: 'AvenirNextLTPro-Bold',
+    heavy: 'AvenirNextLTPro-Heavy'
+  },
+  lineHeight: mapValues(harmonyThemes.day.typography.lineHeight, (pxSize) =>
+    parseInt(pxSize)
+  ),
+  shadow: {
+    emphasis: {
+      textShadowColor: 'rgba(0, 0, 0, 0.20)',
+      textShadowOffset: { width: 0, height: 1.34 },
+      textShadowRadius: 8,
+      padding: 8,
+      margin: -8
+    }
+  }
 }
 
-export const dayTheme: HarmonyTheme = {
-  type: 'day',
-  color: colorTheme.day,
-  typography
+const commonFoundations = {
+  shadows,
+  typography: {
+    ...harmonyThemes.day.typography,
+    ...typographyOverrides
+  },
+  cornerRadius: harmonyThemes.day.cornerRadius,
+  spacing: harmonyThemes.day.spacing,
+  iconSizes: harmonyThemes.day.iconSizes,
+  motion
 }
 
-export const darkTheme: HarmonyTheme = {
-  type: 'dark',
-  color: colorTheme.dark,
-  typography
+export const theme = {
+  day: {
+    type: harmonyThemes.day.type,
+    color: colorTheme.day,
+    ...commonFoundations
+  },
+  dark: {
+    type: harmonyThemes.dark.type,
+    color: colorTheme.dark,
+    ...commonFoundations
+  },
+  matrix: {
+    type: harmonyThemes.matrix.type,
+    color: colorTheme.matrix,
+    ...commonFoundations
+  }
 }
 
-export const matrixTheme: HarmonyTheme = {
-  type: 'matrix',
-  color: colorTheme.matrix,
-  typography
-}
+export type HarmonyNativeTheme = (typeof theme)['dark']

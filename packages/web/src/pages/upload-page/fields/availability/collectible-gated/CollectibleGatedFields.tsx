@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import {
   Chain,
   collectiblesSelectors,
-  isPremiumContentCollectibleGated,
+  isContentCollectibleGated,
   TrackAvailabilityType
 } from '@audius/common'
 import { useField } from 'formik'
@@ -15,7 +15,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import {
   AVAILABILITY_TYPE,
   AccessAndSaleFormValues,
-  PREMIUM_CONDITIONS
+  STREAM_CONDITIONS
 } from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
@@ -40,12 +40,12 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
   const [
-    { value: premiumConditionsValue },
+    { value: streamConditionsValue },
     ,
-    { setValue: setPremiumConditionsValue }
+    { setValue: setStreamConditionsValue }
   ] =
-    useField<AccessAndSaleFormValues[typeof PREMIUM_CONDITIONS]>(
-      PREMIUM_CONDITIONS
+    useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
+      STREAM_CONDITIONS
     )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
@@ -106,10 +106,8 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   // which makes the dropdown show the placeholder.
   // Otherwise, the default value is the nft collection which was previously selected,
   // which also includes the collection image.
-  const defaultCollectionName = isPremiumContentCollectibleGated(
-    premiumConditionsValue
-  )
-    ? premiumConditionsValue.nft_collection?.name ?? ''
+  const defaultCollectionName = isContentCollectibleGated(streamConditionsValue)
+    ? streamConditionsValue.nft_collection?.name ?? ''
     : ''
   const selectedCollection = menuItems.find(
     (item) => item.text === defaultCollectionName
@@ -138,7 +136,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         value={value}
         onSelect={(value: string) => {
           if (ethCollectionMap[value]) {
-            setPremiumConditionsValue({
+            setStreamConditionsValue({
               nft_collection: {
                 chain: Chain.Eth,
                 standard: ethCollectionMap[value].standard,
@@ -151,7 +149,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
             })
             setAvailabilityValue(TrackAvailabilityType.COLLECTIBLE_GATED)
           } else if (solCollectionMap[value]) {
-            setPremiumConditionsValue({
+            setStreamConditionsValue({
               nft_collection: {
                 chain: Chain.Sol,
                 address: value,

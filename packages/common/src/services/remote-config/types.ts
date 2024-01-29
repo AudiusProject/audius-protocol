@@ -195,7 +195,13 @@ export enum IntKeys {
   /**
    * Timeout for handle verification from socials.
    */
-  HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS'
+  HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS',
+
+  /** Coinflow maximum */
+  COINFLOW_MAXIMUM_CENTS = 'COINFLOW_MAXIMUM_CENTS',
+
+  /** Minimum balance required to initiate a USDC cash transfer */
+  MIN_USDC_WITHDRAW_BALANCE_CENTS = 'MIN_USDC_WITHDRAW_BALANCE_CENTS'
 }
 
 export enum BooleanKeys {
@@ -244,11 +250,6 @@ export enum BooleanKeys {
    * Boolean to skip the rollover nodes sanity check.
    */
   SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK',
-
-  /**
-   * Boolean to use amplitude as the metrics tracking.
-   */
-  USE_AMPLITUDE = 'USE_AMPLITUDE',
 
   /**
    * Boolean to enable "Transactions" button on Audio page.
@@ -389,8 +390,8 @@ export enum StringKeys {
   /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
   PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
 
-  /** Allowlist of user ids for explore premium tracks page */
-  EXPLORE_PREMIUM_ALLOWED_USERS = 'EXPLORE_PREMIUM_ALLOWED_USERS'
+  /** Denylist of user ids for explore premium tracks page */
+  EXPLORE_PREMIUM_DENIED_USERS = 'EXPLORE_PREMIUM_DENIED_USERS'
 }
 
 export type AllRemoteConfigKeys =

@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { BasicModalsState, Modals } from './types'
+import {
+  BasicModalsState,
+  Modals,
+  TrackModalClosedActionPayload,
+  TrackModalOpenedActionPayload
+} from './types'
 
 export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
@@ -19,6 +24,7 @@ export const initialState: BasicModalsState = {
   CollectibleDetails: { isOpen: false },
   DeactivateAccountConfirmation: { isOpen: false },
   FeedFilter: { isOpen: false },
+  PurchaseVendor: { isOpen: false },
   TrendingGenreSelection: { isOpen: false },
   SocialProof: { isOpen: false },
   EditFolder: { isOpen: false },
@@ -26,7 +32,7 @@ export const initialState: BasicModalsState = {
   EditTrack: { isOpen: false },
   SignOutConfirmation: { isOpen: false },
   Overflow: { isOpen: false },
-  AddToPlaylist: { isOpen: false },
+  AddToCollection: { isOpen: false },
   DeletePlaylistConfirmation: { isOpen: false },
   DuplicateAddConfirmation: { isOpen: false },
   FeatureFlagOverride: { isOpen: false },
@@ -46,10 +52,15 @@ export const initialState: BasicModalsState = {
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
+  PublishTrackConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
-  USDCManualTransferModal: { isOpen: false }
+  USDCManualTransferModal: { isOpen: false },
+  CoinflowOnramp: { isOpen: false },
+  AddFundsModal: { isOpen: false },
+  Welcome: { isOpen: false },
+  CoinflowWithdraw: { isOpen: false }
 }
 
 const slice = createSlice({
@@ -68,14 +79,14 @@ const slice = createSlice({
     },
     trackModalOpened: (
       _state,
-      _action: PayloadAction<{
-        name: string
-        trackingData?: Record<string, any>
-      }>
+      _action: PayloadAction<TrackModalOpenedActionPayload>
     ) => {
       // handled by saga
     },
-    trackModalClosed: (_state, _action: PayloadAction<{ name: string }>) => {
+    trackModalClosed: (
+      _state,
+      _action: PayloadAction<TrackModalClosedActionPayload>
+    ) => {
       // handled by saga
     }
   }

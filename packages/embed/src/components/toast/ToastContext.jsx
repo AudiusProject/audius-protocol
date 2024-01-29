@@ -1,5 +1,5 @@
-import { createContext } from 'preact'
-import { useCallback, useState } from 'preact/hooks'
+import { createContext, useCallback, useState } from 'react'
+
 import { CSSTransition } from 'react-transition-group'
 
 import Toast from './Toast'

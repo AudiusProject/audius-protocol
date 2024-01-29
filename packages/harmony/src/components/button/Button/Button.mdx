@@ -2,19 +2,19 @@ import {
   Canvas,
   Meta,
   Title,
-  Subtitle,
   Description,
   Primary,
-  Controls,
-  Story
+  Controls
 } from '@storybook/blocks'
 
 import IconCamera from 'assets/icons/Camera.svg'
 import { Flex } from 'components'
 import buttonBackground from 'storybook/assets/buttonBackground.png'
-import { ComponentRules, RelatedComponents } from 'storybook/components'
-
-import { ButtonSize, ButtonType } from '../types'
+import {
+  Heading,
+  ComponentRules,
+  RelatedComponents
+} from 'storybook/components'
 
 import { Button } from './Button'
 import * as ButtonStories from './Button.stories'
@@ -28,11 +28,13 @@ import * as ButtonStories from './Button.stories'
 - [Configuration Options](#configuration-options)
 - [Use cases and examples](#use-cases-and-examples)
 - [Do's and dont's](#dos-and-donts)
+- [Related Components](#related-components)
 
-## Overview
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
 
-<Subtitle />
-<Description />
 <Primary />
 
 ## Props
@@ -43,65 +45,50 @@ import * as ButtonStories from './Button.stories'
 
 ### Variants
 
-<Canvas>
-  <Story of={ButtonStories.Variants} />
-</Canvas>
+<Canvas of={ButtonStories.Variants} />
 
 ### Sizes
 
-Fixed height: 32px, 48px, 64px
-
-<Canvas>
-  <Story of={ButtonStories.Sizes} />
-</Canvas>
+<Canvas of={ButtonStories.Sizes} />
 
 ### States
 
-Hover: transform scale: 1.04x, ease-out curve, 120ms
-Pressed: transform scale: 0.98x, ease-out curve, 120ms
-
-<Canvas>
-  <Story of={ButtonStories.States} />
-</Canvas>
+<Canvas of={ButtonStories.States} />
 
 ### Disabled
 
-<Canvas>
-  <Story of={ButtonStories.Disabled} />
-</Canvas>
+<Canvas of={ButtonStories.Disabled} />
 
 ### Icons
 
-<Canvas>
-  <Story of={ButtonStories.Icons} />
-</Canvas>
+<Canvas of={ButtonStories.Icons} />
 
 ### Loading state
 
-<Canvas>
-  <Story of={ButtonStories.LoadingState} />
-</Canvas>
+<Canvas of={ButtonStories.LoadingState} />
 
+<Heading>
 ### Color Prop Applied
 
 Generate the colors for primary button states using colored overlays rather than distinct hex values for each state.
 
-<Canvas>
-  <Story of={ButtonStories.ColorPropApplied} />
-</Canvas>
+</Heading>
 
+<Canvas of={ButtonStories.ColorPropApplied} />
+
+<Heading>
 ### Link
 
 A link that looks like a button. Useful for buttons that trigger navigation
 
-<Canvas>
-  <Story of={ButtonStories.Link} />
-</Canvas>
+</Heading>
+
+<Canvas of={ButtonStories.Link} />
 
 ## Use cases and examples
 
 - Always use primary button as the main action on screen.
-- Avoid vague or generic labels that requires the user read before taking action
+- Avoid vague or generic labels that requires the user read before taking action.
 - Use active verbs or phrases that clearly indicate action.
 
 ## Do's and don'ts
@@ -111,80 +98,88 @@ A link that looks like a button. Useful for buttons that trigger navigation
     {
       positive: {
         description: 'Use 1 or 2 words, no longer than 4 words',
-        component: <Button>Sign Up!</Button>,
+        size: 'small',
+        component: <Button>Sign Up!</Button>
       },
       negative: {
         description: 'Don’t use more than 20 characters including spaces.',
-        component: <Button>Get started and sign up for Audius</Button>,
+        size: 'small',
+        component: <Button>Get started and sign up for Audius</Button>
       }
     },
     {
       positive: {
         description: 'Use title-case',
-        component: <Button>Get Started</Button>,
+        size: 'small',
+        component: <Button>Get Started</Button>
       },
       negative: {
-        description: 'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
+        description:
+          'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
+        size: 'small',
         component: (
           <Flex gap='l' alignItems='center'>
-            <Button size={ButtonSize.SMALL} style={{textTransform: 'uppercase'}}>Get Started</Button>
-            <Button size={ButtonSize.DEFAULT} style={{textTransform: 'uppercase'}}>Get Started</Button>
+            <Button size='small' style={{ textTransform: 'uppercase' }}>
+              Get Started
+            </Button>
+            <Button size='default' style={{ textTransform: 'uppercase' }}>
+              Get Started
+            </Button>
           </Flex>
-        ),
+        )
       }
     },
     {
       positive: {
         description: 'You may use primary and secondary side-by-side.',
+        size: 'small',
         component: (
           <Flex gap='l'>
-            <Button variant={ButtonType.SECONDARY}>Go Back</Button>
+            <Button variant='secondary'>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
-        ),
+        )
       },
       negative: {
-        description: 'Don’t use tertiary as the 3rd level of button hierarchy. Use plain instead',
+        description: 'Don’t use tertiary as the secondary action',
+        size: 'small',
         component: (
           <Flex gap='l'>
-            <Button variant={ButtonType.TERTIARY}>Go Back</Button>
+            <Button variant='tertiary'>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
-        ),
+        )
       }
     },
     {
       positive: {
-        description: 'Use teriary button exclusively on photos or colored backgrounds.',
-        component: <Button>Get Started</Button>,
-      },
-      negative: {
-        description: 'Never place primary buttons actaions side-by-side ',
-        component: <Button>Get Started</Button>,
-      }
-    },
-    {
-      positive: {
-        description: 'Use teriary button exclusively on photos or colored backgrounds. ',
+        description:
+          'Use teriary button exclusively on photos or colored backgrounds. ',
+        size: 'small',
         component: (
-          <Flex 
-            w='100%' 
-            justifyContent='center' 
-            p='2xl' 
+          <Flex
+            h='100%'
+            w='100%'
+            alignItems='center'
+            justifyContent='center'
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               background: `url(${buttonBackground})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
-            }}>
-            <Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>
+            }}
+          >
+            <Button variant='tertiary' iconLeft={IconCamera}>
               Change Cover Photo
             </Button>
           </Flex>
-        ),
-        css: {padding: 0}
+        )
       },
       negative: {
         description: 'Never place primary buttons actions side-by-side ',
+        size: 'small',
         component: (
           <Flex gap='l'>
             <Button>Go Back</Button>
@@ -192,11 +187,10 @@ A link that looks like a button. Useful for buttons that trigger navigation
           </Flex>
         )
       }
-    },
-
-]}
+    }
+  ]}
 />
 
 ## Related components
 
-<RelatedComponents componentNames={['PlainButton', 'SocialButton']} />
+<RelatedComponents componentNames={['PlainButton', 'FollowButton']} />

@@ -97,11 +97,16 @@
 }
 
 .trackPreviewNew:hover .fileSizeText {
-  opacity: 0;
+  display: none;
 }
 
-.trackPreviewNew:hover .removeButton {
-  opacity: 1;
+.trackPreviewNew:hover .iconsContainer {
+  width: 80px;
+}
+
+.trackPreviewNew:hover .removeButton,
+.trackPreviewNew:hover .editTitleButton {
+  display: flex;
 }
 
 .indexText {
@@ -115,36 +120,34 @@
 
 .titleText {
   flex: 1 1 0;
-}
-
-.sizeContainer {
-  position: relative;
-  width: fit-content;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .fileSizeText {
-  opacity: 1;
+  display: flex;
   transition: var(--hover);
+  width: 80px;
+  justify-content: flex-end;
 }
 
-.removeButtonContainer {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-}
-
-.removeButton {
-  opacity: 0;
+.removeButton,
+.editTitleButton {
+  display: none;
   color: var(--neutral-light-4);
   transition: var(--hover);
 }
 
-.removeButton svg {
+.removeButton svg,
+.editTitleButton svg {
   height: 16px;
   width: 16px;
 }
 
 .removeButton:hover {
   color: var(--accent-red);
+}
+
+.iconsContainer {
+  justify-content: flex-end;
 }

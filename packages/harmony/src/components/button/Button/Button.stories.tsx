@@ -2,16 +2,15 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { Box, Flex } from 'components/layout'
+import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 import { IconArrowLeft, IconArrowRight } from 'icons'
 
-import { ButtonProps, ButtonSize, ButtonType } from '../types'
-
 import { Button } from './Button'
+import { ButtonProps } from './types'
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Buttons/Button',
+  title: 'Buttons/Button',
   component: Button
 }
 
@@ -26,10 +25,10 @@ export const Primary: Story = {
 export const Variants: Story = {
   render: () => (
     <Flex gap='2xl'>
-      <Button variant={ButtonType.PRIMARY}>Primary</Button>
-      <Button variant={ButtonType.SECONDARY}>Secondary</Button>
-      <Button variant={ButtonType.TERTIARY}>Tertiary</Button>
-      <Button variant={ButtonType.DESTRUCTIVE}>Destructive</Button>
+      <Button variant='primary'>Primary</Button>
+      <Button variant='secondary'>Secondary</Button>
+      <Button variant='tertiary'>Tertiary</Button>
+      <Button variant='destructive'>Destructive</Button>
     </Flex>
   )
 }
@@ -38,16 +37,15 @@ export const Sizes: Story = {
   render: () => (
     <Flex gap='3xl' alignItems='end'>
       <Flex direction='column' alignItems='center' gap='m'>
-        <Button size={ButtonSize.SMALL}>Small</Button>
+        <Button size='small'>Small</Button>
         <Text>32px</Text>
       </Flex>
-
       <Flex direction='column' alignItems='center' gap='m'>
-        <Button size={ButtonSize.DEFAULT}>Medium</Button>
+        <Button size='default'>Medium</Button>
         <Text>48px</Text>
       </Flex>
       <Flex direction='column' alignItems='center' gap='m'>
-        <Button size={ButtonSize.LARGE}>Large</Button>
+        <Button size='large'>Large</Button>
         <Text>64px</Text>
       </Flex>
     </Flex>
@@ -64,31 +62,31 @@ export const States: Story = {
     >
       <Flex gap='2xl' alignItems='center'>
         <Text css={{ width: 56 }}>Hover</Text>
-        <Button variant={ButtonType.PRIMARY} _isHovered>
+        <Button variant='primary' _isHovered>
           Primary
         </Button>
-        <Button variant={ButtonType.SECONDARY} _isHovered>
+        <Button variant='secondary' _isHovered>
           Secondary
         </Button>
-        <Button variant={ButtonType.TERTIARY} _isHovered>
+        <Button variant='tertiary' _isHovered>
           Tertiary
         </Button>
-        <Button variant={ButtonType.DESTRUCTIVE} _isHovered>
+        <Button variant='destructive' _isHovered>
           Destructive
         </Button>
       </Flex>
       <Flex gap='2xl' alignItems='center'>
         <Text css={{ width: 56 }}>Pressed</Text>
-        <Button variant={ButtonType.PRIMARY} _isPressed>
+        <Button variant='primary' _isPressed>
           Primary
         </Button>
-        <Button variant={ButtonType.SECONDARY} _isPressed>
+        <Button variant='secondary' _isPressed>
           Secondary
         </Button>
-        <Button variant={ButtonType.TERTIARY} _isPressed>
+        <Button variant='tertiary' _isPressed>
           Tertiary
         </Button>
-        <Button variant={ButtonType.DESTRUCTIVE} _isPressed>
+        <Button variant='destructive' _isPressed>
           Destructive
         </Button>
       </Flex>
@@ -99,16 +97,16 @@ export const States: Story = {
 export const Disabled: Story = {
   render: () => (
     <Flex gap='2xl'>
-      <Button variant={ButtonType.PRIMARY} disabled>
+      <Button variant='primary' disabled>
         Primary
       </Button>
-      <Button variant={ButtonType.SECONDARY} disabled>
+      <Button variant='secondary' disabled>
         Secondary
       </Button>
-      <Button variant={ButtonType.TERTIARY} disabled>
+      <Button variant='tertiary' disabled>
         Tertiary
       </Button>
-      <Button variant={ButtonType.DESTRUCTIVE} disabled>
+      <Button variant='destructive' disabled>
         Destructive
       </Button>
     </Flex>
@@ -126,14 +124,17 @@ export const Icons: Story = {
 
 export const LoadingState: Story = {
   render: () => (
-    <Flex justifyContent='space-between'>
-      <Flex direction='column' gap='2xl'>
-        <Button color='lightGreen'>Buy $1.99</Button>
-        <Button isLoading>Purchasing</Button>
-      </Flex>
-      <Box alignSelf='flex-end'>
-        <Text>Show loading state on click</Text>
-      </Box>
+    <Flex gap='2xl'>
+      <Button isLoading>Purchasing</Button>
+      <Button variant='secondary' isLoading>
+        Uploading
+      </Button>
+      <Button variant='tertiary' isLoading>
+        Updating
+      </Button>
+      <Button variant='destructive' isLoading>
+        Removing
+      </Button>
     </Flex>
   )
 }
@@ -141,79 +142,16 @@ export const LoadingState: Story = {
 export const ColorPropApplied: Story = {
   render: () => (
     <Flex gap='2xl'>
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue'>Default</Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: Near</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' _isHovered>
-            Hover
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value + White Overlay @ 10% Opacity</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: Mid</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1.04x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' _isPressed>
-            Pressed
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value + Black Overlay @ 20% Opacity</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: None</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 0.98x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' disabled>
-            Disabled
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: n-150</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: None</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1x</li>
-          </Text>
-        </Flex>
-      </Flex>
+      <Button color='blue'>Default</Button>
+      <Button color='blue' _isHovered>
+        Hover
+      </Button>
+      <Button color='blue' _isPressed>
+        Pressed
+      </Button>
+      <Button color='blue' disabled>
+        Disabled
+      </Button>
     </Flex>
   )
 }

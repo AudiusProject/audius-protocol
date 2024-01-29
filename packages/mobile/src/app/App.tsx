@@ -1,48 +1,43 @@
-import { AudiusQueryContext } from '@audius/common'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
-import Config from 'react-native-config'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   SafeAreaProvider,
   initialWindowMetrics
 } from 'react-native-safe-area-context'
+import TrackPlayer from 'react-native-track-player'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
-import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
-import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
-import OAuth from 'app/components/oauth/OAuth'
+import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
+import { env } from 'app/env'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
-import { apiClient } from 'app/services/audius-api-client'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { env } from 'app/services/env'
 import { setLibs } from 'app/services/libs'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { persistor, store } from 'app/store'
 import {
   forceRefreshConnectivity,
   subscribeToNetworkStatusUpdates
 } from 'app/utils/reachability'
-import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { AppContextProvider } from './AppContextProvider'
+import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
 import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
-  dsn: Config.SENTRY_DSN
+  dsn: env.SENTRY_DSN
 })
 
 const Airplay = Platform.select({
@@ -68,10 +63,8 @@ const App = () => {
   // Reset libs so that we get a clean app start
   useEffectOnce(() => {
     setLibs(null)
-  })
-
-  useEffectOnce(() => {
     subscribeToNetworkStatusUpdates()
+    TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
   useEnterForeground(() => {
@@ -81,43 +74,33 @@ const App = () => {
   return (
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <FlipperAsyncStorage />
         <Provider store={store}>
           <AudiusTrpcProvider>
-            <AudiusQueryContext.Provider
-              value={{
-                apiClient,
-                audiusSdk,
-                audiusBackend: audiusBackendInstance,
-                dispatch: store.dispatch,
-                reportToSentry,
-                env,
-                fetch
-              }}
-            >
+            <AudiusQueryProvider>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
                   <WalletConnectProvider>
-                    <PortalProvider>
-                      <ErrorBoundary>
-                        <NavigationContainer>
-                          <Toasts />
-                          <Airplay />
-                          <RootScreen />
-                          <Drawers />
-                          <Modals />
-                          <Audio />
-                          <OAuth />
-                          <NotificationReminder />
-                          <RateCtaReminder />
-                          <PortalHost name='ChatReactionsPortal' />
-                        </NavigationContainer>
-                      </ErrorBoundary>
-                    </PortalProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <PortalProvider>
+                        <ErrorBoundary>
+                          <NavigationContainer>
+                            <Toasts />
+                            <Airplay />
+                            <RootScreen />
+                            <Drawers />
+                            <Modals />
+                            <OAuthWebView />
+                            <NotificationReminder />
+                            <RateCtaReminder />
+                            <PortalHost name='ChatReactionsPortal' />
+                          </NavigationContainer>
+                        </ErrorBoundary>
+                      </PortalProvider>
+                    </GestureHandlerRootView>
                   </WalletConnectProvider>
                 </ThemeProvider>
               </PersistGate>
-            </AudiusQueryContext.Provider>
+            </AudiusQueryProvider>
           </AudiusTrpcProvider>
         </Provider>
       </SafeAreaProvider>

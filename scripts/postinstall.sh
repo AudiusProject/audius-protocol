@@ -6,8 +6,11 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   # support nohoist
   cd packages/mobile/node_modules
   ln -s ../../../node_modules/react-native react-native
+  ln -s ../../../node_modules/react-native-code-push react-native-code-push
   cd ../ios
-  bundle check || bundle install 
+  if command -v bundle >/dev/null; then
+    bundle check || bundle install
+  fi
   if command -v pod >/dev/null; then
     pod install
   fi

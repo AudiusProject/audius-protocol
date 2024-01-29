@@ -1,49 +1,42 @@
 protocol-dashboard-init:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
 
   steps:
     - checkout
+    - attach_workspace:
+        at: ./
 
-    - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > protocol-dashboard/.npmrc
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
 
     # Download and cache dependencies
     - restore_cache:
         keys:
-          - dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - dependency-cache-
-
-    - run:
-        name: npm ci
-        command: |
-          cd protocol-dashboard
-          npm ci
-
-    - save_cache:
-        key: dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
-        paths:
-          - protocol-dashboard/node_modules
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     # Lint
     - run:
         name: lint
         command: |
           cd protocol-dashboard
-          npm run lint
+          npx turbo run verify --filter=audius-protocol-dashboard
 
     # Persist node modules
     - persist_to_workspace:
         root: ./
         paths:
-          - protocol-dashboard/node_modules
+          - node_modules
+          - packages/harmony/node_modules
+          - packages/common/node_modules
+          - packages/libs/node_modules
 
 protocol-dashboard-build-staging:
   working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:
@@ -52,6 +45,7 @@ protocol-dashboard-build-staging:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1
           npm run build:stage
     - run:
         name: armada bundle
@@ -104,7 +98,7 @@ protocol-dashboard-deploy-staging:
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   resource_class: xlarge
   steps:
     - checkout
@@ -114,6 +108,7 @@ protocol-dashboard-build-prod:
         name: build
         command: |
           cd protocol-dashboard
+          npm install dotenv@16.3.1
           npm run build:prod
     - run:
         name: zip dist
@@ -143,7 +138,7 @@ protocol-dashboard-deploy-prod:
           aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
           aws s3 cp dist.zip s3://dashboard.audius.org/dist.zip --cache-control max-age=0
 
-protocol-dashboard-update-prod-ga-build:
+protocol-dashboard-update-prod-build:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
@@ -151,7 +146,7 @@ protocol-dashboard-update-prod-ga-build:
     - attach_workspace:
         at: ./
     - run:
-        name: update build in ga
+        name: update pinata pin
         command: |
           cd protocol-dashboard
           npm run update-build:prod

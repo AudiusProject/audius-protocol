@@ -16,7 +16,7 @@ import { Text } from 'components/typography'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
-import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
@@ -50,7 +50,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     artwork: null,
     playlist_name: '',
     description: '',
-    release_date: moment().startOf('day').toString(),
+    release_date: moment().toString(),
     trackDetails: {
       genre: null,
       mood: null,
@@ -61,18 +61,14 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      const {
-        tracks,
-        trackDetails: ignoredTrackDetails,
-        ...collectionMetadata
-      } = values
+      const { tracks, trackDetails, ...collectionMetadata } = values
 
       onContinue({
         uploadType,
         // @ts-expect-error more issues with tracks
         tracks,
         // @ts-expect-error more issues with tracks
-        metadata: { ...collectionMetadata, ...ignoredTrackDetails }
+        metadata: { ...collectionMetadata, ...trackDetails }
       })
     },
     [onContinue, uploadType]
@@ -94,7 +90,11 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       <Form className={styles.root}>
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
-            <ArtworkField name='artwork' className={styles.artwork} />
+            <ArtworkField
+              name='artwork'
+              className={styles.artwork}
+              size='small'
+            />
             <div className={styles.collectionInfo}>
               <TextField
                 name='playlist_name'
@@ -112,7 +112,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
-          <ReleaseDateField />
+          <ReleaseDateFieldLegacy />
+
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text>{messages.trackDetails.description}</Text>

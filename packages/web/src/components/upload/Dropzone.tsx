@@ -1,3 +1,4 @@
+import { TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -7,7 +8,7 @@ import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 import styles from './Dropzone.module.css'
 
 const messages = {
-  track: 'Drag-and-drop a track here, or ',
+  track: 'Drag-and-drop your files here, or ',
   image: 'Drag-and-drop an image here, or ',
   stem: 'Drag-and-drop audio files here, or ',
   browse: 'browse to upload'
@@ -68,7 +69,7 @@ export const Dropzone = ({
     return (
       <>
         {message}
-        <span className={styles.link}>{messages.browse}</span>
+        <TextLink css={{ color: '#a30cb3' }}>{messages.browse}</TextLink>
       </>
     )
   }

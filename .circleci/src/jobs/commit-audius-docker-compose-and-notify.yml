@@ -97,7 +97,7 @@ steps:
           OLD_VERSION=$(echo ${NEW_VERSION} | awk -F. '{$NF = $NF - 1;} 1' | sed 's/ /./g')
 
           # Generate diff for audius-protocol repo commits from last release to HEAD (we're on the new release branch thanks to the checkout step)
-          GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum packages/discovery-provider packages/identity-service comms monitoring/healthz protocol-dashboard | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
+          GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum packages/discovery-provider packages/identity-service packages/ddex* comms monitoring/healthz monitoring/uptime protocol-dashboard | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
           json_content="{ \"blocks\": ["
           json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release (v$NEW_VERSION)\n\" } },"
           audius_protocol_commit_blocks=$(generate_json_content "$GIT_DIFF")
@@ -114,9 +114,9 @@ steps:
           git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
           cd audius-docker-compose
           last_release_commit=$(git log --format=format:%H --grep='^release-v.*auto-deploy$' -1)
-          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" creator-node/docker-compose*.yml
-          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" discovery-provider/docker-compose*.yml
-          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
+          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" creator-node/docker-compose*.yml
+          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" discovery-provider/docker-compose*.yml
+          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
           git add */docker-compose*.yml
           git commit -m "$CIRCLE_BRANCH auto-deploy"
           git push origin stage

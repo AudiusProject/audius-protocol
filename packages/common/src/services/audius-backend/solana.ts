@@ -2,26 +2,25 @@ import { AudiusLibs } from '@audius/sdk'
 import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
-  GetVersionedTransactionConfig,
   Keypair,
   PublicKey,
   Transaction,
   TransactionInstruction,
   TransactionMessage,
-  TransactionResponse,
-  VersionedTransaction,
-  VersionedTransactionResponse
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { BN_USDC_CENT_WEI } from 'utils/wallet'
+
+import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
-
-const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
+const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
+const RECOVERY_MEMO_STRING = 'recovery'
 
 /**
  * Memo program V1
@@ -354,11 +353,12 @@ export const pollForBalanceChange = async (
 }
 
 export type PurchaseContentArgs = {
-  id: number
+  id: ID
   blocknumber: number
   extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
+  purchaserUserId: ID
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
@@ -369,6 +369,44 @@ export const purchaseContent = async (
   ).solanaWeb3Manager!.purchaseContent(config)
 }
 
+export type PurchaseContentWithPaymentRouterArgs = {
+  id: number
+  type: 'track'
+  splits: Record<string, number>
+  extraAmount?: number
+  blocknumber: number
+  recentBlockhash?: string
+  purchaserUserId: ID
+  wallet: Keypair
+}
+
+export const purchaseContentWithPaymentRouter = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    purchaserUserId,
+    splits,
+    wallet
+  }: PurchaseContentWithPaymentRouterArgs
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
+    .solanaWeb3Manager!
+  const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
+    id,
+    type,
+    blocknumber,
+    extraAmount: new BN(extraAmount).mul(BN_USDC_CENT_WEI),
+    splits,
+    purchaserUserId,
+    senderKeypair: wallet,
+    skipSendAndReturnTransaction: true
+  })
+  return tx
+}
+
 export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
@@ -376,6 +414,55 @@ export const findAssociatedTokenAddress = async (
   return (
     await audiusBackendInstance.getAudiusLibsTyped()
   ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
+}
+
+export const createRootWalletRecoveryTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    userBank,
+    wallet,
+    amount,
+    feePayer
+  }: {
+    userBank: PublicKey
+    wallet: Keypair
+    amount: bigint
+    feePayer?: PublicKey
+    usePaymentRouter?: boolean
+  }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const solanaWeb3Manager = libs.solanaWeb3Manager!
+
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(RECOVERY_MEMO_STRING)
+  })
+
+  const [transferInstruction, routeInstruction] =
+    // All the memo related parameters are ignored
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+      id: 0, // ignored
+      type: 'track', // ignored
+      blocknumber: 0, // ignored
+      splits: { [userBank.toString()]: new BN(amount.toString()) },
+      purchaserUserId: 0, // ignored
+      senderAccount: wallet.publicKey
+    })
+
+  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+
+  const tx = new Transaction({ recentBlockhash, feePayer })
+  tx.add(memoInstruction, transferInstruction, routeInstruction)
+  return tx
 }
 
 export const createTransferToUserBankTransaction = async (
@@ -434,6 +521,39 @@ export const createTransferToUserBankTransaction = async (
 }
 
 /**
+ * A pared down version of {@link purchaseContentWithPaymentRouter}
+ * that doesn't add the purchase memo.
+ */
+export const createPaymentRouterRouteTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    sender,
+    splits
+  }: {
+    sender: PublicKey
+    splits: Record<string, number | BN>
+  }
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
+    .solanaWeb3Manager!
+  const { blockhash } = await solanaWeb3Manager.connection.getLatestBlockhash()
+  const [transfer, route] =
+    // All the memo related parameters are ignored
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+      id: 0, // ignored
+      type: 'track', // ignored
+      blocknumber: 0, // ignored
+      splits,
+      purchaserUserId: 0, // ignored
+      senderAccount: sender
+    })
+  return new Transaction({
+    recentBlockhash: blockhash,
+    feePayer: sender
+  }).add(transfer, route)
+}
+
+/**
  * Relays the given transaction using the libs transaction handler
  */
 export const relayTransaction = async (
@@ -477,6 +597,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
+  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const decompiledMessage = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
@@ -487,7 +608,7 @@ export const relayVersionedTransaction = async (
       publicKey: publicKey.toBase58(),
       signature: Buffer.from(transaction.signatures[index])
     }))
-    .filter((meta) => !meta.signature.equals(PLACEHOLDER_SIGNATURE))
+    .filter((meta) => !meta.signature.equals(placeholderSignature))
   return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
     instructions: decompiledMessage.instructions,
     recentBlockhash: decompiledMessage.recentBlockhash,
@@ -552,73 +673,5 @@ export const createVersionedTransaction = async (
   return {
     transaction: new VersionedTransaction(message),
     addressLookupTableAccounts
-  }
-}
-
-/**
- * Sometimes fetching a transaction can turn up empty if the transaction
- * hasn't been finalized and indexed by the RPC yet. This method polls the
- * transaction a few times before it gives up and returns null.
- */
-export const pollForTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  transactionSignature: string,
-  config: GetVersionedTransactionConfig,
-  options?: { maxRetryCount: number; retryDelayMs: number }
-) => {
-  let retryCount = 0
-  const maxRetryCount = options?.maxRetryCount ?? 20
-  const retryDelayMs = options?.retryDelayMs ?? 1000
-  let transaction: VersionedTransactionResponse | TransactionResponse | null =
-    null
-  const connection = await getSolanaConnection(audiusBackendInstance)
-  do {
-    console.debug(
-      `Fetching transaction ${transactionSignature}: attempt ${retryCount} of ${maxRetryCount}`
-    )
-    transaction = await connection.getTransaction(transactionSignature, config)
-    await delay(retryDelayMs)
-  } while (transaction === null && retryCount++ < maxRetryCount)
-  return transaction
-}
-
-/**
- * Maps both the wallet and token balance changes into a map keyed by the
- * public key address of each account.
- */
-export const getBalanceChanges = (
-  transaction: VersionedTransactionResponse | TransactionResponse
-) => {
-  const balanceChanges: Record<string, number> = {}
-  const preTokenBalances: Record<string, bigint> = {}
-  const tokenBalanceChanges: Record<string, bigint> = {}
-
-  const staticAccountKeys = transaction.transaction.message.staticAccountKeys
-  for (let i = 0; i < staticAccountKeys.length; i++) {
-    const pubkey = transaction.transaction.message.staticAccountKeys[i]
-    balanceChanges[pubkey.toBase58()] =
-      (transaction.meta?.postBalances[i] ?? 0) -
-      (transaction.meta?.preBalances[i] ?? 0)
-  }
-  for (const tokenBalance of transaction.meta?.preTokenBalances ?? []) {
-    const account = staticAccountKeys[tokenBalance.accountIndex]
-    if (account) {
-      preTokenBalances[account.toBase58()] = BigInt(
-        tokenBalance.uiTokenAmount.amount
-      )
-    }
-  }
-  for (const tokenBalance of transaction.meta?.postTokenBalances ?? []) {
-    const account = staticAccountKeys[tokenBalance.accountIndex]
-    if (account) {
-      const preTokenBalance = preTokenBalances[account.toBase58()] ?? BigInt(0)
-      const postTokenBalance = BigInt(tokenBalance.uiTokenAmount.amount)
-      const change = postTokenBalance - preTokenBalance
-      tokenBalanceChanges[account.toBase58()] = change
-    }
-  }
-  return {
-    balanceChanges,
-    tokenBalanceChanges
   }
 }

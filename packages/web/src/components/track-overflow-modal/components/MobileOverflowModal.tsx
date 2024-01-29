@@ -14,6 +14,7 @@ type MobileOverflowModalProps = {
   onFavorite?: () => void
   onUnfavorite?: () => void
   onShare?: () => void
+  onAddToAlbum?: () => void
   onAddToPlaylist?: () => void
   onEditPlaylist?: () => void
   onDeletePlaylist?: () => void
@@ -32,9 +33,12 @@ const rowMessageMap = {
   [OverflowAction.FAVORITE]: 'Favorite',
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
+  [OverflowAction.ADD_TO_ALBUM]: 'Add To Album',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.REMOVE_FROM_PLAYLIST]: 'Remove From This Playlist',
+  [OverflowAction.EDIT_ALBUM]: 'Edit Album',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
+  [OverflowAction.DELETE_ALBUM]: 'Delete Album',
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
   [OverflowAction.PUBLISH_PLAYLIST]: 'Publish Playlist',
   [OverflowAction.VIEW_TRACK_PAGE]: 'View Track Page',
@@ -48,6 +52,7 @@ const rowMessageMap = {
   [OverflowAction.FOLLOW]: 'Follow',
   [OverflowAction.UNFOLLOW]: 'Unfollow',
   [OverflowAction.EDIT_TRACK]: 'Edit Track',
+  [OverflowAction.RELEASE_NOW]: 'Release Now',
   [OverflowAction.DELETE_TRACK]: 'Delete Track',
   [OverflowAction.MARK_AS_PLAYED]: 'Mark as Played',
   [OverflowAction.MARK_AS_UNPLAYED]: 'Mark as Unplayed'
@@ -65,6 +70,7 @@ const MobileOverflowModal = ({
   onFavorite,
   onUnfavorite,
   onShare,
+  onAddToAlbum,
   onAddToPlaylist,
   onEditPlaylist,
   onDeletePlaylist,
@@ -83,8 +89,11 @@ const MobileOverflowModal = ({
     [OverflowAction.FAVORITE]: onFavorite,
     [OverflowAction.UNFAVORITE]: onUnfavorite,
     [OverflowAction.SHARE]: onShare,
+    [OverflowAction.ADD_TO_ALBUM]: onAddToAlbum,
     [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
+    [OverflowAction.EDIT_ALBUM]: onEditPlaylist,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
+    [OverflowAction.DELETE_ALBUM]: onDeletePlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,
     [OverflowAction.PUBLISH_PLAYLIST]: onPublishPlaylist,
     [OverflowAction.VIEW_TRACK_PAGE]: onVisitTrackPage,
@@ -101,6 +110,7 @@ const MobileOverflowModal = ({
     // but not mobile web
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {},
     [OverflowAction.EDIT_TRACK]: () => {},
+    [OverflowAction.RELEASE_NOW]: () => {},
     [OverflowAction.DELETE_TRACK]: () => {},
     [OverflowAction.MARK_AS_PLAYED]: () => {},
     [OverflowAction.MARK_AS_UNPLAYED]: () => {}
@@ -112,7 +122,7 @@ const MobileOverflowModal = ({
     if (callbacks && callbacks[action]) {
       callbacks[action]!()
     }
-    // Eventually: will need some special casing for onAddToPlaylist, which returns
+    // Eventually: will need some special casing for onAddToCollection, which returns
     // a function accepting playlistId
     callback()
     onClose()

@@ -316,7 +316,7 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
     title: "Monstera",
     description: "Dedicated to my favorite plant",
     genre: Genre.METAL,
-    mood: Mood.DEVOTIONAL,
+    mood: Mood.AGGRESSIVE,
   },
   trackFile: {
     buffer: Buffer.from(trackBuffer),

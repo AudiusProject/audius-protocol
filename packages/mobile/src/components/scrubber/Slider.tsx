@@ -131,7 +131,7 @@ export const Slider = memo(function Slider(props: SliderProps) {
     handlePressOut: handlePressHandleOut
   } = usePressScaleAnimation(HANDLE_GROW_SCALE)
 
-  const railRef = useRef<View>()
+  const railRef = useRef<View>(null)
   // The rail component's width
   const [railWidth, setRailWidth] = useState(0)
   // The rail component's distance from the left

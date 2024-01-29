@@ -8,6 +8,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-discovery-provider-openresty
+      context: [Vercel, dockerhub]
+      service: discovery-provider-openresty
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-discovery-provider-notifications
       context: [Vercel, dockerhub]
       service: discovery-provider-notifications
@@ -43,6 +50,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub]
+      service: es-indexer
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub]
       service: trpc
@@ -63,6 +77,20 @@ jobs:
       filters:
         branches:
           only: main
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-ddex
+      context: [Vercel, dockerhub]
+      service: ddex
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -80,6 +108,116 @@ jobs:
       requires:
         - lint-discovery-provider
 
+  - push-arm-image:
+      name: push-discovery-provider-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-discovery-provider
+
+  - push-arm-image:
+      name: push-discovery-provider-notifications-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider-notifications
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-discovery-provider-notifications
+
+  - push-arm-image:
+      name: push-pedalboard-trending-challenge-rewards-arm
+      context: [Vercel, dockerhub]
+      service: trending-challenge-rewards
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-trending-challenge-rewards
+
+  - push-arm-image:
+      name: push-pedalboard-relay-arm
+      context: [Vercel, dockerhub]
+      service: relay
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-relay
+
+  - push-arm-image:
+      name: push-pedalboard-sla-auditor-arm
+      context: [Vercel, dockerhub]
+      service: sla-auditor
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-sla-auditor
+
+  - push-arm-image:
+      name: push-comms-arm
+      context: [Vercel, dockerhub]
+      service: comms
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-comms
+
+  - push-arm-image:
+      name: push-trpc-arm
+      context: [Vercel, dockerhub]
+      service: trpc
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-trpc
+
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-protocol-dashboard
+
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-healthz
+
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-uptime
+
+  - push-arm-image:
+      name: push-ddex-arm
+      context: [Vercel, dockerhub]
+      service: ddex
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-ddex
+
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-discovery-provider
@@ -88,6 +226,7 @@ jobs:
         - test-discovery-provider
         - test-discovery-provider-notifications
         - push-discovery-provider
+        - push-discovery-provider-openresty
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
@@ -95,7 +234,22 @@ jobs:
         - push-comms
         - push-trpc
         - push-protocol-dashboard
+        - push-uptime
         - push-healthz
+        - push-ddex
+        # uncomment when arm builds are stable
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-protocol-dashboard-arm
+        # - push-healthz-arm
+        # - push-uptime-arm
+        # - push-ddex-arm
+
       filters:
         branches:
           only: main

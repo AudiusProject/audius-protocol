@@ -53,11 +53,37 @@ const trackApi = createApi({
         kind: Kind.TRACKS,
         schemaKey: 'tracks'
       }
+    },
+    getUserTracksByHandle: {
+      fetch: async (
+        {
+          handle,
+          currentUserId,
+          limit
+        }: { handle: string; currentUserId: Nullable<ID>; limit?: number },
+        { apiClient }
+      ) => {
+        return await apiClient.getUserTracksByHandle({
+          handle,
+          currentUserId,
+          getUnlisted: false,
+          limit
+        })
+      },
+      options: {
+        idListArgKey: 'ids',
+        kind: Kind.TRACKS,
+        schemaKey: 'tracks'
+      }
     }
   }
 })
 
-export const { useGetTrackById, useGetTrackByPermalink, useGetTracksByIds } =
-  trackApi.hooks
+export const {
+  useGetTrackById,
+  useGetTrackByPermalink,
+  useGetTracksByIds,
+  useGetUserTracksByHandle
+} = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer

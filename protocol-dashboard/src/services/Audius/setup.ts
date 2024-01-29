@@ -1,5 +1,5 @@
 import { AudiusClient } from './AudiusClient'
-import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
+import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs'
 
 declare global {
   interface Window {
@@ -52,7 +52,7 @@ export const IS_PRODUCTION =
 
 const IS_STAGING =
   import.meta.env.VITE_ETH_NETWORK_ID &&
-  import.meta.env.VITE_ETH_NETWORK_ID === '3'
+  import.meta.env.VITE_ETH_NETWORK_ID === '5'
 
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
@@ -110,8 +110,8 @@ export async function setup(this: AudiusClient): Promise<void> {
           })
           // Reload anytime the network changes
           window.ethereum.on('chainChanged', () => {
-            console.log('Chain change')
             if (!willReload) {
+              console.log('Chain change')
               willReload = true
               window.location.reload()
             }

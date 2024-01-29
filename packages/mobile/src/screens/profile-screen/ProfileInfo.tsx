@@ -128,7 +128,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     'is_verified'
   ])
 
-  const { name, handle, does_current_user_follow } = profile
+  const { user_id, name, handle, does_current_user_follow } = profile
 
   const isOwner =
     params.handle === 'accountUser' ||
@@ -152,7 +152,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         ) : null}
         <FollowButton
           style={styles.followButton}
-          profile={profile}
+          userId={user_id}
           onPress={onFollow}
           followSource={FollowSource.PROFILE_PAGE}
         />
@@ -161,10 +161,10 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
-      <View style={styles.actionButtons}>
+      <View pointerEvents='box-none' style={styles.actionButtons}>
         {isReachable ? actionButtons : null}
       </View>
-      <View style={styles.text}>
+      <View pointerEvents='none' style={styles.text}>
         <View style={styles.name}>
           <Text
             accessibilityRole='header'

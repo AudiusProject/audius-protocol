@@ -29,7 +29,8 @@ import {
   solanaSelectors,
   deriveUserBankPubkey,
   convertWeiToWAudio,
-  isNullOrUndefined
+  isNullOrUndefined,
+  dayjs
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
@@ -42,7 +43,6 @@ import {
   TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import dayjs from 'dayjs'
 import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
@@ -1077,8 +1077,7 @@ function* recoverPurchaseIfNecessary() {
     // Should only occur as the result of a previously failed Swap
     if (
       exchangableBalance > BigInt(0) &&
-      // $AUDIO has 8 decimals
-      estimatedAudio > BigInt(1 * 10 ** 8)
+      estimatedAudio > BigInt(1 * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
     ) {
       yield* put(
         make(Name.BUY_AUDIO_RECOVERY_OPENED, {

@@ -24,7 +24,7 @@ import { useThemeColors, useThemePalette } from 'app/utils/theme'
 
 import { Link } from './Link'
 
-type ButtonVariant =
+export type ButtonVariant =
   | 'primary'
   | 'primaryAlt'
   | 'secondary'

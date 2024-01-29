@@ -6,16 +6,16 @@ import { Flex } from '../Flex'
 import { Divider } from './Divider'
 
 const meta: Meta<typeof Divider> = {
-  title: 'Components/Layout/Divider',
+  title: 'Layout/Divider',
   component: Divider,
   render: () => (
-    <Flex border='strong' borderRadius='m' p='m' gap='m'>
+    <Flex border='strong' borderRadius='m' p='l' gap='m'>
       <Text variant='label'>Label A</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label B</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label C</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label D</Text>
     </Flex>
   )
@@ -32,10 +32,24 @@ export const Vertical: Story = {
     <Flex
       border='strong'
       borderRadius='m'
-      p='m'
+      p='l'
       justifyContent='center'
       gap='m'
     >
+      <Text variant='label'>Label A</Text>
+      <Divider orientation='vertical' />
+      <Text variant='label'>Label B</Text>
+      <Divider orientation='vertical' />
+      <Text variant='label'>Label C</Text>
+      <Divider orientation='vertical' />
+      <Text variant='label'>Label D</Text>
+    </Flex>
+  )
+}
+
+export const Horizontal: Story = {
+  render: () => (
+    <Flex border='strong' borderRadius='m' p='l' direction='column' gap='m'>
       <Text variant='label'>Label A</Text>
       <Divider />
       <Text variant='label'>Label B</Text>
@@ -47,16 +61,10 @@ export const Vertical: Story = {
   )
 }
 
-export const Horizontal: Story = {
+export const WithText: Story = {
   render: () => (
-    <Flex border='strong' borderRadius='m' p='m' direction='column' gap='m'>
-      <Text variant='label'>Label A</Text>
-      <Divider />
-      <Text variant='label'>Label B</Text>
-      <Divider />
-      <Text variant='label'>Label C</Text>
-      <Divider />
-      <Text variant='label'>Label D</Text>
-    </Flex>
+    <Divider>
+      <Text color='subdued'>Text</Text>
+    </Divider>
   )
 }

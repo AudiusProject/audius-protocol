@@ -1,0 +1,17 @@
+.modal {
+  width: 720px;
+}
+
+.modalHeader {
+  text-align: center;
+}
+
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.noPadding {
+  padding: 0;
+}

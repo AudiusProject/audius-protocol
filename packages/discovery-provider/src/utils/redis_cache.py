@@ -189,6 +189,10 @@ def get_dn_sp_id_key(id):
     return f"sp:dn:id:{id}"
 
 
+def get_solana_transaction_key(signature):
+    return f"solana:transaction:{signature}"
+
+
 def get_trending_cache_key(request_items, request_path):
     request_items.pop("limit", None)
     request_items.pop("offset", None)

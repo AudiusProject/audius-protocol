@@ -42,7 +42,7 @@ type TrackResource = {
   owner_id: number
   cover_art: string
   cover_art_sizes: string
-  premium_conditions: object
+  stream_conditions: object
   creator_node_endpoint: string
   slug: string
   ownerName: string
@@ -168,7 +168,7 @@ export const fetchResources = async (
       'tracks.title',
       'tracks.owner_id',
       'tracks.cover_art_sizes',
-      'tracks.premium_conditions',
+      'tracks.stream_conditions',
       { ownerName: 'users.name' },
       'users.creator_node_endpoint',
       'track_routes.slug'
@@ -252,7 +252,7 @@ const getNotificationProps = async (
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
-      ;(value as Set<number>).forEach(
+      ; (value as Set<number>).forEach(
         idsToFetch[key as keyof ResourceIds].add,
         idsToFetch[key as keyof ResourceIds]
       )
@@ -266,7 +266,7 @@ const getNotificationProps = async (
       for (const notification of acc[n]) {
         const resourcesToFetch = notification.getResourcesForEmail()
         Object.entries(resourcesToFetch).forEach(([key, value]) => {
-          ;(value as Set<number>).forEach(
+          ; (value as Set<number>).forEach(
             idsToFetch[key as keyof ResourceIds].add,
             idsToFetch[key as keyof ResourceIds]
           )
@@ -310,15 +310,12 @@ const getEmailSubject = (
   // they receive the email.
   const formattedDayAgo = now.format('MMMM Do YYYY')
   const shortWeekAgoFormat = weekAgo.format('MMMM Do')
-  const liveSubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  }`
-  const weeklySubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-  const dailySubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  } from ${formattedDayAgo}`
+  const liveSubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    }`
+  const weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+  const dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    } from ${formattedDayAgo}`
 
   let subject
   if (frequency === 'live') {

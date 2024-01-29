@@ -28,10 +28,8 @@ class MockAuth implements AuthService {
 
   signTransaction: (data: EIP712TypedData) => Promise<string> = async () => ''
 
-  sign: (data: string) => Promise<[Uint8Array, number]> = async () => [
-    new Uint8Array(),
-    0
-  ]
+  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
+    async () => [new Uint8Array(), 0]
 
   hashAndSign: (data: string) => Promise<string> = async () => ''
 
@@ -53,7 +51,9 @@ const mswHandlers = [
       version: '1.2.3',
       block_difference: 0,
       network: {
-        discovery_nodes: [discoveryNode],
+        discovery_nodes_with_owner: [
+          { endpoint: discoveryNode, delegateOwnerWallet: '' }
+        ],
         content_nodes: [storageNodeA, storageNodeB]
       }
     }
@@ -152,7 +152,10 @@ describe('StorageNodeSelector', () => {
   })
 
   it('selects correct storage node when discovery node is selected', async () => {
-    const bootstrapDiscoveryNodes = [discoveryNode]
+    const bootstrapDiscoveryNodes = [discoveryNode].map((endpoint) => ({
+      endpoint,
+      delegateOwnerWallet: ''
+    }))
     const discoveryNodeSelector = new DiscoveryNodeSelector({
       healthCheckThresholds: {
         minVersion: '1.2.3'

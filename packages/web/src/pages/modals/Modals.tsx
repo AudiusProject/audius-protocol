@@ -1,14 +1,15 @@
 import { ComponentType, lazy } from 'react'
 
-import { Client } from '@audius/common'
 import type { Modals as ModalTypes } from '@audius/common'
 
-import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
+import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
+import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
+import CoinflowOnrampModal from 'components/coinflow-onramp-modal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
@@ -21,8 +22,9 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
-import PasswordResetModal from 'components/password-reset/PasswordResetModal'
+import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
+import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
@@ -30,18 +32,19 @@ import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
-import { USDCManualTransferModal } from 'components/usdc-manual-transfer-modal/USDCManualTransferModal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
+import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
@@ -76,12 +79,13 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   EditFolder: EditFolderModal,
   EditPlaylist: EditPlaylistModal,
   EditTrack: EditTrackModal,
-  AddToPlaylist: AddToPlaylistModal,
+  AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
+  PublishTrackConfirmation: PublishTrackConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
@@ -95,15 +99,18 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
+  Welcome: WelcomeModal,
   PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
+  CoinflowOnramp: CoinflowOnrampModal,
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  USDCManualTransferModal
+  AddFundsModal,
+  CoinflowWithdraw: CoinflowWithdrawModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
@@ -112,8 +119,7 @@ const commonModals = Object.entries(commonModalsMap) as [
 ][]
 
 const Modals = () => {
-  const client = getClient()
-  const isMobileClient = client === Client.MOBILE
+  const isMobile = useIsMobile()
 
   return (
     <>
@@ -125,7 +131,7 @@ const Modals = () => {
       <UnloadDialog />
       <CollectibleDetailsModal />
 
-      {!isMobileClient && (
+      {!isMobile && (
         <>
           <EmbedModal />
           <ConnectedUserListModal />
@@ -137,7 +143,7 @@ const Modals = () => {
         </>
       )}
 
-      {isMobileClient && (
+      {isMobile && (
         <>
           <ConnectedMobileOverflowModal />
           <UnfollowConfirmationModal />

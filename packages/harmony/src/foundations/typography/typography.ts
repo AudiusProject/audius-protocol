@@ -1,4 +1,5 @@
 export const typography = {
+  font: "'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
   weight: {
     ultraLight: 100,
     thin: 200,
@@ -8,16 +9,6 @@ export const typography = {
     demiBold: 600,
     bold: 700,
     heavy: 900
-  },
-  fontByWeight: {
-    ultraLight: 'AvenirNextLTPro-UltLt',
-    thin: 'AvenirNextLTPro-Thin',
-    light: 'AvenirNextLTPro-Light',
-    regular: 'AvenirNextLTPro-Regular',
-    medium: 'AvenirNextLTPro-Medium',
-    demiBold: 'AvenirNextLTPro-DemiBold',
-    bold: 'AvenirNextLTPro-Bold',
-    heavy: 'AvenirNextLTPro-Heavy'
   },
   size: {
     '2xs': 10,
@@ -46,6 +37,10 @@ export const typography = {
     '4xl': '68px',
     '5xl': '88px',
     '6xl': '120px'
+  },
+  shadow: {
+    emphasis:
+      '0px 1.34px 8px rgba(0, 0, 0, 0.20), 0px 6px 15px rgba(0, 0, 0, 0.10)'
   }
 }
 

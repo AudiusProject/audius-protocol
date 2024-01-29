@@ -22,7 +22,7 @@ type ProfileCardProps = Partial<BaseProfileCardProps> & {
 
 export const ProfileCard = (props: ProfileCardProps) => {
   const { profile, onPress, ...other } = props
-  const { handle } = profile
+  const { user_id, handle } = profile
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
@@ -31,9 +31,13 @@ export const ProfileCard = (props: ProfileCardProps) => {
 
   const renderImage = useCallback(
     (props: ImageProps) => (
-      <UserImage user={profile} size={SquareSizes.SIZE_480_BY_480} {...props} />
+      <UserImage
+        userId={user_id}
+        size={SquareSizes.SIZE_480_BY_480}
+        {...props}
+      />
     ),
-    [profile]
+    [user_id]
   )
 
   return (

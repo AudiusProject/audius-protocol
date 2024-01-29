@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum zIndex {
   CHAT_TAIL = -10,
   PREMIUM_TRACK_TILE_CORNER_TAG = 3,
@@ -5,6 +6,7 @@ export enum zIndex {
   CHAT_REACTIONS_POPUP_DIM_BACKGROUND = 10,
   HEADER_SHADOW = 10,
   STRIPE_ONRAMP_DRAWER = 10,
+  COINFLOW_ONRAMP_DRAWER = 10,
   CHAT_REACTIONS_POPUP_CLOSE_PRESSABLES = 20,
   CHAT_REACTIONS_POPUP_CONTENT = 30,
   SPLASH_SCREEN = 10000,

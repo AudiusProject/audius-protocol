@@ -6,7 +6,8 @@ import { navigationRef } from 'app/components/navigation-container/NavigationCon
 const { registerToast } = toastActions
 
 const messages = {
-  createdToast: 'Playlist Created!',
+  createdToast: (isAlbum: boolean) =>
+    `${isAlbum ? 'Album' : 'Playlist'} Created`,
   view: 'View'
 }
 
@@ -16,13 +17,13 @@ export function* createPlaylistRequestedSaga() {
     function* (
       action: ReturnType<typeof cacheCollectionsActions.createPlaylistRequested>
     ) {
-      const { playlistId, noticeType } = action
+      const { playlistId, noticeType, isAlbum } = action
 
       switch (noticeType) {
         case 'toast': {
           yield* put(
             registerToast({
-              content: messages.createdToast,
+              content: messages.createdToast(isAlbum),
               key: uuid(),
               linkText: messages.view,
               linkConfig: { screen: 'Collection', params: { id: playlistId } }

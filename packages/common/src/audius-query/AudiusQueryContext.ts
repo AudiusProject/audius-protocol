@@ -1,10 +1,10 @@
-import { createContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 
 import type { AudiusAPIClient } from 'services/audius-api-client'
-import { AudiusBackend, Env } from 'services/index'
+import { AudiusBackend, Env, RemoteConfigInstance } from 'services/index'
 
 import { ReportToSentryArgs } from '../models'
 
@@ -16,8 +16,21 @@ export type AudiusQueryContextType = {
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
   fetch: typeof fetch
+  remoteConfigInstance: RemoteConfigInstance
 }
 
-export const AudiusQueryContext = createContext<AudiusQueryContextType | null>(
-  null
+export const AudiusQueryContext = createContext<AudiusQueryContextType>(
+  null as any
 )
+
+export const useAudiusQueryContext = () => {
+  const audiusQueryContext = useContext(AudiusQueryContext)
+
+  if (!audiusQueryContext) {
+    throw new Error(
+      'useAudiusQueryContext has to be used within <AudiusQueryContext.Provider>'
+    )
+  }
+
+  return audiusQueryContext
+}

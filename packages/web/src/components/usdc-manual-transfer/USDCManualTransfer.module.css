@@ -1,0 +1,18 @@
+.buttonContainer {
+  display: flex;
+  flex-direction: row;
+  gap: var(--unit-2);
+}
+
+.buttonContainer.mobile {
+  flex-direction: column;
+}
+
+.qr {
+  width: 160px;
+  height: 160px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

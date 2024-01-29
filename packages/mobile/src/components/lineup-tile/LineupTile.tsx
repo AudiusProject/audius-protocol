@@ -3,10 +3,11 @@ import { useCallback } from 'react'
 import {
   accountSelectors,
   Genre,
-  premiumContentActions,
-  usePremiumContentAccess,
+  gatedContentActions,
+  useGatedContentAccess,
   getDogEarType
 } from '@audius/common'
+import moment from 'moment'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -22,7 +23,7 @@ import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
 
 const { getUserId } = accountSelectors
-const { setLockedContentId } = premiumContentActions
+const { setLockedContentId } = gatedContentActions
 
 export const LineupTile = ({
   children,
@@ -68,26 +69,29 @@ export const LineupTile = ({
   const isCollection = 'playlist_id' in item
   const isTrack = 'track_id' in item
   const trackId = isTrack ? item.track_id : undefined
-  const premiumConditions = isTrack ? item.premium_conditions : null
+  const streamConditions = isTrack ? item.stream_conditions : null
   const isArtistPick = artist_pick_track_id === id
-  const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
+  const { hasStreamAccess } = useGatedContentAccess(isTrack ? item : null)
+  const isScheduledRelease = item.release_date
+    ? moment(item.release_date).isAfter(moment())
+    : false
 
   const dogEarType = getDogEarType({
-    premiumConditions,
+    streamConditions,
     isOwner,
-    doesUserHaveAccess,
+    hasStreamAccess,
     isArtistPick: showArtistPick && isArtistPick,
-    isUnlisted
+    isUnlisted: isUnlisted && !isScheduledRelease
   })
 
   const handlePress = useCallback(() => {
-    if (trackId && !doesUserHaveAccess && !hasPreview) {
+    if (trackId && !hasStreamAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [trackId, doesUserHaveAccess, hasPreview, dispatch, onPress])
+  }, [trackId, hasStreamAccess, hasPreview, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
@@ -134,11 +138,12 @@ export const LineupTile = ({
           repostCount={repost_count}
           saveCount={save_count}
           showRankIcon={showRankIcon}
-          doesUserHaveAccess={doesUserHaveAccess}
-          premiumConditions={premiumConditions}
+          hasStreamAccess={hasStreamAccess}
+          streamConditions={streamConditions}
           isOwner={isOwner}
           isArtistPick={isArtistPick}
           showArtistPick={showArtistPick}
+          releaseDate={item?.release_date ? item.release_date : undefined}
         />
       </View>
       {children}
@@ -151,8 +156,8 @@ export const LineupTile = ({
         isUnlisted={isUnlisted}
         readonly={isReadonly}
         trackId={trackId}
-        premiumConditions={premiumConditions}
-        doesUserHaveAccess={doesUserHaveAccess}
+        streamConditions={streamConditions}
+        hasStreamAccess={hasStreamAccess}
         onPressOverflow={onPressOverflow}
         onPressRepost={onPressRepost}
         onPressSave={onPressSave}

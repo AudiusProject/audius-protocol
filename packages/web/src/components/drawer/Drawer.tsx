@@ -62,6 +62,7 @@ export type DrawerProps = {
   onClosed?: () => void
   isFullscreen?: boolean
   zIndex?: number
+  'aria-labelledby'?: string
 }
 
 const getHeight = (contentRef: RefObject<HTMLDivElement>) => {
@@ -75,7 +76,8 @@ const DraggableDrawer = ({
   children,
   shouldClose,
   onClose,
-  zIndex
+  zIndex,
+  'aria-labelledby': ariaLabelledBy
 }: DrawerProps) => {
   const Portal = usePortal({})
 
@@ -287,6 +289,8 @@ const DraggableDrawer = ({
   return (
     <Portal>
       <animated.div
+        role='dialog'
+        aria-labelledby={ariaLabelledBy}
         className={cn(styles.drawer, { [styles.isOpen]: isOpen })}
         {...bind()}
         style={{
@@ -327,8 +331,10 @@ const interpolateBorderRadius = (r: number) => {
 const FullscreenDrawer = ({
   children,
   isOpen,
+  zIndex,
   onClose,
-  onClosed
+  onClosed,
+  'aria-labelledby': ariaLabelledBy
 }: DrawerProps) => {
   const drawerRef = useRef<HTMLDivElement | null>(null)
   // Lock to prevent double scrollbars
@@ -373,6 +379,8 @@ const FullscreenDrawer = ({
           // @ts-ignore
           item && (
             <animated.div
+              role='dialog'
+              aria-labelledby={ariaLabelledBy}
               ref={drawerRef}
               className={cn(styles.drawer, styles.fullDrawer)}
               key={key}
@@ -384,7 +392,8 @@ const FullscreenDrawer = ({
                 borderRadius: props.borderRadius?.interpolate(
                   // @ts-ignore
                   interpolateBorderRadius
-                )
+                ),
+                zIndex
               }}
             >
               <div className={styles.dismissContainer} onClick={onClose}>

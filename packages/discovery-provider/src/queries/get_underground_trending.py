@@ -2,21 +2,20 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from typing import Any, Optional, TypedDict
 
-from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
+from src.gated_content.constants import (
+    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
+)
 from src.models.social.aggregate_plays import AggregatePlay
-from src.models.social.follow import Follow
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.premium_content.premium_content_constants import (
-    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
-)
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
@@ -64,7 +63,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
-        "is_premium": boolean
+        "is_stream_gated": boolean
     }
     """
 
@@ -73,7 +72,6 @@ def get_scorable_track_data(session, redis_instance, strategy):
     r = score_params["r"]
     q = score_params["q"]
     o = score_params["o"]
-    f = score_params["f"]
     qr = score_params["qr"]
     xf = score_params["xf"]
     pt = score_params["pt"]
@@ -84,36 +82,19 @@ def get_scorable_track_data(session, redis_instance, strategy):
         track_ids = old_trending[1]
     exclude_track_ids = track_ids[:qr]
 
-    # Get followers
-    follower_query = (
-        session.query(
-            Follow.followee_user_id.label("user_id"),
-            User.is_verified.label("is_verified"),
-            func.count(Follow.followee_user_id).label("follower_count"),
-        )
-        .join(User, User.user_id == Follow.followee_user_id)
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            User.is_current == True,
-            Follow.created_at < (datetime.now() - timedelta(days=f)),
-        )
-        .group_by(Follow.followee_user_id, User.is_verified)
-    ).subquery()
-
     base_query = (
         session.query(
             AggregatePlay.play_item_id.label("track_id"),
-            follower_query.c.user_id,
-            follower_query.c.follower_count,
+            User.user_id,
+            AggregateUser.follower_count,
             AggregatePlay.count,
             Track.created_at,
-            follower_query.c.is_verified,
-            Track.is_premium,
-            Track.premium_conditions,
+            User.is_verified,
+            Track.is_stream_gated,
+            Track.stream_conditions,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
-        .join(follower_query, follower_query.c.user_id == Track.owner_id)
+        .join(User, Track.owner_id == User.user_id)
         .join(AggregateUser, AggregateUser.user_id == Track.owner_id)
         .filter(
             Track.is_current == True,
@@ -122,8 +103,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             Track.stem_of == None,
             Track.track_id.notin_(exclude_track_ids),
             Track.created_at >= (datetime.now() - timedelta(days=o)),
-            follower_query.c.follower_count < S,
-            follower_query.c.follower_count >= pt,
+            AggregateUser.follower_count < S,
+            AggregateUser.follower_count >= pt,
             AggregateUser.following_count < r,
             AggregatePlay.count >= q,
         )
@@ -142,24 +123,28 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
-            "is_premium": record[6],
-            "premium_conditions": record[7],
+            "is_stream_gated": record[6],
+            "stream_conditions": record[7],
         }
         for record in base_query
     }
 
     track_ids = [record[0] for record in base_query]
 
-    # Get all the extra values
-    repost_counts = get_repost_counts(
-        session, False, False, track_ids, [RepostType.track]
+    agg_track_rows = (
+        session.query(
+            AggregateTrack.track_id,
+            AggregateTrack.save_count,
+            AggregateTrack.repost_count,
+        )
+        .filter(AggregateTrack.track_id.in_(track_ids))
+        .all()
     )
 
+    # Get all the extra values
     windowed_repost_counts = get_repost_counts(
         session, False, False, track_ids, [RepostType.track], None, "week"
     )
-
-    save_counts = get_save_counts(session, False, False, track_ids, [SaveType.track])
 
     windowed_save_counts = get_save_counts(
         session, False, False, track_ids, [SaveType.track], None, "week"
@@ -168,11 +153,11 @@ def get_scorable_track_data(session, redis_instance, strategy):
     karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
-    for track_id, repost_count in repost_counts:
+    for track_id, save_count, repost_count in agg_track_rows:
         tracks_map[track_id]["repost_count"] = repost_count
     for track_id, repost_count in windowed_repost_counts:
         tracks_map[track_id]["windowed_repost_count"] = repost_count
-    for track_id, save_count in save_counts:
+    for track_id, save_count, repost_count in agg_track_rows:
         tracks_map[track_id]["save_count"] = save_count
     for track_id, save_count in windowed_save_counts:
         tracks_map[track_id]["windowed_save_count"] = save_count
@@ -198,19 +183,19 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
 
-        # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
-        # belonging to premium tracks before applying the limit.
-        if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
+        # If SHOULD_TRENDING_EXCLUDE_GATED_TRACKS is true, then filter out track ids
+        # belonging to gated tracks before applying the limit.
+        if SHOULD_TRENDING_EXCLUDE_GATED_TRACKS:
             track_scoring_data = list(
-                filter(lambda item: not item["is_premium"], track_scoring_data)
+                filter(lambda item: not item["is_stream_gated"], track_scoring_data)
             )
         # If SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS is true, then filter out track ids
         # belonging to collectible gated tracks before applying the limit.
         elif SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS:
             track_scoring_data = list(
                 filter(
-                    lambda item: (item["premium_conditions"] is None)
-                    or ("nft_collection" not in item["premium_conditions"]),
+                    lambda item: (item["stream_conditions"] is None)
+                    or ("nft_collection" not in item["stream_conditions"]),
                     track_scoring_data,
                 )
             )
@@ -226,7 +211,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         tracks = get_unpopulated_tracks(
             session,
             track_ids,
-            exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+            exclude_gated=SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
         )
 
         return (tracks, track_ids)

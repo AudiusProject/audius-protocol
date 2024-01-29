@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -12,6 +13,7 @@ import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { UploadFormScrollContext } from '../UploadFormScrollContext'
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
@@ -20,6 +22,7 @@ import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from '../fields/RemixSettingsField'
 import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
@@ -64,7 +67,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
         description: '',
-        releaseDate: new Date(moment().startOf('day').toString()),
+        releaseDate: new Date(moment().toString()),
         tags: '',
         field_visibility: {
           ...defaultHiddenFields,
@@ -118,6 +121,9 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   useUnmount(() => {
     setIndex(0)
   })
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
 
   return (
     <Form>
@@ -134,7 +140,11 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              <ReleaseDateField />
+              {isScheduledReleasesEnabled ? (
+                <ReleaseDateField />
+              ) : (
+                <ReleaseDateFieldLegacy />
+              )}
               <RemixSettingsField />
               <SourceFilesField />
               <AccessAndSaleField isUpload />

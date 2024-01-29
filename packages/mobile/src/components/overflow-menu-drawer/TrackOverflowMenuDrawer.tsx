@@ -16,11 +16,12 @@ import {
   cacheUsersSelectors,
   tracksSocialActions,
   usersSocialActions,
-  addToPlaylistUIActions,
+  addToCollectionUIActions,
   OverflowAction,
   mobileOverflowMenuUISelectors
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -31,7 +32,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
-const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
+const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
@@ -68,6 +69,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     (t) => t.track === track?.track_id
   )
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: id },
+    { enabled: !!id }
+  )
+
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
@@ -99,8 +105,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
           source: ShareSource.OVERFLOW
         })
       ),
+    [OverflowAction.ADD_TO_ALBUM]: () =>
+      dispatch(openAddToCollectionModal('album', id, title, is_unlisted)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
-      dispatch(openAddToPlaylistModal(id, title, is_unlisted)),
+      dispatch(openAddToCollectionModal('playlist', id, title, is_unlisted)),
     [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {
       if (playlist && playlistTrackInfo) {
         const { metadata_time, time } = playlistTrackInfo
@@ -122,6 +130,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       closeNowPlayingDrawer()
       navigation?.push('Track', { id })
     },
+    [OverflowAction.VIEW_ALBUM_PAGE]: () => {
+      albumInfo && navigation?.push('Collection', { id: albumInfo.playlist_id })
+    },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation?.push('Profile', { handle })
@@ -133,6 +144,16 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.EDIT_TRACK]: () => {
       navigation?.push('EditTrack', { id })
     },
+    [OverflowAction.RELEASE_NOW]: () => {
+      dispatch(
+        setVisibility({
+          drawer: 'ReleaseNowConfirmation',
+          visible: true,
+          data: { trackId: id }
+        })
+      )
+    },
+
     [OverflowAction.DELETE_TRACK]: () => {
       dispatch(
         setVisibility({

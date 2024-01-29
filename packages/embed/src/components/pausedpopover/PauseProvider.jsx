@@ -1,5 +1,4 @@
-import { createContext } from 'preact'
-import { useState } from 'preact/hooks'
+import { createContext, useState } from 'react'
 
 export const PauseContext = createContext({
   setPopoverVisibility: () => {},

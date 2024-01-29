@@ -65,7 +65,6 @@ type MediorumConfig struct {
 	WalletIsRegistered   bool
 	StoreAll             bool
 	VersionJson          VersionJson
-	MigrateQmCidIters    int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -219,7 +218,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud, bucket, config.Self.Host)
+	dbMigrate(crud, config.Self.Host)
 
 	// req.cool http client
 	reqClient := req.C().
@@ -325,6 +324,22 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
+	// reverse proxy /d and /d_api to uptime container
+	uptimeUrl, err := url.Parse("http://uptime:1996")
+	if err != nil {
+		log.Fatal("Invalid uptime URL: ", err)
+	}
+	uptimeProxy := httputil.NewSingleHostReverseProxy(uptimeUrl)
+
+	uptimeAPI := routes.Group("/d_api")
+	// fixes what I think should be considered an echo bug: https://github.com/labstack/echo/issues/1419
+	uptimeAPI.Use(ACAOHeaderOverwriteMiddleware)
+	uptimeAPI.Any("/*", echo.WrapHandler(uptimeProxy))
+
+	uptimeUI := routes.Group("/d")
+	uptimeUI.Any("*", echo.WrapHandler(uptimeProxy))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
@@ -338,19 +353,38 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: blobs between peers
 	internalApi.GET("/blobs/:cid", ss.serveInternalBlobGET, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.serveInternalBlobPOST, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.GET("/qm.csv", ss.serveInternalQmCsv)
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+	internalApi.GET("/metrics/blobs-served/:timeRange", ss.getBlobsServedMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
 	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
+	internalApi.GET("/logs/pg-upgrade", ss.getPgUpgradeLog)
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
 
 	return ss, nil
 
+}
+
+func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
+	resp.Header().Set(
+		echo.HeaderAccessControlAllowOrigin,
+		req.Header.Get(echo.HeaderOrigin),
+	)
+}
+
+func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		ctx.Response().Before(func() {
+			setResponseACAOHeaderFromRequest(*ctx.Request(), *ctx.Response())
+		})
+		return next(ctx)
+	}
 }
 
 func (ss *MediorumServer) MustStart() {
@@ -398,6 +432,8 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startHealthPoller()
 
 		go ss.startRepairer()
+
+		go ss.startQmSyncer()
 
 		ss.crud.StartClients()
 

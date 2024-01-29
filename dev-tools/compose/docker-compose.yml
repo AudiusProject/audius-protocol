@@ -11,13 +11,15 @@ x-common: &common
     driver: json-file
   extra_hosts:
     # Allows the containers can talk to each other via their hostnames routed through nginx
-    - 'audius-protocol-comms-discovery-1:host-gateway'
-    - 'audius-protocol-comms-discovery-2:host-gateway'
-    - 'audius-protocol-comms-discovery-3:host-gateway'
+    - 'audius-protocol-comms-1:host-gateway'
+    - 'audius-protocol-comms-2:host-gateway'
+    - 'audius-protocol-comms-3:host-gateway'
     - 'audius-protocol-creator-node-1:host-gateway'
     - 'audius-protocol-creator-node-2:host-gateway'
     - 'audius-protocol-creator-node-3:host-gateway'
     - 'audius-protocol-discovery-provider-1:host-gateway'
+    - 'audius-protocol-discovery-provider-2:host-gateway'
+    - 'audius-protocol-discovery-provider-3:host-gateway'
     - 'audius-protocol-identity-service-1:host-gateway'
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
@@ -39,7 +41,7 @@ services:
   db:
     image: postgres:11.4
     shm_size: 2g
-    command: postgres -c shared_buffers=2GB
+    command: postgres -c shared_buffers=2GB -c max_connections=300
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -86,45 +88,73 @@ services:
     <<: *common
 
   # Protocol dashboard
-  
+
   dashboard:
-    extends: 
-      file: docker-compose.protocol-dashboard.yml
+    image: audius-protocol-dashboard:${DASHBOARD_ENV_TYPE:-latest}
+    extends:
+      file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
       service: dashboard
+    <<: *common
+
+  # Uptime (standalone container used by Discovery and Content)
+
+  uptime:
+    extends:
+      file: docker-compose.uptime.yml
+      service: uptime
     <<: *common
 
   # Discovery
 
+  discovery-provider-redis:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: discovery-provider-redis
+    <<: *common
+
   discovery-provider-notifications:
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: discovery-provider-notifications
     <<: *common
 
   discovery-provider-elasticsearch:
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: discovery-provider-elasticsearch
     <<: *common
 
   discovery-provider:
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: discovery-provider
+    <<: *common
+
+  discovery-provider-openresty:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: discovery-provider-openresty
     <<: *common
 
   comms:
     # Used for pushing to docker hub in CI
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: comms
     <<: *common
 
   trpc:
     # Used for pushing to docker hub in CI
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: trpc
+    <<: *common
+
+  es-indexer:
+    # Used for pushing to docker hub in CI
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: es-indexer
     <<: *common
 
   # Pedalboard (plugins)
@@ -140,10 +170,24 @@ services:
       service: relay
     <<: *common
 
+  solana-relay:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: solana-relay
+    <<: *common
+
   sla-auditor:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: sla-auditor
+    <<: *common
+
+  # DDEX
+
+  ddex:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex
     <<: *common
 
   # Storage (content node)

@@ -11,11 +11,12 @@ import {
   collectionPageLineupActions as tracksActions,
   imageBlank as placeholderCoverArt,
   newCollectionMetadata,
-  usePremiumContentAccessMap,
+  useGatedContentAccessMap,
   EditPlaylistValues,
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common'
+import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -43,12 +44,12 @@ const { getCollection, getCollectionTracksWithUsers } =
   cacheCollectionsSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
-const messages = {
-  editPlaylist: 'Edit Playlist',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  editPlaylist: `Edit ${capitalize(collectionType)}`,
   randomPhoto: 'Get Random Artwork',
-  placeholderName: 'My Playlist',
-  placeholderDescription: 'Give your playlist a description'
-}
+  placeholderName: `My ${collectionType}`,
+  placeholderDescription: `Give your ${collectionType} a description`
+})
 
 const initialFormFields = {
   artwork: {},
@@ -74,6 +75,7 @@ const EditPlaylistPage = g(
     const tracks = useSelector((state) =>
       getCollectionTracksWithUsers(state, { id: collectionId ?? undefined })
     )
+    const messages = getMessages(metadata?.is_album ? 'album' : 'playlist')
 
     // Close the page if the route was changed
     useHasChangedRoute(onClose)
@@ -324,12 +326,12 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [formFields, onSave]
+      [formFields.playlist_name, messages.editPlaylist, onSave]
     )
 
     useTemporaryNavContext(setters)
 
-    const trackAccessMap = usePremiumContentAccessMap(tracks ?? [])
+    const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
 
     // Put together track list if necessary
     let trackList = null
@@ -341,10 +343,10 @@ const EditPlaylistPage = g(
           showRemoveTrackDrawer &&
           t.track_id === confirmRemoveTrack?.trackId &&
           playlistTrack?.time === confirmRemoveTrack?.timestamp
-        const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
           t.track_id
-        ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-        const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+        ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+        const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
         return {
           isLoading: false,
@@ -354,7 +356,7 @@ const EditPlaylistPage = g(
           permalink: t.permalink,
           trackId: t.track_id,
           time: playlistTrack?.time,
-          isPremium: t.is_premium,
+          isStreamGated: t.is_stream_gated,
           isDeleted: t.is_delete || !!t.user.is_deactivated,
           isLocked,
           isRemoveActive

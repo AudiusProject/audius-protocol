@@ -15,12 +15,10 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import queryString from 'query-string'
 
 import { Env } from 'services/env'
+import dayjs from 'utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
@@ -125,9 +123,6 @@ declare global {
   }
 }
 
-dayjs.extend(utc)
-dayjs.extend(timezone)
-
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
 const IMAGE_CACHE_MAX_SIZE = 200
@@ -196,6 +191,7 @@ type AudiusBackendSolanaConfig = Partial<{
   rewardsManagerProgramId: string
   rewardsManagerProgramPda: string
   rewardsManagerTokenPda: string
+  paymentRouterProgramId: string
   solanaClusterEndpoint: string
   solanaFeePayerAddress: string
   solanaTokenAddress: string
@@ -254,7 +250,6 @@ type AudiusBackendParams = {
   identityServiceUrl: Maybe<string>
   generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
-  isMobile: Maybe<boolean>
   localStorage?: LocalStorage
   monitoringCallbacks: MonitoringCallbacks
   nativeMobile: Maybe<boolean>
@@ -299,7 +294,6 @@ export const audiusBackend = ({
   identityServiceUrl,
   generalAdmissionUrl,
   isElectron,
-  isMobile,
   localStorage,
   monitoringCallbacks,
   nativeMobile,
@@ -317,6 +311,7 @@ export const audiusBackend = ({
     rewardsManagerProgramId,
     rewardsManagerProgramPda,
     rewardsManagerTokenPda,
+    paymentRouterProgramId,
     solanaClusterEndpoint,
     solanaFeePayerAddress,
     solanaTokenAddress,
@@ -782,7 +777,8 @@ export const audiusBackend = ({
       !claimableTokenProgramAddress ||
       !rewardsManagerProgramId ||
       !rewardsManagerProgramPda ||
-      !rewardsManagerTokenPda
+      !rewardsManagerTokenPda ||
+      !paymentRouterProgramId
     ) {
       return {
         error: true
@@ -801,6 +797,7 @@ export const audiusBackend = ({
         rewardsManagerProgramId,
         rewardsManagerProgramPDA: rewardsManagerProgramPda,
         rewardsManagerTokenPDA: rewardsManagerTokenPda,
+        paymentRouterProgramId,
         useRelay: true
       })
     }
@@ -1351,9 +1348,6 @@ export const audiusBackend = ({
     trackIds: ID[] = [],
     isPrivate = true
   ) {
-    // Creating an album is automatically public.
-    if (isAlbum) isPrivate = false
-
     try {
       const web3 = await audiusLibs.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()
@@ -1596,9 +1590,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, otp?: string) {
     await waitForLibsInit()
-    return audiusLibs.Account.login(email, password)
+    return audiusLibs.Account.login(email, password, otp)
   }
 
   async function signOut() {
@@ -1628,8 +1622,8 @@ export const audiusBackend = ({
       handle?: string
       isVerified?: boolean
       location?: string
-      profilePicture: File
-      coverPhoto: File
+      profilePicture: File | null
+      coverPhoto: File | null
     }
     hasWallet: boolean
     referrer: Nullable<ID>
@@ -3168,7 +3162,8 @@ export const audiusBackend = ({
     endpoints,
     AAOEndpoint,
     parallelization,
-    feePayerOverride
+    feePayerOverride,
+    source
   }: {
     challenges: {
       challenge_id: ChallengeRewardID
@@ -3185,12 +3180,12 @@ export const audiusBackend = ({
     parallelization: number
     feePayerOverride: Nullable<string>
     isFinalAttempt: boolean
+    source: 'mobile' | 'electron' | 'web'
   }) {
     await waitForLibsInit()
     try {
       if (!challenges.length) return
 
-      const source = isMobile ? 'mobile' : isElectron ? 'electron' : 'web'
       const reporter = new ClientRewardsReporter({
         libs: audiusLibs,
         recordAnalytics,

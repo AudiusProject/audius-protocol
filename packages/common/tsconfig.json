@@ -14,6 +14,10 @@
       "utils/*": ["src/utils/*"],
       "utils": ["src/utils"]
     },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
     "module": "esnext",
     "target": "es6",
     "moduleResolution": "node",
@@ -30,10 +34,12 @@
     "noImplicitAny": true,
     "strict": true,
     "downlevelIteration": true,
+    "ignoreDeprecations": "5.0",
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["src", "index.d.ts"],
   "exclude": ["node_modules", "dist", "rollup.config.js"]

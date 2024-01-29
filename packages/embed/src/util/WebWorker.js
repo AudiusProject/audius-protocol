@@ -1,38 +1,26 @@
-const importWorkerScript = (script) => {
-  const basename = process.env.PUBLIC_URL
-  // eslint-disable-next-line
-  if (self.location.origin !== 'blob://') {
-    // eslint-disable-next-line
-    let origin = location.origin
-    if (basename) origin += basename
-    // eslint-disable-next-line
-    importScripts(origin + script)
-  } else {
-    // eslint-disable-next-line
-    const href = self.location.href.replace(self.location.protocol, '')
-    const protocol = href.split('//')[0]
-    const origin = href.split('//')[1].split('/')[0]
-    // eslint-disable-next-line
-    importScripts(protocol + '//' + origin + script)
-  }
-}
+import importWorkerScript from './importWorkerScript'
 
 const importWorkScriptCode = importWorkerScript.toString()
+const basename = process.env.VITE_PUBLIC_URL
 
 export default class WebWorker {
   /**
    * Initializes a web worker for performing async tasks.
    * @param {file} workerFile The web worker code, which is turned into a string an exec'd.
    * @param {?boolean} terminateOnResult Whether or not to terminate the worker on gathering the result.
+   * @param {?Array<file>} dependencies Optional array of file dependencies they worker needs
    * Note: Workers are non-trivial to spin up, so leaving commonly used workers running can be useful.
    */
-  constructor(workerFile, terminateOnResult = true) {
+  constructor(workerFile, terminateOnResult = true, dependencies = []) {
     const code = workerFile.toString()
+    const dependencyCode = dependencies.map((d) => `${d.toString()};`).join()
     const blob = new Blob([
       `
-      const importWorkerScript = ${importWorkScriptCode}
-      const code = ${code}
-      code()
+      const basename = ${basename || "''"};
+      ${dependencyCode};
+      const importWorkerScript = ${importWorkScriptCode};
+      const code = ${code};
+      code();
     `
     ])
     this.worker = new Worker(URL.createObjectURL(blob))
@@ -52,15 +40,14 @@ export default class WebWorker {
    * @param {?string} key optional key used to retrieve specifically keyed calls.
    */
   getResult = async (key = '') => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.worker.addEventListener('message', (event) => {
         if (event.data.key) {
           if (event.data.key === key) {
             resolve(event.data.result)
-          } else {
           }
         } else {
-          resolve(event.data.result)
+          resolve(event.data)
         }
         if (this.terminateOnResult) {
           this.worker.terminate()

@@ -52,8 +52,8 @@ export class EntityManagerClient extends ContractClient {
     metadataMultihash: string,
     privateKey?: string
   ): Promise<[string, string]> {
-    const nonce = signatureSchemas.getNonce()
-    const chainId = await this.getEthNetId()
+    const nonce = await signatureSchemas.getNonce()
+    const chainId = await this.getEthChainId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
@@ -106,8 +106,8 @@ export class EntityManagerClient extends ContractClient {
     metadata: string,
     privateKey?: string
   ): Promise<{ txReceipt: TransactionReceipt }> {
-    const nonce = signatureSchemas.getNonce()
-    const chainId = await this.getEthNetId()
+    const nonce = await signatureSchemas.getNonce()
+    const chainId = await this.getEthChainId()
     const contractAddress = await this.getAddress()
     const nethermindContractAddress = await this.getNethermindAddress()
     const signatureData = signatureSchemas.generators.getManageEntityData(

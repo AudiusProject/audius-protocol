@@ -16,7 +16,6 @@ import { Link } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
-import { SIGN_UP } from 'common/store/pages/signon/actions'
 import {
   RouterContext,
   SlideDirection
@@ -29,7 +28,7 @@ import NavContext, {
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
@@ -153,7 +152,7 @@ const NavBar = ({
     )
   } else if (leftElement === LeftPreset.NOTIFICATION && !isSignedIn) {
     left = (
-      <Link className={styles.signUpButton} onClick={signUp} to={SIGN_UP}>
+      <Link className={styles.signUpButton} onClick={signUp} to={SIGN_UP_PAGE}>
         {messages.signUp}
       </Link>
     )

@@ -31,6 +31,7 @@ const UploadArtwork = (props) => {
   }
 
   const hasImage = !!props.artworkUrl && props.artworkUrl !== imageBlank
+  const xy = props.size === 'small' ? 218 : 280
 
   return (
     <div
@@ -41,6 +42,7 @@ const UploadArtwork = (props) => {
         },
         props.className
       )}
+      css={{ width: xy, height: xy }}
       ref={imageSelectionAnchorRef}
     >
       <div

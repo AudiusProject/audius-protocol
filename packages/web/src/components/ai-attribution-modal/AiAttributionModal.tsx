@@ -56,11 +56,7 @@ export const AiAttributionModal = (props: AiAttributionModalProps) => {
       dismissOnClickOutside={false}
     >
       <ModalHeader>
-        <ModalTitle
-          title={messages.title}
-          titleClassName={styles.title}
-          icon={<IconRobot className={styles.titleIcon} />}
-        />
+        <ModalTitle title={messages.title} icon={<IconRobot />} />
       </ModalHeader>
       <ModalContent className={styles.content} forward>
         <label className={styles.switchLabel}>

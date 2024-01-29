@@ -1,21 +1,17 @@
 import { RefObject } from 'react'
 
-import { connect } from 'react-redux'
-
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import FeedPageProvider from './FeedPageProvider'
 import FeedPageContent from './components/desktop/FeedPageContent'
 import FeedPageMobileContent from './components/mobile/FeedPageContent'
 
-interface OwnProps {
+type FeedPageContentProps = {
   containerRef: RefObject<HTMLDivElement>
 }
 
-type FeedPageContentProps = ReturnType<typeof mapStateToProps> & OwnProps
-
-const FeedPage = ({ containerRef, isMobile }: FeedPageContentProps) => {
+const FeedPage = ({ containerRef }: FeedPageContentProps) => {
+  const isMobile = useIsMobile()
   const content = isMobile ? FeedPageMobileContent : FeedPageContent
 
   return (
@@ -23,10 +19,4 @@ const FeedPage = ({ containerRef, isMobile }: FeedPageContentProps) => {
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(FeedPage)
+export default FeedPage

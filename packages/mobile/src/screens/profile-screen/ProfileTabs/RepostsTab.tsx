@@ -19,18 +19,19 @@ const { getProfileFeedLineup } = profilePageSelectors
 export const RepostsTab = () => {
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
   const { lazy } = params
-  const { handle, repost_count } = useSelectProfile(['handle', 'repost_count'])
-  const handleLower = handle.toLowerCase()
+  const { handle, user_id, repost_count } = useSelectProfile([
+    'handle',
+    'user_id',
+    'repost_count'
+  ])
 
   const lineup = useProxySelector(
-    (state) => getProfileFeedLineup(state, handleLower),
-    [handleLower]
+    (state) => getProfileFeedLineup(state, handle),
+    [handle]
   )
 
-  const extraFetchOptions = useMemo(
-    () => ({ handle: handleLower }),
-    [handleLower]
-  )
+  const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
+  const extraFetchOptions = useMemo(() => ({ handle }), [handle])
 
   // This prevents showing empty tile before lineup has started to fetch content
   const canShowEmptyTile = repost_count === 0 || lineup.status !== Status.IDLE
@@ -39,15 +40,17 @@ export const RepostsTab = () => {
     <Lineup
       selfLoad
       lazy={lazy}
+      pullToRefresh
       actions={feedActions}
       lineup={lineup}
+      fetchPayload={fetchPayload}
+      extraFetchOptions={extraFetchOptions}
       limit={repost_count}
       disableTopTabScroll
       LineupEmptyComponent={
         canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
       }
       showsVerticalScrollIndicator={false}
-      extraFetchOptions={extraFetchOptions}
     />
   )
 }

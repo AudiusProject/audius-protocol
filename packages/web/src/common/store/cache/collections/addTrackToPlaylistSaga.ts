@@ -15,25 +15,29 @@ import {
   cacheTracksSelectors,
   updatePlaylistArtwork,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  reformatCollection,
+  toastActions
 } from '@audius/common'
-import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import {
-  retrieveCollection,
-  retrieveCollections
-} from './utils/retrieveCollections'
+import { retrieveCollection } from './utils/retrieveCollections'
 
 const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTrack } = cacheTracksSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
+
+const { toast } = toastActions
+
+const messages = {
+  addedTrack: (collectionType: 'album' | 'playlist') =>
+    `Added track to ${collectionType}`
+}
 
 type AddTrackToPlaylistAction = ReturnType<
   typeof cacheCollectionsActions.addTrackToPlaylist
@@ -56,38 +60,22 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  // Retrieve tracks with the the collection so we confirm with the
-  // most up-to-date information.
-  const { collections } = yield* call(retrieveCollections, [playlistId], {
-    userId,
-    fetchTracks: true,
-    forceRetrieveFromSource: true
-  })
-
-  let playlist: Nullable<Collection> = collections[playlistId]
+  let playlist = yield* select(getCollection, { id: playlistId })
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
   const track = yield* select(getTrack, { id: trackId })
 
   if (!playlist || !playlistTracks || !track) return
-
-  playlist = yield* call(
-    updatePlaylistArtwork,
-    playlist,
-    playlistTracks,
-    {
-      added: track
-    },
-    {
-      audiusBackend: audiusBackendInstance,
-      generateImage: generatePlaylistArtwork
-    }
-  )
 
   const trackUid = makeUid(
     Kind.TRACKS,
     action.trackId,
     `collection:${action.playlistId}`
   )
+
+  yield* put(
+    cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
+  )
+
   const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
   const currentBlock = (yield* call(
     [web3.eth, 'getBlock'],
@@ -102,16 +90,29 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
       uid: trackUid
     })
   }
+
   const count = playlist.track_count + 1
+  playlist.track_count = count
 
-  const event = make(Name.PLAYLIST_ADD, {
-    trackId: action.trackId,
-    playlistId: action.playlistId
-  })
+  // Optimistic update #1 to show track in playlist quickly
+  yield* call(optimisticUpdateCollection, playlist)
 
-  yield* put(event)
+  playlist = yield* call(
+    updatePlaylistArtwork,
+    playlist,
+    playlistTracks,
+    {
+      added: track
+    },
+    {
+      audiusBackend: audiusBackendInstance,
+      generateImage: generatePlaylistArtwork
+    }
+  )
 
-  yield* call(optimisticUpdateCollection, { ...playlist, track_count: count })
+  // Optimistic update #2 to show updated artwork
+  yield* call(optimisticUpdateCollection, playlist)
+
   yield* call(
     confirmAddTrackToPlaylist,
     userId,
@@ -122,12 +123,22 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   )
 
   yield* put(
-    cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
-  )
-  yield* put(
     setOptimisticChallengeCompleted({
       challengeId: 'first-playlist',
       specifier: userId.toString()
+    })
+  )
+
+  const event = make(Name.PLAYLIST_ADD, {
+    trackId: action.trackId,
+    playlistId: action.playlistId
+  })
+
+  yield* put(event)
+
+  yield* put(
+    toast({
+      content: messages.addedTrack(playlist.is_album ? 'album' : 'playlist')
     })
   )
 }
@@ -171,41 +182,19 @@ function* confirmAddTrackToPlaylist(
         const playlist = yield* select(getCollection, { id: playlistId })
         if (!playlist) return
 
-        /** Since "add track" calls are parallelized, tracks may be added
-         * out of order. Here we check if tracks made it in the intended order;
-         * if not, we reorder them into the correct order.
-         */
-        const numberOfTracksMatch =
-          confirmedPlaylist.playlist_contents.track_ids.length ===
-          playlist.playlist_contents.track_ids.length
+        const formattedCollection = reformatCollection({
+          collection: confirmedPlaylist,
+          audiusBackendInstance
+        })
 
-        const confirmedPlaylistHasTracks =
-          confirmedPlaylist.playlist_contents.track_ids.length > 0
-
-        if (numberOfTracksMatch && confirmedPlaylistHasTracks) {
-          const confirmedPlaylistTracks =
-            confirmedPlaylist.playlist_contents.track_ids.map((t) => t.track)
-          const cachedPlaylistTracks = playlist.playlist_contents.track_ids.map(
-            (t) => t.track
-          )
-          if (!isEqual(confirmedPlaylistTracks, cachedPlaylistTracks)) {
-            yield* call(
-              confirmOrderPlaylist,
-              userId,
-              playlistId,
-              cachedPlaylistTracks
-            )
-          } else {
-            yield* put(
-              cacheActions.update(Kind.COLLECTIONS, [
-                {
-                  id: confirmedPlaylist.playlist_id,
-                  metadata: confirmedPlaylist
-                }
-              ])
-            )
-          }
-        }
+        yield* put(
+          cacheActions.update(Kind.COLLECTIONS, [
+            {
+              id: confirmedPlaylist.playlist_id,
+              metadata: { ...formattedCollection, artwork: {} }
+            }
+          ])
+        )
       },
       function* ({ error, timeout, message }) {
         // Fail Call

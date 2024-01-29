@@ -36,9 +36,10 @@ from src.utils.redis_cache import cache
 logger = logging.getLogger(__name__)
 
 ns = Namespace("challenges", description="Challenge related operations")
+full_ns = Namespace("challenges", description="Challenge related operations")
 
 attestation_response = make_response(
-    "attestation_reponse", ns, fields.Nested(attestation)
+    "attestation_reponse", full_ns, fields.Nested(attestation)
 )
 
 attest_route = "/<string:challenge_id>/attest"
@@ -61,29 +62,15 @@ attest_parser.add_argument(
 )
 
 
-@ns.route(attest_route, doc=False)
-class Attest(Resource):
-    @ns.doc(
-        id="Get Challenge Attestation",
-        description="Produces an attestation that a given user has completed a challenge, or errors.",
-        params={
-            "challenge_id": "The challenge ID of the user challenge requiring the attestation"
-        },
-        responses={
-            200: "Success",
-            400: "The attestation request was invalid (eg. The user didn't complete that challenge yet)",
-            500: "Server error",
-        },
-    )
-    @ns.expect(attest_parser)
-    @ns.marshal_with(attestation_response)
+@full_ns.route(attest_route)
+class FullAttest(Resource):
     @cache(ttl_sec=5)
-    def get(self, challenge_id: str):
+    def _get(self, challenge_id: str):
         args = attest_parser.parse_args(strict=True)
         user_id: str = args["user_id"]
         oracle_address: str = args["oracle"]
         specifier: str = args["specifier"]
-        decoded_user_id = decode_with_abort(user_id, ns)
+        decoded_user_id = decode_with_abort(user_id, full_ns)
         db = get_db_read_replica()
         with db.scoped_session() as session:
             try:
@@ -101,6 +88,29 @@ class Attest(Resource):
             except AttestationError as e:
                 abort(400, e)
                 return None
+
+    @full_ns.doc(
+        id="Get Challenge Attestation",
+        description="Produces an attestation that a given user has completed a challenge, or errors.",
+        params={
+            "challenge_id": "The challenge ID of the user challenge requiring the attestation"
+        },
+        responses={
+            200: "Success",
+            400: "The attestation request was invalid (eg. The user didn't complete that challenge yet)",
+            500: "Server error",
+        },
+    )
+    @full_ns.expect(attest_parser)
+    @full_ns.marshal_with(attestation_response)
+    def get(self, challenge_id: str):
+        return self._get(challenge_id)
+
+
+@ns.route(attest_route, doc=False)
+class Attest(FullAttest):
+    def get(self, challenge_id: str):
+        return super()._get(challenge_id)
 
 
 undisbursed_route = "/undisbursed"
@@ -247,6 +257,7 @@ class ChallengeInfo(Resource):
                     "starting_block": challenge.starting_block,
                     "weekly_pool": challenge.weekly_pool,
                     "weekly_pool_remaining": weekly_pool_remaining,
+                    "cooldown_days": challenge.cooldown_days,
                 }
                 if (
                     weekly_pool_min_amount

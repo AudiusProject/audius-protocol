@@ -1,0 +1,58 @@
+.pageContainer {
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-8);
+}
+
+.mobilePageContainer {
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-4);
+  padding: var(--unit-2);
+  margin-bottom: var(--unit-10);
+  padding-top: 64px;
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.noPurchasesTile {
+  align-items: center;
+  gap: var(--unit-8);
+  justify-content: center;
+  padding: var(--unit-10);
+  width: 100%;
+}
+
+.noPurchasesContent {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  justify-content: center;
+}
+
+.tablesContainer {
+  flex: 1;
+  width: 100%;
+}
+
+.tableWrapper {
+  box-shadow: 'none';
+  background-color: 'red';
+}

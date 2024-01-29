@@ -14,8 +14,7 @@ import {
   queueSelectors,
   getContext,
   FeatureFlags,
-  isPremiumContentUSDCPurchaseGated,
-  doesUserHaveTrackAccess,
+  isContentUSDCPurchaseGated,
   StringKeys,
   premiumTracksPageLineupActions,
   accountSelectors
@@ -59,8 +58,9 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
-  const allowedHandles = remoteConfig
-    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS)
+
+  const deniedHandles = remoteConfig
+    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_DENIED_USERS)
     ?.split(',')
 
   return tracksMetadata
@@ -76,8 +76,8 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
       // Remove this when removing the feature flags
       if (
         !isUSDCGatedContentEnabled &&
-        metadata.is_premium &&
-        isPremiumContentUSDCPurchaseGated(metadata.premium_conditions)
+        metadata.is_stream_gated &&
+        isContentUSDCPurchaseGated(metadata.stream_conditions)
       ) {
         return null
       }
@@ -86,9 +86,9 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
       // https://linear.app/audius/issue/PAY-2085/update-whitelist-of-artists-to-feature-on-explore-premium-tracks-page
       if (
         lineupPrefix === premiumTracksPageLineupActions.prefix &&
-        metadata.is_premium &&
-        isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
-        !allowedHandles.includes(users[metadata.owner_id].handle)
+        metadata.is_stream_gated &&
+        isContentUSDCPurchaseGated(metadata.stream_conditions) &&
+        deniedHandles.includes(users[metadata.owner_id].handle)
       ) {
         return null
       }
@@ -381,8 +381,10 @@ function* play(lineupActions, lineupSelector, prefix, action) {
 
   // If preview isn't forced, check for track acccess and switch to preview
   // if the user doesn't have access but the track is previewable
-  if (!isPreview && requestedPlayTrack?.is_premium) {
-    const hasAccess = yield call(doesUserHaveTrackAccess, requestedPlayTrack)
+  if (!isPreview && requestedPlayTrack?.is_stream_gated) {
+    const hasAccess =
+      !requestedPlayTrack?.is_stream_gated ||
+      !!requestedPlayTrack?.access?.stream
     isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
   }
 
@@ -525,16 +527,16 @@ function* updateLineupOrder(lineupPrefix, sourceSelector, action) {
 
 function* refreshInView(lineupActions, lineupSelector, action) {
   const lineup = yield select(lineupSelector)
-  if (lineup.inView) {
-    yield put(
-      lineupActions.fetchLineupMetadatas(
-        0,
-        action.limit || lineup.total,
-        false,
-        action.payload
-      )
+  const { type: _ignoredType, limit, overwrite, payload, ...other } = action
+  yield put(
+    lineupActions.fetchLineupMetadatas(
+      0,
+      limit || lineup.total,
+      overwrite,
+      payload,
+      other
     )
-  }
+  )
 }
 
 const keepUidAndKind = (entry) => ({

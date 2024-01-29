@@ -1,6 +1,6 @@
+import { useEffect } from 'react'
+
 import cn from 'classnames'
-import { h } from 'preact'
-import { useEffect } from 'preact/hooks'
 
 import IconPause from '../../assets/img/iconPause.svg'
 import IconPlay from '../../assets/img/iconPlay.svg'

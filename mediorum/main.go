@@ -48,6 +48,8 @@ func main() {
 		startStagingOrProd(true)
 	case "stage":
 		startStagingOrProd(false)
+	case "sandbox": // audius-d compatibility workflow
+		startSandbox()
 	case "single":
 		startDevInstance()
 	default:
@@ -107,10 +109,88 @@ func startStagingOrProd(isProd bool) {
 		}()
 	}
 
-	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
-	if err != nil {
-		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
+	config := server.MediorumConfig{
+		Self: server.Peer{
+			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
+			Wallet: strings.ToLower(walletAddress),
+		},
+		ListenPort:           "1991",
+		Peers:                peers,
+		Signers:              signers,
+		ReplicationFactor:    5,
+		PrivateKey:           privateKeyHex,
+		Dir:                  "/tmp/mediorum",
+		PostgresDSN:          "postgres://postgres:postgres@db:5432/audius_creator_node",
+		BlobStoreDSN:         os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
+		MoveFromBlobStoreDSN: os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
+		TrustedNotifierID:    trustedNotifierID,
+		SPID:                 spID,
+		SPOwnerWallet:        os.Getenv("spOwnerWallet"),
+		GitSHA:               os.Getenv("GIT_SHA"),
+		AudiusDockerCompose:  os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
+		StoreAll:             os.Getenv("STORE_ALL") == "true",
+		VersionJson:          GetVersionJson(),
 	}
+
+	ss, err := server.New(config)
+	if err != nil {
+		logger.Error("failed to create server", "err", err)
+		log.Fatal(err)
+	}
+
+	go refreshPeersAndSigners(ss, g)
+
+	ss.MustStart()
+}
+
+func startSandbox() {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
+
+	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
+	privateKeyHex := mustGetenv("delegatePrivateKey")
+
+	privateKey, err := ethcontracts.ParsePrivateKeyHex(privateKeyHex)
+	if err != nil {
+		log.Fatal("invalid private key", err)
+	}
+
+	// compute wallet address
+	walletAddress := ethcontracts.ComputeAddressFromPrivateKey(privateKey)
+	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
+	if !strings.EqualFold(walletAddress, delegateOwnerWallet) {
+		slog.Warn("incorrect delegateOwnerWallet env config", "incorrect", delegateOwnerWallet, "computed", walletAddress)
+	}
+
+	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
+	if err != nil {
+		logger.Warn("failed to parse trustedNotifierID", "err", err)
+	}
+	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
+	if err != nil || spID == 0 {
+		go func() {
+			for range time.Tick(10 * time.Second) {
+				logger.Warn("failed to recover spID - please register at https://dashboard.audius.org and restart the server", "err", err)
+			}
+		}()
+	}
+
+	g := registrar.NewEthChainProvider()
+	var peers, signers []server.Peer
+
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		peers, err = g.Peers()
+		return err
+	})
+	eg.Go(func() error {
+		signers, err = g.Signers()
+		return err
+	})
+	if err := eg.Wait(); err != nil {
+		panic(err)
+	}
+	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
@@ -123,7 +203,7 @@ func startStagingOrProd(isProd bool) {
 		ReplicationFactor:    5,
 		PrivateKey:           privateKeyHex,
 		Dir:                  "/tmp/mediorum",
-		PostgresDSN:          os.Getenv("dbUrl"),
+		PostgresDSN:          "postgres://postgres:postgres@db:5432/audius_creator_node",
 		BlobStoreDSN:         os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		MoveFromBlobStoreDSN: os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
 		TrustedNotifierID:    trustedNotifierID,
@@ -134,7 +214,6 @@ func startStagingOrProd(isProd bool) {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
-		MigrateQmCidIters:    migrateQmCidIters,
 	}
 
 	ss, err := server.New(config)

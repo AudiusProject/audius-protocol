@@ -5,10 +5,11 @@ import cn from 'classnames'
 
 import 'url-search-params-polyfill'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { env } from 'services/env'
 
-const HOSTNAME = process.env.VITE_PUBLIC_HOSTNAME
-const INSTAGRAM_APP_ID = process.env.VITE_INSTAGRAM_APP_ID
-const INSTAGRAM_REDIRECT_URL = process.env.VITE_INSTAGRAM_REDIRECT_URL || ''
+const HOSTNAME = env.PUBLIC_HOSTNAME
+const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
+const INSTAGRAM_REDIRECT_URL = env.INSTAGRAM_REDIRECT_URL || ''
 const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
   INSTAGRAM_REDIRECT_URL
 )}&scope=user_profile,user_media&response_type=code`
@@ -174,7 +175,8 @@ const InstagramAuth = ({
   const getDefaultButtonContent = useCallback(() => <span>{text}</span>, [text])
 
   return (
-    <div
+    <span
+      role='button'
       onClick={handleClick}
       style={style}
       className={cn({
@@ -183,7 +185,7 @@ const InstagramAuth = ({
       })}
     >
       {children || getDefaultButtonContent()}
-    </div>
+    </span>
   )
 }
 

@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 
 import cn from 'classnames'
 
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './SelectablePill.module.css'
 
@@ -19,6 +19,7 @@ const SelectablePill = ({
   onClick,
   className
 }: SelectablePillProps) => {
+  const isMobile = useIsMobile()
   const wrappedOnClick = () => {
     !isSelected && onClick()
   }
@@ -29,7 +30,7 @@ const SelectablePill = ({
       className={cn(styles.pill, {
         [styles.selectedPill]: isSelected,
         [className!]: !!className,
-        [styles.isMobile]: isMobile()
+        [styles.isMobile]: isMobile
       })}
     >
       {content}

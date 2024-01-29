@@ -7,6 +7,8 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     default: primitives.neutral.neutral,
     subdued: primitives.neutral.n400,
     disabled: primitives.neutral.n150,
+    accent: primitives.secondary.s300,
+    staticWhite: primitives.static.white,
     warning: primitives.special.orange,
     danger: primitives.special.red
   },
@@ -14,13 +16,24 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     heading: primitives.special.gradient,
     default: primitives.neutral.neutral,
     subdued: primitives.neutral.n400,
-    disabled: primitives.neutral.n150
+    disabled: primitives.neutral.n150,
+    accent: primitives.secondary.s300,
+    staticWhite: primitives.static.white,
+    warning: primitives.special.orange,
+    danger: primitives.special.red
+  },
+  link: {
+    default: primitives.neutral.neutral,
+    subdued: primitives.neutral.n400,
+    visible: primitives.primary.p500,
+    inverted: primitives.static.white
   },
   background: {
     default: primitives.special.background,
     white: primitives.special.white,
     surface1: primitives.neutral.n25,
-    surface2: primitives.neutral.n100
+    surface2: primitives.neutral.n100,
+    accent: primitives.secondary.s300
   },
   border: {
     default: primitives.neutral.n100,

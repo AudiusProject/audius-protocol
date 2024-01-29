@@ -17,8 +17,8 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
-import { useUserCoverImage } from 'app/components/image/UserCoverImage'
-import { useUserImage } from 'app/components/image/UserImage'
+import { useCoverPhoto } from 'app/components/image/CoverPhoto'
+import { useProfilePicture } from 'app/components/image/UserImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -134,21 +134,19 @@ const EditProfileForm = (props: EditProfileFormProps) => {
 }
 
 export const EditProfileScreen = () => {
-  const profile = useSelector(getAccountUser)
+  const profile = useSelector(getAccountUser)!
+  const { user_id, twitterVerified, instagramVerified, tikTokVerified } =
+    profile
 
   const dispatch = useDispatch()
 
-  const isTwitterVerified = profile ? profile.twitterVerified : false
-  const isInstagramVerified = profile ? profile.instagramVerified : false
-  const isTikTokVerified = profile ? profile.tikTokVerified : false
   const navigation = useNavigation()
 
-  const { source: coverPhotoSource } = useUserCoverImage(profile)
-
-  const { source: imageSource } = useUserImage({
-    user: profile,
-    size: SquareSizes.SIZE_480_BY_480
-  })
+  const { source: coverPhotoSource } = useCoverPhoto(user_id)
+  const { source: imageSource } = useProfilePicture(
+    user_id,
+    SquareSizes.SIZE_480_BY_480
+  )
 
   const handleSubmit = useCallback(
     (values: ProfileValues) => {
@@ -211,9 +209,9 @@ export const EditProfileScreen = () => {
         return (
           <EditProfileForm
             {...formikProps}
-            isTwitterVerified={isTwitterVerified}
-            isInstagramVerified={isInstagramVerified}
-            isTikTokVerified={isTikTokVerified}
+            isTwitterVerified={twitterVerified}
+            isInstagramVerified={instagramVerified}
+            isTikTokVerified={tikTokVerified}
           />
         )
       }}

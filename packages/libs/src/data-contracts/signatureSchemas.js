@@ -148,16 +148,15 @@ function browserRandomHash(nChar) {
   return str
 }
 
-// We need to detect whether the nodejs crypto module is available to determine how to
-// generate secure random numbers below
-let nodeCrypto
-try {
-  nodeCrypto = require('crypto')
-} catch (e) {
-  nodeCrypto = null
-}
-
-function getNonce() {
+async function getNonce() {
+  // We need to detect whether the nodejs crypto module is available to determine how to
+  // generate secure random numbers below
+  let nodeCrypto
+  try {
+    nodeCrypto = await import('crypto')
+  } catch (e) {
+    nodeCrypto = null
+  }
   // detect whether we are in browser or in nodejs, and use the correct csprng
   if (typeof window === 'undefined' || window === null) {
     return '0x' + nodeCrypto.randomBytes(32).toString('hex')

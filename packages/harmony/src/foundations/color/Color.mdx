@@ -1,7 +1,12 @@
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
 import { Flex } from 'components'
-import { ColorPaletteTable, BackgroundColorExample } from 'storybook/components'
+import {
+  Heading,
+  ColorPaletteTable,
+  BackgroundColorExample,
+  RelatedFoundations
+} from 'storybook/components'
 
 import { ThemeProvider } from '../theme'
 
@@ -14,39 +19,60 @@ import { ThemeProvider } from '../theme'
 - [Semantic Variables](#semantic-variables)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
-#### Harmony's color palette is tailored for optimal usability and brand coherence.
+Harmony's color palette is tailored for optimal usability and brand coherence.
 
+</Heading>
+
+<Heading>
 ## Primitives
 
 Primitives include all the Harmony colors. They give a numeric name to our HEX values and are organized from lightest to darkest. Our “themes” or modes are defined at the primitive state and include: day (“default”), dark, and matrix mode.
 
+</Heading>
+
+<Heading>
 ### Static colors
 
 Static colors remain the same across all appearance modes: Day, Dark, and Matrix.
 
+</Heading>
+
+<Heading>
 ### Primary
 
 Primary is our brand color. It is used across our interface to represent elements with the highest importance. It defines the overall look and feel of Harmony.
 
+</Heading>
+
 <ColorPaletteTable colorType='primary' />
 
+<Heading>
 ### Secondary
 
 Supporting shades that work in tandem with primary colors to provide depth and hierarchy. These secondary colors are used for secondary actions or selection, while the primary color(s) should take precedence. Used for selected states and added emphasis.
 
+</Heading>
+
 <ColorPaletteTable colorType='secondary' />
 
+<Heading>
 ### Neutral
 
 Neutral is the foundation of the Harmony color system. Almost everything in our designs - text form fields, backgrounds, dividers - is neutral.
 
+</Heading>
+
 <ColorPaletteTable colorType='neutral' />
 
+<Heading>
 ### Special
 
 Specific shades designed for unique interface requirements, from accents to warnings
+
+</Heading>
 
 <ColorPaletteTable
   colorType='special'
@@ -55,13 +81,19 @@ Specific shades designed for unique interface requirements, from accents to warn
   }}
 />
 
+<Heading>
 ## Semantic Variables
 
 Functional color assignments for consistent UI guidance and feedback. Semantic color variables tell you when and how to apply colors.Functional color assignments for consistent UI guidance and feedback. Semantic color variables tell you when and how to apply colors.
 
+</Heading>
+
+<Heading>
 ### Text and icons
 
 Semantic text-icon variables are used to keep all our text components clean and consistent. When a text component has an icon beside it, the icon’s fill should be the same as the text.
+
+</Heading>
 
 <ColorPaletteTable
   colorType='text'
@@ -69,13 +101,18 @@ Semantic text-icon variables are used to keep all our text components clean and 
     heading: 'Use for display text color',
     default: 'Use for default text color',
     subdued: 'Use for text with lesser importance',
-    disabled: 'Use for text that is disabled'
+    disabled: 'Use for text that is disabled',
+    accent: 'Use to accent text',
+    staticWhite: 'Use to achieve white text in any mode'
   }}
 />
 
+<Heading>
 ### Background
 
 Semantic background variables are applied to the fill of any and all backgrounds in Harmony components.
+
+</Heading>
 
 <ColorPaletteTable
   colorType='background'
@@ -87,9 +124,12 @@ Semantic background variables are applied to the fill of any and all backgrounds
   }}
 />
 
+<Heading>
 ### Border
 
 Semantic border variables are applied to the exterior stroke of various elements. The strong variable should be applied when the stroke in on a colored background.
+
+</Heading>
 
 <ColorPaletteTable
   colorType='border'
@@ -99,9 +139,12 @@ Semantic border variables are applied to the exterior stroke of various elements
   }}
 />
 
+<Heading>
 ### Focus
 
 Focus is used frequently as a secondary action color for things like selectable pills, links, radio buttons, inputs, etc. It should be applied to all active or focused states for components.
+
+</Heading>
 
 <ColorPaletteTable
   colorType='focus'
@@ -110,9 +153,12 @@ Focus is used frequently as a secondary action color for things like selectable 
   }}
 />
 
+<Heading>
 ### Status
 
 Status colors are used to display status states: error, warning, and success.
+
+</Heading>
 
 <ColorPaletteTable
   colorType='status'
@@ -150,3 +196,9 @@ Status colors are used to display status states: error, warning, and success.
     </ThemeProvider>
   </Flex>
 </Unstyled>
+
+## Related Foundations
+
+<RelatedFoundations
+  foundationNames={['Typography', 'Shadow', 'CornerRadius']}
+/>

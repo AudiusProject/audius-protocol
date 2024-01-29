@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import type { Color, Nullable, ShareModalContent } from '@audius/common'
+import type { Color, Nullable, ShareContent } from '@audius/common'
 import {
   encodeHashId,
   ErrorLevel,
@@ -19,10 +19,10 @@ import { CreativeKit } from '@snapchat/snap-kit-react-native'
 import type { FFmpegSession } from 'ffmpeg-kit-react-native'
 import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native'
 import { Platform, View } from 'react-native'
-import Config from 'react-native-config'
 import RNFS from 'react-native-fs'
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
-import Share from 'react-native-share'
+import type { ShareSingleOptions } from 'react-native-share'
+import Share, { Social } from 'react-native-share'
 import {
   init as initTikTokShare,
   share as shareToTikTok
@@ -32,6 +32,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
+import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
@@ -119,7 +120,7 @@ export const useShareToStory = ({
   content,
   viewShotRef
 }: {
-  content: Nullable<ShareModalContent>
+  content: Nullable<ShareContent>
   viewShotRef: React.RefObject<ViewShot>
 }) => {
   const { toast } = useToast()
@@ -232,12 +233,12 @@ export const useShareToStory = ({
 
   const pasteToInstagramApp = useCallback(
     async (videoUri: string, stickerUri: string) => {
-      const shareOptions = {
+      const shareOptions: ShareSingleOptions = {
         backgroundVideo: videoUri,
         stickerImage: stickerUri,
-        attributionURL: Config.AUDIUS_URL,
-        social: Share.Social.INSTAGRAM_STORIES,
-        appId: Config.INSTAGRAM_APP_ID
+        attributionURL: env.AUDIUS_URL,
+        social: Social.InstagramStories,
+        appId: env.INSTAGRAM_APP_ID
       }
       await Share.shareSingle(shareOptions)
     },
@@ -267,7 +268,7 @@ export const useShareToStory = ({
   )
 
   const pasteToTikTokApp = useCallback((videoUri: string) => {
-    initTikTokShare(Config.TIKTOK_APP_ID)
+    initTikTokShare(env.TIKTOK_APP_ID as string)
     shareToTikTok(videoUri, (_code) => {
       // TODO: Handle errors handed back from TikTok
     })

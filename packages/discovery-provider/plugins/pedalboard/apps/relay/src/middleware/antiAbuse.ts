@@ -5,6 +5,9 @@ import { logger } from '../logger'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
+import { decodeAbi } from '../abi'
+import { readAAOState, storeAAOState } from '../redis'
+import { StatusCodes } from 'http-status-codes'
 
 type AbuseRule = {
   rule: number
@@ -12,7 +15,7 @@ type AbuseRule = {
   action: 'pass' | 'fail'
 }
 
-type AbuseStatus = {
+export type AbuseStatus = {
   blockedFromRelay: boolean
   blockedFromNotifications: boolean
   blockedFromEmails: boolean
@@ -20,42 +23,87 @@ type AbuseStatus = {
 }
 
 export const antiAbuseMiddleware = async (
-  request: Request,
+  _: Request,
   response: Response,
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
   const { ip, recoveredSigner: user } = response.locals.ctx
-  await detectAbuse(aaoConfig, user, ip, false, next)
+  const decodedAbi = decodeAbi(
+    response.locals.ctx.validatedRelayRequest.encodedABI
+  )
+  const isUserCreate =
+    decodedAbi.action === 'Create' && decodedAbi.entityType === 'User'
+  const isUserDeactivate =
+    user.is_deactivated === false &&
+    decodedAbi.action === 'Update' &&
+    decodedAbi.entityType === 'User' &&
+    JSON.parse(decodedAbi.metadata).data.is_deactivated === true
+  // User creations must be allowed as AAO won't have the user yet,
+  // and deactivations must be allowed even for abuse.
+  if (isUserCreate || isUserDeactivate) {
+    next()
+    return
+  }
+
+  // fire and async update aao cache
+  detectAbuse(aaoConfig, user, ip).catch((e) => {
+    logger.error({ error: e }, 'AAO uncaught exception')
+  })
+
+  if (!user.handle) {
+    internalError(
+      next,
+      `user found but without handle, investigate ${JSON.stringify(user)}`
+    )
+    return
+  }
+
+  // read from cache and determine if blocked from relay
+  const userAbuseRules = await readAAOState(user.handle)
+  if (userAbuseRules === null) {
+    // first relay, allow passage
+    next()
+    return
+  }
+
+  if (userAbuseRules?.blockedFromRelay) {
+    antiAbuseError(next, 'blocked from relay')
+    return
+  }
+
+  // relay allowed from AAO perspective, advance forward
+  next()
 }
 
+// detects abuse for the queried user and stores in cache
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
   user: Users,
-  reqIp: string,
-  abbreviated: boolean,
-  next: NextFunction
+  reqIp: string
 ) => {
-  // if aao turned off, never detect abuse
+  // if AAO is off or we don't yet have a handle, skip detecting abuse
   if (!aaoConfig.useAao || !user.handle) {
-    next()
     return
   }
   let rules: AbuseRule[]
   try {
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
-    logger.warn({ e }, 'error returned from antiabuse oracle')
-    // block requests on issues with aao
-    internalError(next, 'AAO unreachable')
+    logger.error({
+      name: 'INTERNAL_ERROR',
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      message: 'error returned from antiabuse oracle'
+    })
     return
   }
+  const userAbuseRules = determineAbuseRules(aaoConfig, rules)
   const {
     appliedRules,
     blockedFromRelay,
     blockedFromNotifications,
     blockedFromEmails
-  } = determineAbuseRules(aaoConfig, rules)
+  } = userAbuseRules
   logger.info(
     `detectAbuse: got info for handle ${user.handle}: ${JSON.stringify({
       appliedRules,
@@ -64,11 +112,7 @@ export const detectAbuse = async (
       blockedFromEmails
     })}`
   )
-  if (blockedFromRelay) {
-    antiAbuseError(next, 'blocked from relay')
-    return
-  }
-  next()
+  storeAAOState(user.handle, userAbuseRules)
 }
 
 // makes HTTP request to AAO

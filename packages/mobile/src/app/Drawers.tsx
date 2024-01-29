@@ -2,19 +2,22 @@ import type { ComponentType } from 'react'
 
 import type { Modals } from '@audius/common'
 
-import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
+import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
+import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
+import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
+import { ReleaseNowConfirmationDrawer } from 'app/components/drawers/ReleaseNowConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
@@ -29,6 +32,7 @@ import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumTrackPurchaseDrawer } from 'app/components/premium-track-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
+import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -38,6 +42,7 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
+import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -103,7 +108,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TrendingGenreSelection: TrendingFilterDrawer,
   Overflow: OverflowMenuDrawer,
   SignOutConfirmation: SignOutConfirmationDrawer,
-  AddToPlaylist: AddToPlaylistDrawer,
+  AddToCollection: AddToCollectionDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
   DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
@@ -111,11 +116,15 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
-  // PremiumContent, USDCManualTransfer, and StripOnRamp *must* be in this order
+  PublishTrackConfirmation: ReleaseNowConfirmationDrawer,
+  // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
+  AddFundsModal: AddFundsDrawer,
+  PurchaseVendor: PurchaseVendorDrawer,
   USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
+  CoinflowOnramp: CoinflowOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
 }
@@ -126,6 +135,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
+  ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
   RateCallToAction: RateCtaDrawer,
   RemoveAllDownloads: RemoveAllDownloadsDrawer,
@@ -138,7 +148,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
-  SupportersInfo: SupportersInfoDrawer
+  SupportersInfo: SupportersInfoDrawer,
+  Welcome: WelcomeDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

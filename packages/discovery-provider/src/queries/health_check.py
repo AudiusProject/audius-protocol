@@ -1,10 +1,14 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from flask import Blueprint, request
 
 from src.api_helpers import success_response
+from src.models.users.audio_transactions_history import AudioTransactionsHistory
+from src.models.users.usdc_purchase import USDCPurchase
+from src.models.users.usdc_transactions_history import USDCTransactionsHistory
+from src.models.users.user_tip import UserTip
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
 from src.queries.get_entities_count_check import get_entities_count_check
@@ -54,7 +58,9 @@ def health_check():
         "rewards_manager_max_drift": request.args.get(
             "rewards_manager_max_drift", type=int
         ),
-        "user_bank_max_drift": request.args.get("user_bank_max_drift", type=int),
+        "user_bank_max_slot_diff": request.args.get(
+            "user_bank_max_slot_diff", type=int
+        ),
         "spl_audio_max_drift": request.args.get("spl_audio_max_drift", type=int),
     }
     try:
@@ -138,6 +144,74 @@ def sol_play_check():
         error = max_drift and drift > max_drift
 
     return success_response(response, 500 if error else 200, sign_response=False)
+
+
+@bp.route("/tips_check", methods=["GET"])
+def tips_check():
+    interval_seconds = request.args.get("interval_seconds", type=int)
+    max_count = request.args.get("max_count", type=int)
+    db = get_db_read_replica()
+    interval = timedelta(seconds=interval_seconds)
+    with db.scoped_session() as session:
+        tips = (
+            session.query(UserTip)
+            .filter(UserTip.created_at > datetime.utcnow() - interval)
+            .count()
+        )
+        error = tips > max_count
+        return success_response(tips, 500 if error else 200, sign_response=False)
+
+
+@bp.route("/purchases_check", methods=["GET"])
+def purchases_check():
+    interval_seconds = request.args.get("interval_seconds", type=int)
+    max_count = request.args.get("max_count", type=int)
+    db = get_db_read_replica()
+    interval = timedelta(seconds=interval_seconds)
+    with db.scoped_session() as session:
+        purchases = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.created_at > datetime.utcnow() - interval)
+            .count()
+        )
+        error = purchases > max_count
+        return success_response(purchases, 500 if error else 200, sign_response=False)
+
+
+@bp.route("/audio_transactions_check", methods=["GET"])
+def audio_transactions_check():
+    interval_seconds = request.args.get("interval_seconds", type=int)
+    max_count = request.args.get("max_count", type=int)
+    db = get_db_read_replica()
+    interval = timedelta(seconds=interval_seconds)
+    with db.scoped_session() as session:
+        audio_transactions = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.created_at > datetime.utcnow() - interval)
+            .count()
+        )
+        error = audio_transactions > max_count
+        return success_response(
+            audio_transactions, 500 if error else 200, sign_response=False
+        )
+
+
+@bp.route("/usdc_transactions_check", methods=["GET"])
+def usdc_transactions_check():
+    interval_seconds = request.args.get("interval_seconds", type=int)
+    max_count = request.args.get("max_count", type=int)
+    db = get_db_read_replica()
+    interval = timedelta(seconds=interval_seconds)
+    with db.scoped_session() as session:
+        usdc_transactions = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.created_at > datetime.utcnow() - interval)
+            .count()
+        )
+        error = usdc_transactions > max_count
+        return success_response(
+            usdc_transactions, 500 if error else 200, sign_response=False
+        )
 
 
 @bp.route("/ip_check", methods=["GET"])

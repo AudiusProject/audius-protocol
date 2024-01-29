@@ -11,7 +11,7 @@ import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { makeStyles } from 'app/styles'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'
-import { CoverPhoto } from '../CoverPhoto'
+import { ProfileCoverPhoto } from '../ProfileCoverPhoto'
 import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
 import { ProfilePicture } from '../ProfilePicture'
@@ -30,12 +30,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.white,
     paddingTop: spacing(2),
     paddingHorizontal: spacing(3)
-  },
-  profilePicture: {
-    position: 'absolute',
-    top: spacing(13),
-    left: spacing(3),
-    zIndex: 100
   },
   divider: { marginHorizontal: -12, marginBottom: spacing(2) },
   bottomDivider: { marginTop: spacing(2), marginHorizontal: -12 }
@@ -119,8 +113,8 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
 
   return (
     <>
-      <CoverPhoto scrollY={scrollY} />
-      <ProfilePicture style={styles.profilePicture} />
+      <ProfileCoverPhoto scrollY={scrollY} />
+      <ProfilePicture />
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
         <OnlineOnly>

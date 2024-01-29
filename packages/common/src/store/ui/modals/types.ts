@@ -1,3 +1,7 @@
+import { ModalSource } from 'models/Analytics'
+
+import { AddFundsModalState } from './add-funds-modal'
+import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
 import { EditTrackModalState } from './edit-track-modal'
@@ -8,6 +12,7 @@ import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
+import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 
 export type BaseModalState = {
   isOpen: boolean | 'closing'
@@ -30,6 +35,7 @@ export type Modals =
   | 'CollectibleDetails'
   | 'DeactivateAccountConfirmation'
   | 'FeedFilter'
+  | 'PurchaseVendor'
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'EditFolder'
@@ -37,7 +43,7 @@ export type Modals =
   | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
-  | 'AddToPlaylist'
+  | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
@@ -45,6 +51,7 @@ export type Modals =
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
+  | 'CoinflowOnramp'
   | 'InboxSettings'
   | 'LockedContent'
   | 'PlaybackRate'
@@ -57,16 +64,21 @@ export type Modals =
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
+  | 'PublishTrackConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
+  | 'AddFundsModal'
+  | 'Welcome'
+  | 'CoinflowWithdraw'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
 }
 
 export type StatefulModalsState = {
+  CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
   EditPlaylist: EditPlaylistModalState
   EditTrack: EditTrackModalState
@@ -76,7 +88,19 @@ export type StatefulModalsState = {
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
   USDCManualTransferModal: USDCManualTransferModalState
+  AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
+  CoinflowWithdraw: CoinflowWithdrawModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState
+
+export type TrackModalOpenedActionPayload = {
+  name: string
+  source: ModalSource
+  trackingData?: Record<string, any>
+}
+
+export type TrackModalClosedActionPayload = {
+  name: string
+}

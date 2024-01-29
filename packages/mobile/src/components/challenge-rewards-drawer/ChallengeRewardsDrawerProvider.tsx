@@ -8,7 +8,8 @@ import {
   audioRewardsPageActions,
   ClaimStatus,
   audioRewardsPageSelectors,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  getClaimableChallengeSpecifiers
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -25,8 +26,12 @@ import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDra
 import { ChallengeRewardsDrawerContent } from './ChallengeRewardsDrawerContent'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
-const { getChallengeRewardsModalType, getClaimStatus, getAAOErrorCode } =
-  audioRewardsPageSelectors
+const {
+  getChallengeRewardsModalType,
+  getClaimStatus,
+  getAAOErrorCode,
+  getUndisbursedUserChallenges
+} = audioRewardsPageSelectors
 const { claimChallengeReward, resetAndCancelClaimReward } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
@@ -40,7 +45,7 @@ const MODAL_NAME = 'ChallengeRewardsExplainer'
 
 const styles = {
   button: {
-    width: '100%'
+    width: '100%' as const
   }
 }
 
@@ -51,6 +56,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const userChallenges = useSelector((state: CommonState) =>
     getOptimisticUserChallenges(state, true)
   )
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
@@ -74,8 +80,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
-    audioClaimedSoFar =
-      challenge.amount * challenge.current_step_count - audioToClaim
+    audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed') {
     audioToClaim = challenge.totalAmount
     audioClaimedSoFar = 0
@@ -111,19 +116,22 @@ export const ChallengeRewardsDrawerProvider = () => {
         claimChallengeReward({
           claim: {
             challengeId: modalType,
-            specifiers: [
-              {
-                specifier: challenge.specifier,
-                amount: challenge.amount
-              }
-            ],
+            specifiers:
+              challenge.challenge_type === 'aggregate'
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
+                : [
+                    { specifier: challenge.specifier, amount: challenge.amount }
+                  ],
             amount: challenge?.claimableAmount ?? 0
           },
           retryOnFailure: true
         })
       )
     }
-  }, [dispatch, modalType, challenge])
+  }, [dispatch, modalType, challenge, undisbursedUserChallenges])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {

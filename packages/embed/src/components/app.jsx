@@ -1,7 +1,13 @@
+import { useCallback, useEffect, useState, useRef } from 'react'
+
+import { ThemeProvider } from '@audius/harmony'
 import cn from 'classnames'
-import { h } from 'preact'
-import { useCallback, useEffect, useState, useRef } from 'preact/hooks'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
+
+import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/avenir.css'
+import '@audius/harmony/dist/harmony.css'
 
 import {
   initTrackSessionStart,
@@ -26,11 +32,9 @@ import {
   getTrack,
   getTrackWithHashId
 } from '../util/BedtimeClient'
-import { isBItem } from '../util/bitems'
 import { getArtworkUrl } from '../util/getArtworkUrl'
 import { decodeHashId } from '../util/hashIds'
-import { getDominantColor } from '../util/image/dominantColor'
-import { DEFAULT_DOMINANT_COLOR } from '../util/image/dominantColor.worker'
+import { getDominantColor } from '../util/image/imageProcessingUtil'
 import { isMobileWebTwitter } from '../util/isMobileWebTwitter'
 import { logError } from '../util/logError'
 import { shadeColor } from '../util/shadeColor'
@@ -49,13 +53,9 @@ import { PauseContextProvider } from './pausedpopover/PauseProvider'
 import { ToastContextProvider } from './toast/ToastContext'
 import TrackPlayerContainer from './track/TrackPlayerContainer'
 
-if (module.hot) {
-  // tslint:disable-next-line:no-var-requires
-  require('preact/debug')
-}
-
-// How long to wait for GA before we show the loading screen
+// How long to wait before we show the loading screen
 const LOADING_WAIT_MSEC = 1
+const DEFAULT_DOMINANT_COLOR = '#7e1bcc'
 
 const RequestType = Object.seal({
   TRACK: 'track',
@@ -156,9 +156,10 @@ const getRequestDataFromURL = ({ path, type, flavor, matches }) => {
 }
 
 const App = (props) => {
+  const params = useParams()
+  const searchParams = useSearchParams()
   const [didError, setDidError] = useState(false) // General errors
   const [did404, setDid404] = useState(false) // 404s indicate content was deleted
-  const [isBlocked, setIsBlocked] = useState(false) // Whether or not the content was blocked
   const [requestState, setRequestState] = useState(null) // Parsed request state
   const [isRetrying, setIsRetrying] = useState(false) // Currently retrying?
 
@@ -181,8 +182,7 @@ const App = (props) => {
   }, [])
 
   // TODO: pull these out into separate functions?
-  // Request metadata from GA, computing
-  // dominant color on success.
+  // Request metadata, compute dominant color on success.
   const requestMetadata = useCallback(async (request) => {
     onGoingRequest.current = true
 
@@ -205,10 +205,6 @@ const App = (props) => {
 
         if (!track) {
           setDid404(true)
-          setTracksResponse(null)
-        } else if (isBItem(track.id)) {
-          setDid404(true)
-          setIsBlocked(true)
           setTracksResponse(null)
         } else {
           setDid404(false)
@@ -316,7 +312,13 @@ const App = (props) => {
 
   // Perform initial request
   useEffect(() => {
-    const request = getRequestDataFromURL(props)
+    const request = getRequestDataFromURL({
+      path: props.path,
+      // Type comes from the url if present, otherwise pull from the component props
+      type: params.type || props.type,
+      flavor: searchParams[0]?.get('flavor') ?? undefined,
+      matches: params
+    })
     if (!request) {
       setDidError(true)
       return
@@ -355,7 +357,7 @@ const App = (props) => {
   const mobileWebTwitter = isMobileWebTwitter(requestState?.isTwitter)
 
   // The idea is to show nothing (null) until either we
-  // get metadata back from GA, or we pass the loading threshold
+  // get metadata back or we pass the loading threshold
   // and display the loading screen.
   const renderPlayerContainer = () => {
     if (didError) {
@@ -364,12 +366,7 @@ const App = (props) => {
 
     // Tiny variant renders its own deleted content
     if (did404) {
-      return (
-        <DeletedContent
-          flavor={requestState.playerFlavor}
-          isBlocked={isBlocked}
-        />
-      )
+      return <DeletedContent flavor={requestState.playerFlavor} />
     }
 
     if (showLoadingAnimation && !isTiny) {
@@ -393,31 +390,33 @@ const App = (props) => {
           in
           timeout={1000}
         >
-          {!tracksResponse ? null : (
-            <TrackPlayerContainer
-              track={tracksResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-            />
-          )}
-          {!collectionsResponse ? null : (
-            <CollectionPlayerContainer
-              collection={collectionsResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-              rowBackgroundColor={dominantColor.secondary}
-            />
-          )}
-          {collectiblesResponse && (
-            <CollectiblesPlayerContainer
-              collectiblesInfo={collectiblesResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-            />
-          )}
+          <>
+            {!tracksResponse ? null : (
+              <TrackPlayerContainer
+                track={tracksResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+              />
+            )}
+            {!collectionsResponse ? null : (
+              <CollectionPlayerContainer
+                collection={collectionsResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+                rowBackgroundColor={dominantColor.secondary}
+              />
+            )}
+            {collectiblesResponse && (
+              <CollectiblesPlayerContainer
+                collectiblesInfo={collectiblesResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+              />
+            )}
+          </>
         </CSSTransition>
       )
     }
@@ -437,8 +436,8 @@ const App = (props) => {
     const artworkClickURL =
       tracksResponse?.permalink || collectionsResponse?.permalink
         ? stripLeadingSlash(
-            tracksResponse?.permalink || collectionsResponse?.permalink
-          )
+          tracksResponse?.permalink || collectionsResponse?.permalink
+        )
         : null
     const listenOnAudiusURL = artworkClickURL
     const flavor = requestState.playerFlavor
@@ -449,6 +448,7 @@ const App = (props) => {
         listenOnAudiusURL={listenOnAudiusURL}
         flavor={flavor}
         isMobileWebTwitter={mobileWebTwitter}
+        streamConditions={tracksResponse?.streamConditions}
       />
     )
   }
@@ -471,14 +471,16 @@ const App = (props) => {
         }
       )}
     >
-      <ToastContextProvider>
-        <PauseContextProvider>
-          <CardContextProvider>
-            {renderPausePopover()}
-            {renderPlayerContainer()}
-          </CardContextProvider>
-        </PauseContextProvider>
-      </ToastContextProvider>
+      <ThemeProvider theme='day'>
+        <ToastContextProvider>
+          <PauseContextProvider>
+            <CardContextProvider>
+              {renderPausePopover()}
+              {renderPlayerContainer()}
+            </CardContextProvider>
+          </PauseContextProvider>
+        </ToastContextProvider>
+      </ThemeProvider>
     </div>
   )
 }

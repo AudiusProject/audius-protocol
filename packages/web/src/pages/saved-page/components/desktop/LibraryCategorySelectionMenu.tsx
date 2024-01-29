@@ -69,7 +69,7 @@ export const LibraryCategorySelectionMenu = ({
       {categories.map((c) => (
         <SelectablePill
           role='radio'
-          size={variant === 'mobile' ? 'default' : 'large'}
+          size={variant === 'mobile' ? 'small' : 'large'}
           aria-checked={selectedCategory === c.value ? 'true' : 'false'}
           icon={variant === 'mobile' ? undefined : c.icon}
           key={c.value}

@@ -4,10 +4,14 @@ import type { SpacingOptions } from 'foundations/spacing'
 
 import type { BoxProps } from '../Box'
 
-export type FlexProps = {
+export type BaseFlexProps = {
   alignItems?: CSSProperties['alignItems']
   direction?: CSSProperties['flexDirection']
   gap?: SpacingOptions
+  rowGap?: SpacingOptions
+  columnGap?: SpacingOptions
   justifyContent?: CSSProperties['justifyContent']
   wrap?: CSSProperties['flexWrap']
-} & BoxProps
+}
+
+export type FlexProps = BaseFlexProps & BoxProps

@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { Collection, ID, Track, UID, User } from '@audius/common'
 import {
   cacheCollectionsSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   FeatureFlags,
   playbackPositionSelectors,
   Genre,
@@ -24,6 +24,7 @@ import type {
 } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import IconDrag from 'app/assets/images/iconDrag.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -159,6 +160,7 @@ export type TrackListItemProps = {
   contextPlaylistId?: ID
   index: number
   isReorderable?: boolean
+  showViewAlbum?: boolean
   noDividerMargin?: boolean
   onRemove?: (index: number) => void
   prevUid?: UID
@@ -209,6 +211,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     hideArt,
     index,
     isReorderable = false,
+    showViewAlbum = false,
     noDividerMargin,
     onRemove,
     prevUid,
@@ -229,15 +232,19 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    is_premium: isPremium
+    is_stream_gated: isStreamGated
   } = track
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
+
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
   const isUnlisted = is_unlisted
 
-  const { isUserAccessTBD, doesUserHaveAccess } = usePremiumContentAccess(track)
-  const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
+  const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
   const isActive = useSelector((state) => {
     const playingUid = getUid(state)
@@ -292,6 +299,11 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
+  )
+
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.SHARE,
@@ -305,10 +317,14 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isEditAlbumsEnabled && isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
+      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && !showViewAlbum && albumInfo
+        ? OverflowAction.VIEW_ALBUM_PAGE
+        : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -328,17 +344,20 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       })
     )
   }, [
-    contextPlaylistId,
-    isContextPlaylistOwner,
     isTrackOwner,
-    has_current_user_reposted,
     has_current_user_saved,
-    isPremium,
+    has_current_user_reposted,
+    isEditAlbumsEnabled,
+    isStreamGated,
     isNewPodcastControlsEnabled,
     isLongFormContent,
+    albumInfo,
     playbackPositionInfo?.status,
+    showViewAlbum,
+    isContextPlaylistOwner,
     dispatch,
-    track_id
+    track_id,
+    contextPlaylistId
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

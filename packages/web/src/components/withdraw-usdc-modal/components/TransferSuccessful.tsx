@@ -3,13 +3,15 @@ import { useCallback } from 'react'
 import {
   useUSDCBalance,
   BNUSDC,
-  useWithdrawUSDCModal,
   formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink,
   decimalIntegerToHumanReadable,
   Status,
-  Name
+  withdrawUSDCSelectors,
+  Name,
+  WithdrawMethod
 } from '@audius/common'
+import { Button, Flex } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
@@ -18,19 +20,20 @@ import {
 } from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
+import { useSelector } from 'react-redux'
 
 import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import {
-  ADDRESS,
-  AMOUNT
-} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { make, track } from 'services/analytics'
+
+import { ADDRESS, AMOUNT, METHOD } from '../types'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
+
+const { getWithdrawTransaction } = withdrawUSDCSelectors
 
 const messages = {
   priorBalance: 'Prior Balance',
@@ -38,7 +41,8 @@ const messages = {
   amountWithdrawn: 'Amount Withdrawn',
   destinationAddress: 'Destination Address',
   viewOn: 'View On Solana Block Explorer',
-  success: 'Your Withdrawal Was Successful!'
+  success: 'Your Withdrawal Was Successful!',
+  done: 'Done'
 }
 
 const openExplorer = (signature: string) => {
@@ -50,23 +54,25 @@ const openExplorer = (signature: string) => {
 }
 
 export const TransferSuccessful = ({
-  priorBalanceCents
+  priorBalanceCents,
+  onClickDone
 }: {
   priorBalanceCents: number
+  onClickDone: () => void
 }) => {
-  const { data: balance, balanceStatus } = useUSDCBalance()
-  const { data: modalData } = useWithdrawUSDCModal()
+  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const signature = useSelector(getWithdrawTransaction)
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
+  const [{ value: methodValue }] = useField<string>(METHOD)
   const [{ value: amountValue }] = useField<number>(AMOUNT)
   const [{ value: addressValue }] = useField<string>(ADDRESS)
 
-  const { signature = '' } = modalData
-
   const handleClickTransactionLink = useCallback(() => {
+    if (!signature) return
     openExplorer(signature)
     track(
       make({
@@ -98,21 +104,25 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
-          {addressValue}
-        </Text>
-        <HarmonyPlainButton
-          style={{ padding: 0 }}
-          onClick={handleClickTransactionLink}
-          iconRight={IconExternalLink}
-          variant={HarmonyPlainButtonType.SUBDUED}
-          size={HarmonyPlainButtonSize.DEFAULT}
-          text={messages.viewOn}
-        />
-      </div>
+      {methodValue !== WithdrawMethod.MANUAL_TRANSFER && signature ? (
+        <>
+          <Divider style={{ margin: 0 }} />
+          <div className={styles.destination}>
+            <TextRow left={messages.destinationAddress} />
+            <Text variant='body' size='medium' strength='default'>
+              {addressValue}
+            </Text>
+            <HarmonyPlainButton
+              style={{ padding: 0 }}
+              onClick={handleClickTransactionLink}
+              iconRight={IconExternalLink}
+              variant={HarmonyPlainButtonType.SUBDUED}
+              size={HarmonyPlainButtonSize.DEFAULT}
+              text={messages.viewOn}
+            />
+          </div>
+        </>
+      ) : null}
       <div className={styles.success}>
         <div className={styles.completionCheck}>
           <Icon icon={IconCheck} size='xxSmall' color='white' />
@@ -121,6 +131,11 @@ export const TransferSuccessful = ({
           {messages.success}
         </Text>
       </div>
+      <Flex alignItems='center' justifyContent='center' gap='m'>
+        <Button fullWidth variant='primary' onClick={onClickDone}>
+          {messages.done}
+        </Button>
+      </Flex>
     </div>
   )
 }

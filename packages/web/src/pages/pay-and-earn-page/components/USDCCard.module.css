@@ -1,0 +1,84 @@
+.usdcContainer {
+  width: 100%;
+  flex-direction: column;
+  border-radius: var(--unit-3);
+  background: var(--white);
+  overflow: hidden;
+  box-shadow: var(--table-shadow) 0px 16px 20px 0px;
+}
+
+.backgroundBlueGradient {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--unit-4);
+  padding: var(--unit-6);
+  background: linear-gradient(
+      315deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(255, 255, 255, 0.1) 100%
+    ),
+    #2775ca;
+}
+
+.usdcTitleContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.usdcTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.usdc {
+  opacity: 0.8;
+}
+
+.balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.spinner {
+  height: var(--unit-8);
+  width: var(--unit-8);
+  align-self: center;
+}
+
+.spinner g path {
+  stroke: var(--static-white) !important;
+}
+
+.usdcInfo {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.withdrawContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--unit-6);
+  gap: var(--unit-2);
+}
+
+.withdrawButton {
+  flex-grow: 1;
+}
+
+.addFundsButton {
+  flex-grow: 1;
+}

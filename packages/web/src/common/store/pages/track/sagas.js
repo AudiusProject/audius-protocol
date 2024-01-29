@@ -170,7 +170,6 @@ function* watchFetchTrack() {
       if (!track) {
         if (isReachable) {
           yield put(pushRoute(NOT_FOUND_PAGE))
-          return
         }
       } else {
         yield put(trackPageActions.setTrackId(track.track_id))

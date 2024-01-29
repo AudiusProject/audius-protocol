@@ -7,9 +7,10 @@ import { setTheme, PREFERS_DARK_MEDIA_QUERY } from 'utils/theme/theme'
 const { setTheme: setThemeAction } = themeActions
 
 // `window.matchMedia` can be undefined in some environments (testing and outdated browsers).
-const mql = window.matchMedia
-  ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY)
-  : null
+const mql =
+  typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY)
+    : null
 let mqlListener: EventListener
 
 function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {

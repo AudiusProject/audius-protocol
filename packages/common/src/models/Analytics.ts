@@ -1,13 +1,16 @@
-import { ChatPermission } from '@audius/sdk'
+import { ChatPermission, Genre } from '@audius/sdk'
 
 import { FeedFilter } from 'models/FeedFilter'
 import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
+import { MintName } from 'services/index'
+import { Prettify } from 'utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { PurchaseMethod } from './PurchaseContent'
 import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
@@ -30,18 +33,44 @@ export enum Name {
   CREATE_ACCOUNT_COMPLETE_PASSWORD = 'Create Account: Complete Password',
   // When the user starts integrating with twitter
   CREATE_ACCOUNT_START_TWITTER = 'Create Account: Start Twitter',
-  // When the user continues past the "twitter connection page"
+  // When the user successfully continues past the "twitter connection page"
   CREATE_ACCOUNT_COMPLETE_TWITTER = 'Create Account: Complete Twitter',
+  // When the user closed the twitter oauth modal
+  CREATE_ACCOUNT_CLOSED_TWITTER = 'Create Account: Closed Twitter',
+  // When the user encounters an error during twitter oauth
+  CREATE_ACCOUNT_TWITTER_ERROR = 'Create Account: Twitter Error',
   // When the user starts integrating with instagram
   CREATE_ACCOUNT_START_INSTAGRAM = 'Create Account: Start Instagram',
   // When the user continues past the "instagram connection page"
   CREATE_ACCOUNT_COMPLETE_INSTAGRAM = 'Create Account: Complete Instagram',
+  // When the user closed the instagram oauth modal
+  CREATE_ACCOUNT_CLOSED_INSTAGRAM = 'Create Account: Closed Instagram',
+  // When the user encounters an error during instagram oauth
+  CREATE_ACCOUNT_INSTAGRAM_ERROR = 'Create Account: Error Instagram',
   // When the user starts integrating with tiktok
   CREATE_ACCOUNT_START_TIKTOK = 'Create Account: Start TikTok',
   // When the user continues past the "tiktok connection page"
   CREATE_ACCOUNT_COMPLETE_TIKTOK = 'Create Account: Complete TikTok',
+  // When the user closes the tiktok oauth modal
+  CREATE_ACCOUNT_CLOSED_TIKTOK = 'Create Account: Closed TikTok',
+  // Errors encountered during tiktok oauth
+  CREATE_ACCOUNT_TIKTOK_ERROR = 'Create Account: TikTok Error',
   // When the user continues past the "profile info page"
   CREATE_ACCOUNT_COMPLETE_PROFILE = 'Create Account: Complete Profile',
+  // When the user uploads a profile photo in signup
+  CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO = 'Create Account: Upload Profile Photo',
+  // When the user has an error uploading their profile photo
+  CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR = 'Create Account: Upload Profile Photo Error',
+  // When the user uploads a cover photo in signup
+  CREATE_ACCOUNT_UPLOAD_COVER_PHOTO = 'Create Account: Upload Cover Photo',
+  // When the user has an error uploading their cover photo
+  CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR = 'Create Account: Upload Cover Photo Error',
+  // When the user selects a genre
+  CREATE_ACCOUNT_SELECT_GENRE = 'Create Account: Select Genre',
+  // When the user clicks follow on a specific user on the follow artists page
+  CREATE_ACCOUNT_FOLLOW_ARTIST = 'Create Account: Follow Artist',
+  // When the user clicks to preview a song from an artist on the follow artists page
+  CREATE_ACCOUNT_ARTIST_PREVIEWED = 'Create Account: Artist Previewed',
   // When the user continues past the follow page
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
   // When the user continues past the loading page
@@ -52,6 +81,10 @@ export enum Name {
   CREATE_ACCOUNT_RATE_LIMIT = 'Create Account: Rate Limit',
   // When the user gets blocked by AAO during the signup path
   CREATE_ACCOUNT_BLOCKED = 'Create Account: Blocked',
+  // When the welcome modal gets shown to the user
+  CREATE_ACCOUNT_WELCOME_MODAL = 'Create Account: Welcome Modal',
+  // When the user clicks the "Upload Track" CTA in the welcome modal
+  CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
 
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
@@ -72,6 +105,7 @@ export enum Name {
   SETTINGS_LOG_OUT = 'Settings: Log Out',
 
   // TikTok
+  // TODO: deprecate the following 3 metrics in favor of the duped CREATE_ACCOUNT ones
   TIKTOK_START_OAUTH = 'TikTok: Start TikTok OAuth',
   TIKTOK_COMPLETE_OAUTH = 'TikTok: Complete TikTok OAuth',
   TIKTOK_OAUTH_ERROR = 'TikTok: TikTok OAuth Error',
@@ -172,6 +206,7 @@ export enum Name {
   LISTEN_GATED = 'Listen: Gated',
 
   // Unlocked Gated Tracks
+  USDC_PURCHASE_GATED_TRACK_UNLOCKED = 'USDC Gated: Track Unlocked',
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
@@ -344,6 +379,21 @@ export enum Name {
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
+  // Buy Crypto
+  BUY_CRYPTO_STARTED = 'Buy Crypto: Started',
+  BUY_CRYPTO_ON_RAMP_OPENED = 'Buy Crypto: On Ramp Opened',
+  BUY_CRYPTO_ON_RAMP_SUCCESS = 'Buy Crypto: On Ramp Success',
+  BUY_CRYPTO_ON_RAMP_FAILURE = 'Buy Crypto: On Ramp Failure',
+  BUY_CRYPTO_ON_RAMP_CANCELED = 'Buy Crypto: On Ramp Canceled',
+  BUY_CRYPTO_ON_RAMP_CONFIRMED = 'Buy Crypto: On Ramp Confirmed',
+  BUY_CRYPTO_SUCCESS = 'Buy Crypto: Success',
+  BUY_CRYPTO_FAILURE = 'Buy Crypto: Failure',
+
+  // Buy Crypto Recovery
+  BUY_CRYPTO_RECOVERY_STARTED = 'Buy Crypto: Recovery Started',
+  BUY_CRYPTO_RECOVERY_SUCCESS = 'Buy Crypto: Recovery Success',
+  BUY_CRYPTO_RECOVERY_FAILURE = 'Buy Crypto: Recovery Failure',
+
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
@@ -403,7 +453,16 @@ export enum Name {
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
   CHAT_ENTRY_POINT = 'Chat Entry Point',
-  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error'
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error',
+
+  // Jupiter
+  JUPITER_QUOTE_REQUEST = 'Jupiter: Quote Request',
+  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response',
+
+  // Repair Signups
+  SIGN_UP_REPAIR_START = 'Sign Up Repair: Start',
+  SIGN_UP_REPAIR_SUCCESS = 'Sign Up Repair: Success',
+  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure'
 }
 
 type PageView = {
@@ -431,39 +490,117 @@ type CreateAccountCompletePassword = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PASSWORD
   emailAddress: string
 }
+// Twitter Account Creation
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
-  emailAddress: string
+  emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
+  page?: 'create-email' | 'pick-handle'
 }
+type CreateAccountClosedTwitter = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_TWITTER
+  emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
+}
+type CreateAccountTwitterError = {
+  eventName: Name.CREATE_ACCOUNT_TWITTER_ERROR
+  emailAddress?: string
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
+// Instagram Account Creation
 type CreateAccountStartInstagram = {
   eventName: Name.CREATE_ACCOUNT_START_INSTAGRAM
-  emailAddress: string
+  emailAddress?: string
+  page?: string
 }
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
   isVerified: boolean
+  emailAddress?: string
+  handle: string
+  page?: string
+}
+type CreateAccountClosedInstagram = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_INSTAGRAM
+  emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
+}
+type CreateAccountInstagramError = {
+  eventName: Name.CREATE_ACCOUNT_INSTAGRAM_ERROR
+  emailAddress?: string
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
+type CreateAccountStartTikTok = {
+  eventName: Name.CREATE_ACCOUNT_START_TIKTOK
+  emailAddress?: string
+  page?: string
+}
+type CreateAccountCompleteTikTok =
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      emailAddress: string
+      page?: string
+    }
+  | {
+      eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+      isVerified: boolean
+      handle: string
+      page?: string
+    }
+type CreateAccountUploadProfilePhoto = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
   emailAddress: string
   handle: string
 }
-type CreateAccountStartTikTok = {
-  eventName: Name.CREATE_ACCOUNT_START_TIKTOK
-  emailAddress: string
+type CreateAccountUploadProfilePhotoError = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR
+  error: string
 }
-type CreateAccountCompleteTikTok = {
-  eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+type CreateAccountUploadProfileCover = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
   emailAddress: string
+  handle: string
+}
+type CreateAccountUploadProfileCoverError = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR
+  error: string
 }
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
   emailAddress: string
   handle: string
 }
+type CreateAccountSelectGenre = {
+  eventName: Name.CREATE_ACCOUNT_SELECT_GENRE
+  emailAddress: string
+  handle: string
+  genre: Genre
+  selectedGenres: Genre[]
+}
+type CreateAccountFollowArtist = {
+  eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST
+  emailAddress: string
+  handle: string
+  artistID: number
+  artistName: string
+}
+
+type CreateAccountPreviewArtist = {
+  eventName: Name.CREATE_ACCOUNT_ARTIST_PREVIEWED
+  artistID: number
+  artistName: string
+}
+
 type CreateAccountCompleteFollow = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_FOLLOW
   emailAddress: string
@@ -473,6 +610,16 @@ type CreateAccountCompleteFollow = {
 }
 type CreateAccountCompleteCreating = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_CREATING
+  emailAddress: string
+  handle: string
+}
+type CreateAccountWelcomeModal = {
+  eventName: Name.CREATE_ACCOUNT_WELCOME_MODAL
+  emailAddress: string
+  handle: string
+}
+type CreateAccountWelcomeModalUploadTrack = {
+  eventName: Name.CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK
   emailAddress: string
   handle: string
 }
@@ -811,7 +958,7 @@ type EmbedCopy = {
 // Track Upload
 type TrackUploadOpen = {
   eventName: Name.TRACK_UPLOAD_OPEN
-  source: 'nav' | 'profile' | 'signup'
+  source: 'nav' | 'profile' | 'signup' | 'library'
 }
 type TrackUploadStartUploading = {
   eventName: Name.TRACK_UPLOAD_START_UPLOADING
@@ -907,6 +1054,11 @@ type TrackEditAccessChanged = {
 }
 
 // Unlocked Gated Tracks
+type USDCGatedTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+  count: number
+}
+
 type CollectibleGatedTrackUnlocked = {
   eventName: Name.COLLECTIBLE_GATED_TRACK_UNLOCKED
   count: number
@@ -1113,9 +1265,19 @@ type TagClicking = {
   source: 'profile page' | 'track page' | 'collection page'
 }
 
+export enum ModalSource {
+  TrackTile = 'track tile',
+  TrackDetails = 'track details',
+  NowPlaying = 'now playing',
+  PlayBar = 'play bar',
+  // Should never be used, but helps with type-checking
+  Unknown = 'unknown'
+}
+
 // Modals
 type ModalOpened = {
   eventName: Name.MODAL_OPENED
+  source: ModalSource
   name: string
 } & Record<string, any> // For passing state values
 
@@ -1624,34 +1786,34 @@ type BuyAudioRecoveryFailure = {
 // Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampCanceled = {
   eventName: Name.BUY_USDC_ON_RAMP_CANCELED
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampFailed = {
   eventName: Name.BUY_USDC_ON_RAMP_FAILURE
   error: string
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampSuccess = {
   eventName: Name.BUY_USDC_ON_RAMP_SUCCESS
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCSuccess = {
   eventName: Name.BUY_USDC_SUCCESS
-  provider: string
+  vendor: string
   requestedAmount: number
 }
 
 type BuyUSDCFailure = {
   eventName: Name.BUY_USDC_FAILURE
-  provider: string
+  vendor: string
   requestedAmount: number
   error: string
 }
@@ -1674,6 +1836,35 @@ type BuyUSDCRecoveryFailure = {
 type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
+
+// Buy Crypto
+
+type BuyCryptoEvent = {
+  eventName:
+    | Name.BUY_CRYPTO_STARTED
+    | Name.BUY_CRYPTO_ON_RAMP_OPENED
+    | Name.BUY_CRYPTO_ON_RAMP_SUCCESS
+    | Name.BUY_CRYPTO_ON_RAMP_FAILURE
+    | Name.BUY_CRYPTO_ON_RAMP_CANCELED
+    | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
+    | Name.BUY_CRYPTO_SUCCESS
+    | Name.BUY_CRYPTO_FAILURE
+
+  provider: string
+  requestedAmount: number
+  mint: MintName
+  error?: string
+}
+
+type BuyCryptoRecoveryEvent = Prettify<
+  {
+    eventName:
+      | Name.BUY_CRYPTO_RECOVERY_STARTED
+      | Name.BUY_CRYPTO_RECOVERY_FAILURE
+      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
+    intendedSOL: number
+  } & Omit<BuyCryptoEvent, 'eventName'>
+>
 
 // Withdraw USDC
 
@@ -1774,6 +1965,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  purchaseMethod: PurchaseMethod
   totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
@@ -1936,6 +2128,27 @@ type ChatWebsocketError = {
   code?: string
 }
 
+// Jupiter
+type JupiterQuoteRequest = {
+  eventName: Name.JUPITER_QUOTE_REQUEST
+  inputMint: string
+  outputMint: string
+  swapMode?: string
+  slippageBps?: number
+  amount: number
+}
+
+type JupiterQuoteResponse = {
+  eventName: Name.JUPITER_QUOTE_RESPONSE
+  inputMint: string
+  outputMint: string
+  swapMode: string
+  slippageBps: number
+  otherAmountThreshold: number
+  inAmount: number
+  outAmount: number
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1952,6 +2165,19 @@ export type AllTrackingEvents =
   | CreateAccountCompleteFollow
   | CreateAccountCompleteCreating
   | CreateAccountOpenFinish
+  | CreateAccountClosedTwitter
+  | CreateAccountTwitterError
+  | CreateAccountClosedInstagram
+  | CreateAccountInstagramError
+  | CreateAccountUploadProfilePhoto
+  | CreateAccountUploadProfilePhotoError
+  | CreateAccountUploadProfileCover
+  | CreateAccountUploadProfileCoverError
+  | CreateAccountSelectGenre
+  | CreateAccountFollowArtist
+  | CreateAccountPreviewArtist
+  | CreateAccountWelcomeModal
+  | CreateAccountWelcomeModalUploadTrack
   | SignInOpen
   | SignInFinish
   | SignInWithIncompleteAccount
@@ -2012,6 +2238,7 @@ export type AllTrackingEvents =
   | TrackUploadShareWithFans
   | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
+  | USDCGatedTrackUnlocked
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
@@ -2145,6 +2372,8 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
+  | BuyCryptoEvent
+  | BuyCryptoRecoveryEvent
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError
@@ -2201,3 +2430,5 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteError
   | ChatEntryPoint
   | ChatWebsocketError
+  | JupiterQuoteResponse
+  | JupiterQuoteRequest

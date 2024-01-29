@@ -1,7 +1,7 @@
 import { useState, useCallback, KeyboardEvent, useContext } from 'react'
 
 import {
-  AccountImage,
+  Image,
   InstagramProfile,
   TwitterProfile,
   formatInstagramProfile,
@@ -13,17 +13,17 @@ import cn from 'classnames'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
-import { isMobile as getIsMobile } from 'utils/clientUtil'
+import { env } from 'services/env'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
-const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
-const isMobile = getIsMobile()
+const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You',
@@ -31,7 +31,7 @@ const messages = {
 }
 
 type ProfilePageProps = {
-  profileImage?: AccountImage
+  profileImage?: Image
   twitterId: any
   isVerified: boolean
   onNextPage: () => void
@@ -39,20 +39,20 @@ type ProfilePageProps = {
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
-    profileImg?: AccountImage,
-    coverBannerImg?: AccountImage,
+    profileImg?: Image,
+    coverBannerImg?: Image,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   setTikTokProfile: (
     uuid: string,
     profile: TikTokProfile,
-    profileImg?: AccountImage,
+    profileImg?: Image,
     skipEdit?: boolean
   ) => void
   recordTwitterStart: () => void
@@ -95,6 +95,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   const [isLoading, setIsLoading] = useState(false)
   const setLoading = useCallback(() => setIsLoading(true), [setIsLoading])
   const { toast } = useContext(ToastContext)
+  const isMobile = useIsMobile()
 
   const onToggleCompleteProfileWithSocial = useCallback(() => {
     setShowCompleteProfileWithSocial((show) => !show)

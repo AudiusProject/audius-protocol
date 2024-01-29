@@ -4,9 +4,9 @@ import {
   getPathFromTrackUrl,
   useGetTrackByPermalink,
   accountSelectors,
-  usePremiumContentAccess,
-  isPremiumContentUSDCPurchaseGated,
-  isPremiumContentCollectibleGated
+  useGatedContentAccess,
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
 } from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -21,7 +21,7 @@ import { SwitchRowField } from '../SwitchRowField'
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../types'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -45,8 +45,8 @@ const messages = {
 }
 
 export const RemixSettingsMenuFields = () => {
-  const [{ value: isPremium }] = useField(IS_PREMIUM)
-  const [{ value: premiumConditions }] = useField(PREMIUM_CONDITIONS)
+  const [{ value: isStreamGated }] = useField(IS_STREAM_GATED)
+  const [{ value: streamConditions }] = useField(STREAM_CONDITIONS)
   const [{ value: trackUrl }] = useField(REMIX_LINK)
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
@@ -58,44 +58,79 @@ export const RemixSettingsMenuFields = () => {
   )
 
   const trackId = track?.track_id
-  const { doesUserHaveAccess: canRemixParent } = usePremiumContentAccess(
+  const { hasStreamAccess: canRemixParent } = useGatedContentAccess(
     track ?? null
   )
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
+
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   useEffect(() => {
     setParentTrackId(trackId)
     setCanRemixParent(canRemixParent)
   }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
-  return (
-    <div className={styles.fields}>
-      {isPremium ? (
+  const renderGatedContentCallout = () => {
+    if (isStreamGated && !isUSDCPurchaseGated) {
+      return (
         <HelpCallout
           content={`${messages.changeAvailabilityPrefix} ${
-            isPremiumContentUSDCPurchaseGated(premiumConditions)
-              ? messages.premium
-              : isPremiumContentCollectibleGated(premiumConditions)
+            isContentCollectibleGated(streamConditions)
               ? messages.collectibleGated
               : messages.specialAccess
           }${messages.changeAvailabilitySuffix}`}
         />
-      ) : null}
+      )
+    }
+    return null
+  }
+
+  const renderUsdcPurchaseGatedContentCallout = () => {
+    if (isUSDCPurchaseGated) {
+      return (
+        <HelpCallout
+          content={`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
+        />
+      )
+    }
+    return null
+  }
+
+  const renderHideRemixesField = () => {
+    if (isStreamGated && !isUSDCPurchaseGated) {
+      return (
+        <SwitchRowField
+          name={SHOW_REMIXES}
+          header={messages.hideRemix.header}
+          description={messages.hideRemix.description}
+          inverted
+          checked
+          disabled
+        />
+      )
+    }
+    return (
       <SwitchRowField
         name={SHOW_REMIXES}
         header={messages.hideRemix.header}
         description={messages.hideRemix.description}
-        disabled={isPremium}
-        checked={isPremium}
-        inverted={!isPremium}
+        inverted
       />
+    )
+  }
+
+  return (
+    <div className={styles.fields}>
+      {renderGatedContentCallout()}
+      {renderHideRemixesField()}
       <Divider />
+      {renderUsdcPurchaseGatedContentCallout()}
       <SwitchRowField
         name={IS_REMIX}
         header={messages.remixOf.header}
         description={messages.remixOf.description}
-        disabled={isPremium}
+        disabled={isStreamGated}
       >
         <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
         {track ? <TrackInfo trackId={track.track_id} /> : null}

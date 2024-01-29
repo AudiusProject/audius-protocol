@@ -1,18 +1,16 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+
 import { IconVolume0, IconVolume2 } from '@audius/stems'
 import cn from 'classnames'
-import { h } from 'preact'
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
 
 import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
+import { getHash } from '../../util/collectibleHelpers'
 import { getScrollParent } from '../../util/scrollParent'
 import { getCopyableLink } from '../../util/shareUtil'
 import Button from '../button/Button'
+import '@google/model-viewer/dist//model-viewer.min.js'
 
 import styles from './CollectibleDetailsView.module.css'
-import { getHash } from './collectibleHelpers'
-
-const MODEL_VIEWER_SCRIPT_URL =
-  'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'
 
 const messages = {
   videoNotSupported: 'Your browser does not support the video tag.'
@@ -21,7 +19,6 @@ const messages = {
 const CollectibleMedia = ({ collectible, isMuted, toggleMute, isMobile }) => {
   const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
   const [isSvg, setIsSvg] = useState(false)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
   const [isLoading, setIsLoading] = useState(
     mediaType === 'IMAGE' || mediaType === 'GIF'
   )
@@ -45,25 +42,7 @@ const CollectibleMedia = ({ collectible, isMuted, toggleMute, isMobile }) => {
   )
 
   useEffect(() => {
-    const handleScript = (e) => setScriptLoaded(e.type === 'load')
-
-    const script = document.createElement('script')
-    script.src = MODEL_VIEWER_SCRIPT_URL
-    script.type = 'module'
-    script.async = true
-    document.body.appendChild(script)
-
-    script.addEventListener('load', handleScript)
-    script.addEventListener('error', handleScript)
-
-    return () => {
-      script.removeEventListener('load', handleScript)
-      script.removeEventListener('error', handleScript)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (threeDUrl && ref3D?.current && scriptLoaded) {
+    if (threeDUrl && ref3D?.current) {
       ref3D.current.innerHTML = `<model-viewer src=${threeDUrl} auto-rotate camera-controls />`
       const modelViewer = ref3D.current.children[0]
 
@@ -93,7 +72,7 @@ const CollectibleMedia = ({ collectible, isMuted, toggleMute, isMobile }) => {
         }
       }
     }
-  }, [threeDUrl, ref3D, isMobile, scriptLoaded])
+  }, [threeDUrl, ref3D, isMobile])
 
   return mediaType === 'THREE_D' ? (
     <div

@@ -6,7 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/mediorum/ddl"
-	"gocloud.dev/blob"
+	slogGorm "github.com/orandin/slog-gorm"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,13 +40,37 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+// Metric actions
+const (
+	StreamTrack string = "stream_track"
+	ServeImage  string = "serve_image"
+)
+
+type DailyMetrics struct {
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
+}
+
+type MonthlyMetrics struct {
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
+}
+
 type UploadCursor struct {
 	Host  string `gorm:"primaryKey"`
 	After time.Time
 }
 
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{})
+	gormLogger := slogGorm.New()
+
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
+		Logger: gormLogger,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -59,10 +83,10 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
+func dbMigrate(crud *crudr.Crudr, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{})
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +97,7 @@ func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	sqlDb, _ := crud.DB.DB()
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, bucket, myHost)
+	ddl.Migrate(sqlDb, myHost)
 
 	slog.Info("db: migrate done")
 

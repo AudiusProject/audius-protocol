@@ -1,4 +1,4 @@
-import { PremiumConditionsUSDCPurchase, UserTrackMetadata } from 'models/Track'
+import { USDCPurchaseConditions, UserTrackMetadata } from 'models/Track'
 
 /** Denotes the 3 preset amounts to show on the form, values are in cents. */
 export type PayExtraAmountPresetValues = {
@@ -15,8 +15,8 @@ export enum PayExtraPreset {
   NONE = 'none'
 }
 
-export type PurchasableTrackMetadata = UserTrackMetadata & {
-  premium_conditions: PremiumConditionsUSDCPurchase
+export type PurchaseableTrackMetadata = UserTrackMetadata & {
+  stream_conditions: USDCPurchaseConditions
 }
 
 export type USDCPurchaseConfig = {
@@ -25,3 +25,5 @@ export type USDCPurchaseConfig = {
   minUSDCPurchaseAmountCents: number
   maxUSDCPurchaseAmountCents: number
 }
+
+export type PurchasePage = 'purchase' | 'crypto-transfer'

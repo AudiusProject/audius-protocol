@@ -4,18 +4,21 @@ import type {
   ID,
   FavoriteType,
   RepostType,
-  PremiumConditions,
+  AccessConditions,
   Nullable
 } from '@audius/common'
 import {
   formatCount,
   repostsUserListActions,
   favoritesUserListActions,
-  isPremiumContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  dayjs
 } from '@audius/common'
+import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { IconCalendarMonth } from '@audius/harmony-native'
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
@@ -28,7 +31,7 @@ import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeTag'
+import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
@@ -103,11 +106,12 @@ type Props = {
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
-  doesUserHaveAccess?: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  hasStreamAccess?: boolean
+  streamConditions: Nullable<AccessConditions>
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
+  releaseDate?: string
 }
 
 export const LineupTileStats = ({
@@ -124,15 +128,16 @@ export const LineupTileStats = ({
   repostCount,
   saveCount,
   showRankIcon,
-  doesUserHaveAccess,
-  premiumConditions,
+  hasStreamAccess,
+  streamConditions,
   isOwner,
   isArtistPick,
-  showArtistPick
+  showArtistPick,
+  releaseDate
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
-  const { neutralLight4 } = useThemeColors()
+  const { neutralLight4, accentPurple } = useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -155,21 +160,21 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-
+  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {premiumConditions ? (
-          <LineupTilePremiumContentTypeTag
-            premiumConditions={premiumConditions}
-            doesUserHaveAccess={doesUserHaveAccess}
+        {streamConditions ? (
+          <LineupTileGatedContentTypeTag
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
             isOwner={isOwner}
           />
         ) : null}
-        {!premiumConditions && showArtistPick && isArtistPick ? (
+        {!streamConditions && showArtistPick && isArtistPick ? (
           <View style={styles.tagContainer}>
             <IconStar
               fill={neutralLight4}
@@ -181,7 +186,7 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
-        {isUnlisted ? (
+        {isUnlisted && !isScheduledRelease ? (
           <View style={styles.tagContainer}>
             <IconHidden
               fill={neutralLight4}
@@ -190,6 +195,22 @@ export const LineupTileStats = ({
             />
             <Text fontSize='xs' colorValue={neutralLight4}>
               {messages.hiddenTrack}
+            </Text>
+          </View>
+        ) : null}
+        {isUnlisted && isScheduledRelease && releaseDate ? (
+          <View style={styles.tagContainer}>
+            <IconCalendarMonth
+              fill={accentPurple}
+              height={spacing(4)}
+              width={spacing(4)}
+            />
+            <Text fontSize='xs' colorValue={accentPurple}>
+              Releases
+              {' ' +
+                moment(releaseDate).local().format('M/D/YY @ h:mm A') +
+                ' ' +
+                dayjs().format('z')}
             </Text>
           </View>
         ) : null}
@@ -241,13 +262,11 @@ export const LineupTileStats = ({
           ) : null}
         </View>
       </View>
-      {premiumConditions && !isOwner ? (
+      {streamConditions && !isOwner ? (
         <LockedStatusBadge
-          locked={!doesUserHaveAccess}
+          locked={!hasStreamAccess}
           variant={
-            isPremiumContentUSDCPurchaseGated(premiumConditions)
-              ? 'purchase'
-              : 'gated'
+            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }
         />
       ) : !hidePlays ? (

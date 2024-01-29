@@ -287,7 +287,7 @@ You must open this page with the required URL parameters, described below.
 
 - scope `"read" | "write"` - the scope of the authentication request. Use `"write"` if your app will request read/write access to the user's account; otherwise, use `"read"` if your app only needs read access.
 - api_key `string` - your app's Audius API Key. If you don't have one, you can create one on the Audius [Settings page](https://audius.co/settings).
-- redirect_uri `string` - the location that the Audius login page should redirect to once the user successfully authenticates. Custom URL schemes are allowed and supported. You can use the special value `postmessage` here if you would like the login page to send the response back to its opener using `window.postMessage` instead of using a redirect. Otherwise, the following validation rules apply:
+- redirect_uri `string` - the location that the Audius login page should redirect to once the user successfully authenticates. A URL protocol of http or https is required. You can use the special value `postmessage` here if you would like the login page to send the response back to its opener using `window.postMessage` instead of using a redirect. Otherwise, the following validation rules apply:
 
   - Hosts cannot be raw IP addresses UNLESS they are localhost IP addresses
   - Cannot contain the fragment component (`#`)

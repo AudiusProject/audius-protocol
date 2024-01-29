@@ -176,10 +176,11 @@ const CollectionArtCard = g(
                   }}
                   className={styles.iconKebabHorizontalWrapper}
                 >
-                  <IconKebabHorizontal
-                    className={styles.iconKebabHorizontal}
-                    ref={ref}
-                  />
+                  <div ref={ref}>
+                    <IconKebabHorizontal
+                      className={styles.iconKebabHorizontal}
+                    />
+                  </div>
                 </div>
               )}
             </Menu>

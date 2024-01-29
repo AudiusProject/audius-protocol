@@ -14,11 +14,13 @@ program
   )
   .action(async (trackId, { from, extraAmount: extraAmountCents }) => {
     const audiusLibs = await initializeAudiusLibs(from)
+    const user = audiusLibs.userStateManager.getCurrentUser();
+
     const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
-    if (!track.premium_conditions || !track.is_premium) {
-      program.error('Track is not premium')
+    if (!track.stream_conditions || !track.is_stream_gated) {
+      program.error('Track is not stream gated')
     }
-    if (!track.premium_conditions?.usdc_purchase?.splits) {
+    if (!track.stream_conditions?.usdc_purchase?.splits) {
       program.error('Track is not purchaseable')
     }
 
@@ -37,7 +39,8 @@ program
         extraAmount,
         type: 'track',
         blocknumber: track.blocknumber,
-        splits: track.premium_conditions.usdc_purchase.splits
+        splits: track.stream_conditions.usdc_purchase.splits,
+        purchaserUserId: user.user_id
       })
       if (response.error) {
         program.error(chalk.red(response.error))

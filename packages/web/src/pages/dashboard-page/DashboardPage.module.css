@@ -33,7 +33,7 @@
 }
 
 .statTileContainer {
-  flex: 1 auto 120px;
+  flex: 1 1 120px;
   width: 100%;
   height: 72px;
   border-radius: 6px;

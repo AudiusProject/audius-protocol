@@ -11,6 +11,7 @@ import fetch from 'node-fetch'
 import axios from 'axios'
 import { WebClient } from '@slack/web-api'
 import { formatDisbursementTable } from './slack'
+import { discoveryDb } from './utils'
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const disburseTrendingRewards = async (
@@ -26,7 +27,7 @@ export const onDisburse = async (
   app: App<SharedData>,
   dryRun: boolean
 ): Promise<Result<undefined, string>> => {
-  const db = app.getDnDb()
+  const db = discoveryDb
   const libs = app.viewAppData().libs
   const token = process.env.SLACK_BOT_TOKEN
   if (token === undefined) return new Err('SLACK_BOT_TOKEN undefined')
@@ -137,8 +138,13 @@ const canSuccessfullyAttest = async (
     challengeId,
     oracleEthAddress
   )
-  const res = await fetch(url)
-  return res && res.ok
+  try {
+      const res = await fetch(url)
+      return res && res.ok;
+  } catch (e) {
+      console.warn("Can't attest", e, url)
+      return false
+  }
 }
 
 const makeAttestationEndpoint = (
@@ -218,7 +224,7 @@ const getAllChallenges = async (
     // select again if needed
     if (!isValidNodeSet) {
       possibleNodeSet = []
-      console.log('Node set not valid. Selecting nodes...')
+      console.log('Node set not valid. Selecting nodes...', possibleNodeSet)
       for (const nodeGroup of groups.values()) {
         if (possibleNodeSet.length === 3) {
           console.log(`Got 3 nodes!: ${JSON.stringify(possibleNodeSet)}`)
@@ -248,9 +254,9 @@ const getAllChallenges = async (
     // did we succeed?
     if (possibleNodeSet.length !== 3) {
       console.log(
-        `Could not find a valid node set for challenge: ${JSON.stringify(
-          challenge
-        )}, skipping.`
+        `Could not find a valid node set for challenge: ${
+          challenge.specifier
+        }, skipping.`, possibleNodeSet
       )
       impossibleChallenges.push(challenge)
       // reset it for next time

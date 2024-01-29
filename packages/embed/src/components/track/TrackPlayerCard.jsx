@@ -1,11 +1,12 @@
-import { h } from 'preact'
-import { useState, useContext, useEffect } from 'preact/hooks'
+import { useState, useContext, useEffect } from 'react'
 
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import Artwork from '../artwork/Artwork'
 import ShareButton from '../button/ShareButton'
 import Card, { CardDimensionsContext } from '../card/Card'
+import { DogEar } from '../dog-ear/DogEar'
 import PlayButton from '../playbutton/PlayButton'
+import { Preview } from '../preview/Preview'
 import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 import Titles from '../titles/Titles'
 
@@ -25,7 +26,8 @@ const TrackPlayerCard = ({
   duration,
   seekTo,
   backgroundColor,
-  isTwitter
+  isTwitter,
+  streamConditions
 }) => {
   const mobileWebTwitter = isMobileWebTwitter(isTwitter)
   const getBottomWrapperStyle = () =>
@@ -56,6 +58,8 @@ const TrackPlayerCard = ({
     }
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
+  const isPurchaseable =
+    streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Card
@@ -63,6 +67,7 @@ const TrackPlayerCard = ({
       backgroundColor={backgroundColor}
       twitterURL={trackURL}
     >
+      {isPurchaseable ? <DogEar /> : null}
       <div className={styles.paddingContainer}>
         <div className={styles.artworkWrapper} style={artworkWrapperStyle}>
           <Artwork
@@ -87,6 +92,7 @@ const TrackPlayerCard = ({
               playingState={playingState}
               seekTo={seekTo}
             />
+            {isPurchaseable ? <Preview /> : null}
           </div>
           <div className={styles.bottomSection}>
             <PlayButton

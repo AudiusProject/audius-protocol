@@ -1,13 +1,6 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
-import {
-  Status,
-  Track,
-  formatCount,
-  themeSelectors,
-  combineStatuses,
-  useUSDCBalance
-} from '@audius/common'
+import { Status, Track, formatCount, themeSelectors } from '@audius/common'
 import cn from 'classnames'
 import { each } from 'lodash'
 import moment, { Moment } from 'moment'
@@ -17,7 +10,6 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
@@ -27,7 +19,6 @@ import {
   DataSourceTrack,
   tablePageSize
 } from './components/TracksTableContainer'
-import { USDCCard } from './components/USDCCard'
 import {
   getDashboardListenData,
   getDashboardStatus,
@@ -42,7 +33,7 @@ const TotalPlaysChart = lazyWithPreload(
 )
 
 export const messages = {
-  title: 'Dashboard & Payments',
+  title: 'Artist Dashboard',
   description: 'View important stats like plays, reposts, and more.',
   thisYear: 'This Year'
 }
@@ -79,16 +70,6 @@ export const DashboardPage = () => {
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const { data: balance, balanceStatus } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 3000
-  })
-  const statuses = [dashboardStatus]
-  if (balance === null) {
-    statuses.push(balanceStatus)
-  }
-  const status = combineStatuses(statuses)
-  const isUSDCEnabled = useIsUSDCEnabled()
 
   const header = <Header primary={messages.title} />
 
@@ -193,10 +174,7 @@ export const DashboardPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!account ||
-      balance === null ||
-      !listenData ||
-      status === Status.LOADING ? (
+      {!account || !listenData || dashboardStatus === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
@@ -210,9 +188,6 @@ export const DashboardPage = () => {
               handle={account.handle}
               name={account.name}
             />
-            {isUSDCEnabled ? (
-              <USDCCard balance={balance} isArtist={account.track_count > 0} />
-            ) : null}
           </div>
           <div className={styles.sectionContainer}>
             {renderChart()}

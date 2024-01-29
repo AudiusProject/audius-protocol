@@ -1,5 +1,4 @@
-import { h } from 'preact'
-import { useContext } from 'preact/hooks'
+import { useContext } from 'react'
 
 import IconShare from '../../assets/img/iconShare.svg'
 import { share } from '../../util/shareUtil'

@@ -1,0 +1,7 @@
+.scheduledReleaseLabel {
+  color: var(--static-secondary);
+}
+
+.scheduledReleaseLabel path {
+  fill: var(--static-secondary);
+}

@@ -1,3 +1,12 @@
+import { useState } from 'react'
+
+import {
+  FeatureFlags,
+  StemCategory,
+  stemCategoryFriendlyNames,
+  useFeatureFlag
+} from '@audius/common'
+import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'
 
@@ -10,7 +19,12 @@ import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
 import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
 
+import { EditableLabel } from './EditableLabel'
 import styles from './TrackPreview.module.css'
+
+const messages = {
+  selectType: 'Select Type'
+}
 
 const fileTypeIcon = (type: string) => {
   switch (type) {
@@ -39,17 +53,42 @@ type TrackPreviewProps = {
   index: number
   displayIndex: boolean
   onRemove: () => void
+  isTitleEditable?: boolean
+  onEditTitle?: (title: string) => void
+  isStem?: boolean
+  stemCategory?: StemCategory
+  onEditStemCategory?: (stemCategory: StemCategory) => void
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
   const {
     displayIndex = false,
     index,
     fileType = 'audio/mp3',
     trackTitle = 'Untitled',
     fileSize,
-    onRemove
+    onRemove,
+    isTitleEditable,
+    onEditTitle,
+    isStem,
+    stemCategory,
+    onEditStemCategory
   } = props
+
+  const Icon = fileTypeIcon(fileType)
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+
+  const stemCategories = Object.keys(stemCategoryFriendlyNames).map(
+    (value) => ({
+      value,
+      label: stemCategoryFriendlyNames[value as StemCategory]
+    })
+  )
 
   return (
     <div className={styles.trackPreviewNew}>
@@ -58,15 +97,35 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           {index + 1}
         </Text>
       ) : null}
-      <img
-        className={styles.trackPreviewImage}
-        src={fileTypeIcon(fileType)}
-        alt='File type icon'
-      />
-      <Text className={styles.titleText} size='small'>
-        {trackTitle}
-      </Text>
-      <div className={styles.sizeContainer}>
+      <Icon className={styles.trackPreviewImage} />
+      {isLosslessDownloadsEnabled && isTitleEditable && onEditTitle ? (
+        <EditableLabel
+          isEditing={isEditingTitle}
+          setIsEditing={setIsEditingTitle}
+          value={trackTitle}
+          setValue={onEditTitle}
+        />
+      ) : (
+        <Text className={styles.titleText} size='small'>
+          {trackTitle}
+        </Text>
+      )}
+      <Flex alignItems='center'>
+        {isLosslessDownloadsEnabled && isStem && onEditStemCategory ? (
+          <Box mr='xl'>
+            <FilterButton
+              label={messages.selectType}
+              options={stemCategories}
+              popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              popupTransformOrigin={{
+                vertical: 'top',
+                horizontal: 'right'
+              }}
+              onSelect={(label) => onEditStemCategory(label as StemCategory)}
+              selection={stemCategory?.toString()}
+            />
+          </Box>
+        ) : null}
         <Text
           className={styles.fileSizeText}
           size='small'
@@ -74,14 +133,30 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
         >
           {numeral(fileSize).format('0.0 b')}
         </Text>
-        <div className={styles.removeButtonContainer}>
+        {isLosslessDownloadsEnabled ? (
+          <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
+            {isTitleEditable ? (
+              <HarmonyPlainButton
+                iconRight={IconPenSquare}
+                onClick={() => setIsEditingTitle(true)}
+                className={styles.editTitleButton}
+              />
+            ) : null}
+            <HarmonyPlainButton
+              iconRight={IconTrash}
+              onClick={onRemove}
+              className={styles.removeButton}
+            />
+          </Flex>
+        ) : null}
+        {!isLosslessDownloadsEnabled ? (
           <HarmonyPlainButton
             iconRight={IconTrash}
             onClick={onRemove}
             className={styles.removeButton}
           />
-        </div>
-      </div>
+        ) : null}
+      </Flex>
     </div>
   )
 }

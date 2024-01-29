@@ -139,7 +139,12 @@ def test_update_aggregate_user(app):
             {"playlist_id": 2, "playlist_owner_id": 1, "is_album": True},
             {"playlist_id": 3, "playlist_owner_id": 2},
         ],
-        "tracks": [{"track_id": 1, "owner_id": 1}, {"track_id": 2, "owner_id": 2}],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1, "genre": "Electronic"},
+            {"track_id": 2, "owner_id": 2, "genre": "Electronic"},
+            {"track_id": 3, "owner_id": 2, "genre": "Pop"},
+            {"track_id": 4, "owner_id": 2, "genre": "Pop"},
+        ],
         "user": [{"user_id": 1}, {"user_id": 2}],
         "follows": [
             {"follower_user_id": 1, "followee_user_id": 2},
@@ -172,6 +177,9 @@ def test_update_aggregate_user(app):
         assert aggregate_user.following_count == 1
         assert aggregate_user.repost_count == 1
         assert aggregate_user.track_save_count == 1
+        # Dominant genre does not update by triggers
+        assert aggregate_user.dominant_genre is None
+        assert aggregate_user.dominant_genre_count == 0
 
         aggregate_user.track_count = 0
         aggregate_user.playlist_count = 0
@@ -193,3 +201,17 @@ def test_update_aggregate_user(app):
         assert aggregate_user.following_count == 1
         assert aggregate_user.repost_count == 1
         assert aggregate_user.track_save_count == 1
+        assert aggregate_user.dominant_genre == "Electronic"
+        assert aggregate_user.dominant_genre_count == 1
+
+        aggregate_user2 = session.query(AggregateUser).filter_by(user_id=2).first()
+        assert aggregate_user2.user_id == 2
+        assert aggregate_user2.track_count == 3
+        assert aggregate_user2.playlist_count == 1
+        assert aggregate_user2.album_count == 0
+        assert aggregate_user2.follower_count == 1
+        assert aggregate_user2.following_count == 1
+        assert aggregate_user2.repost_count == 0
+        assert aggregate_user2.track_save_count == 0
+        assert aggregate_user2.dominant_genre == "Pop"
+        assert aggregate_user2.dominant_genre_count == 2

@@ -1,8 +1,10 @@
+import { useContext } from 'react'
+
+import { Flex } from '@audius/harmony'
 import cn from 'classnames'
-import { h } from 'preact'
-import { useContext } from 'preact/hooks'
 import { CSSTransition } from 'react-transition-group'
 
+import IconAudius from '../../assets/img/audiusLogoGlyph.svg'
 import IconRemove from '../../assets/img/iconRemove.svg'
 import { PlayerFlavor } from '../app'
 import Artwork from '../artwork/Artwork'
@@ -15,27 +17,16 @@ import { PauseContext } from './PauseProvider'
 import pauseTransitions from './PauseTransitions.module.css'
 import PrimaryLabel from './PrimaryLabel'
 
-const DISMISS_BUTTON_CARD_LEFT_MARGIN = 12
-
 const PausedPopoverCard = ({
   artworkURL,
   artworkClickURL,
   listenOnAudiusURL,
   flavor,
-  isMobileWebTwitter
+  isMobileWebTwitter,
+  streamConditions
 }) => {
   const { popoverVisibility, setPopoverVisibility } = useContext(PauseContext)
   const { width } = useContext(CardDimensionsContext)
-
-  // Get the proper offset for the dismiss button in case we're in card mode
-  const getDismissButtonStyle = () => {
-    if (flavor === PlayerFlavor.COMPACT) return {}
-    const bodyWidth = window.document.body.clientWidth
-    const leftInset = (bodyWidth - width) / 2 + DISMISS_BUTTON_CARD_LEFT_MARGIN
-    return {
-      left: `${leftInset}px`
-    }
-  }
 
   return (
     <CSSTransition
@@ -44,41 +35,66 @@ const PausedPopoverCard = ({
       classNames={pauseTransitions}
     >
       <div
-        className={cn(styles.container, {
+        className={cn(styles.root, {
           [styles.blur]: popoverVisibility
         })}
         // Ensure that when the popover
         // is animating out, it's not clickable.
         style={popoverVisibility ? {} : { pointerEvents: 'none' }}
       >
-        {flavor === PlayerFlavor.CARD && (
-          <>
-            <div className={styles.logo}>
-              <AudiusLogo />
-            </div>
-            {!isMobileWebTwitter && (
-              <Artwork
-                artworkURL={artworkURL}
-                onClickURL={artworkClickURL}
-                className={styles.artworkSizing}
-              />
-            )}
-          </>
-        )}
-        <PrimaryLabel
-          className={
-            flavor === PlayerFlavor.COMPACT
-              ? styles.compactLabelFont
-              : undefined
-          }
-        />
-        <ListenOnAudiusCTA audiusURL={listenOnAudiusURL} />
         <div
-          className={styles.dismissIcon}
-          onClick={() => setPopoverVisibility(false)}
-          style={getDismissButtonStyle()}
+          className={styles.container}
+          style={{ width: flavor === PlayerFlavor.CARD ? width : '100%' }}
         >
-          <IconRemove />
+          {flavor === PlayerFlavor.CARD && (
+            <>
+              <div className={styles.logo}>
+                <AudiusLogo />
+              </div>
+              {!isMobileWebTwitter && (
+                <Artwork
+                  artworkURL={artworkURL}
+                  onClickURL={artworkClickURL}
+                  className={styles.artworkSizing}
+                />
+              )}
+            </>
+          )}
+          <Flex
+            style={{ width: '100%' }}
+            alignItems='center'
+            justifyContent={
+              flavor === PlayerFlavor.CARD ? 'center' : 'space-between'
+            }
+          >
+            {flavor === PlayerFlavor.COMPACT ? (
+              <div
+                className={styles.dismissIcon}
+                onClick={() => setPopoverVisibility(false)}
+              >
+                <IconRemove />
+              </div>
+            ) : null}
+            <PrimaryLabel streamConditions={streamConditions} />
+            {flavor === PlayerFlavor.COMPACT ? (
+              <div className={styles.audiusIcon}>
+                <IconAudius />
+              </div>
+            ) : null}
+          </Flex>
+          <ListenOnAudiusCTA
+            audiusURL={listenOnAudiusURL}
+            streamConditions={streamConditions}
+          />
+
+          {flavor === PlayerFlavor.CARD ? (
+            <div
+              className={cn(styles.dismissIcon, styles.card)}
+              onClick={() => setPopoverVisibility(false)}
+            >
+              <IconRemove />
+            </div>
+          ) : null}
         </div>
       </div>
     </CSSTransition>

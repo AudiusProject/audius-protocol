@@ -1,29 +1,20 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, PremiumConditions } from '@audius/common'
+import type { Nullable, AccessConditions } from '@audius/common'
 import { useField } from 'formik'
-
-const defaultTrackAvailabilityFields = {
-  is_premium: false,
-  premium_conditions: null as Nullable<PremiumConditions>,
-  is_unlisted: false,
-  preview_start_seconds: null as Nullable<Number>,
-  'field_visibility.genre': true,
-  'field_visibility.mood': true,
-  'field_visibility.tags': true,
-  'field_visibility.share': true,
-  'field_visibility.play_count': true,
-  'field_visibility.remixes': true
-}
-type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
 // This hook allows us to set track availability fields during upload.
 // It has to be used with a Formik context because it uses formik's useField hook.
 export const useSetTrackAvailabilityFields = () => {
-  const [, , { setValue: setIsPremium }] = useField<boolean>('is_premium')
-  const [, , { setValue: setPremiumConditions }] =
-    useField<Nullable<PremiumConditions>>('premium_conditions')
-  const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setIsStreamGated }] =
+    useField<boolean>('is_stream_gated')
+  const [, , { setValue: setStreamConditions }] =
+    useField<Nullable<AccessConditions>>('stream_conditions')
+  const [{ value: isUnlisted }, , { setValue: setIsUnlisted }] =
+    useField<boolean>('is_unlisted')
+  const [{ value: isScheduledRelease }, ,] = useField<boolean>(
+    'is_scheduled_release'
+  )
   const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
     'preview_start_seconds'
   )
@@ -42,10 +33,27 @@ export const useSetTrackAvailabilityFields = () => {
     'field_visibility.remixes'
   )
 
+  const defaultTrackAvailabilityFields = useMemo(
+    () => ({
+      is_stream_gated: false,
+      stream_conditions: null as Nullable<AccessConditions>,
+      is_unlisted: !!(isScheduledRelease && isUnlisted), // scheduled releases cannot be made public via access & sale
+      preview_start_seconds: null as Nullable<Number>,
+      'field_visibility.genre': true,
+      'field_visibility.mood': true,
+      'field_visibility.tags': true,
+      'field_visibility.share': true,
+      'field_visibility.play_count': true,
+      'field_visibility.remixes': true
+    }),
+    [isScheduledRelease, isUnlisted]
+  )
+  type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
+
   const fieldSetters = useMemo(() => {
     return {
-      is_premium: setIsPremium,
-      premium_conditions: setPremiumConditions,
+      is_stream_gated: setIsStreamGated,
+      stream_conditions: setStreamConditions,
       is_unlisted: setIsUnlisted,
       preview_start_seconds: setPreviewStartSeconds,
       'field_visibility.genre': setGenre,
@@ -83,7 +91,7 @@ export const useSetTrackAvailabilityFields = () => {
         })
       }
     },
-    [fieldSetters]
+    [defaultTrackAvailabilityFields, fieldSetters]
   )
 
   const reset = useCallback(() => {
@@ -92,7 +100,7 @@ export const useSetTrackAvailabilityFields = () => {
       const setter = fieldSetters[key]
       setter(value)
     })
-  }, [fieldSetters])
+  }, [defaultTrackAvailabilityFields, fieldSetters])
 
   return { set, reset }
 }

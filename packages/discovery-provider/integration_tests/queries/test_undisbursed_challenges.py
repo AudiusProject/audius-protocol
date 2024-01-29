@@ -153,6 +153,7 @@ def test_undisbursed_challenges(app):
                 "handle": "TestHandle6",
                 "wallet": "0x6",
                 "created_at": "2023-10-16 17:51:31.105065+00:00",
+                "cooldown_days": None,
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -163,6 +164,7 @@ def test_undisbursed_challenges(app):
                 "handle": "TestHandle4",
                 "wallet": "0x4",
                 "created_at": "2023-10-16 17:51:31.105065+00:00",
+                "cooldown_days": None,
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -173,6 +175,7 @@ def test_undisbursed_challenges(app):
                 "handle": "TestHandle5",
                 "wallet": "0x5",
                 "created_at": "2023-10-16 17:51:31.105065+00:00",
+                "cooldown_days": None,
             },
         ]
         assert expected == undisbursed
@@ -193,6 +196,7 @@ def test_undisbursed_challenges(app):
                 "handle": "TestHandle6",
                 "wallet": "0x6",
                 "created_at": "2023-10-16 17:51:31.105065+00:00",
+                "cooldown_days": None,
             },
         ]
         assert expected == undisbursed

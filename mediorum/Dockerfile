@@ -3,6 +3,7 @@ FROM golang:alpine AS builder
 RUN apk add build-base make ffmpeg
 
 WORKDIR /app
+ENV CGO_ENABLED=0
 
 COPY go.mod go.sum ./
 RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get

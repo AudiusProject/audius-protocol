@@ -1,17 +1,13 @@
 import type { ComponentType } from 'react'
 import { useMemo, useCallback, useRef } from 'react'
 
-import type {
-  FlatListProps,
-  ListRenderItem,
-  ListRenderItemInfo
-} from 'react-native'
+import type { ListRenderItem, ListRenderItemInfo } from 'react-native'
 import { View } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
-import type { FlatListT } from './FlatList'
+import type { FlatListT, FlatListProps } from './FlatList'
 import { FlatList } from './FlatList'
 
 export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
@@ -60,7 +56,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   } = props
 
   const styles = useStyles()
-  const ref = useRef<FlatListT<ItemT>>(null)
+  const ref = useRef<FlatListT<ItemT | LoadingCard>>(null)
   const isLoading = isLoadingProp ?? !dataProp
 
   useScrollToTop(() => {
@@ -97,7 +93,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
       data={data}
       renderItem={handleRenderItem}
       numColumns={2}
-      {...other}
+      {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
     />
   )
 }

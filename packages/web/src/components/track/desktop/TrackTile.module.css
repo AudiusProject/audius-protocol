@@ -113,6 +113,12 @@
   padding: var(--unit-2) var(--unit-3) var(--unit-2) 18px;
 }
 
+.text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .topSection {
   position: relative;
   display: inline-flex;
@@ -137,19 +143,26 @@
   user-select: none;
   margin-right: 132px;
   padding-bottom: 2px;
+  display: flex;
 }
 
 .titleRow .skeleton {
   height: var(--unit-5);
 }
 
-.container .premiumDogEarContainer {
+.container .gatedDogEarContainer {
   box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
     inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
 }
 
 .volumeIcon {
   margin-left: 6px;
+}
+
+.title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .isActive .title {

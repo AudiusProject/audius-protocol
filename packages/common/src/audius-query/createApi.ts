@@ -45,7 +45,8 @@ import {
   SliceConfig,
   QueryHookResults,
   FetchResetAction,
-  RetryConfig
+  RetryConfig,
+  MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
@@ -132,7 +133,7 @@ const addEndpointToSlice = <NormalizedData>(
     ) => {
       const { fetchArgs } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] } ?? initState
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.LOADING
       state[endpointName][key] = scopedState
     },
@@ -142,7 +143,7 @@ const addEndpointToSlice = <NormalizedData>(
     ) => {
       const { fetchArgs, errorMessage } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] } ?? initState
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.ERROR
       scopedState.errorMessage = errorMessage
       state[endpointName][key] = scopedState
@@ -153,7 +154,7 @@ const addEndpointToSlice = <NormalizedData>(
     ) => {
       const { fetchArgs, nonNormalizedData } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] } ?? initState
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.SUCCESS
       scopedState.nonNormalizedData = nonNormalizedData
       state[endpointName][key] = scopedState
@@ -418,6 +419,15 @@ const buildEndpointHooks = <
 
     const context = useContext(AudiusQueryContext)
 
+    const fetchWrapped = useCallback(async () => {
+      if (!context) return
+      if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
+        return
+      if (hookOptions?.disabled) return
+
+      fetchData(fetchArgs, endpointName, endpoint, actions, context)
+    }, [context, fetchArgs, hookOptions?.disabled, status])
+
     useEffect(() => {
       if (isInitialValue) {
         dispatch(
@@ -429,40 +439,25 @@ const buildEndpointHooks = <
         )
       }
 
-      const fetchWrapped = async () => {
-        if (!context) return
-        if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
-          return
-        if (hookOptions?.disabled) return
-
-        fetchData(fetchArgs, endpointName, endpoint, actions, context)
-      }
-
       fetchWrapped()
-    }, [
-      fetchArgs,
-      dispatch,
-      status,
-      isInitialValue,
-      nonNormalizedData,
-      context,
-      hookOptions?.disabled
-    ])
+    }, [isInitialValue, dispatch, fetchArgs, nonNormalizedData, fetchWrapped])
 
     if (endpoint.options?.schemaKey) {
       cachedData = cachedData?.[endpoint.options?.schemaKey]
     }
 
-    return { data: cachedData, status, errorMessage }
+    return {
+      data: cachedData,
+      status,
+      errorMessage,
+      forceRefresh: fetchWrapped
+    }
   }
 
   // Hook to be returned as use<EndpointName>
   const useMutation = (
     hookOptions?: QueryHookOptions
-  ): [
-    (fetchArgs: Args, hookOptions?: QueryHookOptions) => void,
-    QueryHookResults<Data>
-  ] => {
+  ): MutationHookResults<Args, Data> => {
     const [fetchArgs, setFetchArgs] = useState<Args | null>(null)
     const key = getKeyFromFetchArgs(fetchArgs)
     const queryState = useQueryState(
@@ -502,7 +497,14 @@ const buildEndpointHooks = <
       cachedData = cachedData?.[endpoint.options?.schemaKey]
     }
 
-    return [fetchWrapped, { data: cachedData, status, errorMessage }]
+    return [
+      fetchWrapped,
+      {
+        data: cachedData,
+        status,
+        errorMessage
+      }
+    ]
   }
 
   api.fetch[endpointName] = (

@@ -1,34 +1,10 @@
 import { forwardRef } from 'react'
 
-import cn from 'classnames'
+import { CSSObject, useTheme } from '@emotion/react'
 
 import { BaseButton } from '../BaseButton/BaseButton'
-import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
 
-import styles from './PlainButton.module.css'
-
-const SIZE_STYLE_MAP: {
-  [k in PlainButtonSize]: [string, string, string, string]
-} = {
-  [PlainButtonSize.DEFAULT]: [
-    styles.buttonDefault,
-    styles.iconDefault,
-    styles.textDefault,
-    styles.spinnerDefault
-  ],
-  [PlainButtonSize.LARGE]: [
-    styles.buttonLarge,
-    styles.iconLarge,
-    styles.textLarge,
-    styles.spinnerLarge
-  ]
-}
-
-const TYPE_STYLE_MAP: { [k in PlainButtonType]: string } = {
-  [PlainButtonType.DEFAULT]: styles.default,
-  [PlainButtonType.SUBDUED]: styles.subdued,
-  [PlainButtonType.INVERTED]: styles.inverted
-}
+import { PlainButtonProps } from './types'
 
 /**
  * A plain Button component (no border/background). Includes a few variants and options to
@@ -37,30 +13,82 @@ const TYPE_STYLE_MAP: { [k in PlainButtonType]: string } = {
 export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
   function PlainButton(props, ref) {
     const {
-      variant = PlainButtonType.DEFAULT,
-      size = PlainButtonSize.DEFAULT,
+      variant = 'default',
+      size = 'default',
       disabled,
       ...baseProps
     } = props
     const isDisabled = disabled || baseProps.isLoading
+    const { color, spacing, typography } = useTheme()
 
-    const [buttonSizeClass, iconSizeClass, textSizeClass, spinnerSizeClass] =
-      SIZE_STYLE_MAP[size]
+    // Size Styles
+    const defaultStyles: CSSObject = {
+      gap: spacing.xs,
+      height: spacing.unit4,
+      fontSize: typography.size.s,
+      lineHeight: typography.lineHeight.s
+    }
+    const defaultIconStyles: CSSObject = {
+      width: spacing.unit4,
+      height: spacing.unit4
+    }
+
+    const largeStyles: CSSObject = {
+      gap: spacing.s,
+      height: spacing.unit5,
+      fontSize: typography.size.l,
+      lineHeight: typography.lineHeight.m
+    }
+    const largeIconStyles: CSSObject = {
+      width: spacing.unit5,
+      height: spacing.unit5
+    }
+
+    const buttonCss: CSSObject = {
+      '--text-color':
+        variant === 'subdued' && !isDisabled
+          ? color.text.subdued
+          : variant === 'inverted'
+          ? color.static.white
+          : color.text.default,
+      background: 'transparent',
+      border: 'none',
+      color: 'var(--text-color)',
+      '& svg': {
+        fill: 'var(--text-color)'
+      },
+      fontWeight: typography.weight.bold,
+
+      ...(size === 'large' ? largeStyles : defaultStyles),
+
+      '&:hover': {
+        '--text-color':
+          variant === 'inverted'
+            ? color.static.white
+            : color.secondary.secondary,
+        ...(variant === 'inverted' && { opacity: 0.8 })
+      },
+
+      '&:active': {
+        '--text-color':
+          variant === 'inverted' ? color.static.white : color.secondary.s500,
+        ...(variant === 'inverted' && { opacity: 0.5 })
+      },
+
+      ...(isDisabled && {
+        opacity: 0.2
+      })
+    }
+
+    const iconCss = size === 'large' ? largeIconStyles : defaultIconStyles
 
     return (
       <BaseButton
         ref={ref}
         disabled={isDisabled}
         styles={{
-          button: cn(
-            styles.button,
-            TYPE_STYLE_MAP[variant],
-            { [styles.disabled]: isDisabled },
-            buttonSizeClass,
-            textSizeClass
-          ),
-          icon: cn(styles.icon, iconSizeClass),
-          spinner: cn(styles.spinner, spinnerSizeClass)
+          button: buttonCss,
+          icon: iconCss
         }}
         {...baseProps}
       />

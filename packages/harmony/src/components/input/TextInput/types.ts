@@ -1,10 +1,37 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
-import type { IconComponent } from '../../icon'
+import type { IconComponent, IconProps } from '../../icon'
 
 export enum TextInputSize {
   SMALL = 'small',
   DEFAULT = 'default'
+}
+
+type InternalProps = {
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the incorrect error state for the storybook docs
+   */
+  _incorrectError?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the hover state for the storybook docs
+   */
+  _isHovered?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the focus state for the storybook docs
+   */
+  _isFocused?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Disabled pointer events for storybook docs
+   */
+  _disablePointerEvents?: boolean
 }
 
 export type TextInputProps = Omit<
@@ -59,6 +86,10 @@ export type TextInputProps = Omit<
    */
   endIcon?: IconComponent
   /**
+   * Override props to supply the start or end Icon
+   */
+  IconProps?: Partial<IconProps>
+  /**
    * @hidden
    * Floating component on the righthand side of the input. Meant for internal use only.
    */
@@ -77,4 +108,4 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
-}
+} & InternalProps

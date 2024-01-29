@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Dict, Union
+from datetime import datetime, timezone
+from typing import Dict, List, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -8,13 +8,17 @@ from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.gated_content.constants import USDC_PURCHASE_KEY
+from src.gated_content.content_access_checker import (
+    ContentAccessBatchArgs,
+    content_access_checker,
+)
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
@@ -64,18 +68,13 @@ def update_remixes_table(session, track_record, track_metadata):
     session.query(Remix).filter_by(child_track_id=child_track_id).delete()
 
     # Add all remixes
-    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
-        tracks = track_metadata["remix_of"].get("tracks")
-        if tracks and isinstance(tracks, list):
-            for track in tracks:
-                if not isinstance(track, dict):
-                    continue
-                parent_track_id = track.get("parent_track_id")
-                if isinstance(parent_track_id, int):
-                    remix = Remix(
-                        parent_track_id=parent_track_id, child_track_id=child_track_id
-                    )
-                    session.add(remix)
+    parent_track_ids = get_remix_parent_track_ids(track_metadata)
+    if not parent_track_ids:
+        return
+
+    for parent_track_id in parent_track_ids:
+        remix = Remix(parent_track_id=parent_track_id, child_track_id=child_track_id)
+        session.add(remix)
 
 
 def update_track_price_history(
@@ -87,10 +86,10 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    if track_metadata.get("premium_conditions", None) is not None:
-        premium_conditions = track_metadata["premium_conditions"]
-        if USDC_PURCHASE_KEY in premium_conditions:
-            usdc_purchase = premium_conditions[USDC_PURCHASE_KEY]
+    if track_metadata.get("stream_conditions", None) is not None:
+        stream_conditions = track_metadata["stream_conditions"]
+        if USDC_PURCHASE_KEY in stream_conditions:
+            usdc_purchase = stream_conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp
@@ -102,11 +101,11 @@ def update_track_price_history(
                     new_record.total_price_cents = price
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'price'"
+                        "Invalid type of usdc_purchase gated conditions 'price'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Price missing from usdc_purchase premium conditions"
+                    "Price missing from usdc_purchase gated conditions"
                 )
 
             if "splits" in usdc_purchase:
@@ -116,11 +115,11 @@ def update_track_price_history(
                     new_record.splits = splits
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'splits'"
+                        "Invalid type of usdc_purchase gated conditions 'splits'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Splits missing from usdc_purchase premium conditions"
+                    "Splits missing from usdc_purchase gated conditions"
                 )
     if new_record:
         old_record: Union[TrackPriceHistory, None] = (
@@ -213,18 +212,52 @@ def is_valid_json_field(metadata, field):
     return False
 
 
-def populate_track_record_metadata(track_record, track_metadata, handle, action):
+def parse_release_date(release_date_str):
+    # try various time formats
+    if not release_date_str:
+        return None
+
+    try:
+        return datetime.strptime(
+            release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
+        ).astimezone(timezone.utc)
+    except ValueError:
+        pass
+
+    try:
+        return datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
+            timezone.utc
+        )
+    except ValueError:
+        pass
+
+    try:
+        return datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
+    except (ValueError, TypeError):
+        pass
+
+    return None
+
+
+def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
-        if key == "premium_conditions":
-            if "premium_conditions" in track_metadata and (
-                is_valid_json_field(track_metadata, "premium_conditions")
-                or track_metadata.get("premium_conditions") is None
+        if key == "stream_conditions":
+            if "stream_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "stream_conditions")
+                or track_metadata["stream_conditions"] is None
             ):
-                track_record.premium_conditions = track_metadata["premium_conditions"]
+                track_record.stream_conditions = track_metadata["stream_conditions"]
+
+        elif key == "download_conditions":
+            if "download_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "download_conditions")
+                or track_metadata["download_conditions"] is None
+            ):
+                track_record.download_conditions = track_metadata["download_conditions"]
 
         elif key == "stem_of":
             if "stem_of" in track_metadata and is_valid_json_field(
@@ -254,6 +287,33 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
                     track_metadata["title"], handle
                 )
 
+        elif key == "release_date":
+            if "release_date" in track_metadata:
+                # casting to string because datetime doesn't work for some reason
+                parsed_release_date = parse_release_date(track_metadata["release_date"])
+                # postgres will convert to a timestamp
+                if parsed_release_date:
+                    track_record.release_date = str(parsed_release_date)  # type: ignore
+                    logger.info(
+                        f"asdf set release_date {parsed_release_date} {track_record.release_date}"
+                    )
+        elif key == "is_unlisted":
+            if "is_unlisted" in track_metadata:
+                track_record.is_unlisted = track_metadata["is_unlisted"]
+
+            # allow scheduled_releases to override is_unlisted value based on release date
+            # only for CREATE because publish_scheduled releases will publish this once
+            if (
+                track_record.is_scheduled_release
+                and track_record.release_date
+                and action == Action.CREATE
+            ):
+                track_record.is_unlisted = (
+                    track_record.release_date
+                    >= str(  # type:ignore
+                        datetime.now()
+                    )
+                )
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
@@ -284,6 +344,10 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create track {track_id} below the offset"
             )
+
+    if params.action == Action.UPDATE:
+        validate_update_access_conditions(params)
+
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -299,6 +363,9 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
+        validate_remixability(params)
+        validate_access_conditions(params)
+
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
         if track_id not in params.existing_records["Track"]:
@@ -369,6 +436,7 @@ def create_track(params: ManageEntityParameters):
         blocknumber=params.block_number,
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
+        release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
     )
 
@@ -390,7 +458,6 @@ def create_track(params: ManageEntityParameters):
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
-
     params.add_record(track_id, track_record)
 
 
@@ -453,3 +520,169 @@ def delete_track(params: ManageEntityParameters):
     params.session.query(Stem).filter_by(child_track_id=track_id).delete()
 
     params.add_record(track_id, deleted_track)
+
+
+# Make sure that the user has access to remix parent tracks
+def validate_remixability(params: ManageEntityParameters):
+    track_metadata = params.metadata
+    user_id = params.user_id
+    session = params.session
+
+    parent_track_ids = get_remix_parent_track_ids(track_metadata)
+    if not parent_track_ids:
+        return
+
+    args: List[ContentAccessBatchArgs] = list(
+        map(
+            lambda track_id: {
+                "user_id": user_id,
+                "content_id": track_id,
+                "content_type": "track",
+            },
+            parent_track_ids,
+        )
+    )
+    gated_content_batch_access = content_access_checker.check_access_for_batch(
+        session, args
+    )
+    if "track" not in gated_content_batch_access:
+        return
+    if user_id not in gated_content_batch_access["track"]:
+        return
+
+    for track_id in gated_content_batch_access["track"][user_id]:
+        access = gated_content_batch_access["track"][user_id][track_id]
+        if not access["has_stream_access"]:
+            raise IndexingValidationError(
+                f"User {user_id} does not have access to remix parent gated track {track_id}"
+            )
+
+
+def get_remix_parent_track_ids(track_metadata):
+    if "remix_of" not in track_metadata:
+        return
+    if not isinstance(track_metadata["remix_of"], dict):
+        return
+
+    tracks = track_metadata["remix_of"].get("tracks")
+    if not tracks:
+        return
+    if not isinstance(tracks, list):
+        return
+
+    parent_track_ids = []
+    for track in tracks:
+        if not isinstance(track, dict):
+            continue
+        parent_track_id = track.get("parent_track_id")
+        if isinstance(parent_track_id, int):
+            parent_track_ids.append(parent_track_id)
+
+    return parent_track_ids
+
+
+def validate_access_conditions(params: ManageEntityParameters):
+    track_metadata = params.metadata
+
+    stem_of = track_metadata.get("stem_of")
+    is_stream_gated = track_metadata.get("is_stream_gated")
+    stream_conditions = track_metadata.get("stream_conditions", {}) or {}
+    is_download_gated = track_metadata.get("is_download_gated")
+    download_conditions = track_metadata.get("download_conditions", {}) or {}
+
+    # if stem track, must not be have stream/download conditions
+    # stem tracks must rely on their parent track's access conditions
+    # otherwise the access checker may e.g. look for a purchase
+    # on the stem track instead of the parent track
+    if stem_of and (is_stream_gated or is_download_gated):
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is a stem track but has stream/download conditions"
+        )
+
+    if is_stream_gated:
+        # if stream gated, must have stream conditions
+        if not stream_conditions:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is stream gated but has no stream conditions"
+            )
+        # must be gated on a single condition
+        if len(stream_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of stream conditions"
+            )
+        # if stream gated, must be download gated
+        if not is_download_gated:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is stream gated but not download gated"
+            )
+        # if stream gated, stream conditions must be same as download conditions
+        if stream_conditions != download_conditions:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} stream conditions do not match download conditions"
+            )
+    elif is_download_gated:
+        # if download gated, must have download conditions
+        if not download_conditions:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is download gated but has no download conditions"
+            )
+        # must be gated on a single condition
+        if len(download_conditions) != 1:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} has an invalid number of download conditions"
+            )
+
+
+# Make sure that access conditions do not incorrectly change during track update.
+# Rule of thumb is that access can only be modified to decrease strictness.
+def validate_update_access_conditions(params: ManageEntityParameters):
+    track_id = params.entity_id
+    if track_id not in params.existing_records["Track"]:
+        raise IndexingValidationError(f"Track {track_id} is not in existing records")
+
+    existing_track = helpers.model_to_dictionary(
+        params.existing_records["Track"][track_id]
+    )
+    # scheduled release tracks are not restricted on how they can be updated
+    if existing_track.get("is_scheduled_release"):
+        return
+
+    updated_track = params.metadata
+
+    # validate changes to conditions for stream/download access
+    def validate_update(existing_conditions, updated_conditions):
+        if not existing_conditions:
+            # non gated track cannot be updated to be gated
+            if updated_conditions:
+                raise IndexingValidationError(
+                    f"Track {track_id} cannot increase strictness of stream access conditions"
+                )
+        else:
+            # note that usdc purchase may be edited to change price (and maybe splits?)
+            is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
+            is_updated_usdc_purchase = (
+                updated_conditions and USDC_PURCHASE_KEY in updated_conditions
+            )
+            is_valid_usdc_purchase = (
+                is_existing_usdc_purchase and is_updated_usdc_purchase
+            )
+            # the updated stream conditions must be:
+            # - public (None),
+            # - equal to the existing stream conditions,
+            # - or a valid usdc purchase
+            if (
+                updated_conditions
+                and existing_conditions != updated_conditions
+                and not is_valid_usdc_purchase
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} cannot change access conditions"
+                )
+
+    validate_update(
+        existing_track.get("stream_conditions"), updated_track.get("stream_conditions")
+    )
+    validate_update(
+        existing_track.get("download_conditions"),
+        updated_track.get("download_conditions"),
+    )

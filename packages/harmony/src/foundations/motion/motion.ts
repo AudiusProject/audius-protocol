@@ -8,3 +8,30 @@ export const motion = {
 
 export type Motion = typeof motion
 export type MotionOptions = keyof Motion
+
+export const spring = {
+  standard: {
+    tension: 310,
+    friction: 25,
+    clamp: true
+  },
+  wobble: {
+    tension: 250,
+    friction: 25
+  },
+  slowWobble: {
+    tension: 175,
+    friction: 20
+  },
+  stiff: {
+    tension: 215,
+    friction: 40
+  },
+  fast: {
+    tension: 300,
+    friction: 40
+  }
+}
+
+export type Spring = typeof spring
+export type SpringOptions = keyof Spring

@@ -7,10 +7,11 @@ import {
   modalsActions,
   modalsSelectors
 } from '@audius/common'
-import HCaptcha from '@hcaptcha/react-native-hcaptcha'
+import ConfirmHcaptcha from '@hcaptcha/react-native-hcaptcha'
 import type { NativeSyntheticEvent } from 'react-native'
-import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
+
+import { env } from 'app/env'
 
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
@@ -21,13 +22,8 @@ type HCaptchaMessage = {
   data: string
 }
 
-type HCaptchaRef = {
-  show: () => void
-  hide: () => void
-}
-
-const siteKey = Config.HCAPTCHA_SITE_KEY
-const baseUrl = Config.HCAPTCHA_BASE_URL
+const siteKey = env.HCAPTCHA_SITE_KEY as string
+const baseUrl = env.HCAPTCHA_BASE_URL
 
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const REWARD_MODAL_NAME = 'ChallengeRewardsExplainer'
@@ -44,7 +40,7 @@ const HCaptchaModal = () => {
     getModalVisibility(state, HCAPTCHA_MODAL_NAME)
   )
   const hCaptchaStatus = useSelector(getHCaptchaStatus)
-  const ref = useRef<HCaptchaRef>(null)
+  const ref = useRef<ConfirmHcaptcha>(null)
   const [hasCode, setHasCode] = useState(false)
 
   useEffect(() => {
@@ -97,7 +93,8 @@ const HCaptchaModal = () => {
   )
 
   return isOpen ? (
-    <HCaptcha
+    <ConfirmHcaptcha
+      size='normal'
       ref={ref}
       siteKey={siteKey}
       baseUrl={baseUrl}

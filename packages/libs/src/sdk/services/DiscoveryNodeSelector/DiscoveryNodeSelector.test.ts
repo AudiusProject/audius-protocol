@@ -1,4 +1,5 @@
 import fetch, { Response } from 'cross-fetch'
+import shuffle from 'lodash/shuffle'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
@@ -9,6 +10,7 @@ import type {
   ApiHealthResponseData,
   HealthCheckResponseData
 } from './healthCheckTypes'
+import type { DiscoveryNode } from './types'
 
 // jest.mock('./healthChecks', () => ({
 //   getHealthCheck: jest.fn(() => ({}))
@@ -26,6 +28,14 @@ const UNHEALTHY_DATA_NODE = 'https://unhealthy-data.audius.co'
 const UNRESPONSIVE_NODE = 'https://unresponsive.audius.co'
 const CONTENT_NODE = 'https://contentnode.audius.co'
 
+const generateHealthyNodes = (count: number) => {
+  const nodes = []
+  for (let id = 0; id < count; id++) {
+    nodes.push(`https://healthy${id}.audius.co`)
+  }
+  return nodes
+}
+
 const generateSlowerHealthyNodes = (count: number) => {
   const nodes = []
   for (let id = 0; id < count; id++) {
@@ -42,6 +52,11 @@ const generateUnhealthyNodes = (count: number) => {
   return nodes
 }
 
+const addDelegateOwnerWallets = (endpoint: string): DiscoveryNode => ({
+  endpoint,
+  delegateOwnerWallet: ''
+})
+
 const NETWORK_DISCOVERY_NODES = [
   HEALTHY_NODE,
   ...generateSlowerHealthyNodes(10)
@@ -52,21 +67,24 @@ const healthyComms = {
 }
 
 const handlers = [
-  rest.get(`${HEALTHY_NODE}/health_check`, (_req, res, ctx) => {
-    const data: HealthCheckResponseData = {
-      service: 'discovery-node',
-      version: '1.2.3',
-      block_difference: 0,
-      network: {
-        discovery_nodes: NETWORK_DISCOVERY_NODES
+  rest.get(
+    /https:\/\/healthy(.*).audius.co\/health_check/,
+    (_req, res, ctx) => {
+      const data: HealthCheckResponseData = {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        network: {
+          discovery_nodes: NETWORK_DISCOVERY_NODES
+        }
       }
+      return res(
+        ctx.delay(25),
+        ctx.status(200),
+        ctx.json({ data, comms: healthyComms })
+      )
     }
-    return res(
-      ctx.delay(25),
-      ctx.status(200),
-      ctx.json({ data, comms: healthyComms })
-    )
-  }),
+  ),
 
   // Slower healthy
   rest.get(
@@ -138,8 +156,8 @@ const handlers = [
   // Unhealthy (offline)
   rest.get(
     /https:\/\/unhealthy(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(ctx.status(502))
+    (_req, res, _ctx) => {
+      return res.networkError('')
     }
   ),
 
@@ -186,12 +204,11 @@ describe('discoveryNodeSelector', () => {
         BEHIND_PATCH_VERSION_NODE,
         BEHIND_MINOR_VERSION_NODE,
         ...generateUnhealthyNodes(5)
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
     expect(selector.isBehind).toBe(false)
-    expect(selector.getServices()).toStrictEqual(NETWORK_DISCOVERY_NODES)
   })
 
   test('falls back to patch version backup before blockdiff backup', async () => {
@@ -205,7 +222,7 @@ describe('discoveryNodeSelector', () => {
         BEHIND_PATCH_VERSION_NODE,
         BEHIND_MINOR_VERSION_NODE,
         UNHEALTHY_NODE
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_PATCH_VERSION_NODE)
@@ -221,7 +238,7 @@ describe('discoveryNodeSelector', () => {
         BEHIND_BLOCKDIFF_NODE,
         BEHIND_LARGE_BLOCKDIFF_NODE,
         UNHEALTHY_NODE
-      ]
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -235,7 +252,11 @@ describe('discoveryNodeSelector', () => {
         minVersion: '1.2.3'
       },
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -257,7 +278,11 @@ describe('discoveryNodeSelector', () => {
         minVersion: '1.2.3'
       },
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -276,7 +301,11 @@ describe('discoveryNodeSelector', () => {
     const selector = new DiscoveryNodeSelector({
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets)
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
@@ -289,7 +318,11 @@ describe('discoveryNodeSelector', () => {
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       blocklist: new Set([BEHIND_BLOCKDIFF_NODE]),
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+      bootstrapServices: [
+        HEALTHY_NODE,
+        UNHEALTHY_NODE,
+        BEHIND_BLOCKDIFF_NODE
+      ].map(addDelegateOwnerWallets),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -301,7 +334,9 @@ describe('discoveryNodeSelector', () => {
 
   test('selects fastest discovery node', async () => {
     const selector = new DiscoveryNodeSelector({
-      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)],
+      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)].map(
+        addDelegateOwnerWallets
+      ),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -319,7 +354,7 @@ describe('discoveryNodeSelector', () => {
         UNHEALTHY_DATA_NODE,
         UNHEALTHY_NODE,
         UNRESPONSIVE_NODE
-      ],
+      ].map(addDelegateOwnerWallets),
       healthCheckThresholds: {
         minVersion: '1.2.3'
       }
@@ -328,10 +363,92 @@ describe('discoveryNodeSelector', () => {
     expect(selected).toBe(null)
   })
 
+  test('waits for existing selections to finish gracefully', async () => {
+    const selector = new DiscoveryNodeSelector({
+      bootstrapServices: generateHealthyNodes(100).map(addDelegateOwnerWallets),
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      }
+    })
+    const selected = await Promise.all([
+      selector.getSelectedEndpoint(),
+      selector.getSelectedEndpoint(),
+      selector.getSelectedEndpoint(),
+      selector.getSelectedEndpoint(),
+      selector.getSelectedEndpoint(),
+      selector.getSelectedEndpoint()
+    ])
+    expect(selected.every((s) => s === selected[0])).toBe(true)
+  })
+
+  test('removes backups when TTL is complete', async () => {
+    const TEMP_BEHIND_BLOCKDIFF_NODE = 'https://temp-behind.audius.co'
+    const selector = new DiscoveryNodeSelector({
+      backupsTTL: 0,
+      unhealthyTTL: 0,
+      bootstrapServices: [TEMP_BEHIND_BLOCKDIFF_NODE, HEALTHY_NODE].map(
+        addDelegateOwnerWallets
+      ),
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      }
+    })
+    let requestCount = 0
+    server.use(
+      rest.get(
+        `${TEMP_BEHIND_BLOCKDIFF_NODE}/health_check`,
+        (_req, res, ctx) => {
+          const data: HealthCheckResponseData = {
+            service: 'discovery-node',
+            version: '1.2.3',
+            block_difference: requestCount++ < 1 ? 50 : 0 // switch to healthy
+          }
+          return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+        }
+      )
+    )
+
+    // First select healthy node
+    const first = await selector.getSelectedEndpoint()
+    expect(first).toBe(HEALTHY_NODE)
+
+    const data: ApiHealthResponseData = {
+      latest_chain_block: 100,
+      latest_indexed_block: 2,
+      latest_chain_slot_plays: 100,
+      latest_indexed_slot_plays: 100,
+      version: {
+        service: 'discovery-node',
+        version: '1.2.3'
+      }
+    }
+    const middleware = selector.createMiddleware()
+
+    // Trigger cleanup by retriggering selection
+    await middleware.post!({
+      fetch,
+      url: `${HEALTHY_NODE}/v1/full/tracks`,
+      init: {},
+      response: new Response(JSON.stringify(data))
+    })
+
+    // Force reselection
+    await middleware.post!({
+      fetch,
+      url: `${HEALTHY_NODE}/v1/full/tracks`,
+      init: {},
+      response: new Response(JSON.stringify(data))
+    })
+
+    // Is up to date now
+    const second = await selector.getSelectedEndpoint()
+    expect(second).toBe(TEMP_BEHIND_BLOCKDIFF_NODE)
+  })
+
   describe('middleware', () => {
     test('prepends URL to requests', async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [HEALTHY_NODE]
+        bootstrapServices: [HEALTHY_NODE].map(addDelegateOwnerWallets)
       })
       const middleware = selector.createMiddleware()
       expect(middleware.pre).not.toBeUndefined()
@@ -347,7 +464,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request succeeds but node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -379,7 +498,7 @@ describe('discoveryNodeSelector', () => {
 
     test("doesn't reselect if behind but was already behind", async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -415,7 +534,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -458,7 +579,9 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node unhealthy', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: UNHEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -500,7 +623,9 @@ describe('discoveryNodeSelector', () => {
     test("doesn't reselect if request fails but node is healthy", async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: HEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE].map(
+          addDelegateOwnerWallets
+        ),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -530,7 +655,7 @@ describe('discoveryNodeSelector', () => {
 
     test('resets isBehind when request shows the node is caught up', async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
         healthCheckThresholds: {
           minVersion: '1.2.3'
         }
@@ -561,6 +686,198 @@ describe('discoveryNodeSelector', () => {
         response: new Response(JSON.stringify(data))
       })
       expect(selector.isBehind).toBe(false)
+    })
+
+    test('reselects when encountering network error', async () => {
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      let requestCount = 0
+      server.use(
+        rest.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+          const data: HealthCheckResponseData = {
+            service: 'discovery-node',
+            version: '1.2.3',
+            block_difference: 0,
+            network: {
+              discovery_nodes: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+              discovery_nodes_with_owner: [
+                HEALTHY_NODE,
+                BEHIND_BLOCKDIFF_NODE
+              ].map(addDelegateOwnerWallets)
+            }
+          }
+          return requestCount++ > 0
+            ? res.networkError('')
+            : res(
+                ctx.delay(25),
+                ctx.status(200),
+                ctx.json({ data, comms: healthyComms })
+              )
+        })
+      )
+
+      const middleware = selector.createMiddleware()
+      await middleware.onError!({
+        fetch,
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
+        init: {},
+        error: ''
+      })
+      expect(changeHandler).toHaveBeenCalled()
+      const selected = await selector.getSelectedEndpoint()
+      expect(selected).not.toBe(BEHIND_BLOCKDIFF_NODE)
+    })
+
+    test('does not reselect for client error status', async () => {
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices: NETWORK_DISCOVERY_NODES.map(addDelegateOwnerWallets),
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+
+      const before = await selector.getSelectedEndpoint()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const middleware = selector.createMiddleware()
+      await middleware.post!({
+        fetch,
+        url: `${HEALTHY_NODE}/v1/full/tracks`,
+        init: {},
+        response: new Response(null, { status: 404 })
+      })
+      expect(changeHandler).not.toHaveBeenCalled()
+      const selected = await selector.getSelectedEndpoint()
+      expect(selected).toBe(before)
+    })
+  })
+
+  describe('getUniquelyOwnedEndpoints', () => {
+    test('gets three uniquely owned discovery nodes', async () => {
+      const operators = ['0x1', '0x2', '0x3', '0x4'] as const
+      const healthyNodes = generateHealthyNodes(3)
+      const unhealthyNodes = generateUnhealthyNodes(50)
+      const bootstrapServices = shuffle([
+        ...unhealthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        })),
+        ...healthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        }))
+      ])
+
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices,
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+      const nodes = await selector.getUniquelyOwnedEndpoints(3)
+      expect(nodes.length).toBe(3)
+      expect(nodes).toContain(healthyNodes[0])
+      expect(nodes).toContain(healthyNodes[1])
+      expect(nodes).toContain(healthyNodes[2])
+    })
+
+    test('filters to allowlist', async () => {
+      const operators = ['0x1', '0x2', '0x3', '0x4'] as const
+      const healthyNodes = generateHealthyNodes(3)
+      const unhealthyNodes = generateUnhealthyNodes(10)
+      const bootstrapServices = shuffle([
+        ...unhealthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        })),
+        ...healthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        }))
+      ])
+
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices,
+        unhealthyTTL: 0,
+        allowlist: new Set(unhealthyNodes),
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+
+      await expect(async () => {
+        await selector.getUniquelyOwnedEndpoints(3)
+      }).rejects.toThrow(
+        new Error('Not enough healthy services to choose from')
+      )
+    })
+
+    test('filters to blocklist', async () => {
+      const operators = ['0x1', '0x2', '0x3', '0x4'] as const
+      const healthyNodes = generateHealthyNodes(3)
+      const unhealthyNodes = generateUnhealthyNodes(10)
+      const bootstrapServices = shuffle([
+        ...unhealthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        })),
+        ...healthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        }))
+      ])
+
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices,
+        unhealthyTTL: 0,
+        blocklist: new Set(healthyNodes.slice(0, 1)),
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+
+      await expect(async () => {
+        await selector.getUniquelyOwnedEndpoints(3)
+      }).rejects.toThrow(
+        new Error('Not enough healthy services to choose from')
+      )
+    })
+
+    test('fails when not enough owners', async () => {
+      const operators = ['0x1', '0x2'] as const
+      const healthyNodes = generateHealthyNodes(3)
+      const unhealthyNodes = generateUnhealthyNodes(10)
+      const bootstrapServices = shuffle([
+        ...unhealthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        })),
+        ...healthyNodes.map((endpoint, i) => ({
+          endpoint,
+          delegateOwnerWallet: operators[i % operators.length]!
+        }))
+      ])
+
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices,
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
+      })
+
+      await expect(async () => {
+        await selector.getUniquelyOwnedEndpoints(3)
+      }).rejects.toThrow(new Error('Not enough unique owners to choose from'))
     })
   })
 })

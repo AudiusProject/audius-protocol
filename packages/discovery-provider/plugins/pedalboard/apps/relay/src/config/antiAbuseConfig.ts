@@ -13,7 +13,7 @@ export const newAntiAbuseConfig = (
 ): AntiAbuseConfig => {
   return {
     antiAbuseOracleUrl: url,
-    allowRules: new Set([14, 17]),
+    allowRules: new Set([-17, -18]),
     blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
     blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 13, 15]),

@@ -1,10 +1,10 @@
+import { imageBlank } from '@audius/common'
 import {
   Genre,
   HashId,
   Mood,
-  PremiumConditionsFollowUserId,
-  PremiumConditionsNFTCollection,
-  PremiumConditionsTipUserId
+  EthCollectibleGatedConditions,
+  SolCollectibleGatedConditions
 } from '@audius/sdk'
 import { z } from 'zod'
 
@@ -22,6 +22,35 @@ const messages = {
     nameRequiredError: 'Your album must have a name.'
   }
 }
+
+const CollectibleGatedConditions = z
+  .object({
+    nft_collection: z.optional(
+      z.union([EthCollectibleGatedConditions, SolCollectibleGatedConditions])
+    )
+  })
+  .strict()
+
+const FollowGatedConditionsSchema = z
+  .object({
+    follow_user_id: z.number()
+  })
+  .strict()
+
+const TipGatedConditionsSchema = z
+  .object({
+    tip_user_id: z.number()
+  })
+  .strict()
+
+const USDCPurchaseConditionsSchema = z
+  .object({
+    usdc_purchase: z.object({
+      price: z.number().positive(),
+      splits: z.any()
+    })
+  })
+  .strict()
 
 const GenreSchema = z
   .enum(Object.values(Genre) as [Genre, ...Genre[]])
@@ -60,19 +89,34 @@ const createSdkSchema = () =>
       })
     ),
     genre: GenreSchema,
-    is_premium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
+    is_scheduled_release: z.optional(z.boolean()),
     is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
-    premiumConditions: z.optional(
-      z.union([
-        PremiumConditionsNFTCollection,
-        PremiumConditionsFollowUserId,
-        PremiumConditionsTipUserId
-      ])
-    ),
+    is_stream_gated: z.optional(z.boolean()),
+    stream_conditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditionsSchema,
+          TipGatedConditionsSchema,
+          USDCPurchaseConditionsSchema
+        ])
+      )
+      .nullable(),
+    is_download_gated: z.optional(z.boolean()),
+    download_conditions: z
+      .optional(
+        z.union([
+          CollectibleGatedConditions,
+          FollowGatedConditionsSchema,
+          TipGatedConditionsSchema,
+          USDCPurchaseConditionsSchema
+        ])
+      )
+      .nullable(),
     release_date: z.optional(z.string()).nullable(),
     remixOf: z.optional(
       z
@@ -93,7 +137,11 @@ const createSdkSchema = () =>
     }),
     previewStartSeconds: z.optional(z.number()),
     audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string())
+    previewCid: z.optional(z.string()),
+    orig_file_cid: z.optional(z.string()),
+    orig_filename: z.optional(z.string()),
+    is_downloadable: z.optional(z.boolean()),
+    is_original_available: z.optional(z.boolean())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(
@@ -125,10 +173,14 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
         url: z.string()
       })
       .nullable()
-
-      .refine((artwork) => artwork !== null, {
-        message: messages.artworkRequiredError
-      }),
+      .refine(
+        (artwork) => {
+          return artwork !== null && artwork.url !== imageBlank
+        },
+        {
+          message: messages.artworkRequiredError
+        }
+      ),
     playlist_name: z.string({
       required_error: messages[collectionType].nameRequiredError
     }),

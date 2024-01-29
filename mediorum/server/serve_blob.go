@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"gorm.io/gorm"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
@@ -201,6 +202,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 
 		if isAudioFile {
+			ss.recordMetric(StreamTrack)
 			http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 			return nil
 		}
@@ -209,6 +211,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		if err != nil {
 			return err
 		}
+		ss.recordMetric(ServeImage)
 		return c.Blob(200, blob.ContentType(), blobData)
 	}
 
@@ -228,6 +231,53 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 	}
 
 	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) recordMetric(action string) {
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	firstOfMonth := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	// Increment daily metric
+	err := ss.crud.DB.Transaction(func(tx *gorm.DB) error {
+		var metric DailyMetrics
+		if err := tx.FirstOrCreate(&metric, DailyMetrics{
+			Timestamp: today,
+			Action:    action,
+		}).Error; err != nil {
+			return err
+		}
+		metric.Count += 1
+		if err := tx.Save(&metric).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		ss.logger.Error("unable to increment daily metric", "err", err, "action", action)
+	}
+
+	// Increment monthly metric
+	err = ss.crud.DB.Transaction(func(tx *gorm.DB) error {
+		var metric MonthlyMetrics
+		if err := tx.FirstOrCreate(&metric, MonthlyMetrics{
+			Timestamp: firstOfMonth,
+			Action:    action,
+		}).Error; err != nil {
+			return err
+		}
+		metric.Count += 1
+		if err := tx.Save(&metric).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		ss.logger.Error("unable to increment monthly metric", "err", err, "action", action)
+	}
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) string {
@@ -341,7 +391,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 }
 
-// checks signature from discovery node for cidstream endpoint + premium content.
+// checks signature from discovery node for cidstream endpoint + gated content.
 // based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
 func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {

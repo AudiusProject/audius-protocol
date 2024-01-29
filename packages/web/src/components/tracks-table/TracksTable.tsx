@@ -4,7 +4,7 @@ import {
   formatCount,
   formatSeconds,
   UID,
-  usePremiumContentAccessMap,
+  useGatedContentAccessMap,
   UserTrack
 } from '@audius/common'
 import { IconHidden, IconLock } from '@audius/stems'
@@ -76,6 +76,7 @@ type TracksTableProps = {
   isVirtualized?: boolean
   isPaginated?: boolean
   isReorderable?: boolean
+  isAlbumPage?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
   onClickRemove?: (
@@ -121,6 +122,7 @@ export const TracksTable = ({
   disabledTrackEdit = false,
   isPaginated = false,
   isReorderable = false,
+  isAlbumPage = false,
   fetchBatchSize,
   fetchMoreTracks,
   fetchPage,
@@ -146,7 +148,7 @@ export const TracksTable = ({
   userId,
   wrapperClassName
 }: TracksTableProps) => {
-  const trackAccessMap = usePremiumContentAccessMap(data)
+  const trackAccessMap = useGatedContentAccessMap(data)
 
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
@@ -178,10 +180,10 @@ export const TracksTable = ({
   const renderTrackNameCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const index = cellInfo.row.index
       const active = index === playingIndex
       const deleted =
@@ -275,7 +277,16 @@ export const TracksTable = ({
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
-    return moment(track.created_at).format('M/D/YY')
+    let suffix = ''
+    if (
+      track.release_date &&
+      moment(track.release_date).isAfter(moment.now())
+    ) {
+      suffix = ' (Scheduled)'
+    }
+    return (
+      moment(track.release_date ?? track.created_at).format('M/D/YY') + suffix
+    )
   }, [])
 
   const renderListenDateCell = useCallback((cellInfo: TrackCell) => {
@@ -287,10 +298,10 @@ export const TracksTable = ({
   const renderFavoriteButtonCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
@@ -322,10 +333,10 @@ export const TracksTable = ({
   const renderRepostButtonCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
@@ -360,10 +371,10 @@ export const TracksTable = ({
   const renderOverflowMenuCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       return (
@@ -372,8 +383,8 @@ export const TracksTable = ({
             className={styles.tableActionButton}
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
-            includeEmbed={!track.premium_conditions}
-            includeAddToPlaylist={!isLocked}
+            includeAlbumPage={!isAlbumPage}
+            includeAddToPlaylist={!isLocked && !track.is_stream_gated}
             includeFavorite={!isLocked}
             onRemove={onClickRemove}
             removeText={removeText}
@@ -392,7 +403,14 @@ export const TracksTable = ({
         </div>
       )
     },
-    [trackAccessMap, disabledTrackEdit, onClickRemove, removeText, userId]
+    [
+      trackAccessMap,
+      disabledTrackEdit,
+      isAlbumPage,
+      onClickRemove,
+      removeText,
+      userId
+    ]
   )
 
   const renderTrackActions = useCallback(
@@ -576,10 +594,10 @@ export const TracksTable = ({
   const handleClickRow = useCallback(
     (e: MouseEvent<HTMLTableRowElement>, rowInfo: TrackRow, index: number) => {
       const track = rowInfo.original
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const clickedActionButton = [
@@ -597,10 +615,10 @@ export const TracksTable = ({
   const getRowClassName = useCallback(
     (rowIndex: number) => {
       const track = data[rowIndex]
-      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
-      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       return cn(styles.tableRow, {

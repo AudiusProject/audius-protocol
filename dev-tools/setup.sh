@@ -31,7 +31,7 @@ debian | ubuntu)
     fi
 
     # Install dependencies
-    sudo NEEDRESTART_MODE=l apt-get install -y \
+    sudo NEEDRESTART_MODE=l apt-get install -y --allow-downgrades \
         git \
         python3 \
         python3-pip \
@@ -39,7 +39,7 @@ debian | ubuntu)
         docker-ce-cli \
         containerd.io \
         docker-buildx-plugin \
-        docker-compose-plugin
+        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy'
 
 
     # Add user to docker group

@@ -1,8 +1,9 @@
 import BN from 'bn.js'
-import dayjs from 'dayjs'
 import numeral from 'numeral'
 
 import { BNWei } from 'models/Wallet'
+
+import dayjs from './dayjs'
 
 /**
  * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0
@@ -67,7 +68,7 @@ export const formatCurrencyBalance = (amount: number) => {
 /**
  * Formats a number of bytes into a nice looking string.
  * ie.
- * 1024 => 1.00 KB
+ * 1024 => 1.02 KB
  * 3072 => 3.07 KB
  */
 export const formatBytes = (bytes: number) => {
@@ -139,7 +140,7 @@ export const pluralize = (
 export const formatAudio = (amount: string, decimals?: number) => {
   // remove negative sign if present.
   const amountPos = amount.replace('-', '')
-  let audio = (parseFloat(amountPos) / AUDIO).toString()
+  let audio = (parseFloat(amountPos) / AUDIO_DIVISOR).toString()
   const formatString = '0,0' + (decimals ? '.' + '0'.repeat(decimals!) : '')
   audio = numeral(audio).format(formatString)
   return audio
@@ -148,7 +149,7 @@ export const formatAudio = (amount: string, decimals?: number) => {
 // Wei -> Audio
 
 export const formatWeiToAudioString = (wei: BNWei) => {
-  const aud = wei.div(WEI)
+  const aud = wei.div(WEI_DIVISOR)
   return aud.toString()
 }
 
@@ -171,9 +172,9 @@ export const trimRightZeros = (number: string) => {
   return number.replace(/(\d)0+$/gm, '$1')
 }
 
-export const AUDIO = 100000000
-export const WEI = new BN('1000000000000000000')
-export const USDC = new BN('1000000')
+export const AUDIO_DIVISOR = 100000000
+export const WEI_DIVISOR = new BN('1000000000000000000')
+export const USDC_DIVISOR = new BN('1000000')
 
 export const checkOnlyNumeric = (number: string) => {
   const reg = /^\d+$/
@@ -195,7 +196,7 @@ export const convertFloatToWei = (number: string) => {
   const nums = number.split('.')
   if (nums.length !== 2) return null
   if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return null
-  const aud = new BN(nums[0]).mul(WEI)
+  const aud = new BN(nums[0]).mul(WEI_DIVISOR)
   const weiMultiplier = 18 - nums[1].length
   const wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
   return aud.add(wei)
@@ -208,7 +209,7 @@ export const checkWeiNumber = (number: string) => {
 // Audio -> Wei
 export const parseWeiNumber = (number: string) => {
   if (checkOnlyNumeric(number)) {
-    return new BN(number).mul(WEI)
+    return new BN(number).mul(WEI_DIVISOR)
   } else if (checkOnlyWeiFloat(number)) {
     return convertFloatToWei(number)
   } else {

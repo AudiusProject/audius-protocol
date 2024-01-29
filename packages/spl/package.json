@@ -1,15 +1,14 @@
 {
-  "private": true,
   "name": "@audius/spl",
-  "version": "0.0.4",
+  "version": "0.0.20",
   "description": "The core Typescript mappings to the Audius Solana Programs",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.all.json",
     "build": "tsc --build --verbose tsconfig.all.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -22,9 +21,13 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/spl",
   "dependencies": {
+    "@coral-xyz/anchor": "0.29.0",
     "@solana/buffer-layout": "4.0.1",
     "@solana/buffer-layout-utils": "0.2.0",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.78.4"
+  },
+  "devDependencies": {
+    "vitest": "0.34.6"
   }
 }

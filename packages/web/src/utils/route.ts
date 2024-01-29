@@ -1,18 +1,24 @@
-import { ID, encodeUrlName, getHash } from '@audius/common'
+import { Env, ID, encodeUrlName, getHash } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
-import { Location as HistoryLocation } from 'history'
+import { Location } from 'history'
 import { matchPath } from 'react-router'
 
-const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
+// TODO: Move routing to @audius/common with an injected env
+// so that it can properly handle routing to the correct environment.
+// These values are defaulted to the production context.
+const env: Partial<Env> = {
+  BASENAME: '',
+  USE_HASH_ROUTING: false,
+  PUBLIC_PROTOCOL: 'https:',
+  PUBLIC_HOSTNAME: 'audius.co'
+}
+
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 // Host/protocol.
-export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
-  process.env.VITE_PUBLIC_HOSTNAME || 'audius.co'
-}`
-export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
-  process.env.VITE_GA_HOSTNAME || 'audius.co'
-}`
-export const BASENAME = process.env.VITE_PUBLIC_URL
+export const BASE_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+export const BASENAME = env.BASENAME
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
@@ -67,7 +73,14 @@ export const SETTINGS_PAGE = '/settings'
 export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
+export const SIGN_IN_CONFIRM_EMAIL_PAGE = '/signin/confirm-email'
 export const SIGN_UP_PAGE = '/signup'
+export const SIGN_ON_ALIASES = Object.freeze([
+  '/login',
+  '/join',
+  '/signon',
+  '/register'
+])
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -75,26 +88,37 @@ export const CHECK_PAGE = '/check'
 export const DEACTIVATE_PAGE = '/deactivate'
 export const CHATS_PAGE = '/messages'
 export const CHAT_PAGE = '/messages/:id?'
-export const PURCHASES_PAGE = '/purchases'
-export const SALES_PAGE = '/sales'
-export const WITHDRAWALS_PAGE = '/withdrawals'
+export const PAYMENTS_PAGE = '/payments'
+export const PURCHASES_PAGE = '/payments/purchases'
+export const SALES_PAGE = '/payments/sales'
+export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
   createEmail = 'create-email',
   createPassword = 'create-password',
+  createLoginDetails = 'create-login-details',
   pickHandle = 'pick-handle',
+  reviewHandle = 'review-handle',
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
-  selectArtists = 'select-artists'
+  selectArtists = 'select-artists',
+  loading = 'loading',
+  appCta = 'app-cta',
+  completedRedirect = 'completed'
 }
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
 export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
 export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
+export const SIGN_UP_CREATE_LOGIN_DETAILS = `/signup/${SignUpPath.createLoginDetails}`
 export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
+export const SIGN_UP_REVIEW_HANDLE_PAGE = `/signup/${SignUpPath.reviewHandle}`
 export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
 export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
+export const SIGN_UP_APP_CTA_PAGE = `/signup/${SignUpPath.appCta}`
+export const SIGN_UP_LOADING_PAGE = `/signup/${SignUpPath.loading}`
+export const SIGN_UP_COMPLETED_REDIRECT = `/signup/${SignUpPath.completedRedirect}`
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
@@ -165,12 +189,8 @@ export const AUDIUS_DOCS_LINK = 'https://docs.audius.org'
 export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
 export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 
-export const AUDIUS_HOME_LINK = '/'
-export const AUDIUS_LISTENING_LINK = '/trending'
-export const AUDIUS_SIGN_UP_LINK = '/signup'
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
-export const AUDIUS_EXPLORE_LINK = '/explore'
 export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
 export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
@@ -206,6 +226,7 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  ...SIGN_ON_ALIASES,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_HANDLE_PAGE,
@@ -228,6 +249,7 @@ export const orderedRoutes = [
   LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   SETTINGS_PAGE,
@@ -262,6 +284,7 @@ export const staticRoutes = new Set([
   FAVORITES_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,
@@ -406,8 +429,12 @@ export const chatPage = (id: string) => {
   return `/messages/${id}`
 }
 
-export const doesMatchRoute = (route: string, exact = true) => {
-  return matchPath(getPathname(), {
+export const doesMatchRoute = (
+  location: Location,
+  route: string,
+  exact = true
+) => {
+  return matchPath(getPathname(location), {
     path: route,
     exact
   })
@@ -420,35 +447,8 @@ export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
  * if using hash routing
  * @param {Location} location
  */
-export const getPathname = (
-  location: Location | HistoryLocation = window.location
-) => {
-  // If this is a Location, pathname will have a host. If it's a HistoryLocation,
-  // the hashrouter will automatically understand the pathname to be the hash route
-  if (USE_HASH_ROUTING && 'host' in location) {
-    return location.hash.replace('#', '')
-  }
+export const getPathname = (location: Location) => {
   return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
-}
-
-/**
- * For a given route, checks if any of the previous routes in the `orderedRoutes` array matches the window's pathname
- * Returns true if none of the previous routes mach and it does, otherwise false.
- */
-export const doesRenderPage = (pageRoute: string) => {
-  const pgIndex = orderedRoutes.findIndex((route) => route === pageRoute)
-  if (pgIndex === -1) return false
-  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every((route) => {
-    return !matchPath(getPathname(), {
-      path: route,
-      exact: true
-    })
-  })
-  if (!noPreviousMatches) return false
-  return matchPath(getPathname(), {
-    path: pageRoute,
-    exact: true
-  })
 }
 
 export const recordGoToSignup = (callback: () => void) => {
@@ -475,7 +475,7 @@ export const pushWindowRoute = (route: string) => {
     routeToPush = route
   }
 
-  if (route === AUDIUS_SIGN_UP_LINK) {
+  if (route === SIGN_UP_PAGE) {
     recordGoToSignup(() => {
       window.location.href = `${BASENAME}${routeToPush}`
     })
@@ -487,8 +487,8 @@ export const pushWindowRoute = (route: string) => {
 /**
  * Only calls push route if unique (not current route)
  */
-export const pushUniqueRoute = (route: string) => {
-  const pathname = getPathname()
+export const pushUniqueRoute = (location: Location, route: string) => {
+  const pathname = getPathname(location)
   if (route !== pathname) {
     return pushRoute(route)
   }

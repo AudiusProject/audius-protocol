@@ -17,7 +17,11 @@ const LoadingSpinner = (props: LoadingSpinnerProps) => {
   const { className } = props
 
   return (
-    <div className={cn(styles.container, className)} role='progressbar'>
+    <div
+      className={cn(styles.container, className)}
+      role='progressbar'
+      data-chromatic='ignore'
+    >
       <Lottie options={lottieOptions} />
     </div>
   )

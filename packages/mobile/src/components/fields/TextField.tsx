@@ -1,4 +1,7 @@
-import { useField } from 'formik'
+import { useCallback, useEffect } from 'react'
+
+import { useDebouncedCallback } from '@audius/common'
+import { useField, useFormikContext } from 'formik'
 import { Platform, View } from 'react-native'
 
 import type { TextInputProps } from 'app/components/core'
@@ -10,6 +13,7 @@ import type { FieldProps } from '../../screens/edit-track-screen/fields/types'
 export type TextFieldProps = FieldProps &
   TextInputProps & {
     noGutter?: boolean
+    debouncedValidationMs?: number
   }
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
@@ -40,12 +44,46 @@ export const TextField = (props: TextFieldProps) => {
     style,
     styles: stylesProp,
     id,
+    onChangeText,
+    error: errorProp,
+    debouncedValidationMs = 0,
     ...other
   } = props
 
   const styles = useStyles()
-  const [{ value, onChange, onBlur }, { touched, error }] = useField(name)
+  const [
+    { value, onChange, onBlur },
+    { touched, error: errorMessage },
+    { setTouched }
+  ] = useField(name)
+
+  const { validateField, submitCount } = useFormikContext()
+
+  const debouncedValidateField = useDebouncedCallback(
+    (field: string) => validateField(field),
+    [validateField],
+    debouncedValidationMs
+  )
+
+  useEffect(() => {
+    if (debouncedValidationMs) {
+      debouncedValidateField(name)
+    }
+  }, [debouncedValidationMs, debouncedValidateField, name, value])
   const label = required ? `${labelProp} *` : labelProp
+
+  const hasError = (errorProp ?? errorMessage) && touched && submitCount > 0
+
+  const handleChangeText = useCallback(
+    (text: string) => {
+      onChangeText?.(text)
+      onChange(name)(text)
+      if (touched) {
+        setTouched(false)
+      }
+    },
+    [onChangeText, onChange, name, touched, setTouched]
+  )
 
   return (
     <View style={[noGutter ? undefined : styles.root, style]}>
@@ -57,13 +95,14 @@ export const TextField = (props: TextFieldProps) => {
           labelText: [styles.labelText, stylesProp?.labelText]
         }}
         value={value}
-        onChangeText={onChange(name)}
+        onChangeText={handleChangeText}
         onBlur={onBlur(name)}
         returnKeyType='done'
         id={id ?? name}
+        error={!!hasError}
         {...other}
       />
-      {error && touched ? <InputErrorMessage message={error} /> : null}
+      {hasError ? <InputErrorMessage message={errorMessage!} /> : null}
     </View>
   )
 }

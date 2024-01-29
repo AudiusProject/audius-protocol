@@ -2,11 +2,7 @@
   "extends": ["//"],
   "pipeline": {
     "build": {
-      "outputs": [
-        "build-development/**",
-        "build-staging/**",
-        "build-production/**"
-      ],
+      "outputs": ["build/**", "build-ssr/**"],
       "dependsOn": ["^build"],
       "outputMode": "new-only"
     },

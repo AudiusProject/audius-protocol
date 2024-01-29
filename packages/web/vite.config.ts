@@ -4,23 +4,44 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import react from '@vitejs/plugin-react'
 import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
+import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+import { env as APP_ENV } from './src/services/env'
+
+const fixAcceptHeader404 = () => ({
+  // Fix issue with vite dev server and `wait-on`
+  // https://github.com/vitejs/vite/issues/9520
+  // Can be removed when upgrading to vite5.
+  name: 'fix-accept-header-404',
+  configureServer(server) {
+    server.middlewares.use((req, _res, next) => {
+      if (req.headers.accept === 'application/json, text/plain, */*') {
+        req.headers.accept = '*/*'
+      }
+      next()
+    })
+  }
+})
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
+  const ssr = env.VITE_SSR === 'true'
+  env.VITE_BASENAME = env.VITE_BASENAME ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL ?? '/',
+    base: env.VITE_BASENAME || '/',
     build: {
-      outDir: 'build',
+      outDir: ssr ? 'build-ssr' : 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/node_modules/],
+        transformMixedEsModules: true
       }
     },
     define: {
@@ -29,7 +50,6 @@ export default defineConfig(({ mode }) => {
       'process.env': env
     },
     optimizeDeps: {
-      include: ['@audius/sdk/dist/web-libs'],
       esbuildOptions: {
         define: {
           global: 'globalThis'
@@ -62,7 +82,28 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      react(),
+      {
+        transformIndexHtml(html) {
+          // Replace HTML env vars with values from the system env
+          return html.replace(/%(\S+?)%/g, (text: string, key) => {
+            if (key in APP_ENV) {
+              const value = APP_ENV[key as keyof typeof APP_ENV]
+              if (value !== null) {
+                return value as string
+              }
+            }
+            console.warn(`Missing environment variable: ${key}`)
+            return text
+          })
+        }
+      },
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
+      ...(ssr ? [vike()] : []),
       ...((analyze
         ? [
             visualizer({
@@ -72,7 +113,8 @@ export default defineConfig(({ mode }) => {
               filename: 'analyse.html'
             })
           ]
-        : []) as any)
+        : []) as any),
+      fixAcceptHeader404()
     ],
     resolve: {
       alias: {
@@ -89,6 +131,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      host: '0.0.0.0',
       port
     },
     test: {

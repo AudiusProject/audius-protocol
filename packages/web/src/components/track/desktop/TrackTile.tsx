@@ -9,24 +9,28 @@ import {
   Genre,
   CommonState,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal
+  isContentUSDCPurchaseGated,
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
 import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import { GatedContentLabel } from '../GatedContentLabel'
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
-import { PremiumContentLabel } from '../PremiumContentLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -67,23 +71,23 @@ const RankAndIndexIndicator = ({
 }
 
 const renderLockedOrPlaysContent = ({
-  doesUserHaveAccess,
+  hasStreamAccess,
   fieldVisibility,
   isOwner,
-  isPremium,
+  isStreamGated,
   listenCount,
   variant
 }: Pick<
   TrackTileProps,
-  | 'doesUserHaveAccess'
+  | 'hasStreamAccess'
   | 'fieldVisibility'
   | 'isOwner'
-  | 'isPremium'
+  | 'isStreamGated'
   | 'listenCount'
 > &
   Pick<LockedStatusBadgeProps, 'variant'>) => {
-  if (isPremium && !isOwner) {
-    return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
+  if (isStreamGated && !isOwner) {
+    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -113,9 +117,10 @@ const TrackTile = ({
   isReposted,
   isOwner,
   isUnlisted,
-  isPremium,
-  premiumConditions,
-  doesUserHaveAccess,
+  isScheduledRelease,
+  isStreamGated,
+  streamConditions,
+  hasStreamAccess,
   listenCount,
   isActive,
   isArtistPick,
@@ -145,12 +150,17 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
-  trackId
+  trackId,
+  releaseDate
 }: TrackTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
   const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -162,19 +172,22 @@ const TrackTile = ({
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
-    } else if (trackId && !doesUserHaveAccess && onClickLocked) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (trackId && !hasStreamAccess && onClickLocked) {
       onClickLocked()
     }
   }, [
     isPurchase,
     trackId,
     openPremiumContentPurchaseModal,
-    doesUserHaveAccess,
+    hasStreamAccess,
     onClickLocked
   ])
 
@@ -217,20 +230,23 @@ const TrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        doesUserHaveAccess,
+        hasStreamAccess,
         isArtistPick,
         isOwner,
-        isUnlisted,
-        premiumConditions
+        isUnlisted:
+          isUnlisted &&
+          (!releaseDate || moment(releaseDate).isBefore(moment())),
+        streamConditions
       })
 
   let specialContentLabel = null
+  let scheduledReleaseLabel = null
   if (!isLoading) {
-    if (isPremium) {
+    if (isStreamGated) {
       specialContentLabel = (
-        <PremiumContentLabel
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={!!doesUserHaveAccess}
+        <GatedContentLabel
+          streamConditions={streamConditions}
+          hasStreamAccess={!!hasStreamAccess}
           isOwner={isOwner}
         />
       )
@@ -240,6 +256,11 @@ const TrackTile = ({
           <IconStar className={styles.artistPickIcon} />
           {messages.artistPick}
         </div>
+      )
+    }
+    if (isScheduledReleasesEnabled) {
+      scheduledReleaseLabel = (
+        <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
       )
     }
   }
@@ -308,7 +329,9 @@ const TrackTile = ({
                 className={styles.title}
                 onClick={onClickTitle}
               >
-                {title}
+                <Text variant='inherit' className={styles.text}>
+                  {title}
+                </Text>
                 {isPlaying ? (
                   <IconVolume className={styles.volumeIcon} />
                 ) : null}
@@ -333,10 +356,7 @@ const TrackTile = ({
             className={cn(
               typeStyles.body,
               typeStyles.bodyXSmall,
-              styles.socialsRow,
-              {
-                [styles.isHidden]: isUnlisted
-              }
+              styles.socialsRow
             )}
           >
             {isLoading ? (
@@ -344,7 +364,8 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {stats}
+                {scheduledReleaseLabel}
+                {isUnlisted ? null : stats}
               </>
             )}
           </div>
@@ -355,7 +376,7 @@ const TrackTile = ({
               styles.topRight
             )}
           >
-            {isUnlisted ? (
+            {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
@@ -374,10 +395,10 @@ const TrackTile = ({
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
-                  doesUserHaveAccess,
+                  hasStreamAccess,
                   fieldVisibility,
                   isOwner,
-                  isPremium,
+                  isStreamGated,
                   listenCount,
                   variant: isPurchase ? 'premium' : 'gated'
                 })
@@ -386,7 +407,7 @@ const TrackTile = ({
         </div>
         <div className={styles.divider} />
         <BottomRow
-          doesUserHaveAccess={doesUserHaveAccess}
+          hasStreamAccess={hasStreamAccess}
           isDisabled={isDisabled}
           isLoading={isLoading}
           isFavorited={isFavorited}
@@ -402,8 +423,8 @@ const TrackTile = ({
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
-          onClickPremiumPill={onClickPremiumPill}
-          premiumConditions={premiumConditions}
+          onClickPill={onClickPill}
+          streamConditions={streamConditions}
           isTrack={isTrack}
           trackId={trackId}
         />

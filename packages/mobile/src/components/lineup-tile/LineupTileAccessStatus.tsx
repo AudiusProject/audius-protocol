@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import type { ID, PremiumConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common'
 import {
+  ModalSource,
   formatPrice,
-  isPremiumContentUSDCPurchaseGated,
-  premiumContentActions,
-  premiumContentSelectors,
+  isContentUSDCPurchaseGated,
+  gatedContentActions,
+  gatedContentSelectors,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
@@ -20,8 +21,8 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
-const { getPremiumTrackStatusMap } = premiumContentSelectors
-const { setLockedContentId } = premiumContentActions
+const { getGatedTrackStatusMap } = gatedContentSelectors
+const { setLockedContentId } = gatedContentActions
 
 const messages = {
   unlocking: 'Unlocking',
@@ -54,25 +55,28 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const LineupTileAccessStatus = ({
   trackId,
-  premiumConditions
+  streamConditions
 }: {
   trackId: ID
-  premiumConditions: PremiumConditions
+  streamConditions: AccessConditions
 }) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
-  const premiumTrackStatus = premiumTrackStatusMap[trackId]
+  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatus = gatedTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
-    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
+    isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
 
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
     } else if (trackId) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
@@ -82,19 +86,19 @@ export const LineupTileAccessStatus = ({
   return (
     <TouchableOpacity onPress={handlePress}>
       <View style={[styles.root, isUSDCPurchase ? styles.usdcPurchase : null]}>
-        {premiumTrackStatus === 'UNLOCKING' ? (
+        {gatedTrackStatus === 'UNLOCKING' ? (
           <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
         ) : (
           <IconLock fill={staticWhite} width={spacing(4)} height={spacing(4)} />
         )}
         <Text style={styles.text}>
           {isUSDCPurchase
-            ? premiumTrackStatus === 'UNLOCKING'
+            ? gatedTrackStatus === 'UNLOCKING'
               ? null
               : messages.price(
-                  formatPrice(premiumConditions.usdc_purchase.price)
+                  formatPrice(streamConditions.usdc_purchase.price)
                 )
-            : premiumTrackStatus === 'UNLOCKING'
+            : gatedTrackStatus === 'UNLOCKING'
             ? messages.unlocking
             : messages.locked}
         </Text>

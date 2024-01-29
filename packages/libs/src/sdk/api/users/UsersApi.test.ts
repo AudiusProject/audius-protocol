@@ -1,8 +1,22 @@
 import fs from 'fs'
 import path from 'path'
 
+import { ClaimableTokensProgram } from '@audius/spl'
+import { DecodedTransferClaimableTokensInstruction } from '@audius/spl/dist/types/claimable-tokens/types'
 import { beforeAll, expect, jest } from '@jest/globals'
+import {
+  PublicKey,
+  Secp256k1Program,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
+} from '@solana/web3.js'
 
+import {
+  ClaimableTokensClient,
+  SolanaRelay,
+  SolanaRelayWalletAdapter
+} from '../../services'
 import { Auth } from '../../services/Auth/Auth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
@@ -54,6 +68,10 @@ describe('UsersApi', () => {
     discoveryNodeSelector,
     logger
   })
+  const solanaRelay = new SolanaRelay()
+  const claimableTokens = new ClaimableTokensClient({
+    solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+  })
 
   beforeAll(() => {
     users = new UsersApi(
@@ -62,7 +80,8 @@ describe('UsersApi', () => {
       new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
-      new Logger()
+      new Logger(),
+      claimableTokens
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -220,6 +239,106 @@ describe('UsersApi', () => {
           subscribeeUserId: 1 as any
         })
       }).rejects.toThrow()
+    })
+  })
+
+  describe('sendTip', () => {
+    it('creates and relays a tip transaction with properly formed instructions', async () => {
+      const senderUserId = '7eP5n'
+      const receiverUserId = 'ML51L'
+      const amount = 1
+      const outputAmount = BigInt(100000000) // wAUDIO has 8 decimals
+      // Arbitrary
+      const ethWallets: Record<string, string> = {
+        [senderUserId]: '0x0000000000000000000000000000000000000001',
+        [receiverUserId]: '0x0000000000000000000000000000000000000002'
+      }
+      // Arbitrary
+      const feePayer = new PublicKey(
+        'EAzM1rRJf31SVB4nDHqi2oBtLWUtyXfQSaiq6r2yt7BY'
+      )
+      // Derived from fake eth wallets
+      const userBanks: Record<string, PublicKey> = {
+        [senderUserId]: new PublicKey(
+          '8sMVcgngd3ZBSAuQA6weYZn9WeXtU5TqZA8sAb9q1CS'
+        ),
+        [receiverUserId]: new PublicKey(
+          'C75DLcu2XTbBVjjCZwKDxPyCnEvaRAkcTMKJ3woNgNWg'
+        )
+      }
+
+      // Turn the relay call into a bunch of assertions on the final transaction
+      jest
+        .spyOn(SolanaRelay.prototype, 'relay')
+        .mockImplementation(async ({ transaction }) => {
+          let instructions: TransactionInstruction[] = []
+          if (transaction instanceof VersionedTransaction) {
+            const message = TransactionMessage.decompile(transaction.message)
+            instructions = message.instructions
+          } else {
+            instructions = transaction.instructions
+          }
+          const [secp, transfer] = instructions
+          expect(secp?.programId.toBase58()).toBe(
+            Secp256k1Program.programId.toBase58()
+          )
+          expect(transfer).toBeTruthy()
+          const decoded = ClaimableTokensProgram.decodeInstruction(transfer!)
+          expect(ClaimableTokensProgram.isTransferInstruction(decoded)).toBe(
+            true
+          )
+          // Typescript hint - see above assert
+          const decoded2 = decoded as DecodedTransferClaimableTokensInstruction
+
+          expect(decoded2.keys.destination.pubkey.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(decoded2.keys.sourceUserBank.pubkey.toBase58()).toBe(
+            userBanks[senderUserId]?.toBase58()
+          )
+          const data =
+            ClaimableTokensProgram.decodeSignedTransferInstructionData(secp!)
+
+          expect(data.destination.toBase58()).toBe(
+            userBanks[receiverUserId]?.toBase58()
+          )
+          expect(data.amount).toBe(outputAmount)
+
+          return { signature: 'fake-sig' }
+        })
+
+      // Mock getFeePayer
+      jest
+        .spyOn(SolanaRelay.prototype, 'getFeePayer')
+        .mockImplementation(async () => {
+          return feePayer
+        })
+
+      // Mock getWalletAndUserBank
+      jest
+        // @ts-ignore
+        .spyOn(UsersApi.prototype, 'getWalletAndUserBank')
+        // @ts-ignore
+        .mockImplementation(async (id) => {
+          return {
+            ethWallet: ethWallets[id],
+            userBank: userBanks[id]
+          }
+        })
+
+      // Mock sign
+      jest.spyOn(auth, 'sign').mockImplementation(async () => {
+        return [Uint8Array.from(new Array(64).fill(0)), 0]
+      })
+
+      await users.sendTip({
+        amount,
+        senderUserId,
+        receiverUserId
+      })
+
+      // Ensure relay was attempted to ensure the assertions run
+      expect(solanaRelay.relay).toHaveBeenCalledTimes(1)
     })
   })
 })

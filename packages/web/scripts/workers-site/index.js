@@ -1,13 +1,13 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
+import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 
-/* globals GA, GA_ACCESS_TOKEN, EMBED, DISCOVERY_NODES, HTMLRewriter */
+/* globals HTMLRewriter */
 
+const assetManifest = JSON.parse(manifestJSON)
+
+const SSR = false
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
-
-const discoveryNodes = DISCOVERY_NODES.split(',')
-const discoveryNode =
-  discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
 
 let h1 = null
 
@@ -29,21 +29,6 @@ const routes = [
     keys: ['handle', 'title']
   }
 ]
-
-addEventListener('fetch', (event) => {
-  try {
-    event.respondWith(handleEvent(event))
-  } catch (e) {
-    if (DEBUG) {
-      return event.respondWith(
-        new Response(e.message || e.toString(), {
-          status: 500
-        })
-      )
-    }
-    event.respondWith(new Response('Internal Error', { status: 500 }))
-  }
-})
 
 function matchRoute(input) {
   for (const route of routes) {
@@ -68,7 +53,15 @@ function checkIsBot(val) {
   return botTest.test(val)
 }
 
-async function getMetadata(pathname) {
+function checkIsCrawler(val) {
+  if (!val) {
+    return false
+  }
+  const crawlerTest = /Googlebot|forceSsr/i
+  return crawlerTest.test(val)
+}
+
+async function getMetadata(pathname, discoveryNode) {
   if (pathname.startsWith('/scripts')) {
     return { metadata: null, name: null }
   }
@@ -132,18 +125,24 @@ class SEOHandlerBody {
     if (!h1) {
       return
     }
-    const h1Tag = `<h1 id="audius-h1" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">${h1}</h1>`
+    const h1Tag = `<h1 id="audius-h1" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">${clean(
+      h1
+    )}</h1>`
     element.prepend(h1Tag, { html: true })
   }
 }
 
 class SEOHandlerHead {
-  constructor(pathname) {
+  constructor(pathname, discoveryNode) {
     self.pathname = pathname
+    self.discoveryNode = discoveryNode
   }
 
   async element(element) {
-    const { metadata, name } = await getMetadata(self.pathname)
+    const { metadata, name } = await getMetadata(
+      self.pathname,
+      self.discoveryNode
+    )
 
     if (!metadata || !name || !metadata.data || metadata.data.length === 0) {
       // We didn't parse this to anything we have custom tags for, so just return the default tags
@@ -207,9 +206,7 @@ class SEOHandlerHead {
         return
     }
     const tags = `<title>${clean(title)}</title>
-    <meta name="description" content="${clean(
-      description
-    )}" data-react-helmet="true">
+    <meta name="description" content="${clean(description)}">
 
     <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
     <meta property="og:title" content="${clean(title)}">
@@ -226,8 +223,8 @@ class SEOHandlerHead {
   }
 }
 
-async function handleEvent(event) {
-  const url = new URL(event.request.url)
+async function handleEvent(request, env, ctx) {
+  const url = new URL(request.url)
   const { pathname, search, hash } = url
 
   const isUndefined = pathname === '/undefined'
@@ -235,14 +232,18 @@ async function handleEvent(event) {
     return Response.redirect(url.origin, 302)
   }
 
+  const discoveryNodes = env.DISCOVERY_NODES.split(',')
+  const discoveryNode =
+    discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+
   const isSitemap = pathname.startsWith('/sitemaps')
   if (isSitemap) {
     const destinationURL = discoveryNode + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
+    const newRequest = new Request(destinationURL, request)
     return await fetch(newRequest)
   }
 
-  const userAgent = event.request.headers.get('User-Agent') || ''
+  const userAgent = request.headers.get('User-Agent') || ''
 
   const is204 = pathname === '/204'
   if (is204) {
@@ -255,29 +256,23 @@ async function handleEvent(event) {
   const isBot = checkIsBot(userAgent)
 
   if (isBot) {
-    const destinationURL = GA + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
-    newRequest.headers.set('host', GA)
-    newRequest.headers.set('x-access-token', GA_ACCESS_TOKEN)
+    const destinationURL = env.GA + pathname + search + hash
+    const newRequest = new Request(destinationURL, request)
+    newRequest.headers.set('host', env.GA)
+    newRequest.headers.set('x-access-token', env.GA_ACCESS_TOKEN)
 
     return await fetch(newRequest)
   }
 
   const isEmbed = pathname.startsWith('/embed')
   if (isEmbed) {
-    const destinationURL = EMBED + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
+    const destinationURL = env.EMBED + pathname + search + hash
+    const newRequest = new Request(destinationURL, request)
 
     return await fetch(newRequest)
   }
 
   const options = {}
-  // Always map requests to `/`
-  options.mapRequestToAsset = (request) => {
-    const url = new URL(request.url)
-    url.pathname = `/`
-    return mapRequestToAsset(new Request(url, request))
-  }
 
   try {
     if (DEBUG) {
@@ -287,27 +282,79 @@ async function handleEvent(event) {
       }
     }
 
-    const asset = await getAssetFromKV(event, options)
+    // For now, only SSR for crawlers
+    if (SSR && checkIsCrawler(userAgent)) {
+      const ssrResponse = await env.SSR.fetch(request.clone())
+      return ssrResponse
+    } else {
+      if (!isAssetUrl(request.url)) {
+        // Map all non-asset requests to the root path
+        options.mapRequestToAsset = (request) => {
+          const url = new URL(request.url)
+          url.pathname = `/`
+          return mapRequestToAsset(new Request(url, request))
+        }
 
-    const rewritten = new HTMLRewriter()
-      .on('head', new SEOHandlerHead(pathname))
-      .on('body', new SEOHandlerBody())
-      .transform(asset)
+        const asset = await getAsset(request, env, ctx, options)
 
-    // Adjust browser cache on assets that don't change frequently and/or
-    // are given unique hashes when they do.
-    if (
-      pathname.startsWith('/assets') ||
-      pathname.startsWith('/scripts') ||
-      pathname.startsWith('/fonts')
-    ) {
-      const response = new Response(rewritten.body, rewritten)
-      response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
-      return response
+        const rewritten = new HTMLRewriter()
+          .on('head', new SEOHandlerHead(pathname, discoveryNode))
+          .on('body', new SEOHandlerBody())
+          .transform(asset)
+
+        return rewritten
+      } else {
+        const asset = await getAsset(request, env, ctx, options)
+
+        // Adjust browser cache on assets that don't change frequently and/or
+        // are given unique hashes when they do.
+        const response = new Response(asset.body, asset)
+        response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+
+        return response
+      }
     }
-
-    return rewritten
   } catch (e) {
     return new Response(e.message || e.toString(), { status: 500 })
+  }
+}
+
+async function getAsset(request, env, ctx, options) {
+  return await getAssetFromKV(
+    {
+      request,
+      waitUntil: ctx.waitUntil.bind(ctx)
+    },
+    {
+      ASSET_NAMESPACE: env.__STATIC_CONTENT,
+      ASSET_MANIFEST: assetManifest,
+      ...options
+    }
+  )
+}
+
+function isAssetUrl(url) {
+  const { pathname } = new URL(url)
+  return (
+    pathname.startsWith('/assets') ||
+    pathname.startsWith('/scripts') ||
+    pathname.startsWith('/fonts') ||
+    pathname.startsWith('/favicons') ||
+    pathname.startsWith('/manifest.json')
+  )
+}
+
+export default {
+  fetch(request, env, ctx) {
+    try {
+      return handleEvent(request, env, ctx)
+    } catch (e) {
+      if (DEBUG) {
+        return new Response(e.message || e.toString(), {
+          status: 500
+        })
+      }
+      return new Response('Internal Error', { status: 500 })
+    }
   }
 }

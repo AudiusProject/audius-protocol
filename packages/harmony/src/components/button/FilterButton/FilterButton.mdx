@@ -1,0 +1,60 @@
+import {
+  Meta,
+  Title,
+  Description,
+  Controls,
+  Canvas,
+  Primary
+} from '@storybook/blocks'
+
+import { Heading, RelatedComponents, BetaWarning } from 'storybook/components'
+
+import * as FilterButton from './FilterButton.stories'
+
+<Meta of={FilterButton} />
+
+<Title />
+
+<BetaWarning />
+
+- [Overview](#overview)
+- [Props](#props)
+- [Use cases and examples](#use-cases-and-examples)
+
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
+
+<Primary />
+
+## Props
+
+<Controls />
+
+## Variants
+
+### Fill Container
+
+<Canvas of={FilterButton.FillContainer} />
+
+### Replace Label
+
+<Canvas of={FilterButton.ReplaceLabel} />
+
+### Custom Icons
+
+<Canvas of={FilterButton.CustomIcon} />
+
+## Accessibility
+
+<Canvas of={FilterButton.Accessibility} />
+
+## Use cases and examples
+
+- Use FilterButton like a traditional html `<select>`
+- Configure buttons and completion actions that suit your needs
+
+## Related components
+
+<RelatedComponents componentNames={['Button']} />

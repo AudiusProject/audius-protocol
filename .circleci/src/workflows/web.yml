@@ -27,7 +27,23 @@ jobs:
         - Vercel
       requires:
         - web-init
+
+  - web-build-ssr-staging:
+      context:
+        - Vercel
+      requires:
+        - web-init
+
   - web-build-production:
+      context:
+        - Vercel
+      requires:
+        - web-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - web-build-ssr-production:
       context:
         - Vercel
       requires:
@@ -50,9 +66,12 @@ jobs:
           only: /^main$/
 
   - web-deploy-staging-cloudflare:
-      context: Audius Client
+      context:
+        - Audius Client
+        - slack-secrets
       requires:
         - web-build-staging
+        - web-build-ssr-staging
       filters:
         branches:
           only: /^main$/
@@ -62,6 +81,7 @@ jobs:
       requires:
         - web-init
         - web-build-production
+        - web-build-ssr-production
       filters:
         branches:
           only: /(^release.*)$/
@@ -71,6 +91,7 @@ jobs:
       requires:
         - web-init
         - web-build-staging
+        - web-build-ssr-staging
       filters:
         branches:
           only: /(^release.*)$/
@@ -80,6 +101,7 @@ jobs:
       type: approval
       requires:
         - web-build-production
+        - web-build-ssr-production
       filters:
         branches:
           only: /(^release.*)$/
@@ -91,7 +113,9 @@ jobs:
         branches:
           only: /(^release.*)$/
   - web-deploy-production-cloudflare:
-      context: Audius Client
+      context:
+        - Audius Client
+        - slack-secrets
       requires:
         - web-hold-production
       filters:
@@ -112,6 +136,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -121,6 +146,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -130,6 +156,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -148,6 +175,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-mac-production
       filters:
@@ -164,6 +192,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-win-production
       filters:
@@ -180,6 +209,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-linux-production
       filters:

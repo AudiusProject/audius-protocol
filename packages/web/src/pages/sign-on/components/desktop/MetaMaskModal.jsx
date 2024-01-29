@@ -1,16 +1,17 @@
 import { Component } from 'react'
 
 import { BackendUtils as Utils } from '@audius/common'
+import { Box, Text } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
-import Tooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
+import { env } from 'services/env'
 
 import styles from './MetaMaskModal.module.css'
 
-const WEB3_NETWORK_ID = process.env.VITE_WEB3_NETWORK_ID
+const WEB3_NETWORK_ID = env.WEB3_NETWORK_ID
 
 const messages = {
   title: '    Are You Sure You Want To Continue With MetaMask?   ',
@@ -22,47 +23,52 @@ const messages = {
   metaMaskGuide: 'Read MetaMask Configuration Guide',
   continueOption: 'Yes, I Understand',
   stopOption: 'No, Take Me Back',
-  metaMaskConfigure: 'Configure MetaMask to continue'
+  metaMaskConfigure: 'Configure MetaMask to continue',
+  configureError:
+    'Your MetaMask is not properly configured. Make sure to set your network in MetaMask to the Audius network, and have at least one account in MetaMask. For more info, see the MetaMask Configuration Guide.',
+  accessError:
+    'You must grant Audius access to one of your MetaMask accounts in order to continue.'
 }
 
 class MetaMaskModal extends Component {
   state = {
-    checkWeb3ConfigInterval: null,
-    configured: false
+    submitting: false,
+    accessError: false,
+    configureError: false
   }
 
-  componentDidMount() {
-    const checkWeb3ConfigInterval = setInterval(async () => {
-      try {
-        await waitForLibsInit()
-        const configured = await Utils.configureWeb3(
-          window.web3.currentProvider,
-          WEB3_NETWORK_ID
-        )
-        if (configured) {
-          this.setState({ configured: true })
-          this.clearCheckConfigureWeb3()
-        }
-      } catch (err) {
-        this.setState({ configured: false })
+  resetState = () => {
+    this.setState({
+      submitting: false,
+      accessError: false,
+      configureError: false
+    })
+  }
+
+  onClickContinue = async () => {
+    this.resetState()
+    this.setState({ submitting: true })
+    await waitForLibsInit()
+    try {
+      await window.ethereum?.enable()
+    } catch (err) {
+      this.setState({ accessError: true })
+      return
+    }
+    try {
+      const configured = await Utils.configureWeb3(
+        window.web3.currentProvider,
+        WEB3_NETWORK_ID,
+        true
+      )
+      if (configured) {
+        this.props.onClickContinue()
+        this.props.onClickBack()
+      } else {
+        this.setState({ configureError: true })
       }
-    }, 500)
-    this.setState({ checkWeb3ConfigInterval })
-  }
-
-  componentWillUnmount() {
-    this.clearCheckConfigureWeb3()
-  }
-
-  clearCheckConfigureWeb3 = () => {
-    if (this.state.checkWeb3ConfigInterval)
-      clearInterval(this.state.checkWeb3ConfigInterval)
-  }
-
-  onClickContinue = () => {
-    if (this.state.configured) {
-      this.props.onClickContinue()
-      this.props.onClickBack()
+    } catch {
+      this.setState({ configureError: true })
     }
   }
 
@@ -104,38 +110,42 @@ class MetaMaskModal extends Component {
             />
           </div>
           <div className={styles.actionContainer}>
-            <Tooltip
-              placement='top'
-              overlayClassName={cn(styles.configOverlay, {
-                [styles.hidden]: configured
-              })}
-              title={
-                <span className={styles.configMetaMask}>
-                  {messages.metaMaskConfigure}
-                </span>
-              }
-              getPopupContainer={(trigger) => trigger.parentNode}
-            >
-              <div>
-                <Button
-                  type={configured ? ButtonType.COMMON : ButtonType.DISABLED}
-                  text={messages.continueOption}
-                  onClick={this.onClickContinue}
-                  textClassName={styles.actionButtonText}
-                  className={cn(styles.actionButton, {
-                    [styles.continueButton]: configured
-                  })}
-                />
-              </div>
-            </Tooltip>
+            <div>
+              <Button
+                type={
+                  this.state.submitting
+                    ? ButtonType.DISABLED
+                    : ButtonType.COMMON
+                }
+                disabled={this.state.submitting}
+                text={messages.continueOption}
+                onClick={this.onClickContinue}
+                textClassName={styles.actionButtonText}
+                className={cn(styles.actionButton, {
+                  [styles.continueButton]: configured
+                })}
+              />
+            </div>
             <Button
               type={ButtonType.PRIMARY_ALT}
               text={messages.stopOption}
-              onClick={onClickBack}
+              onClick={() => {
+                this.resetState()
+                onClickBack()
+              }}
               textClassName={styles.actionButtonText}
               className={cn(styles.actionButton, styles.stopButton)}
             />
           </div>
+          {this.state.accessError || this.state.configureError ? (
+            <Box mt='l'>
+              <Text variant='body' color='danger'>
+                {this.state.accessError
+                  ? messages.accessError
+                  : messages.configureError}
+              </Text>
+            </Box>
+          ) : null}
         </div>
       </div>
     )

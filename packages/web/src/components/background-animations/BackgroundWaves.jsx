@@ -64,7 +64,8 @@ const BackgroundWaves = (props) => {
   if (
     (navigator.userAgent.includes('Safari') &&
       !navigator.userAgent.includes('Chrome')) ||
-    navigator.userAgent.includes('Edge' || navigator.userAgent.includes('MSIE'))
+    navigator.userAgent.includes('Edge') ||
+    navigator.userAgent.includes('MSIE')
   ) {
     useStatic = true
   }
@@ -103,7 +104,7 @@ const BackgroundWaves = (props) => {
     <div
       ref={canvasRef}
       className={cn({ [props.className]: !!props.className })}
-      style={{
+      css={{
         position: 'fixed',
         top: 0,
         left: 0,

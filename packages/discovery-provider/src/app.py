@@ -215,7 +215,7 @@ def configure_flask(test_config, app, mode="app"):
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 # ISO-8601 timestamp format
-                return o.strftime("%Y-%m-%dT%H:%M:%S Z")
+                return o.strftime("%Y-%m-%dT%H:%M:%SZ")
             return JSONEncoder.default(self, o)
 
     app.json_encoder = TimestampJSONEncoder
@@ -308,6 +308,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
+            "src.tasks.index_payment_router",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
@@ -323,7 +324,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
-            "src.tasks.publish_scheduled_releases"
+            "src.tasks.publish_scheduled_releases",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -369,6 +370,10 @@ def configure_celery(celery, test_config=None):
             "index_user_bank": {
                 "task": "index_user_bank",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_payment_router": {
+                "task": "index_payment_router",
+                "schedule": timedelta(seconds=1),
             },
             "index_challenges": {
                 "task": "index_challenges",
@@ -481,6 +486,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
+    redis_inst.delete("payment_router_lock")
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
@@ -495,7 +501,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
-    redis_inst.delete("publish_scheduled_releases")
+    redis_inst.delete("publish_scheduled_releases_lock")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 

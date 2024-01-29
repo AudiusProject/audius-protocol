@@ -144,7 +144,7 @@ table {
   outline: none !important;
 }
 
-a {
+a :not(::hover) {
   text-decoration: none !important;
 }
 

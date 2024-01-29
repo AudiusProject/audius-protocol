@@ -11,7 +11,10 @@ has_current_user_saved = "has_current_user_saved"
 followee_reposts = "followee_reposts"
 # array - followees of current user that have saved given track/playlist
 followee_saves = "followee_saves"
-# string - signature required to access premium content
+# json - determines stream and download access for current user
+access = "access"
+# represents the signature for track access
+# todo: remove once clients catch up and no longer use this field
 premium_content_signature = "premium_content_signature"
 
 # remix track specific
@@ -55,8 +58,6 @@ supporting_count = "supporting_count"
 does_current_user_follow = "does_current_user_follow"
 # boolean - does current user subscribe to given user
 does_current_user_subscribe = "does_current_user_subscribe"
-# boolean - does given user follow current user
-does_follow_current_user = "does_follow_current_user"
 # integer - number of followees of current user that also follow given user
 current_user_followee_follow_count = "current_user_followee_follow_count"
 # boolean - has current user tipped given user

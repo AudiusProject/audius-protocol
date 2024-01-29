@@ -18,13 +18,15 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   formatPrice,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
+import { trpc } from 'utils/trpcClientWeb'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconChromecast from 'app/assets/images/iconChromecast.svg'
@@ -109,19 +111,32 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
+  )
+
+  const isOwner = track?.owner_id === accountUser?.user_id
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track?.track_id ?? 0 },
+    { enabled: !!track?.track_id }
+  )
+
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
-      openPremiumContentPurchaseModal({ contentId: track.track_id })
+      openPremiumContentPurchaseModal(
+        { contentId: track.track_id },
+        { source: ModalSource.NowPlaying }
+      )
     }
   }, [track?.track_id, openPremiumContentPurchaseModal])
-  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const { hasStreamAccess } = useGatedContentAccess(track)
   const shouldShowPurchasePill =
-    track?.premium_conditions &&
-    'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
+    !hasStreamAccess
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -133,25 +148,25 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     if (track) {
       if (track.has_current_user_saved) {
         dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
-      } else if (track.owner_id === accountUser?.user_id) {
+      } else if (isOwner) {
         toast({ content: messages.favoriteProhibited })
       } else {
         dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleRepost = useCallback(() => {
     if (track) {
       if (track.has_current_user_reposted) {
         dispatch(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
-      } else if (track.owner_id === accountUser?.user_id) {
+      } else if (isOwner) {
         toast({ content: messages.repostProhibited })
       } else {
         dispatch(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
       }
     }
-  }, [accountUser?.user_id, dispatch, toast, track])
+  }, [dispatch, isOwner, toast, track])
 
   const handleShare = useCallback(() => {
     if (track) {
@@ -176,10 +191,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
-        !track.is_premium ? OverflowAction.ADD_TO_PLAYLIST : null,
+        isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
+        !track.is_stream_gated ? OverflowAction.ADD_TO_PLAYLIST : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
+        isEditAlbumsEnabled && albumInfo
+          ? OverflowAction.VIEW_ALBUM_PAGE
+          : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
@@ -198,7 +217,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
+    isEditAlbumsEnabled,
+    isOwner,
     isNewPodcastControlsEnabled,
+    albumInfo,
     playbackPositionInfo?.status,
     dispatch
   ])
@@ -207,10 +229,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const renderPurchaseButton = () => {
     if (
-      track?.premium_conditions &&
-      'usdc_purchase' in track.premium_conditions
+      track?.stream_conditions &&
+      'usdc_purchase' in track.stream_conditions
     ) {
-      const price = track.premium_conditions.usdc_purchase.price
+      const price = track.stream_conditions.usdc_purchase.price
       return (
         <Button
           style={styles.buyButton}

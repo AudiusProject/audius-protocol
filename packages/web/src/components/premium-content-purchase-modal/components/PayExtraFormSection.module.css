@@ -1,29 +1,3 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--unit-4);
-}
-
-.title {
-  text-transform: uppercase;
-}
-
-.pillContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--unit-2);
-}
-
-.presetContainer {
-  display: flex;
-  gap: var(--unit-2);
-  width: 100%;
-}
-
 .presetPill {
   flex-grow: 1;
-}
-
-.customAmountPill {
-  width: 100%;
 }

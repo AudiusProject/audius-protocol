@@ -5,7 +5,8 @@
  * keyword. The number signifies an increasing value for the property, e.g.
  * -dark-2 is darker than -dark-1.
  */
-html {
+html,
+#harmony-root[data-theme='day'] {
   --harmony-docs-violet-v050: #f7f6fc;
   --harmony-docs-violet-v100: #f1efff;
   --harmony-docs-violet-v200: #c7bffd;
@@ -25,10 +26,26 @@ html {
   --harmony-docs-neutral-n800: #111111;
 
   --harmony-docs-text: var(--harmony-docs-neutral-n800);
-  --harmony-docs-text-muted: var(--harmony-docs-neutral-n500);
-  --harmony-docs-bar-text-color: var(--harmony-docs-neutral-v600);
+  --harmony-docs-text-muted: var(--harmony-docs-neutral-n600);
+  --harmony-docs-bar-text-color: var(--harmony-docs-violet-v600);
+  --harmony-docs-bar-selected-color: var(--harmony-docs-violet-v400);
+  --harmony-docs-bar-hover-color: var(--harmony-docs-violet-v200);
+  --harmony-docs-icon-color: var(--harmony-docs-violet-v400);
+  --harmony-docs-icon-selected-color: var(--harmony-docs-violet-v050);
+  --harmony-docs-deprecated-color: #ff2e2e;
+  color: var(--harmony-docs-text);
 }
 
-html[data-theme='dark'] {
-  /* TODO */
+html[data-theme='dark'],
+html[data-theme='matrix'],
+#harmony-root[data-theme='dark'],
+#harmony-root[data-theme='matrix'],
+html.dark {
+  --harmony-docs-text: var(--harmony-docs-neutral-n050);
+  --harmony-docs-text-muted: var(--harmony-docs-neutral-n200);
+  --harmony-docs-bar-text-color: var(--harmony-docs-violet-v050);
+  --harmony-docs-bar-selected-color: var(--harmony-docs-violet-v300);
+  --harmony-docs-bar-hover-color: var(--harmony-docs-violet-v500);
+  --harmony-docs-icon-color: var(--harmony-docs-violet-v300);
+  color: var(--harmony-docs-text);
 }

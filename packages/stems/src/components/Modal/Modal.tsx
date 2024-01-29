@@ -150,8 +150,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   })
 
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
-  const titleId = `${id}-title` || ariaLabelledbyProp
-  const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
+  const titleId = ariaLabelledbyProp || `${id}-title`
+  const subtitleId = ariaDescribedbyProp || `${id}-subtitle`
   const [isDoneOpening, setIsDoneOpening] = useState(false)
   const modalContextValue = useMemo(() => {
     return { titleId, subtitleId, onClose, isDoneOpening }
@@ -291,7 +291,9 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     [headerContainerClassName!]: !!headerContainerClassName
   })
 
-  const [height, setHeight] = useState(window.innerHeight)
+  const [height, setHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 0
+  )
 
   useEffect(() => {
     const onResize = () => {

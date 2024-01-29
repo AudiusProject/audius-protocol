@@ -1,39 +1,27 @@
+import { createRequire } from 'node:module'
+
 import image from '@rollup/plugin-image'
 import rollupTypescript from 'rollup-plugin-typescript2'
 
 import pkg from './package.json'
+
+const cjsRequire = createRequire(import.meta.url)
+const tspCompiler = cjsRequire('ts-patch/compiler')
 
 export default [
   {
     input: 'src/index.ts',
     output: [
       {
-        file: pkg.module,
+        dir: 'dist',
         format: 'es',
-        exports: 'named',
-        sourcemap: true
-      },
-      {
-        file: pkg.main,
-        format: 'cjs',
         exports: 'named',
         sourcemap: true
       }
     ],
     plugins: [
       rollupTypescript({
-        typescript: require('ttypescript'),
-        tsconfigDefaults: {
-          compilerOptions: {
-            plugins: [
-              { transform: 'typescript-transform-paths' },
-              {
-                transform: 'typescript-transform-paths',
-                afterDeclarations: true
-              }
-            ]
-          }
-        }
+        typescript: tspCompiler
       }),
       image()
     ],

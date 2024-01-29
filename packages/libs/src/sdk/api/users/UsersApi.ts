@@ -12,6 +12,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
+import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -34,7 +35,9 @@ import {
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema
+  UpdateProfileSchema,
+  SendTipRequest,
+  SendTipSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -44,7 +47,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
+    private readonly claimableTokens: ClaimableTokensClient
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -415,5 +419,62 @@ export class UsersApi extends GeneratedUsersApi {
       headers: headerParameters
     })
     return response.blob()
+  }
+
+  /**
+   * Sends a wAUDIO tip from one user to another.
+   * @hidden subject to change
+   */
+  async sendTip(request: SendTipRequest) {
+    const { amount } = await parseParams('sendTip', SendTipSchema)(request)
+
+    const { ethWallet } = await this.getWalletAndUserBank(request.senderUserId)
+    const { ethWallet: receiverEthWallet, userBank: destination } =
+      await this.getWalletAndUserBank(request.receiverUserId)
+
+    if (!ethWallet) {
+      throw new Error('Invalid sender: No Ethereum wallet found.')
+    }
+    if (!receiverEthWallet) {
+      throw new Error('Invalid recipient: No Ethereum wallet found.')
+    }
+    if (!destination) {
+      throw new Error('Invalid recipient: No user bank found.')
+    }
+
+    const secp = await this.claimableTokens.createTransferSecpInstruction({
+      ethWallet,
+      destination,
+      amount,
+      mint: 'wAUDIO',
+      auth: this.auth
+    })
+    const transfer = await this.claimableTokens.createTransferInstruction({
+      ethWallet,
+      destination,
+      mint: 'wAUDIO'
+    })
+
+    const transaction = await this.claimableTokens.buildTransaction({
+      instructions: [secp, transfer]
+    })
+    return await this.claimableTokens.sendTransaction(transaction)
+  }
+
+  /**
+   * Helper function for sendTip that gets the user wallet and creates
+   * or gets the wAUDIO user bank for given user ID.
+   */
+  private async getWalletAndUserBank(id: string) {
+    const res = await this.getUser({ id })
+    const ethWallet = res.data?.ercWallet
+    if (!ethWallet) {
+      return { ethWallet: null, userBank: null }
+    }
+    const { userBank } = await this.claimableTokens.getOrCreateUserBank({
+      ethWallet,
+      mint: 'wAUDIO'
+    })
+    return { ethWallet, userBank }
   }
 }

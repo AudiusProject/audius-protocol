@@ -19,7 +19,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   playerSelectors,
-  usePremiumContentAccess,
+  useGatedContentAccess,
   FeatureFlags,
   Genre
 } from '@audius/common'
@@ -32,6 +32,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+import { trpc } from 'utils/trpcClientWeb'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
@@ -104,14 +105,15 @@ const ConnectedTrackTile = ({
   isActive,
   variant,
   containerClassName,
+  releaseDate,
   isFeed = false
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
     is_unlisted,
-    is_premium: isPremium,
-    premium_conditions: premiumConditions,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     track_id,
     title,
     genre,
@@ -140,9 +142,14 @@ const ConnectedTrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isUserAccessTBD, doesUserHaveAccess } =
-    usePremiumContentAccess(trackWithFallback)
-  const loading = isLoading || isUserAccessTBD
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId: track_id },
+    { enabled: !!track_id }
+  )
+  const { isFetchingNFTAccess, hasStreamAccess } =
+    useGatedContentAccess(trackWithFallback)
+  const loading = isLoading || isFetchingNFTAccess
 
   const toggleSave = (trackId: ID) => {
     if (has_current_user_saved) {
@@ -182,27 +189,31 @@ const ConnectedTrackTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const repostAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null
     const favoriteAction =
-      !isOwner && doesUserHaveAccess
+      !isOwner && hasStreamAccess
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToPlaylistAction = !isPremium
+    const addToAlbumAction =
+      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
+    const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
       repostAction,
       favoriteAction,
+      addToAlbumAction,
       addToPlaylistAction,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
+      isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
@@ -264,11 +275,12 @@ const ConnectedTrackTile = ({
       isMatrix={isMatrix()}
       isTrending={isTrending}
       isUnlisted={is_unlisted}
-      isPremium={isPremium}
-      premiumConditions={premiumConditions}
-      doesUserHaveAccess={doesUserHaveAccess}
+      isStreamGated={isStreamGated}
+      streamConditions={streamConditions}
+      hasStreamAccess={hasStreamAccess}
       showRankIcon={showRankIcon}
       variant={variant}
+      releaseDate={releaseDate}
     />
   )
 }

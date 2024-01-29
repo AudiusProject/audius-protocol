@@ -7,6 +7,7 @@ export enum ContentType {
 }
 
 export enum PurchaseContentStage {
+  IDLE = 'IDLE',
   START = 'START',
   BUY_USDC = 'BUY_USDC',
   PURCHASING = 'PURCHASING',
@@ -15,7 +16,14 @@ export enum PurchaseContentStage {
   FINISH = 'FINISH'
 }
 
+export enum PurchaseContentPage {
+  PURCHASE = 'purchase',
+  TRANSFER = 'crypto-transfer'
+}
+
 export enum PurchaseErrorCode {
+  Canceled = 'Canceled',
+  InsufficientBalance = 'InsufficientBalance',
   Unknown = 'Unknown'
 }
 
