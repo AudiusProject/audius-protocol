@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 
 import {
   IconBronzeBadge,
-  IconGoldBadge,
+  IconTokenGold,
   IconPlatinumBadge,
   IconSilverBadge
 } from '@audius/harmony-native'
@@ -50,7 +50,7 @@ const tierInfoMap = {
     twitterIcon: '🥈'
   },
   gold: {
-    icon: IconGoldBadge,
+    icon: IconTokenGold,
     label: 'Gold',
     amount: 10000,
     twitterIcon: '🥇'
