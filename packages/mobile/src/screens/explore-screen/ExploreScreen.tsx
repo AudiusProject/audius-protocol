@@ -4,7 +4,7 @@ import { useEffectOnce } from 'react-use'
 
 import {
   IconExplore,
-  IconForYou,
+  IconStars,
   IconMood,
   IconPlaylists,
   IconUser
@@ -29,7 +29,7 @@ const exploreScreens = [
   {
     name: 'forYou',
     label: messages.forYou,
-    Icon: IconForYou,
+    Icon: IconStars,
     component: ForYouTab
   },
   {
