@@ -1,4 +1,4 @@
-import IconAlbum from 'app/assets/images/iconAlbum.svg'
+import { IconAlbum } from '@audius/harmony-native'
 import IconLibrary from 'app/assets/images/iconLibrary.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'

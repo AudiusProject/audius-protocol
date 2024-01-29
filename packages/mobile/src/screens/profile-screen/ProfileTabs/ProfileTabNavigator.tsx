@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { Animated } from 'react-native'
 
-import IconAlbum from 'app/assets/images/iconAlbum.svg'
+import { IconAlbum } from '@audius/harmony-native'
 import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
