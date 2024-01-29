@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 discovery_node_service_type = bytes("discovery-node", "utf-8")
 
 
-def get_metrics(endpoint, start_time):
+def get_metrics(endpoint: str, start_time: int):
     try:
         route_metrics_endpoint = (
             f"{endpoint}/v1/metrics/routes/cached?start_time={start_time}"
@@ -169,7 +169,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     logger.debug(f"visited node timestamps: {visited_node_timestamps}")
 
 
-def get_historical_metrics(node):
+def get_historical_metrics(node: str):
     try:
         endpoint = f"{node}/v1/metrics/aggregates/historical"
         logger.debug(f"historical metrics request to: {endpoint}")
