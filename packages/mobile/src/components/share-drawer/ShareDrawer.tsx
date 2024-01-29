@@ -21,7 +21,7 @@ import {
   IconLink,
   IconMessage,
   IconShare,
-  IconSnapchat,
+  IconSnapChat,
   IconTwitter,
   IconTikTok
 } from '@audius/harmony-native'
@@ -224,7 +224,7 @@ export const ShareDrawer = () => {
 
     const shareToSnapchatAction = {
       text: messages.snapchat,
-      icon: <IconSnapchat fill={secondary} height={26} width={26} />,
+      icon: <IconSnapChat fill={secondary} height={26} width={26} />,
       callback: handleShareToSnapchat
     }
 
