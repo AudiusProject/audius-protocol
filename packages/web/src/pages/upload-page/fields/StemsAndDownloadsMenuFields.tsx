@@ -133,6 +133,7 @@ export const stemsAndDownloadsSchema = ({
       // cannot be download gated if no downloadable assets
       (values) => {
         const formValues = values as StemsAndDownloadsFormValues
+        const streamConditions = formValues[STREAM_CONDITIONS]
         const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
         const isDownloadGated = [
           DownloadTrackAvailabilityType.FOLLOWERS,
@@ -142,7 +143,7 @@ export const stemsAndDownloadsSchema = ({
         const stems = formValues[STEMS]
         const hasStems = stems.length > 0
         const hasDownloadableAssets = isDownloadable || hasStems
-        return !isDownloadGated || hasDownloadableAssets
+        return streamConditions || !isDownloadGated || hasDownloadableAssets
       },
       {
         message: messages.noDownloadableAssets,

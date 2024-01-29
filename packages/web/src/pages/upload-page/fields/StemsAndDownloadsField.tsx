@@ -63,9 +63,7 @@ const messages = {
     followerGated: 'Followers Only'
   },
   price: (price: number) =>
-    price.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-  noDownloadableAssets:
-    'You must enable the full track download or upload a stem file before setting download availability.'
+    price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 }
 
 export const StemsAndDownloadsField = () => {
