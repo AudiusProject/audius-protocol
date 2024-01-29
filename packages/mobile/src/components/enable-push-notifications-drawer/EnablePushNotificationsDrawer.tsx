@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import {
   IconCoSign,
   IconUserFollow,
-  IconNotification,
+  IconNotificationOn,
   IconHeart,
   IconMessage,
   IconNewReleases,
@@ -139,7 +139,7 @@ export const EnablePushNotificationsDrawer = () => {
     <NativeDrawer drawerName='EnablePushNotifications'>
       <View style={styles.drawer}>
         <View style={styles.top}>
-          <IconNotification
+          <IconNotificationOn
             height={66}
             width={66}
             fill={pageHeaderGradientColor2}
