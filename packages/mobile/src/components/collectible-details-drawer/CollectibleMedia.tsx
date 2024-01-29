@@ -5,7 +5,7 @@ import { CollectibleMediaType } from '@audius/common'
 import type { ImageStyle } from 'react-native'
 import { TouchableWithoutFeedback, View } from 'react-native'
 
-import { IconVolume, IconMute } from '@audius/harmony-native'
+import { IconVolumeLevel2, IconVolumeLevel0 } from '@audius/harmony-native'
 import AutoSizeImage from 'app/components/image/AutoSizeImage'
 import AutoSizeVideo from 'app/components/video/AutoSizeVideo'
 import { makeStyles } from 'app/styles'
@@ -49,7 +49,7 @@ export const CollectibleMedia = (props: CollectibleMediaProps) => {
     setIsMuted(!isMuted)
   }, [isMuted, setIsMuted])
 
-  const VolumeIcon = isMuted ? IconMute : IconVolume
+  const VolumeIcon = isMuted ? IconVolumeLevel0 : IconVolumeLevel2
 
   const renderByMediaType = {
     // TODO: Implement 3D model viewing on mobile
