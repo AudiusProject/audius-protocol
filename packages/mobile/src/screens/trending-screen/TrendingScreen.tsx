@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import {
   IconAllTime,
   IconDay,
-  IconMonth,
+  IconCalendarMonth,
   IconTrending
 } from '@audius/harmony-native'
 import { RewardsBanner } from 'app/components/audio-rewards'
@@ -44,7 +44,7 @@ const trendingScreens = [
   {
     name: 'ThisMonth',
     label: 'This Month',
-    Icon: IconMonth,
+    Icon: IconCalendarMonth,
     component: ThisMonthTab
   },
   {
