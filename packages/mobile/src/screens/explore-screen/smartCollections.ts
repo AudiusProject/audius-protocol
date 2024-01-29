@@ -13,8 +13,8 @@ import {
 
 import {
   IconExploreFeelingLucky,
-  IconExploreMostLoved,
-  IconExploreNewReleases,
+  IconBoxHeart,
+  IconStars,
   IconRemix,
   IconExploreRotation,
   IconRadar
@@ -68,7 +68,7 @@ export const BEST_NEW_RELEASES: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(160,74,141)',
   shadowOpacity: 0.25,
-  icon: IconExploreNewReleases,
+  icon: IconStars,
   link: EXPLORE_BEST_NEW_RELEASES_PAGE
 }
 
@@ -94,7 +94,7 @@ export const MOST_LOVED: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(3,96,255)',
   shadowOpacity: 0.25,
-  icon: IconExploreMostLoved,
+  icon: IconBoxHeart,
   link: EXPLORE_MOST_LOVED_PAGE
 }
 
