@@ -1,11 +1,16 @@
 import { useMemo } from 'react'
 
 import {
+  AccessConditions,
   Chain,
   collectiblesSelectors,
+  FeatureFlags,
   isContentCollectibleGated,
-  StreamTrackAvailabilityType
+  Nullable,
+  StreamTrackAvailabilityType,
+  useFeatureFlag
 } from '@audius/common'
+import { Box, IconInfo } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
@@ -14,6 +19,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
   AccessAndSaleFormValues,
+  DOWNLOAD_CONDITIONS,
   STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
 } from '../../AccessAndSaleField'
@@ -27,7 +33,9 @@ const messages = {
   pickACollection: 'Pick a Collection',
   compatibilityTitle: "Not seeing what you're looking for?",
   compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.'
+    'Unverified Solana NFT Collections are not compatible at this time.',
+  premiumDownloads:
+    'Setting your track to Collectible Gated will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 type CollectibleGatedFieldsProps = {
@@ -47,6 +55,11 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -167,6 +180,14 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         footer={renderFooter()}
         disabled={disabled}
       />
+      {isLosslessDownloadsEnabled && downloadConditions ? (
+        <Box mt='l'>
+          <HelpCallout
+            icon={<IconInfo />}
+            content={messages.premiumDownloads}
+          />
+        </Box>
+      ) : null}
     </div>
   )
 }

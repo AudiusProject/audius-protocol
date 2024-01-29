@@ -6,16 +6,22 @@ import {
 } from 'react'
 
 import {
+  AccessConditions,
+  FeatureFlags,
+  Nullable,
   decimalIntegerToHumanReadable,
   filterDecimalString,
-  padDecimalValue
+  padDecimalValue,
+  useFeatureFlag
 } from '@audius/common'
+import { IconInfo } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 
-import { PREVIEW, PRICE } from '../../AccessAndSaleField'
+import { PREVIEW, PRICE, DOWNLOAD_CONDITIONS } from '../../AccessAndSaleField'
 import { BoxedTextField } from '../../BoxedTextField'
 
 const messages = {
@@ -34,7 +40,9 @@ const messages = {
   },
   dollars: '$',
   usdc: '(USDC)',
-  seconds: '(Seconds)'
+  seconds: '(Seconds)',
+  premiumDownloads:
+    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 export enum UsdcPurchaseType {
@@ -48,11 +56,19 @@ export type TrackAvailabilityFieldsProps = {
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       <PriceField disabled={disabled} />
       <PreviewField disabled={disabled} />
+      {isLosslessDownloadsEnabled && downloadConditions ? (
+        <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
+      ) : null}
     </div>
   )
 }
