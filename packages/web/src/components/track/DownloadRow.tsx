@@ -2,7 +2,6 @@ import {
   CommonState,
   ID,
   cacheTracksSelectors,
-  DownloadQuality,
   useDownloadableContentAccess
 } from '@audius/common'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'

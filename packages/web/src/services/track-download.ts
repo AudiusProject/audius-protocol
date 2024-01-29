@@ -54,11 +54,10 @@ class TrackDownload extends TrackDownloadBase {
         throw new Error(
           'rootDirectory must be supplied when downloading multiple files'
         )
-      const filenames = files.map(({ filename }) => filename)
       const blob = await downloadZip(
         responses.map((r, i) => {
           return {
-            name: rootDirectoryName + '/' + filenames[i],
+            name: rootDirectoryName + '/' + files[i].filename,
             input: r
           }
         })

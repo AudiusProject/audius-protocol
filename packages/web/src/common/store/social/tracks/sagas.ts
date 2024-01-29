@@ -19,7 +19,6 @@ import {
   getQueryParams,
   confirmerActions,
   confirmTransaction,
-  FeatureFlags,
   modalsActions,
   removeNullable
 } from '@audius/common'
@@ -30,7 +29,6 @@ import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { track } from 'services/analytics/amplitude'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
