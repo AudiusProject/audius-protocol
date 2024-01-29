@@ -21,7 +21,7 @@ import { useDispatch } from 'react-redux'
 import {
   IconCalendarMonth,
   IconHeart,
-  IconHidden,
+  IconVisibilityHidden,
   IconRepost,
   IconStar
 } from '@audius/harmony-native'
@@ -190,7 +190,7 @@ export const LineupTileStats = ({
         ) : null}
         {isUnlisted && !isScheduledRelease ? (
           <View style={styles.tagContainer}>
-            <IconHidden
+            <IconVisibilityHidden
               fill={neutralLight4}
               height={spacing(4)}
               width={spacing(4)}

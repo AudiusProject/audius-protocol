@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import { IconHidden } from '@audius/harmony-native'
+import { IconVisibilityHidden } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -122,7 +122,7 @@ export const HiddenAvailability = ({
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
-        <IconHidden style={styles.titleIcon} fill={titleIconColor} />
+        <IconVisibilityHidden style={styles.titleIcon} fill={titleIconColor} />
         <Text weight='bold' style={titleStyles}>
           {messages.hidden}
         </Text>

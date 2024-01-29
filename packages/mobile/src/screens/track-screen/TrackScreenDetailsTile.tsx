@@ -42,7 +42,7 @@ import { trpc } from 'utils/trpcClientWeb'
 import {
   IconCart,
   IconCollectible,
-  IconHidden,
+  IconVisibilityHidden,
   IconRobot,
   IconSpecialAccess
 } from '@audius/harmony-native'
@@ -538,7 +538,7 @@ export const TrackScreenDetailsTile = ({
 
     return is_unlisted && !isScheduledRelease ? (
       <View style={styles.hiddenDetailsTileWrapper}>
-        <IconHidden fill={neutralLight4} />
+        <IconVisibilityHidden fill={neutralLight4} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
       </View>
     ) : (
