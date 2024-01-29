@@ -12,7 +12,6 @@ import {
   usersSocialActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
@@ -23,7 +22,8 @@ import {
   IconMessage,
   IconShare,
   IconSnapchat,
-  IconTwitterBird
+  IconTwitterBird,
+  IconTikTok
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -200,13 +200,13 @@ export const ShareDrawer = () => {
 
     const shareSoundToTiktokAction = {
       text: messages.tikTokSound,
-      icon: <TikTokIcon height={26} width={26} />,
+      icon: <IconTikTok height={26} width={26} />,
       callback: performActionAndClose(handleShareSoundToTikTok)
     }
 
     const shareVideoToTiktokAction = {
       text: messages.tikTokVideo,
-      icon: <TikTokIcon fill={secondary} height={26} width={26} />,
+      icon: <IconTikTok fill={secondary} height={26} width={26} />,
       callback: handleShareVideoToTiktok
     }
 

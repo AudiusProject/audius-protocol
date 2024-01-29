@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
@@ -25,7 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { IconArrow, IconCheck } from '@audius/harmony-native'
+import { IconArrow, IconCheck, IconValidationX } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
@@ -245,7 +244,7 @@ const Checkbox = ({
     return (
       <View style={styles.checkboxContainer}>
         <Animated.View style={animatedStyles}>
-          <ValidationIconX style={styles.iconCheck} />
+          <IconValidationX style={styles.iconCheck} />
         </Animated.View>
         <View style={styles.unchecked} />
         <Text

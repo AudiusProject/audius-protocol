@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import IconValidationX from 'app/assets/images/iconValidationX.svg'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getPasswordField,
@@ -457,7 +457,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconValidationX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -466,7 +466,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconValidationX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -476,7 +476,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconValidationX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -486,14 +486,14 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconValidationX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
     }
     return (
       <View style={styles.errorContainer}>
-        <ValidationIconX style={[styles.errorIcon, { opacity: 0 }]} />
+        <IconValidationX style={[styles.errorIcon, { opacity: 0 }]} />
         <Text />
       </View>
     )
