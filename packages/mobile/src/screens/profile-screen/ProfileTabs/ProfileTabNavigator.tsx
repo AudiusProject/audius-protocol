@@ -4,7 +4,7 @@ import type { Animated } from 'react-native'
 
 import {
   IconAlbum,
-  IconCollectibles,
+  IconCollectible,
   IconNote,
   IconPlaylists,
   IconRepost
@@ -100,7 +100,7 @@ export const ProfileTabNavigator = ({
 
   const collectiblesScreen = collapsibleTabScreen({
     name: 'Collectibles',
-    Icon: IconCollectibles,
+    Icon: IconCollectible,
     component: CollectiblesTab,
     initialParams,
     refreshing,
