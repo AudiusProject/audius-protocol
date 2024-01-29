@@ -76,19 +76,9 @@ jobs:
       service: ddex-web
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-ddex-crawler
+      name: push-ddex-ingester
       context: [GCP, dockerhub, slack-secrets]
-      service: ddex-crawler
-      notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-ddex-indexer
-      context: [GCP, dockerhub, slack-secrets]
-      service: ddex-indexer
-      notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-ddex-parser
-      context: [GCP, dockerhub, slack-secrets]
-      service: ddex-parser
+      service: ddex-ingester
       notify_slack_on_failure: true
 
   - push-arm-image:
@@ -171,23 +161,11 @@ jobs:
       requires:
         - push-ddex-web
   - push-arm-image:
-      name: push-ddex-crawler-arm
+      name: push-ddex-ingester-arm
       context: [Vercel, dockerhub]
-      service: ddex-crawler
+      service: ddex-ingester
       requires:
-        - push-ddex-crawler
-  - push-arm-image:
-      name: push-ddex-indexer-arm
-      context: [Vercel, dockerhub]
-      service: ddex-indexer
-      requires:
-        - push-ddex-indexer
-  - push-arm-image:
-      name: push-ddex-parser-arm
-      context: [Vercel, dockerhub]
-      service: ddex-parser
-      requires:
-        - push-ddex-parser
+        - push-ddex-ingester
 
   - release-github-draft-trigger:
       type: approval
@@ -229,9 +207,7 @@ jobs:
         - push-protocol-dashboard
         - push-uptime
         - push-ddex-web
-        - push-ddex-crawler
-        - push-ddex-indexer
-        - push-ddex-parser
+        - push-ddex-ingester
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
@@ -246,9 +222,7 @@ jobs:
         # - push-protocol-dashboard-arm
         # - push-uptime-arm
         # - push-ddex-web-arm
-        # - push-ddex-crawler-arm
-        # - push-ddex-indexer-arm
-        # - push-ddex-parser-arm
+        # - push-ddex-ingester-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

@@ -99,6 +99,12 @@ services:
     profiles:
       - ddex
 
+  ddex-ingester:
+    container_name: ddex-ingester
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+
 networks:
   ddex-network:
 
