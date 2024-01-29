@@ -81,11 +81,9 @@ export const StemsAndDownloadsField = () => {
     ,
     { setValue: setisOriginalAvailable }
   ] = useTrackField<boolean>(IS_ORIGINAL_AVAILABLE)
-  const [
-    { value: downloadRequiresFollow },
-    ,
-    { setValue: setDownloadRequiresFollow }
-  ] = useTrackField<boolean>(DOWNLOAD_REQUIRES_FOLLOW)
+  const [, , { setValue: setDownloadRequiresFollow }] = useTrackField<boolean>(
+    DOWNLOAD_REQUIRES_FOLLOW
+  )
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useTrackField<StemUpload[]>(STEMS)
   const [, , { setValue: setDownloadValue }] = useTrackField<Download>(DOWNLOAD)
@@ -257,15 +255,21 @@ export const StemsAndDownloadsField = () => {
 
   const renderValue = () => {
     let values = []
-    if (downloadRequiresFollow) {
-      values.push(messages.values.followerGated)
-    } else if (isContentUSDCPurchaseGated(savedDownloadConditions)) {
-      values.push({
-        label: messages.price(
-          savedDownloadConditions.usdc_purchase.price / 100
-        ),
-        icon: IconCart
-      })
+    if (!streamConditions) {
+      if (
+        isLosslessDownloadsEnabled &&
+        isContentUSDCPurchaseGated(savedDownloadConditions)
+      ) {
+        values.push({
+          label: messages.price(
+            savedDownloadConditions.usdc_purchase.price / 100
+          ),
+          icon: IconCart
+        })
+      }
+      if (isContentFollowGated(savedDownloadConditions)) {
+        values.push(messages.values.followerGated)
+      }
     }
     if (isDownloadable) {
       values.push(messages.values.allowDownload)
