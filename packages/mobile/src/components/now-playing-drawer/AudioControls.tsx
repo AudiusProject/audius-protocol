@@ -14,7 +14,7 @@ import {
   IconNext,
   IconPodcastBack,
   IconPodcastForward,
-  IconPrev
+  IconSkipPrevious
 } from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -145,7 +145,7 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onPrevious}
-        icon={isLongFormContent ? IconPodcastBack : IconPrev}
+        icon={isLongFormContent ? IconPodcastBack : IconSkipPrevious}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )
