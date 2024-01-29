@@ -2,7 +2,7 @@ import type { AnnouncementNotification as AnnouncementNotificationType } from '@
 import { View } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 
-import { IconAudius } from '@audius/harmony-native'
+import { IconAudiusLogo } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import {
@@ -43,7 +43,7 @@ export const AnnouncementNotification = (
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={IconAudius}>
+      <NotificationHeader icon={IconAudiusLogo}>
         <NotificationTitle>
           <View>
             <Markdown

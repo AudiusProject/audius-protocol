@@ -8,7 +8,7 @@ import type {
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconCrownSource } from '@audius/harmony-native'
+import { IconCrown } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 
@@ -80,7 +80,7 @@ export const SupporterDethronedNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader imageSource={IconCrownSource}>
+      <NotificationHeader imageSource={IconCrown}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
