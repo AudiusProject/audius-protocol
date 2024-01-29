@@ -26,15 +26,10 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
     [Property in keyof EndpointDefinitions as `use${Capitalize<
       string & Property
     >}`]: EndpointDefinitions[Property]['options']['type'] extends 'mutation'
-      ? () => [
-          (
-            fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-            options?: QueryHookOptions
-          ) => void,
-          QueryHookResults<
-            Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
-          >
-        ]
+      ? () => MutationHookResults<
+          Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
       : (
           fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
           options?: QueryHookOptions
@@ -140,4 +135,14 @@ export type QueryHookResults<Data> = {
   data: Data
   status: Status
   errorMessage?: string
+  forceRefresh: () => void
 }
+
+export type MutationHookResults<Args, Data> = [
+  (fetchArgs: Args, options?: QueryHookOptions) => void,
+  {
+    data: Data
+    status: Status
+    errorMessage?: string
+  }
+]
