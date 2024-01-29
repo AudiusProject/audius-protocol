@@ -15,7 +15,7 @@ import {
   IconExploreFeelingLucky,
   IconExploreMostLoved,
   IconExploreNewReleases,
-  IconExploreRemixables,
+  IconRemix,
   IconExploreRotation,
   IconRadar
 } from '@audius/harmony-native'
@@ -110,7 +110,7 @@ export const REMIXABLES: SmartCollection = {
   gradientAngle: 137.65,
   shadowColor: 'rgb(87,170,255)',
   shadowOpacity: 0.25,
-  icon: IconExploreRemixables,
+  icon: IconRemix,
   link: EXPLORE_REMIXABLES_PAGE
 }
 
