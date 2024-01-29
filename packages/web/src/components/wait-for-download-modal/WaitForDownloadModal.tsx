@@ -12,7 +12,6 @@ import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import zIndex from 'utils/zIndex'
 
 import styles from './WaitForDownloadModal.module.css'
 
@@ -44,7 +43,6 @@ export const WaitForDownloadModal = () => {
       isFullscreen
       useGradientTitle={false}
       dismissOnClickOutside
-      zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
       <ModalHeader

@@ -1,6 +1,7 @@
 import {
   TrackDownload as TrackDownloadBase,
-  type DownloadTrackArgs
+  type DownloadTrackArgs,
+  DownloadFile
 } from '@audius/common'
 import { downloadZip } from 'client-zip'
 
@@ -14,13 +15,7 @@ function isMobileSafari() {
   )
 }
 
-function browserDownload({
-  url,
-  filename
-}: {
-  url: string
-  filename?: string
-}) {
+function browserDownload({ url, filename }: DownloadFile) {
   if (document) {
     const link = document.createElement('a')
     link.href = url
