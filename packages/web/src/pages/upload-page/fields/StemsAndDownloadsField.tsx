@@ -32,7 +32,6 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useTrackField } from '../hooks'
 
 import {
-  StemsAndDownloadsFormValues,
   StemsAndDownloadsMenuFields,
   stemsAndDownloadsSchema
 } from './StemsAndDownloadsMenuFields'
@@ -48,7 +47,8 @@ import {
   DOWNLOAD_REQUIRES_FOLLOW,
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
-  STEMS
+  STEMS,
+  StemsAndDownloadsFormValues
 } from './types'
 
 const { getUserId } = accountSelectors

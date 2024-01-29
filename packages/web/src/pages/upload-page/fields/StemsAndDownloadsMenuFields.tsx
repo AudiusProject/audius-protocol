@@ -6,7 +6,6 @@ import {
   FeatureFlags,
   Nullable,
   StemCategory,
-  StemUpload,
   StemUploadWithFile,
   formatPrice,
   isContentUSDCPurchaseGated,
@@ -30,13 +29,13 @@ import {
   IS_DOWNLOAD_GATED,
   DOWNLOAD_CONDITIONS,
   STREAM_CONDITIONS,
-  CID,
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_REQUIRES_FOLLOW,
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
   STEMS,
-  DOWNLOAD_PRICE
+  DOWNLOAD_PRICE,
+  StemsAndDownloadsFormValues
 } from './types'
 
 const messages = {
@@ -62,18 +61,6 @@ const messages = {
     `Price must be less than $${formatPrice(maxPrice)}.`,
   noDownloadableAssets:
     'You must enable the full track download or upload a stem file before setting download availability.'
-}
-
-export type StemsAndDownloadsFormValues = {
-  [IS_DOWNLOADABLE]: boolean
-  [IS_ORIGINAL_AVAILABLE]: boolean
-  [DOWNLOAD_REQUIRES_FOLLOW]: boolean
-  [STEMS]: StemUpload[]
-  [CID]: Nullable<string>
-  [IS_DOWNLOAD_GATED]: boolean
-  [DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
-  [STREAM_CONDITIONS]: Nullable<AccessConditions>
-  [DOWNLOAD_AVAILABILITY_TYPE]: DownloadTrackAvailabilityType
 }
 
 export const stemsAndDownloadsSchema = ({
