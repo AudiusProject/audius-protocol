@@ -36,9 +36,6 @@ import {
   AccessAndSaleMenuFields,
   getCombinedDefaultGatedConditionValues
 } from 'pages/upload-page/fields/AccessAndSaleField'
-
-import styles from './AccessAndSaleTriggerLegacy.module.css'
-import { ContextualMenu } from './ContextualMenu'
 import {
   IS_UNLISTED,
   PRICE_HUMANIZED,
@@ -49,6 +46,9 @@ import {
   SpecialAccessType,
   AccessAndSaleFormValues
 } from 'pages/upload-page/fields/types'
+
+import styles from './AccessAndSaleTriggerLegacy.module.css'
+import { ContextualMenu } from './ContextualMenu'
 
 const { getUserId } = accountSelectors
 

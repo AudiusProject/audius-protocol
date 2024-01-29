@@ -17,11 +17,11 @@ import { TextField } from 'components/form-fields'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import { SwitchRowField } from '../SwitchRowField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
-import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 const { getUserId } = accountSelectors
 
 const messages = {

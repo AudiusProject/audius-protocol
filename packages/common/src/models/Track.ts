@@ -55,9 +55,6 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
-// Gated content
-export type TokenStandard = 'ERC721' | 'ERC1155'
-
 export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
