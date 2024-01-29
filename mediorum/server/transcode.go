@@ -15,6 +15,7 @@ import (
 	"mime/multipart"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -35,7 +36,12 @@ var (
 func (ss *MediorumServer) startTranscoder() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
-	numWorkers := 2
+
+	// use most cpus for transcode
+	numWorkers := runtime.NumCPU() - 2
+	if numWorkers < 2 {
+		numWorkers = 2
+	}
 
 	// on boot... reset any of my wip jobs
 	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
