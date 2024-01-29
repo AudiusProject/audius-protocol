@@ -9,7 +9,7 @@ import {
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { IconTikTok, IconTikTok } from '@audius/harmony-native'
+import { IconTikTok } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
