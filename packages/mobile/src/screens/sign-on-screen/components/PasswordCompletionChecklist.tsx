@@ -1,8 +1,8 @@
+import { passwordSchema } from '@audius/common'
 import {
-  passwordSchema,
   createPasswordPageMessages,
   type CompletionChecklistType
-} from '@audius/common'
+} from '@audius/common/messages'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 

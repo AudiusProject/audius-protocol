@@ -1,4 +1,4 @@
-import { signUpPolicyMessages as messages } from '@audius/common'
+import { signUpPolicyMessages as messages } from '@audius/common/messages'
 import {
   BASE_URL,
   PRIVACY_POLICY,

@@ -1,7 +1,5 @@
-import {
-  MAX_HANDLE_LENGTH,
-  pickHandlePageMessages as messages
-} from '@audius/common'
+import { MAX_HANDLE_LENGTH } from '@audius/common'
+import { pickHandlePageMessages as messages } from '@audius/common/messages'
 import { useField, useFormikContext } from 'formik'
 
 import { IconCheck } from '@audius/harmony-native'

@@ -1,10 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  signInPageMessages as messages,
-  signInErrorMessages,
-  signInSchema
-} from '@audius/common'
+import { signInErrorMessages, signInSchema } from '@audius/common'
+import { signInPageMessages as messages } from '@audius/common/messages'
 import {
   getEmailField,
   getPasswordField,

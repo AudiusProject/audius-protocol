@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { selectArtstsPageMessages as messages } from '@audius/common'
+import { selectArtstsPageMessages as messages } from '@audius/common/messages'
 import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {

@@ -1,11 +1,7 @@
 import React, { useState } from 'react'
 
-import {
-  Name,
-  pickHandleSchema,
-  socialMediaMessages,
-  useAudiusQueryContext
-} from '@audius/common'
+import { Name, pickHandleSchema, useAudiusQueryContext } from '@audius/common'
+import { socialMediaMessages } from '@audius/common/messages'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 

@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  pickHandleSchema,
-  useAudiusQueryContext,
-  reviewHandlePageMessages as messages
-} from '@audius/common'
+import { pickHandleSchema, useAudiusQueryContext } from '@audius/common'
+import { reviewHandlePageMessages as messages } from '@audius/common/messages'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
 import {
   getCoverPhotoField,

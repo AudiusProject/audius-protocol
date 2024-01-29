@@ -1,7 +1,5 @@
-import {
-  emailSchemaMessages,
-  createEmailPageMessages as messages
-} from '@audius/common'
+import { emailSchemaMessages } from '@audius/common'
+import { createEmailPageMessages as messages } from '@audius/common/messages'
 
 import { Hint, IconError, Text, TextLink } from '@audius/harmony-native'
 

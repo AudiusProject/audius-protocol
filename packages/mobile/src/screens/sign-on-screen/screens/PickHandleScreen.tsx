@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  pickHandlePageMessages as messages,
-  pickHandleSchema,
-  useAudiusQueryContext
-} from '@audius/common'
+import { pickHandleSchema, useAudiusQueryContext } from '@audius/common'
+import { pickHandlePageMessages as messages } from '@audius/common/messages'
 import { css } from '@emotion/native'
 import { getIsSocialConnected } from 'audius-client/src/common/store/pages/signon/selectors'
 import {

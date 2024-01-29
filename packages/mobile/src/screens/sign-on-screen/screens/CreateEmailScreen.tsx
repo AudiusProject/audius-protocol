@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  emailSchema,
-  useAudiusQueryContext,
-  createEmailPageMessages as messages
-} from '@audius/common'
+import { emailSchema, useAudiusQueryContext } from '@audius/common'
+import { createEmailPageMessages as messages } from '@audius/common/messages'
 import {
   setLinkedSocialOnFirstPage,
   setValueField,

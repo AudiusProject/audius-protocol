@@ -1,4 +1,5 @@
-import { BooleanKeys, useRemoteVar, socialMediaMessages } from '@audius/common'
+import { BooleanKeys, useRemoteVar } from '@audius/common'
+import { socialMediaMessages } from '@audius/common/messages'
 
 import { Flex } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'

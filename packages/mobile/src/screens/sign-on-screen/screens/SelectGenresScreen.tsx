@@ -1,11 +1,8 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
 import type { GENRES } from '@audius/common'
-import {
-  selectGenresPageMessages as messages,
-  selectGenresSchema,
-  selectableGenres
-} from '@audius/common'
+import { selectGenresSchema, selectableGenres } from '@audius/common'
+import { selectGenresPageMessages as messages } from '@audius/common/messages'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { ScrollView } from 'react-native'
