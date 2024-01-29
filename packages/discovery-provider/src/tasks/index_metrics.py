@@ -138,7 +138,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         )
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
         start_time = int(start_time_obj.timestamp())
-        new_route_metrics, new_app_metrics = get_metrics(node, start_time)
+        new_route_metrics, new_app_metrics = get_metrics(node["endpoint"], start_time)
 
         logger.debug(
             f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})"
@@ -158,7 +158,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         merge_app_metrics(new_app_metrics or {}, end_time, db)
 
         if new_route_metrics is not None and new_app_metrics is not None:
-            visited_node_timestamps[node] = end_time
+            visited_node_timestamps[node["endpoint"]] = end_time
             redis.set(metrics_visited_nodes, json.dumps(visited_node_timestamps))
 
     # persist updated summed unique counts
