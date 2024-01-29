@@ -18,7 +18,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import IconAlbum from 'assets/img/iconAlbum.svg'
+import { IconAlbum } from '@audius/harmony'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
