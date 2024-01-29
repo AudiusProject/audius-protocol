@@ -3,7 +3,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import IconValidationX from 'app/assets/images/iconValidationX.svg'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getPasswordField,
@@ -31,7 +30,7 @@ import RadialGradient from 'react-native-radial-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { IconArrow } from '@audius/harmony-native'
+import { IconArrow, IconValidationX } from '@audius/harmony-native'
 import backgImage from 'app/assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color-Deprecated.png'
 import signupCTA from 'app/assets/images/signUpCTA.png'
