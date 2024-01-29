@@ -10,7 +10,7 @@ import {
   IconNotificationOn,
   IconHeart,
   IconMessage,
-  IconNewReleases,
+  IconStars,
   IconRemix,
   IconRepost
 } from '@audius/harmony-native'
@@ -58,7 +58,7 @@ const actions = [
   },
   {
     label: messages.newReleases,
-    icon: IconNewReleases
+    icon: IconStars
   },
   {
     label: messages.messages,
