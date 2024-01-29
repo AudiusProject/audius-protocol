@@ -1,9 +1,6 @@
 import { ChangeEvent } from 'react'
 
-import {
-  emailSchemaMessages,
-  createEmailPageMessages as messages
-} from '@audius/common'
+import { emailSchemaMessages } from '@audius/common'
 import { Hint, IconError, TextLink } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -16,6 +13,7 @@ import {
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
 import { SIGN_IN_PAGE } from 'utils/route'
+import { createEmailPageMessages } from '@audius/common/messages'
 
 export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
   const dispatch = useDispatch()
@@ -29,7 +27,7 @@ export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
     <HarmonyTextField
       name='email'
       autoComplete='email'
-      label={messages.emailLabel}
+      label={createEmailPageMessages.emailLabel}
       autoFocus
       onChange={handleChange}
       {...props}
@@ -46,7 +44,7 @@ export const NewEmailField = () => {
 
   const signInLink = (
     <TextLink variant='visible' asChild>
-      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+      <Link to={SIGN_IN_PAGE}>{createEmailPageMessages.signIn}</Link>
     </TextLink>
   )
 

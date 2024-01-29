@@ -1,9 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import {
-  createPasswordPageMessages as messages,
-  passwordSchema
-} from '@audius/common'
+import { passwordSchema } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,6 +15,7 @@ import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
+import { createPasswordPageMessages } from '@audius/common/messages'
 
 const initialValues = {
   password: '',
@@ -61,12 +59,12 @@ export const CreatePasswordPage = () => {
           autoFocusInputRef={passwordInputRef}
         >
           <Heading
-            heading={messages.createYourPassword}
-            description={messages.description}
+            heading={createPasswordPageMessages.createYourPassword}
+            description={createPasswordPageMessages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <ReadOnlyField
-              label={messages.yourEmail}
+              label={createPasswordPageMessages.yourEmail}
               value={emailField.value}
             />
             <EnterPasswordSection inputRef={passwordInputRef} />

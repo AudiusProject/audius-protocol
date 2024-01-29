@@ -123,7 +123,7 @@ export const WelcomeModal = () => {
                 )
               }}
             >
-              {messages.upload}
+              {welcomeModalMessages.upload}
             </Link>
           </Button>
         </Flex>

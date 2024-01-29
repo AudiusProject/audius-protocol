@@ -1,11 +1,6 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import {
-  socialMediaMessages,
-  pickHandlePageMessages as messages,
-  pickHandleSchema,
-  AudiusQueryContext
-} from '@audius/common'
+import { pickHandleSchema, AudiusQueryContext } from '@audius/common'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,6 +34,10 @@ import {
 } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
+import {
+  pickHandlePageMessages,
+  socialMediaMessages
+} from '@audius/common/messages'
 
 type PickHandleValues = {
   handle: string
@@ -64,9 +63,9 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
           variant={isMobile ? 'title' : 'heading'}
           size={isMobile ? 'm' : 's'}
         >
-          {messages.claimHandleHeaderPrefix}{' '}
+          {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
           <Text color='accent' tag='span'>
-            @{messages.handle}
+            @{pickHandlePageMessages.handle}
           </Text>{' '}
           <IconVerified
             size={isMobile ? 's' : 'm'}
@@ -74,7 +73,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
           />
         </Text>
         <Text variant='body' size={isMobile ? 'm' : 'l'}>
-          {messages.claimHandleDescription}
+          {pickHandlePageMessages.claimHandleDescription}
         </Text>
       </Flex>
       <SocialMediaLoginOptions
@@ -83,7 +82,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size={isMobile ? 'm' : 'l'}>
-        {messages.claimHandleHeadsUp}
+        {pickHandlePageMessages.claimHandleHeadsUp}
       </Text>
     </Paper>
   )
@@ -178,8 +177,8 @@ export const PickHandlePage = () => {
             prefix={
               isMobile ? null : <OutOfText numerator={1} denominator={2} />
             }
-            heading={messages.title}
-            description={messages.description}
+            heading={pickHandlePageMessages.title}
+            description={pickHandlePageMessages.description}
             centered={!isMobile}
           />
           <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
@@ -196,7 +195,7 @@ export const PickHandlePage = () => {
                 size='s'
                 css={{ textTransform: 'uppercase' }}
               >
-                {messages.or}
+                {pickHandlePageMessages.or}
               </Text>
             </Divider>
             <SocialMediaSection
