@@ -175,7 +175,6 @@ const getStemButtons = ({
           if (!isLoggedIn) {
             onNotLoggedInClick?.()
           }
-          console.log('REED id', id)
           onDownload({ trackId: id, category: u.label, parentTrackId })
         }
       } else {
