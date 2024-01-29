@@ -84,7 +84,6 @@ import {
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
 import { MonitoringCallbacks } from './types'
-console.log('wow 2')
 
 type DisplayEncoding = 'utf8' | 'hex'
 type PhantomEvent = 'disconnect' | 'connect' | 'accountChanged'
