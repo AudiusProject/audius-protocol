@@ -4,7 +4,7 @@ import { FeatureFlags } from '@audius/common'
 import { Image, Platform } from 'react-native'
 
 import {
-  IconDownload,
+  IconCloudDownload,
   IconInfo,
   IconMessage,
   IconNotificationOn,
@@ -113,7 +113,7 @@ export const SettingsScreen = () => {
             <SettingsRow onPress={handlePressDownloads}>
               <SettingsRowLabel
                 label={messages.downloads}
-                icon={IconDownload}
+                icon={IconCloudDownload}
               />
             </SettingsRow>
           ) : null}

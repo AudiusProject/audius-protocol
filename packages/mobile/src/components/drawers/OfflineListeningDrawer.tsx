@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 
 import {
   IconCart,
-  IconDownload,
+  IconCloudDownload,
   IconFavorite,
   IconRepost
 } from '@audius/harmony-native'
@@ -148,7 +148,7 @@ export const OfflineListeningDrawer = () => {
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
         <HarmonyModalHeader
-          icon={IconDownload}
+          icon={IconCloudDownload}
           title={messages.offlineListeningTitle}
         />
         <Text weight='medium' fontSize='large' style={styles.descriptionText}>

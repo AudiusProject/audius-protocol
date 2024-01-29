@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
-import { IconDownload } from '@audius/harmony-native'
+import { IconCloudDownload } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { makeStyles } from 'app/styles'
@@ -41,7 +41,7 @@ export const NoTracksPlaceholder = () => {
       <Tile style={styles.tile}>
         <View style={styles.container}>
           <View style={styles.iconRoot}>
-            <IconDownload fill={neutralLight4} height={35} width={35} />
+            <IconCloudDownload fill={neutralLight4} height={35} width={35} />
           </View>
           <Text style={styles.text}>{messages.noDownloadedTracks}</Text>
         </View>
