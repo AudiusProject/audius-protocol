@@ -35,7 +35,6 @@ import {
   STREAM_AVAILABILITY_TYPE,
   AccessAndSaleFormSchema,
   AccessAndSaleFormValues,
-  AccessAndSaleMenuFields,
   FIELD_VISIBILITY,
   IS_STREAM_GATED,
   IS_UNLISTED,
@@ -45,6 +44,7 @@ import {
   SPECIAL_ACCESS_TYPE,
   getCombinedDefaultGatedConditionValues
 } from 'pages/upload-page/fields/AccessAndSaleField'
+import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleMenuFields'
 import { SpecialAccessType } from 'pages/upload-page/fields/stream-availability/SpecialAccessFields'
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'

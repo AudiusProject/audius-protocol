@@ -1,5 +1,7 @@
-import { ReactNode, ReactElement, useCallback } from 'react'
+import { ReactNode, ReactElement, useCallback, useMemo } from 'react'
 
+import { Nullable } from '@audius/common'
+import { Box, Text as HarmonyText } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -15,6 +17,7 @@ import {
   Form,
   Formik,
   FormikConfig,
+  FormikErrors,
   FormikHelpers,
   FormikValues,
   useFormikContext
@@ -38,16 +41,24 @@ type MenuFormProps = {
   label: string
   icon: ReactNode
   menuFields: ReactNode
+  displayMenuErrorMessage?: (errors: FormikErrors<any>) => Nullable<string>
 }
 
 const MenuForm = (props: MenuFormProps) => {
-  const { isOpen, onClose, label, icon, menuFields } = props
-  const { resetForm } = useFormikContext()
+  const { isOpen, onClose, label, icon, menuFields, displayMenuErrorMessage } =
+    props
+  const { resetForm, errors } = useFormikContext()
 
   const handleCancel = useCallback(() => {
     resetForm()
     onClose()
   }, [resetForm, onClose])
+
+  const errorMessage = useMemo(() => {
+    if (errors && displayMenuErrorMessage) {
+      return displayMenuErrorMessage(errors)
+    }
+  }, [displayMenuErrorMessage, errors])
 
   return (
     <Modal onClose={handleCancel} isOpen={isOpen} size='medium'>
@@ -57,7 +68,14 @@ const MenuForm = (props: MenuFormProps) => {
       <ModalContent>
         <Form id={label}>{menuFields}</Form>
       </ModalContent>
-      <ModalFooter>
+      <ModalFooter className={styles.footer}>
+        {errorMessage ? (
+          <Box pb='l' ph='xl'>
+            <HarmonyText variant='body' color='danger' size='s'>
+              {errorMessage}
+            </HarmonyText>
+          </Box>
+        ) : null}
         <Button
           form={label}
           type={ButtonType.PRIMARY}
@@ -103,6 +121,9 @@ type ContextualMenuProps<FormValues extends FormikValues> = {
   menuFields: ReactNode
   error?: boolean
   errorMessage?: string
+  displayMenuErrorMessage?: (
+    errors: FormikErrors<FormValues>
+  ) => Nullable<string>
   previewOverride?: (toggleMenu: () => void) => ReactNode
 } & FormikConfig<FormValues>
 
@@ -118,6 +139,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     onSubmit,
     error,
     errorMessage,
+    displayMenuErrorMessage,
     previewOverride,
     ...formikProps
   } = props
@@ -159,6 +181,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           isOpen={isMenuOpen}
           onClose={toggleMenu}
           menuFields={menuFields}
+          displayMenuErrorMessage={displayMenuErrorMessage}
         />
       </Formik>
     </>

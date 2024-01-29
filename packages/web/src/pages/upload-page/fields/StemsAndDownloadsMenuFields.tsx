@@ -23,6 +23,7 @@ import { processFiles } from '../store/utils/processFiles'
 
 import {
   DOWNLOAD_CONDITIONS,
+  IS_DOWNLOAD_GATED,
   STREAM_CONDITIONS,
   USDCPurchaseRemoteConfig
 } from './AccessAndSaleField'
@@ -32,21 +33,22 @@ import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
 import { DOWNLOAD_PRICE } from './download-availability/DownloadPriceField'
 
-export const ALLOW_DOWNLOAD = 'download.is_downloadable'
-export const FOLLOWER_GATED = 'download.requires_follow'
 export const IS_DOWNLOADABLE = 'is_downloadable'
 export const IS_ORIGINAL_AVAILABLE = 'is_original_available'
+export const DOWNLOAD_REQUIRES_FOLLOW = 'download_requires_follow'
 export const STEMS = 'stems'
+export const DOWNLOAD = 'download'
+export const CID = 'download.cid'
 export const DOWNLOAD_AVAILABILITY_TYPE = 'download_availability_type'
 
 const messages = {
   description:
     'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
-  [ALLOW_DOWNLOAD]: {
+  [IS_DOWNLOADABLE]: {
     header: 'Allow Full Track Download',
     description: 'Allow your fans to download a copy of your full track.'
   },
-  [FOLLOWER_GATED]: {
+  [DOWNLOAD_REQUIRES_FOLLOW]: {
     header: 'Available Only to Followers',
     description:
       'Make your stems and source files available only to your followers'
@@ -65,14 +67,15 @@ const messages = {
 }
 
 export type StemsAndDownloadsFormValues = {
-  [ALLOW_DOWNLOAD]: boolean
-  [FOLLOWER_GATED]: boolean
   [IS_DOWNLOADABLE]: boolean
   [IS_ORIGINAL_AVAILABLE]: boolean
+  [DOWNLOAD_REQUIRES_FOLLOW]: boolean
+  [STEMS]: StemUpload[]
+  [CID]: Nullable<string>
+  [IS_DOWNLOAD_GATED]: boolean
   [DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
   [STREAM_CONDITIONS]: Nullable<AccessConditions>
   [DOWNLOAD_AVAILABILITY_TYPE]: DownloadTrackAvailabilityType
-  [STEMS]: StemUpload[]
 }
 
 export const stemsAndDownloadsSchema = ({
@@ -81,12 +84,9 @@ export const stemsAndDownloadsSchema = ({
 }: USDCPurchaseRemoteConfig) =>
   z
     .object({
-      // [ALLOW_DOWNLOAD]: z.boolean(),
-      // [FOLLOWER_GATED]: z.boolean(),
-      [ALLOW_DOWNLOAD]: z.any(),
-      [FOLLOWER_GATED]: z.any(),
-      [STEMS]: z.any(),
       [IS_DOWNLOADABLE]: z.boolean(),
+      [DOWNLOAD_REQUIRES_FOLLOW]: z.boolean(),
+      [STEMS]: z.any(),
       [IS_ORIGINAL_AVAILABLE]: z.boolean(),
       [DOWNLOAD_CONDITIONS]: z.any(),
       [STREAM_CONDITIONS]: z.any(),
@@ -129,59 +129,95 @@ export const stemsAndDownloadsSchema = ({
         path: [DOWNLOAD_PRICE]
       }
     )
+    .refine(
+      // cannot be download gated if no downloadable assets
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
+        const isDownloadGated = [
+          DownloadTrackAvailabilityType.FOLLOWERS,
+          DownloadTrackAvailabilityType.USDC_PURCHASE
+        ].includes(availabilityType)
+        const isDownloadable = formValues[IS_DOWNLOADABLE]
+        const stems = formValues[STEMS]
+        const hasStems = stems.length > 0
+        const hasDownloadableAssets = isDownloadable || hasStems
+        return !isDownloadGated || hasDownloadableAssets
+      },
+      {
+        message: messages.noDownloadableAssets,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
 
 export const StemsAndDownloadsMenuFields = () => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
-
+  const [{ value: isDownloadable }, , { setValue: isDownloadableSetValue }] =
+    useField(IS_DOWNLOADABLE)
+  const [, , { setValue: setIsOriginalAvailable }] = useField(
+    IS_ORIGINAL_AVAILABLE
+  )
   const [
-    { onChange: allowDownloadOnChange },
-    ,
-    { setValue: allowDownloadSetValue }
-  ] = useField(ALLOW_DOWNLOAD)
-  const [
-    { onChange: followerGatedOnChange },
+    { value: downloadRequiresFollow },
     ,
     { setValue: followerGatedSetValue }
-  ] = useField(FOLLOWER_GATED)
-  const [
-    { onChange: isDownloadableOnChange },
-    ,
-    { setValue: setIsDownloadable }
-  ] = useField(IS_DOWNLOADABLE)
-  const [
-    { onChange: isOriginalAvailableOnChange },
-    ,
-    { setValue: setIsOriginalAvailable }
-  ] = useField(IS_ORIGINAL_AVAILABLE)
+  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: stemsValue }, , { setValue: setStems }] =
     useField<StemUploadWithFile[]>(STEMS)
+  const [{ value: streamConditions }] =
+    useField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
     useField<DownloadTrackAvailabilityType>(DOWNLOAD_AVAILABILITY_TYPE)
+  const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(
+    availabilityType !== DownloadTrackAvailabilityType.PUBLIC
+  )
 
-  const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(false)
-
+  // If the track is download gated for the first time,
+  // set the track to be downloadable and allow lossless files
   useEffect(() => {
-    if (
+    const firstTimeDownloadGated =
       [
         DownloadTrackAvailabilityType.FOLLOWERS,
         DownloadTrackAvailabilityType.USDC_PURCHASE
-      ].includes(availabilityType) &&
-      !isAvailabilityTouched
-    ) {
-      allowDownloadSetValue(true)
-      setIsDownloadable(true)
+      ].includes(availabilityType) && !isAvailabilityTouched
+    if (firstTimeDownloadGated) {
+      isDownloadableSetValue(true)
       setIsOriginalAvailable(true)
       setIsAvailabilityTouched(true)
     }
   }, [
     availabilityType,
     isAvailabilityTouched,
-    allowDownloadSetValue,
-    setIsDownloadable,
+    isDownloadableSetValue,
     setIsOriginalAvailable
   ])
+
+  // Allow lossless files by default if the track is downloadable.
+  // If there are no downloadable assets, set the requires follow switch to false.
+  // (the latter is only relevant until lossless downloads feature is live)
+  // Note that the useEffect has been preferred to the corresponding onChange handlers
+  // as those seemed to cause unwanted race conditions resulting in errors showing up incorrectly.
+  useEffect(() => {
+    if (isDownloadable) {
+      setIsOriginalAvailable(true)
+    } else if (stemsValue.length === 0) {
+      followerGatedSetValue(false)
+    }
+  }, [
+    followerGatedSetValue,
+    isDownloadable,
+    setIsOriginalAvailable,
+    stemsValue.length
+  ])
+
+  // If download requires follow is enabled, set the track to be downloadable.
+  useEffect(() => {
+    if (downloadRequiresFollow) {
+      isDownloadableSetValue(true)
+    }
+  }, [downloadRequiresFollow, isDownloadableSetValue])
 
   const invalidAudioFile = (
     name: string,
@@ -229,18 +265,9 @@ export const StemsAndDownloadsMenuFields = () => {
         />
       ) : null}
       <SwitchRowField
-        name={ALLOW_DOWNLOAD}
-        header={messages[ALLOW_DOWNLOAD].header}
-        description={messages[ALLOW_DOWNLOAD].description}
-        onChange={(e) => {
-          allowDownloadOnChange(e)
-          isDownloadableOnChange(e)
-          if (!e.target.checked) {
-            followerGatedSetValue(false)
-          } else {
-            setIsOriginalAvailable(true)
-          }
-        }}
+        name={IS_DOWNLOADABLE}
+        header={messages[IS_DOWNLOADABLE].header}
+        description={messages[IS_DOWNLOADABLE].description}
       />
       <Divider />
       {isLosslessDownloadsEnabled ? (
@@ -248,20 +275,13 @@ export const StemsAndDownloadsMenuFields = () => {
           name={IS_ORIGINAL_AVAILABLE}
           header={messages[IS_ORIGINAL_AVAILABLE].header}
           description={messages[IS_ORIGINAL_AVAILABLE].description}
-          onChange={isOriginalAvailableOnChange}
         />
       ) : (
         <SwitchRowField
-          name={FOLLOWER_GATED}
-          header={messages[FOLLOWER_GATED].header}
-          description={messages[FOLLOWER_GATED].description}
-          onChange={(e) => {
-            followerGatedOnChange(e)
-            if (e.target.checked) {
-              allowDownloadSetValue(true)
-              setIsDownloadable(true)
-            }
-          }}
+          name={DOWNLOAD_REQUIRES_FOLLOW}
+          header={messages[DOWNLOAD_REQUIRES_FOLLOW].header}
+          description={messages[DOWNLOAD_REQUIRES_FOLLOW].description}
+          disabled={!!streamConditions}
         />
       )}
       <Divider />
