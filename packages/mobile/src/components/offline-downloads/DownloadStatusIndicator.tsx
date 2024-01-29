@@ -5,10 +5,12 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import Rive from 'rive-react-native'
 
-import { IconDownloadFailed } from '@audius/harmony-native'
-import { IconDownloadInactive } from '@audius/harmony-native'
-import { IconDownloadQueued } from '@audius/harmony-native'
-import { IconDownloaded } from '@audius/harmony-native'
+import {
+  IconDownloadFailed,
+  IconDownloadInactive,
+  IconDownloadQueued,
+  IconDownloaded
+} from '@audius/harmony-native'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'

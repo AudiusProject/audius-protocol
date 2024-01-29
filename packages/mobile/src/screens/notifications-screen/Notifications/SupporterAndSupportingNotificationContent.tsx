@@ -1,8 +1,7 @@
 import type { User } from '@audius/common'
 import { View } from 'react-native'
 
-import { IconTip } from '@audius/harmony-native'
-import { IconTrending } from '@audius/harmony-native'
+import { IconTip, IconTrending } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'

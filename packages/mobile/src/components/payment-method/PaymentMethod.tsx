@@ -12,9 +12,11 @@ import BN from 'bn.js'
 import { FlatList, View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCreditCard } from '@audius/harmony-native'
-import { IconDonate } from '@audius/harmony-native'
-import { IconTransaction } from '@audius/harmony-native'
+import {
+  IconCreditCard,
+  IconDonate,
+  IconTransaction
+} from '@audius/harmony-native'
 import { Divider, RadioButton, Text } from 'app/components/core'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'

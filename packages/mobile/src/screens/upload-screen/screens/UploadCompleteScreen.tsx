@@ -14,9 +14,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
+import { IconShare, IconUpload } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import { IconShare } from '@audius/harmony-native'
-import { IconUpload } from '@audius/harmony-native'
 import { Text, TextButton, Tile, Button } from 'app/components/core'
 import {
   LineupTileSkeleton,

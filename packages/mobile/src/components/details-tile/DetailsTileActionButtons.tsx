@@ -9,10 +9,12 @@ import {
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconKebabHorizontal } from '@audius/harmony-native'
-import { IconPencil } from '@audius/harmony-native'
-import { IconRocket } from '@audius/harmony-native'
-import { IconShare } from '@audius/harmony-native'
+import {
+  IconKebabHorizontal,
+  IconPencil,
+  IconRocket,
+  IconShare
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'

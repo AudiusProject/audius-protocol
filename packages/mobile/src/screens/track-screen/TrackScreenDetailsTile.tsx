@@ -39,11 +39,13 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import { IconCart } from '@audius/harmony-native'
-import { IconCollectible } from '@audius/harmony-native'
-import { IconHidden } from '@audius/harmony-native'
-import { IconRobot } from '@audius/harmony-native'
-import { IconSpecialAccess } from '@audius/harmony-native'
+import {
+  IconCart,
+  IconCollectible,
+  IconHidden,
+  IconRobot,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'

@@ -1,10 +1,12 @@
 import { TimeRange, trendingPageSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import { IconAllTime } from '@audius/harmony-native'
-import { IconDay } from '@audius/harmony-native'
-import { IconMonth } from '@audius/harmony-native'
-import { IconTrending } from '@audius/harmony-native'
+import {
+  IconAllTime,
+  IconDay,
+  IconMonth,
+  IconTrending
+} from '@audius/harmony-native'
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'

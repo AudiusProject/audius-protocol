@@ -14,11 +14,13 @@ import { Animated, View, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconImage } from '@audius/harmony-native'
-import { IconInstagram } from '@audius/harmony-native'
-import { IconTwitter } from '@audius/harmony-native'
-import { IconUser } from '@audius/harmony-native'
-import { IconVerified } from '@audius/harmony-native'
+import {
+  IconImage,
+  IconInstagram,
+  IconTwitter,
+  IconUser,
+  IconVerified
+} from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { SocialButton } from 'app/components/social-button'

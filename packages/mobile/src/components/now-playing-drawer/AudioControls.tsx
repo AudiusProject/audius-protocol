@@ -10,10 +10,12 @@ import {
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconNext } from '@audius/harmony-native'
-import { IconPodcastBack } from '@audius/harmony-native'
-import { IconPodcastForward } from '@audius/harmony-native'
-import { IconPrev } from '@audius/harmony-native'
+import {
+  IconNext,
+  IconPodcastBack,
+  IconPodcastForward,
+  IconPrev
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

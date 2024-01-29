@@ -12,17 +12,19 @@ import {
   usersSocialActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
+import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconInstagram } from '@audius/harmony-native'
-import { IconLink } from '@audius/harmony-native'
-import { IconMessage } from '@audius/harmony-native'
-import { IconShare } from '@audius/harmony-native'
-import { IconSnapchat } from '@audius/harmony-native'
-import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
-import { IconTwitterBird } from '@audius/harmony-native'
+import {
+  IconInstagram,
+  IconLink,
+  IconMessage,
+  IconShare,
+  IconSnapchat,
+  IconTwitterBird
+} from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

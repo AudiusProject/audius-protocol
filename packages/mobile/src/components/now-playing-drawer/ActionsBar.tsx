@@ -28,10 +28,12 @@ import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import { IconAirplay } from '@audius/harmony-native'
-import { IconChromecast } from '@audius/harmony-native'
-import { IconKebabHorizontal } from '@audius/harmony-native'
-import { IconShare } from '@audius/harmony-native'
+import {
+  IconAirplay,
+  IconChromecast,
+  IconKebabHorizontal,
+  IconShare
+} from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { Button, IconButton } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'

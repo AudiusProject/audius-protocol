@@ -5,10 +5,12 @@ import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 
-import { IconCart } from '@audius/harmony-native'
-import { IconDownload } from '@audius/harmony-native'
-import { IconFavorite } from '@audius/harmony-native'
-import { IconRepost } from '@audius/harmony-native'
+import {
+  IconCart,
+  IconDownload,
+  IconFavorite,
+  IconRepost
+} from '@audius/harmony-native'
 import { Button, Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'

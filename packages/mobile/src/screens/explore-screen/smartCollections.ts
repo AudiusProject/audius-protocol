@@ -11,12 +11,14 @@ import {
   EXPLORE_REMIXABLES_PAGE
 } from 'utils/route'
 
-import { IconExploreFeelingLucky } from '@audius/harmony-native'
-import { IconExploreMostLoved } from '@audius/harmony-native'
-import { IconExploreNewReleases } from '@audius/harmony-native'
-import { IconExploreRemixables } from '@audius/harmony-native'
-import { IconExploreRotation } from '@audius/harmony-native'
-import { IconExploreUnderRadar } from '@audius/harmony-native'
+import {
+  IconExploreFeelingLucky,
+  IconExploreMostLoved,
+  IconExploreNewReleases,
+  IconExploreRemixables,
+  IconExploreRotation,
+  IconExploreUnderRadar
+} from '@audius/harmony-native'
 
 export type SmartCollectionScreen =
   | 'UnderTheRadar'

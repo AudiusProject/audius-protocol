@@ -17,9 +17,11 @@ import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 
-import { IconCart } from '@audius/harmony-native'
-import { IconCollectible } from '@audius/harmony-native'
-import { IconSpecialAccess } from '@audius/harmony-native'
+import {
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { DogEar, Text } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'

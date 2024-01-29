@@ -13,9 +13,11 @@ import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconBlockMessages } from '@audius/harmony-native'
-import { IconKebabHorizontal } from '@audius/harmony-native'
-import { IconUser } from '@audius/harmony-native'
+import {
+  IconBlockMessages,
+  IconKebabHorizontal,
+  IconUser
+} from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'

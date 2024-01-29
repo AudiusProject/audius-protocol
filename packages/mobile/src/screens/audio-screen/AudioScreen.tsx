@@ -19,12 +19,14 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCrown } from '@audius/harmony-native'
-import { IconDiscord } from '@audius/harmony-native'
-import { IconInfo } from '@audius/harmony-native'
-import { IconReceive } from '@audius/harmony-native'
-import { IconSend } from '@audius/harmony-native'
-import { IconWallet } from '@audius/harmony-native'
+import {
+  IconCrown,
+  IconDiscord,
+  IconInfo,
+  IconReceive,
+  IconSend,
+  IconWallet
+} from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
 import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'

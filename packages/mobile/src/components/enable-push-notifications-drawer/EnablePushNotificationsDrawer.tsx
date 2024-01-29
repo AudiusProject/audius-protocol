@@ -4,14 +4,16 @@ import { settingsPageActions, PushNotificationSetting } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconCoSign } from '@audius/harmony-native'
-import { IconFollow } from '@audius/harmony-native'
-import { IconNotification } from '@audius/harmony-native'
-import { IconHeart } from '@audius/harmony-native'
-import { IconMessage } from '@audius/harmony-native'
-import { IconNewReleases } from '@audius/harmony-native'
-import { IconRemix } from '@audius/harmony-native'
-import { IconRepost } from '@audius/harmony-native'
+import {
+  IconCoSign,
+  IconFollow,
+  IconNotification,
+  IconHeart,
+  IconMessage,
+  IconNewReleases,
+  IconRemix,
+  IconRepost
+} from '@audius/harmony-native'
 import { Button, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'

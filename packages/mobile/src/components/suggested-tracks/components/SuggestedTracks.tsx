@@ -7,8 +7,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { IconCaretDown } from '@audius/harmony-native'
-import { IconRefresh } from '@audius/harmony-native'
+import { IconCaretDown, IconRefresh } from '@audius/harmony-native'
 import {
   Button,
   Divider,

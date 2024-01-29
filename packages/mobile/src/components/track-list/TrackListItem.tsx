@@ -26,10 +26,12 @@ import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import { IconDrag } from '@audius/harmony-native'
-import { IconKebabHorizontal } from '@audius/harmony-native'
-import { IconLock } from '@audius/harmony-native'
-import { IconRemoveTrack } from '@audius/harmony-native'
+import {
+  IconDrag,
+  IconKebabHorizontal,
+  IconLock,
+  IconRemoveTrack
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

@@ -11,14 +11,16 @@ import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 
-import { IconCrown } from '@audius/harmony-native'
-import { IconDonate } from '@audius/harmony-native'
-import { IconEmbed } from '@audius/harmony-native'
-import { IconListeningHistory } from '@audius/harmony-native'
-import { IconMessage } from '@audius/harmony-native'
-import { IconSettings } from '@audius/harmony-native'
-import { IconUpload } from '@audius/harmony-native'
-import { IconUser } from '@audius/harmony-native'
+import {
+  IconCrown,
+  IconDonate,
+  IconEmbed,
+  IconListeningHistory,
+  IconMessage,
+  IconSettings,
+  IconUpload,
+  IconUser
+} from '@audius/harmony-native'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
 import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
 import { env } from 'app/env'

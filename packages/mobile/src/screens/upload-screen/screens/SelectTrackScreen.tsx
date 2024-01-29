@@ -5,8 +5,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import DocumentPicker from 'react-native-document-picker'
 import { useAsyncFn } from 'react-use'
 
-import { IconRemove } from '@audius/harmony-native'
-import { IconUpload } from '@audius/harmony-native'
+import { IconRemove, IconUpload } from '@audius/harmony-native'
 import {
   Button,
   ErrorText,

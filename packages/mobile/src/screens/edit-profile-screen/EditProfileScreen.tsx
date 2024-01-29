@@ -10,11 +10,13 @@ import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconDonate } from '@audius/harmony-native'
-import { IconInstagram } from '@audius/harmony-native'
-import { IconLink } from '@audius/harmony-native'
-import { IconTikTokInverted } from '@audius/harmony-native'
-import { IconTwitterBird } from '@audius/harmony-native'
+import {
+  IconDonate,
+  IconInstagram,
+  IconLink,
+  IconTikTokInverted,
+  IconTwitterBird
+} from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'

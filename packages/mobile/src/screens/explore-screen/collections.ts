@@ -3,16 +3,18 @@ import type { ComponentType } from 'react'
 import type { ImageSourcePropType } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
+import {
+  IconCart,
+  IconCassette,
+  IconExploreDJ,
+  IconExploreTopAlbums,
+  IconExploreTopPlaylists
+} from '@audius/harmony-native'
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
 import EmojiFire from 'app/assets/images/emojis/fire.png'
 import EmojiHeartWithArrow from 'app/assets/images/emojis/heart-with-arrow.png'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import EmojiThinkingFace from 'app/assets/images/emojis/thinking-face.png'
-import { IconCart } from '@audius/harmony-native'
-import { IconCassette } from '@audius/harmony-native'
-import { IconExploreDJ } from '@audius/harmony-native'
-import { IconExploreTopAlbums } from '@audius/harmony-native'
-import { IconExploreTopPlaylists } from '@audius/harmony-native'
 
 import type { ExploreCollectionsVariant } from './types'
 

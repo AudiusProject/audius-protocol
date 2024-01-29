@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
@@ -24,9 +25,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { IconArrow } from '@audius/harmony-native'
-import { IconCheck } from '@audius/harmony-native'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import { IconArrow, IconCheck } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'

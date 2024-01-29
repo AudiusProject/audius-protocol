@@ -10,12 +10,14 @@ import {
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconKey } from '@audius/harmony-native'
-import { IconRecoveryEmail } from '@audius/harmony-native'
-import { IconSignOut } from '@audius/harmony-native'
-import { IconSkull } from '@audius/harmony-native'
-import { IconUser } from '@audius/harmony-native'
-import { IconVerified } from '@audius/harmony-native'
+import {
+  IconKey,
+  IconRecoveryEmail,
+  IconSignOut,
+  IconSkull,
+  IconUser,
+  IconVerified
+} from '@audius/harmony-native'
 import { ScrollView, Screen, ScreenContent } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'

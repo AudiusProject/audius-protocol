@@ -5,10 +5,12 @@ import { cacheUsersSelectors } from '@audius/common'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
-import { IconBronzeBadge } from '@audius/harmony-native'
-import { IconGoldBadge } from '@audius/harmony-native'
-import { IconPlatinumBadge } from '@audius/harmony-native'
-import { IconSilverBadge } from '@audius/harmony-native'
+import {
+  IconBronzeBadge,
+  IconGoldBadge,
+  IconPlatinumBadge,
+  IconSilverBadge
+} from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

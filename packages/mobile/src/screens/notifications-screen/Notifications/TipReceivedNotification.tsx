@@ -15,8 +15,8 @@ import type {
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import { IconTip } from '@audius/harmony-native'
+import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import { Text } from 'app/components/core'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'

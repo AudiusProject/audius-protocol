@@ -1,7 +1,6 @@
 import { View, Text } from 'react-native'
 
-import { IconDonate } from '@audius/harmony-native'
-import { IconLink } from '@audius/harmony-native'
+import { IconDonate, IconLink } from '@audius/harmony-native'
 import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

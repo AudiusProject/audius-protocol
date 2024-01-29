@@ -2,12 +2,14 @@ import { DogEarType } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
+import {
+  IconCart,
+  IconCollectible,
+  IconHidden,
+  IconSpecialAccess,
+  IconStar
+} from '@audius/harmony-native'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
-import { IconCart } from '@audius/harmony-native'
-import { IconCollectible } from '@audius/harmony-native'
-import { IconHidden } from '@audius/harmony-native'
-import { IconSpecialAccess } from '@audius/harmony-native'
-import { IconStar } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'

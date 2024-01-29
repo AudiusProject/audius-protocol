@@ -3,12 +3,14 @@ import { useCallback } from 'react'
 import { FeatureFlags } from '@audius/common'
 import { Image, Platform } from 'react-native'
 
+import {
+  IconDownload,
+  IconInfo,
+  IconMessage,
+  IconNotificationOn,
+  IconSettings
+} from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
-import { IconDownload } from '@audius/harmony-native'
-import { IconInfo } from '@audius/harmony-native'
-import { IconMessage } from '@audius/harmony-native'
-import { IconNotificationOn } from '@audius/harmony-native'
-import { IconSettings } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'

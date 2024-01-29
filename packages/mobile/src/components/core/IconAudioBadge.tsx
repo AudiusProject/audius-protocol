@@ -3,11 +3,13 @@ import type { ImageStyle } from 'react-native'
 import { Image } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'
-import { IconBronzeBadge } from '@audius/harmony-native'
-import { IconGoldBadge } from '@audius/harmony-native'
-import { IconPlatinumBadge } from '@audius/harmony-native'
-import { IconSilverBadge } from '@audius/harmony-native'
-import { IconNoTierBadge } from '@audius/harmony-native'
+import {
+  IconBronzeBadge,
+  IconGoldBadge,
+  IconPlatinumBadge,
+  IconSilverBadge,
+  IconNoTierBadge
+} from '@audius/harmony-native'
 
 const audioTierMap = {
   none: null,

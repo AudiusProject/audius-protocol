@@ -3,9 +3,11 @@ import { useCallback, useState } from 'react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import { IconInstagram } from '@audius/harmony-native'
-import { IconTikTok } from '@audius/harmony-native'
-import { IconTwitterBird } from '@audius/harmony-native'
+import {
+  IconInstagram,
+  IconTikTok,
+  IconTwitterBird
+} from '@audius/harmony-native'
 import type { LinkProps, IconButtonProps } from 'app/components/core'
 import { Text, Link, Hyperlink } from 'app/components/core'
 import Skeleton from 'app/components/skeleton'

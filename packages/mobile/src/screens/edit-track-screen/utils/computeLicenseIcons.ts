@@ -3,11 +3,13 @@ import type { ComponentType } from 'react'
 import type { Nullable } from '@audius/common'
 import type { SvgProps } from 'react-native-svg'
 
-import { IconAllowAttribution } from '@audius/harmony-native'
-import { IconCreativeCommons } from '@audius/harmony-native'
-import { IconNonCommercialUse } from '@audius/harmony-native'
-import { IconNoDerivatives } from '@audius/harmony-native'
-import { IconShareAlike } from '@audius/harmony-native'
+import {
+  IconAllowAttribution,
+  IconCreativeCommons,
+  IconNonCommercialUse,
+  IconNoDerivatives,
+  IconShareAlike
+} from '@audius/harmony-native'
 
 export const computeLicenseIcons = (
   allowAttribution: boolean,

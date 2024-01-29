@@ -18,11 +18,13 @@ import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconCalendarMonth } from '@audius/harmony-native'
-import { IconHeart } from '@audius/harmony-native'
-import { IconHidden } from '@audius/harmony-native'
-import { IconRepost } from '@audius/harmony-native'
-import { IconStar } from '@audius/harmony-native'
+import {
+  IconCalendarMonth,
+  IconHeart,
+  IconHidden,
+  IconRepost,
+  IconStar
+} from '@audius/harmony-native'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'

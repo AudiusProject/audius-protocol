@@ -1,6 +1,4 @@
-import { IconInstagram } from '@audius/harmony-native'
-import { IconTikTok } from '@audius/harmony-native'
-import { IconTwitter } from '@audius/harmony-native'
+import { IconInstagram, IconTikTok, IconTwitter } from '@audius/harmony-native'
 import { Button, type ButtonProps } from 'app/components/core'
 
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'

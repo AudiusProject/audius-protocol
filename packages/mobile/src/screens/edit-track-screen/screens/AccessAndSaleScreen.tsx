@@ -14,8 +14,7 @@ import {
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 
-import { IconCaretLeft } from '@audius/harmony-native'
-import { IconCart } from '@audius/harmony-native'
+import { IconCaretLeft, IconCart } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'

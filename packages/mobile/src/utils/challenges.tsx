@@ -3,6 +3,12 @@ import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
+import {
+  IconLink,
+  IconArrow,
+  IconCheck,
+  IconUpload
+} from '@audius/harmony-native'
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
 import Cart from 'app/assets/images/emojis/cart.png'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
@@ -10,16 +16,12 @@ import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import Gear from 'app/assets/images/emojis/gear.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'
 import IncomingEnvelope from 'app/assets/images/emojis/incoming-envelope.png'
-import { IconLink } from '@audius/harmony-native'
 import LoveLetter from 'app/assets/images/emojis/love-letter.png'
 import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arrow.png'
 import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
-import { IconArrow } from '@audius/harmony-native'
-import { IconCheck } from '@audius/harmony-native'
-import { IconUpload } from '@audius/harmony-native'
 
 export const messages = {
   sendFirstTipTitle: 'Send Your First Tip',

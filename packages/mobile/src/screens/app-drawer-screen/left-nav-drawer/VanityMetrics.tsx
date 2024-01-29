@@ -13,10 +13,12 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconNote } from '@audius/harmony-native'
-import { IconPlaylists } from '@audius/harmony-native'
-import { IconUserFollowers } from '@audius/harmony-native'
-import { IconUserList } from '@audius/harmony-native'
+import {
+  IconNote,
+  IconPlaylists,
+  IconUserFollowers,
+  IconUserList
+} from '@audius/harmony-native'
 import { Divider, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

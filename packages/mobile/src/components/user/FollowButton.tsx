@@ -5,8 +5,7 @@ import { cacheUsersSelectors, usersSocialActions } from '@audius/common'
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconFollow } from '@audius/harmony-native'
-import { IconFollowing } from '@audius/harmony-native'
+import { IconFollow, IconFollowing } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button } from 'app/components/core'
 const { followUser, unfollowUser } = usersSocialActions

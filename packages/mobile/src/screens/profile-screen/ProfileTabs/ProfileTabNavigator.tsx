@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 
 import type { Animated } from 'react-native'
 
-import { IconAlbum } from '@audius/harmony-native'
-import { IconCollectibles } from '@audius/harmony-native'
-import { IconNote } from '@audius/harmony-native'
-import { IconPlaylists } from '@audius/harmony-native'
-import { IconRepost } from '@audius/harmony-native'
+import {
+  IconAlbum,
+  IconCollectibles,
+  IconNote,
+  IconPlaylists,
+  IconRepost
+} from '@audius/harmony-native'
 import {
   collapsibleTabScreen,
   CollapsibleTabNavigator

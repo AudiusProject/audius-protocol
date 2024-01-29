@@ -1,7 +1,9 @@
-import { IconAlbum } from '@audius/harmony-native'
-import { IconLibrary } from '@audius/harmony-native'
-import { IconNote } from '@audius/harmony-native'
-import { IconPlaylists } from '@audius/harmony-native'
+import {
+  IconAlbum,
+  IconLibrary,
+  IconNote,
+  IconPlaylists
+} from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'

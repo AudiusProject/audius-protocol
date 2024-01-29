@@ -1,7 +1,6 @@
 import { View } from 'react-native'
 
-import { IconCrown } from '@audius/harmony-native'
-import { IconTrending } from '@audius/harmony-native'
+import { IconCrown, IconTrending } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
