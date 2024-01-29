@@ -217,10 +217,12 @@ export const getCombinedDefaultGatedConditionValues = (
 type AccessAndSaleFieldProps = {
   isUpload?: boolean
   trackLength?: number
+  forceOpen?: boolean
+  setForceOpen?: (value: boolean) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload } = props
+  const { isUpload, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -582,6 +584,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isScheduledRelease={isScheduledRelease}
         />
       }
+      forceOpen={forceOpen}
+      setForceOpen={setForceOpen}
     />
   )
 }

@@ -1,4 +1,4 @@
-import { ReactNode, ReactElement, useCallback, useMemo } from 'react'
+import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
 
 import { Nullable } from '@audius/common'
 import { Box, Text as HarmonyText } from '@audius/harmony'
@@ -35,19 +35,32 @@ const messages = {
   save: 'Save'
 }
 
+export enum MenuFormCallbackStatus {
+  OPEN_ACCESS_AND_SALE = 'OPEN_ACCESS_AND_SALE'
+}
+
 type MenuFormProps = {
   isOpen: boolean
   onClose: () => void
   label: string
   icon: ReactNode
   menuFields: ReactNode
+  closeMenuCallback?: (data?: any) => void
   displayMenuErrorMessage?: (errors: FormikErrors<any>) => Nullable<string>
 }
 
 const MenuForm = (props: MenuFormProps) => {
-  const { isOpen, onClose, label, icon, menuFields, displayMenuErrorMessage } =
-    props
-  const { resetForm, errors } = useFormikContext()
+  const {
+    isOpen,
+    onClose,
+    label,
+    icon,
+    menuFields,
+    closeMenuCallback,
+    displayMenuErrorMessage
+  } = props
+  const { resetForm, errors, initialStatus, status, setStatus } =
+    useFormikContext()
 
   const handleCancel = useCallback(() => {
     resetForm()
@@ -59,6 +72,13 @@ const MenuForm = (props: MenuFormProps) => {
       return displayMenuErrorMessage(errors)
     }
   }, [displayMenuErrorMessage, errors])
+
+  useEffect(() => {
+    if (!isOpen) {
+      closeMenuCallback?.(status)
+      setStatus(initialStatus)
+    }
+  }, [isOpen, closeMenuCallback, status, setStatus, initialStatus])
 
   return (
     <Modal onClose={handleCancel} isOpen={isOpen} size='medium'>
@@ -119,6 +139,9 @@ type ContextualMenuProps<FormValues extends FormikValues> = {
   icon: ReactElement
   renderValue: () => JSX.Element | null
   menuFields: ReactNode
+  closeMenuCallback?: (data?: any) => void
+  forceOpen?: boolean
+  setForceOpen?: (value: boolean) => void
   error?: boolean
   errorMessage?: string
   displayMenuErrorMessage?: (
@@ -137,6 +160,9 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     menuFields,
     renderValue,
     onSubmit,
+    forceOpen,
+    setForceOpen,
+    closeMenuCallback,
     error,
     errorMessage,
     displayMenuErrorMessage,
@@ -144,6 +170,13 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     ...formikProps
   } = props
   const [isMenuOpen, toggleMenu] = useToggle(false)
+
+  useEffect(() => {
+    if (forceOpen && setForceOpen) {
+      setForceOpen(false)
+      toggleMenu()
+    }
+  }, [forceOpen, setForceOpen, toggleMenu])
 
   const preview = previewOverride ? (
     previewOverride(toggleMenu)
@@ -181,6 +214,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           isOpen={isMenuOpen}
           onClose={toggleMenu}
           menuFields={menuFields}
+          closeMenuCallback={closeMenuCallback}
           displayMenuErrorMessage={displayMenuErrorMessage}
         />
       </Formik>

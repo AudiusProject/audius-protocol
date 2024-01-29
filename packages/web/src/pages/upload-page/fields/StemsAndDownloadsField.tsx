@@ -66,7 +66,13 @@ const messages = {
     price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 }
 
-export const StemsAndDownloadsField = () => {
+type StemsAndDownloadsFieldProps = {
+  closeMenuCallback?: (data?: any) => void
+}
+
+export const StemsAndDownloadsField = ({
+  closeMenuCallback
+}: StemsAndDownloadsFieldProps) => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
@@ -304,6 +310,7 @@ export const StemsAndDownloadsField = () => {
         stemsAndDownloadsSchema(usdcPurchaseConfig)
       )}
       menuFields={<StemsAndDownloadsMenuFields />}
+      closeMenuCallback={closeMenuCallback}
       displayMenuErrorMessage={(
         errors: FormikErrors<StemsAndDownloadsFormValues>
       ) => {
