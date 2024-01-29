@@ -213,6 +213,12 @@ services:
       file: docker-compose.ddex.yml
       service: ddex-mongo
     <<: *common
+  
+  ddex-ingester:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-ingester
+    <<: *common
 
   # Storage (content node)
 
