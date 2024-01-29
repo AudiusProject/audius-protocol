@@ -7,7 +7,7 @@ import Rive from 'rive-react-native'
 
 import {
   IconDownloadFailed,
-  IconDownloadInactive,
+  IconCloudDownloadInactive,
   IconCloudDownloadQueued,
   IconCloudDownload
 } from '@audius/harmony-native'
@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ palette }) => ({
   iconDownloadFailed: {
     fill: palette.secondary
   },
-  iconDownloadInactive: {
+  IconCloudDownloadInactive: {
     fill: palette.neutralLight4
   }
 }))
@@ -95,8 +95,8 @@ export const DownloadStatusIndicator = (
         )
       case OfflineDownloadStatus.INACTIVE:
         return (
-          <IconDownloadInactive
-            fill={styles.iconDownloadInactive.fill}
+          <IconCloudDownloadInactive
+            fill={styles.IconCloudDownloadInactive.fill}
             height={size}
             width={size}
           />
