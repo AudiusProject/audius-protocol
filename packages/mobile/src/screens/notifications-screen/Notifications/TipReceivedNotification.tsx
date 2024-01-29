@@ -15,7 +15,7 @@ import type {
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconTip } from '@audius/harmony-native'
+import { IconTipping } from '@audius/harmony-native'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import { Text } from 'app/components/core'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -111,7 +111,7 @@ export const TipReceivedNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconTip}>
+      <NotificationHeader icon={IconTipping}>
         <NotificationTitle>
           {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
         </NotificationTitle>

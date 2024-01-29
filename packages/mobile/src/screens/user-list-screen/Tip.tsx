@@ -2,7 +2,7 @@ import type { StringWei } from '@audius/common'
 import { formatWei, stringWeiToBN } from '@audius/common'
 import { View } from 'react-native'
 
-import { IconTip } from '@audius/harmony-native'
+import { IconTipping } from '@audius/harmony-native'
 import { AudioText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -34,7 +34,7 @@ export const Tip = (props: TipProps) => {
 
   return (
     <View style={styles.root}>
-      <IconTip fill={neutralLight4} height={15} width={15} />
+      <IconTipping fill={neutralLight4} height={15} width={15} />
       <Text style={styles.amount} color='neutralLight4' weight='bold'>
         {formatWei(stringWeiToBN(amount))}
       </Text>

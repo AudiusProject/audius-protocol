@@ -21,7 +21,7 @@ import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconExternalLink, IconFollow, IconTip } from '@audius/harmony-native'
+import { IconExternalLink, IconFollow, IconTipping } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { Button, LockedStatusBadge, useLink } from 'app/components/core'
@@ -333,7 +333,7 @@ export const DetailsTileNoAccess = ({
             title={messages.sendTip}
             size='large'
             iconPosition='right'
-            icon={IconTip}
+            icon={IconTipping}
             onPress={handleSendTip}
             fullWidth
           />

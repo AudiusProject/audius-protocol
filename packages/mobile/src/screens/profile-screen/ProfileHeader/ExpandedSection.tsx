@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import { IconTip } from '@audius/harmony-native'
+import { IconTipping } from '@audius/harmony-native'
 import { Divider, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -53,7 +53,7 @@ const SupportingSectionTitle = () => {
   const { neutral } = useThemeColors()
   return (
     <View style={styles.titleContainer}>
-      <IconTip height={18} width={18} fill={neutral} style={styles.icon} />
+      <IconTipping height={18} width={18} fill={neutral} style={styles.icon} />
       <Text style={styles.text}>{messages.supporting}</Text>
       <Divider style={styles.divider} />
     </View>
