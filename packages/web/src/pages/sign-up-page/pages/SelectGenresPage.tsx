@@ -3,7 +3,6 @@ import { MouseEventHandler, useCallback, useState } from 'react'
 import {
   Genre,
   Name,
-  selectGenresPageMessages as messages,
   selectGenresSchema,
   selectableGenres
 } from '@audius/common'
@@ -22,6 +21,7 @@ import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
+import { selectGenresPageMessages } from '@audius/common/messages'
 
 type SelectGenresValue = { genres: Genre[] }
 
@@ -90,8 +90,8 @@ export const SelectGenresPage = () => {
               css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Heading
-                heading={messages.header}
-                description={messages.description}
+                heading={selectGenresPageMessages.header}
+                description={selectGenresPageMessages.description}
                 alignItems={!isMobile ? 'center' : undefined}
               />
               <Flex

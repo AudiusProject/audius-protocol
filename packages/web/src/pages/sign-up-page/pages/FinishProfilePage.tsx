@@ -3,8 +3,7 @@ import { useCallback, useRef } from 'react'
 import {
   MAX_DISPLAY_NAME_LENGTH,
   Name,
-  finishProfileSchema,
-  finishProfilePageMessages as messages
+  finishProfileSchema
 } from '@audius/common'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
@@ -37,6 +36,7 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { finishProfilePageMessages } from '@audius/common/messages'
 
 export type FinishProfileValues = {
   profileImage?: ImageFieldValue
@@ -49,14 +49,16 @@ const formSchema = toFormikValidationSchema(finishProfileSchema)
 const ImageUploadErrorText = () => {
   const { errors } = useFormikContext<FinishProfileValues>()
   let errorText
-  if (errors.coverPhoto === messages.coverPhotoUploadError) {
+  if (errors.coverPhoto === finishProfilePageMessages.coverPhotoUploadError) {
     errorText = errors.coverPhoto
   }
   // Profile image error takes priority
-  if (errors.profileImage === messages.profileImageUploadError) {
+  if (
+    errors.profileImage === finishProfilePageMessages.profileImageUploadError
+  ) {
     // If both images have errors, we show a combined error message
     if (errorText !== undefined) {
-      errorText = messages.bothImageUploadError
+      errorText = finishProfilePageMessages.bothImageUploadError
     } else {
       errorText = errors.profileImage
     }
@@ -156,8 +158,8 @@ export const FinishProfilePage = () => {
                 <OutOfText numerator={2} denominator={2} />
               )
             }
-            heading={messages.header}
-            description={messages.description}
+            heading={finishProfilePageMessages.header}
+            description={finishProfilePageMessages.description}
             centered={!isMobile}
           />
           <Paper direction='column' style={{ flexShrink: 0 }}>
@@ -172,8 +174,8 @@ export const FinishProfilePage = () => {
             <HarmonyTextField
               ref={displayNameInputRef}
               name='displayName'
-              label={messages.displayName}
-              placeholder={messages.inputPlaceholder}
+              label={finishProfilePageMessages.displayName}
+              placeholder={finishProfilePageMessages.inputPlaceholder}
               maxLength={MAX_DISPLAY_NAME_LENGTH}
               onChange={(e) => setDisplayName(e.currentTarget.value)}
               css={(theme) => ({
@@ -190,7 +192,7 @@ export const FinishProfilePage = () => {
             postfix={
               isMobile || isSocialConnected ? null : (
                 <PlainButton variant='subdued' onClick={history.goBack}>
-                  {messages.goBack}
+                  {finishProfilePageMessages.goBack}
                 </PlainButton>
               )
             }
@@ -216,7 +218,7 @@ const UploadProfilePhotoHelperText = () => {
         transition: `opacity ${motion.calm}`
       }}
     >
-      {messages.uploadProfilePhoto}
+      {finishProfilePageMessages.uploadProfilePhoto}
     </Text>
   )
 }

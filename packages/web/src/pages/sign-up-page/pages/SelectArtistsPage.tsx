@@ -7,7 +7,6 @@ import {
   convertGenreLabelToValue,
   useGetFeaturedArtists,
   useGetTopArtistsInGenre,
-  selectArtstsPageMessages as messages,
   selectArtistsSchema
 } from '@audius/common'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
@@ -40,6 +39,7 @@ import {
   ScrollView
 } from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
+import { selectArtistsPageMessages } from '@audius/common/messages'
 
 const AnimatedFlex = animated(Flex)
 
@@ -124,7 +124,9 @@ export const SelectArtistsPage = () => {
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
               mode='viewing'
-              backButtonText={isMobile ? undefined : messages.backToGenres}
+              backButtonText={
+                isMobile ? undefined : selectArtistsPageMessages.backToGenres
+              }
             />
             <AnimatedFlex
               direction='column'
@@ -152,8 +154,8 @@ export const SelectArtistsPage = () => {
                 <Heading
                   ref={headerContainerRef}
                   ph={isMobile ? 'l' : undefined}
-                  heading={messages.header}
-                  description={messages.description}
+                  heading={selectArtistsPageMessages.header}
+                  description={selectArtistsPageMessages.description}
                   centered={!isMobile}
                 />
                 <ScrollView
@@ -164,7 +166,7 @@ export const SelectArtistsPage = () => {
                   justifyContent={isMobile ? 'flex-start' : 'center'}
                   role='radiogroup'
                   onChange={handleChangeGenre}
-                  aria-label={messages.genresLabel}
+                  aria-label={selectArtistsPageMessages.genresLabel}
                   disableScroll={!isMobile}
                 >
                   {artistGenres.map((genre) => (
@@ -194,7 +196,7 @@ export const SelectArtistsPage = () => {
                   direction='column'
                 >
                   <HiddenLegend>
-                    {messages.pickArtists(currentGenre)}
+                    {selectArtistsPageMessages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
                   {isLoading || !isMobile ? null : <PreviewArtistHint />}
@@ -223,7 +225,8 @@ export const SelectArtistsPage = () => {
               }}
               postfix={
                 <Text variant='body'>
-                  {messages.selected} {selectedArtists.length || 0}/3
+                  {selectArtistsPageMessages.selected}{' '}
+                  {selectedArtists.length || 0}/3
                 </Text>
               }
             />
