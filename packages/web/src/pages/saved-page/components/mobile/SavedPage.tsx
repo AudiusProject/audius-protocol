@@ -28,7 +28,7 @@ import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconAlbum from 'assets/img/iconAlbum.svg'
+import { IconAlbum } from '@audius/harmony'
 import IconFilter from 'assets/img/iconFilter.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
