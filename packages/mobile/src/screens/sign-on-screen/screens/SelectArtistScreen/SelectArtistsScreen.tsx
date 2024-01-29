@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { selectArtstsPageMessages as messages } from '@audius/common/messages'
+import { selectArtistsPageMessages } from '@audius/common/messages'
 import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {
@@ -42,8 +42,8 @@ export const SelectArtistsScreen = () => {
       <Flex pointerEvents='none' backgroundColor='white'>
         <ReadOnlyAccountHeader />
         <Heading
-          heading={messages.header}
-          description={messages.description}
+          heading={selectArtistsPageMessages.header}
+          description={selectArtistsPageMessages.description}
           gap='s'
           ph='l'
           pv='unit10'
@@ -88,7 +88,8 @@ export const SelectArtistsScreen = () => {
           }}
           postfix={
             <Text variant='body'>
-              {messages.selected} {selectedArtists.length || 0}/3
+              {selectArtistsPageMessages.selected} {selectedArtists.length || 0}
+              /3
             </Text>
           }
         />

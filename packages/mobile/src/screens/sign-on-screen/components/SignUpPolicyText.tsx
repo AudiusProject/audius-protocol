@@ -1,4 +1,4 @@
-import { signUpPolicyMessages as messages } from '@audius/common/messages'
+import { signUpPolicyMessages } from '@audius/common/messages'
 import {
   BASE_URL,
   PRIVACY_POLICY,
@@ -13,13 +13,13 @@ const privacyPolicyLink = `${BASE_URL}${PRIVACY_POLICY}`
 export const SignUpAgreementText = () => {
   return (
     <Text color='default' size='s' strength='default' variant='body'>
-      {messages.agreeTo}
+      {signUpPolicyMessages.agreeTo}
       <TextLink variant='visible' size='s' url={termsOfUseLink}>
-        {messages.termsOfService}
+        {signUpPolicyMessages.termsOfService}
       </TextLink>
-      {messages.and}
+      {signUpPolicyMessages.and}
       <TextLink variant='visible' size='s' url={privacyPolicyLink}>
-        {messages.privacyPolicy}
+        {signUpPolicyMessages.privacyPolicy}
       </TextLink>
     </Text>
   )

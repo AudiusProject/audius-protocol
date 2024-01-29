@@ -1,5 +1,5 @@
 import { emailSchemaMessages } from '@audius/common'
-import { createEmailPageMessages as messages } from '@audius/common/messages'
+import { createEmailPageMessages } from '@audius/common/messages'
 
 import { Hint, IconError, Text, TextLink } from '@audius/harmony-native'
 
@@ -15,7 +15,7 @@ export const EmailInUseHint = (props: EmailInUseHintProps) => {
       <Text variant='body' size='m' textAlign='center'>
         {emailSchemaMessages.emailInUse}{' '}
         <TextLink variant='visible' onPress={() => onChangeScreen('sign-in')}>
-          {messages.signIn}
+          {createEmailPageMessages.signIn}
         </TextLink>
       </Text>
     </Hint>

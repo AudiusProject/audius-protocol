@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { pickHandleSchema, useAudiusQueryContext } from '@audius/common'
-import { pickHandlePageMessages as messages } from '@audius/common/messages'
+import { pickHandlePageMessages } from '@audius/common/messages'
 import { css } from '@emotion/native'
 import { getIsSocialConnected } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
@@ -60,12 +60,12 @@ const SocialMediaSection = ({
     <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
       <Flex direction='column' gap='s'>
         <Text variant='title' size='m'>
-          {messages.claimHandleHeaderPrefix}{' '}
-          <Text color='accent'>@{messages.handle}</Text>
+          {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
+          <Text color='accent'>@{pickHandlePageMessages.handle}</Text>
           <IconVerified size='s' style={{ marginLeft: spacing.xs }} />
         </Text>
         <Text variant='body' size='m'>
-          {messages.claimHandleDescription}
+          {pickHandlePageMessages.claimHandleDescription}
         </Text>
       </Flex>
       <SocialMediaSignUpButtons
@@ -75,7 +75,7 @@ const SocialMediaSection = ({
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size='m'>
-        {messages.claimHandleHeadsUp}
+        {pickHandlePageMessages.claimHandleHeadsUp}
       </Text>
     </Paper>
   )
@@ -145,7 +145,10 @@ export const PickHandleScreen = () => {
         {isWaitingForSocialLogin ? (
           <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
         ) : null}
-        <Heading heading={messages.title} description={messages.description} />
+        <Heading
+          heading={pickHandlePageMessages.title}
+          description={pickHandlePageMessages.description}
+        />
         <Flex direction='column' gap='l'>
           <HandleField />
           <Divider>
@@ -155,7 +158,7 @@ export const PickHandleScreen = () => {
               size='s'
               style={css({ textTransform: 'uppercase' })}
             >
-              {messages.or}
+              {pickHandlePageMessages.or}
             </Text>
           </Divider>
           <SocialMediaSection

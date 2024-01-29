@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { signInErrorMessages, signInSchema } from '@audius/common'
-import { signInPageMessages as messages } from '@audius/common/messages'
+import { signInPageMessages } from '@audius/common/messages'
 import {
   getEmailField,
   getPasswordField,
@@ -71,9 +71,9 @@ export const SignInScreen = () => {
     >
       {({ handleSubmit }) => (
         <>
-          <Heading heading={messages.title} centered />
+          <Heading heading={signInPageMessages.title} centered />
           <Flex gap='l'>
-            <EmailField name='email' label={messages.emailLabel} />
+            <EmailField name='email' label={signInPageMessages.emailLabel} />
             <SignInPasswordField />
           </Flex>
           <Flex gap='l'>
@@ -84,7 +84,7 @@ export const SignInScreen = () => {
               isLoading={signInStatus === 'loading'}
               onPress={() => handleSubmit()}
             >
-              {messages.signIn}
+              {signInPageMessages.signIn}
             </Button>
             <TextLink
               variant='visible'
@@ -92,7 +92,7 @@ export const SignInScreen = () => {
               textAlign='center'
               onPress={onOpen}
             >
-              {messages.forgotPassword}
+              {signInPageMessages.forgotPassword}
             </TextLink>
           </Flex>
         </>
@@ -113,5 +113,7 @@ const SignInPasswordField = () => {
     }
   }, [setError, signInError])
 
-  return <PasswordField name='password' label={messages.passwordLabel} />
+  return (
+    <PasswordField name='password' label={signInPageMessages.passwordLabel} />
+  )
 }

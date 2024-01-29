@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { passwordSchema } from '@audius/common'
-import { createPasswordPageMessages as messages } from '@audius/common/messages'
+import { createPasswordPageMessages } from '@audius/common/messages'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -63,8 +63,8 @@ export const CreatePasswordScreen = () => {
       >
         <Page>
           <Heading
-            heading={messages.createYourPassword}
-            description={messages.description}
+            heading={createPasswordPageMessages.createYourPassword}
+            description={createPasswordPageMessages.description}
           />
           <Flex
             direction='column'
@@ -76,11 +76,17 @@ export const CreatePasswordScreen = () => {
               })
             }}
           >
-            <ReadOnlyField label={messages.yourEmail} value={email} />
-            <PasswordField name='password' label={messages.passwordLabel} />
+            <ReadOnlyField
+              label={createPasswordPageMessages.yourEmail}
+              value={email}
+            />
+            <PasswordField
+              name='password'
+              label={createPasswordPageMessages.passwordLabel}
+            />
             <PasswordField
               name='confirmPassword'
-              label={messages.confirmPasswordLabel}
+              label={createPasswordPageMessages.confirmPasswordLabel}
             />
             <PasswordCompletionChecklist />
           </Flex>

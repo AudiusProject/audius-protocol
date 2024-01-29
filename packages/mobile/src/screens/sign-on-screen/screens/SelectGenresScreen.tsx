@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useState } from 'react'
 
 import type { GENRES } from '@audius/common'
 import { selectGenresSchema, selectableGenres } from '@audius/common'
-import { selectGenresPageMessages as messages } from '@audius/common/messages'
+import { selectGenresPageMessages } from '@audius/common/messages'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { ScrollView } from 'react-native'
@@ -97,8 +97,8 @@ export const SelectGenresScreen = () => {
         <ReadOnlyAccountHeader />
         <Flex ph={gutterSize} gap='2xl' flex={1}>
           <Heading
-            heading={messages.header}
-            description={messages.description}
+            heading={selectGenresPageMessages.header}
+            description={selectGenresPageMessages.description}
           />
           <SelectGenresFieldArray />
         </Flex>

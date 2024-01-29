@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { MAX_DISPLAY_NAME_LENGTH, finishProfileSchema } from '@audius/common'
 import type { Image } from '@audius/common'
-import { finishProfilePageMessages as messages } from '@audius/common/messages'
+import { finishProfilePageMessages } from '@audius/common/messages'
 import { css } from '@emotion/native'
 import {
   getHandleField,
@@ -70,13 +70,16 @@ export const FinishProfileScreen = () => {
       validationSchema={finishProfileFormikSchema}
     >
       <Page>
-        <Heading heading={messages.header} description={messages.description} />
+        <Heading
+          heading={finishProfilePageMessages.header}
+          description={finishProfilePageMessages.description}
+        />
         <Paper>
           <AccountHeaderField />
           <HarmonyTextField
             name='displayName'
-            label={messages.displayName}
-            placeholder={messages.inputPlaceholder}
+            label={finishProfilePageMessages.displayName}
+            placeholder={finishProfilePageMessages.inputPlaceholder}
             maxLength={MAX_DISPLAY_NAME_LENGTH}
             autoComplete='off'
             style={css({
@@ -153,7 +156,7 @@ const UploadProfilePhotoHelperText = () => {
       entering={FadeIn.duration(motion.calm.duration)}
       exiting={FadeOut.duration(motion.calm.duration)}
     >
-      {messages.uploadProfilePhoto}
+      {finishProfilePageMessages.uploadProfilePhoto}
     </AnimatedText>
   )
 }
