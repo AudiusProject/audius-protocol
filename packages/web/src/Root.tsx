@@ -50,9 +50,9 @@ const AppOrPublicSite = () => {
   useEffect(() => {
     // TODO: listen to history and change routes based on history...
     window.onpopstate = () => {
-      setRenderPublicSite(isPublicSiteRoute(history.location))
+      setRenderPublicSite(isPublicSiteRoute(window.location as any))
     }
-  }, [history.location])
+  }, [])
 
   const shouldRedirectToApp =
     foundUser && !isPublicSiteSubRoute(history.location)

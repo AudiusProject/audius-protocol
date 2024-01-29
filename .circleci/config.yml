@@ -462,6 +462,8 @@ workflows:
             .circleci/.* run-stems-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
+            package-lock.json run-sdk-workflow true
+            package-lock.json run-harmony-workflow true
             .* run-release-workflow false
             .* run-integration-workflow true
             packages/discovery-provider/.* run-discovery-workflow true

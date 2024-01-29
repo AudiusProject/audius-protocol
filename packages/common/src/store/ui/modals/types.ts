@@ -13,6 +13,7 @@ import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
+import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 
 export type Modals =
   | 'TiersExplainer'
@@ -67,6 +68,7 @@ export type Modals =
   | 'USDCManualTransferModal'
   | 'AddFundsModal'
   | 'Welcome'
+  | 'CoinflowWithdraw'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -85,6 +87,7 @@ export type StatefulModalsState = {
   USDCManualTransferModal: USDCManualTransferModalState
   AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
+  CoinflowWithdraw: CoinflowWithdrawModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

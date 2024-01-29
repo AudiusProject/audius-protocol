@@ -1,10 +1,9 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
-import { env } from 'services/env'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
@@ -16,8 +15,7 @@ import {
 import { AppContextProvider } from '../app/AppContextProvider'
 
 import LandingPage from './pages/landing-page/LandingPage'
-
-const BASENAME = env.BASENAME
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
@@ -42,6 +40,7 @@ type PublicSiteProps = {
 export const PublicSite = (props: PublicSiteProps) => {
   const { isMobile, setRenderPublicSite } = props
   const [isMobileOrNarrow, setIsMobileOrNarrow] = useState(isMobile)
+  const { history } = useHistoryContext()
   const handleMobileMediaQuery = useCallback(() => {
     if (MOBILE_WIDTH_MEDIA_QUERY.matches) setIsMobileOrNarrow(true)
     else setIsMobileOrNarrow(isMobile)
@@ -93,7 +92,7 @@ export const PublicSite = (props: PublicSiteProps) => {
 
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <AppContextProvider>
-          <Router basename={BASENAME}>
+          <Router history={history}>
             <NavScreen
               closeNavScreen={closeNavScreen}
               isOpen={isNavScreenOpen}

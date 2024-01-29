@@ -17,6 +17,7 @@ name = "audius-web-ssr-release-candidate"
 
 [env.production]
 name = "audius-web-ssr"
+vars = { SENTRY_DSN = "https://4db9c77b0bd7ae6a935f8bd58c06dad3@o260428.ingest.sentry.io/4506623015124992" }
 
 # Test environment, replace `test` with subdomain
 # Invoke with npx wrangler dev --env test

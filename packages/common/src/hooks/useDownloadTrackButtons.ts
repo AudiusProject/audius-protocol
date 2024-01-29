@@ -43,7 +43,17 @@ type LabeledStem = Omit<Stem, 'category'> & { label: string }
 type UseDownloadTrackButtonsArgs = {
   following: boolean
   isOwner: boolean
-  onDownload: (trackID: number, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: number
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onNotLoggedInClick?: () => void
 }
 
@@ -165,7 +175,7 @@ const getStemButtons = ({
           if (!isLoggedIn) {
             onNotLoggedInClick?.()
           }
-          onDownload(id, u.label, parentTrackId)
+          onDownload({ trackId: id, category: u.label, parentTrackId })
         }
       } else {
         return undefined
@@ -223,7 +233,7 @@ const useMakeDownloadOriginalButton = ({
         if (!isLoggedIn) {
           onNotLoggedInClick?.()
         }
-        onDownload(track.track_id)
+        onDownload({ trackId: track.track_id })
       }
     }
   }, [

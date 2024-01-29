@@ -454,6 +454,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 following_count=aggregate_user_meta.get("following_count", 0),
                 repost_count=aggregate_user_meta.get("repost_count", 0),
                 track_save_count=aggregate_user_meta.get("track_save_count", 0),
+                dominant_genre=aggregate_user_meta.get("dominant_genre", None),
+                dominant_genre_count=aggregate_user_meta.get("dominant_genre_count", 0),
             )
             session.add(user)
 

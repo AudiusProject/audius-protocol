@@ -1,19 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Sql } from 'postgres'
-import type { AudiusSdk } from '@audius/sdk/dist/sdk/index.d.ts'
-import type { ScheduledReleaseService } from './services/scheduledReleaseService'
-import type { XmlProcessorService } from './services/xmlProcessorService'
 import express, { Express, Request, Response } from 'express'
 import path from 'path'
-import * as uploadController from './controllers/uploadsController'
-// import cors from 'cors'
+import * as collectionController from './controllers/collectionController'
 
-export default function createApp(
-  sql: Sql,
-  _audiusSdk: AudiusSdk,
-  xmlProcessorService: XmlProcessorService,
-  _scheduledReleaseService: ScheduledReleaseService
-) {
+export default function createApp() {
   /*
    * Setup app
    */
@@ -33,11 +22,14 @@ export default function createApp(
     }
     res.json(envData)
   })
-  app.get('/api/releases', uploadController.getReleases(sql))
-  app.get('/api/uploads', uploadController.getUploads(sql))
-  app.post('/api/upload', uploadController.postUploadXml(xmlProcessorService))
   app.get('/api/health_check', (_req: Request, res: Response) => {
     res.status(200).send('DDEX is alive!')
+  })
+  collectionController.collections.forEach((collection: string) => {
+    app.get(
+      `/api/${collection}`,
+      collectionController.getCollection(collection)
+    )
   })
 
   /*

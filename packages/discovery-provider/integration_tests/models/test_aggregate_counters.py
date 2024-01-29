@@ -101,6 +101,8 @@ def test_aggregate_counters(app):
                 track_save_count=0,
                 supporter_count=0,
                 supporting_count=0,
+                dominant_genre=None,
+                dominant_genre_count=0,
             ),
         )
 
@@ -117,6 +119,8 @@ def test_aggregate_counters(app):
                 track_save_count=1,
                 supporter_count=0,
                 supporting_count=0,
+                dominant_genre=None,
+                dominant_genre_count=0,
             ),
         )
 

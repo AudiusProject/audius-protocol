@@ -67,7 +67,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
         description: '',
-        releaseDate: new Date(moment().startOf('day').toString()),
+        releaseDate: new Date(moment().toString()),
         tags: '',
         field_visibility: {
           ...defaultHiddenFields,
