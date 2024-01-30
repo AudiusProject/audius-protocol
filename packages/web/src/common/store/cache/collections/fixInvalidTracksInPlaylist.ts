@@ -17,7 +17,7 @@ export function* fixInvalidTracksInPlaylist(
   playlistId: ID,
   invalidTrackIds: ID[]
 ) {
-  yield waitForWrite()
+  yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const removedTrackIds = new Set(invalidTrackIds)

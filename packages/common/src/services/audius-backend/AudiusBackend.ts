@@ -177,7 +177,7 @@ const combineLists = <Entity extends Track | User>(
 
 const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
-type TransactionReceipt = { blockHash: string; blockNumber: number }
+export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
 let preloadImageTimer: Timer
 const avoidGC: HTMLImageElement[] = []
