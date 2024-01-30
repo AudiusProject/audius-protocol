@@ -98,6 +98,13 @@ jobs:
       filters:
         branches:
           only: main
+  - push-docker-image:
+      name: push-ddex-publisher
+      context: [Vercel, dockerhub]
+      service: ddex-publisher
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -233,6 +240,15 @@ jobs:
           only: main
       requires:
         - push-ddex-ingester
+  - push-arm-image:
+      name: push-ddex-publisher-arm
+      context: [Vercel, dockerhub]
+      service: ddex-publisher
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-ddex-publisher
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
@@ -254,6 +270,7 @@ jobs:
         - push-healthz
         - push-ddex-web
         - push-ddex-ingester
+        - push-ddex-publisher
         # uncomment when arm builds are stable
         # - push-discovery-provider-arm
         # - push-discovery-provider-notifications-arm
@@ -267,6 +284,7 @@ jobs:
         # - push-uptime-arm
         # - push-ddex-web-arm
         # - push-ddex-ingester-arm
+        # - push-ddex-publisher-arm
 
       filters:
         branches:
