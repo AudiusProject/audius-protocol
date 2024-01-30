@@ -761,10 +761,7 @@ function* downloadTracks({
   original,
   rootDirectoryName
 }: {
-  tracks: {
-    trackId: ID
-    filename: string
-  }[]
+  tracks: { trackId: ID; filename: string }[]
   original?: boolean
   rootDirectoryName?: string
 }) {
