@@ -1,3 +1,4 @@
+import { Nullable } from '~/utils'
 import {
   Chain,
   Collectible,
@@ -155,14 +156,14 @@ export const assetToCollectible = async (
   asset: OpenSeaAssetExtended
 ): Promise<Collectible> => {
   let mediaType: CollectibleMediaType
-  let frameUrl = null
-  let imageUrl = null
-  let videoUrl = null
-  let threeDUrl = null
-  let gifUrl = null
+  let frameUrl: Nullable<string> = null
+  let imageUrl: Nullable<string> = null
+  let videoUrl: Nullable<string> = null
+  let threeDUrl: Nullable<string> = null
+  let gifUrl: Nullable<string> = null
 
   let hasAudio = false
-  let animationUrlOverride = null
+  let animationUrlOverride: Nullable<string> = null
 
   const {
     animation_url,

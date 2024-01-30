@@ -513,7 +513,7 @@ function* doBuyCryptoViaSol({
     const preSwapTokenBalance = account?.amount ?? BigInt(0)
 
     // Try the swap a few times in hopes the price comes back if it slipped
-    let swapError = null
+    let swapError: string | null = null
     let swapTransactionSignature: string | null = null
     let retryCount = 0
     // TODO: Put these into optimizely?

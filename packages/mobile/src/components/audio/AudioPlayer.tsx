@@ -31,9 +31,9 @@ import {
   SquareSizes,
   shallowCompare,
   savedPageTracksLineupActions,
-  useAppContext,
   getTrackPreviewDuration
 } from '@audius/common'
+import { useAppContext } from '@audius/common/context'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
