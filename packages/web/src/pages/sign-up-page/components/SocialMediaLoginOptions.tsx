@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import { BooleanKeys } from '@audius/common'
+import { socialMediaMessages } from '@audius/common/messages'
 import { Box, Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
@@ -9,7 +10,6 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-import { socialMediaMessages } from '@audius/common/messages'
 
 export type SocialPlatform = 'twitter' | 'instagram' | 'tiktok'
 

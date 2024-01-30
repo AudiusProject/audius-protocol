@@ -1,6 +1,10 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { pickHandleSchema, AudiusQueryContext } from '@audius/common'
+import {
+  pickHandlePageMessages,
+  socialMediaMessages
+} from '@audius/common/messages'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -34,10 +38,6 @@ import {
 } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
-import {
-  pickHandlePageMessages,
-  socialMediaMessages
-} from '@audius/common/messages'
 
 type PickHandleValues = {
   handle: string

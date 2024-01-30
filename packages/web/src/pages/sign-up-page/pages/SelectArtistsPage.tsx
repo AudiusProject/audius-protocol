@@ -9,6 +9,7 @@ import {
   useGetTopArtistsInGenre,
   selectArtistsSchema
 } from '@audius/common'
+import { selectArtistsPageMessages } from '@audius/common/messages'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
@@ -39,7 +40,6 @@ import {
   ScrollView
 } from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
-import { selectArtistsPageMessages } from '@audius/common/messages'
 
 const AnimatedFlex = animated(Flex)
 

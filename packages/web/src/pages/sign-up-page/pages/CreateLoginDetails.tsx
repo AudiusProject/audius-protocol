@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { emailSchema, useAudiusQueryContext } from '@audius/common'
+import { createLoginDetailsPageMessages } from '@audius/common/messages'
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -22,7 +23,6 @@ import { PasswordCompletionChecklist } from '../components/PasswordCompletionChe
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { loginDetailsSchema } from '../utils/loginDetailsSchema'
-import { createLoginDetailsPageMessages } from '@audius/common/messages'
 
 export type CreateLoginDetailsValues = {
   email: string

@@ -1,13 +1,13 @@
 import { passwordSchema } from '@audius/common'
+import {
+  createPasswordPageMessages,
+  CompletionChecklistType
+} from '@audius/common/messages'
 import { CompletionCheck, Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
 import { useMedia } from 'hooks/useMedia'
-import {
-  createPasswordPageMessages,
-  CompletionChecklistType
-} from '@audius/common/messages'
 
 const messages: Record<CompletionChecklistType, string> =
   createPasswordPageMessages.completionChecklist

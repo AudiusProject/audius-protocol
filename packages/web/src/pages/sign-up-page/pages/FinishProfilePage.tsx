@@ -5,6 +5,7 @@ import {
   Name,
   finishProfileSchema
 } from '@audius/common'
+import { finishProfilePageMessages } from '@audius/common/messages'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -36,7 +37,6 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
-import { finishProfilePageMessages } from '@audius/common/messages'
 
 export type FinishProfileValues = {
   profileImage?: ImageFieldValue
