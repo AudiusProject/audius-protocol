@@ -1,3 +1,4 @@
+import '../types/fxa-common-password-list'
 export * from './useBooleanOnce'
 export * from './useFeatureFlag'
 export * from './useRemoteVar'

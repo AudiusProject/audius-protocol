@@ -389,7 +389,7 @@ export const audiusBackend = ({
     const start = preloadImageTimer.start()
     const timeoutMs =
       getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-    let timeoutId: Nullable<NodeJS.Timeout> = null
+    let timeoutId: any = null
 
     try {
       const response = await Promise.race([
