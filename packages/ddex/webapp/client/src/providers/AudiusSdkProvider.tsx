@@ -120,6 +120,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       // Get keys
       if (!envVars.ddexKey) {
         setIsLoading(false)
+        console.error(`Skipping sdk initialization: ddexKey missing from env`)
         return
       }
 

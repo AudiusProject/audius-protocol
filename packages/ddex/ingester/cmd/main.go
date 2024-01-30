@@ -2,9 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"ingester/crawler"
 	"ingester/indexer"
 	"ingester/parser"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -19,6 +23,11 @@ func main() {
 	case "parser":
 		parser.Run()
 	default:
-		panic("unknown service: " + *service)
+		fmt.Println("Unknown service: " + *service)
+		// sleep
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigChan
+		fmt.Printf("Received signal: %v, shutting down...\n", sig)
 	}
 }
