@@ -1,8 +1,4 @@
 import {
-  SmartCollectionVariant,
-  Track,
-  UserTrack,
-  UserTrackMetadata,
   accountSelectors,
   smartCollectionPageActions,
   collectionPageActions,
@@ -10,6 +6,12 @@ import {
   removeNullable,
   collectionPageLineupActions
 } from '@audius/common'
+import {
+  SmartCollectionVariant,
+  Track,
+  UserTrackMetadata,
+  UserTrack
+} from '@audius/common/models'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

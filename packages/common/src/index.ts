@@ -1,7 +1,6 @@
-import * as e from './api'
+import * as e from './models'
 console.log('exports', e)
 
-export * from './api'
 export * from './audius-query'
 export * from './models'
 export * from './utils'

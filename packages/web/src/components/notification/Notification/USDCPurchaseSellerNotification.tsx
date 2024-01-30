@@ -5,11 +5,11 @@ import {
   formatUSDCWeiToUSDString,
   notificationsSelectors,
   Nullable,
-  StringUSDC,
   stringUSDCToBN,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
+import { StringUSDC } from '@audius/common/models'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

@@ -1,13 +1,11 @@
 import { useEffect } from 'react'
 
 import {
-  ID,
-  Status,
   remixSettingsSelectors,
   remixSettingsActions,
-  Nullable,
-  AccessConditions
+  Nullable
 } from '@audius/common'
+import { Status, ID, AccessConditions } from '@audius/common/models'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 

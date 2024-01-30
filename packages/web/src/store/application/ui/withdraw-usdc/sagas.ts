@@ -1,24 +1,26 @@
 import {
   withdrawUSDCActions,
   solanaSelectors,
-  ErrorLevel,
-  SolanaWalletAddress,
   getUSDCUserBank,
   getContext,
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
-  BNUSDC,
   relayVersionedTransaction,
   relayTransaction,
   formatUSDCWeiToFloorCentsNumber,
-  Name,
-  WithdrawUSDCTransferEventFields,
   withdrawUSDCModalActions,
   WithdrawUSDCModalPages,
   WithdrawMethod,
-  buyUSDCActions,
-  Status
+  buyUSDCActions
 } from '@audius/common'
+import {
+  Name,
+  ErrorLevel,
+  Status,
+  WithdrawUSDCTransferEventFields,
+  BNUSDC,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync

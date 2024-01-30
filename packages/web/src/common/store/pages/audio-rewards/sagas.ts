@@ -1,7 +1,4 @@
 import {
-  FailureReason,
-  UserChallenge,
-  StringAudio,
   IntKeys,
   StringKeys,
   RemoteConfigInstance,
@@ -22,6 +19,11 @@ import {
   musicConfettiActions,
   createUserBankIfNeeded
 } from '@audius/common'
+import {
+  FailureReason,
+  UserChallenge,
+  StringAudio
+} from '@audius/common/models'
 import {
   call,
   fork,

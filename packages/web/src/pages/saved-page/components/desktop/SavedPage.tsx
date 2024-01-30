@@ -2,20 +2,15 @@ import { useContext } from 'react'
 
 import {
   CommonState,
-  ID,
-  Kind,
   LibraryCategory,
-  Lineup,
   QueueItem,
   SavedPageCollection,
   savedPageSelectors,
   SavedPageTabs,
   SavedPageTrack,
-  Status,
-  TrackRecord,
-  UID,
-  User
+  TrackRecord
 } from '@audius/common'
+import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

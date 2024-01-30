@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
-  ID,
-  ProfilePictureSizes,
-  OS,
-  Theme,
   InstagramProfile,
   TwitterProfile,
   Notifications,
@@ -15,6 +11,7 @@ import {
   removeNullable,
   settingsPageSelectors
 } from '@audius/common'
+import { OS, Theme, ID, ProfilePictureSizes } from '@audius/common/models'
 import { IconAppearance } from '@audius/harmony'
 import {
   Modal,

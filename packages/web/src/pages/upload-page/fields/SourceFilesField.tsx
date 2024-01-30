@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
+import { removeNullable } from '@audius/common'
 import {
-  Download,
   StemCategory,
+  stemCategoryFriendlyNames,
   StemUpload,
-  removeNullable,
-  stemCategoryFriendlyNames
-} from '@audius/common'
+  Download
+} from '@audius/common/models'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
 

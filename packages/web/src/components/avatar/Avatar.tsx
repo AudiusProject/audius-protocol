@@ -1,11 +1,10 @@
 import {
-  ID,
   Maybe,
-  SquareSizes,
   accountSelectors,
   cacheUsersSelectors,
   imageProfilePicEmpty
 } from '@audius/common'
+import { SquareSizes, ID } from '@audius/common/models'
 import {
   Box,
   Avatar as HarmonyAvatar,

@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import {
-  ID,
-  StemCategory,
-  StemUploadWithFile,
-  Track,
   removeNullable,
   uuid,
   cacheTracksActions as cacheTrackActions,
@@ -14,6 +10,12 @@ import {
   useEditTrackModal,
   publishTrackConfirmationModalUIActions
 } from '@audius/common'
+import {
+  StemCategory,
+  ID,
+  StemUploadWithFile,
+  Track
+} from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'

@@ -1,18 +1,11 @@
 import { ComponentType, PureComponent } from 'react'
 
 import {
-  FavoriteSource,
-  ID,
   LibraryCategoryType,
-  LineupTrack,
-  Name,
-  PlaybackSource,
   SavedPageTabs as ProfileTabs,
-  RepostSource,
   SavedPageTabs,
   SavedPageTrack,
   TrackRecord,
-  UID,
   accountActions,
   accountSelectors,
   lineupSelectors,
@@ -25,6 +18,15 @@ import {
   tracksSocialActions as socialActions,
   savedPageTracksLineupActions as tracksActions
 } from '@audius/common'
+import {
+  Name,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  ID,
+  UID,
+  LineupTrack
+} from '@audius/common/models'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'

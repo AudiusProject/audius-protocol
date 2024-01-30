@@ -1,10 +1,10 @@
 import {
   BooleanKeys,
-  Chain,
   getContext,
   getErrorMessage,
   tokenDashboardPageActions
 } from '@audius/common'
+import { Chain } from '@audius/common/models'
 import { call, put } from 'typed-redux-saga'
 
 import { createSession } from 'services/web3-modal'

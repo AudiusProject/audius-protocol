@@ -1,4 +1,5 @@
-import { ID, SmartCollectionVariant } from '@audius/common'
+import { SmartCollectionVariant, ID } from '@audius/common/models'
+import {} from '@audius/common'
 
 import { FavoriteButton } from './FavoriteButton'
 import { ShareButton } from './ShareButton'

@@ -1,6 +1,7 @@
 import { createContext, memo, useContext } from 'react'
 
-import { Nullable, SsrPageProps } from '@audius/common'
+import { Nullable } from '@audius/common'
+import { SsrPageProps } from '@audius/common/models'
 import { History } from 'history'
 
 import { isMobile as isMobileClient } from 'utils/clientUtil'

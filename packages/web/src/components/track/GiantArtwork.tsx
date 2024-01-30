@@ -1,6 +1,7 @@
 import { memo, useEffect } from 'react'
 
-import { CoverArtSizes, SquareSizes, Remix, Nullable } from '@audius/common'
+import { Nullable } from '@audius/common'
+import { SquareSizes, CoverArtSizes, Remix } from '@audius/common/models'
 
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'

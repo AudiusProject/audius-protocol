@@ -1,6 +1,7 @@
 import { HTMLProps, useContext } from 'react'
 
-import { Name, UserMetadata, WidthSizes, formatCount } from '@audius/common'
+import { formatCount } from '@audius/common'
+import { Name, WidthSizes, UserMetadata } from '@audius/common/models'
 import {
   Box,
   Divider,

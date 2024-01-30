@@ -1,9 +1,9 @@
 import {
-  Status,
   PurchaseInfoErrorType,
   buyAudioSelectors,
   formatNumberString
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { IconCaretDown } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

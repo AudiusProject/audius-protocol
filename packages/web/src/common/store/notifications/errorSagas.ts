@@ -1,8 +1,8 @@
 import {
   notificationsActions,
-  ErrorLevel,
   FetchNotificationsFailedAction
 } from '@audius/common'
+import { ErrorLevel } from '@audius/common/models'
 import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'store/errors/actions'

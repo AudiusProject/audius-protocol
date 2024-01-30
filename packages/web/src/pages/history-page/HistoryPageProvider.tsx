@@ -8,22 +8,24 @@ import {
 } from 'react'
 
 import {
-  ID,
-  UID,
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  Status,
   accountSelectors,
   lineupSelectors,
   historyPageTracksLineupActions as tracksActions,
   historyPageSelectors,
   tracksSocialActions as socialActions,
   playerSelectors,
-  queueSelectors,
-  LineupTrack
+  queueSelectors
 } from '@audius/common'
+import {
+  Name,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  Status,
+  ID,
+  UID,
+  LineupTrack
+} from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'

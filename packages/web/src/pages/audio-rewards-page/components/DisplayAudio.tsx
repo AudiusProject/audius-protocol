@@ -1,4 +1,5 @@
-import { BNWei, formatWei } from '@audius/common'
+import { formatWei } from '@audius/common'
+import { BNWei } from '@audius/common/models'
 import cn from 'classnames'
 
 import styles from './DisplayAudio.module.css'

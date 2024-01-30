@@ -1,9 +1,5 @@
-import {
-  TrackMetadata,
-  remixSettingsActions,
-  getContext,
-  Track
-} from '@audius/common'
+import { remixSettingsActions, getContext } from '@audius/common'
+import { TrackMetadata, Track } from '@audius/common/models'
 import { takeLatest, call, put } from 'typed-redux-saga'
 
 import { parseTrackRoute } from 'utils/route/trackRouteParser'

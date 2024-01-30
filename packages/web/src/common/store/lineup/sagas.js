@@ -1,6 +1,4 @@
 import {
-  Kind,
-  Name,
   makeUid,
   makeUids,
   Uid,
@@ -14,11 +12,11 @@ import {
   queueSelectors,
   getContext,
   FeatureFlags,
-  isContentUSDCPurchaseGated,
   StringKeys,
   premiumTracksPageLineupActions,
   accountSelectors
 } from '@audius/common'
+import { Name, Kind, isContentUSDCPurchaseGated } from '@audius/common/models'
 import {
   all,
   call,

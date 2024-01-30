@@ -1,4 +1,5 @@
-import { BNAudio, formatNumberCommas } from '@audius/common'
+import { formatNumberCommas } from '@audius/common'
+import { BNAudio } from '@audius/common/models'
 import { TokenValueSlider } from '@audius/stems'
 import BN from 'bn.js'
 

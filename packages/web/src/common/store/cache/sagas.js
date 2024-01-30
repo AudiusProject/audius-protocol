@@ -1,5 +1,4 @@
 import {
-  Status,
   makeUids,
   getIdFromKindId,
   cacheActions,
@@ -9,6 +8,7 @@ import {
   confirmerSelectors,
   IntKeys
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { pick } from 'lodash'
 import {
   all,

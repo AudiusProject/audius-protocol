@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
 
 import {
-  ID,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  SquareSizes,
   queueActions,
   tracksSocialActions,
   playerSelectors,
   queueSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  Name,
+  FavoriteSource,
+  PlaybackSource,
+  SquareSizes,
+  ID
+} from '@audius/common/models'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'

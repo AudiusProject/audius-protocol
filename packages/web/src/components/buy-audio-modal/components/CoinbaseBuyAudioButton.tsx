@@ -3,9 +3,9 @@ import { useCallback, useContext } from 'react'
 import {
   buyAudioActions,
   buyAudioSelectors,
-  OnRampProvider,
-  Status
+  OnRampProvider
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 

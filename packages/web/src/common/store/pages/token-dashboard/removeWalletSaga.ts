@@ -1,16 +1,15 @@
 import {
   accountSelectors,
   cacheActions,
-  Chain,
   confirmerActions,
   ConfirmRemoveWalletAction,
   getContext,
-  Kind,
   newUserMetadata,
   tokenDashboardPageActions,
   walletActions,
   confirmTransaction
 } from '@audius/common'
+import { Chain, Kind } from '@audius/common/models'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { Client, accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common'
+import { Client } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

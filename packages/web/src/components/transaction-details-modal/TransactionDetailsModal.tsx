@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import {
-  Status,
   transactionDetailsActions,
   transactionDetailsSelectors
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import {
   Button,
   ButtonType,

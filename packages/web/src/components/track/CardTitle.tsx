@@ -1,10 +1,9 @@
+import { FeatureFlags, Nullable } from '@audius/common'
 import {
-  FeatureFlags,
-  Nullable,
-  AccessConditions,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  isContentUSDCPurchaseGated,
+  AccessConditions
+} from '@audius/common/models'
 import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 

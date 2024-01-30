@@ -1,12 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  ID,
-  SquareSizes,
   formatCount,
   cacheUsersSelectors,
   imageBlank as placeholderArt
 } from '@audius/common'
+import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

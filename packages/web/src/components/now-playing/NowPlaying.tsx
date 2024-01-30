@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
-  PlaybackSource,
-  Name,
-  ShareSource,
-  SquareSizes,
   Genre,
   accountSelectors,
   averageColorSelectors,
@@ -23,13 +16,22 @@ import {
   playerSelectors,
   queueSelectors,
   playbackRateValueMap,
-  DogEarType,
   gatedContentSelectors,
   usePremiumContentPurchaseModal,
-  ModalSource,
   FeatureFlags
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  ModalSource,
+  DogEarType,
+  SquareSizes,
+  ID
+} from '@audius/common/models'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'

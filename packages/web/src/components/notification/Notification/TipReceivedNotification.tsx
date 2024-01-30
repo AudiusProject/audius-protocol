@@ -1,7 +1,6 @@
 import { ComponentType, useCallback, useState } from 'react'
 
 import {
-  Name,
   Nullable,
   notificationsSelectors,
   TipReceiveNotification,
@@ -11,6 +10,7 @@ import {
   reactionsUISelectors
 } from '@audius/common'
 import { useUIAudio } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

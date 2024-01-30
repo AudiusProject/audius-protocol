@@ -7,13 +7,13 @@ import {
   FOLLOWERS_USER_LIST_TAG,
   followersUserListActions,
   followersUserListSelectors,
-  User,
   useCreateChatModal,
   useInboxUnavailableModal,
   createChatModalActions,
   searchUsersModalActions,
   chatSelectors
 } from '@audius/common'
+import { User } from '@audius/common/models'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

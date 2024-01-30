@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import {
-  Name,
   ChangePasswordPageStep,
   changePasswordSelectors,
   changePasswordActions
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'

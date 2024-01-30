@@ -1,4 +1,5 @@
-import { ID, Remix } from '@audius/common'
+import { ID, Remix } from '@audius/common/models'
+import {} from '@audius/common'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoSign from 'components/co-sign/CoSign'

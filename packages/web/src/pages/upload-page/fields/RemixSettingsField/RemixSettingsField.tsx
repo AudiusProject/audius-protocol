@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
+import { Nullable } from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
 import {
-  Nullable,
+  isContentUSDCPurchaseGated,
   ID,
   FieldVisibility,
-  Remix,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
-import { useGetTrackById } from '@audius/common/api'
+  Remix
+} from '@audius/common/models'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 

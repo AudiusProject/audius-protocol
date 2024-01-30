@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
 import {
-  LineupState,
   lineupSelectors,
   playerSelectors,
   queueSelectors
 } from '@audius/common'
+import { LineupState } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { LineupVariant } from 'components/lineup/types'

@@ -8,11 +8,6 @@ import {
 } from 'react'
 
 import {
-  UID,
-  ID,
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -23,6 +18,13 @@ import {
   Genre
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  ID,
+  UID
+} from '@audius/common/models'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'

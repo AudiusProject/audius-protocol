@@ -1,7 +1,8 @@
 import { forwardRef, useCallback, useState } from 'react'
 
-import { chatSelectors, User, useCreateChatModal } from '@audius/common'
+import { chatSelectors, useCreateChatModal } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { User } from '@audius/common/models'
 import {
   IconButton,
   IconCompose,

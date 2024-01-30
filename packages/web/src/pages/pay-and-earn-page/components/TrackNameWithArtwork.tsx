@@ -1,4 +1,5 @@
-import { SquareSizes, statusIsNotFinalized } from '@audius/common'
+import { SquareSizes, statusIsNotFinalized } from '@audius/common/models'
+import {} from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

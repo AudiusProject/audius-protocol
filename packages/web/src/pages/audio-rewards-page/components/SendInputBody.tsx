@@ -1,13 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import {
-  Chain,
-  BNAudio,
-  BNWei,
-  SolanaWalletAddress,
-  StringAudio,
-  StringWei,
-  WalletAddress,
   Nullable,
   FeatureFlags,
   IntKeys,
@@ -17,6 +10,15 @@ import {
   weiToAudio,
   MIN_TRANSFERRABLE_WEI
 } from '@audius/common'
+import {
+  Chain,
+  StringWei,
+  StringAudio,
+  BNWei,
+  BNAudio,
+  WalletAddress,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import {
   Button,
   TokenValueInput,

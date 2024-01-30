@@ -1,7 +1,4 @@
 import {
-  Name,
-  DefaultSizes,
-  Kind,
   makeKindId,
   squashNewLines,
   accountSelectors,
@@ -22,6 +19,7 @@ import {
   reformatCollection,
   savedPageActions
 } from '@audius/common'
+import { Name, DefaultSizes, Kind } from '@audius/common/models'
 import {
   all,
   call,

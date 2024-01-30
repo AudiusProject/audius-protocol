@@ -1,6 +1,8 @@
 import { useContext, useEffect } from 'react'
 
-import { ID, UserCollection, Status } from '@audius/common'
+import { Status, UserCollection, ID } from '@audius/common/models'
+
+import {} from '@audius/common'
 
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'

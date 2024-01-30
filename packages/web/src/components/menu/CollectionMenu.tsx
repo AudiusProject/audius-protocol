@@ -1,13 +1,15 @@
 import {
-  PlayableType,
-  ID,
-  ShareSource,
-  FavoriteSource,
-  RepostSource,
   cacheUsersSelectors,
   collectionsSocialActions as socialActions,
   useEditPlaylistModal
 } from '@audius/common'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlayableType,
+  ID
+} from '@audius/common/models'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

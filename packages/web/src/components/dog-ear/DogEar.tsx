@@ -1,4 +1,5 @@
-import { DogEarType } from '@audius/common'
+import { DogEarType } from '@audius/common/models'
+import {} from '@audius/common'
 import {
   IconCart,
   IconCollectible,

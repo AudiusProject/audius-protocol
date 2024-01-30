@@ -7,9 +7,9 @@ import {
   chatSelectors,
   removeNullable,
   tippingActions,
-  tippingSelectors,
-  User
+  tippingSelectors
 } from '@audius/common'
+import { User } from '@audius/common/models'
 import {
   IconBlockMessages,
   IconButton,

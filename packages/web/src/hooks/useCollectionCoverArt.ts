@@ -1,10 +1,9 @@
 import {
-  CoverArtSizes,
-  SquareSizes,
   cacheCollectionsActions,
   imageBlank as imageEmpty
 } from '@audius/common'
 import { useImageSize } from '@audius/common/hooks'
+import { SquareSizes, CoverArtSizes } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 const { fetchCoverArt } = cacheCollectionsActions

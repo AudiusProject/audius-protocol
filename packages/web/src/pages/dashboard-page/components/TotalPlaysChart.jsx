@@ -1,6 +1,7 @@
 import { createRef, Component } from 'react'
 
-import { Theme, formatCount } from '@audius/common'
+import { formatCount } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import moment from 'moment'
 import numeral from 'numeral'
 import PropTypes from 'prop-types'

@@ -1,21 +1,23 @@
 import { useCallback, memo, MouseEvent } from 'react'
 
 import {
-  ID,
-  UID,
-  Collection,
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  LineupState,
-  Status,
   profilePageTracksLineupActions as tracksActions,
   ProfileUser,
   ProfilePageTabs,
   profilePageFeedLineupActions as feedActions,
-  badgeTiers,
-  CreatePlaylistSource
+  badgeTiers
 } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import {
+  CreatePlaylistSource,
+  Status,
+  Collection,
+  ID,
+  UID,
+  ProfilePictureSizes,
+  CoverPhotoSizes,
+  LineupState
+} from '@audius/common/models'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'

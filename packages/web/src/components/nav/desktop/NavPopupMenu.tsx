@@ -2,10 +2,10 @@ import {
   removeNullable,
   FeatureFlags,
   chatSelectors,
-  Name,
   StringKeys
 } from '@audius/common'
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import {
   IconCrown,
   IconDashboard,

@@ -5,10 +5,10 @@ import {
   decimalIntegerToHumanReadable,
   useWithdrawUSDCModal,
   formatUSDCWeiToFloorCentsNumber,
-  BNUSDC,
   WithdrawMethod
 } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
+import { BNUSDC } from '@audius/common/models'
 import { Button, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
 import BN from 'bn.js'

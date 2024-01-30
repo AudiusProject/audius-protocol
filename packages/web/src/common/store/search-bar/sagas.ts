@@ -1,10 +1,10 @@
 import {
-  Name,
   accountSelectors,
   getContext,
   removeNullable,
   FeatureFlags
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { flatMap, zip } from 'lodash'
 import {
   all,

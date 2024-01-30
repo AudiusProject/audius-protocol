@@ -1,10 +1,6 @@
 import { useContext, useEffect, FC } from 'react'
 
 import {
-  ID,
-  SquareSizes,
-  ProfilePictureSizes,
-  Theme,
   InstagramProfile,
   TwitterProfile,
   Notifications,
@@ -14,6 +10,12 @@ import {
   PushNotifications,
   TikTokProfile
 } from '@audius/common'
+import {
+  SquareSizes,
+  Theme,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
 import { SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 

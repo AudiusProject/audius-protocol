@@ -1,13 +1,12 @@
 import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 
 import {
-  Chain,
-  BNWei,
   shortenEthAddress,
   shortenSPLAddress,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors
 } from '@audius/common'
+import { Chain, BNWei } from '@audius/common/models'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

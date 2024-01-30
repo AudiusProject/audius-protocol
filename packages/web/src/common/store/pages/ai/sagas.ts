@@ -1,4 +1,5 @@
-import { aiPageActions, FetchAiUserAction, Maybe, User } from '@audius/common'
+import { aiPageActions, FetchAiUserAction, Maybe } from '@audius/common'
+import { User } from '@audius/common/models'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'

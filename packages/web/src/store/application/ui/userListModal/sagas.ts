@@ -1,5 +1,4 @@
 import {
-  FavoriteType,
   topSupportersUserListActions as topSupporterActions,
   supportingUserListActions as supportingActions,
   RepostType,
@@ -11,6 +10,7 @@ import {
   favoritesUserListActions as favoritesActions,
   relatedArtistsUserListActions
 } from '@audius/common'
+import { FavoriteType } from '@audius/common/models'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { setUsers } from './slice'

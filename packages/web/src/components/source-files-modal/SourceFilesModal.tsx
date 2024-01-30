@@ -5,7 +5,9 @@ import {
   stemCategoryFriendlyNames,
   StemUpload,
   Download
-} from '@audius/common'
+} from '@audius/common/models'
+
+import {} from '@audius/common'
 import {
   Button,
   ButtonSize,

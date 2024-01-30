@@ -9,23 +9,25 @@ import {
 
 import {
   CommonState,
-  ID,
   LibraryCategory,
-  Lineup,
-  Name,
   QueueItem,
   SavedPageTabs,
   SavedPageTrack,
-  UID,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
-  savedPageSelectors,
-  statusIsNotFinalized
+  savedPageSelectors
 } from '@audius/common'
 import {
   useGatedContentAccessMap,
   useDebouncedCallback
 } from '@audius/common/hooks'
+import {
+  Name,
+  statusIsNotFinalized,
+  ID,
+  UID,
+  Lineup
+} from '@audius/common/models'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

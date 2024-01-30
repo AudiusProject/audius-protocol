@@ -9,10 +9,9 @@ import {
   Genre,
   CommonState,
   getDogEarType,
-  isContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal,
-  ModalSource
+  usePremiumContentPurchaseModal
 } from '@audius/common'
+import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'

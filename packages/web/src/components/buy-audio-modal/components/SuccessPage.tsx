@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  Status,
   transactionDetailsSelectors,
   transactionDetailsActions,
   modalsActions,
@@ -9,6 +8,7 @@ import {
   formatAudio,
   isNullOrUndefined
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { Button, ButtonSize, ButtonType, IconInfo } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

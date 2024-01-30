@@ -1,11 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  FavoriteType,
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -23,6 +18,13 @@ import {
   Genre
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FavoriteType,
+  ID
+} from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

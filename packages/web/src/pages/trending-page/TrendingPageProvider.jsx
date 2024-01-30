@@ -1,8 +1,6 @@
 import { PureComponent } from 'react'
 
 import {
-  Name,
-  TimeRange,
   GENRES,
   accountSelectors,
   lineupSelectors,
@@ -12,6 +10,7 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common'
+import { Name, TimeRange } from '@audius/common/models'
 import {
   push as pushRoute,
   replace as replaceRoute

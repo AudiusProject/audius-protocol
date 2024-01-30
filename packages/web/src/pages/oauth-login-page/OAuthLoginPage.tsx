@@ -1,11 +1,7 @@
 import { FormEvent, useLayoutEffect, useState } from 'react'
 
-import {
-  accountSelectors,
-  ErrorLevel,
-  Name,
-  signOutActions
-} from '@audius/common'
+import { accountSelectors, signOutActions } from '@audius/common'
+import { Name, ErrorLevel } from '@audius/common/models'
 import { IconValidationX } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

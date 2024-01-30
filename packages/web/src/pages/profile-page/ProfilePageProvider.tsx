@@ -1,13 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
 import {
-  ID,
-  UID,
-  Name,
-  FollowSource,
-  ShareSource,
-  BadgeTier,
-  Status,
   formatCount,
   getErrorMessage,
   accountActions,
@@ -37,9 +30,18 @@ import {
   chatSelectors,
   ChatPermissionAction,
   inboxUnavailableModalActions,
-  cacheCollectionsActions,
-  CreatePlaylistSource
+  cacheCollectionsActions
 } from '@audius/common'
+import {
+  Name,
+  ShareSource,
+  FollowSource,
+  CreatePlaylistSource,
+  Status,
+  BadgeTier,
+  ID,
+  UID
+} from '@audius/common/models'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'

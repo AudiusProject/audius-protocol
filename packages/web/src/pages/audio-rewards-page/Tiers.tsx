@@ -1,7 +1,6 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
 import {
-  BadgeTier,
   Nullable,
   accountSelectors,
   badgeTiers,
@@ -10,6 +9,7 @@ import {
   musicConfettiActions
 } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { BadgeTier } from '@audius/common/models'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

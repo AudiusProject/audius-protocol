@@ -4,11 +4,9 @@ import {
   walletActions,
   doEvery,
   waitForValue,
-  ID,
-  getContext,
-  Collection,
-  Track
+  getContext
 } from '@audius/common'
+import { Collection, ID, Track } from '@audius/common/models'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'

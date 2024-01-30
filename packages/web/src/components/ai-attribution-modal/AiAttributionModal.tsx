@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { ID, Nullable } from '@audius/common'
+import { Nullable } from '@audius/common'
+import { ID } from '@audius/common/models'
 import {
   Button,
   ButtonSize,

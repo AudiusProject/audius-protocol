@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
-import { PlayableType, ID, Name, Track, encodeHashId } from '@audius/common'
+import { encodeHashId } from '@audius/common'
+import { Name, PlayableType, ID, Track } from '@audius/common/models'
 import { Modal, Button, ButtonType, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'

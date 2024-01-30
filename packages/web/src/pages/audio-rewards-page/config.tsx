@@ -1,11 +1,7 @@
 import { ReactNode } from 'react'
 
-import {
-  ChallengeName,
-  ChallengeRewardID,
-  Nullable,
-  challengeRewardsConfig
-} from '@audius/common'
+import { Nullable, challengeRewardsConfig } from '@audius/common'
+import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
 import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'

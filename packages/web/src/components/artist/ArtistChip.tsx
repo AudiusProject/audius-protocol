@@ -1,6 +1,8 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { ID, SquareSizes, User } from '@audius/common'
+import { SquareSizes, ID, User } from '@audius/common/models'
+
+import {} from '@audius/common'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'

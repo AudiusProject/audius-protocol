@@ -5,7 +5,8 @@ import {
   useState
 } from 'react'
 
-import { chatSelectors, chatActions, Status } from '@audius/common'
+import { chatSelectors, chatActions } from '@audius/common'
+import { Status } from '@audius/common/models'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'

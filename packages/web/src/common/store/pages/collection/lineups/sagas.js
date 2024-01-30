@@ -1,5 +1,4 @@
 import {
-  Kind,
   removeNullable,
   Uid,
   smartCollectionPageSelectors,
@@ -8,6 +7,7 @@ import {
   waitForValue,
   queueSelectors
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'

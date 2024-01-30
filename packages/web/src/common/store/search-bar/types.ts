@@ -1,4 +1,10 @@
-import { SearchPlaylist, SearchTrack, SearchUser, Status } from '@audius/common'
+import {
+  Status,
+  SearchUser,
+  SearchTrack,
+  SearchPlaylist
+} from '@audius/common/models'
+import {} from '@audius/common'
 
 type NewType = SearchPlaylist
 

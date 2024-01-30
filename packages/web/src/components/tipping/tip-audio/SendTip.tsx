@@ -7,10 +7,6 @@ import {
 } from 'react'
 
 import {
-  BadgeTier,
-  BNWei,
-  StringAudio,
-  StringWei,
   formatWei,
   stringWeiToBN,
   weiToString,
@@ -26,6 +22,7 @@ import {
   isNullOrUndefined
 } from '@audius/common'
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
+import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
 import {
   IconTrophy,
   TokenAmountInput,

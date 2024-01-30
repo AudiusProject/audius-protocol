@@ -1,4 +1,5 @@
-import { Name, changePasswordActions, getContext } from '@audius/common'
+import { changePasswordActions, getContext } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'

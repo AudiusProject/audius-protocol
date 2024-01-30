@@ -2,10 +2,9 @@ import { ReactNode, useCallback, useEffect } from 'react'
 
 import {
   deactivateAccountActions,
-  deactivateAccountSelectors,
-  Name,
-  Status
+  deactivateAccountSelectors
 } from '@audius/common'
+import { Name, Status } from '@audius/common/models'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

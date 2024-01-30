@@ -1,12 +1,12 @@
+import { NestedNonNullable } from '@audius/common'
 import {
-  ID,
   PlayableType,
-  CoverArtSizes,
   SquareSizes,
+  ID,
+  CoverArtSizes,
   Playable,
-  User,
-  NestedNonNullable
-} from '@audius/common'
+  User
+} from '@audius/common/models'
 import { Button, ButtonType, IconUser } from '@audius/stems'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'

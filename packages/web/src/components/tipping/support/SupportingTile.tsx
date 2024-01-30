@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
 import {
-  SquareSizes,
-  WidthSizes,
-  Supporting,
-  User,
   Nullable,
   cacheUsersSelectors,
   imageCoverPhotoBlank,
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common'
+import {
+  SquareSizes,
+  WidthSizes,
+  Supporting,
+  User
+} from '@audius/common/models'
 import { IconTrophy } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

@@ -1,7 +1,4 @@
 import {
-  Name,
-  Chain,
-  BNWei,
   FeatureFlags,
   stringWeiToBN,
   weiToString,
@@ -13,12 +10,17 @@ import {
   InputSendDataAction,
   walletActions,
   getContext,
-  ErrorLevel,
   createUserBankIfNeeded,
   solanaSelectors,
-  SolanaWalletAddress,
   isNullOrUndefined
 } from '@audius/common'
+import {
+  Name,
+  Chain,
+  ErrorLevel,
+  BNWei,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'

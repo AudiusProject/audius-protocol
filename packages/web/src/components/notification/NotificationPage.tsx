@@ -1,11 +1,11 @@
 import { useEffect, useCallback, useContext } from 'react'
 
 import {
-  Status,
   notificationsSelectors,
   Notification as Notifications,
   notificationsActions
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'

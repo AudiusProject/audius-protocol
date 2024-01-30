@@ -3,7 +3,6 @@ import { ReactNode, useCallback } from 'react'
 import {
   CHAT_BLOG_POST_URL,
   ChatPermissionAction,
-  User,
   accountSelectors,
   cacheUsersSelectors,
   chatActions,
@@ -12,6 +11,7 @@ import {
   tippingActions,
   useInboxUnavailableModal
 } from '@audius/common'
+import { User } from '@audius/common/models'
 import {
   IconMessageLocked,
   IconTipping,

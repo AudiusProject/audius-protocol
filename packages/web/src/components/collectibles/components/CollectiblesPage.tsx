@@ -8,14 +8,13 @@ import {
 } from 'react'
 
 import {
-  Collectible,
-  CollectiblesMetadata,
   ProfileUser,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
 import { useInstanceVar } from '@audius/common/hooks'
+import { CollectiblesMetadata, Collectible } from '@audius/common/models'
 import {
   Button,
   ButtonSize,

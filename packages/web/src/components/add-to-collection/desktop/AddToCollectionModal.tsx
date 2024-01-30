@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import {
-  CreatePlaylistSource,
-  Collection,
-  SquareSizes,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
@@ -11,6 +8,11 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common'
+import {
+  CreatePlaylistSource,
+  SquareSizes,
+  Collection
+} from '@audius/common/models'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'

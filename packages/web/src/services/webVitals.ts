@@ -1,4 +1,5 @@
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
+import {} from '@audius/common'
 import { Location } from 'history'
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 

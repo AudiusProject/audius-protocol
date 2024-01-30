@@ -9,11 +9,10 @@ import {
   ReactionTypes,
   formatMessageDate,
   isTrackUrl,
-  isCollectionUrl,
-  ChatMessageWithExtras,
-  Status
+  isCollectionUrl
 } from '@audius/common'
 import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
+import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'

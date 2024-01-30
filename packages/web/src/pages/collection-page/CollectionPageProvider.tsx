@@ -1,20 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
-  ID,
-  UID,
-  PlayableType,
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  ShareSource,
-  FollowSource,
-  Collection,
-  SmartCollection,
-  FavoriteType,
-  Kind,
-  Status,
   Nullable,
   Uid,
   formatUrlName,
@@ -43,6 +29,22 @@ import {
   playlistUpdatesSelectors,
   editPlaylistModalActions
 } from '@audius/common'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource,
+  PlaybackSource,
+  FavoriteType,
+  PlayableType,
+  Kind,
+  Status,
+  Collection,
+  SmartCollection,
+  ID,
+  UID
+} from '@audius/common/models'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'

@@ -3,12 +3,14 @@ import { useCallback, useMemo } from 'react'
 import {
   cacheCollectionsActions,
   CommonState,
-  CreatePlaylistSource,
   LibraryCategory,
   savedPageSelectors,
-  SavedPageTabs,
-  statusIsNotFinalized
+  SavedPageTabs
 } from '@audius/common'
+import {
+  CreatePlaylistSource,
+  statusIsNotFinalized
+} from '@audius/common/models'
 import { IconPlus } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

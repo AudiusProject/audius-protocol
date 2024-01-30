@@ -4,9 +4,9 @@ import {
   formatAudio,
   TransactionMethod,
   TransactionType,
-  Kind,
   TransactionDetails
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'

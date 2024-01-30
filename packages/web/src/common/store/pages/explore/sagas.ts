@@ -1,9 +1,9 @@
 import {
-  ID,
   explorePageActions,
   getContext,
   explorePageSelectors
 } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'

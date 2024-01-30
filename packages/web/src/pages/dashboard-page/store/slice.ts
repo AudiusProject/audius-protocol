@@ -1,4 +1,5 @@
-import { Collection, ID, Status, Track } from '@audius/common'
+import { Status, Collection, ID, Track } from '@audius/common/models'
+import {} from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import ArtistDashboardState from './types'

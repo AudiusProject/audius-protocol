@@ -1,16 +1,18 @@
 import {
   BN_USDC_CENT_WEI,
   FeatureFlags,
-  Name,
   accountSelectors,
   getContext,
-  getUSDCUserBank,
+  getUSDCUserBank
+} from '@audius/common'
+import {
+  Name,
   isContentCollectibleGated,
   isContentFollowGated,
-  isContentUSDCPurchaseGated,
   isContentTipGated,
+  isContentUSDCPurchaseGated,
   TrackMetadata
-} from '@audius/common'
+} from '@audius/common/models'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { range } from 'lodash'

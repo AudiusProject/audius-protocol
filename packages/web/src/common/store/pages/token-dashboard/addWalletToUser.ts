@@ -3,12 +3,11 @@ import {
   cacheActions,
   confirmerActions,
   getContext,
-  Kind,
   tokenDashboardPageActions,
-  User,
   walletActions,
   confirmTransaction
 } from '@audius/common'
+import { Kind, User } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'

@@ -1,13 +1,6 @@
 import {
-  Collection,
-  CollectionMetadata,
-  DefaultSizes,
   EditPlaylistValues,
-  ID,
-  Kind,
-  Name,
   Nullable,
-  Track,
   accountActions,
   accountSelectors,
   cacheUsersSelectors,
@@ -25,6 +18,15 @@ import {
   savedPageActions,
   LibraryCategory
 } from '@audius/common'
+import {
+  Name,
+  DefaultSizes,
+  Kind,
+  CollectionMetadata,
+  Collection,
+  ID,
+  Track
+} from '@audius/common/models'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

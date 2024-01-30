@@ -1,4 +1,5 @@
-import { ID, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
+import { ID } from '@audius/common/models'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'

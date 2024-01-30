@@ -1,11 +1,10 @@
 import {
-  ID,
-  FollowSource,
   getErrorMessage,
   feedPageLineupActions as feedActions,
   feedPageActions as discoverActions,
   usersSocialActions as socialActions
 } from '@audius/common'
+import { FollowSource, ID } from '@audius/common/models'
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'

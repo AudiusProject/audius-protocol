@@ -1,11 +1,6 @@
 import { useContext } from 'react'
 
 import {
-  ID,
-  PlayableType,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
@@ -18,6 +13,13 @@ import {
   CommonState,
   useEditTrackModal
 } from '@audius/common'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlayableType,
+  ID
+} from '@audius/common/models'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'

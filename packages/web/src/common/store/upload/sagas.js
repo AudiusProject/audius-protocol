@@ -1,6 +1,4 @@
 import {
-  Kind,
-  Name,
   makeUid,
   formatUrlName,
   accountSelectors,
@@ -19,6 +17,7 @@ import {
   reformatCollection,
   savedPageActions
 } from '@audius/common'
+import { Name, Kind } from '@audius/common/models'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
 import {

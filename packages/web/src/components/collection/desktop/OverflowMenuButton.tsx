@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  Collection,
   collectionPageSelectors,
   CommonState,
-  FollowSource,
-  User,
   usersSocialActions
 } from '@audius/common'
+import { FollowSource, Collection, User } from '@audius/common/models'
 import { Button, ButtonType, IconKebabHorizontal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

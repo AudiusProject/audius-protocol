@@ -1,12 +1,6 @@
-import {
-  ID,
-  LineupState,
-  Track,
-  User,
-  trackPageLineupActions,
-  QueueItem
-} from '@audius/common'
+import { trackPageLineupActions, QueueItem } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import { ID, LineupState, Track, User } from '@audius/common/models'
 import cn from 'classnames'
 
 import CoverPhoto from 'components/cover-photo/CoverPhoto'

@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 
-import { WidthSizes, Nullable, imageCoverPhotoBlank } from '@audius/common'
+import { Nullable, imageCoverPhotoBlank } from '@audius/common'
+import { WidthSizes } from '@audius/common/models'
 import cn from 'classnames'
 import { FileWithPreview } from 'react-dropzone'
 import Lottie from 'react-lottie'

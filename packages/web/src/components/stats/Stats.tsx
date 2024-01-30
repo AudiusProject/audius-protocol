@@ -1,4 +1,5 @@
-import { ID, formatCount } from '@audius/common'
+import { formatCount } from '@audius/common'
+import { ID } from '@audius/common/models'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

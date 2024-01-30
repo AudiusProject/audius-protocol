@@ -3,9 +3,9 @@ import {
   settingsPageActions as actions,
   getContext,
   accountSelectors,
-  cacheActions,
-  Kind
+  cacheActions
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'

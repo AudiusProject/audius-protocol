@@ -1,4 +1,5 @@
-import { Collection, Kind, cacheActions } from '@audius/common'
+import { cacheActions } from '@audius/common'
+import { Kind, Collection } from '@audius/common/models'
 import { put } from 'typed-redux-saga'
 
 export function* optimisticUpdateCollection(collection: Collection) {

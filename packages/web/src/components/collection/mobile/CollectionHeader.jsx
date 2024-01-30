@@ -1,14 +1,13 @@
 import { memo } from 'react'
 
 import {
-  Variant,
-  SquareSizes,
   formatCount,
   formatSecondsAsText,
   formatDate,
   OverflowAction,
   FeatureFlags
 } from '@audius/common'
+import { Variant, SquareSizes } from '@audius/common/models'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'

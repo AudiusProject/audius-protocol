@@ -11,9 +11,9 @@ import {
   TransactionType,
   audioTransactionsPageActions,
   audioTransactionsPageSelectors,
-  transactionDetailsActions,
-  statusIsNotFinalized
+  transactionDetailsActions
 } from '@audius/common'
+import { statusIsNotFinalized } from '@audius/common/models'
 import { full } from '@audius/sdk'
 import { IconCaretRight } from '@audius/stems'
 import { useDispatch } from 'react-redux'

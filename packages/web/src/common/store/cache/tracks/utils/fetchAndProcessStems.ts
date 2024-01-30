@@ -1,14 +1,16 @@
 import {
-  ID,
-  Kind,
-  StemCategory,
-  Stem,
-  StemTrackMetadata,
   cacheTracksSelectors,
   cacheActions,
   getContext,
   waitForValue
 } from '@audius/common'
+import {
+  Kind,
+  StemCategory,
+  ID,
+  Stem,
+  StemTrackMetadata
+} from '@audius/common/models'
 import { call, put } from 'redux-saga/effects'
 
 import { waitForRead } from 'utils/sagaHelpers'

@@ -1,4 +1,11 @@
-import { ID, StemCategory, StemUpload, Track, StemTrack } from '@audius/common'
+import {
+  StemCategory,
+  ID,
+  StemUpload,
+  Track,
+  StemTrack
+} from '@audius/common/models'
+import {} from '@audius/common'
 
 export const updateAndFlattenStems = (
   stems: StemUpload[][],

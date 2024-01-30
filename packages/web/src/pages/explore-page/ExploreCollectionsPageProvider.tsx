@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback, ComponentType } from 'react'
 
 import {
-  ID,
-  FavoriteType,
   ExploreCollectionsVariant,
   explorePageCollectionsSelectors,
   explorePageCollectionsActions,
@@ -10,6 +8,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
+import { FavoriteType, ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'

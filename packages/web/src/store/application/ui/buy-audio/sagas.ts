@@ -1,7 +1,5 @@
-/* eslint-disable new-cap */
 import {
   IntKeys,
-  Name,
   getContext,
   walletActions,
   convertBigIntToAmountObject,
@@ -19,12 +17,10 @@ import {
   TransactionMethod,
   TransactionDetails,
   walletSelectors,
-  BNWei,
   createUserBankIfNeeded,
   modalsActions,
   AmountObject,
   FeatureFlags,
-  ErrorLevel,
   LocalStorage,
   solanaSelectors,
   deriveUserBankPubkey,
@@ -32,6 +28,8 @@ import {
   isNullOrUndefined,
   dayjs
 } from '@audius/common'
+import { Name, ErrorLevel, BNWei } from '@audius/common/models'
+/* eslint-disable new-cap */
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
 import {

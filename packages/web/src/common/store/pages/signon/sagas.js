@@ -1,10 +1,8 @@
 import {
   ELECTRONIC_SUBGENRES,
-  FavoriteSource,
   FeatureFlags,
   Genre,
   MAX_HANDLE_LENGTH,
-  Name,
   accountActions,
   accountSelectors,
   cacheUsersSelectors,
@@ -23,6 +21,7 @@ import {
   isValidEmailString,
   waitForAccount
 } from '@audius/common'
+import { Name, FavoriteSource } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import {

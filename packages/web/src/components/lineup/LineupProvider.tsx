@@ -1,17 +1,19 @@
 import { ComponentType, createRef, PureComponent } from 'react'
 
 import {
-  Kind,
-  ID,
-  UID,
-  Name,
-  PlaybackSource,
-  Lineup,
-  Status,
   LineupBaseActions,
   tippingSelectors,
   playerSelectors
 } from '@audius/common'
+import {
+  Name,
+  PlaybackSource,
+  Kind,
+  Status,
+  ID,
+  UID,
+  Lineup
+} from '@audius/common/models'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'

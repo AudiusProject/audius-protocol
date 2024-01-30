@@ -1,14 +1,16 @@
 import { MouseEvent, useCallback, useRef, useState } from 'react'
 
 import {
-  FavoriteSource,
-  Name,
-  Status,
   accountSelectors,
   collectionsSocialActions,
-  tracksSocialActions,
-  CreateAccountOpen
+  tracksSocialActions
 } from '@audius/common'
+import {
+  Name,
+  FavoriteSource,
+  Status,
+  CreateAccountOpen
+} from '@audius/common/models'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'

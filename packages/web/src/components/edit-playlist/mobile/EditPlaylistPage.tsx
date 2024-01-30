@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
 import {
-  ID,
-  Collection,
-  SquareSizes,
   Nullable,
   RandomImage,
   accountSelectors,
@@ -16,6 +13,7 @@ import {
   useEditPlaylistModal
 } from '@audius/common'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
+import { SquareSizes, Collection, ID } from '@audius/common/models'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

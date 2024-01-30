@@ -2,7 +2,7 @@ const glob = require('glob')
 const fs = require('fs')
 
 var getDirectories = function (callback) {
-  glob('./common/dist/api/**/*', callback)
+  glob('./common/dist/models/**/*', callback)
 }
 
 getDirectories(async function (err, res) {
@@ -21,5 +21,5 @@ getDirectories(async function (err, res) {
       }
     })
 
-  console.log(exports)
+  console.dir(exports, { maxArrayLength: null })
 })

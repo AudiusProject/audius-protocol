@@ -1,12 +1,8 @@
 import { MouseEventHandler, useCallback, useState } from 'react'
 
-import {
-  Genre,
-  Name,
-  selectGenresSchema,
-  selectableGenres
-} from '@audius/common'
+import { Genre, selectGenresSchema, selectableGenres } from '@audius/common'
 import { selectGenresPageMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

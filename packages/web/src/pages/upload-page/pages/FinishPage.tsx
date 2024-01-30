@@ -4,12 +4,12 @@ import {
   accountSelectors,
   CommonState,
   imageBlank as placeholderArt,
-  Name,
   ProgressState,
   ProgressStatus,
   uploadSelectors,
   UploadType
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import {
   HarmonyPlainButton,
   IconArrow,

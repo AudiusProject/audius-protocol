@@ -1,9 +1,9 @@
 import {
-  TimeRange,
   accountSelectors,
   trendingPageLineupActions,
   trendingPageSelectors
 } from '@audius/common'
+import { TimeRange } from '@audius/common/models'
 import { select } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

@@ -1,15 +1,17 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
-  UID,
-  Name,
-  UserCollection,
-  LineupState,
-  Status,
-  User,
   searchResultsPageTracksLineupActions as tracksActions,
   trimToAlphaNumeric
 } from '@audius/common'
+import {
+  Name,
+  Status,
+  UserCollection,
+  UID,
+  LineupState,
+  User
+} from '@audius/common/models'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 

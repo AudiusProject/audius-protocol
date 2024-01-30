@@ -1,17 +1,19 @@
 import { useCallback, useContext } from 'react'
 
 import {
-  Collection,
-  Name,
   ShareContent,
-  ShareSource,
-  Track,
   UploadType,
-  User,
   accountSelectors,
   tracksSocialActions,
   usersSocialActions
 } from '@audius/common'
+import {
+  Name,
+  ShareSource,
+  Collection,
+  Track,
+  User
+} from '@audius/common/models'
 import { Button, ButtonType, IconLink, IconTwitterBird } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

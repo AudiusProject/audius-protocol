@@ -1,5 +1,4 @@
 import {
-  Name,
   accountSelectors,
   getContext,
   waitForValue,
@@ -9,6 +8,7 @@ import {
   confirmTransaction,
   confirmerSelectors
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

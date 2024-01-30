@@ -7,7 +7,9 @@ import {
   Ref
 } from 'react'
 
-import { DogEarType } from '@audius/common'
+import { DogEarType } from '@audius/common/models'
+
+import {} from '@audius/common'
 import cn from 'classnames'
 
 import { DogEar } from 'components/dog-ear'

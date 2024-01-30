@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react'
 
 import {
   Genre,
-  Status,
   convertGenreLabelToValue,
   selectArtistsSchema
 } from '@audius/common'
@@ -12,6 +11,7 @@ import {
   useGetFeaturedArtists
 } from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
+import { Status } from '@audius/common/models'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'

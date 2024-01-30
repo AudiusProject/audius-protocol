@@ -1,13 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  CommonState,
-  ID,
-  cacheTracksSelectors,
-  DownloadQuality,
-  toastActions
-} from '@audius/common'
+import { CommonState, cacheTracksSelectors, toastActions } from '@audius/common'
 import { useDownloadableContentAccess } from '@audius/common/hooks'
+import { DownloadQuality, ID } from '@audius/common/models'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 

@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { accountSelectors, CommonState, encodeHashId } from '@audius/common'
 import {
-  accountSelectors,
-  CommonState,
-  encodeHashId,
-  ErrorLevel,
   Name,
+  ErrorLevel,
   statusIsNotFinalized,
   User
-} from '@audius/common'
+} from '@audius/common/models'
 import * as queryString from 'query-string'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'

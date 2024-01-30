@@ -1,18 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import {
-  Kind,
-  Status,
   makeUid,
-  PlaybackSource,
   QueueSource,
   accountSelectors,
   getPathFromTrackUrl,
-  ID,
   ChatMessageTileProps,
-  cacheTracksActions,
-  SquareSizes,
-  Name
+  cacheTracksActions
 } from '@audius/common'
 import { useGetTrackByPermalink } from '@audius/common/api'
 import {
@@ -20,6 +14,14 @@ import {
   useGatedContentAccess,
   useToggleTrack
 } from '@audius/common/hooks'
+import {
+  Name,
+  PlaybackSource,
+  SquareSizes,
+  Kind,
+  Status,
+  ID
+} from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

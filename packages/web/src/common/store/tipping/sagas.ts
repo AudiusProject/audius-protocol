@@ -1,12 +1,4 @@
 import {
-  Kind,
-  ID,
-  Name,
-  Supporter,
-  Supporting,
-  User,
-  BNWei,
-  StringWei,
   parseAudioInputToWei,
   stringWeiToBN,
   weiToAudioString,
@@ -26,15 +18,25 @@ import {
   GetSupportersArgs,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
-  LastDismissedTip,
   LocalStorage,
   processAndCacheUsers,
   solanaSelectors,
   createUserBankIfNeeded,
-  SolanaWalletAddress,
   chatActions,
   isNullOrUndefined
 } from '@audius/common'
+import {
+  Name,
+  Kind,
+  ID,
+  Supporter,
+  Supporting,
+  LastDismissedTip,
+  User,
+  StringWei,
+  BNWei,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {

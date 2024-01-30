@@ -1,8 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
-  ChallengeRewardID,
-  OptimisticUserChallenge,
   removeNullable,
   StringKeys,
   fillString,
@@ -10,12 +8,16 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
-  ChallengeName,
   audioRewardsPageSelectors,
   isAudioMatchingChallenge,
-  makeOptimisticChallengeSortComparator,
-  Name
+  makeOptimisticChallengeSortComparator
 } from '@audius/common'
+import {
+  Name,
+  ChallengeName,
+  ChallengeRewardID,
+  OptimisticUserChallenge
+} from '@audius/common/models'
 import {
   ProgressBar,
   ButtonType,

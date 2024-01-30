@@ -1,7 +1,4 @@
 import {
-  ID,
-  User,
-  UserMetadata,
   stringWeiToBN,
   decodeHashId,
   cacheUsersSelectors,
@@ -14,6 +11,7 @@ import {
   responseAdapter as adapter,
   SupportingResponse
 } from '@audius/common'
+import { ID, UserMetadata, User } from '@audius/common/models'
 import { put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'

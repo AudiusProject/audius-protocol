@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  Collection,
   collectionPageSelectors,
   CommonState,
-  ID,
-  collectionsSocialActions,
-  RepostSource
+  collectionsSocialActions
 } from '@audius/common'
+import { RepostSource, Collection, ID } from '@audius/common/models'
 import { ButtonProps, ButtonType, IconRepost } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

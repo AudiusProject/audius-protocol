@@ -1,4 +1,5 @@
-import { Nullable, TrackMetadata, UploadType } from '@audius/common'
+import { Nullable, UploadType } from '@audius/common'
+import { TrackMetadata } from '@audius/common/models'
 
 import { CollectionValues } from './validation'
 

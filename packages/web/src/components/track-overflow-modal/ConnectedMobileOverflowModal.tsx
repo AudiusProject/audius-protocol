@@ -1,9 +1,4 @@
 import {
-  FavoriteSource,
-  FollowSource,
-  ID,
-  RepostSource,
-  ShareSource,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -23,6 +18,13 @@ import {
   useEditPlaylistModal,
   FeatureFlags
 } from '@audius/common'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource,
+  ID
+} from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

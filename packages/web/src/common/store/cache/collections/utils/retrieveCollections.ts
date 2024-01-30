@@ -1,9 +1,4 @@
 import {
-  ID,
-  Collection,
-  CollectionMetadata,
-  UserCollectionMetadata,
-  Kind,
   Nullable,
   makeUid,
   accountSelectors,
@@ -14,6 +9,13 @@ import {
   cacheCollectionsActions,
   reformatCollection
 } from '@audius/common'
+import {
+  Kind,
+  CollectionMetadata,
+  Collection,
+  UserCollectionMetadata,
+  ID
+} from '@audius/common/models'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 

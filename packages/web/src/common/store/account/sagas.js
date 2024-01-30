@@ -1,5 +1,4 @@
 import {
-  Kind,
   accountSelectors,
   cacheActions,
   profilePageActions,
@@ -9,9 +8,9 @@ import {
   createUserBankIfNeeded,
   getContext,
   FeatureFlags,
-  chatActions,
-  ErrorLevel
+  chatActions
 } from '@audius/common'
+import { ErrorLevel, Kind } from '@audius/common/models'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'

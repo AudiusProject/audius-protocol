@@ -1,14 +1,6 @@
 import { useEffect, useContext, MouseEvent, ReactNode } from 'react'
 
 import {
-  ID,
-  UID,
-  Collection,
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  LineupState,
-  Status,
-  User,
   ProfilePageTabs,
   ProfileUser,
   profilePageTracksLineupActions as tracksActions,
@@ -16,6 +8,16 @@ import {
   badgeTiers
 } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import {
+  Status,
+  Collection,
+  ID,
+  UID,
+  ProfilePictureSizes,
+  CoverPhotoSizes,
+  LineupState,
+  User
+} from '@audius/common/models'
 import cn from 'classnames'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'

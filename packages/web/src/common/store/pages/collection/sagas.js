@@ -1,5 +1,4 @@
 import {
-  Kind,
   makeUid,
   cacheActions,
   collectionPageActions as collectionActions,
@@ -7,6 +6,7 @@ import {
   collectionPageSelectors,
   reachabilitySelectors
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 

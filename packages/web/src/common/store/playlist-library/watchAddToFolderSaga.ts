@@ -1,14 +1,13 @@
 import {
-  Name,
   accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
   AddToFolderAction,
   toastActions,
   CommonState,
-  collectionsSocialActions,
-  FavoriteSource
+  collectionsSocialActions
 } from '@audius/common'
+import { Name, FavoriteSource } from '@audius/common/models'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { make } from '../analytics/actions'

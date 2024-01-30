@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  Chain,
-  Collectible,
-  CollectibleMediaType,
   profilePageSelectors,
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
+import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

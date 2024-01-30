@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
-import { Status, accountSelectors, chatActions } from '@audius/common'
+import { accountSelectors, chatActions } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 const { connect, disconnect, fetchMoreChats, fetchUnreadMessagesCount } =

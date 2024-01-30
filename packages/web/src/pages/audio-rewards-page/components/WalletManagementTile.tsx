@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
-  BNWei,
   tokenDashboardPageActions,
   walletSelectors,
   tokenDashboardPageSelectors,
@@ -10,10 +9,10 @@ import {
   OnRampProvider,
   FeatureFlags,
   StringKeys,
-  Client,
   Location,
   isNullOrUndefined
 } from '@audius/common'
+import { Client, BNWei } from '@audius/common/models'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'

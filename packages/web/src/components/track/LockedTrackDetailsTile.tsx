@@ -1,12 +1,12 @@
+import { getDogEarType } from '@audius/common'
 import {
-  getDogEarType,
-  ID,
+  SquareSizes,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  SquareSizes,
+  ID,
   Track,
   UserMetadata
-} from '@audius/common'
+} from '@audius/common/models'
 import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 

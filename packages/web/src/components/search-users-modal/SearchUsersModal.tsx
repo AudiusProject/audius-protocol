@@ -10,12 +10,10 @@ import {
 import {
   cacheUsersSelectors,
   searchUsersModalSelectors,
-  searchUsersModalActions,
-  User,
-  ID,
-  Status
+  searchUsersModalActions
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { Status, ID, User } from '@audius/common/models'
 import {
   IconButton,
   IconRemove,

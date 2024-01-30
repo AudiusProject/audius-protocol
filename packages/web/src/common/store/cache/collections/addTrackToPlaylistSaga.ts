@@ -1,6 +1,4 @@
 import {
-  Name,
-  Kind,
   makeKindId,
   makeUid,
   cacheCollectionsSelectors,
@@ -9,9 +7,7 @@ import {
   cacheActions,
   getContext,
   audioRewardsPageActions,
-  Collection,
   Nullable,
-  ID,
   cacheTracksSelectors,
   updatePlaylistArtwork,
   confirmerActions,
@@ -19,6 +15,7 @@ import {
   reformatCollection,
   toastActions
 } from '@audius/common'
+import { Name, Kind, Collection, ID } from '@audius/common/models'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

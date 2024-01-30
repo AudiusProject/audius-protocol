@@ -1,6 +1,8 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
+
+import {} from '@audius/common'
 import cn from 'classnames'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'

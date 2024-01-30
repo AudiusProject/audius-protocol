@@ -1,6 +1,7 @@
 import { RefObject, useContext } from 'react'
 
-import { ID, User, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
+import { ID, User } from '@audius/common/models'
 import { Popup, PopupPosition } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

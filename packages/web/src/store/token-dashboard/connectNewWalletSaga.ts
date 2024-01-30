@@ -1,4 +1,5 @@
-import { getContext, Name, tokenDashboardPageActions } from '@audius/common'
+import { getContext, tokenDashboardPageActions } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { captureException } from '@sentry/browser'
 import { fork, put, takeEvery } from 'typed-redux-saga'
 

@@ -1,12 +1,4 @@
 import {
-  ID,
-  Collection,
-  UserCollectionMetadata,
-  FeedFilter,
-  Kind,
-  LineupTrack,
-  TrackMetadata,
-  UserTrackMetadata,
   getContext,
   accountSelectors,
   feedPageLineupActions as feedActions,
@@ -14,6 +6,16 @@ import {
   GetSocialFeedArgs,
   CommonState
 } from '@audius/common'
+import {
+  FeedFilter,
+  Kind,
+  Collection,
+  UserCollectionMetadata,
+  ID,
+  TrackMetadata,
+  UserTrackMetadata,
+  LineupTrack
+} from '@audius/common/models'
 import { select, all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

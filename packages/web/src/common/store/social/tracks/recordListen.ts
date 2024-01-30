@@ -3,9 +3,9 @@ import {
   audioRewardsPageActions,
   cacheTracksSelectors,
   getContext,
-  Name,
   tracksSocialActions
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

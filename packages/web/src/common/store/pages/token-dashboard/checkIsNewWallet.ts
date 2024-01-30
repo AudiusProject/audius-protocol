@@ -1,10 +1,9 @@
 import {
-  Chain,
   getContext,
-  Name,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors
 } from '@audius/common'
+import { Name, Chain } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 
 const { getAssociatedWallets } = tokenDashboardPageSelectors

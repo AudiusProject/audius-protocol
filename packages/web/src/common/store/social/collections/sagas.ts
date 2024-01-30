@@ -1,10 +1,4 @@
 import {
-  Kind,
-  ID,
-  Name,
-  PlaylistLibrary,
-  SmartCollectionVariant,
-  User,
   makeUid,
   makeKindId,
   formatShareText,
@@ -23,6 +17,14 @@ import {
   savedPageActions,
   LibraryCategory
 } from '@audius/common'
+import {
+  Name,
+  Kind,
+  SmartCollectionVariant,
+  ID,
+  PlaylistLibrary,
+  User
+} from '@audius/common/models'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

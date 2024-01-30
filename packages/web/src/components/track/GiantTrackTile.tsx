@@ -7,17 +7,19 @@ import {
   Genre,
   FeatureFlags,
   Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
   getDogEarType,
-  isContentUSDCPurchaseGated,
   publishTrackConfirmationModalUIActions,
   CommonState,
   cacheTracksSelectors
 } from '@audius/common'
+import {
+  isContentUSDCPurchaseGated,
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
 import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {

@@ -1,11 +1,4 @@
 import {
-  Kind,
-  ID,
-  UID,
-  Name,
-  PlaybackSource,
-  LineupState,
-  User,
   Nullable,
   makeUid,
   Uid,
@@ -25,6 +18,15 @@ import {
   getContext,
   lineupRegistry
 } from '@audius/common'
+import {
+  Name,
+  PlaybackSource,
+  Kind,
+  ID,
+  UID,
+  LineupState,
+  User
+} from '@audius/common/models'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

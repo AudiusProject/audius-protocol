@@ -7,7 +7,9 @@ import {
   useState
 } from 'react'
 
-import { ID, Kind, TrackMetadata } from '@audius/common'
+import { Kind, ID, TrackMetadata } from '@audius/common/models'
+
+import {} from '@audius/common'
 import cn from 'classnames'
 import { debounce, range } from 'lodash'
 import moment from 'moment'

@@ -1,7 +1,4 @@
 import {
-  ID,
-  Kind,
-  UserTrackMetadata,
   removeNullable,
   accountSelectors,
   cacheTracksSelectors,
@@ -9,6 +6,7 @@ import {
   getContext,
   waitForValue
 } from '@audius/common'
+import { Kind, ID, UserTrackMetadata } from '@audius/common/models'
 import { select, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'

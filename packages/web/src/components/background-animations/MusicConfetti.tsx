@@ -1,6 +1,8 @@
 import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
+
+import {} from '@audius/common'
 
 import Confetti from 'utils/animations/music-confetti'
 import { getCurrentThemeColors } from 'utils/theme/theme'

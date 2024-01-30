@@ -1,7 +1,6 @@
 import { Component } from 'react'
 
 import {
-  Name,
   accountSelectors,
   lineupSelectors,
   searchResultsPageActions as searchPageActions,
@@ -11,6 +10,7 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'

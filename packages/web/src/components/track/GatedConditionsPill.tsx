@@ -1,10 +1,10 @@
 import type { MouseEvent } from 'react'
 
+import { formatPrice } from '@audius/common'
 import {
-  formatPrice,
   isContentUSDCPurchaseGated,
   AccessConditions
-} from '@audius/common'
+} from '@audius/common/models'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
 import cn from 'classnames'
 

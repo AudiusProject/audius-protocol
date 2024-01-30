@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import {
   profilePageSelectors,
   MAX_PROFILE_SUPPORTING_TILES,
-  User,
   formatCount
 } from '@audius/common'
 import { useRankedSupportingForUser } from '@audius/common/hooks'
+import { User } from '@audius/common/models'
 import { IconArrow } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

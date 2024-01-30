@@ -1,15 +1,17 @@
 import { memo, useEffect } from 'react'
 
 import {
-  ID,
-  Color,
-  ProfilePictureSizes,
-  SquareSizes,
   CommonState,
   cacheTracksSelectors,
   playerSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  SquareSizes,
+  Color,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

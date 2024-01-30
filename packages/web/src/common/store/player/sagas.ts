@@ -1,5 +1,4 @@
 import {
-  Kind,
   encodeHashId,
   accountSelectors,
   cacheTracksSelectors,
@@ -21,6 +20,7 @@ import {
   getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import { eventChannel } from 'redux-saga'
 import {
   select,

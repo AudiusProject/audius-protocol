@@ -1,6 +1,4 @@
 import {
-  DefaultSizes,
-  Kind,
   DoubleKeys,
   makeUid,
   makeKindId,
@@ -25,6 +23,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
+import { DefaultSizes, Kind } from '@audius/common/models'
 import { merge } from 'lodash'
 import {
   all,

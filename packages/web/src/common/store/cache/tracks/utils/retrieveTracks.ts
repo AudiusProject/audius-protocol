@@ -1,9 +1,4 @@
 import {
-  ID,
-  Kind,
-  Track,
-  TrackMetadata,
-  UserTrackMetadata,
   accountSelectors,
   CommonState,
   getContext,
@@ -13,6 +8,13 @@ import {
   trackPageSelectors,
   trackPageActions
 } from '@audius/common'
+import {
+  Kind,
+  ID,
+  TrackMetadata,
+  Track,
+  UserTrackMetadata
+} from '@audius/common/models'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'

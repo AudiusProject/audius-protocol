@@ -1,9 +1,4 @@
 import {
-  Kind,
-  ID,
-  Name,
-  Track,
-  User,
   makeKindId,
   formatShareText,
   accountSelectors,
@@ -21,6 +16,7 @@ import {
   confirmTransaction,
   FeatureFlags
 } from '@audius/common'
+import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 

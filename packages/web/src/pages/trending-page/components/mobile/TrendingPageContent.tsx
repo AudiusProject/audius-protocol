@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { Name, TimeRange, trendingPageLineupActions } from '@audius/common'
+import { trendingPageLineupActions } from '@audius/common'
+import { Name, TimeRange } from '@audius/common/models'
 import cn from 'classnames'
 
 import IconAllTime from 'assets/img/iconAllTime.svg'

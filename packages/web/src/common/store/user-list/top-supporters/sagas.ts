@@ -1,6 +1,4 @@
 import {
-  ID,
-  User,
   removeNullable,
   decodeHashId,
   cacheUsersSelectors,
@@ -13,6 +11,7 @@ import {
   TOP_SUPPORTERS_USER_LIST_TAG,
   responseAdapter as adapter
 } from '@audius/common'
+import { ID, User } from '@audius/common/models'
 import { put, select } from 'typed-redux-saga'
 
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'

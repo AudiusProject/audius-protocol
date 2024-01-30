@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  Name,
-  AnnouncementNotification as AnnouncementNotificationType
-} from '@audius/common'
+import { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { MarkdownViewer } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

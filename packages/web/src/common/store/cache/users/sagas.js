@@ -1,6 +1,4 @@
 import {
-  DefaultSizes,
-  Kind,
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -10,6 +8,7 @@ import {
   waitForAccount,
   reformatUser
 } from '@audius/common'
+import { DefaultSizes, Kind } from '@audius/common/models'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery, getContext } from 'redux-saga/effects'
 

@@ -1,8 +1,6 @@
 import { ComponentType, PureComponent } from 'react'
 
 import {
-  Name,
-  Theme,
   accountSelectors,
   InstagramProfile,
   settingsPageSelectors,
@@ -20,6 +18,7 @@ import {
   musicConfettiActions,
   TikTokProfile
 } from '@audius/common'
+import { Name, Theme } from '@audius/common/models'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

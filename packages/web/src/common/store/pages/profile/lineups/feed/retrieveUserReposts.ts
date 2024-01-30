@@ -1,10 +1,10 @@
+import { getContext } from '@audius/common'
 import {
-  ID,
   UserCollection,
+  ID,
   Track,
-  UserTrackMetadata,
-  getContext
-} from '@audius/common'
+  UserTrackMetadata
+} from '@audius/common/models'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

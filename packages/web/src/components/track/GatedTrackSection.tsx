@@ -2,24 +2,26 @@ import { useCallback } from 'react'
 
 import {
   cacheUsersSelectors,
-  Chain,
-  FollowSource,
   formatPrice,
-  ID,
+  Nullable,
+  gatedContentSelectors,
+  removeNullable,
+  tippingActions,
+  usersSocialActions as socialActions,
+  usePremiumContentPurchaseModal
+} from '@audius/common'
+import {
+  FollowSource,
+  ModalSource,
+  Chain,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  Nullable,
+  ID,
   AccessConditions,
-  gatedContentSelectors,
-  removeNullable,
-  tippingActions,
-  User,
-  usersSocialActions as socialActions,
-  usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  User
+} from '@audius/common/models'
 import {
   Button,
   ButtonType,

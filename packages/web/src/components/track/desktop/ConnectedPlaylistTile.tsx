@@ -10,14 +10,6 @@ import {
 } from 'react'
 
 import {
-  UID,
-  ID,
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  Name,
-  Track,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
@@ -25,6 +17,16 @@ import {
   shareModalUIActions,
   playerSelectors
 } from '@audius/common'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  ID,
+  UID,
+  Track
+} from '@audius/common/models'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'

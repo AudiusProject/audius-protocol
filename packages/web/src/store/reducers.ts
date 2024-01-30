@@ -1,9 +1,9 @@
 import {
   queueReducer as queue,
   remoteConfigReducer as remoteConfig,
-  reducers as clientStoreReducers,
-  SsrPageProps
+  reducers as clientStoreReducers
 } from '@audius/common'
+import { SsrPageProps } from '@audius/common/models'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
 import localForage from 'localforage'

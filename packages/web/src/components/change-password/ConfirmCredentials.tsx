@@ -1,10 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 
-import {
-  Status,
-  changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
+import { changePasswordSelectors, changePasswordActions } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

@@ -1,12 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  PurchaseContentStage,
-  PurchaseVendor,
-  PurchaseMethod,
-  FeatureFlags,
-  IntKeys
-} from '@audius/common'
+import { PurchaseContentStage, FeatureFlags, IntKeys } from '@audius/common'
 import {
   useFeatureFlag,
   useRemoteVar,
@@ -16,6 +10,7 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod
 } from '@audius/common/hooks'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'

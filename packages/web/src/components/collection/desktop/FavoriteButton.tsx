@@ -2,14 +2,16 @@ import { useCallback } from 'react'
 
 import {
   accountSelectors,
-  Collection,
   collectionPageSelectors,
   CommonState,
-  ID,
-  SmartCollection,
-  collectionsSocialActions,
-  FavoriteSource
+  collectionsSocialActions
 } from '@audius/common'
+import {
+  FavoriteSource,
+  Collection,
+  SmartCollection,
+  ID
+} from '@audius/common/models'
 import { ButtonProps, ButtonType, IconHeart } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,11 +1,7 @@
 import {
   APIActivityV2,
-  Favorite,
-  FavoriteType,
   LibraryCategoryType,
   Nullable,
-  User,
-  UserTrackMetadata,
   accountSelectors,
   savedPageActions as actions,
   decodeHashId,
@@ -17,6 +13,12 @@ import {
   savedPageTracksLineupActions as tracksActions,
   waitForValue
 } from '@audius/common'
+import {
+  FavoriteType,
+  Favorite,
+  UserTrackMetadata,
+  User
+} from '@audius/common/models'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

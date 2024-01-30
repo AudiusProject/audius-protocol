@@ -1,17 +1,6 @@
 import { Component, ComponentType } from 'react'
 
 import {
-  ID,
-  PlayableType,
-  FollowSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  Name,
-  PlaybackSource,
-  FavoriteType,
-  Status,
-  Track,
   Uid,
   formatDate,
   accountSelectors,
@@ -32,6 +21,19 @@ import {
   playerSelectors,
   queueSelectors
 } from '@audius/common'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource,
+  PlaybackSource,
+  FavoriteType,
+  PlayableType,
+  Status,
+  ID,
+  Track
+} from '@audius/common/models'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

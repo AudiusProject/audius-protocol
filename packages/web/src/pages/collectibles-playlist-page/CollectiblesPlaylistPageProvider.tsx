@@ -8,14 +8,6 @@ import {
 } from 'react'
 
 import {
-  ShareSource,
-  Chain,
-  Collectible,
-  Collection,
-  SmartCollection,
-  SmartCollectionVariant,
-  Status,
-  User,
   formatSeconds,
   cacheUsersSelectors,
   profilePageActions,
@@ -28,6 +20,16 @@ import {
   playerSelectors,
   getHash
 } from '@audius/common'
+import {
+  ShareSource,
+  Chain,
+  SmartCollectionVariant,
+  Status,
+  Collectible,
+  Collection,
+  SmartCollection,
+  User
+} from '@audius/common/models'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

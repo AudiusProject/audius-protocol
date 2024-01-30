@@ -1,13 +1,12 @@
 import { ReactNode, useCallback } from 'react'
 
 import {
-  ChallengeName,
-  OptimisticUserChallenge,
   challengeRewardsConfig,
   formatNumberCommas,
   challengesSelectors
 } from '@audius/common'
 import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
   HarmonyButton,

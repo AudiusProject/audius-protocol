@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
+
+import {} from '@audius/common'
 import { Modal, Button, IconDownload, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

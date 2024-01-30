@@ -1,15 +1,15 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 
+import { Nullable } from '@audius/common'
 import {
-  ID,
-  Nullable,
-  AccessConditions,
   SquareSizes,
-  Track,
-  User,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  isContentUSDCPurchaseGated,
+  ID,
+  AccessConditions,
+  Track,
+  User
+} from '@audius/common/models'
 import {
   Modal,
   Button,

@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import {
   musicConfettiActions,
   musicConfettiSelectors,
-  themeSelectors,
-  Theme
+  themeSelectors
 } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { MusicConfetti } from 'components/background-animations/MusicConfetti'

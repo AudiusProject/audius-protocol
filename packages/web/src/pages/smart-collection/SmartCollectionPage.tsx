@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 import {
-  SmartCollectionVariant,
   accountSelectors,
   smartCollectionPageSelectors,
   smartCollectionPageActions,
   playlistLibraryHelpers
 } from '@audius/common'
+import { SmartCollectionVariant } from '@audius/common/models'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 

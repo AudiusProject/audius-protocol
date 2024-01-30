@@ -5,10 +5,10 @@ import {
   cacheCollectionsSelectors,
   CommonState,
   savedPageSelectors,
-  Status,
   useAllPaginatedQuery
 } from '@audius/common'
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
+import { Status } from '@audius/common/models'
 import { uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 

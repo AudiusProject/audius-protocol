@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { User, chatActions, Name } from '@audius/common'
+import { chatActions } from '@audius/common'
+import { Name, User } from '@audius/common/models'
 import {
   Button,
   ButtonType,

@@ -1,15 +1,9 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  BNUSDC,
-  Name,
-  Status,
-  USDCTransactionDetails,
   WithdrawUSDCModalPages,
   accountSelectors,
-  combineStatuses,
   formatUSDCWeiToFloorCentsNumber,
-  statusIsNotFinalized,
   useAllPaginatedQuery,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal
@@ -20,6 +14,14 @@ import {
   Id
 } from '@audius/common/api'
 import { useUSDCBalance } from '@audius/common/hooks'
+import {
+  Name,
+  Status,
+  statusIsNotFinalized,
+  combineStatuses,
+  USDCTransactionDetails,
+  BNUSDC
+} from '@audius/common/models'
 import { full } from '@audius/sdk'
 import BN from 'bn.js'
 

@@ -1,8 +1,4 @@
 import {
-  Name,
-  DefaultSizes,
-  SquareSizes,
-  Kind,
   makeKindId,
   squashNewLines,
   formatUrlName,
@@ -17,6 +13,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
+import { Name, DefaultSizes, SquareSizes, Kind } from '@audius/common/models'
 import {
   call,
   fork,

@@ -1,15 +1,17 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  Status,
-  USDCPurchaseDetails,
   accountSelectors,
-  combineStatuses,
-  statusIsNotFinalized,
   useAllPaginatedQuery,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
 import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
+import {
+  Status,
+  statusIsNotFinalized,
+  combineStatuses,
+  USDCPurchaseDetails
+} from '@audius/common/models'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

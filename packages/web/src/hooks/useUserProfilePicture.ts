@@ -1,11 +1,10 @@
 import {
-  ProfilePictureSizes,
-  SquareSizes,
   cacheUsersActions,
   imageProfilePicEmpty as profilePicEmpty,
   cacheUsersSelectors
 } from '@audius/common'
 import { useImageSize } from '@audius/common/hooks'
+import { SquareSizes, ProfilePictureSizes } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'

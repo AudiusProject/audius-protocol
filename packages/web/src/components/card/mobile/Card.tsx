@@ -1,13 +1,12 @@
 import React, { MouseEvent, ReactNode } from 'react'
 
+import { pluralize, imageBlank as placeholderArt } from '@audius/common'
 import {
-  ID,
-  ProfilePictureSizes,
   SquareSizes,
+  ID,
   CoverArtSizes,
-  pluralize,
-  imageBlank as placeholderArt
-} from '@audius/common'
+  ProfilePictureSizes
+} from '@audius/common/models'
 import cn from 'classnames'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

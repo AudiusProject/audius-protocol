@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  Name,
-  Status,
   BooleanKeys,
   accountSelectors,
   TwitterProfile,
@@ -10,6 +8,7 @@ import {
   accountActions,
   TikTokProfile
 } from '@audius/common'
+import { Name, Status } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconValidationX from 'assets/img/iconValidationX.svg'

@@ -1,23 +1,25 @@
 import { useCallback } from 'react'
 
 import {
-  ID,
-  SquareSizes,
-  CoverArtSizes,
-  FieldVisibility,
-  Remix,
   getCanonicalName,
   formatSeconds,
   formatDate,
   OverflowAction,
   imageBlank as placeholderArt,
-  AccessConditions,
   Nullable,
   getDogEarType,
-  FeatureFlags,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
+  FeatureFlags
 } from '@audius/common'
+import {
+  SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
 import {
   Button,
   ButtonSize,

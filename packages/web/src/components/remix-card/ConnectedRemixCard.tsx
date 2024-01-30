@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  ID,
-  SquareSizes,
-  cacheTracksSelectors,
-  cacheUsersSelectors
-} from '@audius/common'
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common'
+import { SquareSizes, ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

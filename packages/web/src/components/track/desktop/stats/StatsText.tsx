@@ -1,4 +1,5 @@
-import { User, formatCount, pluralize } from '@audius/common'
+import { formatCount, pluralize } from '@audius/common'
+import { User } from '@audius/common/models'
 
 import styles from './StatsText.module.css'
 

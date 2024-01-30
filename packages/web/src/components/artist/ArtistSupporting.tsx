@@ -1,8 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  ID,
-  User,
   stringWeiToBN,
   cacheUsersSelectors,
   tippingSelectors,
@@ -11,6 +9,7 @@ import {
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
   MAX_ARTIST_HOVER_TOP_SUPPORTING
 } from '@audius/common'
+import { ID, User } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import IconTip from 'assets/img/iconTip.svg'

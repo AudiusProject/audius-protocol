@@ -1,10 +1,10 @@
 import {
   CollectionType,
-  ID,
   savedCollectionsActions,
   savedCollectionsSelectors,
   waitForRead
 } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { all, call, select, put, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from '../cache/collections/utils'

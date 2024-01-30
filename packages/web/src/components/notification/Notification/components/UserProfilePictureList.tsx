@@ -1,4 +1,5 @@
-import { User, formatCount } from '@audius/common'
+import { formatCount } from '@audius/common'
+import { User } from '@audius/common/models'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'

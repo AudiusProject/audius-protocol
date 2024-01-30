@@ -1,6 +1,8 @@
 import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
 
-import { SquareSizes, User } from '@audius/common'
+import { SquareSizes, User } from '@audius/common/models'
+
+import {} from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

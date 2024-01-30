@@ -12,7 +12,8 @@
     "./messages": "./src/messages/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./context": "./src/context/index.ts",
-    "./api": "./src/api/index.ts"
+    "./api": "./src/api/index.ts",
+    "./models": "./src/models/index.ts"
   },
   "repository": {
     "type": "git",

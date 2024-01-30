@@ -1,6 +1,8 @@
+import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
+
 import { memo } from 'react'
 
-import { ID, SquareSizes, CoverArtSizes } from '@audius/common'
+import {} from '@audius/common'
 import { useLoadImageWithTimeout } from '@audius/common/hooks'
 import {
   PbIconPlay as IconPlay,

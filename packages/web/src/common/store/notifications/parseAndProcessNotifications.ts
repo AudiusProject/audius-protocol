@@ -1,16 +1,14 @@
 import {
-  ID,
   waitForRead,
   Notification,
   NotificationType,
   Entity,
   reactionsUIActions,
   waitForAccount,
-  Track,
   Achievement,
-  Remix,
   accountSelectors
 } from '@audius/common'
+import { ID, Remix, Track } from '@audius/common/models'
 import moment from 'moment'
 import { all, call, put, select } from 'typed-redux-saga'
 

@@ -3,20 +3,8 @@ import { useCallback, useMemo } from 'react'
 import {
   accountSelectors,
   FeatureFlags,
-  FieldVisibility,
   formatPrice,
-  isContentCollectibleGated,
-  isContentFollowGated,
-  isContentTipGated,
-  isContentUSDCPurchaseGated,
-  Nullable,
-  TrackAvailabilityType,
-  CollectibleGatedConditions,
-  USDCPurchaseConditions,
-  FollowGatedConditions,
-  TipGatedConditions,
-  ID,
-  AccessConditions
+  Nullable
 } from '@audius/common'
 import {
   USDCPurchaseConfig,
@@ -24,6 +12,20 @@ import {
   useUSDCPurchaseConfig,
   useAccessAndRemixSettings
 } from '@audius/common/hooks'
+import {
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated,
+  TrackAvailabilityType,
+  ID,
+  FieldVisibility,
+  CollectibleGatedConditions,
+  FollowGatedConditions,
+  TipGatedConditions,
+  USDCPurchaseConditions,
+  AccessConditions
+} from '@audius/common/models'
 import {
   IconCart,
   IconCollectible,

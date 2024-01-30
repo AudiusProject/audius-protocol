@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 
 import {
   LibraryCategory,
-  statusIsNotFinalized,
   savedPageSelectors,
   CommonState,
   SavedPageTabs
 } from '@audius/common'
+import { statusIsNotFinalized } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'

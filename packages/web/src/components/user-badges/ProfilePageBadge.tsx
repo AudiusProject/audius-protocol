@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { ID, BadgeTier, modalsActions } from '@audius/common'
+import { modalsActions } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { BadgeTier, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

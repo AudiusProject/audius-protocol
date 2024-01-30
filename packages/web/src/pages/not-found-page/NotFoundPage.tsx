@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react'
 
-import { Name, themeSelectors } from '@audius/common'
+import { themeSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

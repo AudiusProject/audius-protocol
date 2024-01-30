@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  SolanaWalletAddress,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
   withdrawUSDCActions,
-  BNUSDC,
   formatUSDCWeiToFloorCentsNumber,
   Nullable,
   withdrawUSDCSelectors,
-  Status,
-  Name,
   WithdrawMethod,
   FeatureFlags,
   IntKeys
@@ -20,6 +16,12 @@ import {
   useRemoteVar,
   useUSDCBalance
 } from '@audius/common/hooks'
+import {
+  Name,
+  Status,
+  BNUSDC,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'

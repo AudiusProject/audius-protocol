@@ -1,6 +1,8 @@
+import { SquareSizes, ID, CoverArtSizes, Remix } from '@audius/common/models'
+
 import { memo } from 'react'
 
-import { ID, CoverArtSizes, SquareSizes, Remix } from '@audius/common'
+import {} from '@audius/common'
 import { useLoadImageWithTimeout } from '@audius/common/hooks'
 import cn from 'classnames'
 

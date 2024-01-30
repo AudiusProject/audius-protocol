@@ -2,15 +2,13 @@ import { useCallback, useEffect } from 'react'
 
 import {
   PurchaseContentStage,
-  Track,
   usePremiumContentPurchaseModal,
   buyUSDCActions,
   purchaseContentActions,
   purchaseContentSelectors,
   isContentPurchaseInProgress,
   PurchaseContentPage,
-  FeatureFlags,
-  PurchaseVendor
+  FeatureFlags
 } from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -20,6 +18,7 @@ import {
   usePayExtraPresets,
   isTrackPurchaseable
 } from '@audius/common/hooks'
+import { PurchaseVendor, Track } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
 import {

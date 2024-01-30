@@ -1,6 +1,13 @@
 import { useState, useCallback, useMemo } from 'react'
 
-import { Status, User, Track, isContentUSDCPurchaseGated } from '@audius/common'
+import {
+  Status,
+  isContentUSDCPurchaseGated,
+  Track,
+  User
+} from '@audius/common/models'
+
+import {} from '@audius/common'
 import { SelectablePill } from '@audius/harmony'
 import {
   IconHidden,

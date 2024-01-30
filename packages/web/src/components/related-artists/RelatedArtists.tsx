@@ -1,6 +1,8 @@
+import { User } from '@audius/common/models'
+
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
+import type {} from '@audius/common'
 import {
   profilePageSelectors,
   MAX_PROFILE_RELATED_ARTISTS,

@@ -1,8 +1,8 @@
 import {
-  Kind,
   accountSelectors,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common'
+import { Kind } from '@audius/common/models'
 import { keyBy } from 'lodash'
 import { call, getContext, select } from 'redux-saga/effects'
 

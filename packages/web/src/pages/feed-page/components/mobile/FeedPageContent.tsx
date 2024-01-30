@@ -1,10 +1,7 @@
 import { useContext, useEffect } from 'react'
 
-import {
-  FeedFilter,
-  Name,
-  feedPageLineupActions as feedActions
-} from '@audius/common'
+import { feedPageLineupActions as feedActions } from '@audius/common'
+import { Name, FeedFilter } from '@audius/common/models'
 import cn from 'classnames'
 
 import { useModalState } from 'common/hooks/useModalState'

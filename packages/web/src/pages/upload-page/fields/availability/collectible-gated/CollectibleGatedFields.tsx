@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
+import { collectiblesSelectors } from '@audius/common'
 import {
   Chain,
-  collectiblesSelectors,
   isContentCollectibleGated,
   TrackAvailabilityType
-} from '@audius/common'
+} from '@audius/common/models'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 

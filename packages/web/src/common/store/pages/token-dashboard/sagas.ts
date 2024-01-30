@@ -1,10 +1,9 @@
 import {
-  Chain,
   accountSelectors,
   tokenDashboardPageActions,
-  getContext,
-  CollectibleState
+  getContext
 } from '@audius/common'
+import { Chain, CollectibleState } from '@audius/common/models'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

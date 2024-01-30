@@ -1,10 +1,10 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
+import { formatUSDCWeiToUSDString } from '@audius/common'
 import {
-  formatUSDCWeiToUSDString,
   USDCContentPurchaseType,
   USDCPurchaseDetails
-} from '@audius/common'
+} from '@audius/common/models'
 import BN from 'bn.js'
 import moment from 'moment'
 

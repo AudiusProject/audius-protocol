@@ -1,8 +1,4 @@
 import {
-  ChallengeRewardID,
-  FailureReason,
-  UserChallenge,
-  StringAudio,
   IntKeys,
   StringKeys,
   accountSelectors,
@@ -16,6 +12,12 @@ import {
   modalsActions,
   stringAudioToStringWei
 } from '@audius/common'
+import {
+  FailureReason,
+  UserChallenge,
+  ChallengeRewardID,
+  StringAudio
+} from '@audius/common/models'
 import delayP from '@redux-saga/delay-p'
 import { all, fork } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'

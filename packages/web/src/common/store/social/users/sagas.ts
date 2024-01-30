@@ -1,7 +1,4 @@
 import {
-  Kind,
-  ID,
-  Name,
   makeKindId,
   accountSelectors,
   cacheActions,
@@ -12,6 +9,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
+import { Name, Kind, ID } from '@audius/common/models'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

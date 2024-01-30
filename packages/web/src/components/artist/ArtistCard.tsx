@@ -1,11 +1,7 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import {
-  FollowSource,
-  User,
-  profilePageActions,
-  usersSocialActions
-} from '@audius/common'
+import { profilePageActions, usersSocialActions } from '@audius/common'
+import { FollowSource, User } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { FollowButton } from 'components/follow-button/FollowButton'

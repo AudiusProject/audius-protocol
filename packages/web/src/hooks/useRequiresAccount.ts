@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
-import { accountSelectors, Status } from '@audius/common'
+import { accountSelectors } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

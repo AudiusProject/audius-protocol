@@ -1,4 +1,5 @@
-import { Theme, themeActions, actionChannelDispatcher } from '@audius/common'
+import { themeActions, actionChannelDispatcher } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { eventChannel } from 'redux-saga'
 import { spawn, takeEvery } from 'redux-saga/effects'

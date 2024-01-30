@@ -1,8 +1,4 @@
 import {
-  ID,
-  Collection,
-  FavoriteType,
-  Track,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   UserListSagaFactory,
@@ -10,6 +6,7 @@ import {
   favoritesUserListSelectors,
   FAVORITES_USER_LIST_TAG
 } from '@audius/common'
+import { FavoriteType, Collection, ID, Track } from '@audius/common/models'
 import { select, put } from 'typed-redux-saga'
 
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'

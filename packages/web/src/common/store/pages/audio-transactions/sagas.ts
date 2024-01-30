@@ -4,12 +4,12 @@ import {
   TransactionMethod,
   TransactionType,
   formatDate,
-  StringAudio,
   transactionDetailsActions,
   getContext,
   Nullable
 } from '@audius/common'
 import type { InAppAudioPurchaseMetadata } from '@audius/common'
+import { StringAudio } from '@audius/common/models'
 import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
