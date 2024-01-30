@@ -15,22 +15,22 @@ import {
   waitForAccount,
   waitForValue,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  Track,
+  Entry,
+  Collection,
+  ID,
+  ExtendedTrackMetadata,
+  getContext
 } from '@audius/common'
-import {
-  call,
-  fork,
-  getContext,
-  put,
-  select,
-  takeEvery
-} from 'redux-saga/effects'
+import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { processTracksForUpload } from 'common/store/upload/sagaHelpers'
+import { TrackForUpload } from 'pages/upload-page/types'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -41,8 +41,8 @@ const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
 const { getAccountUser, getUserId, getUserHandle } = accountSelectors
 
-function* fetchRepostInfo(entries) {
-  const userIds = []
+function* fetchRepostInfo(entries: Entry<Collection>[]) {
+  const userIds: ID[] = []
   entries.forEach((entry) => {
     if (entry.metadata.followee_reposts) {
       entry.metadata.followee_reposts.forEach((repost) =>
@@ -52,32 +52,36 @@ function* fetchRepostInfo(entries) {
   })
 
   if (userIds.length) {
-    yield call(fetchUsers, userIds)
+    yield* call(fetchUsers, userIds)
   }
 }
 
 function* watchAdd() {
-  yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
-    if (action.kind === Kind.TRACKS) {
-      const isNativeMobile = yield getContext('isNativeMobile')
-      if (!isNativeMobile) {
-        yield fork(fetchRepostInfo, action.entries)
+  yield* takeEvery(
+    cacheActions.ADD_SUCCEEDED,
+    function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
+      if (action.kind === Kind.TRACKS) {
+        const isNativeMobile = yield* getContext('isNativeMobile')
+        if (!isNativeMobile) {
+          yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
+        }
       }
     }
-  })
+  )
 }
 
-export function* trackNewRemixEvent(remixTrack) {
-  yield waitForAccount()
-  const account = yield select(getAccountUser)
+export function* trackNewRemixEvent(remixTrack: Track) {
+  yield* waitForAccount()
+  const account = yield* select(getAccountUser)
+  if (!remixTrack.remix_of || !account) return
   const remixParentTrack = remixTrack.remix_of.tracks[0]
-  const parentTrack = yield select(getTrack, {
+  const parentTrack = yield* select(getTrack, {
     id: remixParentTrack.parent_track_id
   })
   const parentTrackUser = parentTrack
-    ? yield select(getUser, { id: parentTrack.owner_id })
+    ? yield* select(getUser, { id: parentTrack.owner_id })
     : null
-  yield put(
+  yield* put(
     make(Name.REMIX_NEW_REMIX, {
       id: remixTrack.track_id,
       handle: account.handle,
@@ -89,24 +93,18 @@ export function* trackNewRemixEvent(remixTrack) {
   )
 }
 
-function* editTrackAsync(action) {
-  yield call(waitForWrite)
+function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
+  yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)
 
-  const currentTrack = yield select(getTrack, { id: action.trackId })
-  const wasDownloadable =
-    currentTrack.is_downloadable ||
-    (currentTrack.download && currentTrack.download.is_downloadable)
-  const isNowDownloadable =
-    action.formFields.is_downloadable ||
-    (action.formFields.download && action.formFields.download.is_downloadable)
-
+  const currentTrack = yield* select(getTrack, { id: action.trackId })
+  if (!currentTrack) return
   const isPublishing = currentTrack._is_publishing
   const wasUnlisted = currentTrack.is_unlisted
   const isNowListed = !action.formFields.is_unlisted
 
   if (!isPublishing && wasUnlisted && isNowListed) {
-    yield put(
+    yield* put(
       cacheActions.update(Kind.TRACKS, [
         {
           id: action.trackId,
@@ -116,22 +114,22 @@ function* editTrackAsync(action) {
     )
   }
 
-  const [{ metadata: trackForEdit }] = yield processTracksForUpload([
-    { metadata: action.formFields }
+  const [{ metadata: trackForEdit }] = yield* processTracksForUpload([
+    // TODO: this is ok because processTracksForUpload only uses the metadata
+    // but ideally we update it to accept TrackMetadata[] instead
+    { metadata: action.formFields } as TrackForUpload
   ])
 
-  yield call(
+  yield* call(
     confirmEditTrack,
     action.trackId,
-    trackForEdit,
-    wasDownloadable,
-    isNowDownloadable,
+    trackForEdit as ExtendedTrackMetadata,
     wasUnlisted,
     isNowListed,
     currentTrack
   )
 
-  const track = { ...trackForEdit }
+  const track = { ...trackForEdit } as ExtendedTrackMetadata & Track
   track.track_id = action.trackId
   if (track.artwork?.file) {
     track._cover_art_sizes = {
@@ -140,10 +138,10 @@ function* editTrackAsync(action) {
     }
   }
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.TRACKS, [{ id: track.track_id, metadata: track }])
   )
-  yield put(trackActions.editTrackSucceeded())
+  yield* put(trackActions.editTrackSucceeded())
 
   // This is a new remix
   if (
@@ -152,67 +150,76 @@ function* editTrackAsync(action) {
       track?.remix_of?.tracks?.[0]?.parent_track_id
   ) {
     // This is a new remix
-    yield call(trackNewRemixEvent, track)
+    yield* call(trackNewRemixEvent, track)
   }
 }
 
 function* confirmEditTrack(
-  trackId,
-  formFields,
-  wasDownloadable,
-  isNowDownloadable,
-  wasUnlisted,
-  isNowListed,
-  currentTrack
+  trackId: ID,
+  formFields: ExtendedTrackMetadata,
+  wasUnlisted: boolean,
+  isNowListed: boolean,
+  currentTrack: Track
 ) {
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const apiClient = yield getContext('apiClient')
+  yield* waitForWrite()
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
   const transcodePreview =
     formFields.preview_start_seconds !== null &&
     currentTrack.preview_start_seconds !== formFields.preview_start_seconds
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        // debug
+        audiusBackendInstance.updateTrack(
+          trackId,
+          { ...formFields },
+          transcodePreview
+        )
+        const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.updateTrack,
           trackId,
           { ...formFields },
           transcodePreview
         )
 
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm edit track for track id ${trackId}`
           )
         }
 
-        yield waitForAccount()
+        yield* waitForAccount()
         // Need to poll with the new track name in case it changed
-        const userId = yield select(getUserId)
-        const handle = yield select(getUserHandle)
+        const userId = yield* select(getUserId)
+        const handle = yield* select(getUserHandle)
 
-        return yield apiClient.getTrack(
+        return yield* call(
+          apiClient.getTrack,
           {
             id: trackId,
             currentUserId: userId,
             unlistedArgs: {
               urlTitle: formatUrlName(formFields.title),
-              handle
+              handle: handle!
             }
           },
           /* retry */ false
         )
       },
-      function* (confirmedTrack) {
+      function* (confirmedTrack: ExtendedTrackMetadata & Track) {
         if (wasUnlisted && isNowListed) {
           confirmedTrack._is_publishing = false
         }
         // Update the cached track so it no longer contains image upload artifacts
         const { artwork: ignoredArtwork, ...metadata } = confirmedTrack
-        yield put(
+        yield* put(
           cacheActions.update(Kind.TRACKS, [
             {
               id: confirmedTrack.track_id,
@@ -220,10 +227,10 @@ function* confirmEditTrack(
             }
           ])
         )
-        yield call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
+        yield* call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
       function* () {
-        yield put(trackActions.editTrackFailed())
+        yield* put(trackActions.editTrackFailed())
         // Throw so the user can't capture a bad upload state (especially for downloads).
         // TODO: Consider better update revesion logic here coupled with a toast or similar.
         throw new Error('Edit track failed')
@@ -233,23 +240,25 @@ function* confirmEditTrack(
 }
 
 function* watchEditTrack() {
-  yield takeEvery(trackActions.EDIT_TRACK, editTrackAsync)
+  yield* takeEvery(trackActions.EDIT_TRACK, editTrackAsync)
 }
 
-function* deleteTrackAsync(action) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield waitForWrite()
-  const userId = yield select(getUserId)
+function* deleteTrackAsync(
+  action: ReturnType<typeof trackActions.deleteTrack>
+) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* waitForWrite()
+  const userId = yield* select(getUserId)
   if (!userId) {
-    yield put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.openSignOn(false))
     return
   }
-  const handle = yield select(getUserHandle)
+  const handle = yield* select(getUserHandle)
 
   // Before deleting, check if the track is set as the artist pick & delete if so
-  const socials = yield call(audiusBackendInstance.getSocialHandles, handle)
+  const socials = yield* call(audiusBackendInstance.getSocialHandles, handle!)
   if (socials.pinnedTrackId === action.trackId) {
-    yield put(
+    yield* put(
       cacheActions.update(Kind.USERS, [
         {
           id: userId,
@@ -259,79 +268,86 @@ function* deleteTrackAsync(action) {
         }
       ])
     )
-    const user = yield call(waitForValue, getUser, { id: userId })
-    yield fork(updateProfileAsync, { metadata: user })
+    const user = yield* call(waitForValue, getUser, { id: userId })
+    yield* fork(updateProfileAsync, { metadata: user })
   }
 
-  const track = yield select(getTrack, { id: action.trackId })
-  yield put(
+  const track = yield* select(getTrack, { id: action.trackId })
+  if (!track) return
+  yield* put(
     cacheActions.update(Kind.TRACKS, [
       { id: track.track_id, metadata: { _marked_deleted: true } }
     ])
   )
 
-  yield call(confirmDeleteTrack, track.track_id)
+  yield* call(confirmDeleteTrack, track.track_id)
 }
 
-function* confirmDeleteTrack(trackId) {
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const apiClient = yield getContext('apiClient')
-  yield put(
+function* confirmDeleteTrack(trackId: ID) {
+  yield* waitForWrite()
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.deleteTrack,
           trackId
         )
 
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm delete track for track id ${trackId}`
           )
         }
 
-        const track = yield select(getTrack, { id: trackId })
-        const handle = yield select(getUserHandle)
-        yield waitForAccount()
-        const userId = yield select(getUserId)
+        const track = yield* select(getTrack, { id: trackId })
+        const handle = yield* select(getUserHandle)
+        yield* waitForAccount()
+        const userId = yield* select(getUserId)
 
-        return yield apiClient.getTrack(
+        if (!track) return
+        return yield* call(
+          apiClient.getTrack,
           {
             id: trackId,
             currentUserId: userId,
             unlistedArgs: {
               urlTitle: formatUrlName(track.title),
-              handle
+              handle: handle!
             }
           },
           /* retry */ false
         )
       },
-      function* (deletedTrack) {
+      function* (deletedTrack: Track) {
         // NOTE: we do not delete from the cache as the track may be playing
-        yield put(trackActions.deleteTrackSucceeded(deletedTrack.track_id))
+        yield* put(trackActions.deleteTrackSucceeded(deletedTrack.track_id))
 
         // Record Delete Event
         const event = make(Name.DELETE, {
           kind: 'track',
-          id: deletedTrack.trackId
+          id: trackId
         })
-        yield put(event)
+        yield* put(event)
         if (deletedTrack.stem_of) {
           const stemDeleteEvent = make(Name.STEM_DELETE, {
             id: deletedTrack.track_id,
             parent_track_id: deletedTrack.stem_of.parent_track_id,
             category: deletedTrack.stem_of.category
           })
-          yield put(stemDeleteEvent)
+          yield* put(stemDeleteEvent)
         }
       },
       function* () {
         // On failure, do not mark the track as deleted
-        yield put(
+        yield* put(
           cacheActions.update(Kind.TRACKS, [
             { id: trackId, metadata: { _marked_deleted: false } }
           ])
@@ -342,69 +358,79 @@ function* confirmDeleteTrack(trackId) {
 }
 
 function* watchDeleteTrack() {
-  yield takeEvery(trackActions.DELETE_TRACK, deleteTrackAsync)
+  yield* takeEvery(trackActions.DELETE_TRACK, deleteTrackAsync)
 }
 
 function* watchFetchCoverArt() {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const isNativeMobile = yield getContext('isNativeMobile')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const isNativeMobile = yield* getContext('isNativeMobile')
 
   const inProgress = new Set()
-  yield takeEvery(trackActions.FETCH_COVER_ART, function* ({ trackId, size }) {
-    // Unique on id and size
-    const key = `${trackId}-${size}`
-    if (inProgress.has(key)) return
-    inProgress.add(key)
+  yield* takeEvery(
+    trackActions.FETCH_COVER_ART,
+    function* ({
+      trackId,
+      size
+    }: ReturnType<typeof trackActions.fetchCoverArt>) {
+      // Unique on id and size
+      const key = `${trackId}-${size}`
+      if (inProgress.has(key)) return
+      inProgress.add(key)
 
-    try {
-      let track = yield call(waitForValue, getTrack, { id: trackId })
-      const user = yield call(waitForValue, getUser, { id: track.owner_id })
-      if (!track || !user || (!track.cover_art_sizes && !track.cover_art))
-        return
-      const multihash = track.cover_art_sizes || track.cover_art
-      const coverArtSize = multihash === track.cover_art_sizes ? size : null
-      const url = yield call(
-        audiusBackendInstance.getImageUrl,
-        multihash,
-        coverArtSize,
-        track.cover_art_cids
-      )
-      track = yield select(getTrack, { id: trackId })
-      track._cover_art_sizes = {
-        ...track._cover_art_sizes,
-        [coverArtSize || DefaultSizes.OVERRIDE]: url
-      }
-      yield put(
-        cacheActions.update(Kind.TRACKS, [{ id: trackId, metadata: track }])
-      )
-
-      let smallImageUrl = url
-      if (coverArtSize !== SquareSizes.SIZE_150_BY_150) {
-        smallImageUrl = yield call(
+      try {
+        let track: Track | null = yield* call(waitForValue, getTrack, {
+          id: trackId
+        })
+        const user = yield* call(waitForValue, getUser, { id: track!.owner_id })
+        if (!track || !user || (!track.cover_art_sizes && !track.cover_art))
+          return
+        const multihash = track.cover_art_sizes || track.cover_art
+        const coverArtSize = multihash === track.cover_art_sizes ? size : null
+        const url = yield* call(
           audiusBackendInstance.getImageUrl,
           multihash,
-          SquareSizes.SIZE_150_BY_150
+          coverArtSize ?? undefined,
+          track.cover_art_cids
         )
-      }
+        track = yield* select(getTrack, { id: trackId })
+        if (!track) return
+        track._cover_art_sizes = {
+          ...track._cover_art_sizes,
+          [coverArtSize || DefaultSizes.OVERRIDE]: url
+        }
+        yield* put(
+          cacheActions.update(Kind.TRACKS, [{ id: trackId, metadata: track }])
+        )
 
-      if (!isNativeMobile) {
-        // Disabling dominant color fetch on mobile because it requires WebWorker
-        // Can revisit this when doing glass morphism on NowPlaying
-        const dominantColors = yield call(dominantColor, smallImageUrl)
-
-        yield put(
-          setDominantColors({
+        let smallImageUrl = url
+        if (coverArtSize !== SquareSizes.SIZE_150_BY_150) {
+          smallImageUrl = yield* call(
+            audiusBackendInstance.getImageUrl,
             multihash,
-            colors: dominantColors
-          })
-        )
+            SquareSizes.SIZE_150_BY_150
+          )
+        }
+
+        if (!isNativeMobile) {
+          // Disabling dominant color fetch on mobile because it requires WebWorker
+          // Can revisit this when doing glass morphism on NowPlaying
+          const dominantColors = yield* call(dominantColor, smallImageUrl)
+
+          if (!multihash) return
+          yield* put(
+            setDominantColors({
+              multihash,
+              colors: dominantColors
+            })
+          )
+        }
+      } catch (e) {
+        console.error(`Unable to fetch cover art for track ${trackId}`)
+      } finally {
+        inProgress.delete(key)
       }
-    } catch (e) {
-      console.error(`Unable to fetch cover art for track ${trackId}`)
-    } finally {
-      inProgress.delete(key)
     }
-  })
+  )
 }
 
 const sagas = () => {

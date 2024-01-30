@@ -67,7 +67,8 @@ import {
   Achievement,
   Notification,
   IdentityNotification,
-  PushNotifications
+  PushNotifications,
+  ExtendedTrackMetadata
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -1095,7 +1096,7 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } },
+    metadata: ExtendedTrackMetadata,
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
