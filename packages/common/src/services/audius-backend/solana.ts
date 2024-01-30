@@ -1,5 +1,11 @@
 import { AudiusLibs } from '@audius/sdk'
-import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
+import {
+  Account,
+  TOKEN_PROGRAM_ID,
+  TokenInstruction,
+  createTransferCheckedInstruction,
+  decodeTransferCheckedInstruction
+} from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
   Keypair,
@@ -119,6 +125,15 @@ export const deriveUserBankAddress = async (
     mint
   })
   return pubkey.toString() as SolanaWalletAddress
+}
+
+export const isTransferCheckedInstruction = (
+  instruction: TransactionInstruction
+) => {
+  return (
+    instruction.programId.equals(TOKEN_PROGRAM_ID) &&
+    instruction.data[0] === TokenInstruction.TransferChecked
+  )
 }
 
 type CreateUserBankIfNeededConfig = UserBankConfig & {
@@ -463,6 +478,82 @@ export const createRootWalletRecoveryTransaction = async (
   const tx = new Transaction({ recentBlockhash, feePayer })
   tx.add(memoInstruction, transferInstruction, routeInstruction)
   return tx
+}
+
+export const decorateCoinflowWithdrawalTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const solanaWeb3Manager = libs.solanaWeb3Manager!
+
+  const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
+    mint: 'usdc'
+  })
+  const wallet = await getRootSolanaAccount(audiusBackendInstance)
+  const walletUSDCTokenAccount =
+    await solanaWeb3Manager.findAssociatedTokenAddress(
+      wallet.publicKey.toBase58(),
+      'usdc'
+    )
+
+  // Find original transfer instruction and index
+  const transferInstructionIndex = transaction.instructions.findIndex(
+    isTransferCheckedInstruction
+  )
+  const transferInstruction = transaction.instructions[transferInstructionIndex]
+  if (!transferInstruction) {
+    throw new Error('No transfer instruction found')
+  }
+
+  const { keys, data } = decodeTransferCheckedInstruction(
+    transferInstruction,
+    TOKEN_PROGRAM_ID
+  )
+  if (!walletUSDCTokenAccount.equals(keys.source.pubkey)) {
+    throw new Error(
+      `Original sender ${keys.source.pubkey} does not match wallet ${walletUSDCTokenAccount}`
+    )
+  }
+
+  const transferToUserBankInstruction = createTransferCheckedInstruction(
+    walletUSDCTokenAccount,
+    keys.mint.pubkey,
+    userBank,
+    wallet.publicKey,
+    data.amount,
+    data.decimals
+  )
+
+  const transferFromUserBankInstructions =
+    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
+      amount: new BN(data.amount.toString()),
+      mint: 'usdc',
+      senderSolanaAddress: userBank,
+      recipientSolanaAddress: keys.destination.pubkey.toBase58(),
+      instructionIndex: transferInstructionIndex + 1,
+      feePayerKey: feePayer
+    })
+
+  // Remove original transfer instruction and replace with our set of transfer steps
+  const instructions = [...transaction.instructions]
+  instructions.splice(
+    transferInstructionIndex,
+    1,
+    transferToUserBankInstruction,
+    ...transferFromUserBankInstructions
+  )
+
+  const { blockhash, lastValidBlockHeight } =
+    await solanaWeb3Manager.connection.getLatestBlockhash()
+  const modifiedTransaction = new Transaction({
+    blockhash,
+    feePayer,
+    lastValidBlockHeight
+  })
+  modifiedTransaction.add(...instructions)
+
+  return modifiedTransaction
 }
 
 export const createTransferToUserBankTransaction = async (
