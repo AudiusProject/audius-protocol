@@ -116,11 +116,7 @@ export const LicenseTypeScreen = () => {
   }
 
   return (
-    <FormScreen
-      title={messages.title}
-      icon={IconCcCC}
-      variant='white'
-    >
+    <FormScreen title={messages.title} icon={IconCcCC} variant='white'>
       <ScrollView>
         <View style={styles.content}>
           <View style={styles.licenseSection}>

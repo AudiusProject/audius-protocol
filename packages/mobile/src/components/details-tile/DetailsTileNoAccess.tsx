@@ -21,7 +21,11 @@ import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconExternalLink, IconUserFollow, IconTipping } from '@audius/harmony-native'
+import {
+  IconExternalLink,
+  IconUserFollow,
+  IconTipping
+} from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { Button, LockedStatusBadge, useLink } from 'app/components/core'

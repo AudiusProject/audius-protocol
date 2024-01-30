@@ -100,7 +100,10 @@ export const LineupTileMetadata = ({
               {title}
             </Text>
             {isPlaying ? (
-              <IconVolumeLevel2 fill={primary} style={styles.playingIndicator} />
+              <IconVolumeLevel2
+                fill={primary}
+                style={styles.playingIndicator}
+              />
             ) : null}
           </>
         </TouchableOpacity>

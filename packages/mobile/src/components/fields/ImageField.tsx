@@ -123,7 +123,11 @@ export const ImageField = (props: ImageFieldProps) => {
           {isLoading || isProcessing ? (
             <LoadingSpinner />
           ) : (
-            <IconCloudUpload fill={styles.centerIcon.fill} height={32} width={32} />
+            <IconCloudUpload
+              fill={styles.centerIcon.fill}
+              height={32}
+              width={32}
+            />
           )}
         </Animated.View>
       </DynamicImage>

@@ -10,7 +10,11 @@ import type { ViewStyle } from 'react-native'
 import { View, ScrollView } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconUserFollowing, IconRobot, IconUserGroup } from '@audius/harmony-native'
+import {
+  IconUserFollowing,
+  IconRobot,
+  IconUserGroup
+} from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

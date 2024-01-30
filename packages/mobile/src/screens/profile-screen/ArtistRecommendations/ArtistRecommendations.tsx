@@ -13,7 +13,11 @@ import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { IconUserFollow, IconUserFollowing, IconClose } from '@audius/harmony-native'
+import {
+  IconUserFollow,
+  IconUserFollowing,
+  IconClose
+} from '@audius/harmony-native'
 import { Button, IconButton, Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
