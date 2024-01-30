@@ -7,13 +7,14 @@ import {
   useCurrentStems,
   useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
+  tracksSocialActions as socialTracksActions,
   useWaitForDownloadModal
 } from '@audius/common'
 import type { ID, CommonState } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   Flex,
@@ -42,10 +43,12 @@ const messages = {
   original: 'Original',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
-  purchased: 'purchased'
+  purchased: 'purchased',
+  followToDownload: 'Must follow artist to download.'
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
+  const dispatch = useDispatch()
   const { color } = useTheme()
   const { toast } = useToast()
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -81,21 +84,31 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     )
   }, [trackId, openPremiumContentPurchaseModal])
 
-  const handleDownloadAll = useCallback(() => {
-    if (shouldDisplayDownloadFollowGated) {
-      // On mobile, show a toast instead of a tooltip
-      toast({ content: messages.followToDownload })
-    } else if (track && track.access.download) {
-      openWaitForDownloadModal({ contentId: trackId })
-      dispatch(
-        socialTracksActions.downloadAll({
-          trackIds: stemTracks.map((t) => t.id),
-          parentTrackId: trackId,
-          original: quality === DownloadQuality.ORIGINAL
-        })
-      )
-    }
-  }, [quality])
+  const handleDownload = useCallback(
+    ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
+      if (shouldDisplayDownloadFollowGated) {
+        // On mobile, show a toast instead of a tooltip
+        toast({ content: messages.followToDownload })
+      } else if (track && track.access.download) {
+        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
+        dispatch(
+          socialTracksActions.downloadTrack({
+            trackIds,
+            parentTrackId,
+            original: quality === DownloadQuality.ORIGINAL
+          })
+        )
+      }
+    },
+    [
+      dispatch,
+      openWaitForDownloadModal,
+      quality,
+      shouldDisplayDownloadFollowGated,
+      toast,
+      track
+    ]
+  )
 
   const renderHeader = () => {
     return (
@@ -185,7 +198,8 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         expanded={isExpanded}
         onToggleExpand={onToggleExpand}
       >
-        {track?.is_original_available ? (
+        {/* {track?.is_original_available ? ( */}
+        {true ? (
           <Flex p='l' borderTop='default' gap='l' alignItems='flex-start'>
             <Text variant='title'>{messages.choose}</Text>
             <SegmentedControl
@@ -201,6 +215,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             quality={quality}
             index={ORIGINAL_TRACK_INDEX}
             hideDownload={shouldHideDownload}
+            onDownload={handleDownload}
           />
         ) : null}
         {stemTracks?.map((s, i) => (
@@ -216,11 +231,22 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             }
             quality={quality}
             hideDownload={shouldHideDownload}
+            onDownload={handleDownload}
           />
         ))}
         {shouldDisplayDownloadAll ? (
           <Flex p='l' borderTop='default' justifyContent='center'>
-            <Button variant='secondary' iconLeft={IconReceive} size='small'>
+            <Button
+              variant='secondary'
+              iconLeft={IconReceive}
+              size='small'
+              onPress={() =>
+                handleDownload({
+                  trackIds: stemTracks.map((t) => t.id),
+                  parentTrackId: trackId
+                })
+              }
+            >
               {messages.downloadAll}
             </Button>
           </Flex>

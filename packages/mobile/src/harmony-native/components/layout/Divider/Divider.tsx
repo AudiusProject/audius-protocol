@@ -14,7 +14,7 @@ export const Divider = (props: DividerProps) => {
   const { color, spacing } = useTheme()
 
   const viewCss: ViewStyle = {
-    borderColor: color.border.strong,
+    borderColor: color.border.default,
     borderStyle: 'solid',
     margin: 0,
 

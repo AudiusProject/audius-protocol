@@ -31,7 +31,6 @@ import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
@@ -738,7 +737,7 @@ const getFilename = ({
   if (!track.orig_filename) {
     filename = `${track.title} ${
       hasCategory ? `- ${capitalize(track.stem_of?.category)}` : null
-    } - ${user.name} (Audius) ${original ? '.wav' : '.mp3'}`
+    } - ${user.name} (Audius)${original ? '.wav' : '.mp3'}`
   } else if (original) {
     filename = `${track.orig_filename}`
   } else {
@@ -793,7 +792,7 @@ function* downloadTracks({
       files,
       rootDirectoryName
     })
-    yield* put(setVisibility({ modal: 'WaitForDownloadModal', visible: false }))
+    // yield* put(setVisibility({ modal: 'WaitForDownloadModal', visible: false }))
   } catch (e) {
     console.error(
       `Could not download files for track ${parentTrackId}: ${
@@ -808,8 +807,16 @@ function* watchDownloadTrack() {
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
       const { trackIds, parentTrackId, original } = action
-      if (trackIds.length === 0 || (trackIds.length > 1 && !parentTrackId))
+      if (
+        trackIds === undefined ||
+        trackIds.length === 0 ||
+        (trackIds.length > 1 && !parentTrackId)
+      ) {
+        console.error(
+          `Could not download track ${trackIds}: Invalid trackIds or missing parentTrackId`
+        )
         return
+      }
 
       yield* call(waitForRead)
 
@@ -867,6 +874,17 @@ function* watchDownloadTrack() {
   )
 }
 
+function* watchDownloadFinished() {
+  yield* takeEvery(
+    socialActions.DOWNLOAD_FINISHED,
+    function* (action: ReturnType<typeof socialActions.downloadFinished>) {
+      yield* put(
+        setVisibility({ modal: 'WaitForDownloadModal', visible: false })
+      )
+    }
+  )
+}
+
 /* SHARE */
 
 function* watchShareTrack() {
@@ -906,6 +924,7 @@ const sagas = () => {
     watchSetArtistPick,
     watchUnsetArtistPick,
     watchDownloadTrack,
+    watchDownloadFinished,
     watchShareTrack,
     watchTrackErrors
   ]

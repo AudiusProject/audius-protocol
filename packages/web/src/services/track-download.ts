@@ -1,11 +1,14 @@
 import {
   TrackDownload as TrackDownloadBase,
   type DownloadTrackArgs,
-  DownloadFile
+  DownloadFile,
+  tracksSocialActions
 } from '@audius/common'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
+
+const { downloadFinished } = tracksSocialActions
 
 function isMobileSafari() {
   if (!navigator) return false
@@ -61,6 +64,7 @@ class TrackDownload extends TrackDownloadBase {
       url = URL.createObjectURL(blob)
     }
     browserDownload({ url, filename })
+    window.store.dispatch(downloadFinished())
   }
 }
 

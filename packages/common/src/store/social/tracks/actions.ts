@@ -24,6 +24,7 @@ export const UNSET_ARTIST_PICK = 'SOCIAL/UNSET_ARTIST_PICK'
 
 export const RECORD_LISTEN = 'SOCIAL/RECORD_LISTEN'
 export const DOWNLOAD_TRACK = 'SOCIAL/DOWNLOAD_TRACK'
+export const DOWNLOAD_FINISHED = 'SOCIAL/DOWNLOAD_FINISHED'
 
 export const SHARE_TRACK = 'SOCIAL/SHARE_TRACK'
 
@@ -111,6 +112,8 @@ export const downloadTrack = createCustomAction(
     stemName
   })
 )
+
+export const downloadFinished = createCustomAction(DOWNLOAD_FINISHED, () => {})
 
 export const shareTrack = createCustomAction(
   SHARE_TRACK,
