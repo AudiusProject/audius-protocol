@@ -1,6 +1,7 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
 import { Status, FeatureFlags, formatCount } from '@audius/common'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import {
   IconCaretRight,
   IconRemove,
@@ -15,7 +16,6 @@ import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
-import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
 import {
   RouterContext,
   SlideDirection
@@ -214,7 +214,7 @@ const NavBar = ({
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>
-                <AudiusLogo />
+                <IconAudiusLogoHorizontal sizeH='l' width='auto' />
                 {isEarlyAccess ? (
                   <div className={styles.earlyAccess}>
                     {messages.earlyAccess}

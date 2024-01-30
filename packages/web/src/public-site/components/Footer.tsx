@@ -1,3 +1,4 @@
+import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import {
   IconInstagram,
   IconTwitterBird,
@@ -6,7 +7,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   HOME_PAGE,
   AUDIUS_TWITTER_LINK,
@@ -102,10 +102,8 @@ const Footer = (props: FooterProps) => {
     >
       <div className={styles.content}>
         <div className={styles.logoLinkContainer}>
-          <img
-            src={horizontalLogo}
+          <IconAudiusLogoHorizontalColor
             className={styles.logo}
-            alt='Audius Logo'
             onClick={handleClickRoute(HOME_PAGE, props.setRenderPublicSite)}
           />
           <div className={styles.siteLinksContainer}>
