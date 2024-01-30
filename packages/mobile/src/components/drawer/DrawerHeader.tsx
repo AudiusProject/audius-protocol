@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ImageSourcePropType } from 'react-native'
 import { TouchableOpacity, View, Image } from 'react-native'
 
-import { IconRemove } from '@audius/harmony-native'
+import { IconClose } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
@@ -61,7 +61,7 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
           onPress={onClose}
           style={styles.dismissContainer}
         >
-          <IconRemove width={30} height={30} fill={iconRemoveColor} />
+          <IconClose width={30} height={30} fill={iconRemoveColor} />
         </TouchableOpacity>
       ) : null}
       {title ? (

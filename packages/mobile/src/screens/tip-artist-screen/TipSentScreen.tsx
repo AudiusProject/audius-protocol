@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCheck, IconRemove } from '@audius/harmony-native'
+import { IconCheck, IconClose } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
 import { TwitterButton } from 'app/components/twitter-button'
 import { makeStyles } from 'app/styles'
@@ -100,7 +100,7 @@ export const TipSentScreen = () => {
   return (
     <TipScreen
       title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}
+      topbarLeft={<TopBarIconButton icon={IconClose} onPress={handleClose} />}
     >
       <TipHeader status='sent' />
       <ReceiverDetails />

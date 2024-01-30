@@ -10,7 +10,7 @@ import RNRestart from 'react-native-restart'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { IconRemove } from '@audius/harmony-native'
+import { IconClose } from '@audius/harmony-native'
 import { ModalScreen, Screen, Text } from 'app/components/core'
 import { EnterPassword } from 'app/components/enter-password'
 import { ENTROPY_KEY } from 'app/constants/storage-keys'
@@ -86,7 +86,7 @@ const ResetPasswordScreen = () => {
     <Screen
       variant='white'
       title={messages.title}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleCancel} />}
+      topbarLeft={<TopBarIconButton icon={IconClose} onPress={handleCancel} />}
       topbarRight={null}
     >
       <View style={styles.root}>
