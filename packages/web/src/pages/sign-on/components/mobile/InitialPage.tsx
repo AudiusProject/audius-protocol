@@ -1,20 +1,19 @@
 import {
+  KeyboardEvent,
   useCallback,
-  useState,
   useContext,
   useEffect,
   useRef,
-  KeyboardEvent
+  useState
 } from 'react'
 
-import { Flex } from '@audius/harmony'
+import { Flex, IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
 
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
-import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
 import signupCtaImage from 'assets/img/signUpCTA.png'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import Input from 'components/data-entry/Input'
@@ -146,10 +145,9 @@ const SignUpEmail = ({
   return (
     <div className={styles.topContainer}>
       <Flex>
-        <PreloadImage
-          src={audiusLogoHorizontal}
-          className={styles.logo}
-          alt='Audius Colored Logo'
+        <IconAudiusLogoHorizontalColor
+          height={51}
+          css={{ width: '100%', maxWidth: 194, margin: '0 auto 32px' }}
         />
       </Flex>
       <h1 className={cn(styles.title)}>{messages.title}</h1>
