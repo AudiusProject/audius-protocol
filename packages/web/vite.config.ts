@@ -10,6 +10,7 @@ import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
 import { env as APP_ENV } from './src/services/env'
+import path from 'path'
 
 const fixAcceptHeader404 = () => ({
   // Fix issue with vite dev server and `wait-on`
@@ -127,6 +128,7 @@ export default defineConfig(({ mode }) => {
         workers: '/src/workers',
         utils: '/src/utils',
         ssr: '/src/ssr',
+        '~': path.resolve(__dirname, '../../packages/common/src'),
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
