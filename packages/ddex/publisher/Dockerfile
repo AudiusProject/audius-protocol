@@ -22,7 +22,7 @@ RUN turbo prune --scope=@audius/ddex-publisher --scope=@audius/ddex-publisher --
 FROM base AS app-builder
 
 WORKDIR /app
-RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat git
 RUN apk update
 
 # First install dependencies (as they change less often)

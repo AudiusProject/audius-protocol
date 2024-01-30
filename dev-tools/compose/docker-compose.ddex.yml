@@ -10,6 +10,8 @@ services:
         app_name: ddex-web
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    ports:
+      - "9000:9000"
     networks:
       - ddex-network
     profiles:
@@ -72,6 +74,13 @@ services:
         app_name: ddex-publisher
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    ports:
+      - "9001:9001"
     networks:
       - ddex-network
     profiles:
