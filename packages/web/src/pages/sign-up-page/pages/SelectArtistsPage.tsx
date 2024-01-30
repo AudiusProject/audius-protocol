@@ -5,10 +5,12 @@ import {
   Genre,
   Status,
   convertGenreLabelToValue,
-  useGetFeaturedArtists,
-  useGetTopArtistsInGenre,
   selectArtistsSchema
 } from '@audius/common'
+import {
+  useGetTopArtistsInGenre,
+  useGetFeaturedArtists
+} from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'

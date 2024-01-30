@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
-import type { SuggestedTrack } from '@audius/common'
+import { SuggestedTrack } from '@audius/common/api'
+import type {} from '@audius/common'
 import {
   Button,
   ButtonSize,

@@ -4,9 +4,9 @@ import type { User } from '@audius/common'
 import {
   profilePageSelectors,
   MAX_PROFILE_RELATED_ARTISTS,
-  FeatureFlags,
-  useGetRelatedArtists
+  FeatureFlags
 } from '@audius/common'
+import { useGetRelatedArtists } from '@audius/common/api'
 import { IconUserGroup } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

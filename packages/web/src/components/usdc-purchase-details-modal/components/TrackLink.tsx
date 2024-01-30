@@ -1,4 +1,5 @@
-import { useGetTrackById } from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
+import {} from '@audius/common'
 import { Link } from 'react-router-dom'
 
 import { Text } from 'components/typography'

@@ -6,10 +6,9 @@ import {
   CommonState,
   savedPageSelectors,
   Status,
-  useAllPaginatedQuery,
-  useGetLibraryAlbums,
-  useGetLibraryPlaylists
+  useAllPaginatedQuery
 } from '@audius/common'
+import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 

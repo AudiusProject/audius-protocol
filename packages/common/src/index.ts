@@ -1,5 +1,5 @@
-// import * as hooks from './hooks'
-// console.log('hook exports', hooks)
+import * as e from './api'
+console.log('exports', e)
 
 export * from './api'
 export * from './audius-query'

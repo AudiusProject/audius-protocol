@@ -3,7 +3,6 @@ import { useCallback, useEffect } from 'react'
 import {
   PurchaseContentStage,
   Track,
-  useGetTrackById,
   usePremiumContentPurchaseModal,
   buyUSDCActions,
   purchaseContentActions,
@@ -13,6 +12,7 @@ import {
   FeatureFlags,
   PurchaseVendor
 } from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
 import {
   PurchaseableTrackMetadata,
   useFeatureFlag,

@@ -4,9 +4,9 @@ import {
   Maybe,
   Nullable,
   SquareSizes,
-  UserCollectionMetadata,
-  useAppContext
+  UserCollectionMetadata
 } from '@audius/common'
+import { useAppContext } from '@audius/common/context'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'

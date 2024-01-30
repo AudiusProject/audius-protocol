@@ -1,4 +1,5 @@
-import { Status, accountSelectors, useGetDeveloperApps } from '@audius/common'
+import { Status, accountSelectors } from '@audius/common'
+import { useGetDeveloperApps } from '@audius/common/api'
 import {
   Button,
   ButtonSize,

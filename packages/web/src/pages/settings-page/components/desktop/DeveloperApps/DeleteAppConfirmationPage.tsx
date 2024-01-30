@@ -1,11 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  Status,
-  accountSelectors,
-  useDeleteDeveloperApp,
-  Name
-} from '@audius/common'
+import { Status, accountSelectors, Name } from '@audius/common'
+import { useDeleteDeveloperApp } from '@audius/common/api'
 import { Button, ButtonType, ModalFooter } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'

@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 
-import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import { AudiusQueryContext } from '@audius/common'
+import { signUpFetch } from '@audius/common/api'
 import { Button, IconMetamask } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'

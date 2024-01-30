@@ -1,4 +1,4 @@
-import '../types/fxa-common-password-list'
+import '../types/fxa-common-password-list/index.d.ts'
 export * from './useBooleanOnce'
 export * from './useFeatureFlag'
 export * from './useRemoteVar'

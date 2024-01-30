@@ -2,7 +2,7 @@ const glob = require('glob')
 const fs = require('fs')
 
 var getDirectories = function (callback) {
-  glob('./common/dist/hooks/**/*', callback)
+  glob('./common/dist/api/**/*', callback)
 }
 
 getDirectories(async function (err, res) {

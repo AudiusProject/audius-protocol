@@ -9,15 +9,17 @@ import {
   playerSelectors,
   getPathFromPlaylistUrl,
   accountSelectors,
-  useGetTracksByIds,
   ChatMessageTileProps,
   SquareSizes,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   CommonState,
-  Name,
-  useGetPlaylistByPermalink
+  Name
 } from '@audius/common'
+import {
+  useGetTracksByIds,
+  useGetPlaylistByPermalink
+} from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 

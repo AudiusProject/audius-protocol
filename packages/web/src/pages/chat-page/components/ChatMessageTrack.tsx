@@ -7,7 +7,6 @@ import {
   PlaybackSource,
   QueueSource,
   accountSelectors,
-  useGetTrackByPermalink,
   getPathFromTrackUrl,
   ID,
   ChatMessageTileProps,
@@ -15,6 +14,7 @@ import {
   SquareSizes,
   Name
 } from '@audius/common'
+import { useGetTrackByPermalink } from '@audius/common/api'
 import {
   TrackPlayback,
   useGatedContentAccess,
