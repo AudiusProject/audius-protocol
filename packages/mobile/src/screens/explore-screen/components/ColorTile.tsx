@@ -11,7 +11,7 @@ import { Animated, Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import type { SvgProps } from 'react-native-svg'
 
-import { IconAudioRewardsPill } from '@audius/harmony-native'
+import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
 import { Pressable } from 'app/components/core'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
