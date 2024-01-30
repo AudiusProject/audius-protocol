@@ -17,8 +17,8 @@ import {
 import BN from 'bn.js'
 import queryString from 'query-string'
 
-import { Env } from 'services/env'
-import dayjs from 'utils/dayjs'
+import { Env } from '~/services/env'
+import dayjs from '~/utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'

@@ -21,17 +21,17 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from 'models'
-import { User } from 'models/User'
-import { IntKeys } from 'services/remote-config'
-import { accountSelectors } from 'store/account'
-import { cacheActions, cacheTracksSelectors } from 'store/cache'
-import { collectiblesActions } from 'store/collectibles'
-import { getContext } from 'store/effects'
-import { musicConfettiActions } from 'store/music-confetti'
-import { usersSocialActions } from 'store/social'
-import { tippingActions } from 'store/tipping'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models'
+import { User } from '~/models/User'
+import { IntKeys } from '~/services/remote-config'
+import { accountSelectors } from '~/store/account'
+import { cacheActions, cacheTracksSelectors } from '~/store/cache'
+import { collectiblesActions } from '~/store/collectibles'
+import { getContext } from '~/store/effects'
+import { musicConfettiActions } from '~/store/music-confetti'
+import { usersSocialActions } from '~/store/social'
+import { tippingActions } from '~/store/tipping'
+import { Nullable } from '~/utils/typeUtils'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'

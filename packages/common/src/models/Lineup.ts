@@ -1,7 +1,7 @@
-import { ID, UID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
-import { Nullable } from 'utils/typeUtils'
+import { ID, UID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { Status } from '~/models/Status'
+import { Nullable } from '~/utils/typeUtils'
 
 export type Lineup<T, ExtraProps = {}> = {
   entries: T[]

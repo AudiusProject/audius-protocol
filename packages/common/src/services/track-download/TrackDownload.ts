@@ -1,4 +1,4 @@
-import { AudiusBackend } from 'services/audius-backend'
+import { AudiusBackend } from '~/services/audius-backend'
 
 export type TrackDownloadConfig = {
   audiusBackend: AudiusBackend

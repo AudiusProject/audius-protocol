@@ -1,8 +1,8 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { initialLineupState } from 'store/lineup/reducer'
-import { PREFIX } from 'store/pages/profile/lineups/tracks/actions'
+import { RESET_SUCCEEDED, stripPrefix } from '~/store/lineup/actions'
+import { initialLineupState } from '~/store/lineup/reducer'
+import { PREFIX } from '~/store/pages/profile/lineups/tracks/actions'
 
 export const initialState = {
   ...initialLineupState,

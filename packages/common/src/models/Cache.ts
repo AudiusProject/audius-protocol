@@ -1,6 +1,6 @@
-import { ID, UID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
+import { ID, UID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { Status } from '~/models/Status'
 
 export type Cacheable<T> = {
   metadata: T

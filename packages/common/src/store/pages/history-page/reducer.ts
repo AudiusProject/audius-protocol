@@ -1,6 +1,6 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from '~/store/lineup/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 import tracksReducer, {

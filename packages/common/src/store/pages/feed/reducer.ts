@@ -1,14 +1,14 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from '~/store/lineup/reducer'
 import {
   SET_SUGGESTED_FOLLOWS,
   SET_FEED_FILTER
-} from 'store/pages/feed/actions'
-import { PREFIX as FeedPrefix } from 'store/pages/feed/lineup/actions'
+} from '~/store/pages/feed/actions'
+import { PREFIX as FeedPrefix } from '~/store/pages/feed/lineup/actions'
 import feedReducer, {
   initialState as feedLinupInitialState
-} from 'store/pages/feed/lineup/reducer'
+} from '~/store/pages/feed/lineup/reducer'
 
 import { FeedFilter } from '../../../models'
 

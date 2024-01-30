@@ -1,4 +1,4 @@
-import { initialCacheState } from 'store/cache/reducer'
+import { initialCacheState } from '~/store/cache/reducer'
 
 import { Collection, ID, Kind } from '../../../models'
 import {

@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { ID } from 'models'
+import { ID } from '~/models'
 
 export const REMOVE_BY_HANDLE = 'CACHE/USERS/REMOVE_BY_HANDLE'
 

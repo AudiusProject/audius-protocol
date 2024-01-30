@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import { ID, UID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
+import { ID, UID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
 
 import { Metadata } from './types'
 

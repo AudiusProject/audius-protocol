@@ -1,7 +1,7 @@
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import { getContext } from 'store/effects'
-import { waitForValue } from 'utils/sagaHelpers'
+import { getContext } from '~/store/effects'
+import { waitForValue } from '~/utils/sagaHelpers'
 
 import * as confirmerActions from './actions'
 import {

@@ -1,4 +1,4 @@
-import { Genre } from 'utils'
+import { Genre } from '~/utils'
 
 import { TimeRange } from '../../../models'
 

@@ -1,6 +1,6 @@
 import { uniq } from 'lodash'
 
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { ID } from '../../../models/Identifiers'
 

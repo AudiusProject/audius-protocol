@@ -1,4 +1,4 @@
-import { PlaybackSource } from 'models'
+import { PlaybackSource } from '~/models'
 
 import { ID, UID } from '../../models/Identifiers'
 import { TrackMetadata } from '../../models/Track'

@@ -2,18 +2,18 @@
 // TODO(nkang) - convert to TS
 import { History } from 'history'
 
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from '~/store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
   SET_LAST_FETCHED_TRENDING_GENRE
-} from 'store/pages/trending/actions'
+} from '~/store/pages/trending/actions'
 import {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_ALL_TIME_PREFIX
-} from 'store/pages/trending/lineup/actions'
-import { GENRES } from 'utils/genres'
+} from '~/store/pages/trending/lineup/actions'
+import { GENRES } from '~/utils/genres'
 
 import { TimeRange } from '../../../models'
 

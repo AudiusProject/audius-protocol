@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { Chain } from 'models/Chain'
-import { ID } from 'models/Identifiers'
+import { Chain } from '~/models/Chain'
+import { ID } from '~/models/Identifiers'
 import {
   AccessConditions,
   Track,
@@ -11,13 +11,13 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from 'models/Track'
+} from '~/models/Track'
 import { useGetCurrentUserId } from 'src/api'
-import { getAccountUser } from 'store/account/selectors'
-import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
-import { gatedContentSelectors } from 'store/gated-content'
-import { CommonState } from 'store/reducers'
-import { Nullable, removeNullable } from 'utils'
+import { getAccountUser } from '~/store/account/selectors'
+import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
+import { gatedContentSelectors } from '~/store/gated-content'
+import { CommonState } from '~/store/reducers'
+import { Nullable, removeNullable } from '~/utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors

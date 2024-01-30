@@ -1,7 +1,7 @@
 // @ts-nocheck
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/collection/lineup/reducer'
+} from '~/store/pages/collection/lineup/reducer'
 
 import { Status } from '../../../models/Status'
 import { asLineup } from '../../../store/lineup/reducer'

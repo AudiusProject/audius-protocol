@@ -1,7 +1,7 @@
 import { mergeWith, add, isEqual } from 'lodash'
 
-import { ID, UID } from 'models/Identifiers'
-import { Status } from 'models/Status'
+import { ID, UID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
 
 import { Kind } from '../../models/Kind'
 

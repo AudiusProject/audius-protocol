@@ -1,4 +1,4 @@
-import { ModalSource } from 'models/Analytics'
+import { ModalSource } from '~/models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'

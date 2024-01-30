@@ -1,4 +1,4 @@
-import { Nullable } from 'utils'
+import { Nullable } from '~/utils'
 
 import { ID, User, UserMetadata } from '../../../models'
 

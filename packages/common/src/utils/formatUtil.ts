@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import numeral from 'numeral'
 
-import { BNWei } from 'models/Wallet'
+import { BNWei } from '~/models/Wallet'
 
 import dayjs from './dayjs'
 

@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client"],
     "paths": {
-      "@audius/trpc-server": ["../trpc-server/src/index.ts"]
+      "@audius/trpc-server": ["../trpc-server/src/index.ts"],
+      "~/*": ["../../common/src/*"]
     }
   },
   "include": ["src", "src/**/*.css"]

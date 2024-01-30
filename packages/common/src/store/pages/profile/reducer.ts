@@ -1,14 +1,14 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
 
-import { asLineup } from 'store/lineup/reducer'
+import { asLineup } from '~/store/lineup/reducer'
 import feedReducer, {
   initialState as initialFeedLineupState
-} from 'store/pages/profile/lineups/feed/reducer'
+} from '~/store/pages/profile/lineups/feed/reducer'
 import tracksReducer, {
   initialState as initialTracksLineupState
-} from 'store/pages/profile/lineups/tracks/reducer'
-import { FollowType, CollectionSortMode } from 'store/pages/profile/types'
+} from '~/store/pages/profile/lineups/tracks/reducer'
+import { FollowType, CollectionSortMode } from '~/store/pages/profile/types'
 
 import { Status } from '../../../models'
 

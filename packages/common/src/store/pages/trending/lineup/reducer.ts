@@ -1,4 +1,4 @@
-import { initialLineupState } from 'store/lineup/reducer'
+import { initialLineupState } from '~/store/lineup/reducer'
 
 import { UID, LineupState, Track } from '../../../../models'
 import { RESET_SUCCEEDED, stripPrefix } from '../../../lineup/actions'

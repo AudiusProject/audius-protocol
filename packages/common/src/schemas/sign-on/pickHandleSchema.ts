@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
-import { AudiusQueryContextType } from 'audius-query'
-import { MAX_HANDLE_LENGTH } from 'services/oauth'
+import { AudiusQueryContextType } from '~/audius-query'
+import { MAX_HANDLE_LENGTH } from '~/services/oauth'
 import { signUpFetch } from 'src/api'
-import { restrictedHandles as commonRestrictedHandles } from 'utils/restrictedHandles'
+import { restrictedHandles as commonRestrictedHandles } from '~/utils/restrictedHandles'
 
 export const pickHandleErrorMessages = {
   badCharacterError: 'Please only use A-Z, 0-9, . and _',

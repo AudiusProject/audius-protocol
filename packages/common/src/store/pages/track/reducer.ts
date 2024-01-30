@@ -1,12 +1,12 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
 
-import { SsrPageProps } from 'models/SsrPageProps'
-import { asLineup } from 'store/lineup/reducer'
+import { SsrPageProps } from '~/models/SsrPageProps'
+import { asLineup } from '~/store/lineup/reducer'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/track/lineup/reducer'
-import { decodeHashId } from 'utils/hashIds'
+} from '~/store/pages/track/lineup/reducer'
+import { decodeHashId } from '~/utils/hashIds'
 
 import {
   SET_TRACK_ID,

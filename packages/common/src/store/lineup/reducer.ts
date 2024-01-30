@@ -1,6 +1,6 @@
 import { Reducer } from 'redux'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
   FETCH_LINEUP_METADATAS_SUCCEEDED,
@@ -12,7 +12,7 @@ import {
   UPDATE_LINEUP_ORDER,
   SET_PAGE,
   stripPrefix
-} from 'store/lineup/actions'
+} from '~/store/lineup/actions'
 
 import { UID } from '../../models/Identifiers'
 import { LineupState, LineupStateTrack, Order } from '../../models/Lineup'
