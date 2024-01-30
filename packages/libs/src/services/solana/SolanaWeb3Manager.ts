@@ -535,6 +535,9 @@ export class SolanaWeb3Manager {
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
+    if (!splits) {
+      throw new Error('Splits must be provided')
+    }
     if (Object.values(splits).length !== 1) {
       throw new Error(
         'Purchasing content only supports a single split. Specifying more splits coming soon!'

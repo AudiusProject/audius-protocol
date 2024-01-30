@@ -196,15 +196,15 @@ export const PremiumContentPurchaseModal = () => {
   const isValidStreamGatedTrack = track && isTrackStreamPurchaseable(track)
   const isValidDownloadGatedTrack = track && isTrackDownloadPurchaseable(track)
   const isValidTrack = isValidDownloadGatedTrack || isValidStreamGatedTrack
+
   const purchaseConditions = isValidStreamGatedTrack
     ? track.stream_conditions
-    : track?.download_conditions
-
-  const price = isValidStreamGatedTrack
-    ? track?.stream_conditions?.usdc_purchase?.price
     : isValidDownloadGatedTrack
-    ? track?.download_conditions?.usdc_purchase?.price
-    : 0
+    ? track.download_conditions
+    : ({} as USDCPurchaseConditions)
+
+  const { price } = purchaseConditions.usdc_purchase
+
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
       track,
