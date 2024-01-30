@@ -11,9 +11,9 @@ import {
   encodeHashId,
   encodeUrlName,
   isEarliestUnread,
-  playerSelectors,
-  useCanSendMessage
+  playerSelectors
 } from '@audius/common'
+import { useCanSendMessage } from '@audius/common/hooks'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'

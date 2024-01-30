@@ -5,9 +5,9 @@ import {
   Name,
   cacheTracksSelectors,
   tracksSocialActions,
-  useDownloadableContentAccess,
   DownloadQuality
 } from '@audius/common'
+import { useDownloadableContentAccess } from '@audius/common/hooks'
 import { css } from '@emotion/native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  useUIAudio,
   formatNumberCommas,
   notificationsSelectors,
   reactionsUIActions,
@@ -12,6 +11,7 @@ import type {
   TipReceiveNotification,
   ReactionTypes
 } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

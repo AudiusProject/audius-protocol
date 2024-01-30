@@ -10,10 +10,10 @@ import {
   useAllPaginatedQuery,
   useGetLibraryAlbums,
   useGetLibraryPlaylists,
-  useProxySelector,
   savedPageSelectors,
   filterCollections
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import uniq from 'lodash/uniq'
 import { useSelector } from 'react-redux'
 

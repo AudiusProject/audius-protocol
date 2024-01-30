@@ -4,7 +4,6 @@ import type { CommonState, Track } from '@audius/common'
 import {
   FeatureFlags,
   Genre,
-  useGatedContentAccess,
   squashNewLines,
   accountSelectors,
   playerSelectors,
@@ -13,6 +12,7 @@ import {
   isContentUSDCPurchaseGated,
   dayjs
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'

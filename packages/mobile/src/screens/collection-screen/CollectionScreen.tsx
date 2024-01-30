@@ -21,7 +21,6 @@ import {
   RepostType,
   repostsUserListActions,
   favoritesUserListActions,
-  useFeatureFlag,
   FeatureFlags
 } from '@audius/common'
 import type {
@@ -31,6 +30,7 @@ import type {
   SearchPlaylist,
   SearchUser
 } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {

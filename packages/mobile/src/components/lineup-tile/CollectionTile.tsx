@@ -10,7 +10,6 @@ import type {
 import {
   SquareSizes,
   removeNullable,
-  useProxySelector,
   playerSelectors,
   FavoriteSource,
   PlaybackSource,
@@ -28,6 +27,7 @@ import {
   RepostType,
   FeatureFlags
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionImage } from 'app/components/image/CollectionImage'

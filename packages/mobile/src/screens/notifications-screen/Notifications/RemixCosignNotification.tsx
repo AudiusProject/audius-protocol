@@ -5,7 +5,8 @@ import type {
   RemixCosignNotification as RemixCosignNotificationType,
   TrackEntity
 } from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

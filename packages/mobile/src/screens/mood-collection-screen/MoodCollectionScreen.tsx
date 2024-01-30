@@ -4,9 +4,9 @@ import {
   Status,
   explorePageCollectionsSelectors,
   ExploreCollectionsVariant,
-  explorePageCollectionsActions,
-  useProxySelector
+  explorePageCollectionsActions
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'

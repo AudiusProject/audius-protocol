@@ -4,9 +4,9 @@ import {
   accountSelectors,
   Genre,
   gatedContentActions,
-  useGatedContentAccess,
   getDogEarType
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import moment from 'moment'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'

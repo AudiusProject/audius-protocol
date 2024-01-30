@@ -4,9 +4,9 @@ import type { UploadTrack } from '@audius/common'
 import {
   creativeCommons,
   formatPrice,
-  isContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig
+  isContentUSDCPurchaseGated
 } from '@audius/common'
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

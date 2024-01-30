@@ -5,9 +5,9 @@ import {
   accountSelectors,
   cacheUsersSelectors,
   tippingSelectors,
-  tippingActions,
-  useProxySelector
+  tippingActions
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

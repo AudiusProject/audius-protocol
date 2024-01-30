@@ -1,10 +1,6 @@
 import type { CommonState } from '@audius/common'
-import {
-  Status,
-  searchResultsPageSelectors,
-  SearchKind,
-  useProxySelector
-} from '@audius/common'
+import { Status, searchResultsPageSelectors, SearchKind } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 
 import { ProfileList } from 'app/components/profile-list'
 import { spacing } from 'app/styles/spacing'

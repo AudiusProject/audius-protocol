@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import type { TipSendNotification } from '@audius/common'
-import { useUIAudio, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

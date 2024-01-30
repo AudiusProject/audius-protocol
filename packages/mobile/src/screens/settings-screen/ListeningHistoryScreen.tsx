@@ -5,9 +5,9 @@ import {
   Status,
   PlaybackSource,
   historyPageTracksLineupActions as tracksActions,
-  historyPageSelectors,
-  useProxySelector
+  historyPageSelectors
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 

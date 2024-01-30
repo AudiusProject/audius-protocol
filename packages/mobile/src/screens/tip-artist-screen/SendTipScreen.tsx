@@ -7,9 +7,9 @@ import {
   tippingSelectors,
   tippingActions,
   walletSelectors,
-  walletActions,
-  useGetFirstOrTopSupporter
+  walletActions
 } from '@audius/common'
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'
 import { Platform } from 'react-native'

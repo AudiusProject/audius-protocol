@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import type { Collectible } from '@audius/common'
-import { accountSelectors, useProxySelector } from '@audius/common'
+import { accountSelectors } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'

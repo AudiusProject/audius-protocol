@@ -10,7 +10,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./messages": "./src/messages/index.ts",
-    "./hooks": "./src/hooks/index.ts"
+    "./hooks": "./src/hooks/index.ts",
+    "./context": "./src/context/index.ts"
   },
   "repository": {
     "type": "git",

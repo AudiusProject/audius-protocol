@@ -7,9 +7,9 @@ import {
   isContentUSDCPurchaseGated,
   remixSettingsActions,
   remixSettingsSelectors,
-  Status,
-  useGatedContentAccess
+  Status
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
 import { debounce } from 'lodash'

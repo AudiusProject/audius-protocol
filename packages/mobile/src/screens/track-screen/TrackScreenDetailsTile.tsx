@@ -25,7 +25,6 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   reachabilitySelectors,
-  useGatedContentAccess,
   playbackPositionSelectors,
   FeatureFlags,
   isContentUSDCPurchaseGated,
@@ -33,6 +32,7 @@ import {
   queueSelectors
 } from '@audius/common'
 import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

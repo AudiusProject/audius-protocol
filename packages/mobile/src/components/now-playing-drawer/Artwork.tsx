@@ -3,9 +3,9 @@ import {
   DogEarType,
   SquareSizes,
   averageColorSelectors,
-  useGatedContentAccess,
   playerSelectors
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 

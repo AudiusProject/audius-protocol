@@ -6,9 +6,9 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentUSDCPurchaseGated,
-  useStreamConditionsEntity
+  isContentUSDCPurchaseGated
 } from '@audius/common'
+import { useStreamConditionsEntity } from '@audius/common/hooks'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 

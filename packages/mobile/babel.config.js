@@ -2,13 +2,16 @@ module.exports = (api) => {
   const babelEnv = api.env()
   const plugins = [
     ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
+    '@babel/plugin-transform-export-namespace-from',
     [
       'module-resolver',
       {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
         root: ['.'],
         alias: {
-          '@audius/common/messages': '../common/src/messages'
+          '@audius/common/messages': '../common/src/messages',
+          '@audius/common/hooks': '../common/src/hooks',
+          '@audius/common/context': '../common/src/context'
         }
       }
     ]
