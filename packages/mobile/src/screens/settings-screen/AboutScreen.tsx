@@ -17,10 +17,10 @@ import {
   IconMessage,
   IconDiscord,
   IconInstagram,
-  IconTwitter
+  IconTwitter,
+  IconUserGroup
 } from '@audius/harmony-native'
 import appIcon from 'app/assets/images/appIcon.png'
-import IconCareers from 'app/assets/images/iconCareers.svg'
 import { Screen, ScreenContent, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -96,7 +96,7 @@ export const AboutScreen = () => {
           <SettingsRowLabel label={messages.contact} icon={IconMessage} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CAREERS_LINK}>
-          <SettingsRowLabel label={messages.careers} icon={IconCareers} />
+          <SettingsRowLabel label={messages.careers} icon={IconUserGroup} />
         </SettingsRow>
         <Divider />
         <SettingsRow url={AUDIUS_HELP_LINK}>

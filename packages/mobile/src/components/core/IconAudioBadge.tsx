@@ -7,9 +7,9 @@ import {
   IconTokenBronze,
   IconTokenGold,
   IconTokenPlatinum,
-  IconTokenSilver
+  IconTokenSilver,
+  IconTokenNoTier
 } from '@audius/harmony-native'
-import IconNoTierBadge from 'app/assets/images/tokenBadgeNoTier.png'
 
 const audioTierMap = {
   none: null,
@@ -33,7 +33,7 @@ export const IconAudioBadge = (props: IconBadgeProps) => {
 
   if (tier === 'none' && !showNoTier) return null
   if (tier === 'none') {
-    return <Image {...other} style={style} source={IconNoTierBadge} />
+    return <Image {...other} style={style} source={IconTokenNoTier} />
   }
 
   const AudioBadge = audioTierMap[tier]

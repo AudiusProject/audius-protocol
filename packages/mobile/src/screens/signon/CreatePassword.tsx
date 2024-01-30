@@ -27,7 +27,7 @@ import { useEffectOnce } from 'react-use'
 import {
   IconArrowRight,
   IconCheck,
-  IconValidationX
+  IconMultiselectRemove
 } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -248,7 +248,7 @@ const Checkbox = ({
     return (
       <View style={styles.checkboxContainer}>
         <Animated.View style={animatedStyles}>
-          <IconValidationX style={styles.iconCheck} />
+          <IconMultiselectRemove style={styles.iconCheck} />
         </Animated.View>
         <View style={styles.unchecked} />
         <Text

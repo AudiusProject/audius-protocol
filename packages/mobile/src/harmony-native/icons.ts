@@ -140,6 +140,7 @@ export { default as IconValidationCheck } from '@audius/harmony/src/assets/icons
 export { default as IconValidationX } from '@audius/harmony/src/assets/icons/ValidationX.svg'
 export { default as IconSoundwave } from '@audius/harmony/src/assets/icons/Soundwave.svg'
 export { default as IconCreditCard } from '@audius/harmony/src/assets/icons/CreditCard.svg'
+export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Waveform.svg'
 
 // Two Tone / Special Styling
 
@@ -156,6 +157,7 @@ export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/Tok
 export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
 export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
 export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
+export { default as IconTokenNoTier } from '@audius/harmony/src/assets/icons/TokenNoTier.svg'
 
 // File Types
 export { default as IconFile3GA } from '@audius/harmony/src/assets/icons/file3GA.svg'

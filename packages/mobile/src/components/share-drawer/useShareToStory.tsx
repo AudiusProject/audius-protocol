@@ -30,7 +30,7 @@ import {
 import type ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconWavform from 'app/assets/images/iconWavform.svg'
+import IconWaveform from '@audius/harmony-native'
 import { Button, LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
@@ -588,7 +588,7 @@ export const ShareToStoryProgressDrawer = () => {
     >
       <View style={styles.container}>
         <HarmonyModalHeader
-          icon={IconWavform}
+          icon={IconWaveform}
           title={messages.loadingStoryModalTitle}
         />
         <View style={styles.progress}>

@@ -132,6 +132,7 @@ import IconVolumeLevel2SVG from '../assets/icons/VolumeLevel2.svg'
 import IconVolumeLevel3SVG from '../assets/icons/VolumeLevel3.svg'
 import IconWalletSVG from '../assets/icons/Wallet.svg'
 import IconWandSVG from '../assets/icons/Wand.svg'
+import IconWaveformSVG from '../assets/icons/Waveform.svg'
 import IconWithdrawSVG from '../assets/icons/Withdraw.svg'
 import type { IconComponent } from '../components/icon'
 
@@ -273,3 +274,4 @@ export const IconValidationCheck = IconValidationCheckSVG as IconComponent
 export const IconValidationX = IconValidationXSVG as IconComponent
 export const IconSoundwave = IconSoundwaveSVG as IconComponent
 export const IconCreditCard = IconCreditCardSVG as IconComponent
+export const IconWaveForm = IconWaveformSVG as IconComponent

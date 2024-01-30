@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import { IconSearch } from '@audius/harmony-native'
+import IconBigSearch from 'app/assets/images/iconBigSearch.svg'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -34,7 +34,7 @@ export const EmptySearch = ({ query = '' }: EmptySearchProps) => {
 
   return (
     <View style={styles.emptyContainer}>
-      <IconSearch width={90} height={90} fill={color} />
+      <IconBigSearch width={90} height={90} fill={color} />
       <Text variant='h1' style={styles.emptyText}>
         {text}
       </Text>

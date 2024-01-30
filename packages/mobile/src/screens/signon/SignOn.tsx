@@ -30,7 +30,7 @@ import RadialGradient from 'react-native-radial-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { IconArrowRight, IconValidationX } from '@audius/harmony-native'
+import { IconArrowRight, IconMultiselectRemove } from '@audius/harmony-native'
 import backgImage from 'app/assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color-Deprecated.png'
 import signupCTA from 'app/assets/images/signUpCTA.png'
@@ -456,7 +456,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconValidationX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -465,7 +465,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconValidationX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -475,7 +475,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconValidationX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -485,14 +485,14 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconValidationX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
     }
     return (
       <View style={styles.errorContainer}>
-        <IconValidationX style={[styles.errorIcon, { opacity: 0 }]} />
+        <IconMultiselectRemove style={[styles.errorIcon, { opacity: 0 }]} />
         <Text />
       </View>
     )
