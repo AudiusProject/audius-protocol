@@ -82,7 +82,7 @@ const countTrackIds = (
   return playlistContents
     ? playlistContents.track_ids
         .map((t) => t.track)
-        .reduce((acc: number, t) => {
+        .reduce<number>((acc: number, t) => {
           if (t === trackId) acc += 1
           return acc
         }, 0)
