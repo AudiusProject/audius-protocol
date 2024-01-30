@@ -59,8 +59,6 @@
 }
 
 .horizontalLogo {
-  width: 132px;
-  margin: 0;
   filter: brightness(0) invert(1);
 }
 
