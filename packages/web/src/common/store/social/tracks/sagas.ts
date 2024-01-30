@@ -788,10 +788,10 @@ function* downloadTracks({
         filename
       }
     })
-    // yield* call(trackDownload.downloadTracks, {
-    //   files,
-    //   rootDirectoryName
-    // })
+    yield* call(trackDownload.downloadTracks, {
+      files,
+      rootDirectoryName
+    })
   } catch (e) {
     console.error(
       `Could not download files for track ${parentTrackId}: ${
