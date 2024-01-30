@@ -451,6 +451,90 @@ def get_stream_url_from_content_node(content_node: str, path: str):
 class TrackStream(Resource):
     @record_metrics
     @ns.doc(
+        id="""Inspect Track""",
+        description="""Inspect an mp3 track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            204: "No Content",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(stream_parser)
+    def head(self, track_id):
+        """
+        Gets the availability of a streamable MP3 file of a track,
+        including Content-Length in the response.
+        """
+        request_args = stream_parser.parse_args()
+        user_data = request_args.get("user_data")
+        user_signature = request_args.get("user_signature")
+        nft_access_signature = request_args.get(
+            "nft_access_signature"
+        ) or request_args.get("premium_content_signature")
+        decoded_id = decode_with_abort(track_id, ns)
+
+        info = get_track_access_info(decoded_id)
+        track = info.get("track")
+
+        if not track:
+            logger.error(
+                f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        redis = redis_connection.get_redis()
+
+        # signature for the track to be included as a query param in the redirect to CN
+        stream_signature = get_track_stream_signature(
+            {
+                "track": track,
+                "is_preview": False,
+                "user_data": user_data,
+                "user_signature": user_signature,
+                "nft_access_signature": nft_access_signature,
+            }
+        )
+        if not stream_signature:
+            abort_not_found(track_id, ns)
+
+        cid = stream_signature["cid"]
+        path = f"tracks/cidstream/{cid}"
+
+        # we cache track cid -> content node so we can avoid
+        # checking multiple content nodes for a track
+        # if we already know where to look
+        redis_key = f"track_cid:{cid}"
+        cached_content_node = redis.get(redis_key)
+        stream_url = None
+        if cached_content_node:
+            cached_content_node = cached_content_node.decode("utf-8")
+            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            if stream_url:
+                return stream_url
+
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
+            logger.error(
+                f"tracks.py | stream | No healthy Content Nodes found when fetching track ID {track_id}. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+
+        content_nodes = rendezvous.get_n(9999999, cid)
+        for content_node in content_nodes:
+            stream_url = get_stream_url_from_content_node(content_node, path)
+            if stream_url:
+                redis.set(redis_key, content_node)
+                redis.expire(redis_key, 60 * 30)  # 30 min ttl
+                return stream_url
+        abort_not_found(track_id, ns)
+
+    @record_metrics
+    @ns.doc(
         id="""Stream Track""",
         description="""Stream an mp3 track""",
         params={"track_id": "A Track ID"},

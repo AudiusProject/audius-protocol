@@ -198,7 +198,9 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 
 		if c.Request().Method == "HEAD" {
-			return c.NoContent(200)
+			// return file size along with head requests
+			c.Response().Header().Set(echo.HeaderContentLength, blob.Size())
+			return c.NoContent(204)
 		}
 
 		if isAudioFile {

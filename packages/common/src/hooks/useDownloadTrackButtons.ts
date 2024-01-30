@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -11,6 +11,9 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
+import { useAsync } from 'react-use'
+import type { AudiusSdk } from '@audius/sdk'
+import { encodeHashId } from 'utils/hashIds'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -95,6 +98,23 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
     }))
     .filter((t) => t.downloadURL)
   return { stemTracks, track }
+}
+
+export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<AudiusSdk>, trackIds: ID[] }) => {
+  const [sizes, setSizes] = useState<any>([])
+  useAsync(async () => {
+    const sdk = await audiusSdk()
+    const sizeResults = await Promise.all(trackIds.map(async trackId => {
+    
+      const res = await sdk.tracks.streamTrackRaw({
+        trackId: encodeHashId(trackId)
+      })
+      console.log(res)
+
+    }))
+    setSizes(sizeResults)
+  }, [trackIds, audiusSdk, setSizes])
+  return sizes
 }
 
 const useUploadingStems = ({ trackId }: { trackId: ID }) => {

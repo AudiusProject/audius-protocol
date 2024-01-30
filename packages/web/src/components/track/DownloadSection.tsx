@@ -7,6 +7,7 @@ import {
   cacheTracksSelectors,
   DownloadQuality,
   useDownloadableContentAccess,
+  useFileSizes,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
@@ -27,6 +28,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -85,6 +87,8 @@ export const DownloadSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const fileSizes = useFileSizes({ audiusSdk, trackIds: [trackId, ...stemTracks.map(s => s.id)] })
+  console.log({fileSizes})
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 

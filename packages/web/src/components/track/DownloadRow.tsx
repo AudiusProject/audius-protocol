@@ -6,7 +6,8 @@ import {
   cacheTracksSelectors,
   DownloadQuality,
   useDownloadableContentAccess,
-  toastActions
+  toastActions,
+  formatBytes
 } from '@audius/common'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
@@ -40,6 +41,7 @@ type DownloadRowProps = {
   }) => void
   hideDownload?: boolean
   index: number
+  size?: number
 }
 
 export const DownloadRow = ({
@@ -48,7 +50,8 @@ export const DownloadRow = ({
   quality,
   onDownload,
   hideDownload,
-  index
+  index,
+  size
 }: DownloadRowProps) => {
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -114,7 +117,7 @@ export const DownloadRow = ({
       <Flex gap='2xl'>
         {hideDownload ? null : (
           <>
-            <Text>size</Text>
+            <Text>{formatBytes(size || 0)}</Text>
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}
