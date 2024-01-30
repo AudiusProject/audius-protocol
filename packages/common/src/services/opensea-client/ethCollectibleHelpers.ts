@@ -163,7 +163,7 @@ export const assetToCollectible = async (
   let gifUrl: Nullable<string> = null
 
   let hasAudio = false
-  let animationUrlOverride = null
+  let animationUrlOverride: Nullable<string> = null
 
   const {
     animation_url,

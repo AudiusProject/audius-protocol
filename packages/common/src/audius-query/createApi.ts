@@ -10,11 +10,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useBooleanOnce } from '~/hooks/useBooleanOnce'
-import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
+import {
+  Collection,
+  CollectionMetadata,
+  UserCollectionMetadata
+} from '~/models/Collection'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { Kind } from '~/models/Kind'
 import { Status, statusIsNotFinalized } from '~/models/Status'
-import { UserMetadata } from '~/models/User'
+import { User, UserMetadata } from '~/models/User'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
 import { getTrack } from '~/store/cache/tracks/selectors'
@@ -49,6 +53,9 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+import { Track } from '../models/Track'
+
+type Entity = Collection | Track | User
 
 const { addEntries } = cacheActions
 
@@ -203,7 +210,7 @@ const useQueryState = <Args, Data>(
       const { kind, idArgKey, idListArgKey, permalinkArgKey, schemaKey } =
         endpoint.options
 
-      let cachedData = null
+      let cachedData: Nullable<Entity | number[]> = null
       if (idArgKey && fetchArgs[idArgKey]) {
         const idAsNumber =
           typeof fetchArgs[idArgKey] === 'number'
