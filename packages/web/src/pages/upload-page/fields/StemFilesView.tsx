@@ -136,7 +136,7 @@ export const StemFilesView = ({
   }
 
   return (
-    <div className={styles.sourceFilesContainer}>
+    <div className={styles.stemFilesContainer}>
       {isLosslessDownloadsEnabled ? renderStemFiles() : null}
       {useRenderDropzone()}
       {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}

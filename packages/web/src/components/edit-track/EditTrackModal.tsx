@@ -21,11 +21,11 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { stemDropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
+import { stemDropdownRows } from 'utils/stems'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
