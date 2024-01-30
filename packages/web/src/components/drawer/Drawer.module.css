@@ -18,7 +18,8 @@
 
 .fullDrawer {
   top: 0px;
-  height: min(100dvh, 100vh);
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   touch-action: auto;
 }
