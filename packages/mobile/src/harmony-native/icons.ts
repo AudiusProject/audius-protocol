@@ -6,7 +6,7 @@ import type { SvgProps } from 'react-native-svg'
 export type IconProps = SvgProps & HarmonyIconProps & { fillSecondary?: string }
 export type Icon = FunctionComponent<IconProps>
 
-export { default as IconAlbum } from '@audiusC/harmony/src/assets/icons/Album.svg'
+export { default as IconAlbum } from '@audius/harmony/src/assets/icons/Album.svg'
 export { default as IconFilter } from '@audius/harmony/src/assets/icons/Filter.svg'
 export { default as IconSearch } from '@audius/harmony/src/assets/icons/Search.svg'
 export { default as IconAllTime } from '@audius/harmony/src/assets/icons/AllTime.svg'

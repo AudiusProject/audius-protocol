@@ -80,7 +80,7 @@ export const SupporterDethronedNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader imageSource={IconCrown}>
+      <NotificationHeader icon={IconCrown}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
