@@ -30,7 +30,6 @@ export function* fixInvalidTracksInPlaylist(
     .map(({ track }) => track)
     .filter((id) => !removedTrackIds.has(id))
 
-  // Debug
   const { error } = yield* call(
     audiusBackendInstance.dangerouslySetPlaylistOrder,
     playlistId,

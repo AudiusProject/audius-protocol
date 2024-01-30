@@ -558,7 +558,6 @@ function* deletePlaylistAsync(
 
     const event = make(Name.DELETE, { kind: 'album', id: action.playlistId })
     yield* put(event)
-    confirmDeleteAlbum(action.playlistId, trackIds, userId)
     yield* call(confirmDeleteAlbum, action.playlistId, trackIds, userId)
   } else {
     const event = make(Name.DELETE, { kind: 'playlist', id: action.playlistId })
