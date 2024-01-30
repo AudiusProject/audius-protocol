@@ -2,6 +2,7 @@ import { ModalSource } from 'models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
+import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -67,6 +68,7 @@ export type Modals =
   | 'USDCManualTransferModal'
   | 'AddFundsModal'
   | 'Welcome'
+  | 'CoinflowWithdraw'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -85,6 +87,7 @@ export type StatefulModalsState = {
   USDCManualTransferModal: USDCManualTransferModalState
   AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
+  CoinflowWithdraw: CoinflowWithdrawModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

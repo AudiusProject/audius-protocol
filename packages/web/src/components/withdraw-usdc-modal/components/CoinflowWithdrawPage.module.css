@@ -1,0 +1,5 @@
+.spinner {
+  height: var(--unit-10);
+  width: var(--unit-10);
+  align-self: center;
+}

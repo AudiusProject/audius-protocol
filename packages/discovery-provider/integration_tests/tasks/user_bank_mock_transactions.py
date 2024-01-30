@@ -29,9 +29,11 @@ CLAIMABLE_TOKENS_PDA = "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9"
 UNKNOWN_PDA = "2HYsaffLbtDuMNNiUkvnQ1i9bHdMwtzEfB4win2bHkaj"
 
 # Used as sender / purchaser in tracks below
-SENDER_ACCOUNT_ADDRESS = "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX"
+SENDER_ACCOUNT_USDC_ADDRESS = "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX"
 # Used as recipient / track owner in transactions below
-RECIPIENT_ACCOUNT_ADDRESS = "7G1angvMtUZLFMyrMDGj7bxsduB4bjLD7VXRR7N4FXqe"
+RECIPIENT_ACCOUNT_USDC_ADDRESS = "7G1angvMtUZLFMyrMDGj7bxsduB4bjLD7VXRR7N4FXqe"
+SENDER_ACCOUNT_WAUDIO_ADDRESS = "9yqbTsyhgH6XFxZXVWKC3mEoxFnToodWiDgyx3YWZbL"
+RECEIVER_ACCOUNT_WAUDIO_ADDRESS = "ECohA2z8a9VGbicoFU7aJGt7ENRsJcsrnfnyG5e4qYkp"
 EXTERNAL_ACCOUNT_ADDRESS = "7hxqJmiPkSAP1zbtu8w2gWXUzEvNp8u9Ms5pKcKwXiNn"
 EXTERNAL_ACCOUNT_ADDRESS_OWNER = "8HLdEuB5K4TGa8txZQpjZcsgYf4PNdnft1ZeZobhP4Ug"
 NONCE_ACCOUNT_ADDRESS = "ETHqyvd51HyoKtsgVdZTVH7c7Qw6dS6zpthqfGPtUsWk"
@@ -75,9 +77,9 @@ mock_valid_track_purchase_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
@@ -248,9 +250,9 @@ mock_valid_track_purchase_pay_extra_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
@@ -422,9 +424,9 @@ mock_valid_transfer_without_purchase_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
@@ -588,9 +590,9 @@ mock_invalid_track_purchase_missing_splits_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
@@ -762,9 +764,9 @@ mock_invalid_track_purchase_bad_splits_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             EXTERNAL_ACCOUNT_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
@@ -959,6 +961,8 @@ mock_invalid_track_purchase_bad_splits_tx = GetTransactionResp.from_json(
     )
 )
 
+# Mock purchase that fails with an instruction error.
+# Used to make sure that indexing can handle errors gracefully.
 mock_failed_track_purchase_tx = GetTransactionResp.from_json(
     json.dumps(
         {
@@ -975,9 +979,9 @@ mock_failed_track_purchase_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,
@@ -1148,9 +1152,9 @@ mock_invalid_track_purchase_unknown_pda_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             UNKNOWN_PDA,
@@ -1306,7 +1310,7 @@ mock_invalid_track_purchase_unknown_pda_tx = GetTransactionResp.from_json(
 
 # Create token account for userbank address 7G1angvMtUZLFMyrMDGj7bxsduB4bjLD7VXRR7N4FXqe
 # and eth address 0xe66402f9a6714a874a539fb1689b870dd271dfb2
-mock_valid_create_token_account_tx = GetTransactionResp.from_json(
+mock_valid_create_usdc_token_account_tx = GetTransactionResp.from_json(
     json.dumps(
         {
             "jsonrpc": "2.0",
@@ -1324,7 +1328,7 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             USDC_MINT,
                             USDC_PDA,
@@ -1413,6 +1417,454 @@ mock_valid_create_token_account_tx = GetTransactionResp.from_json(
     )
 )
 
+
+# Create token account for userbank address
+mock_valid_create_audio_token_account_tx = GetTransactionResp.from_json(
+    json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "slot": 119348547,
+                "transaction": {
+                    "signatures": [
+                        "5vfrb8GUSSjXR3xMzKh7NREFtnnZRD3eZskbyryAtWoRUtac8mDxrc2D9RWt96sYLV1hsgnnhbnm8o6gJ4p7AyMx"
+                    ],
+                    "message": {
+                        "header": {
+                            "numRequiredSignatures": 1,
+                            "numReadonlySignedAccounts": 0,
+                            "numReadonlyUnsignedAccounts": 6,
+                        },
+                        "accountKeys": [
+                            FEE_PAYER,
+                            SENDER_ACCOUNT_WAUDIO_ADDRESS,
+                            WAUDIO_MINT,
+                            WAUDIO_PDA,
+                            "SysvarRent111111111111111111111111111111111",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "11111111111111111111111111111111",
+                            CLAIMABLE_TOKENS_PDA,
+                        ],
+                        "recentBlockhash": "D2F72MHmv38pnzEZjJfienL72WLvWj7a5i4F82SSu1RH",
+                        "instructions": [
+                            {
+                                "programIdIndex": 7,
+                                "accounts": [0, 2, 3, 1, 4, 5, 6],
+                                "data": "12k8SxknneEqdTrNyE17w1fLa2Lr3",
+                                "stackHeight": None,
+                            }
+                        ],
+                    },
+                },
+                "meta": {
+                    "err": None,
+                    "status": {"Ok": None},
+                    "fee": 5000,
+                    "preBalances": [
+                        23307213200,
+                        0,
+                        1461600,
+                        0,
+                        1009200,
+                        953185920,
+                        1,
+                        1141440,
+                    ],
+                    "postBalances": [
+                        23305168920,
+                        2039280,
+                        1461600,
+                        0,
+                        1009200,
+                        953185920,
+                        1,
+                        1141440,
+                    ],
+                    "innerInstructions": [
+                        {
+                            "index": 0,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 6,
+                                    "accounts": [0, 1, 3],
+                                    "data": "R7r7mFYpVnfogxGmgKgoouv7CPupJtRDwQVv3vdrK5Jc6WMMKQSCJRVvFjiJTnjDsSdhQknmHiuv3mTonKg92uBjwC9jzpaHzmZ3MtdyZEQ5ThmZ7DHSxrqKFhkdj5A7VGKeVhxp9ooWpZQMUQaD7oVU1EgZpvj5SmE",
+                                    "stackHeight": None,
+                                },
+                                {
+                                    "programIdIndex": 5,
+                                    "accounts": [1, 2, 3, 4],
+                                    "data": "2",
+                                    "stackHeight": None,
+                                },
+                            ],
+                        }
+                    ],
+                    "logMessages": [
+                        "Program {CLAIMABLE_TOKENS_PDA} invoke [1]",
+                        "Program log: Instruction: CreateTokenAccount",
+                        "Program 11111111111111111111111111111111 invoke [2]",
+                        "Program 11111111111111111111111111111111 success",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: InitializeAccount",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 3272 of 178721 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        "Program {CLAIMABLE_TOKENS_PDA} consumed 25212 of 200000 compute units",
+                        "Program {CLAIMABLE_TOKENS_PDA} success",
+                    ],
+                    "preTokenBalances": [],
+                    "postTokenBalances": [
+                        {
+                            "accountIndex": 1,
+                            "mint": WAUDIO_MINT,
+                            "uiTokenAmount": {
+                                "uiAmount": None,
+                                "decimals": 8,
+                                "amount": "0",
+                                "uiAmountString": "0",
+                            },
+                            "owner": WAUDIO_PDA,
+                        }
+                    ],
+                    "rewards": [],
+                    "loadedAddresses": {"writable": [], "readonly": []},
+                },
+                "version": "legacy",
+                "blockTime": 1644007841,
+            },
+            "id": 0,
+        }
+    )
+)
+
+# 100 wAudio transfer between user banks (tipping)
+mock_valid_waudio_transfer_between_user_banks = GetTransactionResp.from_json(
+    json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "slot": 242838213,
+                "transaction": {
+                    "signatures": [
+                        "4RMmBXdRvE9bomvFSEhKcv53ffwwyHfaU33hqVipbynprqgF673dSJJJAZV6kwqW58Ge3Dd926Fg941kJUvFEBwb"
+                    ],
+                    "message": {
+                        "header": {
+                            "numRequiredSignatures": 1,
+                            "numReadonlySignedAccounts": 0,
+                            "numReadonlyUnsignedAccounts": 7,
+                        },
+                        "accountKeys": [
+                            "HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+                            "DQJe1p8CJukkiGc7y4XXDub1ZThiy14k29yhC5rmPZSM",
+                            RECEIVER_ACCOUNT_WAUDIO_ADDRESS,
+                            SENDER_ACCOUNT_WAUDIO_ADDRESS,
+                            "11111111111111111111111111111111",
+                            WAUDIO_PDA,
+                            CLAIMABLE_TOKENS_PDA,
+                            "KeccakSecp256k11111111111111111111111111111",
+                            "Sysvar1nstructions1111111111111111111111111",
+                            "SysvarRent111111111111111111111111111111111",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        ],
+                        "recentBlockhash": "8crN1sya8UYoBDFp2DjDDdFn7vKoLS1NoYoEj1E1JVJ6",
+                        "instructions": [
+                            {
+                                "programIdIndex": 7,
+                                "accounts": [],
+                                "data": "H4eCheRWTZDTCFYTTmUz3quundBipFSVGxiji3qqK7CEhSLCEvVCUPVSPKEgHvmV1XCtNrtzuL34yKX4kMz9hxBPRyh96LiZqYEdbgGD5qo45KdcFgt7tRioh7P1He5PSLzjTNdoRS2466UajSRXAjChoAfQcKmh6m89fmAy1GqJjxCUJVPKvuc4PM2NzXu9Ls5sV",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 6,
+                                "accounts": [0, 3, 2, 1, 5, 9, 8, 4, 10],
+                                "data": "6JzBv4aFeZziRJMpjMVqY8G1Zfnw",
+                                "stackHeight": None,
+                            },
+                        ],
+                    },
+                },
+                "meta": {
+                    "err": None,
+                    "status": {"Ok": None},
+                    "fee": 10000,
+                    "preBalances": [
+                        1679954583,
+                        953520,
+                        2039280,
+                        2039280,
+                        1,
+                        11030000,
+                        1141440,
+                        1,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "postBalances": [
+                        1679944583,
+                        953520,
+                        2039280,
+                        2039280,
+                        1,
+                        11030000,
+                        1141440,
+                        1,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "innerInstructions": [
+                        {
+                            "index": 1,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 10,
+                                    "accounts": [3, 2, 5, 5],
+                                    "data": "3DcCptZte3oM",
+                                    "stackHeight": 2,
+                                }
+                            ],
+                        }
+                    ],
+                    "logMessages": [
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ invoke [1]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 378084 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ consumed 27149 of 400000 compute units",
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ success",
+                    ],
+                    "preTokenBalances": [
+                        {
+                            "accountIndex": 2,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 476.19608924,
+                                "decimals": 8,
+                                "amount": "47619608924",
+                                "uiAmountString": "476.19608924",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 339.66380431,
+                                "decimals": 8,
+                                "amount": "33966380431",
+                                "uiAmountString": "339.66380431",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "postTokenBalances": [
+                        {
+                            "accountIndex": 2,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 576.19608924,
+                                "decimals": 8,
+                                "amount": "57619608924",
+                                "uiAmountString": "576.19608924",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 239.66380431,
+                                "decimals": 8,
+                                "amount": "23966380431",
+                                "uiAmountString": "239.66380431",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "rewards": [],
+                    "loadedAddresses": {"writable": [], "readonly": []},
+                    "computeUnitsConsumed": 27149,
+                },
+                "version": "legacy",
+                "blockTime": 1705694686,
+            },
+            "id": 0,
+        }
+    )
+)
+
+# Transfer of 100 wAudio user bank to an external source.
+# Counts as audio_transaction_history, but not as a tip.
+mock_valid_waudio_transfer_from_user_bank_to_external_address = GetTransactionResp.from_json(
+    json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "slot": 242838213,
+                "transaction": {
+                    "signatures": [
+                        "4RMmBXdRvE9bomvFSEhKcv53ffwwyHfaU33hqVipbynprqgF673dSJJJAZV6kwqW58Ge3Dd926Fg941kJUvFEBwb"
+                    ],
+                    "message": {
+                        "header": {
+                            "numRequiredSignatures": 1,
+                            "numReadonlySignedAccounts": 0,
+                            "numReadonlyUnsignedAccounts": 7,
+                        },
+                        "accountKeys": [
+                            "HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+                            "DQJe1p8CJukkiGc7y4XXDub1ZThiy14k29yhC5rmPZSM",
+                            EXTERNAL_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_WAUDIO_ADDRESS,
+                            "11111111111111111111111111111111",
+                            WAUDIO_PDA,
+                            CLAIMABLE_TOKENS_PDA,
+                            "KeccakSecp256k11111111111111111111111111111",
+                            "Sysvar1nstructions1111111111111111111111111",
+                            "SysvarRent111111111111111111111111111111111",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        ],
+                        "recentBlockhash": "8crN1sya8UYoBDFp2DjDDdFn7vKoLS1NoYoEj1E1JVJ6",
+                        "instructions": [
+                            {
+                                "programIdIndex": 7,
+                                "accounts": [],
+                                "data": "H4eCheRWTZDTCFYTTmUz3quundBipFSVGxiji3qqK7CEhSLCEvVCUPVSPKEgHvmV1XCtNrtzuL34yKX4kMz9hxBPRyh96LiZqYEdbgGD5qo45KdcFgt7tRioh7P1He5PSLzjTNdoRS2466UajSRXAjChoAfQcKmh6m89fmAy1GqJjxCUJVPKvuc4PM2NzXu9Ls5sV",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 6,
+                                "accounts": [0, 3, 2, 1, 5, 9, 8, 4, 10],
+                                "data": "6JzBv4aFeZziRJMpjMVqY8G1Zfnw",
+                                "stackHeight": None,
+                            },
+                        ],
+                    },
+                },
+                "meta": {
+                    "err": None,
+                    "status": {"Ok": None},
+                    "fee": 10000,
+                    "preBalances": [
+                        1679954583,
+                        953520,
+                        2039280,
+                        2039280,
+                        1,
+                        11030000,
+                        1141440,
+                        1,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "postBalances": [
+                        1679944583,
+                        953520,
+                        2039280,
+                        2039280,
+                        1,
+                        11030000,
+                        1141440,
+                        1,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "innerInstructions": [
+                        {
+                            "index": 1,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 10,
+                                    "accounts": [3, 2, 5, 5],
+                                    "data": "3DcCptZte3oM",
+                                    "stackHeight": 2,
+                                }
+                            ],
+                        }
+                    ],
+                    "logMessages": [
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ invoke [1]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 378084 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ consumed 27149 of 400000 compute units",
+                        "Program Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ success",
+                    ],
+                    "preTokenBalances": [
+                        {
+                            "accountIndex": 2,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 476.19608924,
+                                "decimals": 8,
+                                "amount": "47619608924",
+                                "uiAmountString": "476.19608924",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 339.66380431,
+                                "decimals": 8,
+                                "amount": "33966380431",
+                                "uiAmountString": "339.66380431",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "postTokenBalances": [
+                        {
+                            "accountIndex": 2,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 576.19608924,
+                                "decimals": 8,
+                                "amount": "57619608924",
+                                "uiAmountString": "576.19608924",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "uiTokenAmount": {
+                                "uiAmount": 239.66380431,
+                                "decimals": 8,
+                                "amount": "23966380431",
+                                "uiAmountString": "239.66380431",
+                            },
+                            "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "rewards": [],
+                    "loadedAddresses": {"writable": [], "readonly": []},
+                    "computeUnitsConsumed": 27149,
+                },
+                "version": "legacy",
+                "blockTime": 1705694686,
+            },
+            "id": 0,
+        }
+    )
+)
+
 # Appears to be a purchase, but doesn't use a recognized instruction
 mock_unknown_instruction_tx = GetTransactionResp.from_json(
     json.dumps(
@@ -1430,9 +1882,9 @@ mock_unknown_instruction_tx = GetTransactionResp.from_json(
                         },
                         "accountKeys": [
                             FEE_PAYER,
-                            SENDER_ACCOUNT_ADDRESS,
+                            SENDER_ACCOUNT_USDC_ADDRESS,
                             NONCE_ACCOUNT_ADDRESS,
-                            RECIPIENT_ACCOUNT_ADDRESS,
+                            RECIPIENT_ACCOUNT_USDC_ADDRESS,
                             "11111111111111111111111111111111",
                             CLAIMABLE_TOKENS_PDA,
                             USDC_PDA,

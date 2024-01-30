@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.63",
+  "version": "1.5.64",
   "private": true,
   "scripts": {
     "start": "vite",

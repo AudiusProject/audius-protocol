@@ -1,6 +1,4 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
-import { ID } from '../../../models'
+import { ID, SquareSizes, TrackMetadata, WidthSizes } from '../../../models'
 export const EDIT_TRACK = 'CACHE/TRACKS/EDIT_TRACK'
 export const EDIT_TRACK_SUCCEEDED = 'CACHE/TRACKS/EDIT_TRACK_SUCCEEDED'
 export const EDIT_TRACK_FAILED = 'CACHE/TRACKS/EDIT_TRACK_FAILED'
@@ -13,7 +11,7 @@ export const SET_PERMALINK = 'CACHE/TRACKS/SET_PERMALINK'
 
 export const FETCH_COVER_ART = 'CACHE/TRACKS/FETCH_COVER_ART'
 
-export function editTrack(trackId, formFields) {
+export function editTrack(trackId: ID, formFields: TrackMetadata) {
   return { type: EDIT_TRACK, trackId, formFields }
 }
 
@@ -25,11 +23,11 @@ export function editTrackFailed() {
   return { type: EDIT_TRACK_FAILED }
 }
 
-export function deleteTrack(trackId) {
+export function deleteTrack(trackId: ID) {
   return { type: DELETE_TRACK, trackId }
 }
 
-export function deleteTrackSucceeded(trackId) {
+export function deleteTrackSucceeded(trackId: ID) {
   return { type: DELETE_TRACK_SUCCEEDED, trackId }
 }
 
@@ -41,6 +39,6 @@ export function setPermalink(permalink: string, trackId: ID) {
   return { type: SET_PERMALINK, permalink, trackId }
 }
 
-export function fetchCoverArt(trackId, size) {
+export function fetchCoverArt(trackId: ID, size: WidthSizes | SquareSizes) {
   return { type: FETCH_COVER_ART, trackId, size }
 }

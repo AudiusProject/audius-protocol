@@ -2,6 +2,7 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
+import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
@@ -42,7 +43,8 @@ const combinedReducers = combineReducers({
   AddFundsModal: addFundsModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
-  CoinflowOnramp: coinflowOnrampModalReducer
+  CoinflowOnramp: coinflowOnrampModalReducer,
+  CoinflowWithdraw: coinflowWithdrawModalReducer
 })
 
 /**

@@ -579,7 +579,10 @@ def process_transfer_instruction(
         )
         return
 
-    if receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS:
+    if (
+        receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS
+        or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
+    ):
         logger.info(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
         return
 

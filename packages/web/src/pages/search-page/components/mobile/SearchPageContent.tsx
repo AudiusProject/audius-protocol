@@ -10,11 +10,11 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   trimToAlphaNumeric
 } from '@audius/common'
+import { IconAlbum } from '@audius/harmony'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'

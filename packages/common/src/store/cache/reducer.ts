@@ -16,13 +16,12 @@ import {
   SET_EXPIRED,
   INCREMENT,
   AddSuccededAction,
-  CacheType,
   ADD_ENTRIES,
   AddEntriesAction,
   SetCacheConfigAction,
   SET_CACHE_CONFIG
 } from './actions'
-import { Metadata } from './types'
+import { CacheType, Metadata } from './types'
 
 type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
@@ -273,7 +272,7 @@ const actionsMap = {
   },
   [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
     const { entriesByKind, replace } = action
-    const matchingEntries = entriesByKind[kind]
+    const matchingEntries = entriesByKind[kind] ?? {}
     const cacheableEntries = Object.entries(matchingEntries).map(
       ([id, entry]) => ({
         id,

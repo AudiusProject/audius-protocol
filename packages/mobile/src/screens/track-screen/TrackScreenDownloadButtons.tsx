@@ -104,12 +104,21 @@ export const TrackScreenDownloadButtons = ({
   const dispatch = useDispatch()
 
   const handleDownload = useCallback(
-    (id: ID, category?: string, parentTrackId?: ID) => {
-      dispatch(downloadTrack(id, category))
+    ({
+      trackId,
+      category,
+      parentTrackId
+    }: {
+      trackId: ID
+      category?: string
+      parentTrackId?: ID
+      original?: boolean
+    }) => {
+      dispatch(downloadTrack(trackId, category))
       track(
         make({
           eventName: Name.TRACK_PAGE_DOWNLOAD,
-          id,
+          id: trackId,
           category,
           parent_track_id: parentTrackId
         })

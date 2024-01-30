@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/relay",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": true,
   "scripts": {
     "build": "tsc",
@@ -36,7 +36,7 @@
     "morgan": "^1.10.0",
     "pino": "^8.16.1",
     "rate-limiter-flexible": "^2.4.1",
-    "redis": "^4.6.12",
+    "redis": "4.6.11",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

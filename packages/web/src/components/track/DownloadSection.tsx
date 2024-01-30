@@ -48,7 +48,17 @@ const messages = {
 
 type DownloadSectionProps = {
   trackId: ID
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
 }
 
 export const DownloadSection = ({
@@ -214,6 +224,7 @@ export const DownloadSection = ({
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={onDownload}
                 quality={quality}
