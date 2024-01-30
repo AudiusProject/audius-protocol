@@ -110,8 +110,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     yield* put(getBalance())
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
     const updatedCID = yield* call(getAccountMetadataCID)
-
-    if (updatedCID && accountUserId) {
+    if (accountUserId) {
       yield* put(
         cacheActions.update(Kind.USERS, [
           {

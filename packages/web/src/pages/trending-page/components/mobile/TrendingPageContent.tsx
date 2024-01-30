@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useMemo } from 'react'
 import { Name, TimeRange, trendingPageLineupActions } from '@audius/common'
 import cn from 'classnames'
 
-import IconAllTime from 'assets/img/iconAllTime.svg'
+import { IconAllTime } from '@audius/harmony'
 import IconDay from 'assets/img/iconDay.svg'
 import IconMonth from 'assets/img/iconMonth.svg'
 import { make, useRecord } from 'common/store/analytics/actions'

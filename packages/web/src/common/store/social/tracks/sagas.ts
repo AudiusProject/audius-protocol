@@ -593,7 +593,7 @@ export function* watchSetArtistPick() {
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* waitForWrite()
-      const userId: ID | null = yield* select(getUserId)
+      const userId = yield* select(getUserId)
 
       if (!userId) return
       yield* put(
@@ -618,7 +618,7 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* waitForWrite()
-    const userId: ID | null = yield* select(getUserId)
+    const userId = yield* select(getUserId)
 
     if (!userId) return
     yield* put(

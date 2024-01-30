@@ -1,6 +1,4 @@
-// @ts-nocheck
-
-import { ID } from 'models'
+import { ID, SquareSizes, WidthSizes } from 'models'
 
 export const REMOVE_BY_HANDLE = 'CACHE/USERS/REMOVE_BY_HANDLE'
 
@@ -14,11 +12,14 @@ export const removeByHandle = (handle: string) => ({
   handle
 })
 
-export function fetchProfilePicture(userId, size) {
+export function fetchProfilePicture(
+  userId: ID,
+  size: WidthSizes | SquareSizes
+) {
   return { type: FETCH_PROFILE_PICTURE, userId, size }
 }
 
-export function fetchCoverPhoto(userId, size) {
+export function fetchCoverPhoto(userId: ID, size: WidthSizes | SquareSizes) {
   return { type: FETCH_COVER_PHOTO, userId, size }
 }
 

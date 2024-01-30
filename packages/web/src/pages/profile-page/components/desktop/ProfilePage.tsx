@@ -17,7 +17,7 @@ import {
   CreatePlaylistSource
 } from '@audius/common'
 
-import IconAlbum from 'assets/img/iconAlbum.svg'
+import { IconAlbum } from '@audius/harmony'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'

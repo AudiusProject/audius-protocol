@@ -276,7 +276,7 @@ export function* watchReset() {
 
 export function* watchStop() {
   yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
-    const id: ID | null = yield* select(getTrackId)
+    const id = yield* select(getTrackId)
     if (id) {
       yield* put(
         cacheActions.unsubscribe(Kind.TRACKS, [

@@ -341,7 +341,7 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(entities as Record<Kind, Entry[]>))
+      dispatch(addEntries(entities))
     } else {
       data = apiData
     }
