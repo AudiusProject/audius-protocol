@@ -297,7 +297,6 @@ function* watchAdd() {
     cacheActions.ADD,
     function* (action: ReturnType<typeof cacheActions.add>) {
       const { kind, entries, replace, persist } = action
-      add(kind, entries, replace, persist)
       yield* call(add, kind, entries, replace, persist)
     }
   )
@@ -314,11 +313,8 @@ function* watchUnsubscribe() {
 
       // Remove all transitive subscriptions.
       const transitiveSubscriptions: {
-        [key in Kind]?: {
-          uid: string
-          id?: number | undefined
-        }[]
-      } = {} // keyed by Kind
+        [key in Kind]?: SubscriberInfo[]
+      } = {}
       unsubscribers.forEach((s) => {
         const { id = cache.uids[s.uid] } = s
         if (
