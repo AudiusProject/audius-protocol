@@ -60,8 +60,8 @@ export type UserMetadata = {
   tikTokVerified?: boolean
   balance?: Nullable<StringWei>
   total_balance?: Nullable<StringWei>
-  associated_wallets?: Nullable<string[]>
-  associated_sol_wallets?: Nullable<string[]>
+  associated_wallets?: Nullable<Record<string, string>>
+  associated_sol_wallets?: Nullable<Record<string, string>>
   associated_wallets_balance?: Nullable<StringWei>
   playlist_library?: PlaylistLibrary
   userBank?: SolanaWalletAddress

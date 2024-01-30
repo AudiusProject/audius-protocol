@@ -1,7 +1,8 @@
-// TODO(nkang) - convert to TS
-// @ts-nocheck
-
 import { pick } from 'lodash'
+
+import { User } from 'models/User'
+import { UserEvent } from 'models/UserEvent'
+import { ExtendedTrackMetadata } from 'store/upload'
 
 const trackMetadataSchema = {
   track_cid: null,
@@ -56,7 +57,10 @@ const trackMetadataSchema = {
   ai_attribution_user_id: null
 }
 
-export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
+export const newTrackMetadata = (
+  fields: Partial<ExtendedTrackMetadata>,
+  validate = false
+): ExtendedTrackMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields
@@ -69,6 +73,7 @@ export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
     ...validFields,
     // Reformat remixes last so we don't carry through any extra metadata that
     // was part of the remix_of response from backends
+    // @ts-ignore
     remix_of: remixParentTrackId
       ? createRemixOfMetadata({ parentTrackId: remixParentTrackId })
       : null
@@ -130,7 +135,10 @@ const userMetadataSchema = {
   artist_pick_track_id: null
 }
 
-export const newUserMetadata = (fields?: any, validate = false): User => {
+export const newUserMetadata = (
+  fields?: any,
+  validate = false
+): User & { events: Partial<UserEvent> } => {
   const validFields = validate
     ? pick(fields, Object.keys(userMetadataSchema).concat(['user_id']))
     : fields

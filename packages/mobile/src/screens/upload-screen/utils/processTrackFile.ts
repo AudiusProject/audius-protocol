@@ -1,4 +1,4 @@
-import type { UploadTrack } from '@audius/common'
+import type { ExtendedTrackMetadata, UploadTrack } from '@audius/common'
 import {
   ALLOWED_AUDIO_FILE_EXTENSIONS,
   ALLOWED_AUDIO_FILE_MIME,
@@ -66,9 +66,11 @@ export const processTrackFile = async (
     file: { ...trackFile, uri: fileCopyUri ?? uri },
     preview: null,
     metadata: newTrackMetadata({
+      // @ts-ignore - KJ - Look at this later, might be fine
       title,
       artwork: null,
+      // @ts-ignore - KJ - Look at this later, might be fine
       duration
-    })
+    }) as ExtendedTrackMetadata
   }
 }

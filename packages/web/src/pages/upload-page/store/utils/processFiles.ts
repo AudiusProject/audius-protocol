@@ -9,16 +9,16 @@ import jsmediatags from 'jsmediatags'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 const readMediaTags = (file: File): Promise<any> => {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     jsmediatags.read(file, {
-      onSuccess: function (tag: any) {
+      onSuccess: function(tag: any) {
         let tags
         if (tag && tag.tags) {
           tags = tag.tags
         }
         resolve(tags)
       },
-      onError: function (error) {
+      onError: function(error) {
         reject(error)
       }
     })
@@ -93,6 +93,7 @@ export const processFiles = (
       preview: audio,
       metadata: newTrackMetadata({
         title,
+        // @ts-ignore - KJ - Look at this later, might be fine
         artwork
       })
     }

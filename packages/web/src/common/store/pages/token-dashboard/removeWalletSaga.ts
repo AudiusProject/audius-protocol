@@ -60,7 +60,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
       ...(currentAssociatedWallets || {})
     }
 
-    delete updatedMetadata.associated_wallets[removeWallet]
+    delete updatedMetadata.associated_wallets?.[removeWallet]
   } else if (removeChain === Chain.Sol) {
     const currentAssociatedWallets = yield* call(
       audiusBackendInstance.fetchUserAssociatedSolWallets,
@@ -78,7 +78,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     updatedMetadata.associated_sol_wallets = {
       ...(currentAssociatedWallets || {})
     }
-    delete updatedMetadata.associated_sol_wallets[removeWallet]
+    delete updatedMetadata.associated_sol_wallets?.[removeWallet]
   }
 
   if (!accountUserId) {

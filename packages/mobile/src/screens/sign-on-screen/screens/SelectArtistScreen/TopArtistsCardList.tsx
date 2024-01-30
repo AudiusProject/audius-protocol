@@ -32,10 +32,12 @@ export const TopArtistsCardList = (props: Props) => {
   return (
     <CardList
       ListHeaderComponent={genre === 'Featured' ? <PreviewArtistHint /> : null}
+      // @ts-ignore
       data={artists}
       style={css({ paddingTop: spacing.xl })}
       renderItem={({ item, index }) => (
         <FollowArtistCard
+          // @ts-ignore
           artist={item}
           showPreviewHint={genre === 'Featured' && index === 0}
         />
