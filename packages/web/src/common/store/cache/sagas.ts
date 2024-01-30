@@ -10,12 +10,14 @@ import {
   IntKeys
 } from '@audius/common'
 import type {
-  CacheEntry,
-  CacheSubscriber,
   CommonStoreContext,
   ID,
   Kind,
-  Metadata
+  Metadata,
+  Cache,
+  Entry,
+  SubscriberInfo,
+  CacheType
 } from '@audius/common'
 import { pick } from 'lodash'
 import { all, call, put, select, takeEvery, getContext } from 'typed-redux-saga'
@@ -24,7 +26,7 @@ const { CACHE_PRUNE_MIN } = cacheConfig
 const { getConfirmCalls } = confirmerSelectors
 const { getCache, getEntryTTL } = cacheSelectors
 
-const isMissingFields = (cacheEntry: CacheEntry, requiredFields: string[]) => {
+const isMissingFields = (cacheEntry: Entry, requiredFields: string[]) => {
   if (!requiredFields) return false
   for (const field of requiredFields) {
     if (!(field in cacheEntry)) {
@@ -46,15 +48,13 @@ type AddToCacheHandler = (
 
 type RetrieveArgs = {
   ids: ID[]
-  selectFromCache: (
-    ids: ID[]
-  ) => Generator<never, Record<ID, CacheEntry>, CacheEntry[]>
+  selectFromCache: (ids: ID[]) => Generator<never, Record<ID, Entry>, Entry[]>
   getEntriesTimestamp: (ids: ID[]) => Generator<
     never,
     {
       [id: ID]: number | null
     },
-    CacheEntry[]
+    Entry[]
   >
   retrieveFromSource: (ids: ID[]) => Metadata[]
   kind: Kind
@@ -132,7 +132,7 @@ export function* retrieve({
   uniqueIds.forEach((id) => {
     const shouldFetch =
       !(id in cachedEntries) ||
-      isMissingFields(cachedEntries[id] as CacheEntry, [...requiredFields]) ||
+      isMissingFields(cachedEntries[id] as Entry, [...requiredFields]) ||
       isExpired(timestamps[id] as number, entryTTL) ||
       forceRetrieveFromSource
     if (shouldFetch) {
@@ -251,9 +251,9 @@ function* retrieveFromSourceThenCache({
 
 export function* add(
   kind: Kind,
-  entries: cacheActions.Entry[],
-  replace: boolean,
-  persist: boolean
+  entries: Entry[],
+  replace?: boolean,
+  persist?: boolean
 ) {
   // Get cached things that are confirming
   const confirmCalls = yield* select(getConfirmCalls)
@@ -263,8 +263,8 @@ export function* add(
     Object.keys(confirmCalls).map((kindId) => getIdFromKindId(kindId))
   )
 
-  const entriesToAdd: cacheActions.Entry[] = []
-  const entriesToSubscribe: CacheSubscriber[] = []
+  const entriesToAdd: Entry[] = []
+  const entriesToSubscribe: SubscriberInfo[] = []
   entries.forEach((entry) => {
     // If something is confirming and in the cache, we probably don't
     // want to replace it (unless explicit) because we would lose client
@@ -362,7 +362,7 @@ function* watchUnsubscribeSucceeded() {
       const { kind, unsubscribers } = action
       const cache = yield* select(getCache, { kind })
 
-      const idsToRemove: (number | string)[] = []
+      const idsToRemove: (ID | string)[] = []
       unsubscribers.forEach((s) => {
         const { id } = s
         if (id && id in cache.subscribers && cache.subscribers[id].size === 0) {
@@ -381,7 +381,7 @@ function* watchRemove() {
     cacheActions.REMOVE,
     function* (action: ReturnType<typeof cacheActions.remove>) {
       const { kind } = action
-      const cache = yield* select(getCache, { kind })
+      const cache: Cache<any> | null = yield* select(getCache, { kind })
 
       if (
         cache &&
@@ -423,7 +423,7 @@ function* initializeCacheType() {
 
   yield* put(
     cacheActions.setCacheConfig({
-      cacheType: cacheType as cacheActions.CacheType,
+      cacheType: cacheType as CacheType,
       entryTTL: cacheEntryTTL,
       simple: simpleCache
     })

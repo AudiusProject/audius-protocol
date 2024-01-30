@@ -62,6 +62,7 @@ export function* retrieveTrackByHandleAndSlug({
 
   // Check if this is the first fetch after server side rendering the track page
   const isInitialFetchAfterSsr = yield* select(getIsInitialFetchAfterSsr)
+  // @ts-ignore string IDs don't play well with the current retrieve typing
   const tracks = (yield* call(retrieve, {
     ids: [permalink],
     selectFromCache: function* (permalinks: string[]) {

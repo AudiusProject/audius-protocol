@@ -25,7 +25,6 @@ import {
   getContext,
   lineupRegistry,
   Collectible,
-  Track,
   UserTrackMetadata
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'

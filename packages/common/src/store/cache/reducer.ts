@@ -1,5 +1,8 @@
 import { mergeWith, add, isEqual } from 'lodash'
 
+import { ID, UID } from 'models/Identifiers'
+import { Status } from 'models/Status'
+
 import { Kind } from '../../models/Kind'
 
 import {
@@ -18,7 +21,19 @@ import {
   SetCacheConfigAction,
   SET_CACHE_CONFIG
 } from './actions'
-import { CacheState, Metadata } from './types'
+import { CacheType, Metadata } from './types'
+
+type CacheState = {
+  entries: Record<ID, { _timestamp: number; metadata: Metadata }>
+  statuses: Record<ID, Status>
+  uids: Record<UID, ID>
+  subscribers: Record<ID, Set<UID>>
+  subscriptions: Record<ID, Set<UID>>
+  idsToPrune: Set<ID>
+  cacheType: CacheType
+  entryTTL: number
+  simple: boolean
+}
 
 /**
  * The cache is implemented as primarily a map of ids to metadata (track, playlist, collection).
@@ -251,7 +266,7 @@ const actionsMap = {
       simple
     }
   },
-  [ADD_SUCCEEDED](state: CacheState, action: AddSuccededAction<Metadata>) {
+  [ADD_SUCCEEDED](state: CacheState, action: AddSuccededAction) {
     const { entries, replace } = action
     return addEntries(state, entries, replace)
   },

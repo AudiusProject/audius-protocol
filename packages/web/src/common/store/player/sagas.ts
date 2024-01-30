@@ -19,8 +19,7 @@ import {
   QueryParams,
   Genre,
   getQueryParams,
-  getTrackPreviewDuration,
-  ID
+  getTrackPreviewDuration
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
