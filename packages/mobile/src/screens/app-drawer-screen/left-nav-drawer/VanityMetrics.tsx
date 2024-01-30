@@ -2,12 +2,12 @@ import type { ComponentType } from 'react'
 import { useCallback, useContext } from 'react'
 
 import {
-  formatCount,
   accountSelectors,
   followersUserListActions,
   followingUserListActions
 } from '@audius/common'
 import type { User } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'

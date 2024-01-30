@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
 import { accountSelectors } from '@audius/common'
 import { isContentFollowGated, isContentTipGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import type { CommonState, Maybe } from '@audius/common'
-import { removeNullable } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
+import type { Maybe } from '@audius/common/utils'
 import {
   removeFollowArtists,
   addFollowArtists

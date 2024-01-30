@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { fillString, settingsPageActions } from '@audius/common'
+import { settingsPageActions } from '@audius/common'
 import { welcomeModalMessages } from '@audius/common/messages'
+import { fillString } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'

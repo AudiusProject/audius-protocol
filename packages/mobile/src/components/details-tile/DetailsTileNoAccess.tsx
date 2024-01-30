@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import {
-  formatPrice,
   gatedContentSelectors,
   tippingActions,
   usePremiumContentPurchaseModal,
@@ -19,6 +18,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
+import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

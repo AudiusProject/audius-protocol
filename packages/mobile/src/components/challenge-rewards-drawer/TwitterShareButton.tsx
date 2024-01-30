@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { makeTwitterShareUrl } from '@audius/common'
+import { makeTwitterShareUrl } from '@audius/common/utils'
 import { Linking } from 'react-native'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'

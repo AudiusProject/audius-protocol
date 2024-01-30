@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  encodeUrlName,
-  removeNullable,
   collectionPageActions,
-  formatDate,
   accountSelectors,
   collectionPageSelectors,
   collectionsSocialActions,
@@ -18,7 +15,6 @@ import {
   favoritesUserListActions,
   FeatureFlags
 } from '@audius/common'
-import type { Nullable } from '@audius/common'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -33,6 +29,8 @@ import type {
   SearchPlaylist,
   User
 } from '@audius/common/models'
+import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {

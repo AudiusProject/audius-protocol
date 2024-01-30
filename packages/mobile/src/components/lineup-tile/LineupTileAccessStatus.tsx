@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
 import {
-  formatPrice,
   gatedContentActions,
   gatedContentSelectors,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { formatPrice } from '@audius/common/utils'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

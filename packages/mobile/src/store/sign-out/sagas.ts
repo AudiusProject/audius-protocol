@@ -3,10 +3,10 @@ import {
   accountActions,
   feedPageLineupActions,
   themeActions,
-  waitForValue,
   tokenDashboardPageActions
 } from '@audius/common'
 import { Name, Theme } from '@audius/common/models'
+import { waitForValue } from '@audius/common/utils'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors'
 import { resetSignOn } from 'audius-client/src/common/store/pages/signon/actions'

@@ -1,7 +1,5 @@
 import path from 'path'
 
-import type { Nullable } from '@audius/common'
-import { allSettled } from '@audius/common'
 import type {
   CollectionMetadata,
   Collection,
@@ -10,6 +8,8 @@ import type {
   UserTrackMetadata,
   UserMetadata
 } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
+import { allSettled } from '@audius/common/utils'
 import RNFetchBlob from 'rn-fetch-blob'
 
 const {

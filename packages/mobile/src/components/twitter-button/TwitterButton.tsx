@@ -1,12 +1,9 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import {
-  makeTwitterShareUrl,
-  cacheUsersActions,
-  cacheUsersSelectors
-} from '@audius/common'
+import { cacheUsersActions, cacheUsersSelectors } from '@audius/common'
 import { useTwitterButtonStatus } from '@audius/common/hooks'
+import { makeTwitterShareUrl } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'

@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable } from '@audius/common'
 import { collectiblesSelectors } from '@audius/common'
 import { Chain, isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'

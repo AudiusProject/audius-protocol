@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
 import type { FollowNotification as FollowNotificationType } from '@audius/common'
-import { formatCount, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 
 import IconUser from 'app/assets/images/iconUser.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'

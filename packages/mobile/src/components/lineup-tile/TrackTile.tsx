@@ -4,9 +4,7 @@ import type { CommonState } from '@audius/common'
 import {
   playbackPositionSelectors,
   FeatureFlags,
-  Genre,
   accountSelectors,
-  removeNullable,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
@@ -27,6 +25,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
+import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'

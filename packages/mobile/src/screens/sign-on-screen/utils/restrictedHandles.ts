@@ -1,4 +1,4 @@
-import { restrictedHandles as commonRestrictedHandles } from '@audius/common'
+import { restrictedHandles as commonRestrictedHandles } from '@audius/common/utils'
 import { orderedRoutes } from 'audius-client/src/utils/route'
 
 const restrictedRoutes = orderedRoutes

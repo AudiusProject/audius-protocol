@@ -1,14 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type {
-  CommonState,
-  Nullable,
-  QueryParams,
-  Queueable
-} from '@audius/common'
+import type { CommonState, QueryParams, Queueable } from '@audius/common'
 import {
-  getQueryParams,
-  removeNullable,
   playbackRateValueMap,
   accountSelectors,
   cacheUsersSelectors,
@@ -23,16 +16,21 @@ import {
   gatedContentSelectors,
   RepeatMode,
   FeatureFlags,
-  encodeHashId,
-  Genre,
   tracksSocialActions,
-  shallowCompare,
-  savedPageTracksLineupActions,
-  getTrackPreviewDuration
+  savedPageTracksLineupActions
 } from '@audius/common'
 import { useAppContext } from '@audius/common/context'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
+import {
+  Genre,
+  encodeHashId,
+  shallowCompare,
+  removeNullable,
+  getQueryParams,
+  getTrackPreviewDuration
+} from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,

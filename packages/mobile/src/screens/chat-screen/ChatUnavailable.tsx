@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import { ChatPermissionAction, CHAT_BLOG_POST_URL } from '@audius/common'
+import { ChatPermissionAction } from '@audius/common'
 import { useCanSendMessage } from '@audius/common/hooks'
+import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

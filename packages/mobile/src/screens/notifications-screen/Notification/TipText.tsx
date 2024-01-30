@@ -1,4 +1,4 @@
-import { formatNumberCommas } from '@audius/common'
+import { formatNumberCommas } from '@audius/common/utils'
 
 import { AudioText } from 'app/components/core'
 

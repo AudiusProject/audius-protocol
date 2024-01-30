@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
 import type {
-  Nullable,
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common'
 import { notificationsSelectors, Achievement } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 

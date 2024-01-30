@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
 import {
   LibraryCategory,
   SavedPageTabs,
@@ -13,6 +12,7 @@ import {
 } from '@audius/common'
 import { PlaybackSource, Status } from '@audius/common/models'
 import type { ID, UID, Track, User } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'

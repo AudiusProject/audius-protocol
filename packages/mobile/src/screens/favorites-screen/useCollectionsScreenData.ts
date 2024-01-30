@@ -1,18 +1,20 @@
 import type { CollectionType, CommonState } from '@audius/common'
 import {
-  removeNullable,
   SavedPageTabs,
   accountSelectors,
   cacheCollectionsSelectors,
   reachabilitySelectors,
-  shallowCompare,
   useAllPaginatedQuery,
-  savedPageSelectors,
-  filterCollections
+  savedPageSelectors
 } from '@audius/common'
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
+import {
+  filterCollections,
+  shallowCompare,
+  removeNullable
+} from '@audius/common/utils'
 import uniq from 'lodash/uniq'
 import { useSelector } from 'react-redux'
 

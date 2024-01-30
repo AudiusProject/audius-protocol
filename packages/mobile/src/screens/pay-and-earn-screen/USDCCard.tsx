@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react'
 
-import {
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  useAddFundsModal
-} from '@audius/common'
+import { useAddFundsModal } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import type { BNUSDC } from '@audius/common/models'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import BN from 'bn.js'
 import { TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable } from '@audius/common'
 import type { AccessConditions } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 
 // This hook allows us to set track availability fields during upload.

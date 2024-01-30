@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { fillString, formatNumberCommas, ClaimStatus } from '@audius/common'
+import { ClaimStatus } from '@audius/common'
 import type { UserChallengeState } from '@audius/common/models'
+import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'

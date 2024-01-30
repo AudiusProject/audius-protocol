@@ -6,12 +6,12 @@ import {
   chatActions,
   tippingActions,
   ChatPermissionAction,
-  CHAT_BLOG_POST_URL,
   accountSelectors,
   makeChatId,
   useInboxUnavailableModal,
   cacheUsersSelectors
 } from '@audius/common'
+import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

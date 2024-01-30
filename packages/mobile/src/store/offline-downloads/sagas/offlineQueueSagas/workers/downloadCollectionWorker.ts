@@ -1,9 +1,10 @@
-import { removeNullable, accountSelectors, getContext } from '@audius/common'
+import { accountSelectors, getContext } from '@audius/common'
 import type {
   CollectionMetadata,
   UserCollectionMetadata
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
 

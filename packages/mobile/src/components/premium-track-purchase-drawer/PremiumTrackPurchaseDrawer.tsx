@@ -5,7 +5,6 @@ import {
   PurchaseContentPage,
   FeatureFlags,
   PurchaseContentStage,
-  formatPrice,
   isContentPurchaseInProgress,
   purchaseContentActions,
   purchaseContentSelectors,
@@ -30,6 +29,7 @@ import {
   PurchaseVendor,
   statusIsNotFinalized
 } from '@audius/common/models'
+import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,

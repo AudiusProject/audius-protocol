@@ -1,7 +1,7 @@
-import type { Nullable } from '@audius/common'
 import { cacheUsersSelectors } from '@audius/common'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { BlurView } from '@react-native-community/blur'
 import { Animated, StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'

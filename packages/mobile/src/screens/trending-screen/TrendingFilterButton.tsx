@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Genre, trendingPageSelectors, modalsActions } from '@audius/common'
+import { trendingPageSelectors, modalsActions } from '@audius/common'
+import { Genre } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ScreenHeaderButton } from 'app/components/core'

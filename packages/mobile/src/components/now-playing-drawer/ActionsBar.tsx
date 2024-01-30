@@ -1,11 +1,8 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import type { Nullable } from '@audius/common'
 import {
   FeatureFlags,
   playbackPositionSelectors,
-  Genre,
-  removeNullable,
   reachabilitySelectors,
   accountSelectors,
   castSelectors,
@@ -15,7 +12,6 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  formatPrice,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -26,6 +22,8 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
+import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'

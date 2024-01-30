@@ -1,8 +1,10 @@
 import { useCallback, useRef } from 'react'
 
-import type { Nullable, ReactionTypes } from '@audius/common'
-import { chatActions, encodeHashId, accountSelectors } from '@audius/common'
+import type { ReactionTypes } from '@audius/common'
+import { chatActions, accountSelectors } from '@audius/common'
 import type { ChatMessageWithExtras } from '@audius/common/models'
+import { encodeHashId } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

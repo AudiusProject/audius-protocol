@@ -1,12 +1,7 @@
 import { useCallback } from 'react'
 
 import {
-  Genre,
-  removeNullable,
   playerSelectors,
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   accountSelectors,
   trackPageLineupActions,
   tracksSocialActions,
@@ -41,6 +36,13 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  removeNullable
+} from '@audius/common/utils'
 import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

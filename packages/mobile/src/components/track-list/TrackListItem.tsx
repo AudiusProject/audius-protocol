@@ -5,8 +5,6 @@ import {
   cacheCollectionsSelectors,
   FeatureFlags,
   playbackPositionSelectors,
-  Genre,
-  removeNullable,
   OverflowAction,
   OverflowSource,
   mobileOverflowMenuUIActions,
@@ -17,6 +15,7 @@ import {
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import { Genre, removeNullable } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,

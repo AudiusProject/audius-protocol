@@ -1,5 +1,5 @@
 import { TrackDownload as TrackDownloadBase } from '@audius/common'
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { Platform, Share } from 'react-native'
 import type {
   FetchBlobResponse,

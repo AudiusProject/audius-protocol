@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import type { EnhancedCollectionTrack, CommonState } from '@audius/common'
 import {
-  removeNullable,
   playerSelectors,
   accountSelectors,
   cacheCollectionsSelectors,
@@ -25,6 +24,7 @@ import {
   SquareSizes
 } from '@audius/common/models'
 import type { Collection, Track, User } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionImage } from 'app/components/image/CollectionImage'

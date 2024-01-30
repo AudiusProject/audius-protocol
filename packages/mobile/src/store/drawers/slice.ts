@@ -1,5 +1,5 @@
-import type { Nullable } from '@audius/common'
 import type { ID } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
