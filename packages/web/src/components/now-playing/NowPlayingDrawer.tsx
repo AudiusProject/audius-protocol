@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import ConnectedBottomBar from 'components/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 
@@ -380,7 +380,7 @@ const NowPlayingDrawer = ({
         }}
       >
         <animated.div className={styles.header} style={headerFadeProps}>
-          <AudiusLogo />
+          <IconAudiusLogoHorizontal color='subdued' sizeH='l' width='auto' />
         </animated.div>
 
         <animated.div className={styles.playBar} style={playBarFadeProps}>
