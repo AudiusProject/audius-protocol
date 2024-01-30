@@ -1,12 +1,12 @@
 import type { FunctionComponent } from 'react'
 
-import type { IconProps as HarmonyIconProps } from '@audius/harmony'
+import { type IconProps as HarmonyIconProps } from '@audius/harmony'
 import type { SvgProps } from 'react-native-svg'
 
 export type IconProps = SvgProps & HarmonyIconProps & { fillSecondary?: string }
 export type Icon = FunctionComponent<IconProps>
 
-export { default as IconAlbum } from '@audius/harmony/src/assets/icons/Album.svg'
+export { default as IconAlbum } from '@audiusC/harmony/src/assets/icons/Album.svg'
 export { default as IconFilter } from '@audius/harmony/src/assets/icons/Filter.svg'
 export { default as IconSearch } from '@audius/harmony/src/assets/icons/Search.svg'
 export { default as IconAllTime } from '@audius/harmony/src/assets/icons/AllTime.svg'
@@ -157,7 +157,8 @@ export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/Tok
 export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
 export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
 export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
-export { default as IconTokenNoTier } from '@audius/harmony/src/assets/icons/TokenNoTier.svg'
+// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
+export { IconTokenNoTier } from './components/IconTokenNoTier'
 
 // File Types
 export { default as IconFile3GA } from '@audius/harmony/src/assets/icons/file3GA.svg'
