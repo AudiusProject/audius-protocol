@@ -19,4 +19,3 @@ WORKDIR /root/
 COPY --from=builder /app/ingester .
 
 CMD ["./ingester"]
-
