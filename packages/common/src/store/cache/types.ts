@@ -21,7 +21,7 @@ export type Metadata = {
 
 export type SubscriberInfo = {
   uid: UID
-  id?: string | number
+  id: string | number
 }
 
 export type SubscriptionInfo = SubscriberInfo & {
