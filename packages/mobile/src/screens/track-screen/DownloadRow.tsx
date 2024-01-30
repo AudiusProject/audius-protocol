@@ -1,22 +1,12 @@
-import { useCallback } from 'react'
-
 import type { CommonState, ID, DownloadQuality } from '@audius/common'
-import {
-  Name,
-  cacheTracksSelectors,
-  tracksSocialActions,
-  useDownloadableContentAccess
-} from '@audius/common'
+import { cacheTracksSelectors } from '@audius/common'
 import { css } from '@emotion/native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Flex, Text, IconReceive, Box } from '@audius/harmony-native'
 import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/PlainButton'
-import { useToast } from 'app/hooks/useToast'
-import { make, track as trackAnalytics } from 'app/services/analytics'
 
 const { getTrack } = cacheTracksSelectors
-const { downloadTrack } = tracksSocialActions
 
 const messages = {
   fullTrack: 'Full Track',

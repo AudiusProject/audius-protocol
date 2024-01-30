@@ -198,8 +198,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         expanded={isExpanded}
         onToggleExpand={onToggleExpand}
       >
-        {/* {track?.is_original_available ? ( */}
-        {true ? (
+        {track?.is_original_available ? (
           <Flex p='l' borderTop='default' gap='l' alignItems='flex-start'>
             <Text variant='title'>{messages.choose}</Text>
             <SegmentedControl

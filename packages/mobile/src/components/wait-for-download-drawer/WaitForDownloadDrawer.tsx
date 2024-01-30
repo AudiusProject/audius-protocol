@@ -10,7 +10,6 @@ import {
   Flex,
   useTheme
 } from '@audius/harmony-native'
-// import { Divider } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 
 import LoadingSpinner from '../loading-spinner'
@@ -34,7 +33,7 @@ export const WaitForDownloadDrawer = () => {
   )
   const trackName =
     track?.orig_filename && track?.orig_filename?.length > 0
-      ? track?.orig_filename
+      ? track.orig_filename
       : track?.title
 
   return (

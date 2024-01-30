@@ -711,7 +711,7 @@ function* downloadTrackV1(
   let filename
   if (track.stem_of?.parent_track_id) {
     const parentTrack = yield* select(getTrack, {
-      id: track.stem_of?.parent_track_id
+      id: track.stem_of.parent_track_id
     })
     filename = `${parentTrack?.title} - ${stemName} - ${user.name} (Audius).mp3`
   } else {
