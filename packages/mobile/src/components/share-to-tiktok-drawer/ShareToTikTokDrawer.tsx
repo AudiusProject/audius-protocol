@@ -171,7 +171,6 @@ export const ShareToTikTokDrawer = () => {
             disabled={isButtonDisabled}
             onPress={handleShareButtonClick}
             icon={<IconTikTok />}
-            I
             title={messages.shareButton}
           />
         </View>
