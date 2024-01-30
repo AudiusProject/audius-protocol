@@ -4,7 +4,7 @@ import { trimToAlphaNumeric } from '@audius/common'
 import Tag from 'antd/lib/tag'
 import cn from 'classnames'
 
-import IconRemove from 'assets/img/iconRemove.svg'
+import { IconClose as IconRemove } from '@audius/harmony'
 import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './TagInput.module.css'

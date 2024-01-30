@@ -11,7 +11,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'

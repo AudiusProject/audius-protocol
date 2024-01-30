@@ -28,7 +28,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCopy from 'assets/img/iconCopy.svg'
+import { IconCopy as IconCopy } from '@audius/harmony'
 import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'

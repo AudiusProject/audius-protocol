@@ -13,7 +13,7 @@ import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useToggle } from 'react-use'
 
-import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
+import { IconCaretDown as IconCaretDown } from '@audius/harmony'
 import { Divider } from 'components/divider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

@@ -9,7 +9,7 @@ import {
 import { Modal, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
-import IconRemove from 'assets/img/iconRemove.svg'
+import { IconClose as IconRemove } from '@audius/harmony'
 import Switch from 'components/switch/Switch'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'

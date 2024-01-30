@@ -9,7 +9,7 @@ import iconFileMp3 from 'assets/img/iconFileMp3.svg'
 import iconFileOgg from 'assets/img/iconFileOgg.svg'
 import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
 import iconFileWav from 'assets/img/iconFileWav.svg'
-import IconRemove from 'assets/img/iconRemove.svg'
+import { IconClose as IconRemove } from '@audius/harmony'
 import PreviewButton from 'components/upload/PreviewButton'
 
 import styles from './TrackPreview.module.css'

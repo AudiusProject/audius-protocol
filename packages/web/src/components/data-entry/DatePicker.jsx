@@ -7,7 +7,7 @@ import moment from 'moment'
 import PropTypes from 'prop-types'
 import { SingleDatePicker, isInclusivelyBeforeDay } from 'react-dates'
 
-import IconCalendar from 'assets/img/iconCalendar.svg'
+import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 
 import styles from './DatePicker.module.css'
 

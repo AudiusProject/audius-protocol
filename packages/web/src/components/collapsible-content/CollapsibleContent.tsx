@@ -5,8 +5,8 @@ import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
-import IconCaretDownLine from 'assets/img/iconCaretDownLine.svg'
-import IconCaretUpLine from 'assets/img/iconCaretUpLine.svg'
+import { IconCaretDown as IconCaretDownLine } from '@audius/harmony'
+import { IconCaretUp as IconCaretUpLine } from '@audius/harmony'
 
 import styles from './CollapsibleContent.module.css'
 

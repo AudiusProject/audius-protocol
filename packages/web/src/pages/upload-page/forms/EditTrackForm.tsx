@@ -9,7 +9,7 @@ import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'

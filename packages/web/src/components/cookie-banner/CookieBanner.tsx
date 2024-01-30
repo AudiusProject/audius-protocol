@@ -5,7 +5,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconRemove from 'assets/img/iconRemove.svg'
+import { IconClose as IconRemove } from '@audius/harmony'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
 import { AppState } from 'store/types'

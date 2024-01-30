@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops.cjs'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
 import IconSend from 'assets/img/iconSend.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 

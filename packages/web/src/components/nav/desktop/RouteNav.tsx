@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { goBack, goForward } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
+import { IconCaretRight as IconCaretRight } from '@audius/harmony'
 
 import styles from './RouteNav.module.css'
 

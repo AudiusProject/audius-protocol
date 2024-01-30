@@ -4,7 +4,7 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import IconUpload from 'assets/img/iconUpload.svg'
+import { IconCloudUpload as IconUpload } from '@audius/harmony'
 
 import styles from './UploadStub.module.css'
 

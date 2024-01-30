@@ -12,7 +12,7 @@ import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconCopy from 'assets/img/iconCopy.svg'
+import { IconCopy as IconCopy } from '@audius/harmony'
 import IconRemove from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'

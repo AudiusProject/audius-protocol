@@ -2,11 +2,11 @@ import type { ComponentType, SVGProps } from 'react'
 
 import type { Nullable } from '@audius/common'
 
-import IconAllowAttribution from 'assets/img/creativeCommons/by.svg'
-import IconCreativeCommons from 'assets/img/creativeCommons/cc.svg'
-import IconNonCommercialUse from 'assets/img/creativeCommons/nc.svg'
-import IconNoDerivatives from 'assets/img/creativeCommons/nd.svg'
-import IconShareAlike from 'assets/img/creativeCommons/sa.svg'
+import { IconCcBy as IconAllowAttribution } from '@audius/harmony'
+import { IconCcCC as IconCreativeCommons } from '@audius/harmony'
+import { IconCcNC as IconNonCommercialUse } from '@audius/harmony'
+import { IconCcND as IconNoDerivatives } from '@audius/harmony'
+import { IconCcSA as IconShareAlike } from '@audius/harmony'
 
 export const computeLicenseIcons = (
   allowAttribution: boolean,

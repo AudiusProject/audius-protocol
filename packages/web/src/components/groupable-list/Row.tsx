@@ -3,7 +3,7 @@ import { ComponentType, ReactNode } from 'react'
 import cn from 'classnames'
 import { Link, LinkProps } from 'react-router-dom'
 
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
+import { IconCaretRight as IconCaretRight } from '@audius/harmony'
 
 import styles from './Row.module.css'
 

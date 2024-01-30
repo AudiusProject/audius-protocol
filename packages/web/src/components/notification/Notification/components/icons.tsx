@@ -3,7 +3,6 @@ import { ReactNode } from 'react'
 import { IconAudiusLogo, useTheme } from '@audius/harmony'
 import { IconCart as IconCartBase } from '@audius/stems'
 
-// import IconCartBase from 'assets/img/iconCart.svg'
 import IconHeart from 'assets/img/iconHeart.svg'
 import IconPlaylist from 'assets/img/iconPlaylists.svg'
 import IconRemixBase from 'assets/img/iconRemix.svg'

@@ -13,7 +13,7 @@ import {
   DayPickerSingleDateController
 } from 'react-dates'
 
-import IconCalendar from 'assets/img/iconCalendar.svg'
+import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 
 import styles from './DatePickerField.module.css'
 

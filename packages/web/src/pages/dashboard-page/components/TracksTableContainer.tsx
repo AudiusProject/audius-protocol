@@ -12,7 +12,7 @@ import {
 } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconClose from 'assets/img/iconRemove.svg'
+import { IconClose as IconClose } from '@audius/harmony'
 import { Input } from 'components/input'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 

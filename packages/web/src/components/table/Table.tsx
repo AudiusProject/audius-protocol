@@ -27,10 +27,10 @@ import {
   WindowScroller
 } from 'react-virtualized'
 
-import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
-import IconCaretUp from 'assets/img/iconCaretUpLine.svg'
+import { IconCaretDown as IconCaretDown } from '@audius/harmony'
+import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
+import { IconCaretRight as IconCaretRight } from '@audius/harmony'
+import { IconCaretUp as IconCaretUp } from '@audius/harmony'
 import { Draggable, Droppable } from 'components/dragndrop'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'

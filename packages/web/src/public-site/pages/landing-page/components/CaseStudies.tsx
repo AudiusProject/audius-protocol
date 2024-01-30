@@ -4,7 +4,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
+import { IconCaretRight as IconCaretRight } from '@audius/harmony'
 import imgMerch from 'assets/img/publicSite/ImgMerch.jpg'
 import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import useCardWeight from 'hooks/useCardWeight'
