@@ -21,15 +21,6 @@
   color: var(--neutral-light-2);
 }
 
-.logoIcon {
-  width: 22px;
-  height: 22px;
-}
-
-.logoIcon path {
-  fill: var(--neutral-light-2);
-}
-
 .subheader {
   padding: 0 var(--unit-12);
 

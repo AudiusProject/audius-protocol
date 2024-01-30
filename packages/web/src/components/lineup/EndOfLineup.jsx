@@ -2,7 +2,7 @@ import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 
-import LogoSVG from 'assets/img/audiusLogoGlyph.svg'
+import { IconAudiusLogo } from '@audius/harmony'
 
 import styles from './EndOfLineup.module.css'
 
@@ -11,7 +11,7 @@ export const EndOfLineup = (props) => {
 
   return (
     <div className={styles.endOfLineup} key='endOfLineup'>
-      <LogoSVG className={styles.endOfLineupLogo} />
+      <IconAudiusLogo color='subdued' size='2xl' />
       <div className={styles.endTitle}>{title}</div>
       <div className={styles.endDescriptionContainer}>
         <div className={styles.divider} />

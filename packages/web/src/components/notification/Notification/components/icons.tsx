@@ -2,7 +2,6 @@ import { ReactNode } from 'react'
 
 import { IconCart as IconCartBase } from '@audius/stems'
 
-import IconAudius from 'assets/img/iconAudius.svg'
 // import IconCartBase from 'assets/img/iconCart.svg'
 import IconHeart from 'assets/img/iconHeart.svg'
 import IconPlaylist from 'assets/img/iconPlaylists.svg'
@@ -16,6 +15,7 @@ import IconTrophy from 'assets/img/iconTrophy.svg'
 import IconUser from 'assets/img/iconUser.svg'
 
 import styles from './icons.module.css'
+import { IconAudiusLogo, useTheme } from '@audius/harmony'
 
 export const IconFollow = () => {
   return <IconUser className={styles.iconFollow} />
@@ -66,7 +66,10 @@ export const IconTip = () => {
 }
 
 export const IconAnnouncement = () => {
-  return <IconAudius className={styles.iconAnnouncement} />
+  const { spacing } = useTheme()
+  return (
+    <IconAudiusLogo size='l' color='accent' css={{ marginRight: spacing.s }} />
+  )
 }
 
 export const IconAddTrackToPlaylist = () => {
