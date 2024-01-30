@@ -11,7 +11,7 @@ import BN from 'bn.js'
 import { TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
+import { IconQuestionCircle } from '@audius/harmony-native'
 import LogoUSDCInverted from 'app/assets/images/logoUSDCInverted.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'

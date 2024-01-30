@@ -4,8 +4,7 @@ import { accountSelectors, challengesSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconValidationCheck from 'app/assets/images/iconValidationCheck.svg'
+import { IconArrowRight, IconValidationCheck } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
@@ -54,7 +53,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-const renderArrowIcon = (color) => <IconArrow fill={color} />
+const renderArrowIcon = (color) => <IconArrowRight fill={color} />
 
 export const ProfileCompletionChecks = ({
   isComplete,

@@ -8,8 +8,7 @@ import {
 } from '@audius/common'
 import { View } from 'react-native'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconKebabHorizontal, IconShare } from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'

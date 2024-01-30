@@ -6,6 +6,7 @@ import IconPlaybackPauseSVG from '../assets/icons/PlaybackPause.svg'
 import IconPlaybackPlaySVG from '../assets/icons/PlaybackPlay.svg'
 import IconTokenBronzeSVG from '../assets/icons/TokenBronze.svg'
 import IconTokenGoldSVG from '../assets/icons/TokenGold.svg'
+import IconTokenNoTierSVG from '../assets/icons/TokenNoTier.svg'
 import IconTokenPlatinumSVG from '../assets/icons/TokenPlatinum.svg'
 import IconTokenSilverSVG from '../assets/icons/TokenSilver.svg'
 import IconVerifiedSVG from '../assets/icons/Verified.svg'
@@ -70,6 +71,7 @@ export const IconTokenBronze = IconTokenBronzeSVG as IconComponent
 export const IconTokenGold = IconTokenGoldSVG as IconComponent
 export const IconTokenPlatinum = IconTokenPlatinumSVG as IconComponent
 export const IconTokenSilver = IconTokenSilverSVG as IconComponent
+export const IconTokenNoTier = IconTokenNoTierSVG as IconComponent
 
 // File Types
 export const IconFile3GA = IconFile3GASVG as IconComponent

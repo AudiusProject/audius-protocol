@@ -14,7 +14,7 @@ import {
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrophy } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'

@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { makeTwitterShareUrl } from '@audius/common'
 import { Linking } from 'react-native'
 
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { IconTwitter } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import { makeStyles } from 'app/styles'
 
@@ -21,9 +21,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-const renderIcon = () => (
-  <IconTwitterBird fill={'white'} width={24} height={24} />
-)
+const renderIcon = () => <IconTwitter fill={'white'} width={24} height={24} />
 
 const messages = {
   buttonTitleFriends: 'Share Invite With Your Friends',

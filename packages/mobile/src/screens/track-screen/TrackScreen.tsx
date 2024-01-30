@@ -11,7 +11,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
@@ -147,7 +147,7 @@ export const TrackScreen = () => {
               <View style={styles.buttonContainer}>
                 <Button
                   title={messages.viewOtherRemixes}
-                  icon={IconArrow}
+                  icon={IconArrowRight}
                   variant='primary'
                   size='small'
                   onPress={handlePressGoToRemixes}

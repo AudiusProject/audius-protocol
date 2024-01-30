@@ -9,7 +9,7 @@ import BN from 'bn.js'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
+import { IconInfo } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'

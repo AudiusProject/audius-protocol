@@ -4,7 +4,7 @@ import type { User } from '@audius/common'
 import { Name, chatActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import IconMessage from 'app/assets/images/iconMessage.svg'
+import { IconMessage } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'

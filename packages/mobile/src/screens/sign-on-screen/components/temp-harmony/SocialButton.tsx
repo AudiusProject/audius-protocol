@@ -1,6 +1,4 @@
-import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
-import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
+import { IconInstagram, IconTikTok, IconTwitter } from '@audius/harmony-native'
 import { Button, type ButtonProps } from 'app/components/core'
 
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'

@@ -8,7 +8,7 @@ import {
   Entity
 } from '@audius/common'
 
-import IconHeart from 'app/assets/images/iconHeart.svg'
+import { IconHeart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

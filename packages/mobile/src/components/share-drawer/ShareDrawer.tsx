@@ -16,13 +16,15 @@ import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconLink from 'app/assets/images/iconLink.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
-import IconSnapchat from 'app/assets/images/iconSnapchat.svg'
-import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import {
+  IconInstagram,
+  IconLink,
+  IconMessage,
+  IconShare,
+  IconSnapChat,
+  IconTwitter,
+  IconTikTok
+} from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -191,20 +193,20 @@ export const ShareDrawer = () => {
     }
 
     const shareToTwitterAction = {
-      icon: <IconTwitterBird fill={secondary} height={20} width={26} />,
+      icon: <IconTwitter fill={secondary} height={20} width={26} />,
       text: messages.twitter,
       callback: performActionAndClose(handleShareToTwitter)
     }
 
     const shareSoundToTiktokAction = {
       text: messages.tikTokSound,
-      icon: <TikTokIcon height={26} width={26} />,
+      icon: <IconTikTok height={26} width={26} />,
       callback: performActionAndClose(handleShareSoundToTikTok)
     }
 
     const shareVideoToTiktokAction = {
       text: messages.tikTokVideo,
-      icon: <TikTokIcon fill={secondary} height={26} width={26} />,
+      icon: <IconTikTok fill={secondary} height={26} width={26} />,
       callback: handleShareVideoToTiktok
     }
 
@@ -222,7 +224,7 @@ export const ShareDrawer = () => {
 
     const shareToSnapchatAction = {
       text: messages.snapchat,
-      icon: <IconSnapchat fill={secondary} height={26} width={26} />,
+      icon: <IconSnapChat fill={secondary} height={26} width={26} />,
       callback: handleShareToSnapchat
     }
 

@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
+import { IconListeningHistory } from '@audius/harmony-native'
 import {
   Screen,
   ScreenContent,

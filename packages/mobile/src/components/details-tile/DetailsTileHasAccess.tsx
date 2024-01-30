@@ -12,9 +12,11 @@ import {
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import {
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { LockedStatusBadge, Text, useLink } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'

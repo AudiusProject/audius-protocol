@@ -24,9 +24,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCheck from 'app/assets/images/iconValidationCheck.svg'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import {
+  IconArrowRight,
+  IconCheck,
+  IconMultiselectRemove
+} from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
@@ -246,7 +248,7 @@ const Checkbox = ({
     return (
       <View style={styles.checkboxContainer}>
         <Animated.View style={animatedStyles}>
-          <ValidationIconX style={styles.iconCheck} />
+          <IconMultiselectRemove style={styles.iconCheck} />
         </Animated.View>
         <View style={styles.unchecked} />
         <Text
@@ -436,7 +438,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
           isWorking ? (
             <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
           ) : (
-            <IconArrow style={styles.arrowIcon} fill='white' />
+            <IconArrowRight style={styles.arrowIcon} fill='white' />
           )
         }
       />
