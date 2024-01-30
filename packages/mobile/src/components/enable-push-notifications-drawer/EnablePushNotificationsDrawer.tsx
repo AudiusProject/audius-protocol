@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
-  IconCoSign,
+  IconCosign,
   IconUserFollow,
   IconNotificationOn,
   IconHeart,
@@ -50,7 +50,7 @@ const actions = [
   },
   {
     label: messages.coSigns,
-    icon: IconCoSign
+    icon: IconCosign
   },
   {
     label: messages.remixes,
