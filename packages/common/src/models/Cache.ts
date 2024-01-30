@@ -11,8 +11,8 @@ export type Cache<T> = {
   entries: { [id: number]: Cacheable<T> }
   statuses: { [id: number]: Status }
   uids: { [uid: string]: ID }
-  subscribers: { [id: number]: Set<UID> }
-  subscriptions: { [id: number]: Set<{ uid: UID; kind: Kind }> }
+  subscribers: { [id: number | string]: Set<UID> }
+  subscriptions: { [id: number | string]: Set<{ uid: UID; kind: Kind }> }
   idsToPrune: Set<ID>
   entryTTL: number
 }

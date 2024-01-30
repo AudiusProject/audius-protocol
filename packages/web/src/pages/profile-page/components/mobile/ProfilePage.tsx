@@ -16,9 +16,9 @@ import {
   badgeTiers,
   useSelectTierInfo
 } from '@audius/common'
+import { IconAlbum } from '@audius/harmony'
 import cn from 'classnames'
 
-import { IconAlbum } from '@audius/harmony'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'

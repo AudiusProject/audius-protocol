@@ -98,7 +98,7 @@ type SetPageAction = {
   page: number
 }
 
-type LineupActions<T> =
+export type LineupActions<T> =
   | SetInViewAction
   | FetchLineupMetadatasRequestedAction
   | FetchLineupMetadatasSucceededAction<T>

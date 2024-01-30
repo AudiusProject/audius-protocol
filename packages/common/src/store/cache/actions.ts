@@ -1,8 +1,15 @@
-import { ID, UID } from 'models/Identifiers'
+import { ID } from 'models/Identifiers'
 import { Kind } from 'models/Kind'
 import { Status } from 'models/Status'
 
-import { Metadata } from './types'
+import {
+  CacheType,
+  EntriesByKind,
+  Entry,
+  Metadata,
+  SubscriberInfo,
+  SubscriptionInfo
+} from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
@@ -17,13 +24,6 @@ export const REMOVE = 'CACHE/REMOVE'
 export const REMOVE_SUCCEEDED = 'CACHE/REMOVE_SUCCEEDED'
 export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
-
-export type Entry<EntryT extends Metadata = Metadata> = {
-  id: ID
-  uid?: UID
-  metadata: EntryT
-  timestamp?: number
-}
 
 type BaseAddAction<EntryT extends Metadata = Metadata> = {
   kind: Kind
@@ -76,10 +76,6 @@ export const addSucceeded = ({
   persist
 })
 
-export type EntriesByKind<EntryT extends Metadata = Metadata> = {
-  [key in Kind]?: Entry<EntryT>[]
-}
-
 export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
   type: typeof ADD_ENTRIES
   entriesByKind: EntriesByKind<EntryT>
@@ -102,10 +98,6 @@ export const addEntries = (
   replace,
   persist
 })
-
-type SubscriptionInfo = SubscriberInfo & {
-  kind: Kind
-}
 
 /**
  * Updates an entry in the cache. Can also add transitive cache subscriptions.
@@ -139,7 +131,7 @@ export const increment = (kind: Kind, entries: Entry[]) => ({
  * Sets the status of an entry from the cache as to be removed. The
  * entries actually get removed by the removeSucceeded action
  */
-export const remove = (kind: Kind, ids: ID[]) => ({
+export const remove = (kind: Kind, ids: (ID | string)[]) => ({
   type: REMOVE,
   kind,
   ids
@@ -165,11 +157,6 @@ export const setStatus = (
   kind,
   statuses
 })
-
-type SubscriberInfo = {
-  uid: UID
-  id?: string | number
-}
 
 /**
  * Subscribes uids to ids in the cache.
@@ -211,8 +198,6 @@ export const setExpired = (kind: Kind, id: ID) => ({
   kind,
   id
 })
-
-export type CacheType = 'normal' | 'fast' | 'safe-fast'
 
 export type SetCacheConfigAction = {
   cacheType: CacheType
