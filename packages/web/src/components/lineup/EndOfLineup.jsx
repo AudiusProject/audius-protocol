@@ -1,8 +1,7 @@
 import { memo } from 'react'
 
-import PropTypes from 'prop-types'
-
 import { IconAudiusLogo } from '@audius/harmony'
+import PropTypes from 'prop-types'
 
 import styles from './EndOfLineup.module.css'
 

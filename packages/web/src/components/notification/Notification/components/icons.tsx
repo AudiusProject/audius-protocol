@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { IconAudiusLogo, useTheme } from '@audius/harmony'
 import { IconCart as IconCartBase } from '@audius/stems'
 
 // import IconCartBase from 'assets/img/iconCart.svg'
@@ -15,7 +16,6 @@ import IconTrophy from 'assets/img/iconTrophy.svg'
 import IconUser from 'assets/img/iconUser.svg'
 
 import styles from './icons.module.css'
-import { IconAudiusLogo, useTheme } from '@audius/harmony'
 
 export const IconFollow = () => {
   return <IconUser className={styles.iconFollow} />

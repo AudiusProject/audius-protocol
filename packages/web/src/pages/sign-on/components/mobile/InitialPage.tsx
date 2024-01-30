@@ -18,7 +18,6 @@ import signupCtaImage from 'assets/img/signUpCTA.png'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import PreloadImage from 'components/preload-image/PreloadImage'
 import { StatusMessage } from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
@@ -249,11 +248,7 @@ const SignIn = ({
   return (
     <div className={styles.topContainer}>
       <Flex>
-        <PreloadImage
-          src={audiusLogoHorizontal}
-          className={styles.logo}
-          alt='Audius Colored Logo'
-        />
+        <IconAudiusLogoHorizontalColor className={styles.logo} />
       </Flex>
       <select style={{ display: 'none' }} />
       <h1 className={styles.signInDescription}>{messages.signinDescription}</h1>

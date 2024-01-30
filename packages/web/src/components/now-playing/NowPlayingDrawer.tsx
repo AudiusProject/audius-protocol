@@ -1,12 +1,12 @@
 import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar, nowPlayingUIActions } from '@audius/common'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import ConnectedBottomBar from 'components/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { MobileOS } from '@audius/common'
+import { IconAudiusLogo } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -10,7 +11,6 @@ import {
   IconUpload,
   IconSpeaker
 } from '@audius/stems'
-import { IconAudiusLogo } from '@audius/harmony'
 
 import Drawer from 'components/drawer/Drawer'
 import { getMobileOS } from 'utils/clientUtil'
