@@ -20,6 +20,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import Switch from 'components/switch/Switch'
 import { Dropzone } from 'components/upload/Dropzone'
+import { stemDropdownRows } from 'utils/stems'
 
 import styles from './SourceFilesModal.module.css'
 
@@ -41,21 +42,6 @@ const defaultDownloadSettings: Download = {
   cid: null
 }
 
-export const dropdownRows = [
-  StemCategory.INSTRUMENTAL,
-  StemCategory.LEAD_VOCALS,
-  StemCategory.MELODIC_LEAD,
-  StemCategory.PAD,
-  StemCategory.SNARE,
-  StemCategory.KICK,
-  StemCategory.HIHAT,
-  StemCategory.PERCUSSION,
-  StemCategory.SAMPLE,
-  StemCategory.BACKING_VOX,
-  StemCategory.BASS,
-  StemCategory.OTHER
-]
-
 type StemRowProps = {
   stem: StemUpload
   didSelectCategory: (category: StemCategory) => void
@@ -68,11 +54,11 @@ const StemRow = ({
   onDelete
 }: StemRowProps) => {
   const onSelectIndex = (index: number) => {
-    const cat = dropdownRows[index]
+    const cat = stemDropdownRows[index]
     didSelectCategory(cat)
   }
 
-  let stemIndex = dropdownRows.findIndex((r) => r === category)
+  let stemIndex = stemDropdownRows.findIndex((r) => r === category)
   if (stemIndex === -1) {
     console.error(`Couldn't find stem row for category: ${category}`)
     stemIndex = 0
@@ -104,7 +90,7 @@ const StemRow = ({
         <Dropdown
           size='medium'
           menu={{
-            items: dropdownRows.map((r) => ({
+            items: stemDropdownRows.map((r) => ({
               text: stemCategoryFriendlyNames[r]
             }))
           }}

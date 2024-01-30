@@ -17,11 +17,12 @@ import { z } from 'zod'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'
 
 import { USDCPurchaseRemoteConfig } from './AccessAndSaleField'
-import { StemFilesView, dropdownRows as stemCategories } from './StemFilesView'
+import { StemFilesView } from './StemFilesView'
 import styles from './StemsAndDownloadsField.module.css'
 import { SwitchRowField } from './SwitchRowField'
 import { DownloadAvailability } from './download-availability/DownloadAvailability'
@@ -223,7 +224,7 @@ export const StemsAndDownloadsMenuFields = () => {
       const detectCategory = (filename: string): StemCategory => {
         const lowerCaseFilename = filename.toLowerCase()
         return (
-          stemCategories.find((category) =>
+          stemDropdownRows.find((category) =>
             lowerCaseFilename.includes(category.toString().toLowerCase())
           ) ?? StemCategory.OTHER
         )

@@ -21,7 +21,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
+import { stemDropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { AppState } from 'store/types'
@@ -160,7 +160,7 @@ const EditTrackModal = ({
         ...p,
         allowDelete: true,
         allowCategorySwitch: true,
-        category: dropdownRows[0]
+        category: stemDropdownRows[0]
       }))
 
     setPendingUploads((s) => [...s, ...processed])

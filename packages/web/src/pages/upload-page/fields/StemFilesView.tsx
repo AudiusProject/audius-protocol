@@ -17,6 +17,7 @@ import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesView.module.css'
 
@@ -143,21 +144,6 @@ export const StemFilesView = ({
   )
 }
 
-export const dropdownRows = [
-  StemCategory.INSTRUMENTAL,
-  StemCategory.LEAD_VOCALS,
-  StemCategory.MELODIC_LEAD,
-  StemCategory.PAD,
-  StemCategory.SNARE,
-  StemCategory.KICK,
-  StemCategory.HIHAT,
-  StemCategory.PERCUSSION,
-  StemCategory.SAMPLE,
-  StemCategory.BACKING_VOX,
-  StemCategory.BASS,
-  StemCategory.OTHER
-]
-
 type StemListItemProps = {
   stem: StemUpload
   didSelectCategory: (category: StemCategory) => void
@@ -170,11 +156,11 @@ const StemListItem = ({
   onDelete
 }: StemListItemProps) => {
   const onSelectIndex = (index: number) => {
-    const cat = dropdownRows[index]
+    const cat = stemDropdownRows[index]
     didSelectCategory(cat)
   }
 
-  let stemIndex = dropdownRows.findIndex((r) => r === category)
+  let stemIndex = stemDropdownRows.findIndex((r) => r === category)
   if (stemIndex === -1) {
     console.error(`Couldn't find stem row for category: ${category}`)
     stemIndex = 0
@@ -206,7 +192,7 @@ const StemListItem = ({
         <Dropdown
           size='medium'
           menu={{
-            items: dropdownRows.map((r) => ({
+            items: stemDropdownRows.map((r) => ({
               text: stemCategoryFriendlyNames[r]
             }))
           }}
