@@ -27,6 +27,7 @@ import { ClaimableTokensProgram, RewardManagerProgram } from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
 const CLAIMABLE_TOKEN_PROGRAM_ID: string = config.get(
   'solanaClaimableTokenProgramAddress'
 )
@@ -438,6 +439,7 @@ export const assertRelayAllowedInstructions = async (
       case Secp256k1Program.programId.toBase58():
       case PAYMENT_ROUTER_PROGRAM_ID:
       case MEMO_PROGRAM_ID:
+      case MEMO_V2_PROGRAM_ID:
         // All instructions of these programs are allowed
         break
       default:
