@@ -1,5 +1,4 @@
 import { PlayableType, ID } from '@audius/common/models'
-import {} from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
 
 export const OPEN = 'EMBED_MODAL/OPEN'

@@ -1,8 +1,6 @@
 import { memo, useCallback } from 'react'
 
 import { ID, CoverArtSizes } from '@audius/common/models'
-
-import {} from '@audius/common'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 

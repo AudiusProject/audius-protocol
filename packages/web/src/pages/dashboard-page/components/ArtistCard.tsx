@@ -1,5 +1,4 @@
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
-import {} from '@audius/common'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Text } from 'components/typography'

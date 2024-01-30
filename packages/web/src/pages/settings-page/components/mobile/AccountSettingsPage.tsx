@@ -1,8 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'

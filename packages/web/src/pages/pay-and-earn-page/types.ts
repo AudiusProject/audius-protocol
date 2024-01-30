@@ -2,7 +2,6 @@ import {
   USDCPurchaseDetails,
   USDCTransactionDetails
 } from '@audius/common/models'
-import {} from '@audius/common'
 import { Cell, Row } from 'react-table'
 
 export enum TableType {

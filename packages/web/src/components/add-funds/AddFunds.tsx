@@ -1,9 +1,7 @@
-import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-
 import { useState } from 'react'
 
-import {} from '@audius/common'
 import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import { Box, Button, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
 import { BN } from 'bn.js'

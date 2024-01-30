@@ -5,8 +5,6 @@ import {
   stemCategoryFriendlyNames,
   StemUpload
 } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { IconRemove, IconButton } from '@audius/stems'
 import cn from 'classnames'
 

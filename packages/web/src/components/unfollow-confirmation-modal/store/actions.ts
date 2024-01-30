@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import {} from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
 
 export const SET_OPEN = 'UNFOLLOW_CONFIRMATION/SET_OPEN'

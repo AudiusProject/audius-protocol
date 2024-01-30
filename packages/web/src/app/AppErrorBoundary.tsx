@@ -1,8 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
 import { ErrorLevel } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { ErrorBoundary, ErrorBoundaryProps } from 'react-error-boundary'
 import { useDispatch } from 'react-redux'
 

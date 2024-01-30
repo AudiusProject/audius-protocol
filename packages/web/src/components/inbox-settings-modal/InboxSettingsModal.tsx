@@ -1,9 +1,7 @@
-import { Status } from '@audius/common/models'
-
 import { ChangeEvent, useCallback, useEffect } from 'react'
 
-import {} from '@audius/common'
 import { useSetInboxPermissions } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,

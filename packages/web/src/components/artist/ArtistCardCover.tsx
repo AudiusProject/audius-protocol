@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

@@ -1,5 +1,4 @@
 import { Variant, Collection, SmartCollection } from '@audius/common/models'
-import {} from '@audius/common'
 
 export const computeCollectionMetadataProps = (
   metadata: Collection | SmartCollection | null

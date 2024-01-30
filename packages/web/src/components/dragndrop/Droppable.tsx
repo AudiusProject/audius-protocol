@@ -1,5 +1,3 @@
-import { ID } from '@audius/common/models'
-
 import {
   useState,
   useCallback,
@@ -8,8 +6,8 @@ import {
   ReactNode
 } from 'react'
 
-import {} from '@audius/common'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
 import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

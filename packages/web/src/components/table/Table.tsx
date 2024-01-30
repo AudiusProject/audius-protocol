@@ -8,8 +8,6 @@ import {
 } from 'react'
 
 import { Kind, ID, TrackMetadata } from '@audius/common/models'
-
-import {} from '@audius/common'
 import cn from 'classnames'
 import { debounce, range } from 'lodash'
 import moment from 'moment'

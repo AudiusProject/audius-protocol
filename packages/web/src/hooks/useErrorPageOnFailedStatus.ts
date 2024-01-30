@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { HandleErrorArgs, handleError } from 'store/errors/actions'

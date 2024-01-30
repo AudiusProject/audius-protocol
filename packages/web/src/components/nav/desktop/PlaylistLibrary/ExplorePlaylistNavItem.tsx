@@ -1,5 +1,4 @@
 import { SmartCollectionVariant } from '@audius/common/models'
-import {} from '@audius/common'
 
 import { SMART_COLLECTION_MAP } from 'common/store/smart-collection/smartCollections'
 

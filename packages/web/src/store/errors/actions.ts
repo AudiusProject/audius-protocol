@@ -3,7 +3,6 @@ import {
   AdditionalErrorReportInfo,
   ReportToSentryArgs
 } from '@audius/common/models'
-import {} from '@audius/common'
 
 export const HANDLE_ERROR = 'ERROR/HANDLE_ERROR'
 export const OPEN_ERROR_PAGE = 'ERROR/OPEN_ERROR_PAGE'

@@ -5,7 +5,6 @@ import {
   Track,
   StemTrack
 } from '@audius/common/models'
-import {} from '@audius/common'
 
 export const updateAndFlattenStems = (
   stems: StemUpload[][],

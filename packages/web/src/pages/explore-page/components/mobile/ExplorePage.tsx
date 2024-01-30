@@ -15,7 +15,7 @@ import {
   removeNullable
 } from '@audius/common'
 import {
-  Variant,
+  CollectionVariant,
   Status,
   UserCollection,
   SmartCollection,

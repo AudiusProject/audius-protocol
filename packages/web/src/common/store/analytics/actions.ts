@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
 import { Name, AllTrackingEvents } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { useDispatch as useDispatchRedux } from 'react-redux'
 
 /** UI EVENTS */

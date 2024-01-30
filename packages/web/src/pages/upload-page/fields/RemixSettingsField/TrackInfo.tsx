@@ -1,6 +1,5 @@
-import { SquareSizes, ID } from '@audius/common/models'
-import {} from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
+import { SquareSizes, ID } from '@audius/common/models'
 
 import { SelectedValue } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

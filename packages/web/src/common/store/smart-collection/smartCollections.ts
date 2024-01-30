@@ -3,7 +3,6 @@ import {
   SmartCollectionVariant,
   SmartCollection
 } from '@audius/common/models'
-import {} from '@audius/common'
 
 import IconExploreFeelingLucky from 'assets/img/iconExploreFeelingLucky.svg'
 import IconExploreMostLoved from 'assets/img/iconExploreMostLoved.svg'

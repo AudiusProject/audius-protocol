@@ -4,7 +4,6 @@ import {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
-import {} from '@audius/common'
 
 type NewType = SearchPlaylist
 

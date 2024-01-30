@@ -1,14 +1,12 @@
-import { User } from '@audius/common/models'
-
 import { useCallback } from 'react'
 
-import type {} from '@audius/common'
 import {
   profilePageSelectors,
   MAX_PROFILE_RELATED_ARTISTS,
   FeatureFlags
 } from '@audius/common'
 import { useGetRelatedArtists } from '@audius/common/api'
+import { User } from '@audius/common/models'
 import { IconUserGroup } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

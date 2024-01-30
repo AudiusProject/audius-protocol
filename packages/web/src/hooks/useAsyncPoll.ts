@@ -2,8 +2,6 @@ import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
 
-import {} from '@audius/common'
-
 type UseAsyncPoll = {
   // Call to make (usually an action), doesn't have to be async
   call: () => void

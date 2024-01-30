@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import {} from '@audius/common'
 
 export enum PinTrackAction {
   ADD = 'ADD',

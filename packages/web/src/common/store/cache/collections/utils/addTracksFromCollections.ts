@@ -1,6 +1,5 @@
 import { CollectionMetadata, UserTrackMetadata } from '@audius/common/models'
 // Move all to web
-import {} from '@audius/common'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 

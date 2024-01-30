@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

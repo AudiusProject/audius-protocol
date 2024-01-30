@@ -1,5 +1,4 @@
 import { ID, User } from '@audius/common/models'
-import {} from '@audius/common'
 
 import { ImageFieldValue } from 'pages/sign-up-page/components/ImageField'
 

@@ -1,8 +1,6 @@
 import { useCallback, MouseEvent } from 'react'
 
 import { Name, AllTrackingEvents } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { Tag } from '@audius/stems'
 import type { TagProps } from '@audius/stems'
 import { Link } from 'react-router-dom'

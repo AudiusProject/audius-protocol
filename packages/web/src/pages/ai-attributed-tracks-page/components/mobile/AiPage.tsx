@@ -1,8 +1,6 @@
 import { useEffect, useContext } from 'react'
 
 import { User } from '@audius/common/models'
-
-import {} from '@audius/common'
 import cn from 'classnames'
 
 import IconRobot from 'assets/img/iconRobot.svg'

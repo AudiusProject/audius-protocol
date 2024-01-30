@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import {} from '@audius/common'
 import cn from 'classnames'
 
 import IconRemix from 'assets/img/iconRemix.svg'

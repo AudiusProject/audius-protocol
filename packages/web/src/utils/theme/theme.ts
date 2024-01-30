@@ -1,5 +1,4 @@
 import { Theme } from '@audius/common/models'
-import {} from '@audius/common'
 
 import DarkTheme from './dark'
 import DefaultTheme from './default'

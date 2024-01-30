@@ -1,5 +1,4 @@
 import { TimeRange, ID, UID, Lineup, Track, User } from '@audius/common/models'
-import {} from '@audius/common'
 
 type ExtraTrendingLineupProps = {}
 

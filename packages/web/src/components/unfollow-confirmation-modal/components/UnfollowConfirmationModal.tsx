@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import {} from '@audius/common'
 
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 

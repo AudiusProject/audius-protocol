@@ -1,8 +1,6 @@
 import { ReactNode } from 'react'
 
 import { Client } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { IconArrowWhite } from '@audius/stems'
 import cn from 'classnames'
 

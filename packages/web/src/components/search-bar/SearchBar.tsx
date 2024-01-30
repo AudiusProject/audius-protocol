@@ -1,8 +1,6 @@
 import { ChangeEvent, KeyboardEvent } from 'react'
 
 import { Status } from '@audius/common/models'
-
-import {} from '@audius/common'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 

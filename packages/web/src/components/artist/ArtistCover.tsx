@@ -5,7 +5,6 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes
 } from '@audius/common/models'
-import {} from '@audius/common'
 
 import BadgeArtist from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

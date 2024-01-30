@@ -6,8 +6,6 @@ import {
   Track,
   User
 } from '@audius/common/models'
-
-import {} from '@audius/common'
 import { SelectablePill } from '@audius/harmony'
 import {
   IconHidden,
