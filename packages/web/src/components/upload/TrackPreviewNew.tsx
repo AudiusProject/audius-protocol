@@ -61,6 +61,7 @@ type TrackPreviewProps = {
   stemCategory?: StemCategory
   onEditStemCategory?: (stemCategory: StemCategory) => void
   isEdit?: boolean
+  isDisabled?: boolean
   className?: string
 }
 
@@ -82,6 +83,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     stemCategory,
     onEditStemCategory,
     isEdit,
+    isDisabled,
     className
   } = props
 
@@ -131,6 +133,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
+              isDisabled={isDisabled}
             />
           </Box>
         ) : null}
