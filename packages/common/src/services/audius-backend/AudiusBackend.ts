@@ -1448,10 +1448,7 @@ export const audiusBackend = ({
   // NOTE: This is called to explicitly set a playlist track ids w/out running validation checks.
   // This should NOT be used to set the playlist order
   // It's added for the purpose of manually fixing broken playlists
-  async function dangerouslySetPlaylistOrder(
-    playlistId: ID,
-    trackIds: PlaylistTrackId[]
-  ) {
+  async function dangerouslySetPlaylistOrder(playlistId: ID, trackIds: ID[]) {
     try {
       await audiusLibs.contracts.PlaylistFactoryClient.orderPlaylistTracks(
         playlistId,
