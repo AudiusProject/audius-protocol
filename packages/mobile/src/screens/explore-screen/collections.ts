@@ -5,8 +5,7 @@ import type { SvgProps } from 'react-native-svg'
 
 import {
   IconCart,
-  IconCassette,
-  IconExploreDJ,
+  IconListens,
   IconTurntable,
   IconPlaylists
 } from '@audius/harmony-native'
@@ -15,6 +14,7 @@ import EmojiFire from 'app/assets/images/emojis/fire.png'
 import EmojiHeartWithArrow from 'app/assets/images/emojis/heart-with-arrow.png'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import EmojiThinkingFace from 'app/assets/images/emojis/thinking-face.png'
+import IconCassette from 'app/assets/images/iconCassette.svg'
 
 import type { ExploreCollectionsVariant } from './types'
 
@@ -72,7 +72,7 @@ export const LET_THEM_DJ: ExploreCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(9,175,233)',
   shadowOpacity: 0.25,
-  icon: IconExploreDJ
+  icon: IconListens
 }
 
 export const TOP_ALBUMS: ExploreCollection = {

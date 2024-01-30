@@ -2,17 +2,15 @@ import type { PlaybackRate } from '@audius/common'
 import { playerSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import {
-  Icon0_5x,
-  Icon0_8x,
-  Icon1_1x,
-  Icon1_2x,
-  Icon1_5x,
-  Icon1x,
-  Icon2_5x,
-  Icon2x,
-  Icon3x
-} from '@audius/harmony-native'
+import Icon0_5x from 'app/assets/images/iconPlaybackRate0_5x.svg'
+import Icon0_8x from 'app/assets/images/iconPlaybackRate0_8x.svg'
+import Icon1_1x from 'app/assets/images/iconPlaybackRate1_1x.svg'
+import Icon1_2x from 'app/assets/images/iconPlaybackRate1_2x.svg'
+import Icon1_5x from 'app/assets/images/iconPlaybackRate1_5x.svg'
+import Icon1x from 'app/assets/images/iconPlaybackRate1x.svg'
+import Icon2_5x from 'app/assets/images/iconPlaybackRate2_5x.svg'
+import Icon2x from 'app/assets/images/iconPlaybackRate2x.svg'
+import Icon3x from 'app/assets/images/iconPlaybackRate3x.svg'
 import type { IconButtonProps } from 'app/components/core'
 import { IconButton } from 'app/components/core'
 

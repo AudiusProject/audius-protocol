@@ -14,13 +14,13 @@ import codePush from 'react-native-code-push'
 import { useAsync } from 'react-use'
 
 import {
-  IconCareers,
   IconMessage,
   IconDiscord,
   IconInstagram,
   IconTwitter
 } from '@audius/harmony-native'
 import appIcon from 'app/assets/images/appIcon.png'
+import IconCareers from 'app/assets/images/iconCareers.svg'
 import { Screen, ScreenContent, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

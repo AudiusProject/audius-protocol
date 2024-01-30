@@ -16,9 +16,9 @@ import {
   IconBoxHeart,
   IconStars,
   IconRemix,
-  IconExploreRotation,
   IconRadar
 } from '@audius/harmony-native'
+import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
 
 export type SmartCollectionScreen =
   | 'UnderTheRadar'

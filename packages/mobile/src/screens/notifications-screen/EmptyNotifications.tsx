@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import { IconAnnouncement } from '@audius/harmony-native'
+import IconAnnouncement from 'app/assets/images/iconAnnouncement.svg'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
