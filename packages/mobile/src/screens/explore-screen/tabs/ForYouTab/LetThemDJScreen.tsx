@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 
 import {
-  Status,
   explorePageCollectionsSelectors,
   ExploreCollectionsVariant,
   explorePageCollectionsActions
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Status } from '@audius/common'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import {
   fetchSearch,
   clearSearch

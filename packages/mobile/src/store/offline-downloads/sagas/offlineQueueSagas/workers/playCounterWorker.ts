@@ -1,5 +1,5 @@
-import type { ID } from '@audius/common'
 import { tracksSocialActions } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { put } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'

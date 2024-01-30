@@ -1,9 +1,9 @@
-import type { ID, AccessConditions } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common/models'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated
-} from '@audius/common'
+} from '@audius/common/models'
 import type { ViewStyle } from 'react-native'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'

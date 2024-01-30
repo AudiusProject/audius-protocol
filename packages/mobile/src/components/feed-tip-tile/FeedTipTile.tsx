@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import type { User } from '@audius/common'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -8,6 +7,7 @@ import {
   tippingActions
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import type { User } from '@audius/common/models'
 import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

@@ -2,9 +2,9 @@ import { useCallback, useEffect } from 'react'
 
 import {
   deactivateAccountActions,
-  deactivateAccountSelectors,
-  Status
+  deactivateAccountSelectors
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import {
-  Status,
-  changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
+import { changePasswordSelectors, changePasswordActions } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

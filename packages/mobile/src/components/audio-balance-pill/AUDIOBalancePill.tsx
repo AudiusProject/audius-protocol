@@ -1,9 +1,10 @@
-import type { User } from '@audius/common'
-import { accountSelectors, formatWei, isNullOrUndefined } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import {
   useSelectTierInfo,
   useTotalBalanceWithFallback
 } from '@audius/common/hooks'
+import type { User } from '@audius/common/models'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

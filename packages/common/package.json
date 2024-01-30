@@ -13,7 +13,8 @@
     "./hooks": "./src/hooks/index.ts",
     "./context": "./src/context/index.ts",
     "./api": "./src/api/index.ts",
-    "./models": "./src/models/index.ts"
+    "./models": "./src/models/index.ts",
+    "./utils": "./src/utils/index.ts"
   },
   "repository": {
     "type": "git",

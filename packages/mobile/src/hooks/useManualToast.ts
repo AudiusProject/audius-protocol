@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import type { Toast } from '@audius/common'
-import { uuid, toastActions } from '@audius/common'
+import { toastActions } from '@audius/common'
+import { uuid } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 const { registerToast, manualClearToast } = toastActions

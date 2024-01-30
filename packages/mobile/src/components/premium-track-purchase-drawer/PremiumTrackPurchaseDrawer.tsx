@@ -4,16 +4,12 @@ import type { PurchaseContentError } from '@audius/common'
 import {
   PurchaseContentPage,
   FeatureFlags,
-  Name,
   PurchaseContentStage,
-  formatPrice,
   isContentPurchaseInProgress,
   purchaseContentActions,
   purchaseContentSelectors,
-  statusIsNotFinalized,
   usePremiumContentPurchaseModal,
-  IntKeys,
-  PurchaseVendor
+  IntKeys
 } from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -28,6 +24,12 @@ import {
   usePurchaseMethod
 } from '@audius/common/hooks'
 import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
+import {
+  Name,
+  PurchaseVendor,
+  statusIsNotFinalized
+} from '@audius/common/models'
+import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,

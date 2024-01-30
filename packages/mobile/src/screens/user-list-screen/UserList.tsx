@@ -1,11 +1,12 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID, User, UserListStoreState, CommonState } from '@audius/common'
+import type { UserListStoreState, CommonState } from '@audius/common'
 import {
   cacheUsersSelectors,
   userListActions,
   userListSelectors
 } from '@audius/common'
+import type { ID, User } from '@audius/common/models'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { range } from 'lodash'
 import { View } from 'react-native'

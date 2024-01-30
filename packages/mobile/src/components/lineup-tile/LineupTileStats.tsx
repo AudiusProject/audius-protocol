@@ -1,19 +1,14 @@
 import { useCallback } from 'react'
 
-import type {
-  ID,
-  FavoriteType,
-  RepostType,
-  AccessConditions,
-  Nullable
-} from '@audius/common'
+import type { RepostType } from '@audius/common'
 import {
-  formatCount,
   repostsUserListActions,
-  favoritesUserListActions,
-  isContentUSDCPurchaseGated,
-  dayjs
+  favoritesUserListActions
 } from '@audius/common'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
+import { dayjs, formatCount } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'

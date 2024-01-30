@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { creativeCommons } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
+import { creativeCommons } from '@audius/common/utils'
 import { useField } from 'formik'
 import { ScrollView, View } from 'react-native'
 

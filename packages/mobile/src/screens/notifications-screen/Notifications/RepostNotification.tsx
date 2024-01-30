@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
 import type { RepostNotification as RepostNotificationType } from '@audius/common'
-import { formatCount, notificationsSelectors, Entity } from '@audius/common'
+import { notificationsSelectors, Entity } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'

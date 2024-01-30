@@ -1,12 +1,11 @@
+import { reachabilitySelectors } from '@audius/common'
 import type {
+  SquareSizes,
   Collection,
   ID,
-  Maybe,
-  Nullable,
-  SearchPlaylist,
-  SquareSizes
-} from '@audius/common'
-import { reachabilitySelectors } from '@audius/common'
+  SearchPlaylist
+} from '@audius/common/models'
+import type { Nullable, Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'

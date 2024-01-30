@@ -1,19 +1,21 @@
-import type {
-  ID,
-  QueryParams,
-  Track,
-  TrackMetadata,
-  UserTrackMetadata
-} from '@audius/common'
+import type { QueryParams } from '@audius/common'
 import {
-  getQueryParams,
-  removeNullable,
-  SquareSizes,
-  encodeHashId,
   accountSelectors,
   getContext,
   gatedContentSelectors
 } from '@audius/common'
+import type {
+  ID,
+  TrackMetadata,
+  Track,
+  UserTrackMetadata
+} from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
+import {
+  encodeHashId,
+  removeNullable,
+  getQueryParams
+} from '@audius/common/utils'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 

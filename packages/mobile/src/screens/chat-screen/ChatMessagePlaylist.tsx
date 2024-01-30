@@ -1,22 +1,16 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import type { ChatMessageTileProps, ID } from '@audius/common'
-import {
-  Name,
-  Kind,
-  PlaybackSource,
-  QueueSource,
-  accountSelectors,
-  getPathFromPlaylistUrl,
-  makeUid,
-  playerSelectors
-} from '@audius/common'
+import type { ChatMessageTileProps } from '@audius/common'
+import { QueueSource, accountSelectors, playerSelectors } from '@audius/common'
 import {
   useGetTracksByIds,
   useGetPlaylistByPermalink
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
+import { Name, PlaybackSource, Kind } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { CollectionTile } from 'app/components/lineup-tile'

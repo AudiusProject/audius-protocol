@@ -1,16 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable, AccessConditions } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
-  TrackAvailabilityType,
+  isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentCollectibleGated,
-  FeatureFlags,
-  removeNullable,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
-import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
+  isContentUSDCPurchaseGated,
+  TrackAvailabilityType
+} from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'

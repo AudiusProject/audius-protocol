@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { Platform, TouchableOpacity, View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'

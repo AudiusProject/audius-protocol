@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import type { SvgProps } from 'react-native-svg'
 
 import IconAllowAttribution from 'app/assets/images/creativeCommons/by.svg'

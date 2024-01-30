@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 
-import type { User } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import type { User } from '@audius/common/models'
 import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
 import { StyleSheet, View, Text } from 'react-native'
 

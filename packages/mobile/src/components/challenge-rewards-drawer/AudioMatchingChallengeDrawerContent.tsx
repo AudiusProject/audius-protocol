@@ -1,7 +1,9 @@
 import React from 'react'
 
-import type { OptimisticUserChallenge } from '@audius/common'
-import { ChallengeName, ClaimStatus, formatNumberCommas } from '@audius/common'
+import { ClaimStatus } from '@audius/common'
+import type { OptimisticUserChallenge } from '@audius/common/models'
+import { ChallengeName } from '@audius/common/models'
+import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'

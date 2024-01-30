@@ -1,12 +1,9 @@
 import { useCallback, useMemo } from 'react'
 
 import type { UploadTrack } from '@audius/common'
-import {
-  creativeCommons,
-  formatPrice,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import { creativeCommons, formatPrice } from '@audius/common/utils'
 import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

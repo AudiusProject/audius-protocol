@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  Status,
-  ShareSource,
   profilePageSelectors,
   profilePageActions,
   reachabilitySelectors,
   shareModalUIActions,
-  encodeUrlName,
   modalsActions,
   FeatureFlags,
   relatedArtistsUIActions
 } from '@audius/common'
+import { ShareSource, Status } from '@audius/common/models'
+import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'

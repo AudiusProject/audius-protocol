@@ -4,10 +4,10 @@ import type { CommonState } from '@audius/common'
 import {
   SavedPageTabs,
   reachabilitySelectors,
-  statusIsNotFinalized,
   savedPageSelectors,
   LibraryCategory
 } from '@audius/common'
+import { statusIsNotFinalized } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'

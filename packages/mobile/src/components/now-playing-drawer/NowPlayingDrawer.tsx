@@ -8,12 +8,12 @@ import {
 } from 'react'
 
 import {
-  Genre,
   cacheUsersSelectors,
   queueActions,
   playerSelectors,
   playerActions
 } from '@audius/common'
+import { Genre } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import type {
   Animated,

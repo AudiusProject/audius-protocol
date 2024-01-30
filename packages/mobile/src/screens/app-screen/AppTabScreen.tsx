@@ -1,15 +1,17 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import type {
-  ID,
-  FavoriteType,
-  TipSource,
   NotificationType,
   RepostType,
-  SearchPlaylist,
-  SearchTrack,
   CreateChatModalState
 } from '@audius/common'
+import type {
+  FavoriteType,
+  TipSource,
+  ID,
+  SearchTrack,
+  SearchPlaylist
+} from '@audius/common/models'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 

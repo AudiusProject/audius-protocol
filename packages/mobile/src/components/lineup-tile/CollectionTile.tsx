@@ -1,21 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import type {
-  Collection,
-  Track,
-  User,
-  EnhancedCollectionTrack,
-  CommonState
-} from '@audius/common'
+import type { EnhancedCollectionTrack, CommonState } from '@audius/common'
 import {
-  SquareSizes,
-  removeNullable,
   playerSelectors,
-  FavoriteSource,
-  PlaybackSource,
-  RepostSource,
-  ShareSource,
-  FavoriteType,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
@@ -28,6 +15,16 @@ import {
   FeatureFlags
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  FavoriteType,
+  SquareSizes
+} from '@audius/common/models'
+import type { Collection, Track, User } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionImage } from 'app/components/image/CollectionImage'

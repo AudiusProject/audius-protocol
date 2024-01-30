@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  deletePlaylistConfirmationModalUISelectors,
-  fillString
+  deletePlaylistConfirmationModalUISelectors
 } from '@audius/common'
+import { fillString } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'

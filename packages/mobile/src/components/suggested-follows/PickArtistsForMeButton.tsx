@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import {
   getFollowIds,

@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 import {
-  Status,
   explorePageCollectionsSelectors,
   ExploreCollectionsVariant,
   explorePageCollectionsActions
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'

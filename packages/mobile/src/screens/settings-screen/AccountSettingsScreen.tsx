@@ -4,9 +4,9 @@ import {
   accountSelectors,
   recoveryEmailActions,
   recoveryEmailSelectors,
-  modalsActions,
-  Status
+  modalsActions
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,11 +1,10 @@
-import type { ID } from '@audius/common'
 import {
   useGetPlaylistById,
   useGetSuggestedAlbumTracks,
   useGetSuggestedPlaylistTracks,
   useGetCurrentUserId
 } from '@audius/common/api'
-import {} from '@audius/common'
+import type { ID } from '@audius/common/models'
 
 import { SuggestedTracks } from './components/SuggestedTracks'
 

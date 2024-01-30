@@ -6,9 +6,9 @@ import {
   chatSelectors,
   ChatPermissionAction,
   cacheUsersSelectors,
-  formatCount,
   useInboxUnavailableModal
 } from '@audius/common'
+import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'

@@ -1,12 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  accountSelectors,
-  Genre,
-  gatedContentActions,
-  getDogEarType
-} from '@audius/common'
+import { accountSelectors, gatedContentActions } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import { Genre, getDogEarType } from '@audius/common/utils'
 import moment from 'moment'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'

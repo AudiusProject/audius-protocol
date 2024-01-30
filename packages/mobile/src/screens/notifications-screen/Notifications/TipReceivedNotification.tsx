@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 
 import {
-  formatNumberCommas,
   notificationsSelectors,
   reactionsUIActions,
   reactionsUISelectors
 } from '@audius/common'
-import type {
-  Nullable,
-  TipReceiveNotification,
-  ReactionTypes
-} from '@audius/common'
+import type { TipReceiveNotification, ReactionTypes } from '@audius/common'
 import { useUIAudio } from '@audius/common/hooks'
+import { formatNumberCommas } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

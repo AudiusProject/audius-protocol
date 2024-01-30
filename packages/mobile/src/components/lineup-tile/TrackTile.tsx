@@ -1,18 +1,10 @@
 import { useCallback } from 'react'
 
-import type { Track, User, CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import {
   playbackPositionSelectors,
   FeatureFlags,
-  Genre,
-  SquareSizes,
   accountSelectors,
-  removeNullable,
-  PlaybackSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  FavoriteType,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
@@ -21,9 +13,19 @@ import {
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   RepostType,
-  playerSelectors,
-  isContentUSDCPurchaseGated
+  playerSelectors
 } from '@audius/common'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  FavoriteType,
+  SquareSizes,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type { Track, User } from '@audius/common/models'
+import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'

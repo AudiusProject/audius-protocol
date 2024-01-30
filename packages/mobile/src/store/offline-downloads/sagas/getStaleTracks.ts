@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import moment from 'moment'
 import { select } from 'typed-redux-saga'
 

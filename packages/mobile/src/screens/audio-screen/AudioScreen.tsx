@@ -1,18 +1,18 @@
 import { useCallback, useEffect } from 'react'
 
-import type { StringWei, CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import {
   tokenDashboardPageActions,
   StringKeys,
   vipDiscordModalActions,
-  formatWei,
   tokenDashboardPageSelectors,
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions,
-  isNullOrUndefined
+  modalsActions
 } from '@audius/common'
+import type { StringWei } from '@audius/common/models'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

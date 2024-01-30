@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import type { User } from '@audius/common'
 import { tippingActions } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { View, Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 

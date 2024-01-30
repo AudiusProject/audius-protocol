@@ -1,9 +1,9 @@
-import type { ID } from '@audius/common'
 import {
   getContext,
   accountSelectors,
   cacheTracksSelectors
 } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import moment from 'moment'
 import { put, select, call, take, race } from 'typed-redux-saga'
 

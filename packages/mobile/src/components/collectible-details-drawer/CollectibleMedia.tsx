@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import type { Collectible } from '@audius/common'
-import { CollectibleMediaType } from '@audius/common'
+import type { Collectible } from '@audius/common/models'
+import { CollectibleMediaType } from '@audius/common/models'
 import type { ImageStyle } from 'react-native'
 import { TouchableWithoutFeedback, View } from 'react-native'
 

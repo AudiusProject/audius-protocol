@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 

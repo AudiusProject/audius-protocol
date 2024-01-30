@@ -1,9 +1,9 @@
-import type { DownloadReason, ID } from '@audius/common'
 import {
   cacheCollectionsSelectors,
   accountSelectors,
   getContext
 } from '@audius/common'
+import type { ID, DownloadReason } from '@audius/common/models'
 import { difference } from 'lodash'
 import moment from 'moment'
 import { call, put, race, select, take } from 'typed-redux-saga'

@@ -1,11 +1,7 @@
 import { useEffect } from 'react'
 
-import {
-  CreatePlaylistSource,
-  profilePageActions,
-  profilePageSelectors,
-  Status
-} from '@audius/common'
+import { profilePageActions, profilePageSelectors } from '@audius/common'
+import { CreatePlaylistSource, Status } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
 import { cacheUsersSelectors, notificationsSelectors } from '@audius/common'
-import type {
-  Nullable,
-  SupporterDethronedNotification as SupporterDethroned
-} from '@audius/common'
+import type { SupporterDethronedNotification as SupporterDethroned } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 

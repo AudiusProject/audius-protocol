@@ -1,9 +1,6 @@
-import type { SearchTrack, Track } from '@audius/common'
-import {
-  accountSelectors,
-  formatLineupTileDuration,
-  playbackPositionSelectors
-} from '@audius/common'
+import { accountSelectors, playbackPositionSelectors } from '@audius/common'
+import type { SearchTrack, Track } from '@audius/common/models'
+import { formatLineupTileDuration } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

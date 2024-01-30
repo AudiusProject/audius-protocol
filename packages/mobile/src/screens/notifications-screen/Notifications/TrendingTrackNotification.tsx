@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
 import type {
-  Nullable,
   TrackEntity,
   TrendingTrackNotification as TrendingTrackNotificationType
 } from '@audius/common'
-import { Name, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'

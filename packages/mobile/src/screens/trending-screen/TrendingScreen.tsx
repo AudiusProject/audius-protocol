@@ -1,4 +1,5 @@
-import { TimeRange, trendingPageSelectors } from '@audius/common'
+import { trendingPageSelectors } from '@audius/common'
+import { TimeRange } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import IconAllTime from 'app/assets/images/iconAllTime.svg'

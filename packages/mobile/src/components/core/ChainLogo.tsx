@@ -1,4 +1,4 @@
-import type { Chain } from '@audius/common'
+import type { Chain } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 

@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
-import { Name, chatActions } from '@audius/common'
+import { chatActions } from '@audius/common'
+import type { User } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import IconMessage from 'app/assets/images/iconMessage.svg'

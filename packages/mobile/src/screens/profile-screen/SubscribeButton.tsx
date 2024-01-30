@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
 import { profilePageSelectors, profilePageActions } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconNotification from 'app/assets/images/iconNotification.svg'
