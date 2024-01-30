@@ -7,10 +7,10 @@ import {
   cacheConfig,
   FeatureFlags,
   confirmerSelectors,
-  IntKeys
+  IntKeys,
+  getContext
 } from '@audius/common'
 import type {
-  CommonStoreContext,
   ID,
   Kind,
   Metadata,
@@ -20,7 +20,7 @@ import type {
   CacheType
 } from '@audius/common'
 import { pick } from 'lodash'
-import { all, call, put, select, takeEvery, getContext } from 'typed-redux-saga'
+import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 const { CACHE_PRUNE_MIN } = cacheConfig
 const { getConfirmCalls } = confirmerSelectors
@@ -392,12 +392,8 @@ function* watchRemove() {
 }
 
 function* initializeCacheType() {
-  const remoteConfig = yield* getContext<
-    CommonStoreContext['remoteConfigInstance']
-  >('remoteConfigInstance')
-  const getFeatureEnabled = yield* getContext<
-    CommonStoreContext['getFeatureEnabled']
-  >('getFeatureEnabled')
+  const remoteConfig = yield* getContext('remoteConfigInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
 
   const fastCache = yield* call(getFeatureEnabled, FeatureFlags.FAST_CACHE)
