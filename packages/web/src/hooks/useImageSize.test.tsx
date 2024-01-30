@@ -1,10 +1,5 @@
-import {
-  BaseUserImageSizeProps,
-  DefaultSizes,
-  ImageSizesObject,
-  SquareSizes
-} from '@audius/common'
-import { useImageSize } from '@audius/common/hooks'
+import { DefaultSizes, ImageSizesObject, SquareSizes } from '@audius/common'
+import { useImageSize, BaseUserImageSizeProps } from '@audius/common/hooks'
 import { render } from '@testing-library/react'
 import type { Dispatch } from 'redux'
 import { expect, describe, it, vitest } from 'vitest'

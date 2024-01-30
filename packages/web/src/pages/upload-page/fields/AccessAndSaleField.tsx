@@ -11,7 +11,6 @@ import {
   isContentUSDCPurchaseGated,
   Nullable,
   TrackAvailabilityType,
-  USDCPurchaseConfig,
   CollectibleGatedConditions,
   USDCPurchaseConditions,
   FollowGatedConditions,
@@ -20,6 +19,7 @@ import {
   AccessConditions
 } from '@audius/common'
 import {
+  USDCPurchaseConfig,
   useFeatureFlag,
   useUSDCPurchaseConfig,
   useAccessAndRemixSettings

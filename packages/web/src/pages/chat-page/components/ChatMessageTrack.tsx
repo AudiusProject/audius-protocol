@@ -10,13 +10,16 @@ import {
   useGetTrackByPermalink,
   getPathFromTrackUrl,
   ID,
-  TrackPlayback,
   ChatMessageTileProps,
   cacheTracksActions,
   SquareSizes,
   Name
 } from '@audius/common'
-import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
+import {
+  TrackPlayback,
+  useGatedContentAccess,
+  useToggleTrack
+} from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

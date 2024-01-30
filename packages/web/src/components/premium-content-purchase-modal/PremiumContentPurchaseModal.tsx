@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
   useGetTrackById,
@@ -15,6 +14,7 @@ import {
   PurchaseVendor
 } from '@audius/common'
 import {
+  PurchaseableTrackMetadata,
   useFeatureFlag,
   usePurchaseContentFormConfiguration,
   usePayExtraPresets,
