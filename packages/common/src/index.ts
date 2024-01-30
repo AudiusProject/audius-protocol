@@ -2,7 +2,6 @@ import * as e from './utils'
 console.log('exports', Object.keys(e))
 
 export * from './audius-query'
-export * from './utils'
 export * from './services'
 export * from './store'
 export * from './schemas'
