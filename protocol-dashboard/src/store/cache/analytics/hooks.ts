@@ -27,6 +27,7 @@ import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
 import { fetchWithLibs, fetchWithTimeout } from 'utils/fetch'
 import { AnyAction } from '@reduxjs/toolkit'
+import { ServiceType } from 'types'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -206,26 +207,45 @@ async function fetchTimeSeries(
   return metric
 }
 
-async function fetchUptime(node: string, bucket: Bucket) {
+async function fetchUptime(nodeType: ServiceType, node: string, bucket: Bucket) {
   if (bucket !== Bucket.DAY) {
     // currently only 24h uptime supported
     return MetricError.ERROR
   }
 
+  const endpoints = nodeType === ServiceType.DiscoveryProvider ? [
+    `https://discoveryprovider.audius.co`,
+    `https://discoveryprovider2.audius.co`,
+    `https://discoveryprovider3.audius.co`
+  ] : [
+    `https://creatornode.audius.co`,
+    `https://creatornode2.audius.co`,
+    `https://creatornode3.audius.co`
+  ]
+
+  let highestUptimeRecord = { uptime_percentage: 0 }
   let error = false
-  let metric: UptimeRecord = {}
-  try {
-    const endpoint = `${node}/d_api/uptime?host=${node}`
-    metric = await fetchWithTimeout(endpoint)
-  } catch (e) {
-    console.error(e)
-    error = true
+
+  for (const endpoint of endpoints) {
+    try {
+      const metric = await fetchWithTimeout(`${endpoint}/d_api/uptime?host=${node}`)
+      if (metric.uptime_percentage === 100) {
+        return metric // If we find a 100% uptime, return early
+      }
+      if (metric.uptime_percentage >= highestUptimeRecord.uptime_percentage) {
+        highestUptimeRecord = metric
+      }
+    } catch (e) {
+      console.error(e)
+      error = true
+    }
   }
-  if (error) {
+
+  if (error && highestUptimeRecord.uptime_percentage === 0) {
     return MetricError.ERROR
   }
 
-  return metric
+  return highestUptimeRecord
 }
 
 export function fetchPlays(
@@ -244,12 +264,13 @@ export function fetchPlays(
 }
 
 export function fetchIndividualNodeUptime(
+  nodeType: ServiceType,
   node: string,
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async dispatch => {
-    const metric = await fetchUptime(node, bucket)
-    dispatch(setIndividualNodeUptime({ node, metric, bucket }))
+    const metric = await fetchUptime(nodeType, node, bucket)
+    dispatch(setIndividualNodeUptime({ nodeType, node, metric, bucket }))
   }
 }
 
@@ -475,7 +496,7 @@ export const useApiCalls = (bucket: Bucket) => {
   return { apiCalls }
 }
 
-export const useIndividualNodeUptime = (node: string, bucket: Bucket) => {
+export const useIndividualNodeUptime = (nodeType: ServiceType, node: string, bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
   const uptime = useSelector(state =>
     getIndividualNodeUptime(state as AppState, { node, bucket })
@@ -484,7 +505,7 @@ export const useIndividualNodeUptime = (node: string, bucket: Bucket) => {
   useEffect(() => {
     if (doOnce !== bucket && (uptime === null || uptime === undefined)) {
       setDoOnce(bucket)
-      dispatch(fetchIndividualNodeUptime(node, bucket))
+      dispatch(fetchIndividualNodeUptime(nodeType, node, bucket))
     }
   }, [dispatch, uptime, bucket, node, doOnce])
 
