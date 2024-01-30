@@ -213,6 +213,7 @@
     "babel-jest": "29.6.3",
     "babel-loader": "8.3.0",
     "babel-plugin-macros": "3.1.0",
+    "babel-plugin-module-resolver": "5.0.0",
     "babel-plugin-transform-remove-console": "6.9.4",
     "detox": "20.12.1",
     "eslint": "8.56.0",

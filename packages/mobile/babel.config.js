@@ -1,7 +1,17 @@
 module.exports = (api) => {
   const babelEnv = api.env()
   const plugins = [
-    ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+    ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
+    [
+      'module-resolver',
+      {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        root: ['.'],
+        alias: {
+          '@audius/common/messages': '../common/src/messages'
+        }
+      }
+    ]
   ]
 
   if (babelEnv !== 'development') {

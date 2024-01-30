@@ -6,6 +6,7 @@
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
   "license": "",
+  "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
     "./messages": "./src/messages/index.ts"
