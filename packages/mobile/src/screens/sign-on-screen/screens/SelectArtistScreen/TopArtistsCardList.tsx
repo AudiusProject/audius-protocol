@@ -3,7 +3,6 @@ import {
   useGetTopArtistsInGenre,
   useGetFeaturedArtists
 } from '@audius/common/api'
-import {} from '@audius/common'
 import { css } from '@emotion/native'
 import { useIsFocused, type RouteProp } from '@react-navigation/native'
 

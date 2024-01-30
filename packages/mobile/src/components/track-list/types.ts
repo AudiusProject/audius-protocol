@@ -1,4 +1,5 @@
-import type { CommonState, lineupSelectors, LineupTrack } from '@audius/common'
+import type { CommonState, lineupSelectors } from '@audius/common'
+import type { LineupTrack } from '@audius/common/models'
 import type { SetOptional } from 'type-fest'
 
 export type TrackMetadata = SetOptional<

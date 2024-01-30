@@ -1,12 +1,10 @@
-import type {
-  ChallengeRewardsInfo,
-  OptimisticUserChallenge
-} from '@audius/common'
+import type { ChallengeRewardsInfo } from '@audius/common'
 import {
   fillString,
   formatNumberCommas,
   isAudioMatchingChallenge
 } from '@audius/common'
+import type { OptimisticUserChallenge } from '@audius/common/models'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'

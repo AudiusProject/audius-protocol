@@ -1,7 +1,7 @@
 import { createElement, useCallback, useMemo } from 'react'
 
-import type { Collection, ID, UserCollection } from '@audius/common'
-import { CreatePlaylistSource } from '@audius/common'
+import type { Collection, UserCollection, ID } from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
 import type { ListRenderItem } from 'react-native'
 
 import type { CardListProps } from 'app/components/core'

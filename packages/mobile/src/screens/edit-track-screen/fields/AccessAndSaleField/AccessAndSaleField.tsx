@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
 
+import { type Nullable } from '@audius/common'
+import type { FieldVisibility, AccessConditions } from '@audius/common/models'
 import {
-  isContentFollowGated,
-  type FieldVisibility,
-  type Nullable,
-  type AccessConditions,
-  isContentTipGated,
   isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
   isContentUSDCPurchaseGated
-} from '@audius/common'
+} from '@audius/common/models'
 import { useField } from 'formik'
 
 import type { ContextualMenuProps } from 'app/components/core'

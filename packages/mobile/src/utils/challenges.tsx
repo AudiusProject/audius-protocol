@@ -1,5 +1,9 @@
-import { ChallengeName, challengeRewardsConfig } from '@audius/common'
-import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
+import { challengeRewardsConfig } from '@audius/common'
+import type {
+  ChallengeRewardID,
+  OptimisticUserChallenge
+} from '@audius/common/models'
+import { ChallengeName } from '@audius/common/models'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 

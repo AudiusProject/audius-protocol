@@ -1,4 +1,4 @@
-import type { BadgeTier } from '@audius/common'
+import type { BadgeTier } from '@audius/common/models'
 import type { ImageStyle } from 'react-native'
 import { Image } from 'react-native'
 

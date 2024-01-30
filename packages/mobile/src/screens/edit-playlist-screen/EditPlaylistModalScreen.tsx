@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import type { EditPlaylistValues } from '@audius/common'
 import {
-  SquareSizes,
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common'
+import { SquareSizes } from '@audius/common/models'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 

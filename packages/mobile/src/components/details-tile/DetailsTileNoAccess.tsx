@@ -1,22 +1,24 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { ID, AccessConditions, User } from '@audius/common'
 import {
-  Chain,
-  FollowSource,
   formatPrice,
-  isContentCollectibleGated,
-  isContentFollowGated,
-  isContentTipGated,
-  isContentUSDCPurchaseGated,
   gatedContentSelectors,
   tippingActions,
   usePremiumContentPurchaseModal,
-  usersSocialActions,
-  ModalSource
+  usersSocialActions
 } from '@audius/common'
 import { useStreamConditionsEntity } from '@audius/common/hooks'
+import {
+  FollowSource,
+  ModalSource,
+  Chain,
+  isContentCollectibleGated,
+  isContentFollowGated,
+  isContentTipGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type { ID, AccessConditions, User } from '@audius/common/models'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

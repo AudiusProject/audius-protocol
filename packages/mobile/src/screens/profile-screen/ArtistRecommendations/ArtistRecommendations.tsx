@@ -1,13 +1,14 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 
-import type { CommonState, ID, User } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import {
-  FollowSource,
   usersSocialActions,
   relatedArtistsUISelectors,
   relatedArtistsUIActions,
   cacheUsersSelectors
 } from '@audius/common'
+import { FollowSource } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { isEmpty } from 'lodash'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

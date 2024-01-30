@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status, accountSelectors, BooleanKeys } from '@audius/common'
+import { accountSelectors, BooleanKeys } from '@audius/common'
+import { Status } from '@audius/common/models'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'

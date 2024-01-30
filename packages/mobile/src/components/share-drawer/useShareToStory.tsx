@@ -3,14 +3,10 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import type { Color, Nullable, ShareContent } from '@audius/common'
-import {
-  encodeHashId,
-  ErrorLevel,
-  modalsActions,
-  SquareSizes,
-  uuid
-} from '@audius/common'
+import type { Nullable, ShareContent } from '@audius/common'
+import { encodeHashId, modalsActions, uuid } from '@audius/common'
+import { ErrorLevel, SquareSizes } from '@audius/common/models'
+import type { Color } from '@audius/common/models'
 import {
   activateKeepAwake,
   deactivateKeepAwake

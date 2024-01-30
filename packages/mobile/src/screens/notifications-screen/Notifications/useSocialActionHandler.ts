@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
 import type {
-  User,
   Nullable,
   FavoriteNotification,
   FollowNotification,
   RepostNotification
 } from '@audius/common'
 import { notificationsUserListActions } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'

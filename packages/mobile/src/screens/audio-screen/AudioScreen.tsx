@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import type { StringWei, CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import {
   tokenDashboardPageActions,
   StringKeys,
@@ -13,6 +13,7 @@ import {
   modalsActions,
   isNullOrUndefined
 } from '@audius/common'
+import type { StringWei } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

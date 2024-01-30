@@ -12,7 +12,8 @@ module.exports = (api) => {
           '@audius/common/messages': '../common/src/messages',
           '@audius/common/hooks': '../common/src/hooks',
           '@audius/common/context': '../common/src/context',
-          '@audius/common/api': '../common/src/api'
+          '@audius/common/api': '../common/src/api',
+          '@audius/common/models': '../common/src/models'
         }
       }
     ]

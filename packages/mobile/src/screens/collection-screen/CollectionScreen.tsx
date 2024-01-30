@@ -1,13 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  SquareSizes,
   encodeUrlName,
   removeNullable,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  FavoriteType,
   collectionPageActions,
   formatDate,
   accountSelectors,
@@ -23,14 +18,21 @@ import {
   favoritesUserListActions,
   FeatureFlags
 } from '@audius/common'
+import type { Nullable } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FavoriteType,
+  SquareSizes
+} from '@audius/common/models'
 import type {
   Collection,
-  Nullable,
-  User,
+  SearchUser,
   SearchPlaylist,
-  SearchUser
-} from '@audius/common'
-import { useFeatureFlag } from '@audius/common/hooks'
+  User
+} from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {

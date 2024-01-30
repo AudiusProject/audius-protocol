@@ -1,15 +1,15 @@
 import path from 'path'
 
-import type {
-  Collection,
-  CollectionMetadata,
-  ID,
-  Nullable,
-  Track,
-  UserMetadata,
-  UserTrackMetadata
-} from '@audius/common'
+import type { Nullable } from '@audius/common'
 import { allSettled } from '@audius/common'
+import type {
+  CollectionMetadata,
+  Collection,
+  ID,
+  Track,
+  UserTrackMetadata,
+  UserMetadata
+} from '@audius/common/models'
 import RNFetchBlob from 'rn-fetch-blob'
 
 const {

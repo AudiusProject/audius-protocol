@@ -1,10 +1,11 @@
-import type { BNWei, AssociatedWallet } from '@audius/common'
+import type { AssociatedWallet } from '@audius/common'
 import {
-  Chain,
   formatWei,
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
+import type { BNWei } from '@audius/common/models'
+import { Chain } from '@audius/common/models'
 import BN from 'bn.js'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'

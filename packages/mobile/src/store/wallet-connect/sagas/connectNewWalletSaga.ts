@@ -1,12 +1,12 @@
-import type { WalletAddress, Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common'
 import {
   accountSelectors,
-  Chain,
   getContext,
   tokenDashboardPageActions,
-  Name,
   getErrorMessage
 } from '@audius/common'
+import type { WalletAddress } from '@audius/common/models'
+import { Name, Chain } from '@audius/common/models'
 import bs58 from 'bs58'
 import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
 import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'

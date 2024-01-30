@@ -1,4 +1,4 @@
-import type { BadgeTier } from '@audius/common'
+import type { BadgeTier } from '@audius/common/models'
 
 import type { GradientTextProps } from 'app/components/core'
 import { GradientText } from 'app/components/core'

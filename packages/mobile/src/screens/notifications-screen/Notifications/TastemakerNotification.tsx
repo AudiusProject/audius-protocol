@@ -5,7 +5,8 @@ import type {
   Nullable,
   TrackEntity
 } from '@audius/common'
-import { Name, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 

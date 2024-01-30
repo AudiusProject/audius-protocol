@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import type { Collection, ID, Track, UID, User } from '@audius/common'
 import {
   cacheCollectionsSelectors,
   FeatureFlags,
@@ -17,6 +16,7 @@ import {
   playerSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import type { Collection, ID, UID, Track, User } from '@audius/common/models'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,

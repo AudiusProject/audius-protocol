@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 
+import type { Nullable } from '@audius/common'
 import type {
   ID,
   LineupState,
-  Track,
-  User,
-  Nullable,
+  SearchUser,
   SearchTrack,
-  SearchUser
-} from '@audius/common'
+  Track,
+  User
+} from '@audius/common/models'
 import { View } from 'react-native'
 
 import { useNavigation } from 'app/hooks/useNavigation'

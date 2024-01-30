@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'

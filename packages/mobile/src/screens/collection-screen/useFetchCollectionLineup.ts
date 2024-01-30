@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import type { SmartCollectionVariant } from '@audius/common'
 import {
   Uid,
   areSetsEqual,
-  Kind,
   makeUid,
   cacheActions,
   cacheCollectionsSelectors,
@@ -12,6 +10,8 @@ import {
   collectionPageSelectors,
   queueSelectors
 } from '@audius/common'
+import type { SmartCollectionVariant } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { useField } from 'formik'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native-gesture-handler'

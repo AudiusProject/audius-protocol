@@ -3,9 +3,9 @@ import {
   tokenDashboardPageSelectors,
   getContext,
   waitForValue,
-  Name,
   getErrorMessage
 } from '@audius/common'
+import { Name } from '@audius/common/models'
 import bs58 from 'bs58'
 import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
 import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'

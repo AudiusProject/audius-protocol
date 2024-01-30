@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import type { ChatMessageWithExtras } from '@audius/common'
 import {
-  Status,
   accountSelectors,
   chatActions,
   chatCanFetchMoreMessages,
@@ -14,6 +12,8 @@ import {
   playerSelectors
 } from '@audius/common'
 import { useCanSendMessage } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import type { ChatMessageWithExtras } from '@audius/common/models'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'

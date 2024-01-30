@@ -1,12 +1,11 @@
-import type { User } from '@audius/common'
 import {
   accountActions,
   getContext,
   removeNullable,
-  SquareSizes,
-  WidthSizes,
   accountSagas
 } from '@audius/common'
+import type { User } from '@audius/common/models'
+import { SquareSizes, WidthSizes } from '@audius/common/models'
 import webAccountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import FastImage from 'react-native-fast-image'

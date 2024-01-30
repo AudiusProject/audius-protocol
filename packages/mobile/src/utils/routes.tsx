@@ -1,5 +1,5 @@
-import type { UserCollection, User } from '@audius/common'
 import { getHash, encodeUrlName } from '@audius/common'
+import type { UserCollection, User } from '@audius/common/models'
 
 import { env } from 'app/env'
 

@@ -1,5 +1,5 @@
-import type { ID } from '@audius/common'
 import { cacheCollectionsSelectors, removeNullable } from '@audius/common'
+import type { ID } from '@audius/common/models'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'

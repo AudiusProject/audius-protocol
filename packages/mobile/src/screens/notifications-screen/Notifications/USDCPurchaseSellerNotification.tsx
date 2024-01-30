@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type {
   Nullable,
-  StringUSDC,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
@@ -11,6 +10,7 @@ import {
   notificationsSelectors,
   stringUSDCToBN
 } from '@audius/common'
+import type { StringUSDC } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'

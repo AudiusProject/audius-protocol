@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { CommonState, Track } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import {
   FeatureFlags,
   Genre,
@@ -9,10 +9,11 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   getDogEarType,
-  isContentUSDCPurchaseGated,
   dayjs
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { Track } from '@audius/common/models'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'

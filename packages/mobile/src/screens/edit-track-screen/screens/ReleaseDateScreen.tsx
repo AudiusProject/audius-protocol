@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import {
-  Theme,
-  dayjs,
-  remixSettingsActions,
-  removeNullable
-} from '@audius/common'
+import { dayjs, remixSettingsActions, removeNullable } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { useField } from 'formik'
 import moment from 'moment'
 import { Dimensions, View } from 'react-native'

@@ -1,12 +1,8 @@
 import { useCallback } from 'react'
 
-import type { BNWei } from '@audius/common'
-import {
-  formatWei,
-  shortenEthAddress,
-  shortenSPLAddress,
-  Chain
-} from '@audius/common'
+import { formatWei, shortenEthAddress, shortenSPLAddress } from '@audius/common'
+import type { BNWei } from '@audius/common/models'
+import { Chain } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 

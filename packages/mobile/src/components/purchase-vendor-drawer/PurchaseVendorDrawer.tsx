@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import { FeatureFlags, PurchaseVendor } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import { useFeatureFlag } from '@audius/common/hooks'
+import { PurchaseVendor } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'

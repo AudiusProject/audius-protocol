@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback } from 'react'
 
-import type { Nullable, CID, WidthSizes, SquareSizes } from '@audius/common'
+import type { Nullable } from '@audius/common'
 import { interleave } from '@audius/common'
 import { useAppContext } from '@audius/common/context'
+import type { SquareSizes, WidthSizes, CID } from '@audius/common/models'
 import type { ImageSourcePropType, ImageURISource } from 'react-native'
 
 export type ContentNodeImageSource = {

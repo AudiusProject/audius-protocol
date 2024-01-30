@@ -1,13 +1,12 @@
 import { useCallback, useState } from 'react'
 
 import {
-  PurchaseVendor,
   useAddFundsModal,
   useUSDCManualTransferModal,
-  buyUSDCActions,
-  PurchaseMethod
+  buyUSDCActions
 } from '@audius/common'
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

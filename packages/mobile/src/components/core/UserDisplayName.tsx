@@ -1,5 +1,6 @@
-import { type ID, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import type { ID } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import type { TextProps } from '@audius/harmony-native'

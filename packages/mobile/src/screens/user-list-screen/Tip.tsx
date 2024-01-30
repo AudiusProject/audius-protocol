@@ -1,5 +1,5 @@
-import type { StringWei } from '@audius/common'
 import { formatWei, stringWeiToBN } from '@audius/common'
+import type { StringWei } from '@audius/common/models'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'

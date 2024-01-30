@@ -1,17 +1,19 @@
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
-import type { ID } from '@audius/common'
 import {
-  SquareSizes,
   getDogEarType,
-  isContentCollectibleGated,
   cacheUsersSelectors,
-  cacheTracksSelectors,
-  isContentUSDCPurchaseGated,
-  GatedContentType
+  cacheTracksSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  SquareSizes,
+  GatedContentType,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'

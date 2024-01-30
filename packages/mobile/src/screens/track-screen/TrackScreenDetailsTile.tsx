@@ -2,15 +2,8 @@ import { useCallback } from 'react'
 
 import {
   Genre,
-  SquareSizes,
   removeNullable,
   playerSelectors,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  Name,
-  PlaybackSource,
-  FavoriteType,
   getCanonicalName,
   formatSeconds,
   formatDate,
@@ -27,12 +20,27 @@ import {
   reachabilitySelectors,
   playbackPositionSelectors,
   FeatureFlags,
-  isContentUSDCPurchaseGated,
-  isContentCollectibleGated,
   queueSelectors
 } from '@audius/common'
-import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  FavoriteType,
+  SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type {
+  UID,
+  SearchUser,
+  SearchTrack,
+  Track,
+  User
+} from '@audius/common/models'
 import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

@@ -6,13 +6,13 @@ import {
   cacheCollectionsSelectors,
   reachabilitySelectors,
   shallowCompare,
-  Status,
   useAllPaginatedQuery,
   savedPageSelectors,
   filterCollections
 } from '@audius/common'
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import uniq from 'lodash/uniq'
 import { useSelector } from 'react-redux'
 

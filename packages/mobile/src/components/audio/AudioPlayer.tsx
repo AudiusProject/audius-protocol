@@ -2,11 +2,9 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 
 import type {
   CommonState,
-  ID,
   Nullable,
   QueryParams,
-  Queueable,
-  Track
+  Queueable
 } from '@audius/common'
 import {
   getQueryParams,
@@ -28,12 +26,13 @@ import {
   encodeHashId,
   Genre,
   tracksSocialActions,
-  SquareSizes,
   shallowCompare,
   savedPageTracksLineupActions,
   getTrackPreviewDuration
 } from '@audius/common'
 import { useAppContext } from '@audius/common/context'
+import { SquareSizes } from '@audius/common/models'
+import type { ID, Track } from '@audius/common/models'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,

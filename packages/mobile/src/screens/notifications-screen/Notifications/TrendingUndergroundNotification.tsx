@@ -5,7 +5,8 @@ import type {
   TrackEntity,
   TrendingUndergroundNotification as TrendingUndergroundNotificationType
 } from '@audius/common'
-import { Name, notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'

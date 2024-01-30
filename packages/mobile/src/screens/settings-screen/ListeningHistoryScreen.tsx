@@ -1,13 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ID, UID } from '@audius/common'
 import {
-  Status,
-  PlaybackSource,
   historyPageTracksLineupActions as tracksActions,
   historyPageSelectors
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { PlaybackSource, Status } from '@audius/common/models'
+import type { ID, UID } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 

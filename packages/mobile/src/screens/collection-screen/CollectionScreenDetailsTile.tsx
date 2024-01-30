@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
+import type { Maybe } from '@audius/common'
 import {
   removeNullable,
   collectionPageSelectors,
   playerSelectors,
-  Status,
-  Name,
-  PlaybackSource,
   formatSecondsAsText,
   collectionPageLineupActions as tracksActions,
   reachabilitySelectors,
   cacheCollectionsSelectors
 } from '@audius/common'
+import { Name, PlaybackSource, Status } from '@audius/common/models'
+import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'

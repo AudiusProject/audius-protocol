@@ -1,4 +1,5 @@
-import { Theme, themeActions, themeSelectors } from '@audius/common'
+import { themeActions, themeSelectors } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { SectionList, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

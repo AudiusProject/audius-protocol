@@ -5,7 +5,8 @@ import type {
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
   TrackEntity
 } from '@audius/common'
-import { notificationsSelectors, Name } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { make } from 'audius-client/src/common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 

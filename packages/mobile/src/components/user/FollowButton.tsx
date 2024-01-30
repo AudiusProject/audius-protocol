@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { FollowSource, ID } from '@audius/common'
 import { cacheUsersSelectors, usersSocialActions } from '@audius/common'
+import type { FollowSource, ID } from '@audius/common/models'
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

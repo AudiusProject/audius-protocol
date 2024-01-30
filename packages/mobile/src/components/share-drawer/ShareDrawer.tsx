@@ -4,13 +4,12 @@ import {
   accountSelectors,
   collectionsSocialActions,
   FeatureFlags,
-  Name,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
-  ShareSource,
   tracksSocialActions,
   usersSocialActions
 } from '@audius/common'
+import { Name, ShareSource } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'

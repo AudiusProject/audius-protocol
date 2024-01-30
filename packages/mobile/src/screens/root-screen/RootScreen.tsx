@@ -4,9 +4,9 @@ import {
   accountSelectors,
   chatActions,
   FeatureFlags,
-  playerActions,
-  Status
+  playerActions
 } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,

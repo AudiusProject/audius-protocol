@@ -1,5 +1,5 @@
-import type { User } from '@audius/common'
 import { formatCount } from '@audius/common'
+import type { User } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
 

@@ -1,10 +1,10 @@
-import type { BNUSDC } from '@audius/common'
 import {
-  Status,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
+import type { BNUSDC } from '@audius/common/models'
+import { Status } from '@audius/common/models'
 import BN from 'bn.js'
 import { View } from 'react-native'
 

@@ -1,12 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  accountSelectors,
-  Name,
-  themeActions,
-  themeSelectors
-} from '@audius/common'
+import { accountSelectors, themeActions, themeSelectors } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconAppearance from 'app/assets/images/iconAppearance.svg'

@@ -4,9 +4,9 @@ import {
   castActions,
   encodeHashId,
   playerSelectors,
-  cacheUsersSelectors,
-  SquareSizes
+  cacheUsersSelectors
 } from '@audius/common'
+import { SquareSizes } from '@audius/common/models'
 import {
   CastState,
   useCastState,

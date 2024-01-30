@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { BNWei, Chain } from '@audius/common'
 import { formatWei, tokenDashboardPageActions } from '@audius/common'
+import type { Chain, BNWei } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

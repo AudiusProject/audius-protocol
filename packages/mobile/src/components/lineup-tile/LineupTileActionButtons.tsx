@@ -1,11 +1,8 @@
 import type { ReactElement } from 'react'
 
-import {
-  isContentUSDCPurchaseGated,
-  type ID,
-  type Nullable,
-  type AccessConditions
-} from '@audius/common'
+import { type Nullable } from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common/models'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
