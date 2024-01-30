@@ -15,7 +15,8 @@ module.exports = {
             // Don't remove unused IDs, as sometimes they are applied later on via CSS.
             remove: false
           },
-          removeUselessDefs: false
+          removeUselessDefs: false,
+          removeTitle: false
         }
       }
     }
