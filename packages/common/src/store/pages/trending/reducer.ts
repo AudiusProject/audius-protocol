@@ -1,21 +1,23 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
 import { History } from 'history'
 
-import { asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from 'store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
-  SET_LAST_FETCHED_TRENDING_GENRE
+  SET_LAST_FETCHED_TRENDING_GENRE,
+  SetTrendingGenreAction,
+  SetTrendingTimeRangeAction,
+  SetLastFetchedTrendingGenreAction,
+  TrendingPageAction
 } from 'store/pages/trending/actions'
 import {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_ALL_TIME_PREFIX
 } from 'store/pages/trending/lineup/actions'
-import { GENRES } from 'utils/genres'
+import { GENRES, Genre } from 'utils/genres'
 
-import { TimeRange } from '../../../models'
+import { TimeRange, Track } from '../../../models'
 
 import {
   trendingWeek,
@@ -23,21 +25,31 @@ import {
   trendingAllTime,
   makeInitialState
 } from './lineup/reducer'
+import { TrendingPageState } from './types'
 
 const actionsMap = {
-  [SET_TRENDING_TIME_RANGE](state, action) {
+  [SET_TRENDING_TIME_RANGE](
+    state: TrendingPageState,
+    action: SetTrendingTimeRangeAction
+  ) {
     return {
       ...state,
       trendingTimeRange: action.timeRange
     }
   },
-  [SET_TRENDING_GENRE](state, action) {
+  [SET_TRENDING_GENRE](
+    state: TrendingPageState,
+    action: SetTrendingGenreAction
+  ) {
     return {
       ...state,
       trendingGenre: action.genre
     }
   },
-  [SET_LAST_FETCHED_TRENDING_GENRE](state, action) {
+  [SET_LAST_FETCHED_TRENDING_GENRE](
+    state: TrendingPageState,
+    action: SetLastFetchedTrendingGenreAction
+  ) {
     return {
       ...state,
       lastFetchedTrendingGenre: action.genre
@@ -52,44 +64,61 @@ const trendingAllTimeReducer = asLineup(
   trendingAllTime
 )
 
-const reducer = (history?: History) => (state, action) => {
-  if (!state) {
-    const initialState = {
-      lastFetchedTrendingGenre: null,
-      trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
-      trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
-      trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
-    }
-
-    if (history) {
-      const urlParams = new URLSearchParams(history.location.search)
-      const genre = urlParams.get('genre')
-      const timeRange = urlParams.get('timeRange')
-      return {
-        ...initialState,
-        trendingTimeRange: Object.values(TimeRange).includes(timeRange)
-          ? timeRange
-          : TimeRange.WEEK,
-        trendingGenre: Object.values(GENRES).includes(genre) ? genre : null
+const reducer =
+  (history?: History) =>
+  (
+    state: TrendingPageState,
+    action: TrendingPageAction | LineupActions<Track>
+  ) => {
+    if (!state) {
+      const initialState = {
+        lastFetchedTrendingGenre: null,
+        trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
+        trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
+        trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
       }
+
+      if (history) {
+        const urlParams = new URLSearchParams(history.location.search)
+        const genre = urlParams.get('genre') as Genre | null
+        const timeRange = urlParams.get('timeRange') as TimeRange | null
+        return {
+          ...initialState,
+          trendingTimeRange:
+            timeRange && Object.values(TimeRange).includes(timeRange)
+              ? timeRange
+              : TimeRange.WEEK,
+          trendingGenre:
+            genre && Object.values(GENRES).includes(genre) ? genre : null
+        }
+      }
+
+      return initialState
+    }
+    const trendingWeek = trendingWeekReducer(
+      state.trendingWeek,
+      action as LineupActions<Track>
+    )
+    if (trendingWeek !== state.trendingWeek) return { ...state, trendingWeek }
+
+    const trendingMonth = trendingMonthReducer(
+      state.trendingMonth,
+      action as LineupActions<Track>
+    )
+    if (trendingMonth !== state.trendingMonth)
+      return { ...state, trendingMonth }
+
+    const trendingAllTime = trendingAllTimeReducer(
+      state.trendingAllTime,
+      action as LineupActions<Track>
+    )
+    if (trendingAllTime !== state.trendingAllTime) {
+      return { ...state, trendingAllTime }
     }
 
-    return initialState
+    const matchingReduceFunction = actionsMap[action.type]
+    if (!matchingReduceFunction) return state
+    return matchingReduceFunction(state, action as TrendingPageAction)
   }
-  const trendingWeek = trendingWeekReducer(state.trendingWeek, action)
-  if (trendingWeek !== state.trendingWeek) return { ...state, trendingWeek }
-
-  const trendingMonth = trendingMonthReducer(state.trendingMonth, action)
-  if (trendingMonth !== state.trendingMonth) return { ...state, trendingMonth }
-
-  const trendingAllTime = trendingAllTimeReducer(state.trendingAllTime, action)
-  if (trendingAllTime !== state.trendingAllTime) {
-    return { ...state, trendingAllTime }
-  }
-
-  const matchingReduceFunction = actionsMap[action.type]
-  if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
-}
 
 export default reducer
