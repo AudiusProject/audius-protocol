@@ -1,11 +1,11 @@
 import {
-  weiToString,
   tokenDashboardPageActions,
   TokenDashboardPageModalState,
   tokenDashboardPageSelectors,
   walletActions,
   modalsActions
 } from '@audius/common'
+import { weiToString } from '@audius/common/utils'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
 import commonTokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'

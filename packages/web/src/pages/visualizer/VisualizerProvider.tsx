@@ -1,4 +1,5 @@
-import { Name, SquareSizes, Track } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+     import { Name, SquareSizes, Track } from '@audius/common/models'
 import { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
@@ -12,7 +13,7 @@ import Toast from 'components/toast/Toast'
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import {
-  Nullable,
+  
   playerSelectors,
   queueSelectors,
   themeSelectors

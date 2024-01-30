@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  Nullable,
   tippingSelectors,
   tippingActions,
   TippingSendStatus,
@@ -9,6 +8,7 @@ import {
   StringKeys,
   accountSelectors
 } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

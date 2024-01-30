@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import {
-  removeNullable,
-  uuid,
   cacheTracksActions as cacheTrackActions,
   stemsUploadSelectors,
   stemsUploadActions,
@@ -16,6 +14,7 @@ import {
   StemUploadWithFile,
   Track
 } from '@audius/common/models'
+import { removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'

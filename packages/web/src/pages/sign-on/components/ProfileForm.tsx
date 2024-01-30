@@ -3,9 +3,9 @@ import { KeyboardEventHandler, useState } from 'react'
 import {
   imageProfilePicEmpty as profilePicEmpty,
   MAX_DISPLAY_NAME_LENGTH,
-  MAX_HANDLE_LENGTH,
-  getErrorMessage
+  MAX_HANDLE_LENGTH
 } from '@audius/common'
+import { getErrorMessage } from '@audius/common/utils'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

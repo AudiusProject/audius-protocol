@@ -1,10 +1,6 @@
-import {
-  SearchKind,
-  accountSelectors,
-  getContext,
-  removeNullable
-} from '@audius/common'
+import { SearchKind, accountSelectors, getContext } from '@audius/common'
 import { Name } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import { flatMap, zip } from 'lodash'
 import {
   call,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { formatDateWithTimezoneOffset } from '@audius/common'
 import { CollectibleMediaType, Collectible } from '@audius/common/models'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconDrag from 'assets/img/iconDrag.svg'

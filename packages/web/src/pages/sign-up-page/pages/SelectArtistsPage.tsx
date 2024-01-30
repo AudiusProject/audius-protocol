@@ -1,17 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
-import {
-  Genre,
-  convertGenreLabelToValue,
-  selectArtistsSchema
-} from '@audius/common'
+import { selectArtistsSchema } from '@audius/common'
 import {
   useGetTopArtistsInGenre,
   useGetFeaturedArtists
 } from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
+import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'

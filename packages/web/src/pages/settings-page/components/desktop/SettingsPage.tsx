@@ -8,10 +8,10 @@ import {
   EmailFrequency,
   TikTokProfile,
   FeatureFlags,
-  removeNullable,
   settingsPageSelectors
 } from '@audius/common'
 import { OS, Theme, ID, ProfilePictureSizes } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import { IconAppearance } from '@audius/harmony'
 import {
   Modal,

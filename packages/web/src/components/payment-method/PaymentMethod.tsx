@@ -1,11 +1,11 @@
 import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
-import {
-  Nullable,
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common'
 import { PurchaseMethod, PurchaseVendor, BNUSDC } from '@audius/common/models'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber,
+  Nullable
+} from '@audius/common/utils'
 import {
   FilterButton,
   Flex,

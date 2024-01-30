@@ -1,7 +1,5 @@
 import {
-  ELECTRONIC_SUBGENRES,
   FeatureFlags,
-  Genre,
   MAX_HANDLE_LENGTH,
   accountActions,
   accountSelectors,
@@ -16,12 +14,16 @@ import {
   toastActions,
   confirmerActions,
   confirmTransaction,
-  IntKeys,
-  parseHandleReservedStatusFromSocial,
-  isValidEmailString,
-  waitForAccount
+  IntKeys
 } from '@audius/common'
 import { Name, FavoriteSource } from '@audius/common/models'
+import {
+  Genre,
+  ELECTRONIC_SUBGENRES,
+  waitForAccount,
+  parseHandleReservedStatusFromSocial,
+  isValidEmailString
+} from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import {

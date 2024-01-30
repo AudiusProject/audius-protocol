@@ -1,7 +1,4 @@
 import {
-  makeUid,
-  makeKindId,
-  formatShareText,
   accountSelectors,
   accountActions,
   cacheCollectionsSelectors,
@@ -25,6 +22,7 @@ import {
   PlaylistLibrary,
   User
 } from '@audius/common/models'
+import { formatShareText, makeUid, makeKindId } from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

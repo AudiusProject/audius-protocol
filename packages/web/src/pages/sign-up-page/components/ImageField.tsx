@@ -1,7 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 
-import { Nullable } from '@audius/common'
 import { finishProfilePageMessages as messages } from '@audius/common/messages'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useField } from 'formik'
 import ReactDropzone, { DropFilesEventHandler } from 'react-dropzone'

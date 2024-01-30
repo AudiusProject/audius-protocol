@@ -6,10 +6,10 @@ import {
 } from 'react'
 
 import {
-  decimalIntegerToHumanReadable,
   filterDecimalString,
-  padDecimalValue
-} from '@audius/common'
+  padDecimalValue,
+  decimalIntegerToHumanReadable
+} from '@audius/common/utils'
 import cn from 'classnames'
 import { useField } from 'formik'
 

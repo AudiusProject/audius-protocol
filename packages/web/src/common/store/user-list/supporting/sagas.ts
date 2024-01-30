@@ -1,6 +1,4 @@
 import {
-  stringWeiToBN,
-  decodeHashId,
   cacheUsersSelectors,
   tippingActions,
   SupportingMapForUser,
@@ -12,6 +10,7 @@ import {
   SupportingResponse
 } from '@audius/common'
 import { ID, UserMetadata, User } from '@audius/common/models'
+import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
 import { put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'

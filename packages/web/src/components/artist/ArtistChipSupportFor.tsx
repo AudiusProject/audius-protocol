@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import {
-  Nullable,
-  formatWei,
-  stringWeiToBN,
-  tippingSelectors
-} from '@audius/common'
+import { tippingSelectors } from '@audius/common'
 import { ID, StringWei } from '@audius/common/models'
+import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
 import { IconTrophy, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 

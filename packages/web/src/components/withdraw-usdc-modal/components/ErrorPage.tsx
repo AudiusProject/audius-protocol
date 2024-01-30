@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
-import {
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorDollarNumber,
-  useWithdrawUSDCModal,
-  WithdrawUSDCModalPages,
-  decimalIntegerToHumanReadable
-} from '@audius/common'
+import { useWithdrawUSDCModal, WithdrawUSDCModalPages } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
+import {
+  decimalIntegerToHumanReadable,
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorDollarNumber
+} from '@audius/common/utils'
 import BN from 'bn.js'
 import { useField } from 'formik'
 

@@ -1,6 +1,5 @@
 import {
   EditPlaylistValues,
-  Nullable,
   accountActions,
   accountSelectors,
   cacheUsersSelectors,
@@ -9,7 +8,6 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   getContext,
-  makeKindId,
   newCollectionMetadata,
   confirmerActions,
   confirmTransaction,
@@ -27,6 +25,7 @@ import {
   ID,
   Track
 } from '@audius/common/models'
+import { makeKindId, Nullable } from '@audius/common/utils'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

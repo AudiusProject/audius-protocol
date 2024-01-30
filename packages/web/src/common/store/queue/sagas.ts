@@ -1,7 +1,4 @@
 import {
-  Nullable,
-  makeUid,
-  Uid,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -11,7 +8,6 @@ import {
   queueActions,
   RepeatMode,
   QueueSource,
-  waitForAccount,
   playerActions,
   playerSelectors,
   queueSelectors,
@@ -27,6 +23,7 @@ import {
   LineupState,
   User
 } from '@audius/common/models'
+import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

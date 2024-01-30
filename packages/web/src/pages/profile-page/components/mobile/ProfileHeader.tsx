@@ -1,10 +1,6 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
-import {
-  formatCount,
-  imageCoverPhotoBlank,
-  imageProfilePicEmpty
-} from '@audius/common'
+import { imageCoverPhotoBlank, imageProfilePicEmpty } from '@audius/common'
 import {
   Name,
   SquareSizes,
@@ -13,6 +9,7 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes
 } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Button,
   ButtonType,

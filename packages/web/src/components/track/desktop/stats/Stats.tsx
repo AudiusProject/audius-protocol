@@ -1,11 +1,8 @@
 import { memo, useMemo, MouseEvent, useCallback } from 'react'
 
-import {
-  createShallowSelector,
-  cacheUsersSelectors,
-  CommonState
-} from '@audius/common'
+import { cacheUsersSelectors, CommonState } from '@audius/common'
 import { Favorite, ID, Repost } from '@audius/common/models'
+import { createShallowSelector } from '@audius/common/utils'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 

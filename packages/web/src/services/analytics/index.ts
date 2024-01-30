@@ -1,5 +1,5 @@
-import { Nullable } from '@audius/common'
 import { AnalyticsEvent, AllTrackingEvents } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 
 import { env } from 'services/env'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'

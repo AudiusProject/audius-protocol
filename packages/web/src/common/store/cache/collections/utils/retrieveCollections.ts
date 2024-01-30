@@ -1,6 +1,4 @@
 import {
-  Nullable,
-  makeUid,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheSelectors,
@@ -16,6 +14,7 @@ import {
   UserCollectionMetadata,
   ID
 } from '@audius/common/models'
+import { makeUid, Nullable } from '@audius/common/utils'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 

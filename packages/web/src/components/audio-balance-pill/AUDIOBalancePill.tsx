@@ -1,10 +1,11 @@
 import { cloneElement } from 'react'
 
-import { accountSelectors, formatWei, isNullOrUndefined } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import {
   useSelectTierInfo,
   useTotalBalanceWithFallback
 } from '@audius/common/hooks'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

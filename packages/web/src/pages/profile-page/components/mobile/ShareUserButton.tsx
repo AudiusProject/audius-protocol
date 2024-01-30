@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { Nullable, shareModalUIActions } from '@audius/common'
+import { shareModalUIActions } from '@audius/common'
 import { ShareSource, ID } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { IconShare, IconButton } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

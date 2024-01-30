@@ -1,5 +1,5 @@
-import { formatUSDCWeiToUSDString } from '@audius/common'
 import { USDCPurchaseDetails } from '@audius/common/models'
+import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import BN from 'bn.js'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'

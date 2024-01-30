@@ -1,12 +1,11 @@
 import { useCallback, ReactNode } from 'react'
 
 import {
-  formatWei,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors,
-  walletSelectors,
-  isNullOrUndefined
+  walletSelectors
 } from '@audius/common'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

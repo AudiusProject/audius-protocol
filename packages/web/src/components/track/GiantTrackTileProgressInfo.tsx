@@ -1,10 +1,10 @@
 import {
   CommonState,
-  formatLineupTileDuration,
   accountSelectors,
   playbackPositionSelectors
 } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { formatLineupTileDuration } from '@audius/common/utils'
 import { IconCheck, ProgressBar } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

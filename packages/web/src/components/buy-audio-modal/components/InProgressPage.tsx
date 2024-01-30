@@ -3,9 +3,9 @@ import { ReactNode } from 'react'
 import {
   buyAudioSelectors,
   BuyAudioStage,
-  formatNumberString,
   OnRampProvider
 } from '@audius/common'
+import { formatNumberString } from '@audius/common/utils'
 import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

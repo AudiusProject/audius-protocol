@@ -1,11 +1,11 @@
 import { Component } from 'react'
 
 import {
-  formatCount,
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
 } from '@audius/common'
 import { Status } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import { Redirect } from 'react-router'
 
 import IconBigSearch from 'assets/img/iconBigSearch.svg'

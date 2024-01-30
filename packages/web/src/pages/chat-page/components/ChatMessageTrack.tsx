@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import {
-  makeUid,
   QueueSource,
   accountSelectors,
-  getPathFromTrackUrl,
   ChatMessageTileProps,
   cacheTracksActions
 } from '@audius/common'
@@ -22,6 +20,7 @@ import {
   Status,
   ID
 } from '@audius/common/models'
+import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

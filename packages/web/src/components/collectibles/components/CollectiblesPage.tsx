@@ -10,11 +10,11 @@ import {
 import {
   ProfileUser,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions,
-  getHash
+  collectibleDetailsUIActions
 } from '@audius/common'
 import { useInstanceVar } from '@audius/common/hooks'
 import { CollectiblesMetadata, Collectible } from '@audius/common/models'
+import { getHash } from '@audius/common/utils'
 import {
   Button,
   ButtonSize,

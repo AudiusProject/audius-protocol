@@ -1,6 +1,4 @@
 import {
-  getIdFromKindId,
-  getKindFromKindId,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -8,10 +6,14 @@ import {
   profilePageFeedLineupActions as feedActions,
   tracksSocialActions,
   collectionsSocialActions,
-  makeUid,
   confirmerSelectors
 } from '@audius/common'
 import { Kind } from '@audius/common/models'
+import {
+  makeUid,
+  getIdFromKindId,
+  getKindFromKindId
+} from '@audius/common/utils'
 import { select, call, takeEvery, put } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

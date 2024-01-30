@@ -1,9 +1,9 @@
-import {
-  formatUSDCWeiToFloorCentsNumber,
-  decimalIntegerToHumanReadable
-} from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
+import {
+  decimalIntegerToHumanReadable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import BN from 'bn.js'
 import { useField } from 'formik'
 

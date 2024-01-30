@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  Nullable,
   cacheUsersSelectors,
   imageCoverPhotoBlank,
   imageProfilePicEmpty as profilePicEmpty
@@ -12,6 +11,7 @@ import {
   Supporting,
   User
 } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { IconTrophy } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

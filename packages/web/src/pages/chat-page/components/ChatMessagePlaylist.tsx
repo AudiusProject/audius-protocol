@@ -1,10 +1,8 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
 import {
-  makeUid,
   QueueSource,
   playerSelectors,
-  getPathFromPlaylistUrl,
   accountSelectors,
   ChatMessageTileProps,
   cacheCollectionsActions,
@@ -17,6 +15,7 @@ import {
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import { Name, SquareSizes, Kind, Status, ID } from '@audius/common/models'
+import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

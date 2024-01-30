@@ -1,6 +1,4 @@
 import {
-  makeKindId,
-  squashNewLines,
   accountSelectors,
   accountActions,
   cacheCollectionsSelectors,
@@ -10,9 +8,7 @@ import {
   cacheActions,
   getContext,
   toastActions,
-  updatePlaylistArtwork,
   cacheTracksSelectors,
-  removeNullable,
   confirmerActions,
   LibraryCategory,
   confirmTransaction,
@@ -20,6 +16,12 @@ import {
   savedPageActions
 } from '@audius/common'
 import { Name, DefaultSizes, Kind } from '@audius/common/models'
+import {
+  squashNewLines,
+  removeNullable,
+  makeKindId,
+  updatePlaylistArtwork
+} from '@audius/common/utils'
 import {
   all,
   call,

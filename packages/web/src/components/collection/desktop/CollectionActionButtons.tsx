@@ -1,5 +1,5 @@
-import { Nullable } from '@audius/common'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import styles from './CollectionHeader.module.css'

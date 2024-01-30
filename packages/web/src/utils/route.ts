@@ -1,5 +1,6 @@
-import { Env, encodeUrlName, getHash } from '@audius/common'
+import { Env } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { encodeUrlName, getHash } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'

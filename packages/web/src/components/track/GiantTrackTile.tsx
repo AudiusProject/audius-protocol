@@ -1,13 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
   FeatureFlags,
-  Nullable,
-  getDogEarType,
   publishTrackConfirmationModalUIActions,
   CommonState,
   cacheTracksSelectors
@@ -20,6 +14,14 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {

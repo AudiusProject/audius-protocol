@@ -1,13 +1,8 @@
 import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
 import {
-  formatCount,
-  Nullable,
   gatedContentSelectors,
   gatedContentActions,
-  formatLineupTileDuration,
-  Genre,
-  getDogEarType,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import {
@@ -16,6 +11,13 @@ import {
   ID,
   AccessConditions
 } from '@audius/common/models'
+import {
+  formatCount,
+  Genre,
+  formatLineupTileDuration,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

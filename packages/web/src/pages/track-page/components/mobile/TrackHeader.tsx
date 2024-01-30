@@ -1,13 +1,8 @@
 import { useCallback } from 'react'
 
 import {
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
   OverflowAction,
   imageBlank as placeholderArt,
-  Nullable,
-  getDogEarType,
   FeatureFlags
 } from '@audius/common'
 import {
@@ -20,6 +15,13 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import {
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import {
   Button,
   ButtonSize,

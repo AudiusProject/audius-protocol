@@ -14,8 +14,7 @@ import {
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  gatedContentActions,
-  Genre
+  gatedContentActions
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -25,6 +24,7 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import { Genre } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'

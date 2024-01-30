@@ -1,11 +1,11 @@
 import {
-  makeUid,
   accountSelectors,
   cacheActions,
   getContext,
   reformatUser
 } from '@audius/common'
 import { Kind, TrackMetadata, User } from '@audius/common/models'
+import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 

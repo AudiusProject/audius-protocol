@@ -1,7 +1,4 @@
 import {
-  makeUid,
-  makeUids,
-  Uid,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
@@ -17,6 +14,7 @@ import {
   accountSelectors
 } from '@audius/common'
 import { Name, Kind, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { Uid, makeUids, makeUid } from '@audius/common/utils'
 import {
   all,
   call,

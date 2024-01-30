@@ -2,9 +2,9 @@ import {
   cacheTracksSelectors,
   searchResultsPageSelectors,
   SearchKind,
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
+  searchResultsPageTracksLineupActions as tracksActions
 } from '@audius/common'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call, getContext } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
-import {
-  PurchaseContentError,
-  PurchaseContentStage,
-  formatPrice
-} from '@audius/common'
+import { PurchaseContentError, PurchaseContentStage } from '@audius/common'
 import {
   PurchaseableTrackMetadata,
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
+import { formatPrice } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import {
   HarmonyPlainButton,

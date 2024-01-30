@@ -11,8 +11,7 @@ import {
   explorePageActions,
   ExplorePageTabs as ExploreTabs,
   ExploreCollectionsVariant,
-  explorePageSelectors,
-  removeNullable
+  explorePageSelectors
 } from '@audius/common'
 import {
   Variant as CollectionVariant,
@@ -21,6 +20,7 @@ import {
   SmartCollection,
   User
 } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

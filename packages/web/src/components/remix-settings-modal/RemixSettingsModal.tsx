@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 
-import { Nullable } from '@audius/common'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -10,6 +9,7 @@ import {
   Track,
   User
 } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import {
   Modal,
   Button,

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { makeSolanaTransactionLink } from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   Button,
   Flex,

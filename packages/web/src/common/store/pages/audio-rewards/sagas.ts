@@ -3,7 +3,6 @@ import {
   StringKeys,
   RemoteConfigInstance,
   getContext,
-  stringAudioToStringWei,
   accountSelectors,
   accountActions,
   audioRewardsPageActions,
@@ -14,7 +13,6 @@ import {
   solanaSelectors,
   walletActions,
   modalsActions,
-  waitForValue,
   Env,
   musicConfettiActions,
   createUserBankIfNeeded
@@ -24,6 +22,7 @@ import {
   UserChallenge,
   StringAudio
 } from '@audius/common/models'
+import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
   call,
   fork,

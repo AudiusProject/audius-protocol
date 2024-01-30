@@ -1,17 +1,19 @@
 import { memo } from 'react'
 
 import {
-  formatCount,
   accountSelectors,
   playbackPositionSelectors,
   FeatureFlags,
-  formatLineupTileDuration,
-  Genre,
   CommonState,
-  getDogEarType,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import {
+  formatCount,
+  Genre,
+  formatLineupTileDuration,
+  getDogEarType
+} from '@audius/common/utils'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'

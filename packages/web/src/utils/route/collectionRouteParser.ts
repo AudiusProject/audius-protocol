@@ -1,5 +1,5 @@
-import { decodeHashId } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { decodeHashId } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
 import {

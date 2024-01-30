@@ -8,15 +8,17 @@ import {
 import {
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  formatUSDCWeiToFloorCentsNumber,
-  filterDecimalString,
-  padDecimalValue,
-  decimalIntegerToHumanReadable,
   WithdrawMethod,
   FeatureFlags
 } from '@audius/common'
 import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
 import { Name, BNUSDC } from '@audius/common/models'
+import {
+  filterDecimalString,
+  padDecimalValue,
+  decimalIntegerToHumanReadable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'

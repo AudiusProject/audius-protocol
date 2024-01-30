@@ -2,13 +2,15 @@ import { useCallback } from 'react'
 
 import {
   WithdrawUSDCModalPages,
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
   useWithdrawUSDCModal,
   useAddFundsModal
 } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status, BNUSDC } from '@audius/common/models'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { Button, PlainButton, IconQuestionCircle, Flex } from '@audius/harmony'
 import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'

@@ -1,8 +1,5 @@
 import {
   DoubleKeys,
-  makeUid,
-  makeKindId,
-  squashNewLines,
   accountSelectors,
   cacheActions,
   profilePageSelectors,
@@ -11,11 +8,6 @@ import {
   reachabilitySelectors,
   tippingActions,
   relatedArtistsUIActions as relatedArtistsActions,
-  waitForAccount,
-  dataURLtoFile,
-  SUPPORTING_PAGINATION_SIZE,
-  MAX_PROFILE_SUPPORTING_TILES,
-  MAX_PROFILE_TOP_SUPPORTERS,
   collectiblesActions,
   processAndCacheUsers,
   chatActions,
@@ -24,6 +16,16 @@ import {
   confirmTransaction
 } from '@audius/common'
 import { DefaultSizes, Kind } from '@audius/common/models'
+import {
+  squashNewLines,
+  makeUid,
+  makeKindId,
+  waitForAccount,
+  dataURLtoFile,
+  MAX_PROFILE_TOP_SUPPORTERS,
+  MAX_PROFILE_SUPPORTING_TILES,
+  SUPPORTING_PAGINATION_SIZE
+} from '@audius/common/utils'
 import { merge } from 'lodash'
 import {
   all,

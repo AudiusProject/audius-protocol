@@ -1,5 +1,5 @@
-import { Nullable } from '@audius/common'
 import { Status, Collection, Track } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 
 export default interface ArtistDashboardState {
   status: Status

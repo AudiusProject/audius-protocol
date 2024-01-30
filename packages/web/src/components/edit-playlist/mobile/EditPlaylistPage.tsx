@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
 import {
-  Nullable,
   RandomImage,
   accountSelectors,
   cacheCollectionsActions,
@@ -14,6 +13,7 @@ import {
 } from '@audius/common'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

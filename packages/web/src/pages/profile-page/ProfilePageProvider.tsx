@@ -1,8 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
 import {
-  formatCount,
-  getErrorMessage,
   accountActions,
   accountSelectors,
   profilePageSelectors,
@@ -25,7 +23,6 @@ import {
   newUserMetadata,
   playerSelectors,
   queueSelectors,
-  Nullable,
   chatActions,
   chatSelectors,
   ChatPermissionAction,
@@ -42,6 +39,7 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import { getErrorMessage, formatCount, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'

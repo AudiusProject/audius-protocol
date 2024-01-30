@@ -4,9 +4,9 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  duplicateAddConfirmationModalUISelectors,
-  fillString
+  duplicateAddConfirmationModalUISelectors
 } from '@audius/common'
+import { fillString } from '@audius/common/utils'
 import {
   Button,
   ButtonType,

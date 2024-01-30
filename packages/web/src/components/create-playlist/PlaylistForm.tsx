@@ -1,9 +1,9 @@
-import { Nullable } from '@audius/common'
 import {
   SquareSizes,
   CollectionMetadata,
   Collection
 } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

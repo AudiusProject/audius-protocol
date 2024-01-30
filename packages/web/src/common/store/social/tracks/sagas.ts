@@ -1,6 +1,4 @@
 import {
-  makeKindId,
-  formatShareText,
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -8,15 +6,19 @@ import {
   gatedContentSelectors,
   getContext,
   tracksSocialActions as socialActions,
-  waitForValue,
   QueryParams,
-  encodeHashId,
-  getQueryParams,
   confirmerActions,
   confirmTransaction,
   FeatureFlags
 } from '@audius/common'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import {
+  formatShareText,
+  encodeHashId,
+  makeKindId,
+  waitForValue,
+  getQueryParams
+} from '@audius/common/utils'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 

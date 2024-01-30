@@ -1,8 +1,8 @@
+import { useUSDCTransactionDetailsModal } from '@audius/common'
 import {
   formatUSDCWeiToUSDString,
-  useUSDCTransactionDetailsModal,
   makeSolanaTransactionLink
-} from '@audius/common'
+} from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import {
   IconExternalLink,

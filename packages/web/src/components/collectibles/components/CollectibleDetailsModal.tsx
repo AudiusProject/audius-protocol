@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import {
-  formatDateWithTimezoneOffset,
   accountSelectors,
   badgeTiers,
   collectibleDetailsUISelectors,
@@ -16,6 +15,7 @@ import {
 } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   Button,
   ButtonSize,

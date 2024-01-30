@@ -1,9 +1,9 @@
 import {
   FetchNotificationsAction,
-  getErrorMessage,
   notificationsActions,
   notificationsSelectors
 } from '@audius/common'
+import { getErrorMessage } from '@audius/common/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'

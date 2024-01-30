@@ -1,7 +1,8 @@
 import { useState, useCallback, MouseEventHandler } from 'react'
 
-import { ChatPermissionAction, CHAT_BLOG_POST_URL } from '@audius/common'
+import { ChatPermissionAction } from '@audius/common'
 import { User } from '@audius/common/models'
+import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 

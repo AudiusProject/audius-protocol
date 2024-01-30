@@ -4,9 +4,9 @@ import {
   CommonState,
   chatActions,
   chatSelectors,
-  makeSolanaTransactionLink,
   useInboxUnavailableModal
 } from '@audius/common'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   Button,
   Flex,

@@ -1,7 +1,6 @@
 import { PureComponent } from 'react'
 
 import {
-  GENRES,
   accountSelectors,
   lineupSelectors,
   trendingPageLineupActions,
@@ -11,6 +10,7 @@ import {
   queueSelectors
 } from '@audius/common'
 import { Name, TimeRange } from '@audius/common/models'
+import { GENRES } from '@audius/common/utils'
 import {
   push as pushRoute,
   replace as replaceRoute

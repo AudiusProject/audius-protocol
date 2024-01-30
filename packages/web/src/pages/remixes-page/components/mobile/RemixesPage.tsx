@@ -1,7 +1,7 @@
 import { useEffect, useContext } from 'react'
 
-import { pluralize } from '@audius/common'
 import { Track, User } from '@audius/common/models'
+import { pluralize } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconRemixes from 'assets/img/iconRemix.svg'

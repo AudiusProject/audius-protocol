@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  Genre,
   accountSelectors,
   averageColorSelectors,
   queueActions,
@@ -32,6 +31,7 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
+import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'

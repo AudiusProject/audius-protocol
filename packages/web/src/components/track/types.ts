@@ -1,6 +1,5 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { Nullable, Genre } from '@audius/common'
 import {
   PlaybackSource,
   Collection,
@@ -14,6 +13,7 @@ import {
   AccessConditions,
   LineupTrack
 } from '@audius/common/models'
+import { Genre, Nullable } from '@audius/common/utils'
 
 export enum TrackTileSize {
   LARGE = 'LARGE',

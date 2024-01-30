@@ -1,5 +1,4 @@
 import {
-  makeUid,
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
   savedPageActions as saveActions,
@@ -16,6 +15,7 @@ import {
   ContentType
 } from '@audius/common'
 import { Kind } from '@audius/common/models'
+import { makeUid } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'

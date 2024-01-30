@@ -1,7 +1,8 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
-import { formatCount, themeSelectors } from '@audius/common'
+import { themeSelectors } from '@audius/common'
 import { Status, Track } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { each } from 'lodash'
 import moment, { Moment } from 'moment'

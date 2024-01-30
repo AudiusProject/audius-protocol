@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { Maybe, Nullable } from '@audius/common'
 import { useAppContext } from '@audius/common/context'
 import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
+import { Nullable, Maybe } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'

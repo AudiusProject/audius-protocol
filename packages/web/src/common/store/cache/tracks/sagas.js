@@ -1,19 +1,21 @@
 import {
-  makeKindId,
-  squashNewLines,
-  formatUrlName,
   accountSelectors,
   averageColorActions,
   cacheTracksSelectors,
   cacheTracksActions as trackActions,
   cacheUsersSelectors,
   cacheActions,
-  waitForAccount,
-  waitForValue,
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
 import { Name, DefaultSizes, SquareSizes, Kind } from '@audius/common/models'
+import {
+  formatUrlName,
+  squashNewLines,
+  makeKindId,
+  waitForValue,
+  waitForAccount
+} from '@audius/common/utils'
 import {
   call,
   fork,

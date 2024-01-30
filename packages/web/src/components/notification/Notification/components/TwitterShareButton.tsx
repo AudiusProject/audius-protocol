@@ -1,12 +1,12 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import {
-  Nullable,
   CommonState,
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
 import { useTwitterButtonStatus } from '@audius/common/hooks'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

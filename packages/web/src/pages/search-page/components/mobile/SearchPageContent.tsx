@@ -1,9 +1,6 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
-import {
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
-} from '@audius/common'
+import { searchResultsPageTracksLineupActions as tracksActions } from '@audius/common'
 import {
   Name,
   Status,
@@ -12,6 +9,7 @@ import {
   LineupState,
   User
 } from '@audius/common/models'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 

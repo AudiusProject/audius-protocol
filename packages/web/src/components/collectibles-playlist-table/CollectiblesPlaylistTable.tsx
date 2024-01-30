@@ -1,7 +1,7 @@
 import { useCallback, useMemo, MouseEvent } from 'react'
 
-import { formatSeconds } from '@audius/common'
 import { Chain } from '@audius/common/models'
+import { formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 import { Cell, Row } from 'react-table'
 

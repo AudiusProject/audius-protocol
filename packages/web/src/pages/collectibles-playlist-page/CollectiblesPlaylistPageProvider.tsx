@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import {
-  formatSeconds,
   cacheUsersSelectors,
   profilePageActions,
   CollectionTrack,
@@ -17,8 +16,7 @@ import {
   QueueSource,
   collectibleDetailsUIActions,
   shareModalUIActions,
-  playerSelectors,
-  getHash
+  playerSelectors
 } from '@audius/common'
 import {
   ShareSource,
@@ -30,6 +28,7 @@ import {
   SmartCollection,
   User
 } from '@audius/common/models'
+import { getHash, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

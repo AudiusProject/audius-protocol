@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons } from '@audius/common'
+import { creativeCommons } from '@audius/common/utils'
 import { IconRobot } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'

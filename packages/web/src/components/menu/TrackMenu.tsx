@@ -8,7 +8,6 @@ import {
   playbackPositionSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
-  Genre,
   FeatureFlags,
   CommonState,
   useEditTrackModal
@@ -20,6 +19,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
+import { Genre } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'

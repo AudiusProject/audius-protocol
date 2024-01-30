@@ -1,4 +1,5 @@
-import { getErrorMessage, notificationsActions } from '@audius/common'
+import { notificationsActions } from '@audius/common'
+import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'

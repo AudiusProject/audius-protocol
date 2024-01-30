@@ -1,7 +1,8 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { formatSeconds, EnhancedCollectionTrack, Genre } from '@audius/common'
+import { EnhancedCollectionTrack } from '@audius/common'
 import { ID, UID } from '@audius/common/models'
+import { Genre, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'

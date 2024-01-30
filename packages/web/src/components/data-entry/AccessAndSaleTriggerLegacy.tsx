@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { accountSelectors, Nullable } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
@@ -15,6 +15,7 @@ import {
   AccessConditions,
   Track
 } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import {
   Button,
   ButtonSize,

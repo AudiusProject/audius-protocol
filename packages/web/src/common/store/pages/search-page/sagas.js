@@ -1,13 +1,12 @@
 import {
-  trimToAlphaNumeric,
   accountSelectors,
   searchResultsPageActions as searchPageActions,
   searchResultsPageTracksLineupActions as tracksLineupActions,
   SearchKind,
   processAndCacheUsers,
-  removeNullable,
   FeatureFlags
 } from '@audius/common'
+import { trimToAlphaNumeric, removeNullable } from '@audius/common/utils'
 import { flatMap, zip } from 'lodash'
 import {
   select,

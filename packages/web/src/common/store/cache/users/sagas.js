@@ -4,11 +4,10 @@ import {
   cacheUsersSelectors,
   cacheReducer,
   cacheUsersActions as userActions,
-  waitForValue,
-  waitForAccount,
   reformatUser
 } from '@audius/common'
 import { DefaultSizes, Kind } from '@audius/common/models'
+import { waitForValue, waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery, getContext } from 'redux-saga/effects'
 

@@ -1,8 +1,6 @@
 import { Component, ComponentType } from 'react'
 
 import {
-  Uid,
-  formatDate,
   accountSelectors,
   cacheTracksActions as cacheTrackActions,
   lineupSelectors,
@@ -34,6 +32,7 @@ import {
   ID,
   Track
 } from '@audius/common/models'
+import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

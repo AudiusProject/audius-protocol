@@ -1,9 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
-  Nullable,
-  Uid,
-  formatUrlName,
   accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
@@ -45,6 +42,7 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'

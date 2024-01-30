@@ -7,7 +7,6 @@ import {
   getUserbankAccountInfo,
   relayVersionedTransaction,
   relayTransaction,
-  formatUSDCWeiToFloorCentsNumber,
   withdrawUSDCModalActions,
   WithdrawUSDCModalPages,
   WithdrawMethod,
@@ -21,6 +20,7 @@ import {
   BNUSDC,
   SolanaWalletAddress
 } from '@audius/common/models'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync

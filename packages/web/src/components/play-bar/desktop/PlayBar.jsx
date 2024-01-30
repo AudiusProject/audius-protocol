@@ -1,7 +1,6 @@
 import { Component } from 'react'
 
 import {
-  Genre,
   accountSelectors,
   lineupSelectors,
   queueActions,
@@ -22,6 +21,7 @@ import {
   PlaybackSource,
   Kind
 } from '@audius/common/models'
+import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

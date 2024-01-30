@@ -1,7 +1,5 @@
 import {
-  Nullable,
   StringKeys,
-  Genre,
   cacheTracksSelectors,
   trendingPageLineupSelectors,
   trendingPageActions,
@@ -9,6 +7,7 @@ import {
   getContext
 } from '@audius/common'
 import { TimeRange, ID, Track, UserTrackMetadata } from '@audius/common/models'
+import { Genre, Nullable } from '@audius/common/utils'
 import { keccak_256 } from 'js-sha3'
 import { call, put, select } from 'redux-saga/effects'
 

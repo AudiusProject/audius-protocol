@@ -1,7 +1,8 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Nullable, Entity } from '@audius/common'
+import { Entity } from '@audius/common'
 import { Name, Collection, Track, User } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

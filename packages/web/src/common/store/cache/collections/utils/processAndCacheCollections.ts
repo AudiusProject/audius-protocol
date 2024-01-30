@@ -1,15 +1,11 @@
-import {
-  makeUid,
-  cacheActions,
-  getContext,
-  reformatCollection
-} from '@audius/common'
+import { cacheActions, getContext, reformatCollection } from '@audius/common'
 import {
   Kind,
   CollectionMetadata,
   UserCollectionMetadata,
   ID
 } from '@audius/common/models'
+import { makeUid } from '@audius/common/utils'
 import { put, call } from 'redux-saga/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'

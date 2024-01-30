@@ -1,12 +1,8 @@
 import {
-  makeUid,
-  formatUrlName,
   accountSelectors,
   accountActions,
   cacheUsersSelectors,
   cacheActions,
-  waitForAccount,
-  actionChannelDispatcher,
   uploadActions,
   UploadType,
   ProgressStatus,
@@ -18,6 +14,12 @@ import {
   savedPageActions
 } from '@audius/common'
 import { Name, Kind } from '@audius/common/models'
+import {
+  formatUrlName,
+  makeUid,
+  actionChannelDispatcher,
+  waitForAccount
+} from '@audius/common/utils'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
 import {

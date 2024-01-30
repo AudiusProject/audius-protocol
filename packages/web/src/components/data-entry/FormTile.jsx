@@ -1,13 +1,12 @@
 import { Component, useState, useCallback } from 'react'
 
+import { createRemixOfMetadata, FeatureFlags } from '@audius/common'
 import {
-  GENRES,
-  convertGenreLabelToValue,
-  getCanonicalName,
-  createRemixOfMetadata,
   creativeCommons,
-  FeatureFlags
-} from '@audius/common'
+  getCanonicalName,
+  GENRES,
+  convertGenreLabelToValue
+} from '@audius/common/utils'
 import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'

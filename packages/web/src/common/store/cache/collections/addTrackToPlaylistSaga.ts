@@ -1,21 +1,23 @@
 import {
-  makeKindId,
-  makeUid,
   cacheCollectionsSelectors,
   cacheCollectionsActions,
   PlaylistOperations,
   cacheActions,
   getContext,
   audioRewardsPageActions,
-  Nullable,
   cacheTracksSelectors,
-  updatePlaylistArtwork,
   confirmerActions,
   confirmTransaction,
   reformatCollection,
   toastActions
 } from '@audius/common'
 import { Name, Kind, Collection, ID } from '@audius/common/models'
+import {
+  makeUid,
+  makeKindId,
+  updatePlaylistArtwork,
+  Nullable
+} from '@audius/common/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

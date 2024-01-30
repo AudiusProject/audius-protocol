@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import {
-  Nullable,
   notificationsSelectors,
   TrackEntity,
   TastemakerNotification as TastemakerNotificationType
 } from '@audius/common'
 import { Name } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

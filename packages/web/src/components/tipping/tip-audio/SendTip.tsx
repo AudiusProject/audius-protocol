@@ -7,9 +7,6 @@ import {
 } from 'react'
 
 import {
-  formatWei,
-  stringWeiToBN,
-  weiToString,
   accountSelectors,
   tippingSelectors,
   tippingActions,
@@ -18,11 +15,16 @@ import {
   OnRampProvider,
   buyAudioActions,
   FeatureFlags,
-  StringKeys,
-  isNullOrUndefined
+  StringKeys
 } from '@audius/common'
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
+import {
+  isNullOrUndefined,
+  stringWeiToBN,
+  weiToString,
+  formatWei
+} from '@audius/common/utils'
 import {
   IconTrophy,
   TokenAmountInput,

@@ -5,11 +5,11 @@ import {
   chatActions,
   ChatPermissionAction,
   chatSelectors,
-  removeNullable,
   tippingActions,
   tippingSelectors
 } from '@audius/common'
 import { User } from '@audius/common/models'
+import { removeNullable } from '@audius/common/utils'
 import {
   IconBlockMessages,
   IconButton,

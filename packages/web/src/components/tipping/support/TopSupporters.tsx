@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import {
   cacheUsersSelectors,
   profilePageSelectors,
-  tippingSelectors,
-  MAX_PROFILE_TOP_SUPPORTERS
+  tippingSelectors
 } from '@audius/common'
 import { ID, User } from '@audius/common/models'
+import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
 import { IconTrophy } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

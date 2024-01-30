@@ -2,13 +2,15 @@ import {
   cacheUsersSelectors,
   TransactionDetails,
   TransactionMethod,
-  formatAudio,
-  TransactionType,
-  formatCapitalizeString,
-  makeSolanaTransactionLink,
-  isNullOrUndefined
+  TransactionType
 } from '@audius/common'
 import { ChallengeRewardID, User } from '@audius/common/models'
+import {
+  formatAudio,
+  formatCapitalizeString,
+  isNullOrUndefined,
+  makeSolanaTransactionLink
+} from '@audius/common/utils'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'

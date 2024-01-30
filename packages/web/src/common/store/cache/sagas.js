@@ -1,6 +1,4 @@
 import {
-  makeUids,
-  getIdFromKindId,
   cacheActions,
   cacheSelectors,
   cacheConfig,
@@ -9,6 +7,7 @@ import {
   IntKeys
 } from '@audius/common'
 import { Status } from '@audius/common/models'
+import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import {
   all,

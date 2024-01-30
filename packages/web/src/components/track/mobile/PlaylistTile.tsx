@@ -1,7 +1,7 @@
 import { useState, useEffect, MouseEvent } from 'react'
 
-import { formatCount, formatLineupTileDuration } from '@audius/common'
 import { ID, UID, LineupTrack } from '@audius/common/models'
+import { formatCount, formatLineupTileDuration } from '@audius/common/utils'
 import cn from 'classnames'
 import { range } from 'lodash'
 

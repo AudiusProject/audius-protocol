@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
-  fillString,
-  formatNumberCommas,
   accountSelectors,
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
   ClaimStatus,
   audioRewardsPageSelectors,
+  musicConfettiActions
+} from '@audius/common'
+import {
+  fillString,
+  formatNumberCommas,
   getAAOErrorEmojis,
-  musicConfettiActions,
   challengeRewardsConfig,
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
-} from '@audius/common'
+} from '@audius/common/utils'
 import {
   Button,
   ButtonType,

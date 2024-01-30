@@ -4,8 +4,6 @@ import {
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
   withdrawUSDCActions,
-  formatUSDCWeiToFloorCentsNumber,
-  Nullable,
   withdrawUSDCSelectors,
   WithdrawMethod,
   FeatureFlags,
@@ -22,6 +20,7 @@ import {
   BNUSDC,
   SolanaWalletAddress
 } from '@audius/common/models'
+import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'

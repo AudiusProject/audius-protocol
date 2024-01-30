@@ -1,4 +1,4 @@
-import { formatPrice } from '@audius/common'
+import { formatPrice } from '@audius/common/utils'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'

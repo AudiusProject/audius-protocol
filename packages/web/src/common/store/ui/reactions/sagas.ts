@@ -1,13 +1,12 @@
 import {
-  removeNullable,
   getReactionFromRawValue,
   reactionsMap,
   reactionsUIActions,
   reactionsUISelectors,
   getContext,
-  AudiusBackend,
-  getErrorMessage
+  AudiusBackend
 } from '@audius/common'
+import { getErrorMessage, removeNullable } from '@audius/common/utils'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =

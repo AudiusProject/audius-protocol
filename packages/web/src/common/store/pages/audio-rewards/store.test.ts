@@ -9,8 +9,7 @@ import {
   audioRewardsPageSelectors,
   solanaSelectors,
   walletActions,
-  modalsActions,
-  stringAudioToStringWei
+  modalsActions
 } from '@audius/common'
 import {
   FailureReason,
@@ -18,6 +17,7 @@ import {
   ChallengeRewardID,
   StringAudio
 } from '@audius/common/models'
+import { stringAudioToStringWei } from '@audius/common/utils'
 import delayP from '@redux-saga/delay-p'
 import { all, fork } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'

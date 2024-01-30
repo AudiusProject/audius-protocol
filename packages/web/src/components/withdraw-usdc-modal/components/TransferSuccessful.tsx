@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
-import {
-  formatUSDCWeiToFloorCentsNumber,
-  makeSolanaTransactionLink,
-  decimalIntegerToHumanReadable,
-  withdrawUSDCSelectors,
-  WithdrawMethod
-} from '@audius/common'
+import { withdrawUSDCSelectors, WithdrawMethod } from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status, BNUSDC } from '@audius/common/models'
+import {
+  decimalIntegerToHumanReadable,
+  formatUSDCWeiToFloorCentsNumber,
+  makeSolanaTransactionLink
+} from '@audius/common/utils'
 import { Button, Flex } from '@audius/harmony'
 import {
   HarmonyPlainButton,
