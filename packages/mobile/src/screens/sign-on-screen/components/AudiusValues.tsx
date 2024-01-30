@@ -11,10 +11,6 @@ import {
 
 import { PANEL_EXPAND_DURATION } from '../constants'
 
-// import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
-// import IconHeadphones from './temp-harmony/iconHeadphones.svg'
-// import IconMessage from './temp-harmony/iconMessages.svg'
-
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 const messages = {
