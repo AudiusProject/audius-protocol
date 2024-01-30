@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import type { ChatMessageTileProps, ID, TrackPlayback } from '@audius/common'
+import type { ChatMessageTileProps, ID } from '@audius/common'
 import {
   Name,
   Kind,
@@ -13,6 +13,7 @@ import {
   useToggleTrack,
   useGatedContentAccess
 } from '@audius/common'
+import type { TrackPlayback } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 
 import { TrackTile } from 'app/components/lineup-tile'

@@ -1,5 +1,5 @@
-import type { Credentials, UseTikTokAuthArguments } from '@audius/common'
 import { createUseTikTokAuthHook } from '@audius/common'
+import type { UseTikTokAuthArguments, Credentials } from '@audius/common/hooks'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CookieManager from '@react-native-cookies/cookies'
 import { Linking } from 'react-native'

@@ -1,5 +1,5 @@
-import type { PayExtraAmountPresetValues } from '@audius/common'
 import { AMOUNT_PRESET, CUSTOM_AMOUNT, PayExtraPreset } from '@audius/common'
+import type { PayExtraAmountPresetValues } from '@audius/common/hooks'
 import { useField } from 'formik'
 import { View } from 'react-native'
 

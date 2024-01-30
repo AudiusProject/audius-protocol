@@ -1,9 +1,6 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import type {
-  PurchaseableTrackMetadata,
-  PurchaseContentError
-} from '@audius/common'
+import type { PurchaseContentError } from '@audius/common'
 import {
   PurchaseContentPage,
   FeatureFlags,
@@ -28,6 +25,7 @@ import {
   IntKeys,
   PurchaseVendor
 } from '@audius/common'
+import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,
