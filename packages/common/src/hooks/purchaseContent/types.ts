@@ -17,6 +17,7 @@ export enum PayExtraPreset {
 
 export type PurchaseableTrackMetadata = UserTrackMetadata & {
   stream_conditions: USDCPurchaseConditions
+  download_conditions: USDCPurchaseConditions
 }
 
 export type USDCPurchaseConfig = {

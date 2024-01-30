@@ -33,7 +33,12 @@ export const getExtraAmount = ({
   return extraAmount
 }
 
-export const isTrackPurchaseable = (
+export const isTrackStreamPurchaseable = (
   track: UserTrackMetadata
 ): track is PurchaseableTrackMetadata =>
   isContentUSDCPurchaseGated(track.stream_conditions)
+
+export const isTrackDownloadPurchaseable = (
+  track: UserTrackMetadata
+): track is PurchaseableTrackMetadata =>
+  isContentUSDCPurchaseGated(track.download_conditions)

@@ -12,7 +12,7 @@ import {
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
-  isTrackPurchaseable,
+  isTrackStreamPurchaseable,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
@@ -433,7 +433,7 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidTrack = track && isTrackPurchaseable(track)
+  const isValidTrack = track && isTrackStreamPurchaseable(track)
   const price = isValidTrack
     ? track?.stream_conditions?.usdc_purchase?.price
     : 0
@@ -445,7 +445,7 @@ export const PremiumTrackPurchaseDrawer = () => {
     dispatch(purchaseContentActions.cleanup())
   }, [onClosed, dispatch])
 
-  if (!track || !isTrackPurchaseable(track) || !isUSDCEnabled) return null
+  if (!track || !isTrackStreamPurchaseable(track) || !isUSDCEnabled) return null
 
   return (
     <Drawer

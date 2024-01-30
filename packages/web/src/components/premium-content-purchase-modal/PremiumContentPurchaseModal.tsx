@@ -4,7 +4,7 @@ import {
   PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
-  isTrackPurchaseable,
+  isTrackStreamPurchaseable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
@@ -16,7 +16,9 @@ import {
   PurchaseContentPage,
   useFeatureFlag,
   FeatureFlags,
-  PurchaseVendor
+  PurchaseVendor,
+  isTrackDownloadPurchaseable,
+  USDCPurchaseConditions
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -72,19 +74,19 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track
+  track,
+  purchaseConditions
 }: {
   onClose: () => void
   track: PurchaseableTrackMetadata
+  purchaseConditions: USDCPurchaseConditions
 }) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+  const { permalink } = track
   const {
-    permalink,
-    stream_conditions: {
-      usdc_purchase: { price }
-    }
-  } = track
+    usdc_purchase: { price }
+  } = purchaseConditions
   const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
   const currentPageIndex = pageToPageIndex(page)
@@ -191,9 +193,17 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidTrack = track && isTrackPurchaseable(track)
-  const price = isValidTrack
+  const isValidStreamGatedTrack = track && isTrackStreamPurchaseable(track)
+  const isValidDownloadGatedTrack = track && isTrackDownloadPurchaseable(track)
+  const isValidTrack = isValidDownloadGatedTrack || isValidStreamGatedTrack
+  const purchaseConditions = isValidStreamGatedTrack
+    ? track.stream_conditions
+    : track?.download_conditions
+
+  const price = isValidStreamGatedTrack
     ? track?.stream_conditions?.usdc_purchase?.price
+    : isValidDownloadGatedTrack
+    ? track?.download_conditions?.usdc_purchase?.price
     : 0
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
@@ -245,7 +255,11 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm track={track} onClose={handleClose} />
+          <RenderForm
+            track={track}
+            onClose={handleClose}
+            purchaseConditions={purchaseConditions}
+          />
         </Formik>
       ) : null}
     </ModalDrawer>
