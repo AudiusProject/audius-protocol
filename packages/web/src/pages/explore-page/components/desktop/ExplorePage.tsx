@@ -2,7 +2,7 @@ import { Fragment, useCallback } from 'react'
 
 import { ExploreCollectionsVariant } from '@audius/common'
 import {
-  CollectionVariant,
+  Variant as CollectionVariant,
   Status,
   UserCollection,
   User
