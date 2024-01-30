@@ -11,7 +11,8 @@ module.exports = (api) => {
         alias: {
           '@audius/common/messages': '../common/src/messages',
           '@audius/common/hooks': '../common/src/hooks',
-          '@audius/common/context': '../common/src/context'
+          '@audius/common/context': '../common/src/context',
+          '@audius/common/api': '../common/src/api'
         }
       }
     ]

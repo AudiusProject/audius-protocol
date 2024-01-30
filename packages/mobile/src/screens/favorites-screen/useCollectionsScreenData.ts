@@ -8,11 +8,10 @@ import {
   shallowCompare,
   Status,
   useAllPaginatedQuery,
-  useGetLibraryAlbums,
-  useGetLibraryPlaylists,
   savedPageSelectors,
   filterCollections
 } from '@audius/common'
+import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import uniq from 'lodash/uniq'
 import { useSelector } from 'react-redux'

@@ -1,5 +1,9 @@
 import type { QueryHookOptions } from '@audius/common'
-import { useGetFeaturedArtists, useGetTopArtistsInGenre } from '@audius/common'
+import {
+  useGetTopArtistsInGenre,
+  useGetFeaturedArtists
+} from '@audius/common/api'
+import {} from '@audius/common'
 import { css } from '@emotion/native'
 import { useIsFocused, type RouteProp } from '@react-navigation/native'
 

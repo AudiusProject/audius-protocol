@@ -9,10 +9,12 @@ import {
   accountSelectors,
   getPathFromPlaylistUrl,
   makeUid,
-  playerSelectors,
+  playerSelectors
+} from '@audius/common'
+import {
   useGetTracksByIds,
   useGetPlaylistByPermalink
-} from '@audius/common'
+} from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'

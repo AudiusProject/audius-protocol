@@ -11,11 +11,11 @@ import {
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
-  useGetTrackById,
   usePremiumContentPurchaseModal,
   IntKeys,
   PurchaseVendor
 } from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
 import {
   useRemoteVar,
   useUSDCBalance,

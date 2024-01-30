@@ -1,11 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  deletePlaylistConfirmationModalUIActions,
-  useGetCurrentUserId,
-  useGetPlaylistById
-} from '@audius/common'
+import { deletePlaylistConfirmationModalUIActions } from '@audius/common'
 import type { EditPlaylistValues } from '@audius/common'
+import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import type { FormikProps } from 'formik'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
