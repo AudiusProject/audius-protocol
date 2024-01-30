@@ -110,14 +110,17 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     yield* put(getBalance())
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
     const updatedCID = yield* call(getAccountMetadataCID)
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: accountUserId,
-          metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
-        }
-      ])
-    )
+
+    if (updatedCID && accountUserId) {
+      yield* put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: accountUserId,
+            metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
+          }
+        ])
+      )
+    }
 
     yield* fork(fetchSolanaCollectibles, updatedMetadata)
     yield* fork(fetchOpenSeaAssets, updatedMetadata)

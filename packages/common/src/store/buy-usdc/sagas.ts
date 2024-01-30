@@ -9,6 +9,7 @@ import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { PurchaseVendor } from 'models/PurchaseContent'
 import { Status } from 'models/Status'
+import { StringUSDC } from 'models/Wallet'
 import {
   createPaymentRouterRouteTransaction,
   createRootWalletRecoveryTransaction,
@@ -31,6 +32,7 @@ import {
 import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
+import { setUSDCBalance } from 'store/wallet/slice'
 import { waitForValue } from 'utils'
 
 import {
@@ -46,8 +48,6 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
-import { setUSDCBalance } from 'store/wallet/slice'
-import { StringUSDC } from 'models/Wallet'
 
 type PurchaseStepParams = {
   desiredAmount: number

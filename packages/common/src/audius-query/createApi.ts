@@ -24,6 +24,7 @@ import { getErrorMessage } from 'utils/error'
 import { Nullable, removeNullable } from 'utils/typeUtils'
 
 import * as cacheActions from '../store/cache/actions'
+import { Entry } from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 
 import {
@@ -340,7 +341,7 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(Object.keys(entities), entities))
+      dispatch(addEntries(entities as Record<Kind, Entry[]>))
     } else {
       data = apiData
     }

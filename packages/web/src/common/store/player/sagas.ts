@@ -19,7 +19,8 @@ import {
   QueryParams,
   Genre,
   getQueryParams,
-  getTrackPreviewDuration
+  getTrackPreviewDuration,
+  ID
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -275,12 +276,14 @@ export function* watchReset() {
 
 export function* watchStop() {
   yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
-    const id = yield* select(getTrackId)
-    yield* put(
-      cacheActions.unsubscribe(Kind.TRACKS, [
-        { uid: PLAYER_SUBSCRIBER_NAME, id }
-      ])
-    )
+    const id: ID | null = yield* select(getTrackId)
+    if (id) {
+      yield* put(
+        cacheActions.unsubscribe(Kind.TRACKS, [
+          { uid: PLAYER_SUBSCRIBER_NAME, id }
+        ])
+      )
+    }
     const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.stop()
   })
