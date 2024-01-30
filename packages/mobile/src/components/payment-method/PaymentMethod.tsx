@@ -177,7 +177,7 @@ export const PaymentMethod = ({
         <View style={styles.rowTitle}>
           <RadioButton checked={isSelected} disabled={disabled} />
           <View style={styles.rowTitleText}>
-            <Icon />
+            <Icon color='default' />
           </View>
           {label}
         </View>

@@ -5,8 +5,8 @@ import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(() => ({
   icon: {
-    height: 28,
-    width: 28
+    height: 20,
+    width: 20
   }
 }))
 
