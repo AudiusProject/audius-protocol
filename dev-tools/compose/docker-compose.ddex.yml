@@ -1,14 +1,112 @@
 version: '3.9'
 
 services:
-  ddex:
-    container_name: ddex
+  ddex-web:
+    container_name: ddex-web
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/ddex/Dockerfile
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/webapp/Dockerfile
       args:
-        app_name: ddex
+        app_name: ddex-web
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    networks:
+      - ddex-network
     profiles:
       - ddex
+
+  ddex-crawler:
+    container_name: ddex-crawler
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    entrypoint: ./ingester --service crawler
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
+  ddex-indexer:
+    container_name: ddex-indexer
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    entrypoint: ./ingester --service indexer
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
+  ddex-parser:
+    container_name: ddex-parser
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    entrypoint: ./ingester --service parser
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
+  ddex-mongo:
+    container_name: ddex-mongo
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ddex-mongo-db:/data/db
+      - ${PROJECT_ROOT}/packages/ddex/ingester/mongo-keyfile:/etc/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: >
+        bash -c 'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "
+          var ping = db.runCommand({ping: 1});
+          if (!ping.ok) {
+            exit(1);  // Unhealthy: MongoDB server not responding
+          }
+          var result = rs.status();
+          if (result.ok && result.set) {
+            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
+          } else {
+            exit(1);  // Unhealthy: Replica set not initiated or not OK
+          }
+        "' localhost:27017/ddex
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
+  ddex-ingester:
+    container_name: ddex-ingester
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+
+networks:
+  ddex-network:
+
+volumes:
+  ddex-mongo-db:
