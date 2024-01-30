@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  useLockedContent,
-  gatedContentActions,
-  useGatedContentAccess
-} from '@audius/common'
+import { gatedContentActions } from '@audius/common'
+import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

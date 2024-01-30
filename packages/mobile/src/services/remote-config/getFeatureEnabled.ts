@@ -1,5 +1,5 @@
 import type { FeatureFlags } from '@audius/common'
-import { FEATURE_FLAG_OVERRIDE_KEY } from '@audius/common'
+import { FEATURE_FLAG_OVERRIDE_KEY } from '@audius/common/hooks'
 import type { OverrideSetting } from '@audius/common/hooks'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 

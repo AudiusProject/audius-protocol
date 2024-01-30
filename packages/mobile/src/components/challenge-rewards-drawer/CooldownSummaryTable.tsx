@@ -1,7 +1,7 @@
 import React from 'react'
 
 import type { ChallengeRewardID } from '@audius/common'
-import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common'
+import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
 
 import { SummaryTable } from '../summary-table'
 

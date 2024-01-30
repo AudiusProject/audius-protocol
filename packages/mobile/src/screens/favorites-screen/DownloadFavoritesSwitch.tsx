@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 
-import { reachabilitySelectors, useThrottledCallback } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
+import { useThrottledCallback } from '@audius/common/hooks'
 import type { SwitchProps } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

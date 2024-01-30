@@ -1,12 +1,8 @@
 import { useCallback } from 'react'
 
 import type { FavoriteNotification as FavoriteNotificationType } from '@audius/common'
-import {
-  formatCount,
-  notificationsSelectors,
-  useProxySelector,
-  Entity
-} from '@audius/common'
+import { formatCount, notificationsSelectors, Entity } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'

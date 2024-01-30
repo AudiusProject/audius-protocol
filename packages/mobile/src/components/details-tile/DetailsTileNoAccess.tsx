@@ -12,11 +12,11 @@ import {
   isContentUSDCPurchaseGated,
   gatedContentSelectors,
   tippingActions,
-  useStreamConditionsEntity,
   usePremiumContentPurchaseModal,
   usersSocialActions,
   ModalSource
 } from '@audius/common'
+import { useStreamConditionsEntity } from '@audius/common/hooks'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

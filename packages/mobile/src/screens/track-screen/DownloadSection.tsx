@@ -4,11 +4,13 @@ import {
   DownloadQuality,
   ModalSource,
   cacheTracksSelectors,
-  useCurrentStems,
-  useDownloadableContentAccess,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import type { ID, CommonState } from '@audius/common'
+import {
+  useCurrentStems,
+  useDownloadableContentAccess
+} from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'

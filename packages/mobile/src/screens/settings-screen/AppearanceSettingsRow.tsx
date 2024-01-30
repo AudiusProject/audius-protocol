@@ -4,9 +4,9 @@ import {
   accountSelectors,
   Name,
   themeActions,
-  themeSelectors,
-  useSelectTierInfo
+  themeSelectors
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconAppearance from 'app/assets/images/iconAppearance.svg'

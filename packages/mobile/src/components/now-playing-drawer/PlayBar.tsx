@@ -6,9 +6,9 @@ import {
   FavoriteSource,
   accountSelectors,
   tracksSocialActions,
-  playerSelectors,
-  useGatedContentAccess
+  playerSelectors
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { TouchableOpacity, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

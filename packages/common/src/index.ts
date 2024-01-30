@@ -3,7 +3,6 @@
 
 export * from './api'
 export * from './audius-query'
-export * from './context'
 export * from './models'
 export * from './utils'
 export * from './services'

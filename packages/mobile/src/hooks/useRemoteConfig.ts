@@ -1,9 +1,8 @@
+import { accountSelectors, remoteConfigSelectors } from '@audius/common'
 import {
   createUseFeatureFlagHook,
-  createUseRemoteVarHook,
-  accountSelectors,
-  remoteConfigSelectors
-} from '@audius/common'
+  createUseRemoteVarHook
+} from '@audius/common/hooks'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSelector } from 'react-redux'
 

@@ -4,9 +4,9 @@ import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  useProxySelector,
   reachabilitySelectors
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

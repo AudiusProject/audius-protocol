@@ -6,11 +6,8 @@ import type {
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common'
-import {
-  notificationsSelectors,
-  Achievement,
-  useProxySelector
-} from '@audius/common'
+import { notificationsSelectors, Achievement } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { Name, useCreateUserbankIfNeeded, useUSDCBalance } from '@audius/common'
+import { Name } from '@audius/common'
+import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
 import BN from 'bn.js'

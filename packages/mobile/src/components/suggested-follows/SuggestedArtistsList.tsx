@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import type { CommonState, ID, Maybe } from '@audius/common'
-import { useProxySelector, removeNullable } from '@audius/common'
+import { removeNullable } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import {
   removeFollowArtists,
   addFollowArtists

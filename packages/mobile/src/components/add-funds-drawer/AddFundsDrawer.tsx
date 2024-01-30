@@ -5,9 +5,9 @@ import {
   useAddFundsModal,
   useUSDCManualTransferModal,
   buyUSDCActions,
-  PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS
+  PurchaseMethod
 } from '@audius/common'
+import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

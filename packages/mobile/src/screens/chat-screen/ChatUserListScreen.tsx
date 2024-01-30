@@ -13,9 +13,9 @@ import {
   searchUsersModalSelectors,
   statusIsNotFinalized,
   chatSelectors,
-  useProxySelector,
   userListActions
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { View, Image } from 'react-native'
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'

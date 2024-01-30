@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import type { Nullable } from '@audius/common'
 import {
   makeTwitterShareUrl,
-  useTwitterButtonStatus,
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
+import { useTwitterButtonStatus } from '@audius/common/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'

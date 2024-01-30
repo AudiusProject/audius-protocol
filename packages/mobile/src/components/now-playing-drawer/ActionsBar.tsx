@@ -18,11 +18,11 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  useGatedContentAccess,
   formatPrice,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'

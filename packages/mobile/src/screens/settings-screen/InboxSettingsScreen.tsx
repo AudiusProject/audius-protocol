@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useSetInboxPermissions } from '@audius/common'
+import { useSetInboxPermissions } from '@audius/common/hooks'
 import { ChatPermission } from '@audius/sdk'
 import { TouchableOpacity, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'

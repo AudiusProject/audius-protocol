@@ -3,10 +3,10 @@ import { useCallback, useEffect } from 'react'
 import {
   cacheUsersSelectors,
   tippingSelectors,
-  useProxySelector,
   removeNullable,
   tippingActions
 } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'

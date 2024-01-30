@@ -9,10 +9,9 @@ import {
   accountSelectors,
   getPathFromTrackUrl,
   makeUid,
-  useGetTrackByPermalink,
-  useToggleTrack,
-  useGatedContentAccess
+  useGetTrackByPermalink
 } from '@audius/common'
+import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 

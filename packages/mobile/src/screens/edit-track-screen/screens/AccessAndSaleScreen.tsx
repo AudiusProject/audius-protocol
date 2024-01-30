@@ -8,10 +8,9 @@ import {
   isContentCollectibleGated,
   FeatureFlags,
   removeNullable,
-  isContentUSDCPurchaseGated,
-  useAccessAndRemixSettings,
-  useFeatureFlag
+  isContentUSDCPurchaseGated
 } from '@audius/common'
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import { useField, useFormikContext } from 'formik'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'

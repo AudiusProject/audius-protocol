@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  useCoinflowAdapter,
-  useCoinflowOnrampModal,
-  coinflowModalUIActions
-} from '@audius/common'
+import { useCoinflowOnrampModal, coinflowModalUIActions } from '@audius/common'
+import { useCoinflowAdapter } from '@audius/common/hooks'
 import { CoinflowPurchase } from '@coinflowlabs/react-native'
 import { Transaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'

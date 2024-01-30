@@ -3,10 +3,10 @@ import {
   FeatureFlags,
   StringKeys,
   accountSelectors,
-  useAccountHasClaimableRewards,
   chatSelectors,
   Name
 } from '@audius/common'
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'

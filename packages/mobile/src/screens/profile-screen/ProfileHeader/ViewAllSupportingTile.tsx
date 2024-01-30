@@ -3,10 +3,12 @@ import { useCallback } from 'react'
 import {
   formatCount,
   cacheUsersSelectors,
-  MAX_PROFILE_SUPPORTING_TILES,
+  MAX_PROFILE_SUPPORTING_TILES
+} from '@audius/common'
+import {
   useRankedSupportingForUser,
   useProxySelector
-} from '@audius/common'
+} from '@audius/common/hooks'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Tile, TextButton } from 'app/components/core'

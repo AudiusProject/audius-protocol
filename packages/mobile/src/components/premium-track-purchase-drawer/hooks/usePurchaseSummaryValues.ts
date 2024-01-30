@@ -1,13 +1,13 @@
 import type { Nullable, BNUSDC } from '@audius/common'
+import { getPurchaseSummaryValues } from '@audius/common'
 import {
-  CUSTOM_AMOUNT,
-  AMOUNT_PRESET,
-  getExtraAmount,
-  getPurchaseSummaryValues,
-  PayExtraPreset,
+  useUSDCPurchaseConfig,
   usePayExtraPresets,
-  useUSDCPurchaseConfig
-} from '@audius/common'
+  getExtraAmount,
+  PayExtraPreset,
+  CUSTOM_AMOUNT,
+  AMOUNT_PRESET
+} from '@audius/common/hooks'
 import { useField } from 'formik'
 
 export const usePurchaseSummaryValues = ({

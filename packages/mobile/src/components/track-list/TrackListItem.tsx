@@ -4,7 +4,6 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import type { Collection, ID, Track, UID, User } from '@audius/common'
 import {
   cacheCollectionsSelectors,
-  useGatedContentAccess,
   FeatureFlags,
   playbackPositionSelectors,
   Genre,
@@ -17,6 +16,7 @@ import {
   cacheTracksSelectors,
   playerSelectors
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,
