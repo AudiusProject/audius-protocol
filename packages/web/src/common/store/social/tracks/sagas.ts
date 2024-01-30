@@ -847,6 +847,7 @@ function* watchDownloadTrack() {
       const user = yield* select(getUser, { id: userId })
       if (!user) return
       const rootDirectoryName = `${user.name} - ${mainTrack.title} (Audius)`
+      // Mobile typecheck complains if this array isn't typed
       const tracks: { trackId: ID; filename: string }[] = []
 
       for (const trackId of [...trackIds, parentTrackId].filter(

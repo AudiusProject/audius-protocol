@@ -325,10 +325,11 @@ function* watchUnsubscribe() {
           cache.subscriptions[id].forEach((subscription) => {
             if (!transitiveSubscriptions[subscription.kind]) {
               transitiveSubscriptions[subscription.kind] = [
-                { uid: subscription.uid }
+                { id, uid: subscription.uid }
               ]
             } else {
               transitiveSubscriptions[subscription.kind]!.push({
+                id,
                 uid: subscription.uid
               })
             }
