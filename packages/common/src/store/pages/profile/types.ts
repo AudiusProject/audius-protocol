@@ -18,7 +18,7 @@ export enum TracksSortMode {
 }
 
 export type ProfilePageFollow = {
-  userIds: Array<{ id: ID; uid: UID }>
+  userIds: { id: ID; uid?: UID }[]
   status: Status
 }
 
@@ -30,7 +30,7 @@ export type ProfileState = {
   updateSuccess: boolean
   updateError: boolean
   collectionIds: number[]
-  collectionStatus: Status.IDLE
+  collectionStatus: Status
   topTagsStatus: Status
   topTags: string[]
   collectionSortMode: CollectionSortMode
