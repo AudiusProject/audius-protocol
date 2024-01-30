@@ -38,7 +38,7 @@ export const EnvVarsProvider = ({ children }: { children: ReactNode }) => {
         if (!response.ok) {
           throw new Error('Network response was not ok')
         }
-        const data = (await response.json()) as EnvVars
+        const data = (await response.json()).data as EnvVars
         setEnvVars(data)
       } catch (error) {
         console.error('Error fetching env vars:', error)
