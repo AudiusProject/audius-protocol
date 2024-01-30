@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 
 import { ID } from '~/models/Identifiers'
-import { useAppContext } from 'src/context'
+import { useAppContext } from '~/context'
 import {
   getCollection,
   getCollectionTracks

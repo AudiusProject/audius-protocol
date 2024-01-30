@@ -18,7 +18,7 @@ import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import * as toastActions from 'src/store/ui/toast/slice'
+import * as toastActions from '~/store/ui/toast/slice'
 import { getAccountUser, getUserId } from '~/store/account/selectors'
 import dayjs from '~/utils/dayjs'
 

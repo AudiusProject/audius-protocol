@@ -12,7 +12,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { useGetCurrentUserId } from 'src/api'
+import { useGetCurrentUserId } from '~/api'
 import { getAccountUser } from '~/store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'

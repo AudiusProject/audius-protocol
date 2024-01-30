@@ -4,7 +4,7 @@ import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 
 import { getRootSolanaAccount } from '~/services/audius-backend'
-import { useAppContext } from 'src/context'
+import { useAppContext } from '~/context'
 
 type CoinflowAdapter = {
   wallet: {
