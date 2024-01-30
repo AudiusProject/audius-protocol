@@ -15,6 +15,7 @@ import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 const { downloadTrack } = tracksSocialActions
 
@@ -114,7 +115,10 @@ export const TrackScreenDownloadButtons = ({
       parentTrackId?: ID
       original?: boolean
     }) => {
-      dispatch(downloadTrack(trackId, category))
+      dispatch(
+        setVisibility({ drawer: 'DownloadTrackProgress', visible: true })
+      )
+      dispatch(downloadTrack({ trackIds: [trackId], stemName: category }))
       track(
         make({
           eventName: Name.TRACK_PAGE_DOWNLOAD,
