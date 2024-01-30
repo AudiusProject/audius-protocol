@@ -203,7 +203,7 @@ export const DownloadSection = ({
                   />
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>
-                  <Text>size</Text>
+                  {track ? <Text>{fileSizes[track.track_id]}</Text> : null }
                   {shouldDisplayDownloadAll ? (
                     <Button
                       variant='secondary'
@@ -223,6 +223,7 @@ export const DownloadSection = ({
                 quality={quality}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[trackId]}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -233,6 +234,7 @@ export const DownloadSection = ({
                 onDownload={onDownload}
                 quality={quality}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[s.id]}
                 index={
                   i +
                   (track?.is_downloadable

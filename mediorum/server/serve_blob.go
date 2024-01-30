@@ -199,7 +199,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 
 		if c.Request().Method == "HEAD" {
 			// return file size along with head requests
-			c.Response().Header().Set(echo.HeaderContentLength, blob.Size())
+			c.Response().Header().Set(echo.HeaderContentLength, strconv.FormatInt(blob.Size(), 10))
 			return c.NoContent(204)
 		}
 

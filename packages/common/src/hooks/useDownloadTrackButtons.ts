@@ -101,19 +101,25 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
 }
 
 export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<AudiusSdk>, trackIds: ID[] }) => {
-  const [sizes, setSizes] = useState<any>([])
+  const [sizes, setSizes] = useState<{[trackId: ID]: number}>({})
   useAsync(async () => {
     const sdk = await audiusSdk()
     const sizeResults = await Promise.all(trackIds.map(async trackId => {
-    
+      if (sizes[trackId]) {
+        return ({ trackId, size: sizes[trackId] })
+      }
       const res = await sdk.tracks.streamTrackRaw({
         trackId: encodeHashId(trackId)
       })
       console.log(res)
-
+      return ({ trackId, size: res })
     }))
-    setSizes(sizeResults)
-  }, [trackIds, audiusSdk, setSizes])
+
+    setSizes(sizeResults.reduce((acc, curr) => {
+      acc[curr.trackId] = curr.size
+      return acc
+    }, {} as { trackId: ID, size: number }))
+  }, [trackIds, audiusSdk, sizes, setSizes])
   return sizes
 }
 
