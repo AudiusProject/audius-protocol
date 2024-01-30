@@ -45,10 +45,10 @@ const ShuffleButtonProvider = ({
         setAnimations({ ...matrixAnimations.current })
       } else if (darkMode) {
         if (!darkAnimations.current) {
-          const pbIconShuffleOff = (await import(
+          const { default: pbIconShuffleOff } = (await import(
             '../../../assets/animations/pbIconShuffleOffDark.json'
           )) as any
-          const pbIconShuffleOn = (await import(
+          const { default: pbIconShuffleOn } = (await import(
             '../../../assets/animations/pbIconShuffleOnDark.json'
           )) as any
           darkAnimations.current = {
