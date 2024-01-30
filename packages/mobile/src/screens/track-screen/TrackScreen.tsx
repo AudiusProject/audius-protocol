@@ -79,7 +79,7 @@ export const TrackScreen = () => {
     dispatch(tracksActions.reset())
     dispatch(
       fetchTrack(
-        id,
+        id ?? null,
         decodeURIComponent(slug ?? ''),
         handle ?? user?.handle,
         canBeUnlisted
