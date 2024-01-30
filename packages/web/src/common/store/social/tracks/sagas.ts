@@ -761,7 +761,10 @@ function* downloadTracks({
   original,
   rootDirectoryName
 }: {
-  tracks: { trackId: ID; filename: string }[]
+  tracks: {
+    trackId: ID
+    filename: string
+  }[]
   original?: boolean
   rootDirectoryName?: string
 }) {
@@ -848,7 +851,8 @@ function* watchDownloadTrack() {
       const user = yield* select(getUser, { id: userId })
       if (!user) return
       const rootDirectoryName = `${user.name} - ${mainTrack.title} (Audius)`
-      const tracks = []
+      // Mobile typecheck complains if this array isn't typed
+      const tracks: { trackId: ID; filename: string }[] = []
 
       for (const trackId of [...trackIds, parentTrackId].filter(
         removeNullable
