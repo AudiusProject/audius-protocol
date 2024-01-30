@@ -63,6 +63,20 @@ services:
     profiles:
       - ddex
 
+  ddex-publisher:
+    container_name: ddex-publisher
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/publisher/Dockerfile
+      args:
+        app_name: ddex-publisher
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
   ddex-mongo:
     container_name: ddex-mongo
     image: mongo:latest
