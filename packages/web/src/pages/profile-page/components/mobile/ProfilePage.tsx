@@ -13,9 +13,9 @@ import {
   ProfileUser,
   profilePageTracksLineupActions as tracksActions,
   profilePageFeedLineupActions as feedActions,
-  badgeTiers,
-  useSelectTierInfo
+  badgeTiers
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import cn from 'classnames'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'

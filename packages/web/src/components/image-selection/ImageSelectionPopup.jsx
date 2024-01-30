@@ -4,9 +4,9 @@ import {
   RandomImage,
   accountSelectors,
   badgeTiers,
-  useSelectTierInfo,
   removeNullable
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'

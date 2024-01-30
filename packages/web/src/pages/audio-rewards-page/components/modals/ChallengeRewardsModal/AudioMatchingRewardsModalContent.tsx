@@ -5,9 +5,9 @@ import {
   OptimisticUserChallenge,
   challengeRewardsConfig,
   formatNumberCommas,
-  useAudioMatchingChallengeCooldownSchedule,
   challengesSelectors
 } from '@audius/common'
+import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
   HarmonyButton,

@@ -1,9 +1,9 @@
 import {
   SolanaWalletAddress,
   WalletAddress,
-  FeatureFlags,
-  useCreateUserbankIfNeeded
+  FeatureFlags
 } from '@audius/common'
+import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { Button, ButtonType, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 

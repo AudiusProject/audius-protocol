@@ -23,13 +23,13 @@ import {
   playerSelectors,
   queueSelectors,
   playbackRateValueMap,
-  useGatedContentAccess,
   DogEarType,
   gatedContentSelectors,
   usePremiumContentPurchaseModal,
   ModalSource,
   FeatureFlags
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'

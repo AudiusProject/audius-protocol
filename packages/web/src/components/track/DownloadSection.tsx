@@ -1,15 +1,17 @@
 import { useCallback, useState } from 'react'
 
 import {
-  useCurrentStems,
   ID,
   CommonState,
   cacheTracksSelectors,
   DownloadQuality,
-  useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
+import {
+  useCurrentStems,
+  useDownloadableContentAccess
+} from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,

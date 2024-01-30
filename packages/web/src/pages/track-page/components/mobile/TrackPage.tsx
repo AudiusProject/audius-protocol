@@ -7,9 +7,9 @@ import {
   User,
   trackPageLineupActions,
   QueueItem,
-  OverflowAction,
-  useGatedContentAccess
+  OverflowAction
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'

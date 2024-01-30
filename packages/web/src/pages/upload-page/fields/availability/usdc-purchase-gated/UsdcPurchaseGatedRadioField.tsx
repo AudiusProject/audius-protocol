@@ -4,10 +4,9 @@ import {
   FeatureFlags,
   Name,
   AccessConditions,
-  TrackAvailabilityType,
-  useAccessAndRemixSettings,
-  useFeatureFlag
+  TrackAvailabilityType
 } from '@audius/common'
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'

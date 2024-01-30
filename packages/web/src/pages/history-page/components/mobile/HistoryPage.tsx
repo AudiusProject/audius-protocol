@@ -1,6 +1,7 @@
 import { memo, useEffect, useCallback, useContext } from 'react'
 
-import { ID, UID, LineupTrack, useGatedContentAccessMap } from '@audius/common'
+import { ID, UID, LineupTrack } from '@audius/common'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { Button, ButtonType } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

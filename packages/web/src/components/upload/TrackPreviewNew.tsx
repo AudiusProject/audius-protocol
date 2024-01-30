@@ -3,9 +3,9 @@ import { useState } from 'react'
 import {
   FeatureFlags,
   StemCategory,
-  stemCategoryFriendlyNames,
-  useFeatureFlag
+  stemCategoryFriendlyNames
 } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'

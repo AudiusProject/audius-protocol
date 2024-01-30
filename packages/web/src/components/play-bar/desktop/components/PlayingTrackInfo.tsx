@@ -7,9 +7,9 @@ import {
   SquareSizes,
   CommonState,
   cacheTracksSelectors,
-  useGatedContentAccess,
   playerSelectors
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

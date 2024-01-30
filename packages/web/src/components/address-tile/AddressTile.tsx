@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import { shortenSPLAddress, useUSDCBalance } from '@audius/common'
+import { shortenSPLAddress } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Text,

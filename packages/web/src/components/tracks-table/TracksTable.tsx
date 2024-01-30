@@ -1,12 +1,7 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import {
-  formatCount,
-  formatSeconds,
-  UID,
-  useGatedContentAccessMap,
-  UserTrack
-} from '@audius/common'
+import { formatCount, formatSeconds, UID, UserTrack } from '@audius/common'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { IconHidden, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'

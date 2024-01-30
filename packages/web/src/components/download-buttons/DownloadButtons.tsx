@@ -1,12 +1,11 @@
 import { memo, useCallback } from 'react'
 
+import { ID, toastActions } from '@audius/common'
 import {
-  ID,
   ButtonState,
   ButtonType,
-  useDownloadTrackButtons,
-  toastActions
-} from '@audius/common'
+  useDownloadTrackButtons
+} from '@audius/common/hooks'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

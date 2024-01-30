@@ -7,14 +7,13 @@ import {
   decodeHashId,
   encodeHashId,
   ReactionTypes,
-  useProxySelector,
   formatMessageDate,
   isTrackUrl,
   isCollectionUrl,
   ChatMessageWithExtras,
-  Status,
-  useCanSendMessage
+  Status
 } from '@audius/common'
+import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
 import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'

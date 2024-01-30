@@ -3,13 +3,13 @@ import { useCallback } from 'react'
 import {
   CoverPhotoSizes,
   WidthSizes,
-  useImageSize,
   cacheUsersActions,
   imageCoverPhotoBlank,
   cacheUsersSelectors,
   SquareSizes,
   imageProfilePicEmpty
 } from '@audius/common'
+import { useImageSize } from '@audius/common/hooks'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'

@@ -1,6 +1,7 @@
 import { ChangeEvent, useCallback, useEffect } from 'react'
 
-import { Status, useSetInboxPermissions } from '@audius/common'
+import { Status } from '@audius/common'
+import { useSetInboxPermissions } from '@audius/common/hooks'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,

@@ -20,10 +20,12 @@ import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   savedPageSelectors,
-  statusIsNotFinalized,
-  useDebouncedCallback,
-  useGatedContentAccessMap
+  statusIsNotFinalized
 } from '@audius/common'
+import {
+  useGatedContentAccessMap,
+  useDebouncedCallback
+} from '@audius/common/hooks'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

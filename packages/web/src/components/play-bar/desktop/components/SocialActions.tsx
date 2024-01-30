@@ -5,11 +5,11 @@ import {
   gatedContentSelectors,
   themeSelectors,
   Theme,
-  useGatedContentAccess,
   cacheTracksSelectors,
   CommonState,
   ModalSource
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'

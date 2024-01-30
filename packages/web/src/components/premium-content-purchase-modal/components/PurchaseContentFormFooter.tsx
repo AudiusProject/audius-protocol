@@ -5,9 +5,9 @@ import {
   PurchaseableTrackMetadata,
   PurchaseContentError,
   PurchaseContentStage,
-  formatPrice,
-  usePurchaseContentErrorMessage
+  formatPrice
 } from '@audius/common'
+import { usePurchaseContentErrorMessage } from '@audius/common/hooks'
 import { Button } from '@audius/harmony'
 import {
   HarmonyPlainButton,

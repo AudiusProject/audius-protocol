@@ -1,10 +1,7 @@
 import { MouseEventHandler, useCallback, useEffect } from 'react'
 
-import {
-  isAudiusUrl,
-  useLinkUnfurlMetadata,
-  useLeavingAudiusModal
-} from '@audius/common'
+import { isAudiusUrl, useLeavingAudiusModal } from '@audius/common'
+import { useLinkUnfurlMetadata } from '@audius/common/hooks'
 import cn from 'classnames'
 
 import styles from './LinkPreview.module.css'

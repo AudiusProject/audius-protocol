@@ -6,7 +6,8 @@ import {
   ReactNode
 } from 'react'
 
-import { ID, useDebouncedCallback } from '@audius/common'
+import { ID } from '@audius/common'
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

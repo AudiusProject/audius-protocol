@@ -9,9 +9,9 @@ import {
   queueActions,
   tracksSocialActions,
   playerSelectors,
-  queueSelectors,
-  useGatedContentAccess
+  queueSelectors
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'

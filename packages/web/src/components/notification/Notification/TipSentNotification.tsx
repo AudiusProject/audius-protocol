@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  useUIAudio,
   notificationsSelectors,
   TipSendNotification
 } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
 
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'

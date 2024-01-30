@@ -19,10 +19,10 @@ import {
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  useGatedContentAccess,
   gatedContentActions,
   Genre
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'

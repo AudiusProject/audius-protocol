@@ -8,9 +8,9 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   useWithdrawUSDCModal,
   useAddFundsModal,
-  useUSDCBalance,
   Status
 } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
 import { Button, PlainButton, IconQuestionCircle, Flex } from '@audius/harmony'
 import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'

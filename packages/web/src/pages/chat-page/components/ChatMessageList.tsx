@@ -19,9 +19,9 @@ import {
   Status,
   hasTail,
   isEarliestUnread,
-  chatCanFetchMoreMessages,
-  useCanSendMessage
+  chatCanFetchMoreMessages
 } from '@audius/common'
+import { useCanSendMessage } from '@audius/common/hooks'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { throttle } from 'lodash'

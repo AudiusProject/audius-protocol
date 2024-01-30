@@ -12,16 +12,18 @@ import {
   Nullable,
   TrackAvailabilityType,
   USDCPurchaseConfig,
-  useUSDCPurchaseConfig,
-  useAccessAndRemixSettings,
   CollectibleGatedConditions,
   USDCPurchaseConditions,
   FollowGatedConditions,
   TipGatedConditions,
   ID,
-  useFeatureFlag,
   AccessConditions
 } from '@audius/common'
+import {
+  useFeatureFlag,
+  useUSDCPurchaseConfig,
+  useAccessAndRemixSettings
+} from '@audius/common/hooks'
 import {
   IconCart,
   IconCollectible,

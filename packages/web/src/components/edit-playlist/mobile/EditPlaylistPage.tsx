@@ -11,11 +11,11 @@ import {
   collectionPageLineupActions as tracksActions,
   imageBlank as placeholderCoverArt,
   newCollectionMetadata,
-  useGatedContentAccessMap,
   EditPlaylistValues,
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

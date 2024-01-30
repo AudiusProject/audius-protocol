@@ -4,11 +4,11 @@ import {
   useAddFundsModal,
   buyUSDCActions,
   PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS,
   PurchaseVendor,
   buyUSDCSelectors,
   BuyUSDCStage
 } from '@audius/common'
+import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

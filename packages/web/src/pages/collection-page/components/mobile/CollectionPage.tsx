@@ -10,9 +10,9 @@ import {
   User,
   CollectionsPageType,
   CollectionTrack,
-  OverflowAction,
-  useGatedContentAccessMap
+  OverflowAction
 } from '@audius/common'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

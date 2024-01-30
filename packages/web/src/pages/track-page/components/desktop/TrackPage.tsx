@@ -4,9 +4,9 @@ import {
   Track,
   User,
   trackPageLineupActions,
-  QueueItem,
-  useGatedContentAccess
+  QueueItem
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import cn from 'classnames'
 
 import CoverPhoto from 'components/cover-photo/CoverPhoto'

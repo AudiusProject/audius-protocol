@@ -1,9 +1,9 @@
+import { PayExtraAmountPresetValues } from '@audius/common'
 import {
-  AMOUNT_PRESET,
+  PayExtraPreset,
   CUSTOM_AMOUNT,
-  PayExtraAmountPresetValues,
-  PayExtraPreset
-} from '@audius/common'
+  AMOUNT_PRESET
+} from '@audius/common/hooks'
 import { Text, Flex, SelectablePill } from '@audius/harmony'
 import { useField } from 'formik'
 

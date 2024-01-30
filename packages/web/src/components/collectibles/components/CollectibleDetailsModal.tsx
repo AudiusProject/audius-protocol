@@ -15,9 +15,9 @@ import {
   accountSelectors,
   badgeTiers,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions,
-  useSelectTierInfo
+  collectibleDetailsUIActions
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   Button,
   ButtonSize,

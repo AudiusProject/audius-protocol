@@ -4,10 +4,10 @@ import {
   getPathFromTrackUrl,
   useGetTrackByPermalink,
   accountSelectors,
-  useGatedContentAccess,
   isContentUSDCPurchaseGated,
   isContentCollectibleGated
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 import { useThrottle } from 'react-use'

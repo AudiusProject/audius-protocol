@@ -1,10 +1,7 @@
 import { Ref, forwardRef, useCallback, useContext } from 'react'
 
-import {
-  MAX_HANDLE_LENGTH,
-  pickHandleErrorMessages,
-  useIsWaitingForValidation
-} from '@audius/common'
+import { MAX_HANDLE_LENGTH, pickHandleErrorMessages } from '@audius/common'
+import { useIsWaitingForValidation } from '@audius/common/hooks'
 import {
   socialMediaMessages,
   pickHandlePageMessages as messages

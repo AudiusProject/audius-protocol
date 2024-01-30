@@ -12,10 +12,10 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig,
   Nullable,
   AccessConditions
 } from '@audius/common'
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   Button,
   ButtonSize,

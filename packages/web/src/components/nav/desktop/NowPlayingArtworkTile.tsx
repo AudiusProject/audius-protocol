@@ -7,9 +7,9 @@ import {
   CommonState,
   accountSelectors,
   averageColorSelectors,
-  DogEarType,
-  useGatedContentAccess
+  DogEarType
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'

@@ -19,13 +19,13 @@ import {
   tippingActions,
   walletSelectors,
   getTierAndNumberForBalance,
-  useGetFirstOrTopSupporter,
   OnRampProvider,
   buyAudioActions,
   FeatureFlags,
   StringKeys,
   isNullOrUndefined
 } from '@audius/common'
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import {
   IconTrophy,
   TokenAmountInput,

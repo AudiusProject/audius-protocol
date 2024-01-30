@@ -13,9 +13,9 @@ import {
   ProfilePageTabs,
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
-  useSelectTierInfo,
   CreatePlaylistSource
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'

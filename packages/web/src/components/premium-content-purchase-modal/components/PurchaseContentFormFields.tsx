@@ -2,18 +2,20 @@ import { useCallback, useEffect } from 'react'
 
 import {
   PurchaseContentStage,
-  usePayExtraPresets,
-  useUSDCBalance,
-  PURCHASE_METHOD,
   PurchaseVendor,
-  PURCHASE_VENDOR,
-  usePurchaseMethod,
   PurchaseMethod,
-  useFeatureFlag,
   FeatureFlags,
-  useRemoteVar,
   IntKeys
 } from '@audius/common'
+import {
+  useFeatureFlag,
+  useRemoteVar,
+  useUSDCBalance,
+  usePayExtraPresets,
+  PURCHASE_METHOD,
+  PURCHASE_VENDOR,
+  usePurchaseMethod
+} from '@audius/common/hooks'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'

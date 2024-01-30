@@ -2,9 +2,9 @@ import {
   BNUSDC,
   Status,
   formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  useUSDCBalance
+  formatUSDCWeiToFloorCentsNumber
 } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
 import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'

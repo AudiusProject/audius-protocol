@@ -7,9 +7,9 @@ import {
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
-  musicConfettiActions,
-  useSelectTierInfo
+  musicConfettiActions
 } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

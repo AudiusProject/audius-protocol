@@ -10,12 +10,12 @@ import {
 import {
   Collectible,
   CollectiblesMetadata,
-  useInstanceVar,
   ProfileUser,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import {
   Button,
   ButtonSize,

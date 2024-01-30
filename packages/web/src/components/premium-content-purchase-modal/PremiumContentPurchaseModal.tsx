@@ -4,20 +4,22 @@ import {
   PurchaseableTrackMetadata,
   PurchaseContentStage,
   Track,
-  isTrackPurchaseable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
-  usePurchaseContentFormConfiguration,
   buyUSDCActions,
   purchaseContentActions,
   purchaseContentSelectors,
   isContentPurchaseInProgress,
-  usePayExtraPresets,
   PurchaseContentPage,
-  useFeatureFlag,
   FeatureFlags,
   PurchaseVendor
 } from '@audius/common'
+import {
+  useFeatureFlag,
+  usePurchaseContentFormConfiguration,
+  usePayExtraPresets,
+  isTrackPurchaseable
+} from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
 import {

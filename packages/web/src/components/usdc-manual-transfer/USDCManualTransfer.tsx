@@ -3,10 +3,9 @@ import { useCallback, useContext } from 'react'
 import {
   Name,
   isContentPurchaseInProgress,
-  purchaseContentSelectors,
-  useCreateUserbankIfNeeded,
-  useUSDCBalance
+  purchaseContentSelectors
 } from '@audius/common'
+import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, IconLogoCircleUSDC } from '@audius/harmony'
 import { IconError } from '@audius/stems'

@@ -19,10 +19,10 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   playerSelectors,
-  useGatedContentAccess,
   FeatureFlags,
   Genre
 } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

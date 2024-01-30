@@ -3,9 +3,9 @@ import {
   FeatureFlags,
   chatSelectors,
   Name,
-  useAccountHasClaimableRewards,
   StringKeys
 } from '@audius/common'
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import {
   IconCrown,
   IconDashboard,

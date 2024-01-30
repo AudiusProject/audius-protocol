@@ -1,6 +1,7 @@
 import { cloneElement, ReactElement } from 'react'
 
-import { ID, BadgeTier, Nullable, useSelectTierInfo } from '@audius/common'
+import { ID, BadgeTier, Nullable } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import cn from 'classnames'
 
 import IconBronzeBadgeSVG from 'assets/img/IconBronzeBadge.svg'

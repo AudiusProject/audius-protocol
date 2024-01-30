@@ -14,10 +14,10 @@ import {
   useAllPaginatedQuery,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
-  useUSDCBalance,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal
 } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
 import { full } from '@audius/sdk'
 import BN from 'bn.js'
 

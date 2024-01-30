@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  gatedContentActions,
-  useLockedContent,
-  useGatedContentAccess
-} from '@audius/common'
+import { gatedContentActions } from '@audius/common'
+import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
 import { IconLock, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

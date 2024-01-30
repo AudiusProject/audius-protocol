@@ -7,7 +7,7 @@ import {
   RefObject
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import { IconRemove } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'

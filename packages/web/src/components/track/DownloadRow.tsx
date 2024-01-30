@@ -5,9 +5,9 @@ import {
   ID,
   cacheTracksSelectors,
   DownloadQuality,
-  useDownloadableContentAccess,
   toastActions
 } from '@audius/common'
+import { useDownloadableContentAccess } from '@audius/common/hooks'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 

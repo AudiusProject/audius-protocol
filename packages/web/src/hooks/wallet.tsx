@@ -1,8 +1,5 @@
-import {
-  accountSelectors,
-  profilePageSelectors,
-  useSelectTierInfo
-} from '@audius/common'
+import { accountSelectors, profilePageSelectors } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 
 const { getProfileUser } = profilePageSelectors

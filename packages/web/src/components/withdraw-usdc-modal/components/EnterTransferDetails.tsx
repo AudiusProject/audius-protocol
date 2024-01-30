@@ -6,7 +6,6 @@ import {
 } from 'react'
 
 import {
-  useUSDCBalance,
   BNUSDC,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
@@ -16,9 +15,9 @@ import {
   decimalIntegerToHumanReadable,
   Name,
   WithdrawMethod,
-  FeatureFlags,
-  useFeatureFlag
+  FeatureFlags
 } from '@audius/common'
+import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
 import { Button } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'
