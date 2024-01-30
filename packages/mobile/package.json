@@ -162,7 +162,7 @@
     "react-native-video": "5.2.1",
     "react-native-view-shot": "3.8.0",
     "react-native-webview": "13.6.3",
-    "react-native-zip-archive": "^6.1.0",
+    "react-native-zip-archive": "6.1.0",
     "react-qr-code": "2.0.12",
     "react-redux": "8.0.5",
     "react-use": "17.3.2",
