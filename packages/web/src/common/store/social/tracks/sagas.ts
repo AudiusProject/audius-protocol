@@ -595,16 +595,18 @@ export function* watchSetArtistPick() {
       yield* waitForWrite()
       const userId = yield* select(getUserId)
 
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: userId,
-            metadata: {
-              artist_pick_track_id: action.trackId
+      if (userId) {
+        yield* put(
+          cacheActions.update(Kind.USERS, [
+            {
+              id: userId,
+              metadata: {
+                artist_pick_track_id: action.trackId
+              }
             }
-          }
-        ])
-      )
+          ])
+        )
+      }
       const user = yield* call(waitForValue, getUser, { id: userId })
       yield fork(updateProfileAsync, { metadata: user })
 
@@ -619,16 +621,18 @@ export function* watchUnsetArtistPick() {
     yield* waitForWrite()
     const userId = yield* select(getUserId)
 
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
-            artist_pick_track_id: null
+    if (userId) {
+      yield* put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: userId,
+            metadata: {
+              artist_pick_track_id: null
+            }
           }
-        }
-      ])
-    )
+        ])
+      )
+    }
     const user = yield* call(waitForValue, getUser, { id: userId })
     yield fork(updateProfileAsync, { metadata: user })
 

@@ -352,16 +352,10 @@ function* updateGatedTrackAccess(
 
   const allTracks = {
     ...cachedTracks,
-    ...newlyUpdatedTracks.reduce(
-      (
-        acc: { [id: ID]: Track },
-        curr: { id: number; uid: string; metadata: Track }
-      ) => {
-        acc[curr.metadata.track_id] = curr.metadata
-        return acc
-      },
-      []
-    )
+    ...newlyUpdatedTracks.reduce((acc: { [id: ID]: Track }, curr: any) => {
+      acc[curr.metadata.track_id] = curr.metadata
+      return acc
+    }, [])
   }
 
   // Handle newly loading special access tracks that should have a signature but do not yet.

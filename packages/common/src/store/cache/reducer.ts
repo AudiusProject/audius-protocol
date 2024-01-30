@@ -273,7 +273,7 @@ const actionsMap = {
   },
   [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
     const { entriesByKind, replace } = action
-    const matchingEntries = entriesByKind[kind]
+    const matchingEntries = entriesByKind[kind] ?? {}
     const cacheableEntries = Object.entries(matchingEntries).map(
       ([id, entry]) => ({
         id,
