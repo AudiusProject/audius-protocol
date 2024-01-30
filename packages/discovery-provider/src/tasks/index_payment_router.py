@@ -47,6 +47,7 @@ from src.utils.helpers import (
     BalanceChange,
     decode_all_solana_memos,
     get_account_index,
+    get_account_owner_from_balance_change,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -178,16 +179,6 @@ def get_highest_payment_router_tx_slot(session: Session):
     if tx_query:
         slot = tx_query[0]
     return slot
-
-
-def get_account_owner_from_balance_change(
-    sender_account: str, balance_changes: dict[str, BalanceChange]
-):
-    """Finds the owner of the sender account by looking at the balance changes"""
-    if sender_account in balance_changes:
-        return balance_changes[sender_account]["owner"]
-    else:
-        return None
 
 
 # Cache the latest value committed to DB in redis
@@ -390,88 +381,13 @@ def index_purchase(
         )
 
 
-def attempt_index_recovery_transfer(
-    session: Session,
-    sender_account: str,
-    sender_user_account: UserIdBankAccount | None,
-    receiver_user_accounts: List[UserIdBankAccount],
-    balance_changes: dict[str, BalanceChange],
-    tx_sig: str,
-):
-    if sender_user_account is not None:
-        raise Exception(
-            f"Sender account for recovery cannot be a user bank: {sender_user_account}"
-        )
-    if len(receiver_user_accounts) != 1:
-        raise Exception(
-            f"Recovery transfer must have exactly one receiver account. Received: {','.join([a['user_bank_account'] for a in receiver_user_accounts])}"
-        )
-
-    sender_account_owner = get_account_owner_from_balance_change(
-        sender_account=sender_account, balance_changes=balance_changes
-    )
-    if sender_account_owner is None:
-        raise Exception(
-            f"Unexpectedly found no owner account for sender account {sender_account}"
-        )
-
-    receiver_user_account = receiver_user_accounts[0]
-    receiver_bank_account = receiver_user_account["user_bank_account"]
-    receiver_balance_change = balance_changes[receiver_bank_account]
-    receiver_balance_change_amount = receiver_balance_change["change"]
-
-    # Find the previous transaction in the other direction (receiver -> sender)
-    # So that we can modify it
-    previous_transaction = (
-        session.query(USDCTransactionsHistory)
-        .filter(
-            and_(
-                USDCTransactionsHistory.user_bank == receiver_bank_account,
-                USDCTransactionsHistory.method == USDCTransactionMethod.send,
-                # The original transaction will be indexed with the owner account
-                # of the original recipient
-                USDCTransactionsHistory.tx_metadata == sender_account_owner,
-            )
-        )
-        .order_by(desc(USDCTransactionsHistory.transaction_created_at))
-        .first()
-    )
-    if previous_transaction is None:
-        raise Exception(
-            f"Failed to find matching previous transcation from {receiver_bank_account} to {sender_account}"
-        )
-
-    difference = previous_transaction.change + receiver_balance_change_amount
-
-    # Previous transaction is undone by this recovery
-    if difference == 0:
-        logger.info(
-            f"index_payment_router.py | tx: {tx_sig} | Removing previous transaction {previous_transaction.signature}."
-        )
-        session.delete(previous_transaction)
-    elif difference < 0:
-        # Previous transaction is partially undone by this recovery
-        # Modifying the object returned by the query will update the DB
-        # when the session is flushed
-        previous_transaction.change = (
-            previous_transaction.change + receiver_balance_change_amount
-        )
-        previous_transaction.balance = Decimal(receiver_balance_change["post_balance"])
-        logger.info(
-            f"index_payment_router.py | tx: {tx_sig} | Found partial recovery for  {previous_transaction.signature}. New change value is {previous_transaction.change}."
-        )
-    else:
-        raise Exception(
-            f"Recovery transaction is for greater amount than original transaction ({receiver_balance_change_amount} > {-previous_transaction.change})"
-        )
-
-
 def index_transfer(
     session: Session,
     sender_account: str,
     sender_user_account: UserIdBankAccount | None,
     receiver_user_accounts: List[UserIdBankAccount],
     receiver_accounts: List[str],
+    transaction_type: USDCTransactionType,
     balance_changes: dict[str, BalanceChange],
     slot: int,
     timestamp: datetime,
@@ -483,7 +399,7 @@ def index_transfer(
     if sender_user_account is None:
         sender_metadata_address = (
             get_account_owner_from_balance_change(
-                sender_account=sender_account, balance_changes=balance_changes
+                account=sender_account, balance_changes=balance_changes
             )
             or sender_account
         )
@@ -493,7 +409,7 @@ def index_transfer(
             user_bank=user_account["user_bank_account"],
             slot=slot,
             signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
+            transaction_type=transaction_type,
             method=USDCTransactionMethod.receive,
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
@@ -501,8 +417,9 @@ def index_transfer(
             tx_metadata=sender_metadata_address,
         )
         session.add(usdc_tx_received)
+
         logger.debug(
-            f"index_payment_router.py | tx: {tx_sig} | Creating transfer received tx {usdc_tx_received}"
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} received tx {usdc_tx_received}"
         )
     # If sender was a user bank, index a single transfer with a list of recipients
     if sender_user_account is not None:
@@ -511,7 +428,7 @@ def index_transfer(
             user_bank=sender_user_account["user_bank_account"],
             slot=slot,
             signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
+            transaction_type=transaction_type,
             method=USDCTransactionMethod.send,
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
@@ -520,7 +437,7 @@ def index_transfer(
         )
         session.add(usdc_tx_received)
         logger.debug(
-            f"index_payment_router.py | tx: {tx_sig} | Creating transfer received tx {usdc_tx_received}"
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} sent tx {usdc_tx_received}"
         )
 
 
@@ -558,32 +475,12 @@ def validate_and_index_usdc_transfers(
         )
     # For invalid purchases or transfers not related to a purchase, we'll index
     # it as a regular transfer from the sender_account.
-    elif memo is not None and memo["type"] is RouteTransactionMemoType.recovery:
-        try:
-            attempt_index_recovery_transfer(
-                session=session,
-                sender_account=sender_account,
-                sender_user_account=sender_user_account,
-                receiver_user_accounts=receiver_user_accounts,
-                balance_changes=balance_changes,
-                tx_sig=tx_sig,
-            )
-        except Exception as e:
-            logger.warn(
-                f"index_payment_router.py | tx: {tx_sig} | Failed to index recovery transfer. Will index as plain transfer. Exception received was: {e}."
-            )
-            index_transfer(
-                session=session,
-                sender_account=sender_account,
-                sender_user_account=sender_user_account,
-                receiver_user_accounts=receiver_user_accounts,
-                receiver_accounts=receiver_accounts,
-                balance_changes=balance_changes,
-                slot=slot,
-                timestamp=timestamp,
-                tx_sig=tx_sig,
-            )
     else:
+        transaction_type = (
+            USDCTransactionType.recovery
+            if memo is not None and memo["type"] is RouteTransactionMemoType.recovery
+            else USDCTransactionType.transfer
+        )
         index_transfer(
             session=session,
             sender_account=sender_account,
@@ -591,6 +488,7 @@ def validate_and_index_usdc_transfers(
             receiver_user_accounts=receiver_user_accounts,
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
+            transaction_type=transaction_type,
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
