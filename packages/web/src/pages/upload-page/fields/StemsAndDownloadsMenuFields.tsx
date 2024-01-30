@@ -170,13 +170,16 @@ export const StemsAndDownloadsMenuFields = () => {
       ].includes(availabilityType) && !isAvailabilityTouched
     if (firstTimeDownloadGated) {
       isDownloadableSetValue(true)
-      setIsOriginalAvailable(true)
       setIsAvailabilityTouched(true)
+      if (isLosslessDownloadsEnabled) {
+        setIsOriginalAvailable(true)
+      }
     }
   }, [
     availabilityType,
     isAvailabilityTouched,
     isDownloadableSetValue,
+    isLosslessDownloadsEnabled,
     setIsOriginalAvailable
   ])
 
@@ -186,12 +189,14 @@ export const StemsAndDownloadsMenuFields = () => {
   // Note that the useEffect has been preferred to the corresponding onChange handlers
   // as those seemed to cause unwanted race conditions resulting in errors showing up incorrectly.
   useEffect(() => {
-    if (isDownloadable) {
+    if (isLosslessDownloadsEnabled && isDownloadable) {
       setIsOriginalAvailable(true)
-    } else if (stemsValue.length === 0) {
+    }
+    if (!isDownloadable && stemsValue.length === 0) {
       followerGatedSetValue(false)
     }
   }, [
+    isLosslessDownloadsEnabled,
     followerGatedSetValue,
     isDownloadable,
     setIsOriginalAvailable,
