@@ -1,4 +1,4 @@
-import { WithdrawMethod } from '@audius/common'
+import { WithdrawMethod } from '@audius/common/store'
 
 export const AMOUNT = 'amount'
 export const ADDRESS = 'address'

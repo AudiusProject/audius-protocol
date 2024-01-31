@@ -1,4 +1,4 @@
-import { convertGenreLabelToValue, GENRES } from '@audius/common'
+import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 
 import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 

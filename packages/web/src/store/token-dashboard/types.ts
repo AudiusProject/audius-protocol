@@ -1,4 +1,5 @@
-import { Chain, PhantomProvider } from '@audius/common'
+import { Chain } from '@audius/common/models'
+import { PhantomProvider } from '@audius/common/services'
 
 export type PhantomWalletConnection = {
   chain: Chain.Sol

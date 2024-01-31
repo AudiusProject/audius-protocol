@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { Supporting } from '@audius/common'
-import { cacheUsersSelectors } from '@audius/common'
+import type { Supporting } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'

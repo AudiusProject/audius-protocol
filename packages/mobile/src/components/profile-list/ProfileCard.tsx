@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import type { User } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'

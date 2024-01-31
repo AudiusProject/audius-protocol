@@ -1,16 +1,18 @@
 import { useContext } from 'react'
 
+import { AudiusQueryContext } from '@audius/common/audius-query'
+import { Name } from '@audius/common/models'
+import { pickHandleSchema } from '@audius/common/schemas'
 import {
-  AudiusQueryContext,
-  formatInstagramProfile,
-  formatTikTokProfile,
   formatTwitterProfile,
+  formatInstagramProfile,
+  formatTikTokProfile
+} from '@audius/common/services'
+import {
   InstagramProfile,
-  Name,
-  pickHandleSchema,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
+  TwitterProfile,
+  TikTokProfile
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

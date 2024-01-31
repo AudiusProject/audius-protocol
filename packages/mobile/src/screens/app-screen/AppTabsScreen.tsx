@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { walletActions } from '@audius/common'
+import { walletActions } from '@audius/common/store'
 import { useAppState } from '@react-native-community/hooks'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'

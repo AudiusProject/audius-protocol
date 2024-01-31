@@ -1,7 +1,7 @@
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useEffect, useLayoutEffect } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import { pickBy, negate, isUndefined } from 'lodash'
 import type { Animated, StyleProp, ViewProps, ViewStyle } from 'react-native'

@@ -2,7 +2,7 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import { SsrPageProps } from 'models/SsrPageProps'
+import { SsrPageProps } from '~/models/SsrPageProps'
 
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'

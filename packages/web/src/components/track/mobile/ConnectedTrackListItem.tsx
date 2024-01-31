@@ -1,17 +1,15 @@
 import { memo } from 'react'
 
+import { RepostSource, FavoriteSource, ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
   accountSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
-  FeatureFlags
-} from '@audius/common'
+  OverflowAction,
+  OverflowSource
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

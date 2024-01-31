@@ -1,4 +1,4 @@
-import { toastSelectors } from '@audius/common'
+import { toastSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { Toast } from './Toast'

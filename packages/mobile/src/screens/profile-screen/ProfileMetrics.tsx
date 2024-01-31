@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
 import {
-  followersUserListActions,
-  followingUserListActions
-} from '@audius/common'
+  followingUserListActions,
+  followersUserListActions
+} from '@audius/common/store'
 import { Pressable, Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

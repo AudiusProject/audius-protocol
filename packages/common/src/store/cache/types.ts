@@ -1,5 +1,5 @@
-import { ID, UID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
+import { ID, UID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
 
 export type CacheType = 'normal' | 'fast' | 'safe-fast'
 

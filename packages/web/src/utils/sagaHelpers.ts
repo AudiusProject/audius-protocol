@@ -1,4 +1,4 @@
-import { waitForAccount } from '@audius/common'
+import { waitForAccount } from '@audius/common/utils'
 import { call } from 'typed-redux-saga'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'

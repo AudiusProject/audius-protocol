@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect'
 
-import { Kind } from 'models'
-import { getTracksByUid } from 'store/cache/tracks/selectors'
-import { getUsers } from 'store/cache/users/selectors'
-import { Nullable, removeNullable } from 'utils/typeUtils'
+import { Kind } from '~/models'
+import { getTracksByUid } from '~/store/cache/tracks/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
+import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { LineupState } from '../../models/Lineup'
 

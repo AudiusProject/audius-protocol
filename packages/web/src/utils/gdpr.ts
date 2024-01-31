@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 
 import { getLocation } from 'services/Location'
 import { env } from 'services/env'

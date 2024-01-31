@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 import { Fragment, useCallback, useMemo, useState } from 'react'
 
-import type { ID, UID } from '@audius/common'
+import type { ID, UID } from '@audius/common/models'
 import type { FlatListProps } from 'react-native'
 import { FlatList, View } from 'react-native'
 import type {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ReactionNotification } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
+import type { ReactionNotification } from '@audius/common/store'
 import {
-  useUIAudio,
   notificationsSelectors,
   getReactionFromRawValue
-} from '@audius/common'
+} from '@audius/common/store'
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

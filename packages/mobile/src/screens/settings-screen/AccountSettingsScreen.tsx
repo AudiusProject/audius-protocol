@@ -1,12 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   accountSelectors,
   recoveryEmailActions,
   recoveryEmailSelectors,
-  modalsActions,
-  Status
-} from '@audius/common'
+  modalsActions
+} from '@audius/common/store'
 import { css } from '@emotion/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

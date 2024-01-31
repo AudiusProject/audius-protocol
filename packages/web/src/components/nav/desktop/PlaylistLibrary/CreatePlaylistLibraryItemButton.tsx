@@ -1,12 +1,12 @@
 import { MutableRefObject, useCallback, useMemo } from 'react'
 
+import { CreatePlaylistSource } from '@audius/common/models'
 import {
-  CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
   playlistLibraryActions,
   playlistLibraryHelpers
-} from '@audius/common'
+} from '@audius/common/store'
 import {
   PopupMenu,
   IconFolder,

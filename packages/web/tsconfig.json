@@ -11,7 +11,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -19,10 +19,12 @@
     "jsxImportSource": "@emotion/react",
     "downlevelIteration": true,
     "noFallthroughCasesInSwitch": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {
-      "@audius/trpc-server": ["../trpc-server/src/index.ts"],
+      "~/*": ["../../common/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "src/**/*.css"]
 }

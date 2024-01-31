@@ -12,6 +12,7 @@ export const createProxySelectorHook = <TState extends object = any>() => {
     deps: DependencyList,
     equalityFn?: Parameters<typeof useSelector>[1]
   ): TReturnType => {
+    // @ts-ignore
     // eslint-disable-next-line react-hooks/exhaustive-deps
     return useSelector(useCallback(memoize(fn), deps), equalityFn)
   }

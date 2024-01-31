@@ -1,5 +1,5 @@
-import { Track } from 'models/Track'
-import { LineupActions, asLineup } from 'store/lineup/reducer'
+import { Track } from '~/models/Track'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 import tracksReducer, {

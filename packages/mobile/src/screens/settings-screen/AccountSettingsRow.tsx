@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { Text, View } from 'react-native'

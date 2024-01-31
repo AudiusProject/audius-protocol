@@ -1,14 +1,14 @@
 import BN from 'bn.js'
 
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import {
   BNWei,
   SolanaWalletAddress,
   StringWei,
   WalletAddress
-} from 'models/Wallet'
-import { isNullOrUndefined } from 'utils/typeUtils'
-import { stringWeiToBN } from 'utils/wallet'
+} from '~/models/Wallet'
+import { isNullOrUndefined } from '~/utils/typeUtils'
+import { stringWeiToBN } from '~/utils/wallet'
 
 import { AudiusAPIClient } from '../audius-api-client'
 import {

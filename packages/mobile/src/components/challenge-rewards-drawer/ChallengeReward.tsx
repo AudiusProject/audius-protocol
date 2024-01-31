@@ -1,4 +1,4 @@
-import { formatNumberCommas } from '@audius/common'
+import { formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import { GradientText, Text } from '../core'

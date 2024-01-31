@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { SupportersMap, SupportingMap } from 'store/tipping'
-import { parseWeiNumber } from 'utils/formatUtil'
-import { Nullable } from 'utils/typeUtils'
-import { parseAudioInputToWei, stringWeiToBN } from 'utils/wallet'
+import { SupportersMap, SupportingMap } from '~/store/tipping'
+import { parseWeiNumber } from '~/utils/formatUtil'
+import { Nullable } from '~/utils/typeUtils'
+import { parseAudioInputToWei, stringWeiToBN } from '~/utils/wallet'
 
 import { ID, Supporter, User, BNWei, StringAudio, StringWei } from '../models'
 

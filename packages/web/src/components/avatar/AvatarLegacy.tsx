@@ -1,11 +1,7 @@
-import {
-  ID,
-  Maybe,
-  SquareSizes,
-  accountSelectors,
-  cacheUsersSelectors,
-  imageProfilePicEmpty
-} from '@audius/common'
+import { imageProfilePicEmpty } from '@audius/common/assets'
+import { SquareSizes, ID } from '@audius/common/models'
+import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
+import { Maybe } from '@audius/common/utils'
 import { Link } from 'react-router-dom'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

@@ -1,4 +1,5 @@
-import { SsrPageProps, chatMiddleware, ErrorLevel, Name } from '@audius/common'
+import { Name, ErrorLevel, SsrPageProps } from '@audius/common/models'
+import { chatMiddleware } from '@audius/common/store'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { routerMiddleware } from 'connected-react-router'

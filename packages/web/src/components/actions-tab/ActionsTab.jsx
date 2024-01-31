@@ -1,13 +1,12 @@
 import { PureComponent } from 'react'
 
+import { ShareSource, RepostSource } from '@audius/common/models'
 import {
-  ShareSource,
-  RepostSource,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   shareModalUIActions
-} from '@audius/common'
+} from '@audius/common/store'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'

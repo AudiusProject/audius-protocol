@@ -1,37 +1,35 @@
 import {
-  Kind,
   Name,
-  makeUid,
-  makeUids,
-  Uid,
+  Kind,
+  isContentUSDCPurchaseGated,
+  LineupEntry,
+  Track,
+  Collection,
+  UID,
+  LineupState,
+  CollectionMetadata
+} from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
   lineupActions as baseLineupActions,
+  premiumTracksPageLineupActions,
   queueActions,
-  playerSelectors,
   queueSelectors,
   getContext,
-  FeatureFlags,
-  isContentUSDCPurchaseGated,
-  StringKeys,
-  premiumTracksPageLineupActions,
-  accountSelectors,
-  LineupBaseActions,
-  LineupEntry,
-  LineupState,
-  Track,
-  UID,
+  playerSelectors,
   SubscriberInfo,
-  Collection,
-  CollectionMetadata,
-  Entry,
   SubscriptionInfo,
-  removeNullable,
+  Entry,
+  LineupBaseActions,
   QueueSource,
   UnsubscribeInfo
-} from '@audius/common'
+} from '@audius/common/store'
+import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
 import {
   all,
   call,

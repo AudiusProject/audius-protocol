@@ -3,38 +3,85 @@ import { useCallback } from 'react'
 import {
   StemCategory,
   stemCategoryFriendlyNames,
-  StemUpload
-} from '@audius/common'
+  StemUpload,
+  StemUploadWithFile
+} from '@audius/common/models'
+import { Box, Flex, Text as HarmonyText } from '@audius/harmony'
 import { IconRemove, IconButton } from '@audius/stems'
 import cn from 'classnames'
+import { FeatureFlags } from '~/services'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
+import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { stemDropdownRows } from 'utils/stems'
 
-import styles from './SourceFilesView.module.css'
+import styles from './StemFilesView.module.css'
 
 const MAX_ROWS = 10
 
 const messages = {
-  sourceFiles: 'SOURCE FILES',
-  maxCapacity: 'Reached upload limit of 10 files.'
+  additionalFiles: 'UPLOAD ADDITIONAL FILES',
+  audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
+  maxCapacity: 'Reached upload limit of 10 files.',
+  stemTypeHeader: 'Select Stem Type',
+  stemTypeDescription: 'Please select a stem type for each of your files.'
 }
 
-type SourceFilesViewProps = {
+type StemFilesViewProps = {
   onAddStems: (stems: any) => void
-  stems: StemUpload[]
+  stems: StemUploadWithFile[]
   onSelectCategory: (category: StemCategory, index: number) => void
   onDeleteStem: (index: number) => void
 }
 
-export const SourceFilesView = ({
+export const StemFilesView = ({
   onAddStems,
   stems,
   onSelectCategory,
   onDeleteStem
-}: SourceFilesViewProps) => {
+}: StemFilesViewProps) => {
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+
+  const renderStemFiles = () => {
+    return stems.length > 0 ? (
+      <>
+        <Flex direction='column'>
+          <HarmonyText variant='title' size='l'>
+            {messages.stemTypeHeader}
+          </HarmonyText>
+          <Box mt='s'>
+            <HarmonyText variant='body'>
+              {messages.stemTypeDescription}
+            </HarmonyText>
+          </Box>
+        </Flex>
+        <Flex direction='column' borderRadius='m' border='default'>
+          {stems.map((stem, i) => (
+            <TrackPreviewNew
+              className={styles.stemPreview}
+              index={i}
+              displayIndex={stems.length > 1}
+              key={`stem-${i}`}
+              trackTitle={stem.file.name}
+              fileType={stem.file.type}
+              fileSize={stem.file.size}
+              onRemove={() => onDeleteStem(i)}
+              stemCategory={stem.category}
+              onEditStemCategory={(category) => onSelectCategory(category, i)}
+              isStem
+            />
+          ))}
+        </Flex>
+      </>
+    ) : null
+  }
+
   const renderCurrentStems = () => {
     return (
       <ul className={styles.stemListItems}>
@@ -75,37 +122,27 @@ export const SourceFilesView = ({
         iconClassName={cn(styles.dropzoneIcon, {
           [styles.dropzoneDisabled]: atCapacity
         })}
-        textAboveIcon={messages.sourceFiles}
+        textAboveIcon={messages.additionalFiles}
+        subtextAboveIcon={
+          isLosslessDownloadsEnabled ? messages.audioQuality : undefined
+        }
         onDropAccepted={onAdd}
         type='stem'
         subtitle={atCapacity ? messages.maxCapacity : undefined}
         disableClick={atCapacity}
+        isTruncated={stems.length > 0}
       />
     )
   }
 
   return (
-    <div className={styles.sourceFilesContainer}>
+    <div className={styles.stemFilesContainer}>
+      {isLosslessDownloadsEnabled ? renderStemFiles() : null}
       {useRenderDropzone()}
-      {renderCurrentStems()}
+      {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}
     </div>
   )
 }
-
-export const dropdownRows = [
-  StemCategory.INSTRUMENTAL,
-  StemCategory.LEAD_VOCALS,
-  StemCategory.MELODIC_LEAD,
-  StemCategory.PAD,
-  StemCategory.SNARE,
-  StemCategory.KICK,
-  StemCategory.HIHAT,
-  StemCategory.PERCUSSION,
-  StemCategory.SAMPLE,
-  StemCategory.BACKING_VOX,
-  StemCategory.BASS,
-  StemCategory.OTHER
-]
 
 type StemListItemProps = {
   stem: StemUpload
@@ -119,11 +156,11 @@ const StemListItem = ({
   onDelete
 }: StemListItemProps) => {
   const onSelectIndex = (index: number) => {
-    const cat = dropdownRows[index]
+    const cat = stemDropdownRows[index]
     didSelectCategory(cat)
   }
 
-  let stemIndex = dropdownRows.findIndex((r) => r === category)
+  let stemIndex = stemDropdownRows.findIndex((r) => r === category)
   if (stemIndex === -1) {
     console.error(`Couldn't find stem row for category: ${category}`)
     stemIndex = 0
@@ -155,7 +192,7 @@ const StemListItem = ({
         <Dropdown
           size='medium'
           menu={{
-            items: dropdownRows.map((r) => ({
+            items: stemDropdownRows.map((r) => ({
               text: stemCategoryFriendlyNames[r]
             }))
           }}

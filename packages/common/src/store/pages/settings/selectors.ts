@@ -1,5 +1,5 @@
-import { getAccountUser } from 'store/account/selectors'
-import { CommonState } from 'store/commonStore'
+import { getAccountUser } from '~/store/account/selectors'
+import { CommonState } from '~/store/commonStore'
 
 const getBaseState = (state: CommonState) => state.pages.settings
 

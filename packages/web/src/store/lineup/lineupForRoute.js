@@ -1,13 +1,13 @@
 import {
-  trackPageSelectors,
   trendingPageSelectors,
+  trackPageSelectors,
   searchResultsPageSelectors,
   savedPageSelectors,
   profilePageSelectors,
   historyPageSelectors,
   feedPageSelectors,
   collectionPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { matchPath } from 'react-router'
 
 import {

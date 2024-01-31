@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
+import { Name, FeedFilter } from '@audius/common/models'
 import {
-  FeedFilter,
-  Name,
   feedPageLineupActions as feedActions,
   feedPageActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'

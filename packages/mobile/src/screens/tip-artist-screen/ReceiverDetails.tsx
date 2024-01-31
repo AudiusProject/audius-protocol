@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { tippingSelectors } from '@audius/common'
+import { tippingSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { Pressable, View } from 'react-native'

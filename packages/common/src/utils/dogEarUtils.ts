@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 
-import { DogEarType } from 'models/DogEar'
-import { AccessConditions } from 'models/Track'
+import { DogEarType } from '~/models/DogEar'
+import { AccessConditions } from '~/models/Track'
 
 import { Nullable } from './typeUtils'
 

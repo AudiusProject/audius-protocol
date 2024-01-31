@@ -1,4 +1,4 @@
-import { ID, SquareSizes, WidthSizes } from 'models'
+import { ID, SquareSizes, WidthSizes } from '~/models'
 
 export const REMOVE_BY_HANDLE = 'CACHE/USERS/REMOVE_BY_HANDLE'
 

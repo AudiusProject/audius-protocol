@@ -1,4 +1,4 @@
-import { LineupActions, asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import {
   FETCH_SEARCH_PAGE_RESULTS,
   FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED,
@@ -12,11 +12,11 @@ import {
   FetchSearchPageTagsAction,
   FetchSearchPageTagsSucceededAction,
   FetchSearchPageTagsFailedAction
-} from 'store/pages/search-results/actions'
-import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
+} from '~/store/pages/search-results/actions'
+import { PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/search-results/lineup/tracks/reducer'
+} from '~/store/pages/search-results/lineup/tracks/reducer'
 
 import { Status, Track } from '../../../models'
 

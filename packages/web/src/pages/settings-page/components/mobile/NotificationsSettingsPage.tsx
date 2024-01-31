@@ -1,4 +1,4 @@
-import { EmailFrequency } from '@audius/common'
+import { EmailFrequency } from '@audius/common/store'
 import { SegmentedControl } from '@audius/stems'
 
 import GroupableList from 'components/groupable-list/GroupableList'

@@ -1,4 +1,5 @@
-import { Name, getContext } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { getContext } from '@audius/common/store'
 import { LOCATION_CHANGE } from 'connected-react-router'
 import { take } from 'redux-saga/effects'
 

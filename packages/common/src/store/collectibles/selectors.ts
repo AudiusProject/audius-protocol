@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { removeNullable } from 'utils/typeUtils'
+import { removeNullable } from '~/utils/typeUtils'
 
 import {
   Chain,

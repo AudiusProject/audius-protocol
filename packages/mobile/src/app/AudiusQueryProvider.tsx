@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext } from '@audius/common/audius-query'
 
 import { env } from 'app/env'
 import { apiClient } from 'app/services/audius-api-client'

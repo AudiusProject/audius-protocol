@@ -4,7 +4,7 @@ import {
   NotificationType,
   notificationsUserListActions,
   notificationsUserListSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { useRoute } from 'app/hooks/useRoute'

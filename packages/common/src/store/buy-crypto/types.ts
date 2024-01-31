@@ -1,5 +1,5 @@
-import { MintName } from 'services/index'
-import { OnRampProvider } from 'store/ui/buy-audio/types'
+import { MintName } from '~/services/index'
+import { OnRampProvider } from '~/store/ui/buy-audio/types'
 
 export type BuyCryptoConfig = {
   /**

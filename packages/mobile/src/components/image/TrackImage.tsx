@@ -1,12 +1,6 @@
-import type {
-  Track,
-  Nullable,
-  SquareSizes,
-  ID,
-  Maybe,
-  SearchTrack
-} from '@audius/common'
-import { reachabilitySelectors } from '@audius/common'
+import type { SquareSizes, ID, SearchTrack, Track } from '@audius/common/models'
+import { reachabilitySelectors } from '@audius/common/store'
+import type { Nullable, Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import type { FastImageProps } from '@audius/harmony-native'

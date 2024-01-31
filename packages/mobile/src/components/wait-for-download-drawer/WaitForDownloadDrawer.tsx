@@ -1,5 +1,8 @@
-import type { CommonState } from '@audius/common'
-import { cacheTracksSelectors, useWaitForDownloadModal } from '@audius/common'
+import type { CommonState } from '@audius/common/store'
+import {
+  cacheTracksSelectors,
+  useWaitForDownloadModal
+} from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useSelector } from 'react-redux'
 

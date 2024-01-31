@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import type { CommonState } from '@audius/common'
-import { FavoriteSource, collectionsSocialActions } from '@audius/common'
+import { FavoriteSource } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
+import { collectionsSocialActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'

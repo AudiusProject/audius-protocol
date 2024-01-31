@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
-import type { TrendingRewardsModalType } from '@audius/common'
+import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  Theme,
-  StringKeys,
-  audioRewardsPageActions,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  audioRewardsPageSelectors,
+  audioRewardsPageActions
+} from '@audius/common/store'
+import type { TrendingRewardsModalType } from '@audius/common/store'
 import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

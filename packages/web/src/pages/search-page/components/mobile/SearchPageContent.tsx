@@ -1,15 +1,15 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
-  UID,
   Name,
-  UserCollection,
-  LineupState,
   Status,
-  User,
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
-} from '@audius/common'
+  UserCollection,
+  UID,
+  LineupState,
+  User
+} from '@audius/common/models'
+import { searchResultsPageTracksLineupActions as tracksActions } from '@audius/common/store'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import { IconAlbum } from '@audius/harmony'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'

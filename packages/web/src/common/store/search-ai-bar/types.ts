@@ -1,4 +1,4 @@
-import { SearchUser, Status } from '@audius/common'
+import { Status, SearchUser } from '@audius/common/models'
 
 export type SearchResults = {
   users: SearchUser[]

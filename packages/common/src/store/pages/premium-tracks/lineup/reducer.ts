@@ -1,5 +1,5 @@
-import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { initialLineupState } from 'store/lineup/reducer'
+import { RESET_SUCCEEDED, stripPrefix } from '~/store/lineup/actions'
+import { initialLineupState } from '~/store/lineup/reducer'
 
 import { Track, LineupState } from '../../../../models'
 

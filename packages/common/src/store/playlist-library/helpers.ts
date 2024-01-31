@@ -1,5 +1,5 @@
-import { Nullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
+import { Nullable } from '~/utils/typeUtils'
+import { uuid } from '~/utils/uid'
 
 import { ID } from '../../models/Identifiers'
 import {

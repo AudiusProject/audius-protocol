@@ -1,8 +1,8 @@
-import { LineupState } from 'models/Lineup'
-import { Track } from 'models/Track'
-import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { initialLineupState } from 'store/lineup/reducer'
-import { PREFIX } from 'store/pages/feed/lineup/actions'
+import { LineupState } from '~/models/Lineup'
+import { Track } from '~/models/Track'
+import { RESET_SUCCEEDED, stripPrefix } from '~/store/lineup/actions'
+import { initialLineupState } from '~/store/lineup/reducer'
+import { PREFIX } from '~/store/pages/feed/lineup/actions'
 
 export const initialState = {
   ...initialLineupState,

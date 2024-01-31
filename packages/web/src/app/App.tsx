@@ -2,7 +2,8 @@
 
 import { useEffect, Suspense, lazy } from 'react'
 
-import { FeatureFlags, useFeatureFlag } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
