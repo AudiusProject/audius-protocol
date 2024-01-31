@@ -2,6 +2,8 @@ set -e
 
 should_error=false
 
+npx only-allow pnpm
+
 if ! [ -z $CI ]; then
   exit 0
 fi
