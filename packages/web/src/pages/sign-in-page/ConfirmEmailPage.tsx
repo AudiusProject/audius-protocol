@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import {
-  confirmEmailErrorMessages,
-  confirmEmailSchema,
-  formatOtp
-} from '@audius/common'
 import { confirmEmailMessages } from '@audius/common/messages'
+import {
+  confirmEmailSchema,
+  formatOtp,
+  confirmEmailErrorMessages
+} from '@audius/common/utils'
 import { Text, TextLink } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'

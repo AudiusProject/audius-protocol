@@ -1,4 +1,4 @@
-import { passwordSchema } from '@audius/common'
+import { passwordSchema } from '@audius/common/utils'
 import { Button, Flex, IconArrowRight, IconComponent } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

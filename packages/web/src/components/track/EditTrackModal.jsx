@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { newTrackMetadata } from '@audius/common'
 import { SquareSizes } from '@audius/common/models'
+import { newTrackMetadata } from '@audius/common/utils'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'

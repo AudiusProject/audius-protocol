@@ -1,10 +1,11 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { pickHandleSchema, AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext } from '@audius/common'
 import {
   pickHandlePageMessages,
   socialMediaMessages
 } from '@audius/common/messages'
+import { pickHandleSchema } from '@audius/common/utils'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

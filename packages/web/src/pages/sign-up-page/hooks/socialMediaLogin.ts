@@ -6,11 +6,11 @@ import {
   formatTikTokProfile,
   formatTwitterProfile,
   InstagramProfile,
-  pickHandleSchema,
   TikTokProfile,
   TwitterProfile
 } from '@audius/common'
 import { Name } from '@audius/common/models'
+import { pickHandleSchema } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

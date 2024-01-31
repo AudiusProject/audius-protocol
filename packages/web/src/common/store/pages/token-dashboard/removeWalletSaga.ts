@@ -4,12 +4,12 @@ import {
   confirmerActions,
   ConfirmRemoveWalletAction,
   getContext,
-  newUserMetadata,
   tokenDashboardPageActions,
   walletActions,
   confirmTransaction
 } from '@audius/common'
 import { Chain, Kind } from '@audius/common/models'
+import { newUserMetadata } from '@audius/common/utils'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

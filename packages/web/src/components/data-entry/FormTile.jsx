@@ -1,7 +1,8 @@
 import { Component, useState, useCallback } from 'react'
 
-import { createRemixOfMetadata, FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import {
+  createRemixOfMetadata,
   creativeCommons,
   getCanonicalName,
   GENRES,

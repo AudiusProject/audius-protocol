@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext, pickHandleSchema } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common'
+import { pickHandleSchema } from '@audius/common/utils'
 import { Paper, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'

@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import { emailSchema, useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/utils'
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { signInErrorMessages, signInSchema } from '@audius/common'
 import { signInPageMessages } from '@audius/common/messages'
+import { signInSchema, signInErrorMessages } from '@audius/common/utils'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
