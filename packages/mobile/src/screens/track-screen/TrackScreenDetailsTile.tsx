@@ -14,7 +14,6 @@ import {
   favoritesUserListActions,
   reachabilitySelectors,
   playbackPositionSelectors,
-  FeatureFlags,
   queueSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -36,6 +35,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Genre,
   getCanonicalName,

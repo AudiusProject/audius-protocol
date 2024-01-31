@@ -1,10 +1,6 @@
-import {
-  accountSelectors,
-  chatSelectors,
-  StringKeys,
-  FeatureFlags
-} from '@audius/common'
+import { accountSelectors, chatSelectors } from '@audius/common'
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

@@ -1,12 +1,8 @@
-import {
-  FeatureFlags,
-  StringKeys,
-  accountSelectors,
-  chatSelectors
-} from '@audius/common'
+import { accountSelectors, chatSelectors } from '@audius/common'
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
 import { Name } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'

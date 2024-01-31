@@ -12,8 +12,7 @@ import {
   shareModalUIActions,
   RepostType,
   repostsUserListActions,
-  favoritesUserListActions,
-  FeatureFlags
+  favoritesUserListActions
 } from '@audius/common'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -29,6 +28,7 @@ import type {
   SearchPlaylist,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'

@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import type { CommonState } from '@audius/common'
 import {
   playbackPositionSelectors,
-  FeatureFlags,
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -25,6 +24,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'

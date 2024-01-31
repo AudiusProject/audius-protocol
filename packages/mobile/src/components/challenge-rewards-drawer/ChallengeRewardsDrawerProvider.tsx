@@ -2,13 +2,12 @@ import { useCallback, useEffect } from 'react'
 
 import type { CommonState } from '@audius/common'
 import {
-  IntKeys,
-  StringKeys,
   challengesSelectors,
   audioRewardsPageActions,
   ClaimStatus,
   audioRewardsPageSelectors
 } from '@audius/common'
+import { IntKeys, StringKeys } from '@audius/common/services'
 import {
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers

@@ -11,8 +11,7 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  RepostType,
-  FeatureFlags
+  RepostType
 } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import {
@@ -24,6 +23,7 @@ import {
   SquareSizes
 } from '@audius/common/models'
 import type { Collection, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 

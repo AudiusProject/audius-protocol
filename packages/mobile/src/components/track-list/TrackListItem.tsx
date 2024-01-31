@@ -3,7 +3,6 @@ import { memo, useCallback, useMemo, useState } from 'react'
 
 import {
   cacheCollectionsSelectors,
-  FeatureFlags,
   playbackPositionSelectors,
   OverflowAction,
   OverflowSource,
@@ -15,6 +14,7 @@ import {
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Genre, removeNullable } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,

@@ -1,4 +1,3 @@
-import type { QueryParams } from '@audius/common'
 import {
   accountSelectors,
   getContext,
@@ -11,6 +10,7 @@ import type {
   UserTrackMetadata
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import type { QueryParams } from '@audius/common/services'
 import {
   encodeHashId,
   removeNullable,

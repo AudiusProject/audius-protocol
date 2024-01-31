@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import { FEATURE_FLAG_OVERRIDE_KEY } from '@audius/common/hooks'
 import type { OverrideSetting } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FlatList } from 'react-native-gesture-handler'

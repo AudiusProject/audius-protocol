@@ -1,4 +1,4 @@
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
 import IconIndent from 'app/assets/images/iconIndent.svg'

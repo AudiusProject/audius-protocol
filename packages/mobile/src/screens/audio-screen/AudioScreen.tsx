@@ -3,7 +3,6 @@ import { useCallback, useEffect } from 'react'
 import type { CommonState } from '@audius/common'
 import {
   tokenDashboardPageActions,
-  StringKeys,
   vipDiscordModalActions,
   tokenDashboardPageSelectors,
   walletSelectors,
@@ -12,6 +11,7 @@ import {
   modalsActions
 } from '@audius/common'
 import type { StringWei } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'

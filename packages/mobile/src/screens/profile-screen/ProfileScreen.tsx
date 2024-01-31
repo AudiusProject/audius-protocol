@@ -6,10 +6,10 @@ import {
   reachabilitySelectors,
   shareModalUIActions,
   modalsActions,
-  FeatureFlags,
   relatedArtistsUIActions
 } from '@audius/common'
 import { ShareSource, Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'

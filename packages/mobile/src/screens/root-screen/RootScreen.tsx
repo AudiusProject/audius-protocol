@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  accountSelectors,
-  chatActions,
-  FeatureFlags,
-  playerActions
-} from '@audius/common'
+import { accountSelectors, chatActions, playerActions } from '@audius/common'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,
