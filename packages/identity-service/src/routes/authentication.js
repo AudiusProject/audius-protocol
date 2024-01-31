@@ -101,7 +101,8 @@ module.exports = function (app) {
   app.get(
     '/authentication',
     handleResponse(async (req, res, next) => {
-      const { lookupKey, username: email, otp } = req.query
+      const { lookupKey, email: emailParam, username, otp } = req.query
+      const email = emailParam ?? username
       if (!lookupKey) {
         return errorResponseBadRequest('Missing lookupKey')
       }

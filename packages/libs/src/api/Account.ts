@@ -239,7 +239,12 @@ export class Account extends Base {
     if (args.softCheck) {
       // @ts-expect-error hard to type this hedgehog addon
       const lookupKey = await this.hedgehog.getLookupKey(args)
-      return await this.identityService.checkAuth({ lookupKey })
+      try {
+        await this.identityService.checkAuth({ lookupKey })
+        return true
+      } catch (e) {
+        return false
+      }
     }
     return await this.hedgehog.confirmCredentials(args)
   }

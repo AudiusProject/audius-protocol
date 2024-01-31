@@ -519,7 +519,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         />
       </Modal>
       <ChangePasswordModal
-        showModal={isChangePasswordModalVisible}
+        isOpen={isChangePasswordModalVisible}
         onClose={closeChangePasswordModal}
       />
       <ChangeEmailModal

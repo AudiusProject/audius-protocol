@@ -61,6 +61,17 @@ type ChangeEmailModalProps = {
 }
 
 const OTP_ERROR = 'Missing otp'
+export const isOtpMissing = (e: unknown) => {
+  return (
+    e instanceof Object &&
+    'response' in e &&
+    e.response instanceof Object &&
+    'data' in e.response &&
+    e.response.data instanceof Object &&
+    'error' in e.response.data &&
+    e.response.data.error === OTP_ERROR
+  )
+}
 
 const ConfirmPasswordPage = () => {
   const [{ value: email }] = useField('email')
@@ -108,8 +119,11 @@ const NewEmailPage = () => {
   )
 }
 
-const VerifyEmailPage = () => {
-  const [{ value: newEmail }] = useField('newEmail')
+export const VerifyEmailPage = ({
+  onResendEmailClicked
+}: {
+  onResendEmailClicked: () => Promise<void>
+}) => {
   const [otpField, { error }] = useField('otp')
   const [isSending, setIsSending] = useState(false)
   const { toast } = useContext(ToastContext)
@@ -117,20 +131,12 @@ const VerifyEmailPage = () => {
   const resend = useCallback(() => {
     setIsSending(true)
     const fn = async () => {
-      const libs = await audiusBackendInstance.getAudiusLibsTyped()
-      try {
-        // Trigger email by not including otp
-        await libs.identityService!.changeEmail({
-          email: newEmail
-        })
-      } catch (e) {
-        //do nothing
-      }
+      await onResendEmailClicked()
       setIsSending(false)
       toast(messages.resentToast)
     }
     fn()
-  }, [toast, newEmail])
+  }, [onResendEmailClicked, toast])
 
   return (
     <Flex direction='column' gap='xl'>
@@ -176,7 +182,19 @@ const ChangeEmailModalForm = ({
   page: ChangeEmailPage
 }) => {
   const { isSubmitting } = useFormikContext()
-  const [, , { setValue: setEmail }] = useField('email')
+  const [{ value: email }, , { setValue: setEmail }] = useField('email')
+
+  const handleResendEmail = useCallback(async () => {
+    const libs = await audiusBackendInstance.getAudiusLibsTyped()
+    try {
+      // Trigger email by not including otp
+      await libs.identityService!.changeEmail({
+        email
+      })
+    } catch (e) {
+      // do nothing
+    }
+  }, [email])
 
   // Load the email for the user
   const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
@@ -196,7 +214,7 @@ const ChangeEmailModalForm = ({
       <ModalContentPages currentPage={page}>
         <ConfirmPasswordPage />
         <NewEmailPage />
-        <VerifyEmailPage />
+        <VerifyEmailPage onResendEmailClicked={handleResendEmail} />
         <SuccessPage />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
@@ -248,12 +266,16 @@ export const ChangeEmailModal = ({
       const { email, password } = values
       const libs = await audiusBackendInstance.getAudiusLibsTyped()
       try {
-        await libs.Account?.confirmCredentials({
+        const confirmed = await libs.Account?.confirmCredentials({
           username: email,
           password,
           softCheck: true
         })
-        setPage(ChangeEmailPage.NewEmail)
+        if (confirmed) {
+          setPage(ChangeEmailPage.NewEmail)
+        } else {
+          onError()
+        }
       } catch (e) {
         onError()
       }
@@ -280,18 +302,14 @@ export const ChangeEmailModal = ({
         })
         setPage(ChangeEmailPage.Success)
       } catch (e) {
-        // If missing OTP, go to verify email page
-        if (
-          'response' in (e as any) &&
-          (e as any).response?.data?.error === OTP_ERROR
-        ) {
+        if (isOtpMissing(e)) {
           setPage(ChangeEmailPage.VerifyEmail)
         } else {
           onError()
         }
       }
     },
-    [page, setPage]
+    [setPage]
   )
 
   const handleSubmit = useCallback(
@@ -313,7 +331,7 @@ export const ChangeEmailModal = ({
         })
       }
     },
-    [page, setPage]
+    [page, changeEmail, checkPassword]
   )
 
   return (
