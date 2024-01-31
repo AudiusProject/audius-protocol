@@ -62,7 +62,7 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
-  const user = yield* call(apiClient.getUserByHandle, {
+  const user = yield* apiClient.getUserByHandle({
     handle,
     currentUserId: userId,
     retry
