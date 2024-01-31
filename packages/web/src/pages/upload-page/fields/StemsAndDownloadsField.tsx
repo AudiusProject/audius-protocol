@@ -15,13 +15,13 @@ import {
   stemCategoryFriendlyNames,
   useUSDCPurchaseConfig
 } from '@audius/common'
+import { IconReceive } from '@audius/harmony'
 import { IconCart } from '@audius/stems'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconSourceFiles from 'assets/img/iconSourceFiles.svg'
 import {
   ContextualMenu,
   SelectedValue,
@@ -302,7 +302,7 @@ export const StemsAndDownloadsField = ({
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconSourceFiles />}
+      icon={<IconReceive />}
       initialValues={initialValues}
       onSubmit={handleSubmit}
       renderValue={renderValue}
