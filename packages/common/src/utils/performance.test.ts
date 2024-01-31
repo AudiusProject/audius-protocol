@@ -1,6 +1,7 @@
 import { Timer } from './performance'
 
-let sendToAnalytics
+let sendToAnalytics: ReturnType<typeof jest.fn>
+
 beforeEach(() => {
   sendToAnalytics = jest.fn()
 })

@@ -1,4 +1,6 @@
-/* eslint-disable jest/no-disabled-tests */
+import { PlaylistLibrary, PlaylistLibraryFolder } from 'models/PlaylistLibrary'
+import { SmartCollectionVariant } from 'models/SmartCollectionVariant'
+
 import {
   addFolderToLibrary,
   findIndexInPlaylistLibrary,
@@ -14,7 +16,7 @@ import {
 
 describe('findInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -27,11 +29,12 @@ describe('findInPlaylistLibrary', () => {
   })
 
   it('finds an index in the library with folders', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [{ type: 'playlist', playlist_id: 3 }]
@@ -44,7 +47,7 @@ describe('findInPlaylistLibrary', () => {
   })
 
   it('does not find something not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -64,7 +67,7 @@ describe('findInPlaylistLibrary', () => {
 
 describe('findIndexInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -77,7 +80,7 @@ describe('findIndexInPlaylistLibrary', () => {
   })
 
   it('does not find something not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -90,7 +93,7 @@ describe('findIndexInPlaylistLibrary', () => {
   })
 
   it('finds folder in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -112,7 +115,7 @@ describe('findIndexInPlaylistLibrary', () => {
   })
 
   it('finds playlist inside folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -125,7 +128,10 @@ describe('findIndexInPlaylistLibrary', () => {
           contents: [
             { type: 'playlist', playlist_id: 7 },
             { type: 'playlist', playlist_id: 10 },
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             {
               type: 'folder',
               name: 'favorites 2',
@@ -142,7 +148,10 @@ describe('findIndexInPlaylistLibrary', () => {
     let index = findIndexInPlaylistLibrary(library, 7)
     expect(index).toEqual([4, 0])
 
-    index = findIndexInPlaylistLibrary(library, 'Heavy Rotation')
+    index = findIndexInPlaylistLibrary(
+      library,
+      SmartCollectionVariant.HEAVY_ROTATION
+    )
     expect(index).toEqual([4, 2])
 
     index = findIndexInPlaylistLibrary(library, 12)
@@ -150,7 +159,7 @@ describe('findIndexInPlaylistLibrary', () => {
   })
 
   it('finds folder inside folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -183,7 +192,7 @@ describe('findIndexInPlaylistLibrary', () => {
 
 describe('removeFromPlaylistLibrary', () => {
   it('removes playlist from the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -203,7 +212,7 @@ describe('removeFromPlaylistLibrary', () => {
   })
 
   it('removes folder from the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -238,11 +247,12 @@ describe('removeFromPlaylistLibrary', () => {
   })
 
   it('removes playlist from the library with folders present', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [
@@ -259,6 +269,7 @@ describe('removeFromPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [{ type: 'playlist', playlist_id: 5 }]
@@ -270,11 +281,12 @@ describe('removeFromPlaylistLibrary', () => {
   })
 
   it('does not remove something not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [
@@ -291,6 +303,7 @@ describe('removeFromPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [
@@ -307,7 +320,7 @@ describe('removeFromPlaylistLibrary', () => {
 
 describe('removePlaylistLibraryDuplicates', () => {
   it('can remove single dupes', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -326,7 +339,7 @@ describe('removePlaylistLibraryDuplicates', () => {
   })
 
   it('does not remove non duplicates', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -350,7 +363,7 @@ describe('removePlaylistLibraryDuplicates', () => {
   })
 
   it('can remove multiple dupes', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -373,12 +386,13 @@ describe('removePlaylistLibraryDuplicates', () => {
   })
 
   it('can remove nested dupes', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         { type: 'playlist', playlist_id: 3 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [
@@ -397,6 +411,7 @@ describe('removePlaylistLibraryDuplicates', () => {
         { type: 'playlist', playlist_id: 2 },
         { type: 'playlist', playlist_id: 3 },
         {
+          id: 'folder_123',
           type: 'folder',
           name: 'favorites',
           contents: [{ type: 'playlist', playlist_id: 5 }]
@@ -406,7 +421,7 @@ describe('removePlaylistLibraryDuplicates', () => {
   })
 
   it('can remove dupe folders', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -474,7 +489,7 @@ describe('removePlaylistLibraryDuplicates', () => {
 
 describe('reorderPlaylistLibrary', () => {
   it('can reorder adjacent playlists', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -484,7 +499,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -502,7 +520,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -512,7 +533,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder the start playlist', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -523,7 +544,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         }
@@ -541,7 +565,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         }
@@ -550,7 +577,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder the end playlist', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -559,7 +586,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -578,7 +608,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -588,7 +621,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a playlist inside a folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -597,7 +630,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -615,7 +651,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -626,7 +665,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a playlist to the beginning', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -635,7 +674,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -654,7 +696,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -664,7 +709,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a playlist to a folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -673,7 +718,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -682,7 +730,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -701,7 +752,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -710,7 +764,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -729,7 +786,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -738,7 +798,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -748,7 +811,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a playlist inside a folder to another position inside the folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -757,7 +820,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -765,7 +831,11 @@ describe('reorderPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 4 }
       ]
     }
-    const ret = reorderPlaylistLibrary(library, 'Heavy Rotation', 12)
+    const ret = reorderPlaylistLibrary(
+      library,
+      SmartCollectionVariant.HEAVY_ROTATION,
+      12
+    )
     expect(ret).toEqual({
       contents: [
         { type: 'playlist', playlist_id: 1 },
@@ -776,7 +846,10 @@ describe('reorderPlaylistLibrary', () => {
           id: 'my-uuid',
           contents: [
             { type: 'playlist', playlist_id: 12 },
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' }
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            }
           ]
         },
         { type: 'playlist', playlist_id: 3 },
@@ -786,7 +859,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('does not reorder a playlist to a location outside of the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -796,7 +869,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -814,7 +890,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -824,7 +903,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('inserts a new playlist that was not in the original order', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -833,7 +912,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -852,7 +934,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -860,7 +945,11 @@ describe('reorderPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 4 }
       ]
     })
-    const res2 = reorderPlaylistLibrary(library, 22, 'Heavy Rotation')
+    const res2 = reorderPlaylistLibrary(
+      library,
+      22,
+      SmartCollectionVariant.HEAVY_ROTATION
+    )
     expect(res2).toEqual({
       contents: [
         { type: 'playlist', playlist_id: 1 },
@@ -870,7 +959,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 22 },
             { type: 'playlist', playlist_id: 12 }
           ]
@@ -882,7 +974,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('soft fails if the dragging item is a folder but it is not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -891,7 +983,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -909,7 +1004,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('is a no op if the dragging id and dropping id are the same', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -918,7 +1013,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -936,7 +1034,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a folder to the beginning of the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -945,7 +1043,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -966,7 +1067,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -979,7 +1083,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a folder to the end of the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -988,7 +1092,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1008,7 +1115,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         }
@@ -1017,7 +1127,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a folder to the middle of the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1026,7 +1136,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1045,7 +1158,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1055,7 +1171,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder a playlist or folder after a folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1064,7 +1180,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1073,7 +1192,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1096,7 +1218,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1105,7 +1230,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1122,7 +1250,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1131,7 +1262,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1143,7 +1277,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 
   it('can reorder an item before the target item', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1152,7 +1286,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1161,7 +1298,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1183,7 +1323,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites',
           id: 'my-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1194,7 +1337,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1205,7 +1351,7 @@ describe('reorderPlaylistLibrary', () => {
     const ret2 = reorderPlaylistLibrary(
       ret,
       1,
-      'Heavy Rotation',
+      SmartCollectionVariant.HEAVY_ROTATION,
       'playlist',
       true
     )
@@ -1217,7 +1363,10 @@ describe('reorderPlaylistLibrary', () => {
           id: 'my-uuid',
           contents: [
             { type: 'playlist', playlist_id: 1 },
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 12 }
           ]
         },
@@ -1227,7 +1376,10 @@ describe('reorderPlaylistLibrary', () => {
           name: 'favorites 2',
           id: 'my-uuid-2',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Best New Releases' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.BEST_NEW_RELEASES
+            },
             { type: 'playlist', playlist_id: 120 }
           ]
         },
@@ -1240,14 +1392,14 @@ describe('reorderPlaylistLibrary', () => {
 
 describe('addFolderToLibrary', () => {
   it('Adds a new folder to the beginning of a playlist library and returns the result', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
         { type: 'playlist', playlist_id: 3 }
       ]
     }
-    const folder = {
+    const folder: PlaylistLibraryFolder = {
       id: 'fake-uuid',
       name: 'Foldero',
       contents: [],
@@ -1272,7 +1424,7 @@ describe('addFolderToLibrary', () => {
 
   it('works with a null library', () => {
     const library = null
-    const folder = {
+    const folder: PlaylistLibraryFolder = {
       id: 'fake-uuid',
       name: 'Foldero',
       contents: [],
@@ -1296,7 +1448,7 @@ describe('addFolderToLibrary', () => {
     const emptyLibrary1 = {
       contents: []
     }
-    const folder = {
+    const folder: PlaylistLibraryFolder = {
       id: 'fake-uuid',
       name: 'Foldero',
       contents: [],
@@ -1333,7 +1485,7 @@ describe('addFolderToLibrary', () => {
 
 describe('renamePlaylistFolderInLibrary', () => {
   it('changes the name of given folder in library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1364,7 +1516,7 @@ describe('renamePlaylistFolderInLibrary', () => {
   })
 
   it('is a no op if the given folder is not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1383,7 +1535,7 @@ describe('renamePlaylistFolderInLibrary', () => {
 
 describe('removePlaylistFolderInLibrary', () => {
   it('removes folder from library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1404,7 +1556,7 @@ describe('removePlaylistFolderInLibrary', () => {
   })
 
   it('moves contents of folder to upper level before deleting', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1441,7 +1593,7 @@ describe('removePlaylistFolderInLibrary', () => {
   })
 
   it('is a no op if the given folder is not in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1459,7 +1611,7 @@ describe('removePlaylistFolderInLibrary', () => {
 
 describe('addPlaylistToFolder', () => {
   it('adds playlist to given folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1472,7 +1624,11 @@ describe('addPlaylistToFolder', () => {
       ]
     }
 
-    const result = addPlaylistToFolder(library, 'Heavy Rotation', 'fake-uuid')
+    const result = addPlaylistToFolder(
+      library,
+      SmartCollectionVariant.HEAVY_ROTATION,
+      'fake-uuid'
+    )
     const expectedResult = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
@@ -1482,7 +1638,10 @@ describe('addPlaylistToFolder', () => {
           name: 'Foldero',
           id: 'fake-uuid',
           contents: [
-            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+            {
+              type: 'explore_playlist',
+              playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+            },
             { type: 'playlist', playlist_id: 3 }
           ]
         }
@@ -1492,7 +1651,7 @@ describe('addPlaylistToFolder', () => {
   })
 
   it('returns the original unchanged library if the playlist is already in the folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1510,7 +1669,7 @@ describe('addPlaylistToFolder', () => {
   })
 
   it('returns the original unchanged library if folder does not exist', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1525,7 +1684,7 @@ describe('addPlaylistToFolder', () => {
 
     const result = addPlaylistToFolder(
       library,
-      'Heavy Rotation',
+      SmartCollectionVariant.HEAVY_ROTATION,
       'uuid-doesnt-exist'
     )
     expect(result).toBe(library)
@@ -1534,12 +1693,17 @@ describe('addPlaylistToFolder', () => {
   it('returns the original unchanged library if the library has no contents', () => {
     const library = {}
 
-    const result = addPlaylistToFolder(library, 'Heavy Rotation', 'fake-uuid')
+    const result = addPlaylistToFolder(
+      // @ts-ignore - Testing incorrectly formatted library
+      library,
+      SmartCollectionVariant.HEAVY_ROTATION,
+      'fake-uuid'
+    )
     expect(result).toBe(library)
   })
 
   it('moves the playlist into the folder if the playlist is already in the library but not in the folder', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
@@ -1573,11 +1737,14 @@ describe('addPlaylistToFolder', () => {
 
 describe('getPlaylistsNotInLibrary', () => {
   it('returns the playlists that are not already in the library', () => {
-    const library = {
+    const library: PlaylistLibrary = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
         { type: 'playlist', playlist_id: 2 },
-        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        {
+          type: 'explore_playlist',
+          playlist_id: SmartCollectionVariant.HEAVY_ROTATION
+        },
         {
           type: 'folder',
           id: 'my id',
@@ -1597,7 +1764,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       },
       2: {
         id: 2,
@@ -1606,7 +1774,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       },
       10: {
         id: 10,
@@ -1615,7 +1784,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       },
       11: {
         id: 11,
@@ -1624,7 +1794,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       },
       12: {
         id: 12,
@@ -1633,7 +1804,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       }
     }
 
@@ -1646,7 +1818,8 @@ describe('getPlaylistsNotInLibrary', () => {
         user: {
           handle: 'nikki',
           id: 49408
-        }
+        },
+        permalink: ''
       }
     })
   })
