@@ -4,7 +4,8 @@ import {
   remixesPageActions,
   remixesPageSelectors,
   getContext,
-  CommonState
+  CommonState,
+  Track
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -22,10 +23,10 @@ function* getTracks({
 }: {
   offset: number
   limit: number
-  payload: { trackId: number | null }
+  payload?: { trackId: number | null }
 }) {
   const apiClient = yield* getContext('apiClient')
-  const { trackId } = payload
+  const { trackId } = payload ?? {}
   if (!trackId) return []
   yield* waitForRead()
 
@@ -47,7 +48,7 @@ function* getTracks({
 const sourceSelector = (state: CommonState) =>
   `${tracksActions.prefix}:${getTrackId(state)}`
 
-class TracksSagas extends LineupSagas {
+class TracksSagas extends LineupSagas<Track> {
   constructor() {
     super(
       tracksActions.prefix,

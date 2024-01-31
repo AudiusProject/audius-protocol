@@ -4,7 +4,8 @@ import {
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
-  getContext
+  getContext,
+  Collection
 } from '@audius/common'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
@@ -69,13 +70,16 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   return processed
 }
 
-class TrendingPlaylistSagas extends LineupSagas {
+class TrendingPlaylistSagas extends LineupSagas<Collection> {
   constructor() {
     super(
       trendingPlaylistsPageLineupActions.prefix,
       trendingPlaylistsPageLineupActions,
       getLineup,
-      getPlaylists
+      getPlaylists,
+      undefined,
+      undefined,
+      undefined
     )
   }
 }
