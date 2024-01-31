@@ -23,6 +23,7 @@
     "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {
+      "@audius/common/*": ["../../common/src/*"],
       "~/*": ["../../common/src/*"]
     }
   },
