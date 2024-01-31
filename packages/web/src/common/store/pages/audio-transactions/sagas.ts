@@ -7,7 +7,8 @@ import {
   StringAudio,
   transactionDetailsActions,
   getContext,
-  Nullable
+  Nullable,
+  removeNullable
 } from '@audius/common'
 import type { InAppAudioPurchaseMetadata } from '@audius/common'
 import { AudiusLibs, full } from '@audius/sdk'
@@ -138,7 +139,7 @@ function* fetchAudioTransactionsAsync() {
         .filter((tx) => tx !== null)
       yield* call(
         fetchUsers,
-        userIds,
+        userIds.filter(removeNullable).map(parseInt),
         undefined, // requiredFields
         false // forceRetrieveFromSource
       )

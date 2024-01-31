@@ -243,7 +243,7 @@ class CollectionPage extends Component<
     // Check if the collection has moved in the cache and redirect as needed.
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
-      const collectionId = Uid.fromString(metadata._moved).id
+      const collectionId = Uid.fromString(metadata._moved).id as number
       fetchCollectionSucceeded(
         collectionId,
         metadata._moved,

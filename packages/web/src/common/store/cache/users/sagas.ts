@@ -11,12 +11,11 @@ import {
   reformatUser,
   getContext,
   User,
-  Entry,
   Metadata,
   UserMetadata
 } from '@audius/common'
 import { mergeWith } from 'lodash'
-import { all, call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
@@ -38,15 +37,17 @@ export function* fetchUsers(
   forceRetrieveFromSource?: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
   return yield* call(retrieve<User>, {
     ids: userIds,
     selectFromCache: function* (ids) {
-      return yield* select(getUsers, { ids })
+      return yield* select(getUsers, { ids: ids as number[] })
     },
     getEntriesTimestamp: function* (ids) {
-      return yield* select(getUserTimestamps, { ids })
+      return yield* select(getUserTimestamps, { ids: ids as number[] })
     },
-    retrieveFromSource: audiusBackendInstance.getCreators,
+    retrieveFromSource: (ids: (number | string)[]) =>
+      audiusBackendInstance.getCreators(ids as number[]),
     kind: Kind.USERS,
     idField: 'user_id',
     requiredFields,

@@ -33,7 +33,8 @@ import {
   createUserBankIfNeeded,
   SolanaWalletAddress,
   chatActions,
-  isNullOrUndefined
+  isNullOrUndefined,
+  removeNullable
 } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
@@ -502,7 +503,7 @@ function* refreshSupportAsync({
     ...(supportersForReceiverList || []).map((supporter) =>
       decodeHashId(supporter.sender.id)
     )
-  ]
+  ].filter(removeNullable)
 
   yield call(fetchUsers, userIds)
 
@@ -562,9 +563,9 @@ function* fetchSupportersForUserAsync(action: FetchSupportingAction) {
     supportersParams
   )
 
-  const userIds = supportersForReceiverList?.map((supporter) =>
-    decodeHashId(supporter.sender.id)
-  )
+  const userIds = supportersForReceiverList
+    ?.map((supporter) => decodeHashId(supporter.sender.id))
+    .filter(removeNullable)
   if (!userIds) return
   yield call(fetchUsers, userIds)
 
@@ -616,8 +617,9 @@ function* fetchSupportingForUserAsync({
     limit
   })
   const userIds =
-    supportingList?.map((supporting) => decodeHashId(supporting.receiver.id)) ??
-    []
+    supportingList
+      ?.map((supporting) => decodeHashId(supporting.receiver.id))
+      .filter(removeNullable) ?? []
 
   yield call(fetchUsers, userIds)
 

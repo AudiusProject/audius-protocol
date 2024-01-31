@@ -55,7 +55,7 @@ type RetrieveArgs<T> = {
   getEntriesTimestamp: (ids: (ID | string)[]) => Generator<
     SelectEffect,
     {
-      [id: ID]: number | null
+      [id: ID | string]: number | null
     },
     any
   >
@@ -112,21 +112,23 @@ export function* retrieve<T>({
   onAfterAddToCache = function* (_metadatas) {}
 }: RetrieveArgs<T>): Generator<
   any,
-  { entries: Record<ID | string, T>; uids: string[] }
+  { entries: Record<ID | string, T>; uids: Record<ID | string, string> }
 > {
   if (!ids.length) {
     return {
       entries: {},
-      uids: []
+      uids: {}
     }
   }
 
   const uniqueIds = [...new Set(ids)]
   // Create uids for each id and collect a mapping.
-  const uids = makeUids([kind], uniqueIds).reduce<string[]>((map, uid, i) => {
+  const uids = makeUids([kind], uniqueIds).reduce<
+    Record<number | string, string>
+  >((map, uid, i) => {
     map[uniqueIds[i]] = uid
     return map
-  }, [])
+  }, {})
 
   // Get cached entries
   const [cachedEntries, timestamps] = yield* all([
@@ -136,7 +138,7 @@ export function* retrieve<T>({
 
   const entryTTL = yield* select(getEntryTTL)
 
-  const idsToFetch: ID[] = []
+  const idsToFetch: (ID | string)[] = []
   uniqueIds.forEach((id) => {
     const shouldFetch =
       !(id in cachedEntries) ||
@@ -172,19 +174,21 @@ export function* retrieve<T>({
   }
 }
 
-type RetrieveFromSourceThenCacheArgs = {
-  idsToFetch: ID[]
+type RetrieveFromSourceThenCacheArgs<T> = {
+  idsToFetch: (ID | string)[]
   kind: Kind
-  retrieveFromSource: (ids: ID[]) => Metadata[]
+  retrieveFromSource: (
+    ids: (ID | string)[]
+  ) => Promise<T[]> | Generator<any, T[], any>
   onBeforeAddToCache: AddToCacheHandler
   onAfterAddToCache: AddToCacheHandler
   shouldSetLoading: boolean
   deleteExistingEntry: boolean
   idField: string
-  uids: string[]
+  uids: Record<number | string, string>
 }
 
-function* retrieveFromSourceThenCache({
+function* retrieveFromSourceThenCache<T>({
   idsToFetch,
   kind,
   retrieveFromSource,
@@ -194,7 +198,7 @@ function* retrieveFromSourceThenCache({
   deleteExistingEntry,
   idField,
   uids
-}: RetrieveFromSourceThenCacheArgs) {
+}: RetrieveFromSourceThenCacheArgs<T>) {
   if (shouldSetLoading) {
     yield* put(
       cacheActions.setStatus(
@@ -203,7 +207,7 @@ function* retrieveFromSourceThenCache({
       )
     )
   }
-  let metadatas = yield* call(retrieveFromSource, idsToFetch)
+  let metadatas = yield* call(retrieveFromSource, idsToFetch) as unknown as T[]
   if (metadatas) {
     if (!Array.isArray(metadatas)) {
       metadatas = [metadatas]
@@ -221,7 +225,7 @@ function* retrieveFromSourceThenCache({
 
     // Either add or update the cache. If we're doing a cache refresh post load, it should
     // be an update.
-    const cacheMetadata = metadatas.map((m) => ({
+    const cacheMetadata = metadatas.map((m: Metadata) => ({
       id: m[idField],
       uid: uids[m[idField]],
       metadata: m

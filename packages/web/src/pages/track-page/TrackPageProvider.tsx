@@ -298,7 +298,7 @@ class TrackPageProvider extends Component<
     play(uid)
     if (uid) {
       const trackId = Uid.fromString(uid).id
-      recordPlayMoreByArtist(trackId)
+      recordPlayMoreByArtist(trackId as number)
     }
   }
 

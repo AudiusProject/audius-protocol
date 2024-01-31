@@ -152,7 +152,7 @@ export const removeSucceeded = (kind: Kind, ids: ID[]) => ({
  */
 export const setStatus = (
   kind: Kind,
-  statuses: { id: ID; status: Status }[]
+  statuses: { id: ID | string; status: Status }[]
 ) => ({
   type: SET_STATUS,
   kind,
