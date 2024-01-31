@@ -1,4 +1,4 @@
-import { TrackDownload as TrackDownloadBase } from '@audius/common'
+import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 import type { Nullable } from '@audius/common/utils'
 import { Platform, Share } from 'react-native'
 import type {

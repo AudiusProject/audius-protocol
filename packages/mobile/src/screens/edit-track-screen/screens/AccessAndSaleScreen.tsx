@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
@@ -10,6 +9,7 @@ import {
   TrackAvailabilityType
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'

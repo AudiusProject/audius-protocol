@@ -1,4 +1,5 @@
-import { FeatureFlags, getContext } from '@audius/common'
+import { getContext } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { call } from 'typed-redux-saga'
 
 import { OFFLINE_OVERRIDE_STORAGE_KEY } from 'app/constants/storage-keys'

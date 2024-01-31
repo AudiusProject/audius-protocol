@@ -1,7 +1,5 @@
 import { Environment, Env } from '@audius/common/services'
 
-import type {} from '@audius/common'
-
 import { env as envDev } from './env.dev'
 import { env as envProd } from './env.prod'
 import { env as envStage } from './env.stage'

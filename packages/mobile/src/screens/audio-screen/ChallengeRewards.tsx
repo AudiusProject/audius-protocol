@@ -2,15 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type { ChallengeRewardsModalType, CommonState } from '@audius/common'
 import {
-  StringKeys,
   challengesSelectors,
   audioRewardsPageActions,
   audioRewardsPageSelectors,
-  modalsActions,
-  FeatureFlags
+  modalsActions
 } from '@audius/common'
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   removeNullable,
   makeOptimisticChallengeSortComparator

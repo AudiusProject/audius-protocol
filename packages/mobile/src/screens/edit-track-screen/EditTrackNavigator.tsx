@@ -1,4 +1,4 @@
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'

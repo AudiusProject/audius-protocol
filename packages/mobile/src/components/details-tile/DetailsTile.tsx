@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type { CommonState } from '@audius/common'
 import {
-  FeatureFlags,
   accountSelectors,
   playerSelectors,
   playbackPositionSelectors
@@ -10,6 +9,7 @@ import {
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   dayjs,
   squashNewLines,

@@ -1,5 +1,5 @@
-import { IntKeys } from '@audius/common'
 import type { ServiceMonitorType, MonitorPayload } from '@audius/common/models'
+import { IntKeys } from '@audius/common/services'
 
 import { track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'

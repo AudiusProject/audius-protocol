@@ -1,5 +1,4 @@
 import { emailSchemaMessages } from '@audius/common/schemas'
-
 import { useField, useFormikContext } from 'formik'
 import { usePrevious } from 'react-use'
 

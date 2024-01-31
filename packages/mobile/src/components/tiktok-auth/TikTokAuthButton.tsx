@@ -1,5 +1,5 @@
-import type { TikTokProfileData } from '@audius/common'
-import { formatTikTokProfile } from '@audius/common'
+import type { TikTokProfileData } from '@audius/common/services'
+import { formatTikTokProfile } from '@audius/common/services'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch } from 'react-redux'
 

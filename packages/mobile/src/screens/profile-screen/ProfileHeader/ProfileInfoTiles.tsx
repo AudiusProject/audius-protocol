@@ -1,11 +1,8 @@
 import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
-import {
-  FeatureFlags,
-  accountSelectors,
-  relatedArtistsUISelectors
-} from '@audius/common'
+import { accountSelectors, relatedArtistsUISelectors } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import type { ViewStyle } from 'react-native'
 import { View, ScrollView } from 'react-native'
 import { useSelector } from 'react-redux'

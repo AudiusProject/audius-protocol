@@ -1,7 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
 import {
-  FeatureFlags,
   playbackPositionSelectors,
   reachabilitySelectors,
   accountSelectors,
@@ -22,6 +21,7 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'

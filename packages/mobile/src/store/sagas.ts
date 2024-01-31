@@ -4,7 +4,7 @@ import {
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   gatedContentSagas,
-  remoteConfigSagas as remoteConfig,
+  remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
@@ -201,7 +201,7 @@ export default function* rootSaga() {
     ...toastSagas(),
 
     initKeyboardEvents,
-    ...remoteConfig(),
+    ...remoteConfigSagas(),
     ...oauthSagas(),
     ...walletsSagas()
   ]

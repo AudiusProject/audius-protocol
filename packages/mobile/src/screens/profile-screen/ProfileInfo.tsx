@@ -5,10 +5,10 @@ import {
   chatSelectors,
   chatActions,
   profilePageSelectors,
-  reachabilitySelectors,
-  FeatureFlags
+  reachabilitySelectors
 } from '@audius/common'
 import { FollowSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

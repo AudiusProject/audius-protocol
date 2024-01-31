@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { RandomImage } from '@audius/common'
+import { RandomImage } from '@audius/common/services'
 import { useField } from 'formik'
 
 import IconSearch from 'app/assets/images/iconSearch.svg'

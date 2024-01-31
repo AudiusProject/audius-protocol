@@ -3,13 +3,13 @@ import React, { useCallback, useRef } from 'react'
 import {
   accountSelectors,
   collectionsSocialActions,
-  FeatureFlags,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
   tracksSocialActions,
   usersSocialActions
 } from '@audius/common'
 import { Name, ShareSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'

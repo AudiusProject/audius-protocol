@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { BooleanKeys } from '@audius/common'
 import type { Name } from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {

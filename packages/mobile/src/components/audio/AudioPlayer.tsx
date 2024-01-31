@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type { CommonState, QueryParams, Queueable } from '@audius/common'
+import type { CommonState, Queueable } from '@audius/common'
 import {
   playbackRateValueMap,
   accountSelectors,
@@ -15,13 +15,14 @@ import {
   reachabilitySelectors,
   gatedContentSelectors,
   RepeatMode,
-  FeatureFlags,
   tracksSocialActions,
   savedPageTracksLineupActions
 } from '@audius/common'
 import { useAppContext } from '@audius/common/context'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import type { QueryParams } from '@audius/common/services'
 import {
   Genre,
   encodeHashId,
