@@ -1,7 +1,6 @@
 import { Component, useState, useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common'
-import { createRemixOfMetadata } from '@audius/common/schemas'
+import { FeatureFlags, createRemixOfMetadata } from '@audius/common/schemas'
 import {
   creativeCommons,
   getCanonicalName,

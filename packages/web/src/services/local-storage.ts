@@ -1,4 +1,4 @@
-import { LocalStorage } from '@audius/common'
+import { LocalStorage } from '@audius/common/schemas'
 
 export const localStorage = new LocalStorage({
   localStorage:

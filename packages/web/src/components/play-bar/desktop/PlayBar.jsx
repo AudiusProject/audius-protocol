@@ -10,7 +10,6 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  FeatureFlags,
   playbackRateValueMap,
   cacheTracksSelectors
 } from '@audius/common'
@@ -21,6 +20,7 @@ import {
   PlaybackSource,
   Kind
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/schemas'
 import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

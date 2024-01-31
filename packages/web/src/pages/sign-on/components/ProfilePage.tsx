@@ -4,11 +4,13 @@ import {
   Image,
   InstagramProfile,
   TwitterProfile,
-  formatInstagramProfile,
-  formatTwitterProfile,
-  formatTikTokProfile,
   TikTokProfile
 } from '@audius/common'
+import {
+  formatTwitterProfile,
+  formatInstagramProfile,
+  formatTikTokProfile
+} from '@audius/common/schemas'
 import cn from 'classnames'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'

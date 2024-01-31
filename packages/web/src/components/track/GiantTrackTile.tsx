@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import {
-  FeatureFlags,
   publishTrackConfirmationModalUIActions,
   CommonState,
   cacheTracksSelectors
@@ -14,6 +13,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/schemas'
 import {
   Genre,
   getCanonicalName,

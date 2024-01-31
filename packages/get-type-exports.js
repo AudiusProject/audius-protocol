@@ -2,7 +2,7 @@ const glob = require('glob')
 const fs = require('fs')
 
 var getDirectories = function (callback) {
-  glob('./common/dist/schemas/**/*', callback)
+  glob('./common/dist/services/**/*', callback)
 }
 
 getDirectories(async function (err, res) {

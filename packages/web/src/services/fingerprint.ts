@@ -1,4 +1,4 @@
-import { FingerprintClient } from '@audius/common'
+import { FingerprintClient } from '@audius/common/schemas'
 import FingerprintJS, { Agent } from '@fingerprintjs/fingerprintjs-pro'
 
 import { env } from './env'

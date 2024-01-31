@@ -10,11 +10,10 @@ import {
   playbackPositionActions,
   playbackPositionSelectors,
   reachabilitySelectors,
-  FeatureFlags,
-  gatedContentSelectors,
-  QueryParams
+  gatedContentSelectors
 } from '@audius/common'
 import { Kind } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/schemas'
 import {
   Genre,
   encodeHashId,

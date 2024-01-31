@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
 import {
-  RandomImage,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions,
@@ -12,7 +11,7 @@ import {
 } from '@audius/common'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID } from '@audius/common/models'
-import { newCollectionMetadata } from '@audius/common/schemas'
+import { RandomImage, newCollectionMetadata } from '@audius/common/schemas'
 import { Nullable } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'

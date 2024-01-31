@@ -1,4 +1,7 @@
-import { getLookupTableAccounts, getRecentBlockhash } from '@audius/common'
+import {
+  getRecentBlockhash,
+  getLookupTableAccounts
+} from '@audius/common/schemas'
 import { MintName } from '@audius/sdk'
 import {
   createCloseAccountInstruction,

@@ -1,11 +1,11 @@
 import {
-  FeatureFlags,
   accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/schemas'
 import { Button } from '@audius/harmony'
 import { IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'

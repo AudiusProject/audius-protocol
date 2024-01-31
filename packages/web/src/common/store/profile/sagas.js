@@ -1,5 +1,4 @@
 import {
-  DoubleKeys,
   accountSelectors,
   cacheActions,
   profilePageSelectors,
@@ -11,11 +10,11 @@ import {
   collectiblesActions,
   processAndCacheUsers,
   chatActions,
-  FeatureFlags,
   confirmerActions,
   confirmTransaction
 } from '@audius/common'
 import { DefaultSizes, Kind } from '@audius/common/models'
+import { DoubleKeys, FeatureFlags } from '@audius/common/schemas'
 import {
   squashNewLines,
   makeUid,

@@ -1,7 +1,7 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/schemas'
 import { formatCount } from '@audius/common/utils'
 import {
   IconCaretRight,

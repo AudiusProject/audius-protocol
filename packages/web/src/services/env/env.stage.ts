@@ -1,4 +1,4 @@
-import { Env } from '@audius/common'
+import { Env } from '@audius/common/schemas'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',

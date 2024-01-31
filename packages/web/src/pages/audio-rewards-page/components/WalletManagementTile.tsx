@@ -5,12 +5,10 @@ import {
   walletSelectors,
   tokenDashboardPageSelectors,
   buyAudioActions,
-  OnRampProvider,
-  FeatureFlags,
-  StringKeys,
-  Location
+  OnRampProvider
 } from '@audius/common'
 import { Client, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags, Location } from '@audius/common/schemas'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'

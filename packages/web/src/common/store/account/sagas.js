@@ -3,14 +3,16 @@ import {
   cacheActions,
   profilePageActions,
   accountActions,
-  recordIP,
   solanaSelectors,
-  createUserBankIfNeeded,
   getContext,
-  FeatureFlags,
   chatActions
 } from '@audius/common'
 import { ErrorLevel, Kind } from '@audius/common/models'
+import {
+  FeatureFlags,
+  recordIP,
+  createUserBankIfNeeded
+} from '@audius/common/schemas'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'

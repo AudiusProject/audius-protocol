@@ -1,4 +1,4 @@
-import { getLocation as getLocationCommon } from '@audius/common'
+import { getLocation as getLocationCommon } from '@audius/common/schemas'
 
 import { localStorage } from 'services/local-storage'
 

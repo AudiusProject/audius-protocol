@@ -1,4 +1,4 @@
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/schemas'
 
 import { useFlag } from './useRemoteConfig'
 

@@ -3,13 +3,15 @@ import {
   tippingActions,
   SupportersMapForUser,
   UserListSagaFactory,
-  SupporterResponse,
   topSupportersUserListSelectors,
   topSupportersUserListActions,
-  TOP_SUPPORTERS_USER_LIST_TAG,
-  responseAdapter as adapter
+  TOP_SUPPORTERS_USER_LIST_TAG
 } from '@audius/common'
 import { ID, User } from '@audius/common/models'
+import {
+  responseAdapter as adapter,
+  SupporterResponse
+} from '@audius/common/schemas'
 import { decodeHashId, removeNullable } from '@audius/common/utils'
 import { put, select } from 'typed-redux-saga'
 

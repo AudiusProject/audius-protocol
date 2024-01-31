@@ -1,6 +1,7 @@
-import { FeatureFlags, chatSelectors, StringKeys } from '@audius/common'
+import { chatSelectors } from '@audius/common'
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/schemas'
 import { removeNullable } from '@audius/common/utils'
 import {
   IconCrown,

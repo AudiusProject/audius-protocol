@@ -15,7 +15,8 @@
     "./api": "./src/api/index.ts",
     "./models": "./src/models/index.ts",
     "./utils": "./src/utils/index.ts",
-    "./schemas": "./src/schemas/index.ts"
+    "./schemas": "./src/schemas/index.ts",
+    "./services": "./src/services/index.ts"
   },
   "repository": {
     "type": "git",

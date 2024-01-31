@@ -1,4 +1,4 @@
-import { RemoteConfigInstance } from '@audius/common'
+import { RemoteConfigInstance } from '@audius/common/schemas'
 import { vitest } from 'vitest'
 
 let fakeConfig: Record<string, any> = {}

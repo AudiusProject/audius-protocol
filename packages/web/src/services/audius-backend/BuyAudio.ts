@@ -1,4 +1,5 @@
-import { InAppAudioPurchaseMetadata, MEMO_PROGRAM_ID } from '@audius/common'
+import { InAppAudioPurchaseMetadata } from '@audius/common'
+import { MEMO_PROGRAM_ID } from '@audius/common/schemas'
 import {
   TokenAccountNotFoundError,
   createTransferCheckedInstruction,
