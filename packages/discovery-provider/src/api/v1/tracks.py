@@ -3,7 +3,7 @@ import logging
 import re
 import urllib.parse
 from typing import List
-from urllib.parse import urljoin
+from urllib.parse import parse_qs, urlencode, urljoin, urlparse
 
 import requests
 from flask import redirect
@@ -435,14 +435,19 @@ def tranform_stream_cache(stream_url):
 
 
 def get_stream_url_from_content_node(content_node: str, path: str):
-    stream_url = urljoin(content_node, path)
+    # Add additional query parameters
+    joined_url = urljoin(content_node, path)
+    parsed_url = urlparse(joined_url)
+    query_params = parse_qs(parsed_url.query)
+    query_params["skip_play_count"] = ["true"]
+    stream_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
+
     headers = {"Range": "bytes=0-1"}
+
     try:
-        response = requests.get(
-            stream_url + "&skip_play_count=True", headers=headers, timeout=5
-        )
-        if response.status_code == 206:
-            return stream_url
+        response = requests.get(stream_url, headers=headers, timeout=5)
+        if response.status_code == 206 or response.status_code == 204:
+            return parsed_url.geturl()
     except:
         pass
 
@@ -461,19 +466,13 @@ class TrackStream(Resource):
         },
     )
     @ns.expect(stream_parser)
+    @cache(ttl_sec=5, transform=tranform_stream_cache)
     def head(self, track_id):
         """
         Gets the availability of a streamable MP3 file of a track,
         including Content-Length in the response.
         """
-        request_args = stream_parser.parse_args()
-        user_data = request_args.get("user_data")
-        user_signature = request_args.get("user_signature")
-        nft_access_signature = request_args.get(
-            "nft_access_signature"
-        ) or request_args.get("premium_content_signature")
         decoded_id = decode_with_abort(track_id, ns)
-
         info = get_track_access_info(decoded_id)
         track = info.get("track")
 
@@ -486,20 +485,17 @@ class TrackStream(Resource):
         redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
-        stream_signature = get_track_stream_signature(
-            {
-                "track": track,
-                "is_preview": False,
-                "user_data": user_data,
-                "user_signature": user_signature,
-                "nft_access_signature": nft_access_signature,
-            }
-        )
+        stream_signature = get_track_stream_signature({"track": track})
         if not stream_signature:
             abort_not_found(track_id, ns)
 
+        signature = stream_signature["signature"]
         cid = stream_signature["cid"]
-        path = f"tracks/cidstream/{cid}"
+        params = {"signature": json.dumps(signature)}
+
+        base_path = f"tracks/cidstream/{cid}"
+        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+        path = f"{base_path}?{query_string}"
 
         # we cache track cid -> content node so we can avoid
         # checking multiple content nodes for a track

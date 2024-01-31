@@ -189,18 +189,19 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 		defer blob.Close()
 
+		if c.Request().Method == "HEAD" {
+			// return file size along with head requests
+			c.Response().Header().Set(echo.HeaderContentLength, strconv.FormatInt(blob.Size(), 10))
+			c.Response().WriteHeader(http.StatusOK)
+			return nil
+		}
+
 		// v2 file listen
 		if isAudioFile {
 			go ss.logTrackListen(c)
 		} else {
 			// images: cache 30 days
 			c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
-		}
-
-		if c.Request().Method == "HEAD" {
-			// return file size along with head requests
-			c.Response().Header().Set(echo.HeaderContentLength, strconv.FormatInt(blob.Size(), 10))
-			return c.NoContent(204)
 		}
 
 		if isAudioFile {
