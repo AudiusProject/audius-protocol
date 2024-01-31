@@ -2,7 +2,7 @@
     "compilerOptions": {
       "outDir": "build",
       "skipLibCheck": true,
-      "target": "es5",
+      "target": "ES2015",
       "esModuleInterop": true,
       "module": "CommonJS",
       "moduleResolution": "node",
