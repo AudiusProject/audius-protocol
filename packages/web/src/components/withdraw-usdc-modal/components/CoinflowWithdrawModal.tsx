@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
 import {
-  useCoinflowAdapter,
+  useCoinflowWithdrawalAdapter,
   useCoinflowWithdrawModal,
-  useCoinflowWithdrawalDecorator,
   withdrawUSDCActions
 } from '@audius/common'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
@@ -34,7 +33,6 @@ const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowWithdrawModal = () => {
-  const transactionDecorator = useCoinflowWithdrawalDecorator()
   const {
     data: { amount },
     isOpen,
@@ -42,9 +40,7 @@ export const CoinflowWithdrawModal = () => {
     onClosed
   } = useCoinflowWithdrawModal()
 
-  const adapter = useCoinflowAdapter({
-    onSendTransaction: transactionDecorator
-  })
+  const adapter = useCoinflowWithdrawalAdapter()
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {

@@ -6,6 +6,7 @@ import {
   createTransferCheckedInstruction,
   decodeTransferCheckedInstruction
 } from '@solana/spl-token'
+import { u8 } from '@solana/buffer-layout'
 import {
   AddressLookupTableAccount,
   Keypair,
@@ -132,7 +133,8 @@ export const isTransferCheckedInstruction = (
 ) => {
   return (
     instruction.programId.equals(TOKEN_PROGRAM_ID) &&
-    instruction.data[0] === TokenInstruction.TransferChecked
+    instruction.data.length &&
+    u8().decode(instruction.data) === TokenInstruction.TransferChecked
   )
 }
 
@@ -480,6 +482,13 @@ export const createRootWalletRecoveryTransaction = async (
   return tx
 }
 
+/** Converts a Coinflow transaction which transfers directly from root wallet USDC
+ * account into a transaction that routes through the current user's USDC user bank, to
+ * better facilitate indexing. The original transaction *must* use a TransferChecked instruction
+ * and must have the current user's Solana root wallet USDC token account as the source.
+ * @returns a new transaction that routes the USDC transfer through the user bank. This must be signed
+ * by the current user's Solana root wallet and the provided fee payer (likely via relay).
+ */
 export const decorateCoinflowWithdrawalTransaction = async (
   audiusBackendInstance: AudiusBackend,
   { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
