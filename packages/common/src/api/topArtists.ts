@@ -1,8 +1,8 @@
 import { uniq } from 'lodash'
 
-import { createApi } from 'audius-query'
-import { ID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
+import { createApi } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
 
 import { userApiFetch } from './user'
 

@@ -10,6 +10,7 @@ import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
 import { env as APP_ENV } from './src/services/env'
+import path from 'path'
 
 const fixAcceptHeader404 = () => ({
   // Fix issue with vite dev server and `wait-on`
@@ -61,11 +62,6 @@ export default defineConfig(({ mode }) => {
       }
     },
     plugins: [
-      // TODO: Enable once https://github.com/aleclarson/vite-tsconfig-paths/issues/110
-      // is resolved
-      // tsconfigPaths({
-      //   root: './packages'
-      // }),
       glslify(),
       svgr({
         include: '**/*.svg'
@@ -119,7 +115,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        // Should be able to use vite-tsconfig-paths instead
+        // Can't use vite-tsconfig-paths because of vike
         app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
@@ -132,6 +128,7 @@ export default defineConfig(({ mode }) => {
         workers: '/src/workers',
         utils: '/src/utils',
         ssr: '/src/ssr',
+        '~': path.resolve(__dirname, '../../packages/common/src'),
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),

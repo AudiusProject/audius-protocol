@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { AudiusQueryContextType } from 'audius-query'
-import { signUpFetch } from 'src/api'
-import { EMAIL_REGEX } from 'utils/email'
+import { signUpFetch } from '~/api'
+import { AudiusQueryContextType } from '~/audius-query'
+import { EMAIL_REGEX } from '~/utils/email'
 
 export const emailSchemaMessages = {
   emailRequired: 'Please enter an email.',

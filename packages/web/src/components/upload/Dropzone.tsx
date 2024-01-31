@@ -1,4 +1,4 @@
-import { TextLink } from '@audius/harmony'
+import { Flex, Text, TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -8,9 +8,9 @@ import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 import styles from './Dropzone.module.css'
 
 const messages = {
-  track: 'Drag-and-drop your files here, or ',
-  image: 'Drag-and-drop an image here, or ',
-  stem: 'Drag-and-drop audio files here, or ',
+  track: 'Drag-and-drop your files here, or',
+  image: 'Drag-and-drop an image here, or',
+  stem: 'Drag-and-drop audio files here, or',
   browse: 'browse to upload'
 }
 
@@ -18,10 +18,12 @@ type DropzoneProps = {
   className?: string
   messageClassName?: string
   titleTextClassName?: string
+  subtitleTextClassName?: string
   iconClassName?: string
   type?: 'track' | 'image' | 'stem'
   // Extra text content to be displayed inside the dropzone.
   textAboveIcon?: string
+  subtextAboveIcon?: string
   subtitle?: string
   allowMultiple?: boolean
   /**
@@ -35,21 +37,25 @@ type DropzoneProps = {
   onDropRejected?: (files: File[]) => void
   disabled?: boolean
   disableClick?: boolean
+  isTruncated?: boolean
 }
 
 export const Dropzone = ({
   className,
   titleTextClassName,
+  subtitleTextClassName,
   messageClassName,
   iconClassName,
   type = 'track',
   textAboveIcon,
+  subtextAboveIcon,
   allowMultiple = true,
   onDropAccepted,
   onDropRejected,
   subtitle,
   disabled = false,
-  disableClick
+  disableClick,
+  isTruncated
 }: DropzoneProps) => {
   const getMessage = () => {
     if (subtitle) return subtitle
@@ -67,10 +73,21 @@ export const Dropzone = ({
     }
 
     return (
-      <>
-        {message}
-        <TextLink css={{ color: '#a30cb3' }}>{messages.browse}</TextLink>
-      </>
+      <Flex alignItems='center'>
+        {isTruncated ? (
+          <IconUpload
+            className={cn(styles.iconUpload, iconClassName, {
+              [styles.truncated]: isTruncated
+            })}
+          />
+        ) : null}
+        <Text>
+          {message}
+          <TextLink css={{ color: '#a30cb3' }}>
+            &nbsp;{messages.browse}
+          </TextLink>
+        </Text>
+      </Flex>
     )
   }
 
@@ -79,7 +96,9 @@ export const Dropzone = ({
       multiple={allowMultiple}
       onDropAccepted={onDropAccepted}
       onDropRejected={onDropRejected}
-      className={cn(styles.dropzone, className)}
+      className={cn(styles.dropzone, className, {
+        [styles.truncated]: isTruncated
+      })}
       disabled={disabled}
       disableClick={disabled || disableClick}
       accept={
@@ -89,12 +108,21 @@ export const Dropzone = ({
     >
       <div className={styles.hoverBoundingBox}>
         <span className={styles.contentWrapper}>
-          {textAboveIcon ? (
-            <div className={cn(styles.textAboveIcon, titleTextClassName)}>
-              {textAboveIcon}
-            </div>
+          {!isTruncated ? (
+            <>
+              {textAboveIcon ? (
+                <div className={cn(styles.textAboveIcon, titleTextClassName)}>
+                  {textAboveIcon}
+                </div>
+              ) : null}
+              {subtextAboveIcon ? (
+                <Text size='s' variant='body' className={subtitleTextClassName}>
+                  {subtextAboveIcon}
+                </Text>
+              ) : null}
+              <IconUpload className={cn(styles.iconUpload, iconClassName)} />
+            </>
           ) : null}
-          <IconUpload className={cn(styles.iconUpload, iconClassName)} />
           <div className={cn(styles.text, messageClassName)}>
             {getMessage()}
           </div>

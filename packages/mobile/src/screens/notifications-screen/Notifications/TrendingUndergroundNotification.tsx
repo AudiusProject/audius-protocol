@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import type {
-  Nullable,
   TrackEntity,
   TrendingUndergroundNotification as TrendingUndergroundNotificationType
-} from '@audius/common'
-import { Name, notificationsSelectors } from '@audius/common'
+} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconTrending } from '@audius/harmony-native'

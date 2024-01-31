@@ -6,10 +6,10 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from 'models/Track'
-import { getSupportedUserCollections } from 'store/collectibles/selectors'
-import { CommonState } from 'store/index'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models/Track'
+import { getSupportedUserCollections } from '~/store/collectibles/selectors'
+import { CommonState } from '~/store/index'
+import { Nullable } from '~/utils/typeUtils'
 
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean

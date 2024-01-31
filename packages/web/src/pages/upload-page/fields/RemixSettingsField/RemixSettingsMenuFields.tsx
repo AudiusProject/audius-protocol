@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
 
+import { useGetTrackByPermalink } from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  getPathFromTrackUrl,
-  useGetTrackByPermalink,
-  accountSelectors,
-  useGatedContentAccess,
-  isContentUSDCPurchaseGated,
-  isContentCollectibleGated
-} from '@audius/common'
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { getPathFromTrackUrl } from '@audius/common/utils'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 import { useThrottle } from 'react-use'
@@ -16,8 +16,8 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
-import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../AccessAndSaleField'
 import { SwitchRowField } from '../SwitchRowField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'

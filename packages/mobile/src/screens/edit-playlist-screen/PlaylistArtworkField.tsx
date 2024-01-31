@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGeneratePlaylistArtwork } from '@audius/common'
+import { useGeneratePlaylistArtwork } from '@audius/common/hooks'
 import { useField, useFormikContext } from 'formik'
 
 import { PickArtworkField } from 'app/components/fields'

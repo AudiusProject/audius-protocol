@@ -1,29 +1,31 @@
 import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
   Name,
-  PlaybackSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
   FavoriteType,
-  Track,
+  ID,
+  Track
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   themeSelectors,
-  RepostType,
-  favoritesUserListActions,
+  OverflowAction,
+  OverflowSource,
   repostsUserListActions,
-  playerSelectors,
-  FeatureFlags
-} from '@audius/common'
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

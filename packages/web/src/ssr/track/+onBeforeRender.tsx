@@ -1,4 +1,4 @@
-import type { Maybe } from '@audius/common'
+import { Maybe } from '@audius/common/utils'
 import {
   sdk,
   full as FullSdk,

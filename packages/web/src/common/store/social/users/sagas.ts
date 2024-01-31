@@ -1,17 +1,15 @@
+import { Name, Kind, ID } from '@audius/common/models'
 import {
-  Kind,
-  ID,
-  Name,
-  makeKindId,
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
-  getContext,
-  usersSocialActions as socialActions,
   profilePageActions,
+  usersSocialActions as socialActions,
+  getContext,
   confirmerActions,
   confirmTransaction
-} from '@audius/common'
+} from '@audius/common/store'
+import { makeKindId } from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

@@ -1,11 +1,11 @@
+import { Kind } from '@audius/common/models'
 import {
-  getErrorMessage,
-  settingsPageActions as actions,
-  getContext,
   accountSelectors,
   cacheActions,
-  Kind
-} from '@audius/common'
+  settingsPageActions as actions,
+  getContext
+} from '@audius/common/store'
+import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'

@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import {
-  FeatureFlags,
-  Name,
-  isContentUSDCPurchaseGated,
-  useFeatureFlag
-} from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 

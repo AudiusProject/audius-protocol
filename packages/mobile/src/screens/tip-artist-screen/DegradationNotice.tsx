@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { StringKeys } from '@audius/common'
+import { StringKeys } from '@audius/common/services'
 import { Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 

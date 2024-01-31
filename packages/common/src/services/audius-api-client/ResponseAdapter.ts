@@ -1,6 +1,6 @@
 import { full } from '@audius/sdk'
 
-import dayjs from 'utils/dayjs'
+import dayjs from '~/utils/dayjs'
 
 import {
   ID,

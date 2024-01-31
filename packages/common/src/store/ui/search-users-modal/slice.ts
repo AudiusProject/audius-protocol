@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from 'models/Identifiers'
-import { Status } from 'models/Status'
+import { ID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
 
 export type SearchUsersModalState = {
   userList: {

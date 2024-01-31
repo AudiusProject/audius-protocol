@@ -1,9 +1,9 @@
+import { newTrackMetadata } from '@audius/common/schemas'
 import {
-  newTrackMetadata,
   ALLOWED_MAX_AUDIO_SIZE_BYTES,
   ALLOWED_AUDIO_FILE_EXTENSIONS,
   ALLOWED_AUDIO_FILE_MIME
-} from '@audius/common'
+} from '@audius/common/utils'
 import jsmediatags from 'jsmediatags'
 
 import { resizeImage } from 'utils/imageProcessingUtil'

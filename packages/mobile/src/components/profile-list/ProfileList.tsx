@@ -1,4 +1,4 @@
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 
 import type { CardListProps } from 'app/components/core'
 import { CardList } from 'app/components/core'

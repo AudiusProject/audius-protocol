@@ -1,28 +1,31 @@
+import { Name, FavoriteSource } from '@audius/common/models'
 import {
-  ELECTRONIC_SUBGENRES,
-  FavoriteSource,
+  IntKeys,
   FeatureFlags,
-  Genre,
   MAX_HANDLE_LENGTH,
-  Name,
+  getCityAndRegion
+} from '@audius/common/services'
+import {
   accountActions,
   accountSelectors,
-  cacheUsersSelectors,
-  collectionsSocialActions,
-  getCityAndRegion,
-  getContext,
   processAndCacheUsers,
+  cacheUsersSelectors,
   settingsPageActions,
+  collectionsSocialActions,
   usersSocialActions as socialActions,
   solanaSelectors,
   toastActions,
+  getContext,
   confirmerActions,
-  confirmTransaction,
-  IntKeys,
+  confirmTransaction
+} from '@audius/common/store'
+import {
+  Genre,
+  ELECTRONIC_SUBGENRES,
+  waitForAccount,
   parseHandleReservedStatusFromSocial,
-  isValidEmailString,
-  waitForAccount
-} from '@audius/common'
+  isValidEmailString
+} from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import {

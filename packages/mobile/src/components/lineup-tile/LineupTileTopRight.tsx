@@ -1,9 +1,9 @@
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
   accountSelectors,
-  playbackPositionSelectors,
-  formatLineupTileDuration
-} from '@audius/common'
+  playbackPositionSelectors
+} from '@audius/common/store'
+import { formatLineupTileDuration } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'

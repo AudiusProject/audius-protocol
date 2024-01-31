@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  fillString,
-  welcomeModalMessages as messages,
-  settingsPageActions
-} from '@audius/common'
+import { welcomeModalMessages } from '@audius/common/messages'
+import { settingsPageActions } from '@audius/common/store'
+import { fillString } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
@@ -65,17 +63,17 @@ export const WelcomeDrawer = () => {
             color='accent'
           >
             {fillString(
-              messages.welcome,
+              welcomeModalMessages.welcome,
               displayName ? `, ${displayName}` : ''
             )}
           </Text>
           <Text variant='body' size='l'>
-            {messages.youreIn}
+            {welcomeModalMessages.youreIn}
           </Text>
         </Flex>
         <Flex direction='column' gap='s'>
           <Button iconRight={IconArrowRight} onPress={handleClose} fullWidth>
-            {messages.startListening}
+            {welcomeModalMessages.startListening}
           </Button>
           <Button
             iconRight={IconCloudUpload}
@@ -86,7 +84,7 @@ export const WelcomeDrawer = () => {
             }}
             fullWidth
           >
-            {messages.upload}
+            {welcomeModalMessages.upload}
           </Button>
         </Flex>
       </Flex>

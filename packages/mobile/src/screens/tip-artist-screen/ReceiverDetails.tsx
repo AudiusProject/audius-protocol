@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { tippingSelectors } from '@audius/common'
+import { tippingSelectors } from '@audius/common/store'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

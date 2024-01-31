@@ -22,14 +22,14 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { Name } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
+import { Name } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
 import {
   SLIPPAGE_TOLERANCE_EXCEEDED_ERROR,
   jupiterInstance,
   parseJupiterInstruction,
   quoteWithAnalytics
-} from 'services/Jupiter'
+} from '~/services/Jupiter'
 import {
   MEMO_PROGRAM_ID,
   MintName,
@@ -41,9 +41,9 @@ import {
   pollForBalanceChange,
   pollForTokenBalanceChange,
   relayVersionedTransaction
-} from 'services/audius-backend/solana'
-import { FeatureFlags } from 'services/index'
-import { IntKeys } from 'services/remote-config/types'
+} from '~/services/audius-backend/solana'
+import { FeatureFlags } from '~/services/index'
+import { IntKeys } from '~/services/remote-config/types'
 import {
   onrampCanceled,
   onrampFailed,
@@ -54,15 +54,15 @@ import {
   buyCryptoSucceeded,
   buyCryptoRecoverySucceeded,
   buyCryptoRecoveryFailed
-} from 'store/buy-crypto/slice'
-import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
-import { getContext } from 'store/commonStore'
-import { getFeePayer } from 'store/solana/selectors'
-import { TOKEN_LISTING_MAP } from 'store/ui/buy-audio/constants'
-import { OnRampProvider } from 'store/ui/buy-audio/types'
-import { setVisibility } from 'store/ui/modals/parentSlice'
-import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
-import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
+} from '~/store/buy-crypto/slice'
+import { getBuyUSDCRemoteConfig } from '~/store/buy-usdc'
+import { getContext } from '~/store/commonStore'
+import { getFeePayer } from '~/store/solana/selectors'
+import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
+import { OnRampProvider } from '~/store/ui/buy-audio/types'
+import { setVisibility } from '~/store/ui/modals/parentSlice'
+import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
+import { waitForAccount, waitForValue } from '~/utils/sagaHelpers'
 
 import {
   BuyCryptoConfig,
@@ -513,7 +513,7 @@ function* doBuyCryptoViaSol({
     const preSwapTokenBalance = account?.amount ?? BigInt(0)
 
     // Try the swap a few times in hopes the price comes back if it slipped
-    let swapError = null
+    let swapError: string | null = null
     let swapTransactionSignature: string | null = null
     let retryCount = 0
     // TODO: Put these into optimizely?

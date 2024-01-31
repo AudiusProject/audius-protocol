@@ -1,4 +1,4 @@
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import type { ImageStyle, TextStyle, ViewStyle } from 'react-native'
 import { StyleSheet } from 'react-native'
 

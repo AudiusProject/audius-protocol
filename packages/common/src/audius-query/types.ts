@@ -11,7 +11,7 @@ import {
 import AsyncRetry from 'async-retry'
 import { Dispatch } from 'redux'
 
-import { Kind, Status } from 'models'
+import { Kind, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 

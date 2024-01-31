@@ -1,4 +1,5 @@
-import { getErrorMessage, ReportToSentryArgs, ErrorLevel } from '@audius/common'
+import { ErrorLevel, ReportToSentryArgs } from '@audius/common/models'
+import { getErrorMessage } from '@audius/common/utils'
 import { withScope, captureException } from '@sentry/browser'
 import type { SeverityLevel } from '@sentry/types'
 

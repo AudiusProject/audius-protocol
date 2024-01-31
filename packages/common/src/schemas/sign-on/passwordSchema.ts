@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { isNotCommonPassword } from 'utils/commonPasswordCheck'
+import { isNotCommonPassword } from '~/utils/commonPasswordCheck'
 
 export const passwordSchema = z
   .object({

@@ -1,9 +1,9 @@
-import type { RemoteConfigInstance } from '@audius/common'
+import type { RemoteConfigInstance } from '@audius/common/services'
 import {
-  getContext,
-  formatInstagramProfile,
-  formatTwitterProfile
-} from '@audius/common'
+  formatTwitterProfile,
+  formatInstagramProfile
+} from '@audius/common/services'
+import { getContext } from '@audius/common/store'
 import * as Sentry from '@sentry/react-native'
 import { takeEvery, put, takeLatest, call } from 'redux-saga/effects'
 

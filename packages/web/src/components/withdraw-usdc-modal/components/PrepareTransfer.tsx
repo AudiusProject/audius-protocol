@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 import {
-  CoinflowWithdrawState,
   withdrawUSDCSelectors,
+  useCoinflowWithdrawModal,
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  useCoinflowWithdrawModal
-} from '@audius/common'
+  CoinflowWithdrawState
+} from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'

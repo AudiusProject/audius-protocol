@@ -1,11 +1,12 @@
 import { createElement, useCallback, useMemo } from 'react'
 
-import type { Collection, CommonState, ID } from '@audius/common'
+import { SquareSizes } from '@audius/common/models'
+import type { Collection, ID } from '@audius/common/models'
 import {
-  SquareSizes,
   cacheCollectionsSelectors,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 

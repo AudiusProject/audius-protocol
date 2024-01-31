@@ -1,8 +1,8 @@
 import BN from 'bn.js'
 
-import { BNUSDC } from 'models/Wallet'
-import { Nullable } from 'utils/typeUtils'
-import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
+import { BNUSDC } from '~/models/Wallet'
+import { Nullable } from '~/utils/typeUtils'
+import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from '~/utils/wallet'
 
 import { PurchaseContentStage } from './types'
 

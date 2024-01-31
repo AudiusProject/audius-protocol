@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react'
 
 import {
-  ID,
   StemCategory,
+  ID,
   StemUploadWithFile,
-  Track,
-  removeNullable,
-  uuid,
+  Track
+} from '@audius/common/models'
+import {
   cacheTracksActions as cacheTrackActions,
-  stemsUploadSelectors,
   stemsUploadActions,
+  stemsUploadSelectors,
+  publishTrackConfirmationModalUIActions,
   editTrackModalSelectors,
-  useEditTrackModal,
-  publishTrackConfirmationModalUIActions
-} from '@audius/common'
+  useEditTrackModal
+} from '@audius/common/store'
+import { removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -21,11 +22,11 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
+import { stemDropdownRows } from 'utils/stems'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
@@ -160,7 +161,7 @@ const EditTrackModal = ({
         ...p,
         allowDelete: true,
         allowCategorySwitch: true,
-        category: dropdownRows[0]
+        category: stemDropdownRows[0]
       }))
 
     setPendingUploads((s) => [...s, ...processed])

@@ -1,4 +1,4 @@
-import { playerActions } from '@audius/common'
+import { playerActions } from '@audius/common/store'
 
 import { createErrorSagas } from 'utils/errorSagas'
 

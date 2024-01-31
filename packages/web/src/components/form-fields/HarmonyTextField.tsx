@@ -1,6 +1,6 @@
 import { Ref, forwardRef, useEffect } from 'react'
 
-import { useDebouncedCallback } from '@audius/common'
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { TextInput, TextInputProps } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 

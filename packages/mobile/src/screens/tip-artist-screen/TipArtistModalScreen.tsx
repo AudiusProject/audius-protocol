@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { tippingActions } from '@audius/common'
+import { tippingActions } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useDispatch } from 'react-redux'
 

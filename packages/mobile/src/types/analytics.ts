@@ -1,8 +1,8 @@
 import type {
-  AllTrackingEvents as CommonTrackingEvents,
-  ID
-} from '@audius/common'
-import { Name as CommonEventNames } from '@audius/common'
+  ID,
+  AllTrackingEvents as CommonTrackingEvents
+} from '@audius/common/models'
+import { Name as CommonEventNames } from '@audius/common/models'
 
 import type { OfflineJob } from 'app/store/offline-downloads/slice'
 
@@ -196,4 +196,4 @@ export {
   FavoriteSource,
   FollowSource,
   CreatePlaylistSource
-} from '@audius/common'
+} from '@audius/common/models'

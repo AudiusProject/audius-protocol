@@ -1,4 +1,4 @@
-import { makeGetStorageNodeSelector } from '@audius/common'
+import { makeGetStorageNodeSelector } from '@audius/common/services'
 
 import { env } from 'services/env'
 

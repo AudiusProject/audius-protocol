@@ -1,11 +1,8 @@
 import { useEffect } from 'react'
 
-import {
-  explorePageActions,
-  explorePageSelectors,
-  Status,
-  useProxySelector
-} from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import { explorePageSelectors, explorePageActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ProfileList } from 'app/components/profile-list'

@@ -1,4 +1,4 @@
-import type { ID, UserCollectionMetadata } from '@audius/common'
+import type { UserCollectionMetadata, ID } from '@audius/common/models'
 
 export const isCollectionDownloadable = (
   collection: UserCollectionMetadata,

@@ -1,5 +1,5 @@
-import { ID } from 'models/Identifiers'
-import { TrendingRange } from 'store/notifications'
+import { ID } from '~/models/Identifiers'
+import { TrendingRange } from '~/store/notifications'
 
 export const SET_TRACK_RANK = 'TRACK_PAGE/SET_TRACK_RANK'
 export const GET_TRACK_RANKS = 'TRACK_PAGE/GET_TRACK_RANKS'

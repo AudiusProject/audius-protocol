@@ -1,6 +1,6 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
@@ -24,9 +25,9 @@ import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { RemixSettingsField } from '../fields/RemixSettingsField'
-import { SourceFilesField } from '../fields/SourceFilesField'
+import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
-import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
+import { defaultHiddenFields } from '../fields/stream-availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
 import { TrackMetadataFormSchema } from '../validation'
 
@@ -124,6 +125,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { isEnabled: isScheduledReleasesEnabled } = useFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
+  const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
   return (
     <Form>
@@ -145,10 +147,20 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               ) : (
                 <ReleaseDateFieldLegacy />
               )}
-              <RemixSettingsField />
-              <SourceFilesField />
-              <AccessAndSaleField isUpload />
+              <AccessAndSaleField
+                isUpload
+                forceOpen={forceOpenAccessAndSale}
+                setForceOpen={setForceOpenAccessAndSale}
+              />
               <AttributionField />
+              <StemsAndDownloadsField
+                closeMenuCallback={(data) => {
+                  if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+                    setForceOpenAccessAndSale(true)
+                  }
+                }}
+              />
+              <RemixSettingsField />
             </div>
             <PreviewButton
               // Since edit form is a single component, render a different preview for each track

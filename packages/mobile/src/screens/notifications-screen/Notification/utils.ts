@@ -1,4 +1,4 @@
-import type { EntityType } from '@audius/common'
+import type { EntityType } from '@audius/common/store'
 
 import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 

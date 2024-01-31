@@ -1,27 +1,30 @@
 import {
   FailureReason,
   UserChallenge,
-  StringAudio,
+  StringAudio
+} from '@audius/common/models'
+import {
   IntKeys,
   StringKeys,
-  RemoteConfigInstance,
-  getContext,
-  stringAudioToStringWei,
-  accountSelectors,
+  createUserBankIfNeeded,
+  Env,
+  RemoteConfigInstance
+} from '@audius/common/services'
+import {
   accountActions,
-  audioRewardsPageActions,
-  ClaimStatus,
-  HCaptchaStatus,
-  UndisbursedUserChallenge,
+  accountSelectors,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  HCaptchaStatus,
+  ClaimStatus,
   solanaSelectors,
   walletActions,
   modalsActions,
-  waitForValue,
-  Env,
+  getContext,
   musicConfettiActions,
-  createUserBankIfNeeded
-} from '@audius/common'
+  UndisbursedUserChallenge
+} from '@audius/common/store'
+import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
   call,
   fork,

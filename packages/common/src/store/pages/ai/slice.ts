@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { Status } from 'models/Status'
-import { asLineup } from 'store/lineup/reducer'
+import { Status } from '~/models/Status'
+import { asLineup } from '~/store/lineup/reducer'
 
 import { ID } from '../../../models/Identifiers'
 
