@@ -1,3 +1,4 @@
+import type { PickRename } from '@audius/common'
 import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { View } from 'react-native'
@@ -10,8 +11,11 @@ import { useMargin } from 'app/harmony-native/utils/styleProps'
 import type { FastImageProps } from '../FastImage/FastImage'
 import { FastImage } from '../FastImage/FastImage'
 
+type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
+  Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
+
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
-  SetRequired<FastImageProps, 'accessibilityLabel'> &
+  SetRequired<TweakedFastImageProps, 'accessibilityLabel'> &
   MarginProps
 
 const sizeMap = {
