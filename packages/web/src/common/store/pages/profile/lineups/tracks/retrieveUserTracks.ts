@@ -1,4 +1,4 @@
-import { ID, Track } from '@audius/common/models'
+import { ID, Track, UserTrackMetadata } from '@audius/common/models'
 import { getContext } from '@audius/common/store'
 import { call } from 'typed-redux-saga'
 
@@ -26,7 +26,7 @@ export function* retrieveUserTracks({
   getUnlisted = false
 }: RetrieveUserTracksArgs): Generator<any, Track[], any> {
   const apiClient = yield* getContext('apiClient')
-  const apiTracks = yield apiClient.getUserTracksByHandle({
+  const apiTracks = yield* call([apiClient, apiClient.getUserTracksByHandle], {
     handle,
     currentUserId,
     sort,
