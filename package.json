@@ -1,16 +1,6 @@
 {
   "name": "root",
   "version": "1.5.64",
-  "workspaces": [
-    "packages/*",
-    "packages/discovery-provider/plugins/pedalboard/apps/*",
-    "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "protocol-dashboard",
-    "packages/ddex/webapp/server",
-    "packages/ddex/webapp/client",
-    "packages/ddex/publisher",
-    "packages/es-indexer"
-  ],
   "private": true,
   "scripts": {
     "build": "turbo run build",
