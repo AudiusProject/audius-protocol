@@ -2,9 +2,9 @@ import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
 import { initialLineupState } from 'store/lineup/reducer'
 import { PREFIX } from 'store/pages/profile/lineups/feed/actions'
 
-import { LineupState } from '../../../../../models'
+import { LineupState, Track } from '../../../../../models'
 
-export const initialState: LineupState<{ id: number }> = {
+export const initialState: LineupState<Track> = {
   ...initialLineupState,
   prefix: PREFIX
 }
@@ -14,10 +14,7 @@ type ResetSucceededAction = {
 }
 
 const actionsMap = {
-  [RESET_SUCCEEDED](
-    _state: LineupState<{ id: number }>,
-    _action: ResetSucceededAction
-  ) {
+  [RESET_SUCCEEDED](_state: LineupState<Track>, _action: ResetSucceededAction) {
     const newState = initialState
     return newState
   }

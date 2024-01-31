@@ -241,17 +241,14 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
-        // @ts-ignore todo
-        const lineup: LineupState<{ id: number }> = yield* select(
+        const lineup: LineupState<Track | Collection> = yield* select(
           getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
           yield* put(clear({}))
           const toQueue = yield* all(
-            lineup.entries.map((e: { kind: Kind; uid: UID }) =>
-              call(getToQueue, lineup.prefix, e)
-            )
+            lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
           )
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))

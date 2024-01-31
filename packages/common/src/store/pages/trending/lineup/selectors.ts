@@ -1,10 +1,10 @@
 import { CommonState } from 'store/commonStore'
 
-import { LineupEntry, TimeRange } from '../../../../models'
+import { Collection, LineupEntry, TimeRange, Track } from '../../../../models'
 
 export const getTrendingEntries =
   (timeRange: TimeRange) =>
-  (state: CommonState): LineupEntry<{ id: number }>[] => {
+  (state: CommonState): LineupEntry<Track | Collection>[] => {
     if (timeRange === TimeRange.WEEK) {
       return state.pages.trending.trendingWeek.entries
     } else if (timeRange === TimeRange.MONTH) {

@@ -14,7 +14,8 @@ import {
   profilePageTracksLineupActions as tracksActions,
   profilePageFeedLineupActions as feedActions,
   badgeTiers,
-  useSelectTierInfo
+  useSelectTierInfo,
+  Track
 } from '@audius/common'
 import { IconAlbum } from '@audius/harmony'
 import cn from 'classnames'
@@ -92,8 +93,8 @@ export type ProfilePageProps = {
   playlists: Collection[] | null
   status: Status
   goToRoute: (route: string) => void
-  artistTracks: LineupState<{ id: ID }>
-  userFeed: LineupState<{ id: ID }>
+  artistTracks: LineupState<Track | Collection>
+  userFeed: LineupState<Track | Collection>
   playArtistTrack: (uid: UID) => void
   pauseArtistTrack: () => void
   playUserFeedTrack: (uid: UID) => void

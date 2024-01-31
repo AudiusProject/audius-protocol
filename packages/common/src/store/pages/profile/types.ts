@@ -1,4 +1,12 @@
-import type { ID, UID, LineupState, Status, User } from '../../../models'
+import type {
+  ID,
+  UID,
+  LineupState,
+  Status,
+  User,
+  Track,
+  Collection
+} from '../../../models'
 import type { Nullable } from '../../../utils/typeUtils'
 
 export enum FollowType {
@@ -38,8 +46,8 @@ export type ProfileState = {
   followers: ProfilePageFollow
   followees: ProfilePageFollow
   followeeFollows: ProfilePageFollow
-  feed: LineupState<{ id: ID }>
-  tracks: LineupState<{ id: ID }>
+  feed: LineupState<Track | Collection>
+  tracks: LineupState<Track | Collection>
   isNotificationSubscribed: boolean
   error?: string
 }
