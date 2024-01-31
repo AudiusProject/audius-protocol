@@ -10,7 +10,7 @@ import {
   DogEarType,
   useGatedContentAccess
 } from '@audius/common'
-import { IconWavform as IconVisualizer } from '@audius/harmony'
+import { IconWaveform as IconVisualizer } from '@audius/harmony'
 import { IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
