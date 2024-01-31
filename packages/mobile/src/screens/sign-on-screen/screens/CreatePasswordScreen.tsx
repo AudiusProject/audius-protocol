@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { passwordSchema } from '@audius/common'
 import { createPasswordPageMessages } from '@audius/common/messages'
+import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'

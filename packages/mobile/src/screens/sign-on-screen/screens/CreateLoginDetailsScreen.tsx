@@ -1,11 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  createLoginDetailsSchema,
-  useAudiusQueryContext,
-  emailSchema
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
+import { emailSchema, createLoginDetailsSchema } from '@audius/common/schemas'
 import { css } from '@emotion/native'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
 import {
