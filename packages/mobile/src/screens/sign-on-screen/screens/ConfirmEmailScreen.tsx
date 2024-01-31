@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  confirmEmailErrorMessages,
-  confirmEmailSchema,
-  formatOtp
-} from '@audius/common'
 import { confirmEmailMessages } from '@audius/common/messages'
+import {
+  confirmEmailSchema,
+  formatOtp,
+  confirmEmailErrorMessages
+} from '@audius/common/schemas'
 import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import {
   getEmailField,

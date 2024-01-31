@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
-import { MAX_DISPLAY_NAME_LENGTH, finishProfileSchema } from '@audius/common'
+import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common'
 import type { Image } from '@audius/common'
 import { finishProfilePageMessages } from '@audius/common/messages'
+import { finishProfileSchema } from '@audius/common/schemas'
 import { css } from '@emotion/native'
 import {
   getHandleField,

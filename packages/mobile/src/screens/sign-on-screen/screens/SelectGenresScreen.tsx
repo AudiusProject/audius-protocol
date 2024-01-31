@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { selectGenresSchema, selectableGenres } from '@audius/common'
 import { selectGenresPageMessages } from '@audius/common/messages'
+import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
 import type { GENRES } from '@audius/common/utils'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
