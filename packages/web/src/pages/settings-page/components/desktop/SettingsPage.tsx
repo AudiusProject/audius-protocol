@@ -12,7 +12,7 @@ import {
   Notifications
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { IconAppearance } from '@audius/harmony'
+import { IconAppearance, IconKey } from '@audius/harmony'
 import {
   Modal,
   Button,
