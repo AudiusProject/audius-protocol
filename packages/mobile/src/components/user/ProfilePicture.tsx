@@ -1,5 +1,5 @@
-import type { ID } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import type { ID } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 
 import { UserImage } from 'app/components/image/UserImage'
 import { makeStyles } from 'app/styles'

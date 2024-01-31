@@ -3,14 +3,12 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
-  FeatureFlags,
-  Nullable,
   StemCategory,
   StemUploadWithFile,
-  formatPrice,
-  isContentUSDCPurchaseGated,
-  removeNullable
-} from '@audius/common'
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { z } from 'zod'
 

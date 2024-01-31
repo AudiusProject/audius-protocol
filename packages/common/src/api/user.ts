@@ -1,14 +1,14 @@
 import { full } from '@audius/sdk'
 
-import { createApi } from 'audius-query'
-import { ID, Kind, StringUSDC } from 'models'
+import { createApi } from '~/audius-query'
+import { ID, Kind, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
   USDCTransactionType
-} from 'models/USDCTransactions'
-import { getRootSolanaAccount } from 'services/audius-backend/solana'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models/USDCTransactions'
+import { getRootSolanaAccount } from '~/services/audius-backend/solana'
+import { Nullable } from '~/utils/typeUtils'
 
 import { Id } from './utils'
 

@@ -1,21 +1,21 @@
 import { useMemo } from 'react'
 
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
-  CollectibleGatedConditions,
-  FollowGatedConditions,
-  TipGatedConditions,
-  USDCPurchaseConditions,
-  Track,
   StreamTrackAvailabilityType,
-  accountSelectors,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig,
-  Nullable,
-  AccessConditions
-} from '@audius/common'
+  CollectibleGatedConditions,
+  FollowGatedConditions,
+  TipGatedConditions,
+  USDCPurchaseConditions,
+  AccessConditions,
+  Track
+} from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import {
   Button,
   ButtonSize,

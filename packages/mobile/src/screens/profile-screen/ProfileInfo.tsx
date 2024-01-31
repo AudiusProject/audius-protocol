@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
 
+import { FollowSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  chatSelectors,
-  chatActions,
   profilePageSelectors,
-  FollowSource,
-  reachabilitySelectors,
-  FeatureFlags
-} from '@audius/common'
+  chatActions,
+  chatSelectors,
+  reachabilitySelectors
+} from '@audius/common/store'
 import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

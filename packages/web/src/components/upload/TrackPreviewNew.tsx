@@ -1,10 +1,7 @@
 import { useState } from 'react'
 
-import {
-  FeatureFlags,
-  StemCategory,
-  stemCategoryFriendlyNames
-} from '@audius/common'
+import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Box, FilterButton, Flex, IconCompose } from '@audius/harmony'
 import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import cn from 'classnames'

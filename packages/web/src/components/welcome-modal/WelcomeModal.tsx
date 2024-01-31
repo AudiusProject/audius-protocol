@@ -1,12 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  accountSelectors,
-  fillString,
-  welcomeModalMessages as messages
-} from '@audius/common'
+import { welcomeModalMessages } from '@audius/common/messages'
+import { Name, SquareSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { fillString } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -101,15 +98,18 @@ export const WelcomeModal = () => {
             id='welcome-title'
             color='accent'
           >
-            {fillString(messages.welcome, userName ? `, ${userName}` : ' ')}
+            {fillString(
+              welcomeModalMessages.welcome,
+              userName ? `, ${userName}` : ' '
+            )}
           </Text>
           <Text variant='body' size='l'>
-            {messages.youreIn}
+            {welcomeModalMessages.youreIn}
           </Text>
         </Flex>
         <Flex direction='column' gap='s'>
           <Button iconRight={IconArrowRight} onClick={onClose}>
-            {messages.startListening}
+            {welcomeModalMessages.startListening}
           </Button>
           <Button
             variant='secondary'
@@ -125,7 +125,7 @@ export const WelcomeModal = () => {
                 )
               }}
             >
-              {messages.upload}
+              {welcomeModalMessages.upload}
             </Link>
           </Button>
         </Flex>

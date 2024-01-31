@@ -1,6 +1,6 @@
 import { ComponentType, SVGProps } from 'react'
 
-import { ExploreCollectionsVariant } from '@audius/common'
+import { ExploreCollectionsVariant } from '@audius/common/store'
 import { IconCart } from '@audius/stems'
 
 import IconCassette from 'assets/img/iconCassette.svg'

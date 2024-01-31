@@ -1,4 +1,4 @@
-import type { TrackMetadata } from '@audius/common'
+import type { TrackMetadata } from '@audius/common/models'
 import { useField } from 'formik'
 
 import { TagInput } from 'app/components/core'

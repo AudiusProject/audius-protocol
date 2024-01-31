@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

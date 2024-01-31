@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Name,
-  ChangePasswordPageStep,
   changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
+  changePasswordActions,
+  ChangePasswordPageStep
+} from '@audius/common/store'
 import { Modal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

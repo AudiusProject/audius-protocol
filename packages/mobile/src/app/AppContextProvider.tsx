@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 
-import { AppContext } from '@audius/common'
+import { AppContext } from '@audius/common/context'
 import { useAsync } from 'react-use'
 
 import * as analytics from 'app/services/analytics'

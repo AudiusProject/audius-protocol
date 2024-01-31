@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { formatNumberCommas } from '@audius/common'
+import { formatNumberCommas } from '@audius/common/utils'
 
 import type { TextInputProps } from 'app/components/core'
 import { AudioText, TextInput } from 'app/components/core'

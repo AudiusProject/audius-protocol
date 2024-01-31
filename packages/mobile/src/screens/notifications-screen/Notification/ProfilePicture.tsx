@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
 import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'

@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import type { ChatMessageWithExtras } from '@audius/common'
+import { useCanSendMessage } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import type { ChatMessageWithExtras } from '@audius/common/models'
 import {
-  Status,
   accountSelectors,
   chatActions,
-  chatCanFetchMoreMessages,
   chatSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import {
+  encodeUrlName,
   decodeHashId,
   encodeHashId,
-  encodeUrlName,
   isEarliestUnread,
-  playerSelectors,
-  useCanSendMessage
-} from '@audius/common'
+  chatCanFetchMoreMessages
+} from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'

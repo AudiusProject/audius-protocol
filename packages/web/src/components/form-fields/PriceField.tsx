@@ -7,11 +7,11 @@ import {
 } from 'react'
 
 import {
-  decimalIntegerFromHumanReadable,
-  decimalIntegerToHumanReadable,
   filterDecimalString,
-  padDecimalValue
-} from '@audius/common'
+  padDecimalValue,
+  decimalIntegerToHumanReadable,
+  decimalIntegerFromHumanReadable
+} from '@audius/common/utils'
 import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from './TextField'

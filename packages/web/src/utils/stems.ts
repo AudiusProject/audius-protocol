@@ -1,4 +1,4 @@
-import { StemCategory } from '@audius/common'
+import { StemCategory } from '@audius/common/models'
 
 export const stemDropdownRows = [
   StemCategory.INSTRUMENTAL,

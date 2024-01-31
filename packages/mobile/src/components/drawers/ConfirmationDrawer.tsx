@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { Modals } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconInfo } from '@audius/harmony-native'

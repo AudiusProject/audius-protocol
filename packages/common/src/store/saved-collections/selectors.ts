@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { ID } from 'models/Identifiers'
-import { getUsers } from 'store/cache/users/selectors'
+import { ID } from '~/models/Identifiers'
+import { getUsers } from '~/store/cache/users/selectors'
 
 import { getAccountStatus } from '../account/selectors'
 import { getCollections } from '../cache/collections/selectors'

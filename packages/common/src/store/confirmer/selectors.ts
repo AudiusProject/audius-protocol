@@ -1,6 +1,6 @@
 import { findLastIndex } from 'lodash'
 
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 // Confirmer selectors
 

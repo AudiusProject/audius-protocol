@@ -1,9 +1,9 @@
 import { uniq } from 'lodash'
 
-import { getCollections } from 'store/cache/collections/selectors'
-import { getUser, getUsers } from 'store/cache/users/selectors'
-import type { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector, dayjs } from 'utils'
+import { getCollections } from '~/store/cache/collections/selectors'
+import { getUser, getUsers } from '~/store/cache/users/selectors'
+import type { CommonState } from '~/store/commonStore'
+import { removeNullable, createDeepEqualSelector, dayjs } from '~/utils'
 
 import { Status } from '../../../models'
 import type { Collection, ID, User, UserCollection } from '../../../models'

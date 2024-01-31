@@ -1,4 +1,4 @@
-import { LocalStorage } from '@audius/common'
+import { LocalStorage } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const localStorage = new LocalStorage({

@@ -1,10 +1,10 @@
-import { LineupActions, asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import feedReducer, {
   initialState as initialFeedLineupState
-} from 'store/pages/profile/lineups/feed/reducer'
+} from '~/store/pages/profile/lineups/feed/reducer'
 import tracksReducer, {
   initialState as initialTracksLineupState
-} from 'store/pages/profile/lineups/tracks/reducer'
+} from '~/store/pages/profile/lineups/tracks/reducer'
 
 import { Collection, Status, Track } from '../../../models'
 

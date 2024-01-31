@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import {
-  BNWei,
-  StringAudio,
-  WalletAddress,
-  stringAudioToBN,
-  weiToAudio,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+import { StringAudio, BNWei, WalletAddress } from '@audius/common/models'
+import { tokenDashboardPageSelectors } from '@audius/common/store'
+import { weiToAudio, stringAudioToBN } from '@audius/common/utils'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

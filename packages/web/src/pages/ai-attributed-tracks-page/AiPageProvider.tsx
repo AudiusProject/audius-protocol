@@ -1,14 +1,14 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { ID } from '@audius/common/models'
 import {
-  ID,
   lineupSelectors,
   aiPageLineupActions as tracksActions,
   aiPageActions,
   aiPageSelectors,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useParams } from 'react-router'

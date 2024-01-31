@@ -1,11 +1,10 @@
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  User,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
   Image
-} from '@audius/common'
+} from '@audius/common/store'
 import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'

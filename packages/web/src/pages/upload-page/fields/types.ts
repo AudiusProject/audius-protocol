@@ -2,10 +2,10 @@ import {
   AccessConditions,
   DownloadTrackAvailabilityType,
   FieldVisibility,
-  Nullable,
   StemUpload,
   StreamTrackAvailabilityType
-} from '@audius/common'
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 
 export type FieldProps = {
   name: string

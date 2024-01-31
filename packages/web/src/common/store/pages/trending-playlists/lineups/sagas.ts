@@ -1,12 +1,11 @@
+import { UserCollectionMetadata, Collection } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  UserCollectionMetadata,
-  StringKeys,
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
-  getContext,
-  Collection
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 

@@ -1,22 +1,21 @@
 import { useCallback, useMemo } from 'react'
 
+import { USDCPurchaseConfig, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
-  accountSelectors,
-  FieldVisibility,
-  formatPrice,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
+  FieldVisibility,
   StreamTrackAvailabilityType,
-  USDCPurchaseConfig,
-  useUSDCPurchaseConfig,
   CollectibleGatedConditions,
-  USDCPurchaseConditions,
   FollowGatedConditions,
   TipGatedConditions,
-  Download
-} from '@audius/common'
+  Download,
+  USDCPurchaseConditions
+} from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { formatPrice } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,

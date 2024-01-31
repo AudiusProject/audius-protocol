@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { getLocalTimezone } from '@audius/common'
+import { getLocalTimezone } from '@audius/common/utils'
 import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'

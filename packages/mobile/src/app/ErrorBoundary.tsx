@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { PureComponent, useEffect } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import * as Sentry from '@sentry/react-native'
 
 import { useToast } from 'app/hooks/useToast'

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-import { commonPasswordCheck } from '@audius/common'
+import { commonPasswordCheck } from '@audius/common/utils'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 

@@ -1,8 +1,5 @@
-import {
-  JupiterTokenSymbol,
-  TOKEN_LISTING_MAP,
-  convertBigIntToAmountObject
-} from '@audius/common'
+import { TOKEN_LISTING_MAP, JupiterTokenSymbol } from '@audius/common/store'
+import { convertBigIntToAmountObject } from '@audius/common/utils'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'

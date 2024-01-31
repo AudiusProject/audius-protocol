@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { ID } from '../../models/Identifiers'
 

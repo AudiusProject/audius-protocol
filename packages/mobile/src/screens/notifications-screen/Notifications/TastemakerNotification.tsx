@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import type {
-  TastemakerNotification as TastemakerNotificationType,
-  Nullable,
-  TrackEntity
-} from '@audius/common'
-import { Name, notificationsSelectors } from '@audius/common'
+  TrackEntity,
+  TastemakerNotification as TastemakerNotificationType
+} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 

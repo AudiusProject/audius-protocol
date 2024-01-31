@@ -1,4 +1,4 @@
-import type { CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common/store'
 import { waitForBackendSetup } from 'audius-client/src/common/store/backend/sagas'
 import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
 import { difference, intersection } from 'lodash'

@@ -1,10 +1,10 @@
-import { BuyCryptoErrorCode } from 'store/buy-crypto/types'
-import { BuyUSDCErrorCode } from 'store/index'
+import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
+import { BuyUSDCErrorCode } from '~/store/index'
 import {
   PurchaseContentErrorCode,
   PurchaseErrorCode
-} from 'store/purchase-content'
-import { formatPrice } from 'utils/formatUtil'
+} from '~/store/purchase-content'
+import { formatPrice } from '~/utils/formatUtil'
 
 import { useUSDCPurchaseConfig } from './useUSDCPurchaseConfig'
 

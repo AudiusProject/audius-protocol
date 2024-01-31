@@ -45,4 +45,6 @@ declare module 'react-redux' {
     State = unknown,
     Action extends BasicAction<any> = AnyAction
   >() => Store<State, Action>
+
+  export declare function shallowEqual(objA: any, objB: any): boolean
 }

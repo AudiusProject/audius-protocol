@@ -8,15 +8,15 @@ import {
   MouseEventHandler
 } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
-  ID,
-  ProfilePictureSizes,
+  DogEarType,
   SquareSizes,
+  ID,
   CoverArtSizes,
-  pluralize,
-  imageBlank as placeholderArt,
-  DogEarType
-} from '@audius/common'
+  ProfilePictureSizes
+} from '@audius/common/models'
+import { pluralize } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'

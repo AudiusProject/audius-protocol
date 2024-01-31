@@ -1,9 +1,9 @@
+import { useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
-  AccessConditions,
   StreamTrackAvailabilityType,
-  collectiblesSelectors,
-  useAccessAndRemixSettings
-} from '@audius/common'
+  AccessConditions
+} from '@audius/common/models'
+import { collectiblesSelectors } from '@audius/common/store'
 import { IconCollectible } from '@audius/stems'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'

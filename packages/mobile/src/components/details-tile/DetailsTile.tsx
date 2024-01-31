@@ -1,18 +1,21 @@
 import { useCallback } from 'react'
 
-import type { CommonState, Track } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  Genre,
-  useGatedContentAccess,
-  squashNewLines,
   accountSelectors,
   playerSelectors,
-  playbackPositionSelectors,
-  getDogEarType,
-  isContentUSDCPurchaseGated,
-  dayjs
-} from '@audius/common'
+  playbackPositionSelectors
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
+import {
+  dayjs,
+  squashNewLines,
+  Genre,
+  getDogEarType
+} from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'

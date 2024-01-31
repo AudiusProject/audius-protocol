@@ -1,12 +1,10 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import {
-  AccessConditions,
-  FeatureFlags,
-  Nullable,
-  accountSelectors,
-  useFeatureFlag
-} from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { AccessConditions } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'

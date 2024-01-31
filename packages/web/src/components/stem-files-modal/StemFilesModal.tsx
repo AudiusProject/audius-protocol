@@ -4,9 +4,9 @@ import {
   StemCategory,
   stemCategoryFriendlyNames,
   StemUpload,
-  Download,
-  FeatureFlags
-} from '@audius/common'
+  Download
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Flex, Box, Text as HarmonyText } from '@audius/harmony'
 import {
   Button,
