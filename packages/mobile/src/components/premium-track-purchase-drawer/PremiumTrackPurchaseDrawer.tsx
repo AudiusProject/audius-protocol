@@ -1,13 +1,3 @@
-import type { PurchaseContentError } from '@audius/common/store'
-import {
-  usePremiumContentPurchaseModal,
-  purchaseContentActions,
-  purchaseContentSelectors,
-  PurchaseContentStage,
-  PurchaseContentPage,
-  isContentPurchaseInProgress
-} from '@audius/common/store'
-
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
@@ -29,6 +19,15 @@ import {
   statusIsNotFinalized
 } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
+import {
+  usePremiumContentPurchaseModal,
+  purchaseContentActions,
+  purchaseContentSelectors,
+  PurchaseContentStage,
+  PurchaseContentPage,
+  isContentPurchaseInProgress
+} from '@audius/common/store'
+import type { PurchaseContentError } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
 import {

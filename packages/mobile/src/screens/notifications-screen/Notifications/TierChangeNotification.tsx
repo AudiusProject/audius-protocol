@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors } from '@audius/common'
-import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common'
+import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common/store'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'

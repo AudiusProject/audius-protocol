@@ -5,7 +5,6 @@ import {
   cacheUsersSelectors,
   notificationsSelectors
 } from '@audius/common/store'
-
 import type { Nullable } from '@audius/common/utils'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'

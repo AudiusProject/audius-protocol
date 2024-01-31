@@ -1,7 +1,6 @@
+import { Chain } from '@audius/common/models'
 import type { AssociatedWallet } from '@audius/common/store'
 import { tokenDashboardPageSelectors } from '@audius/common/store'
-
-import { Chain } from '@audius/common/models'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

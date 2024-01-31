@@ -1,17 +1,3 @@
-import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  collectionsSocialActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  OverflowAction,
-  OverflowSource,
-  RepostType,
-  playerSelectors
-} from '@audius/common/store'
-
 import { useCallback, useMemo } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
@@ -25,6 +11,19 @@ import {
 } from '@audius/common/models'
 import type { Collection, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
+import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 

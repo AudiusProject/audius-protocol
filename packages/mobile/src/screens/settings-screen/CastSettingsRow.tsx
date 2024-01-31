@@ -6,7 +6,6 @@ import {
   castSelectors,
   castActions
 } from '@audius/common/store'
-
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconVolume2 from 'app/assets/images/iconVolume2.svg'

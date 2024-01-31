@@ -1,9 +1,8 @@
 import { useCallback, useRef } from 'react'
 
+import type { ChatMessageWithExtras } from '@audius/common/models'
 import type { ReactionTypes } from '@audius/common/store'
 import { accountSelectors, chatActions } from '@audius/common/store'
-
-import type { ChatMessageWithExtras } from '@audius/common/models'
 import { encodeHashId } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'

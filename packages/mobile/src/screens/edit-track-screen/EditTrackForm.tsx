@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { type } from '@audius/common'
 import { FeatureFlags } from '@audius/common/services'
 import type { UploadTrack } from '@audius/common/store'
 import { Keyboard } from 'react-native'

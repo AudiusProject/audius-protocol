@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { notificationsSelectors, Entity } from '@audius/common'
-import type { FavoriteOfRepostNotification as FavoriteOfRepostNotificationType } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
-import { notificationsSelectors } from '@audius/common/store'
+import type { FavoriteOfRepostNotification as FavoriteOfRepostNotificationType } from '@audius/common/store'
+import { notificationsSelectors, Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'

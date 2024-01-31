@@ -1,9 +1,8 @@
-import type { CommonState } from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import type { Maybe } from '@audius/common/utils'
 import {

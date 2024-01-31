@@ -1,9 +1,8 @@
 import { memo, useCallback, useState } from 'react'
 
+import { Status } from '@audius/common/models'
 import type { ReactionTypes } from '@audius/common/store'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
-
-import { Status } from '@audius/common/models'
 import {
   formatMessageDate,
   decodeHashId,

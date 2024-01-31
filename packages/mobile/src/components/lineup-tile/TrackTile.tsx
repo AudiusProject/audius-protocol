@@ -1,18 +1,3 @@
-import type { CommonState } from '@audius/common/store'
-import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  tracksSocialActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  OverflowAction,
-  OverflowSource,
-  RepostType,
-  playerSelectors,
-  playbackPositionSelectors
-} from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import {
@@ -26,6 +11,20 @@ import {
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  RepostType,
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,5 +1,4 @@
 import type { ExtendedTrackMetadata } from '@audius/common/store'
-
 import type { Nullable } from '@audius/common/utils'
 import type { FormikProps } from 'formik'
 

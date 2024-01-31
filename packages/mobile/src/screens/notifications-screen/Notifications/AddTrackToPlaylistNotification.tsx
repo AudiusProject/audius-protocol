@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
-import { notificationsSelectors } from '@audius/common'
-import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 

@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
+import { SquareSizes } from '@audius/common/models'
 import type { ExtendedTrackMetadata } from '@audius/common/store'
 import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
-
-import { SquareSizes } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ModalScreen } from 'app/components/core'

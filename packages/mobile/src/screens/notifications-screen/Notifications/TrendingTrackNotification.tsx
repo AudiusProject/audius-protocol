@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { notificationsSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
 import type {
   TrackEntity,
   TrendingTrackNotification as TrendingTrackNotificationType
-} from '@audius/common'
-import { Name } from '@audius/common/models'
+} from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'

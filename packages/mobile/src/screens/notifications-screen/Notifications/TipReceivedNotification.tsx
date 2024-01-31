@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useUIAudio } from '@audius/common/hooks'
 import type {
   TipReceiveNotification,
   ReactionTypes
@@ -9,8 +10,6 @@ import {
   reactionsUIActions,
   reactionsUISelectors
 } from '@audius/common/store'
-
-import { useUIAudio } from '@audius/common/hooks'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'

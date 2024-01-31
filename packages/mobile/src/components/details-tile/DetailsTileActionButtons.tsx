@@ -1,10 +1,9 @@
-import type { CommonState } from '@audius/common/store'
-import { cacheCollectionsSelectors } from '@audius/common/store'
-
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { cacheCollectionsSelectors } from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

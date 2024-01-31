@@ -1,8 +1,7 @@
-import type { TrendingRewardsModalType, Modals } from '@audius/common/store'
-import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
-
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
+import type { TrendingRewardsModalType, Modals } from '@audius/common/store'
+import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

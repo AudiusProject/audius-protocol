@@ -1,19 +1,18 @@
-import type {
-  ChallengeRewardsModalType,
-  CommonState
-} from '@audius/common/store'
+import { useCallback, useEffect, useState } from 'react'
+
+import { Name, ChallengeName } from '@audius/common/models'
+import type { ChallengeRewardID } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
   modalsActions
 } from '@audius/common/store'
-
-import { useCallback, useEffect, useState } from 'react'
-
-import { Name, ChallengeName } from '@audius/common/models'
-import type { ChallengeRewardID } from '@audius/common/models'
-import { StringKeys, FeatureFlags } from '@audius/common/services'
+import type {
+  ChallengeRewardsModalType,
+  CommonState
+} from '@audius/common/store'
 import {
   removeNullable,
   makeOptimisticChallengeSortComparator

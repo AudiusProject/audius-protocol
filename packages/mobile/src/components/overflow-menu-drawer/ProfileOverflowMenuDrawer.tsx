@@ -1,3 +1,5 @@
+import type { ID } from '@audius/common/models'
+import { ShareSource, FollowSource } from '@audius/common/models'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import {
   cacheUsersSelectors,
@@ -6,9 +8,6 @@ import {
   shareModalUIActions,
   OverflowAction
 } from '@audius/common/store'
-
-import type { ID } from '@audius/common/models'
-import { ShareSource, FollowSource } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors

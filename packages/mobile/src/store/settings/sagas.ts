@@ -1,3 +1,4 @@
+import type { PushNotifications as TPushNotifications } from '@audius/common/store'
 import {
   accountSelectors,
   settingsPageSelectors,
@@ -5,9 +6,7 @@ import {
   settingsPageActions,
   PushNotificationSetting,
   getContext
-} from '@audius/common'
-import type { PushNotifications as TPushNotifications } from '@audius/common'
-import { accountSelectors } from '@audius/common/store'
+} from '@audius/common/store'
 import {
   getErrorMessage,
   waitForValue,
@@ -79,7 +78,7 @@ function* enablePushNotifications() {
 
   // Enabling push notifications should enable all of the notification types
   const newSettings = { ...initialState.pushNotifications }
-  yield* put(actions.setPushNotificationSettings(newSettings))
+  yield* put(settingsPageActions.setPushNotificationSettings(newSettings))
 
   // We need a user for this to work (and in the case of sign up, we might not
   // have one right away when this function is called)
@@ -95,7 +94,7 @@ function* disablePushNotifications() {
       return false
     }
   )
-  yield* put(actions.setPushNotificationSettings(newSettings))
+  yield* put(settingsPageActions.setPushNotificationSettings(newSettings))
   yield* call(waitForValue, getAccountUser)
   yield* call(audiusBackendInstance.updatePushNotificationSettings, newSettings)
   yield* call(deregisterPushNotifications)
@@ -111,42 +110,51 @@ function pushNotificationsEnabled(settings: TPushNotifications): boolean {
 
 function* watchGetPushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* takeEvery(actions.GET_PUSH_NOTIFICATION_SETTINGS, function* () {
-    yield* call(waitForRead)
-    try {
-      const settings = yield* call(
-        audiusBackendInstance.getPushNotificationSettings
-      )
-      let pushNotificationSettings = mapValues(
-        initialState.pushNotifications,
-        function (_val: boolean) {
-          return false
-        }
-      )
+  yield* takeEvery(
+    settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
+    function* () {
+      yield* call(waitForRead)
+      try {
+        const settings = yield* call(
+          audiusBackendInstance.getPushNotificationSettings
+        )
+        let pushNotificationSettings = mapValues(
+          initialState.pushNotifications,
+          function (_val: boolean) {
+            return false
+          }
+        )
 
-      if (settings) {
-        pushNotificationSettings = {
-          ...settings,
-          [PushNotificationSetting.MobilePush]: yield* call(
-            pushNotificationsEnabled,
-            settings
-          )
+        if (settings) {
+          pushNotificationSettings = {
+            ...settings,
+            [PushNotificationSetting.MobilePush]: yield* call(
+              pushNotificationsEnabled,
+              settings
+            )
+          }
         }
+        yield* put(
+          settingsPageActions.setPushNotificationSettings(
+            pushNotificationSettings
+          )
+        )
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        console.error(errorMessage)
+        yield* put(
+          settingsPageActions.getPushNotificationSettingsFailed(errorMessage)
+        )
       }
-      yield* put(actions.setPushNotificationSettings(pushNotificationSettings))
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      console.error(errorMessage)
-      yield* put(actions.getPushNotificationSettingsFailed(errorMessage))
     }
-  })
+  )
 }
 
 function* watchUpdatePushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
-    actions.TOGGLE_PUSH_NOTIFICATION_SETTING,
-    function* (action: actions.TogglePushNotificationSetting) {
+    settingsPageActions.TOGGLE_PUSH_NOTIFICATION_SETTING,
+    function* (action: settingsPageActions.TogglePushNotificationSetting) {
       let isOn = action.isOn
 
       try {
@@ -169,7 +177,7 @@ function* watchUpdatePushNotificationSettings() {
         }
       } catch (e) {
         yield* put(
-          actions.togglePushNotificationSettingFailed(
+          settingsPageActions.togglePushNotificationSettingFailed(
             action.notificationType,
             action.isOn
           )
@@ -180,23 +188,26 @@ function* watchUpdatePushNotificationSettings() {
 }
 
 function* watchRequestPushNotificationPermissions() {
-  yield* takeEvery(actions.REQUEST_PUSH_NOTIFICATION_PERMISSIONS, function* () {
-    const { status } = yield* call(checkNotifications)
-    const isMobilePushEnabled = yield* call(getIsMobilePushEnabled)
+  yield* takeEvery(
+    settingsPageActions.REQUEST_PUSH_NOTIFICATION_PERMISSIONS,
+    function* () {
+      const { status } = yield* call(checkNotifications)
+      const isMobilePushEnabled = yield* call(getIsMobilePushEnabled)
 
-    if (
-      (status === RESULTS.GRANTED || status === RESULTS.LIMITED) &&
-      isMobilePushEnabled
-    ) {
-      yield* call(registerDeviceToken)
-    } else if (status === RESULTS.BLOCKED || status === RESULTS.UNAVAILABLE) {
-      // do nothing
-    } else {
-      yield* put(
-        setVisibility({ drawer: 'EnablePushNotifications', visible: true })
-      )
+      if (
+        (status === RESULTS.GRANTED || status === RESULTS.LIMITED) &&
+        isMobilePushEnabled
+      ) {
+        yield* call(registerDeviceToken)
+      } else if (status === RESULTS.BLOCKED || status === RESULTS.UNAVAILABLE) {
+        // do nothing
+      } else {
+        yield* put(
+          setVisibility({ drawer: 'EnablePushNotifications', visible: true })
+        )
+      }
     }
-  })
+  )
 }
 
 export default function sagas() {

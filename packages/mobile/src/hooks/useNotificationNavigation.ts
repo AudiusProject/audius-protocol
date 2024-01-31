@@ -48,7 +48,6 @@ import {
   tippingActions,
   notificationsUserListActions
 } from '@audius/common/store'
-
 import type { AppState } from 'audius-client/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 

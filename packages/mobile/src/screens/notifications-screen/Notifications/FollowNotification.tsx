@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
-import { notificationsSelectors } from '@audius/common'
-import type { FollowNotification as FollowNotificationType } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import type { FollowNotification as FollowNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 

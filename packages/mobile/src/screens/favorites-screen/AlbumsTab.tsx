@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { statusIsNotFinalized } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   savedPageSelectors,
@@ -7,8 +8,6 @@ import {
   SavedPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
-
-import { statusIsNotFinalized } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'

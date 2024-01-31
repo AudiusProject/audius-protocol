@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import type {
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
 } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
-
-import { Name } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { make } from 'audius-client/src/common/store/analytics/actions'
 import { useSelector } from 'react-redux'

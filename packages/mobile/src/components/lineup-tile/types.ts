@@ -1,5 +1,3 @@
-import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
-
 import type { ReactNode } from 'react'
 
 import type {
@@ -11,6 +9,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import type { GestureResponderHandler } from 'app/types/gesture'

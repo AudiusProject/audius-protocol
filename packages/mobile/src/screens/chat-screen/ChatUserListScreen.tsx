@@ -1,4 +1,8 @@
-import type { CreateChatModalState } from '@audius/common/store'
+import { useCallback, useEffect, useState } from 'react'
+
+import { useProxySelector } from '@audius/common/hooks'
+import { Status, statusIsNotFinalized } from '@audius/common/models'
+import type { User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -11,12 +15,7 @@ import {
   followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
-
-import { useCallback, useEffect, useState } from 'react'
-
-import { useProxySelector } from '@audius/common/hooks'
-import { Status, statusIsNotFinalized } from '@audius/common/models'
-import type { User } from '@audius/common/models'
+import type { CreateChatModalState } from '@audius/common/store'
 import { View, Image } from 'react-native'
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'

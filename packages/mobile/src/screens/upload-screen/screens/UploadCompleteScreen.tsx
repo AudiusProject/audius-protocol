@@ -8,7 +8,6 @@ import {
   uploadActions,
   uploadSelectors
 } from '@audius/common/store'
-
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

@@ -5,7 +5,6 @@ import {
   LibraryCategory,
   SavedPageTabs
 } from '@audius/common/store'
-
 import { useNavigationState } from '@react-navigation/native'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

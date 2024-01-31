@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react'
 
+import {
+  CreatePlaylistSource,
+  statusIsNotFinalized
+} from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   savedPageSelectors,
@@ -7,11 +11,6 @@ import {
   SavedPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
-
-import {
-  CreatePlaylistSource,
-  statusIsNotFinalized
-} from '@audius/common/models'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 

@@ -1,9 +1,3 @@
-import type {
-  NotificationType,
-  RepostType,
-  CreateChatModalState
-} from '@audius/common/store'
-
 import { useCallback, useContext, useEffect } from 'react'
 
 import type {
@@ -13,6 +7,11 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
+import type {
+  NotificationType,
+  RepostType,
+  CreateChatModalState
+} from '@audius/common/store'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 

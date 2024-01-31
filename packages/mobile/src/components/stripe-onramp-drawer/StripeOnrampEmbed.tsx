@@ -5,7 +5,6 @@ import {
   stripeModalUIActions,
   stripeModalUISelectors
 } from '@audius/common/store'
-
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'

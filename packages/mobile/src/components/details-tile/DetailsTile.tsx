@@ -1,16 +1,15 @@
-import type { CommonState } from '@audius/common/store'
-import {
-  accountSelectors,
-  playerSelectors,
-  playbackPositionSelectors
-} from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import {
   dayjs,
   squashNewLines,

@@ -1,4 +1,11 @@
-import type { OverflowActionCallbacks } from '@audius/common/store'
+import { useContext } from 'react'
+
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource
+} from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
@@ -8,15 +15,7 @@ import {
   publishPlaylistConfirmationModalUIActions,
   OverflowAction
 } from '@audius/common/store'
-
-import { useContext } from 'react'
-
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource
-} from '@audius/common/models'
-import type { ID } from '@audius/common/models'
+import type { OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'

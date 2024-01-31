@@ -1,7 +1,6 @@
+import type { UID, LineupTrack } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { playerSelectors } from '@audius/common/store'
-
-import type { UID, LineupTrack } from '@audius/common/models'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'

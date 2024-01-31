@@ -1,4 +1,12 @@
-import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
+import { useContext } from 'react'
+
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource
+} from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -14,16 +22,7 @@ import {
   OverflowAction,
   playbackPositionActions
 } from '@audius/common/store'
-
-import { useContext } from 'react'
-
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  FollowSource
-} from '@audius/common/models'
-import type { ID } from '@audius/common/models'
+import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 

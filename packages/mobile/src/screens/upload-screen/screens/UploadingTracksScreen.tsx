@@ -6,7 +6,6 @@ import {
   uploadSelectors,
   UploadType
 } from '@audius/common/store'
-
 import { useRoute } from '@react-navigation/native'
 import { useKeepAwake } from '@sayem314/react-native-keep-awake'
 import { View } from 'react-native'
