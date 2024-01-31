@@ -6,10 +6,10 @@ import { useTheme } from '@emotion/react'
 import { TouchableOpacity } from 'react-native'
 
 import { ProfilePicture } from 'app/components/core'
-import type { ProfilePictureProps } from 'app/components/user'
+import type { ProfilePictureProps } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-type NotificationProfilePictureProps = ProfilePictureProps & {
+type NotificationProfilePictureProps = Partial<ProfilePictureProps> & {
   profile: { user_id: ID; handle: string }
   navigationType?: 'push' | 'navigate'
   interactive?: boolean
