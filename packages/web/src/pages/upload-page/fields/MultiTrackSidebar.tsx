@@ -1,13 +1,12 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { Button, IconTrash } from '@audius/harmony'
 import { IconError, IconUpload } from '@audius/stems'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import IconTrash from 'assets/img/iconTrash.svg'
 import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'

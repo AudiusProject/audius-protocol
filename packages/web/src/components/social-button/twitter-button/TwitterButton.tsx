@@ -1,6 +1,5 @@
+import { IconTwitter } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconTwitter from 'assets/img/iconTwitterBird.svg'
 
 import { SocialButton, SocialButtonProps } from '../SocialButton'
 

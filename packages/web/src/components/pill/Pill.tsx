@@ -1,8 +1,7 @@
 import { ComponentProps, forwardRef, MouseEvent } from 'react'
 
+import { IconSave } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './Pill.module.css'
 

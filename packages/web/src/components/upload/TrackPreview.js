@@ -1,15 +1,17 @@
 import { Component } from 'react'
 
-import { IconClose as IconRemove } from '@audius/harmony'
+import {
+  IconClose as IconRemove,
+  IconFileAIFF as iconFileAiff,
+  IconFileFlAC as iconFileFlac,
+  IconFileMP3 as iconFileMp3,
+  IconFileOGG as iconFileOgg,
+  IconFileUnknown as iconFileUnknown,
+  IconFileWAV as iconFileWav
+} from '@audius/harmony'
 import numeral from 'numeral'
 import PropTypes from 'prop-types'
 
-import iconFileAiff from 'assets/img/iconFileAiff.svg'
-import iconFileFlac from 'assets/img/iconFileFlac.svg'
-import iconFileMp3 from 'assets/img/iconFileMp3.svg'
-import iconFileOgg from 'assets/img/iconFileOgg.svg'
-import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
-import iconFileWav from 'assets/img/iconFileWav.svg'
 import PreviewButton from 'components/upload/PreviewButton'
 
 import styles from './TrackPreview.module.css'

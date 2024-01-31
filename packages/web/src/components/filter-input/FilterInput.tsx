@@ -1,4 +1,5 @@
-import IconFilter from 'assets/img/iconFilter.svg'
+import { IconFilter } from '@audius/harmony'
+
 import { Input } from 'components/input'
 
 import styles from './FilterInput.module.css'

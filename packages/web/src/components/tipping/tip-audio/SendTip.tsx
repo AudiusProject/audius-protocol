@@ -26,6 +26,7 @@ import {
   StringKeys,
   isNullOrUndefined
 } from '@audius/common'
+import { IconQuestionCircle } from '@audius/harmony'
 import {
   IconTrophy,
   TokenAmountInput,
@@ -38,7 +39,6 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconQuestionCircle from 'assets/img/iconQuestionCircle.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'

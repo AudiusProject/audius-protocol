@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common'
+import { IconWand } from '@audius/harmony'
 import { Button, ButtonType, IconArrow, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 
-import IconWand from 'assets/img/iconWand.svg'
 import {
   FollowArtistsCategory,
   artistCategories

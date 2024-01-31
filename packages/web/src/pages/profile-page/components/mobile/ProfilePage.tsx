@@ -17,12 +17,15 @@ import {
   useSelectTierInfo,
   Track
 } from '@audius/common'
-import { IconAlbum, IconCollectible as IconCollectibles } from '@audius/harmony'
+import {
+  IconAlbum,
+  IconCollectible as IconCollectibles,
+  IconNote,
+  IconPlaylists,
+  IconRepost as IconReposts
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconNote from 'assets/img/iconNote.svg'
-import IconPlaylists from 'assets/img/iconPlaylists.svg'
-import IconReposts from 'assets/img/iconRepost.svg'
 import Card from 'components/card/mobile/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

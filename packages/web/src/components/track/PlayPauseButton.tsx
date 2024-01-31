@@ -6,11 +6,10 @@ import {
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { Button, IconRepeatOff as IconRepeat } from '@audius/harmony'
 import { IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import IconRepeat from 'assets/img/iconRepeatOff.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getUserId } = accountSelectors

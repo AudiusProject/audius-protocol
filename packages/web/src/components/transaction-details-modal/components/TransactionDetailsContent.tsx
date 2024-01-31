@@ -10,13 +10,13 @@ import {
   makeSolanaTransactionLink,
   isNullOrUndefined
 } from '@audius/common'
+import { IconExternalLink } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
 import LogoStripeLink from 'assets/img/LogoStripeLink.svg'
 import LogoCoinbase from 'assets/img/coinbase-pay/LogoCoinbase.svg'
-import { IconExternalLink as IconExternalLink } from '@audius/harmony'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { isChangePositive } from 'components/audio-transactions-table/AudioTransactionsTable'

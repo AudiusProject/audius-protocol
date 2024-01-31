@@ -20,7 +20,8 @@ import {
 } from '@audius/common'
 import {
   IconVolumeLevel2 as IconVolume,
-  IconVolumeLevel0 as IconMute
+  IconVolumeLevel0 as IconMute,
+  IconEmbed
 } from '@audius/harmony'
 import {
   Button,
@@ -36,7 +37,6 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconEmbed from 'assets/img/iconEmbed.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import Toast from 'components/toast/Toast'

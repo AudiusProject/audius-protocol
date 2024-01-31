@@ -15,7 +15,7 @@ import {
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
 } from '@audius/common'
-import { IconCopy } from '@audius/harmony'
+import { IconCopy, IconValidationCheck } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -29,7 +29,6 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

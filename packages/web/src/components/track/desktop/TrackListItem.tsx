@@ -7,9 +7,9 @@ import {
   EnhancedCollectionTrack,
   Genre
 } from '@audius/common'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'

@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { tippingSelectors, tippingActions } from '@audius/common'
-import { IconCaretLeft } from '@audius/harmony'
+import { IconCaretLeft, IconSend } from '@audius/harmony'
 import { Button, ButtonType, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops.cjs'
 
-import IconSend from 'assets/img/iconSend.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'

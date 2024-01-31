@@ -4,14 +4,14 @@ import { ID, CoverArtSizes, SquareSizes } from '@audius/common'
 import {
   IconRemove as IconRemoveTrack,
   IconPlaybackPause as IconPause,
-  IconPlaybackPlay as IconPlay
+  IconPlaybackPlay as IconPlay,
+  IconDrag
 } from '@audius/harmony'
 import { IconKebabHorizontal, IconButton, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import IconDrag from 'assets/img/iconDrag.svg'
 import { SeoLink } from 'components/link'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'

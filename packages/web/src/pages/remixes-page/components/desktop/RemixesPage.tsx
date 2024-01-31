@@ -1,7 +1,7 @@
 import { Track, User, pluralize } from '@audius/common'
+import { IconRemix as IconRemixes } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconRemixes from 'assets/img/iconRemix.svg'
 import Header from 'components/header/desktop/Header'
 import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'

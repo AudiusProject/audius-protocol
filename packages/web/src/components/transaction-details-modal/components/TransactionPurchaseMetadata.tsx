@@ -4,8 +4,8 @@ import {
   Nullable,
   makeSolanaTransactionLink
 } from '@audius/common'
+import { IconExternalLink } from '@audius/harmony'
 
-import { IconExternalLink as IconExternalLink } from '@audius/harmony'
 import {
   IconUSD,
   IconSOL,

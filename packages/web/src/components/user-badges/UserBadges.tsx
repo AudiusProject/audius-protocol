@@ -5,11 +5,11 @@ import {
   IconTokenBronze as IconBronzeBadgeSVG,
   IconTokenGold as IconGoldBadgeSVG,
   IconTokenPlatinum as IconPlatinumBadgeSVG,
-  IconTokenSilver as IconSilverBadgeSVG
+  IconTokenSilver as IconSilverBadgeSVG,
+  IconVerified
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconVerified from 'assets/img/iconVerified.svg'
 import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'

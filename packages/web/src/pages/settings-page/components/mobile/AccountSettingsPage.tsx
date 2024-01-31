@@ -1,11 +1,11 @@
 import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common'
+import { IconVerified } from '@audius/harmony'
 import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import IconVerified from 'assets/img/iconVerified.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'

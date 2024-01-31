@@ -8,13 +8,11 @@ import {
   tracksSocialActions,
   shareModalUIActions
 } from '@audius/common'
+import { IconKebabHorizontal, IconRepost, IconShare } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
-import IconRepost from 'assets/img/iconRepost.svg'
-import IconShare from 'assets/img/iconShare.svg'
 import Menu from 'components/menu/Menu'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'

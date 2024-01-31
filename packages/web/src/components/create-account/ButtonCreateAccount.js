@@ -1,9 +1,9 @@
 import { Component } from 'react'
 
+import { IconCreateAccount as icon } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 
-import icon from 'assets/img/iconCreateAccount.svg'
 import { openSignOn } from 'common/store/pages/signon/actions'
 
 import styles from './ButtonCreateAccount.module.css'

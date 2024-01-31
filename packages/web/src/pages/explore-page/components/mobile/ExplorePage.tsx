@@ -19,12 +19,15 @@ import {
   explorePageSelectors,
   removeNullable
 } from '@audius/common'
-import { IconStars as IconForYou, IconMood as IconMoods } from '@audius/harmony'
+import {
+  IconStars as IconForYou,
+  IconMood as IconMoods,
+  IconNote,
+  IconUser
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNote from 'assets/img/iconNote.svg'
-import IconUser from 'assets/img/iconUser.svg'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

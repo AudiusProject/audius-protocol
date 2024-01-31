@@ -6,6 +6,7 @@ import {
   useAccountHasClaimableRewards,
   StringKeys
 } from '@audius/common'
+import { IconKebabHorizontal } from '@audius/harmony'
 import {
   IconCrown,
   IconDashboard,
@@ -19,7 +20,6 @@ import {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'

@@ -14,6 +14,12 @@ import {
   Location,
   isNullOrUndefined
 } from '@audius/common'
+import {
+  IconReceive,
+  IconSend,
+  IconSettings,
+  IconTransaction
+} from '@audius/harmony'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -22,10 +28,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconReceive from 'assets/img/iconReceive.svg'
-import IconSend from 'assets/img/iconSend.svg'
-import IconSettings from 'assets/img/iconSettings.svg'
-import IconTransaction from 'assets/img/iconTransaction.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'

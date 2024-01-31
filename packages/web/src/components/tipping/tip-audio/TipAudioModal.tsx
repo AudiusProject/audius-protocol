@@ -9,6 +9,7 @@ import {
   StringKeys,
   accountSelectors
 } from '@audius/common'
+import { IconVerified as IconSuccess } from '@audius/harmony'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -16,7 +17,6 @@ import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops.cjs'
 import { usePrevious } from 'react-use'
 
-import IconSuccess from 'assets/img/iconVerified.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
