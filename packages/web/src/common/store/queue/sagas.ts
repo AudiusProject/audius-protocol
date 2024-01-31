@@ -1,20 +1,4 @@
 import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  cacheActions,
-  cacheSelectors,
-  queueActions,
-  RepeatMode,
-  QueueSource,
-  playerActions,
-  playerSelectors,
-  queueSelectors,
-  getContext,
-  lineupRegistry
-} from '@audius/common'
-import {
   Name,
   PlaybackSource,
   Kind,
@@ -23,6 +7,22 @@ import {
   LineupState,
   User
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  cacheActions,
+  cacheSelectors,
+  cacheUsersSelectors,
+  lineupRegistry,
+  queueActions,
+  queueSelectors,
+  RepeatMode,
+  QueueSource,
+  getContext,
+  playerActions,
+  playerSelectors
+} from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 

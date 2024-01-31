@@ -1,34 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
 import {
-  accountActions,
-  accountSelectors,
-  profilePageSelectors,
-  CollectionSortMode,
-  ProfilePageTabs,
-  FollowType,
-  TracksSortMode,
-  getTabForRoute,
-  profilePageActions as profileActions,
-  profilePageTracksLineupActions as tracksActions,
-  profilePageFeedLineupActions as feedActions,
-  relatedArtistsUISelectors,
-  OverflowSource,
-  OverflowAction,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  followingUserListActions,
-  followersUserListActions,
-  usersSocialActions as socialActions,
-  playerSelectors,
-  queueSelectors,
-  chatActions,
-  chatSelectors,
-  ChatPermissionAction,
-  inboxUnavailableModalActions,
-  cacheCollectionsActions
-} from '@audius/common'
-import {
   Name,
   ShareSource,
   FollowSource,
@@ -39,6 +11,34 @@ import {
   UID
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
+import {
+  accountActions,
+  accountSelectors,
+  cacheCollectionsActions,
+  profilePageFeedLineupActions as feedActions,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageActions as profileActions,
+  profilePageSelectors,
+  FollowType,
+  CollectionSortMode,
+  TracksSortMode,
+  ProfilePageTabs,
+  getTabForRoute,
+  chatActions,
+  chatSelectors,
+  ChatPermissionAction,
+  queueSelectors,
+  usersSocialActions as socialActions,
+  relatedArtistsUISelectors,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  inboxUnavailableModalActions,
+  followingUserListActions,
+  followersUserListActions,
+  playerSelectors
+} from '@audius/common/store'
 import { getErrorMessage, formatCount, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'

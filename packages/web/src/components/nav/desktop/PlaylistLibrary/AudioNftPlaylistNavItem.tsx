@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { SmartCollectionVariant } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { SMART_COLLECTION_MAP } from 'common/store/smart-collection/smartCollections'

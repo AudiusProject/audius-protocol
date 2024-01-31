@@ -2,7 +2,8 @@ import {
   trendingPageLineupActions,
   trendingPageActions,
   trendingPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { TimeRange } from '@audius/common/models'
 import { Genre, ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'

@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
-
 import {
   notificationsSelectors,
   Achievement,
   EntityType,
   MilestoneNotification as MilestoneNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import { Name, User } from '@audius/common/models'
 import { formatCount, Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'

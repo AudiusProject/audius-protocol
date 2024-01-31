@@ -1,6 +1,8 @@
+import { accountSelectors } from '@audius/common/store'
+
 import { MouseEventHandler, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import {} from '@audius/common'
 import { useGetUserById } from '@audius/common/api'
 import { UserMetadata } from '@audius/common/models'
 import cn from 'classnames'

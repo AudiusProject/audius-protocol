@@ -1,4 +1,5 @@
-import { profilePageSelectors, tippingActions } from '@audius/common'
+import { profilePageSelectors, tippingActions } from '@audius/common/store'
+import {} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

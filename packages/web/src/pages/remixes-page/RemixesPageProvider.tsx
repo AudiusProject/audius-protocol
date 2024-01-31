@@ -1,13 +1,15 @@
-import { useEffect, useCallback, ComponentType, RefObject } from 'react'
-
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
+
+import { useEffect, useCallback, ComponentType, RefObject } from 'react'
+
+import {} from '@audius/common'
 import { ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

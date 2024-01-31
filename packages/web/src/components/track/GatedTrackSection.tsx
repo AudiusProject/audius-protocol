@@ -1,12 +1,14 @@
-import { useCallback } from 'react'
-
 import {
   cacheUsersSelectors,
-  gatedContentSelectors,
-  tippingActions,
   usersSocialActions as socialActions,
-  usePremiumContentPurchaseModal
-} from '@audius/common'
+  tippingActions,
+  usePremiumContentPurchaseModal,
+  gatedContentSelectors
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import {
   FollowSource,
   ModalSource,

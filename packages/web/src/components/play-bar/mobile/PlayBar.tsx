@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import {
-  queueActions,
-  tracksSocialActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -14,6 +8,12 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
+import {
+  queueActions,
+  queueSelectors,
+  tracksSocialActions,
+  playerSelectors
+} from '@audius/common/store'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'

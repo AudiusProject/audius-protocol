@@ -2,12 +2,13 @@ import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
-  profilePageSelectors,
   profilePageFeedLineupActions as feedActions,
-  tracksSocialActions,
+  profilePageSelectors,
   collectionsSocialActions,
+  tracksSocialActions,
   confirmerSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Kind } from '@audius/common/models'
 import {
   makeUid,

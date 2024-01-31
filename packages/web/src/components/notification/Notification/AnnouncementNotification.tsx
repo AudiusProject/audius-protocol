@@ -1,6 +1,8 @@
+import { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common/store'
+
 import { useCallback } from 'react'
 
-import { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common'
+import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { MarkdownViewer } from '@audius/stems'
 import cn from 'classnames'

@@ -1,4 +1,10 @@
 import {
+  cacheUsersSelectors,
+  searchUsersModalActions,
+  searchUsersModalSelectors
+} from '@audius/common/store'
+
+import {
   ChangeEvent,
   ReactNode,
   useCallback,
@@ -7,11 +13,7 @@ import {
   useState
 } from 'react'
 
-import {
-  cacheUsersSelectors,
-  searchUsersModalSelectors,
-  searchUsersModalActions
-} from '@audius/common'
+import {} from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status, ID, User } from '@audius/common/models'
 import {

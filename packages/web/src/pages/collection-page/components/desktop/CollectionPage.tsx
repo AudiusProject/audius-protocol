@@ -1,11 +1,6 @@
 import { ChangeEvent, useMemo } from 'react'
 
 import {
-  CollectionTrack,
-  CollectionPageTrackRecord,
-  CollectionsPageType
-} from '@audius/common'
-import {
   Variant,
   DogEarType,
   Status,
@@ -15,6 +10,11 @@ import {
   User
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  CollectionTrack,
+  CollectionsPageType,
+  CollectionPageTrackRecord
+} from '@audius/common/store'
 
 import {
   CollectiblesPlaylistTableColumn,

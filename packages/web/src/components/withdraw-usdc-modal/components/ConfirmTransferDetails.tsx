@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react'
-
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
   WithdrawMethod
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback, useState } from 'react'
+
+import {} from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
 import {

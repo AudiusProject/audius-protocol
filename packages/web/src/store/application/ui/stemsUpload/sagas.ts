@@ -1,9 +1,9 @@
+import { Name, Track, User } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   stemsUploadActions
-} from '@audius/common'
-import { Name, Track, User } from '@audius/common/models'
+} from '@audius/common/store'
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'

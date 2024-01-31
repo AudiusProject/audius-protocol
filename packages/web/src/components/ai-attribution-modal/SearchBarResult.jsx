@@ -1,6 +1,8 @@
+import { cacheUsersActions } from '@audius/common/store'
+
 import { useState, useEffect, memo, useCallback } from 'react'
 
-import { cacheUsersActions } from '@audius/common'
+import {} from '@audius/common'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Kind } from '@audius/common/models'
 import { Tag } from '@audius/stems'

@@ -1,6 +1,11 @@
+import {
+  notificationsSelectors,
+  TipSendNotification
+} from '@audius/common/store'
+
 import { useCallback } from 'react'
 
-import { notificationsSelectors, TipSendNotification } from '@audius/common'
+import {} from '@audius/common'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 

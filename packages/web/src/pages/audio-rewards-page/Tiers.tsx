@@ -1,12 +1,14 @@
-import { ReactElement, useCallback, useEffect, useMemo } from 'react'
-
 import {
   accountSelectors,
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
   musicConfettiActions
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { ReactElement, useCallback, useEffect, useMemo } from 'react'
+
+import {} from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { BadgeTier } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'

@@ -8,18 +8,18 @@ import React, {
 } from 'react'
 
 import {
-  explorePageActions,
-  ExplorePageTabs as ExploreTabs,
-  ExploreCollectionsVariant,
-  explorePageSelectors
-} from '@audius/common'
-import {
   Variant as CollectionVariant,
   Status,
   UserCollection,
   SmartCollection,
   User
 } from '@audius/common/models'
+import {
+  explorePageSelectors,
+  explorePageActions,
+  ExplorePageTabs as ExploreTabs,
+  ExploreCollectionsVariant
+} from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

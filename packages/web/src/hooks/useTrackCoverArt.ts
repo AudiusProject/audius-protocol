@@ -1,7 +1,7 @@
-import { cacheTracksActions, cacheTracksSelectors } from '@audius/common'
 import { imageBlank as imageEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
+import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 

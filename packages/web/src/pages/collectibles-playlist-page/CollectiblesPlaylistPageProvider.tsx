@@ -1,4 +1,16 @@
 import {
+  cacheUsersSelectors,
+  profilePageActions,
+  queueActions,
+  QueueSource,
+  collectibleDetailsUIActions,
+  shareModalUIActions,
+  playerSelectors,
+  CollectionTrack,
+  CollectionPageTrackRecord
+} from '@audius/common/store'
+
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -7,17 +19,7 @@ import {
   ComponentType
 } from 'react'
 
-import {
-  cacheUsersSelectors,
-  profilePageActions,
-  CollectionTrack,
-  CollectionPageTrackRecord,
-  queueActions,
-  QueueSource,
-  collectibleDetailsUIActions,
-  shareModalUIActions,
-  playerSelectors
-} from '@audius/common'
+import {} from '@audius/common'
 import {
   ShareSource,
   Chain,

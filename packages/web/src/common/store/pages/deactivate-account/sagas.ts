@@ -1,12 +1,13 @@
 import {
   accountSelectors,
-  getContext,
-  signOutActions,
   deactivateAccountActions,
+  signOutActions,
+  getContext,
   confirmerActions,
-  confirmTransaction,
-  confirmerSelectors
-} from '@audius/common'
+  confirmerSelectors,
+  confirmTransaction
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { waitForValue } from '@audius/common/utils'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'

@@ -1,4 +1,4 @@
-import { toastActions } from '@audius/common'
+import { toastActions } from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import * as errorActions from './actions'

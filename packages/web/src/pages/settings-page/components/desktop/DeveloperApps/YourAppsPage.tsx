@@ -1,6 +1,6 @@
-import { accountSelectors } from '@audius/common'
 import { useGetDeveloperApps } from '@audius/common/api'
 import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Button,
   ButtonSize,

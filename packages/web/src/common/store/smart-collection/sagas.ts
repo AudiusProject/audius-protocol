@@ -1,10 +1,11 @@
 import {
   accountSelectors,
   smartCollectionPageActions,
+  collectionPageLineupActions,
   collectionPageActions,
-  getContext,
-  collectionPageLineupActions
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
+import {} from '@audius/common'
 import {
   SmartCollectionVariant,
   Track,

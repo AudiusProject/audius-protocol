@@ -1,8 +1,9 @@
 import {
   accountActions,
-  modalsActions,
-  addToCollectionUIActions as actions
-} from '@audius/common'
+  addToCollectionUIActions as actions,
+  modalsActions
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { requiresAccount } from 'common/utils/requiresAccount'

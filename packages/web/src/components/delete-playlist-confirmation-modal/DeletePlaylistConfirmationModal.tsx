@@ -3,7 +3,9 @@ import { useCallback, useContext, useMemo } from 'react'
 import {
   cacheCollectionsActions,
   deletePlaylistConfirmationModalUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
+
+import {} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 

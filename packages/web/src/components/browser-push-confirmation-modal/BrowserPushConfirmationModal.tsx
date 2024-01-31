@@ -4,9 +4,11 @@ import {
   accountActions,
   settingsPageSelectors,
   settingsPageActions as settingPageActions,
-  modalsActions,
-  modalsSelectors
-} from '@audius/common'
+  modalsSelectors,
+  modalsActions
+} from '@audius/common/store'
+
+import {} from '@audius/common'
 import { Modal, Anchor, Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'

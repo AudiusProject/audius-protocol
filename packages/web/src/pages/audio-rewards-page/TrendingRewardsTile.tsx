@@ -1,6 +1,8 @@
+import { audioRewardsPageActions } from '@audius/common/store'
+
 import { ReactNode } from 'react'
 
-import { audioRewardsPageActions } from '@audius/common'
+import {} from '@audius/common'
 import {
   ChallengeRewardID,
   OptimisticUserChallenge

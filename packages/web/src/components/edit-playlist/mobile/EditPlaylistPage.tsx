@@ -1,18 +1,18 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import {
-  accountSelectors,
-  cacheCollectionsActions,
-  collectionPageLineupActions as tracksActions,
-  EditPlaylistValues,
-  cacheCollectionsSelectors,
-  useEditPlaylistModal
-} from '@audius/common'
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
+import {
+  accountSelectors,
+  cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  collectionPageLineupActions as tracksActions,
+  useEditPlaylistModal,
+  EditPlaylistValues
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'

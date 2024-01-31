@@ -1,8 +1,8 @@
+import { ShareSource, FollowSource, ID } from '@audius/common/models'
 import {
   usersSocialActions as socialActions,
   shareModalUIActions
-} from '@audius/common'
-import { ShareSource, FollowSource, ID } from '@audius/common/models'
+} from '@audius/common/store'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

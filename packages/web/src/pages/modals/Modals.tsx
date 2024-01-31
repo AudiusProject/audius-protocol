@@ -1,6 +1,8 @@
 import { ComponentType, lazy } from 'react'
 
-import type { Modals as ModalTypes } from '@audius/common'
+import { Modals as ModalTypes } from '@audius/common/store'
+
+import type {} from '@audius/common'
 
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'

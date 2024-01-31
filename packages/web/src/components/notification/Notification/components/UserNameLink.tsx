@@ -1,6 +1,8 @@
+import { Notification } from '@audius/common/store'
+
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Notification } from '@audius/common'
+import {} from '@audius/common'
 import { Name, User } from '@audius/common/models'
 import cn from 'classnames'
 import { push } from 'connected-react-router'

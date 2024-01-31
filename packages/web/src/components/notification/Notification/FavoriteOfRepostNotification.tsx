@@ -1,8 +1,9 @@
 import {
   notificationsSelectors,
-  FavoriteOfRepostNotification as FavoriteOfRepostNotificationType,
-  Entity
-} from '@audius/common'
+  Entity,
+  FavoriteOfRepostNotification as FavoriteOfRepostNotificationType
+} from '@audius/common/store'
+import {} from '@audius/common'
 
 import { useSelector } from 'utils/reducer'
 

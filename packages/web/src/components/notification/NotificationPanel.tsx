@@ -1,10 +1,13 @@
-import { useRef, useCallback, useEffect, RefObject } from 'react'
-
 import {
+  notificationsActions,
   notificationsSelectors,
   Notification as Notifications,
-  notificationsActions
-} from '@audius/common'
+  Notifications
+} from '@audius/common/store'
+
+import { useRef, useCallback, useEffect, RefObject } from 'react'
+
+import {} from '@audius/common'
 import { Status } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'

@@ -1,20 +1,20 @@
+import { DefaultSizes, Kind } from '@audius/common/models'
+import { DoubleKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
+  processAndCacheUsers,
+  profilePageActions as profileActions,
   profilePageSelectors,
   FollowType,
-  profilePageActions as profileActions,
+  chatActions,
   reachabilitySelectors,
   tippingActions,
   relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
-  processAndCacheUsers,
-  chatActions,
   confirmerActions,
   confirmTransaction
-} from '@audius/common'
-import { DefaultSizes, Kind } from '@audius/common/models'
-import { DoubleKeys, FeatureFlags } from '@audius/common/services'
+} from '@audius/common/store'
 import {
   squashNewLines,
   makeUid,

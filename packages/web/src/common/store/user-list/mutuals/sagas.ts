@@ -4,7 +4,8 @@ import {
   mutualsUserListActions,
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { ID, User } from '@audius/common/models'
 import { AudiusBackend } from '@audius/common/services'
 import { put, select } from 'typed-redux-saga'

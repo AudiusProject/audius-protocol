@@ -1,10 +1,10 @@
 import { Component } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
-} from '@audius/common'
-import { Status } from '@audius/common/models'
+} from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { Redirect } from 'react-router'
 

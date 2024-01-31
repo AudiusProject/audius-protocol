@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'

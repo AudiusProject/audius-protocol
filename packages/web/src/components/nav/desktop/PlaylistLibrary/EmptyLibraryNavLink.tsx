@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { cacheCollectionsActions } from '@audius/common'
 import { CreatePlaylistSource } from '@audius/common/models'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { LeftNavLink } from '../LeftNavLink'

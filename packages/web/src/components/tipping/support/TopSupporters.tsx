@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
-
 import {
   cacheUsersSelectors,
   profilePageSelectors,
   tippingSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import { ID, User } from '@audius/common/models'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
 import { IconTrophy } from '@audius/stems'

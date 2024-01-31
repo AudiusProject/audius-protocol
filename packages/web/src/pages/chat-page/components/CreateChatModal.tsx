@@ -1,19 +1,19 @@
 import { useCallback, useEffect } from 'react'
 
+import { User } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
+  chatSelectors,
+  searchUsersModalActions,
+  useCreateChatModal,
+  createChatModalActions,
+  useInboxUnavailableModal,
   userListActions,
-  FOLLOWERS_USER_LIST_TAG,
   followersUserListActions,
   followersUserListSelectors,
-  useCreateChatModal,
-  useInboxUnavailableModal,
-  createChatModalActions,
-  searchUsersModalActions,
-  chatSelectors
-} from '@audius/common'
-import { User } from '@audius/common/models'
+  FOLLOWERS_USER_LIST_TAG
+} from '@audius/common/store'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
-import { accountSelectors, playlistLibraryActions } from '@audius/common'
 import { PlaylistLibraryFolder } from '@audius/common/models'
+import { accountSelectors, playlistLibraryActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'

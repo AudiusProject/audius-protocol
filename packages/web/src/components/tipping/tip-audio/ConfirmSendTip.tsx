@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { tippingSelectors, tippingActions } from '@audius/common'
+import { tippingSelectors, tippingActions } from '@audius/common/store'
+
+import {} from '@audius/common'
 import { Button, ButtonType, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

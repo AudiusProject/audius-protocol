@@ -1,4 +1,8 @@
-import { cacheCollectionsSelectors, cacheTracksSelectors } from '@audius/common'
+import {
+  cacheCollectionsSelectors,
+  cacheTracksSelectors
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { PlayableType } from '@audius/common/models'
 
 import { AppState } from 'store/types'

@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
-
 import {
   profilePageSelectors,
   collectibleDetailsUIActions
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback, useEffect, useState } from 'react'
+
+import {} from '@audius/common'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import { getHash } from '@audius/common/utils'
 import { LogoEth, LogoSol } from '@audius/stems'

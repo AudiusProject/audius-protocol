@@ -1,14 +1,14 @@
 import { useCallback, useEffect } from 'react'
 
+import { User } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
-  ChatPermissionAction,
   chatSelectors,
-  tippingActions,
-  tippingSelectors
-} from '@audius/common'
-import { User } from '@audius/common/models'
+  ChatPermissionAction,
+  tippingSelectors,
+  tippingActions
+} from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
   IconBlockMessages,

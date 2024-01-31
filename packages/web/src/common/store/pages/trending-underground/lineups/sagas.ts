@@ -3,7 +3,8 @@ import {
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { StringKeys } from '@audius/common/services'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'

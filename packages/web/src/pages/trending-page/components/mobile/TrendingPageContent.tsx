@@ -1,6 +1,8 @@
+import { trendingPageLineupActions } from '@audius/common/store'
+
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { trendingPageLineupActions } from '@audius/common'
+import {} from '@audius/common'
 import { Name, TimeRange } from '@audius/common/models'
 import cn from 'classnames'
 

@@ -1,15 +1,17 @@
 import {
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal,
+  WithdrawMethod
+} from '@audius/common/store'
+
+import {
   ChangeEventHandler,
   FocusEventHandler,
   useCallback,
   useState
 } from 'react'
 
-import {
-  useWithdrawUSDCModal,
-  WithdrawUSDCModalPages,
-  WithdrawMethod
-} from '@audius/common'
+import {} from '@audius/common'
 import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'

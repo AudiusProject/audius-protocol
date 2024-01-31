@@ -1,12 +1,13 @@
 import {
+  accountActions,
   accountSelectors,
   cacheActions,
   profilePageActions,
-  accountActions,
+  chatActions,
   solanaSelectors,
-  getContext,
-  chatActions
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,

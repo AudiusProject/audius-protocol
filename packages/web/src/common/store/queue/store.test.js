@@ -1,3 +1,4 @@
+import { Kind } from '@audius/common/models'
 import {
   accountReducer,
   cacheActions,
@@ -7,8 +8,7 @@ import {
   QueueSource,
   playerReducer,
   playerActions
-} from '@audius/common'
-import { Kind } from '@audius/common/models'
+} from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { take } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'

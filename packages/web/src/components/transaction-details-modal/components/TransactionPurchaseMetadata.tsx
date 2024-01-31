@@ -1,4 +1,5 @@
-import { InAppAudioPurchaseMetadata } from '@audius/common'
+import { InAppAudioPurchaseMetadata } from '@audius/common/store'
+import {} from '@audius/common'
 import {
   formatNumberString,
   makeSolanaTransactionLink,

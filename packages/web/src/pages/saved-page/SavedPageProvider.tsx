@@ -1,23 +1,6 @@
 import { ComponentType, PureComponent } from 'react'
 
-import {
-  LibraryCategoryType,
-  SavedPageTabs as ProfileTabs,
-  SavedPageTabs,
-  SavedPageTrack,
-  TrackRecord,
-  accountActions,
-  accountSelectors,
-  lineupSelectors,
-  playerSelectors,
-  playlistUpdatesActions,
-  playlistUpdatesSelectors,
-  queueSelectors,
-  savedPageActions as saveActions,
-  savedPageSelectors,
-  tracksSocialActions as socialActions,
-  savedPageTracksLineupActions as tracksActions
-} from '@audius/common'
+import { SavedPageTabs as ProfileTabs } from '@audius/common'
 import {
   Name,
   RepostSource,
@@ -27,6 +10,23 @@ import {
   UID,
   LineupTrack
 } from '@audius/common/models'
+import {
+  accountActions,
+  accountSelectors,
+  lineupSelectors,
+  savedPageTracksLineupActions as tracksActions,
+  savedPageActions as saveActions,
+  savedPageSelectors,
+  SavedPageTabs,
+  queueSelectors,
+  tracksSocialActions as socialActions,
+  playerSelectors,
+  playlistUpdatesActions,
+  playlistUpdatesSelectors,
+  LibraryCategoryType,
+  SavedPageTrack,
+  TrackRecord
+} from '@audius/common/store'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'

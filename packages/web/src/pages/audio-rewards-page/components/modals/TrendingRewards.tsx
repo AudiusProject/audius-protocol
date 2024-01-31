@@ -1,10 +1,12 @@
+import {
+  audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  TrendingRewardsModalType
+} from '@audius/common/store'
+
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  audioRewardsPageActions,
-  TrendingRewardsModalType,
-  audioRewardsPageSelectors
-} from '@audius/common'
+import {} from '@audius/common'
 import { Theme } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'

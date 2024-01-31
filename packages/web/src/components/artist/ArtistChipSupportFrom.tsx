@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { tippingSelectors } from '@audius/common'
 import { ID, StringWei } from '@audius/common/models'
+import { tippingSelectors } from '@audius/common/store'
 import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 

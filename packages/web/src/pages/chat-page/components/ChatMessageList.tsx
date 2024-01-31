@@ -11,9 +11,13 @@ import {
   useMemo
 } from 'react'
 
-import { accountSelectors, chatActions, chatSelectors } from '@audius/common'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
+import {
+  accountSelectors,
+  chatActions,
+  chatSelectors
+} from '@audius/common/store'
 import {
   encodeHashId,
   hasTail,

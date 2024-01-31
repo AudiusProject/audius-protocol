@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { OverflowAction } from '@audius/common'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   SquareSizes,
@@ -13,6 +12,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { OverflowAction } from '@audius/common/store'
 import {
   getCanonicalName,
   formatSeconds,

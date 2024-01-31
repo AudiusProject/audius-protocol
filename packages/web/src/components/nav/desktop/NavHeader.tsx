@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react'
 
+import { Name, Theme } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   notificationsSelectors,
   themeSelectors
-} from '@audius/common'
-import { Name, Theme } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+} from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

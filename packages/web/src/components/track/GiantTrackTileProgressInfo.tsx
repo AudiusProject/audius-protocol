@@ -1,8 +1,9 @@
 import {
-  CommonState,
   accountSelectors,
-  playbackPositionSelectors
-} from '@audius/common'
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { ID } from '@audius/common/models'
 import { formatLineupTileDuration } from '@audius/common/utils'
 import { IconCheck, ProgressBar } from '@audius/stems'

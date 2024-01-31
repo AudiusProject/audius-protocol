@@ -1,4 +1,10 @@
 import {
+  collectibleDetailsUISelectors,
+  collectibleDetailsUIActions,
+  ProfileUser
+} from '@audius/common/store'
+
+import {
   useCallback,
   useContext,
   useEffect,
@@ -7,11 +13,7 @@ import {
   useState
 } from 'react'
 
-import {
-  ProfileUser,
-  collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
-} from '@audius/common'
+import {} from '@audius/common'
 import { useInstanceVar } from '@audius/common/hooks'
 import { CollectiblesMetadata, Collectible } from '@audius/common/models'
 import { getHash } from '@audius/common/utils'

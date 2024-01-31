@@ -1,6 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import { modalsSelectors, modalsActions, Modals } from '@audius/common'
+import { modalsSelectors, modalsActions, Modals } from '@audius/common/store'
+
+import {} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from './useSelector'

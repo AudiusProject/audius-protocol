@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
 
+import { Name, PlaylistLibraryFolder } from '@audius/common/models'
 import {
   accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers
-} from '@audius/common'
-import { Name, PlaylistLibraryFolder } from '@audius/common/models'
+} from '@audius/common/store'
 import {
   IconFolder,
   Modal,

@@ -2,11 +2,12 @@ import {
   cacheTracksActions as trackCacheActions,
   cacheTracksSelectors,
   cacheUsersSelectors,
+  trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  trackPageLineupActions,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Kind } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { makeUid } from '@audius/common/utils'

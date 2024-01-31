@@ -1,4 +1,5 @@
-import { cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common/store'
+import {} from '@audius/common'
 import { ID } from '@audius/common/models'
 import cn from 'classnames'
 

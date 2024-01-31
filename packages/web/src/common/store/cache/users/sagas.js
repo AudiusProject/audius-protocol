@@ -1,11 +1,12 @@
 import {
   accountSelectors,
-  cacheActions,
-  cacheUsersSelectors,
-  cacheReducer,
   cacheUsersActions as userActions,
-  reformatUser
-} from '@audius/common'
+  cacheActions,
+  cacheReducer,
+  reformatUser,
+  cacheUsersSelectors
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { DefaultSizes, Kind } from '@audius/common/models'
 import { waitForValue, waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'

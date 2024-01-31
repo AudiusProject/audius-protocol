@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-
 import {
-  useWithdrawUSDCModal,
-  WithdrawUSDCModalPages,
   withdrawUSDCActions,
   withdrawUSDCSelectors,
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal,
   WithdrawMethod
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import {} from '@audius/common'
 import {
   useFeatureFlag,
   useRemoteVar,

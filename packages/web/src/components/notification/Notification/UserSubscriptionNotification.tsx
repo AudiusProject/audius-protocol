@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
-
 import {
   notificationsSelectors,
   Entity,
   UserSubscriptionNotification as UserSubscriptionNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

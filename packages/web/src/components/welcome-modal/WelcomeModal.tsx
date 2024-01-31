@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import {
   Button,

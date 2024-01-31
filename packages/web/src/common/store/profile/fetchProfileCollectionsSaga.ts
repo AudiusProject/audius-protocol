@@ -1,10 +1,10 @@
+import { Kind } from '@audius/common/models'
 import {
   cacheActions,
-  getContext,
   profilePageActions,
-  profilePageSelectors
-} from '@audius/common'
-import { Kind } from '@audius/common/models'
+  profilePageSelectors,
+  getContext
+} from '@audius/common/store'
 import { isEqual } from 'lodash'
 import { put, select, takeLatest, call } from 'typed-redux-saga'
 

@@ -1,13 +1,13 @@
 import { useCallback, useRef, useState } from 'react'
 
+import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
+import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
   chatActions,
   ReactionTypes
-} from '@audius/common'
-import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
-import { Status, ChatMessageWithExtras } from '@audius/common/models'
+} from '@audius/common/store'
 import {
   formatMessageDate,
   decodeHashId,

@@ -1,9 +1,10 @@
 import {
   cacheUsersSelectors,
-  TransactionDetails,
+  TransactionType,
   TransactionMethod,
-  TransactionType
-} from '@audius/common'
+  TransactionDetails
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { ChallengeRewardID, User } from '@audius/common/models'
 import {
   formatAudio,

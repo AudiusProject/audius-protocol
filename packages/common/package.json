@@ -18,7 +18,8 @@
     "./schemas": "./src/schemas/index.ts",
     "./services": "./src/services/index.ts",
     "./audius-query": "./src/audius-query/index.ts",
-    "./assets": "./src/assets/index.ts"
+    "./assets": "./src/assets/index.ts",
+    "./store": "./src/store/index.ts"
   },
   "repository": {
     "type": "git",

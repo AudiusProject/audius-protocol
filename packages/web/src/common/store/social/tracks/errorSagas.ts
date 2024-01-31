@@ -1,4 +1,5 @@
-import { tracksSocialActions as socialTrackActions } from '@audius/common'
+import { tracksSocialActions as socialTrackActions } from '@audius/common/store'
+import {} from '@audius/common'
 
 import { createErrorSagas } from 'utils/errorSagas'
 

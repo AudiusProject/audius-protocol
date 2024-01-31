@@ -1,16 +1,17 @@
 import {
+  accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
   lineupActions as baseLineupActions,
+  premiumTracksPageLineupActions,
   queueActions,
-  playerSelectors,
   queueSelectors,
   getContext,
-  premiumTracksPageLineupActions,
-  accountSelectors
-} from '@audius/common'
+  playerSelectors
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Name, Kind, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import { Uid, makeUids, makeUid } from '@audius/common/utils'

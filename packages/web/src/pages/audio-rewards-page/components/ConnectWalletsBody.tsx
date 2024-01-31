@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+  tokenDashboardPageSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
+
+import {} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

@@ -1,12 +1,5 @@
 import { useEffect, useContext, MouseEvent, ReactNode } from 'react'
 
-import {
-  ProfilePageTabs,
-  ProfileUser,
-  profilePageTracksLineupActions as tracksActions,
-  profilePageFeedLineupActions as feedActions,
-  badgeTiers
-} from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   Status,
@@ -18,6 +11,13 @@ import {
   LineupState,
   User
 } from '@audius/common/models'
+import {
+  profilePageFeedLineupActions as feedActions,
+  profilePageTracksLineupActions as tracksActions,
+  ProfilePageTabs,
+  badgeTiers,
+  ProfileUser
+} from '@audius/common/store'
 import cn from 'classnames'
 
 import IconAlbum from 'assets/img/iconAlbum.svg'

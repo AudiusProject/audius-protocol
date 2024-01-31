@@ -1,14 +1,15 @@
 import {
   accountSelectors,
-  audioRewardsPageActions,
-  AudioRewardsClaim,
-  ClaimStatus,
-  HCaptchaStatus,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  HCaptchaStatus,
+  ClaimStatus,
   solanaSelectors,
   walletActions,
-  modalsActions
-} from '@audius/common'
+  modalsActions,
+  AudioRewardsClaim
+} from '@audius/common/store'
+import {} from '@audius/common'
 import {
   FailureReason,
   UserChallenge,

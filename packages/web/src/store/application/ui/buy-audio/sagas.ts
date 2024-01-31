@@ -1,21 +1,3 @@
-import {
-  getContext,
-  walletActions,
-  TOKEN_LISTING_MAP,
-  buyAudioSelectors,
-  PurchaseInfoErrorType,
-  buyAudioActions,
-  OnRampProvider,
-  transactionDetailsActions,
-  TransactionMetadataType,
-  TransactionType,
-  TransactionMethod,
-  TransactionDetails,
-  walletSelectors,
-  modalsActions,
-  AmountObject,
-  solanaSelectors
-} from '@audius/common'
 import { Name, ErrorLevel, BNWei } from '@audius/common/models'
 import {
   IntKeys,
@@ -24,6 +6,24 @@ import {
   createUserBankIfNeeded,
   LocalStorage
 } from '@audius/common/services'
+import {
+  solanaSelectors,
+  walletSelectors,
+  walletActions,
+  buyAudioActions,
+  buyAudioSelectors,
+  transactionDetailsActions,
+  modalsActions,
+  OnRampProvider,
+  PurchaseInfoErrorType,
+  TOKEN_LISTING_MAP,
+  TransactionType,
+  TransactionMethod,
+  TransactionMetadataType,
+  getContext,
+  AmountObject,
+  TransactionDetails
+} from '@audius/common/store'
 import {
   dayjs,
   isNullOrUndefined,

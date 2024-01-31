@@ -1,6 +1,11 @@
 import { MouseEvent, useCallback, useEffect, useState, useRef } from 'react'
 
-import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
+import {
+  stripeModalUIActions,
+  stripeModalUISelectors
+} from '@audius/common/store'
+
+import {} from '@audius/common'
 import { loadStripeOnramp, OnrampSession } from '@stripe/crypto'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

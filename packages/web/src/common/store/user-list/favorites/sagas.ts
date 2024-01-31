@@ -5,7 +5,8 @@ import {
   favoritesUserListActions,
   favoritesUserListSelectors,
   FAVORITES_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { FavoriteType, Collection, ID, Track } from '@audius/common/models'
 import { select, put } from 'typed-redux-saga'
 

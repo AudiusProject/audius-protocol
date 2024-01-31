@@ -1,13 +1,13 @@
+import { Kind } from '@audius/common/models'
 import {
   cacheReducer,
-  LineupBaseActions,
   lineupReducer,
+  LineupBaseActions,
   queueReducer,
   initialQueueState,
   playerReducer,
   initialPlayerState
-} from '@audius/common'
-import { Kind } from '@audius/common/models'
+} from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { all } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'

@@ -1,6 +1,8 @@
+import { gatedContentSelectors } from '@audius/common/store'
+
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { gatedContentSelectors } from '@audius/common'
+import {} from '@audius/common'
 import { ID, FieldVisibility, AccessConditions } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'

@@ -8,16 +8,6 @@ import {
 } from 'react'
 
 import {
-  CommonState,
-  LibraryCategory,
-  QueueItem,
-  SavedPageTabs,
-  SavedPageTrack,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  savedPageSelectors
-} from '@audius/common'
-import {
   useGatedContentAccessMap,
   useDebouncedCallback
 } from '@audius/common/hooks'
@@ -28,6 +18,16 @@ import {
   UID,
   Lineup
 } from '@audius/common/models'
+import {
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  savedPageSelectors,
+  LibraryCategory,
+  SavedPageTabs,
+  SavedPageTrack,
+  QueueItem,
+  CommonState
+} from '@audius/common/store'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

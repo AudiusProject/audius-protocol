@@ -1,8 +1,8 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import { playerActions } from '@audius/common'
 import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
 import { ID, UserTrackMetadata } from '@audius/common/models'
+import { playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 

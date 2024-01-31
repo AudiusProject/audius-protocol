@@ -1,5 +1,5 @@
-import { ProfilePageTabRoute } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { ProfilePageTabRoute } from '@audius/common/store'
 import { decodeHashId } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 

@@ -1,17 +1,6 @@
 import { useContext } from 'react'
 
 import {
-  accountSelectors,
-  cacheCollectionsActions,
-  collectionPageSelectors,
-  playbackPositionActions,
-  playbackPositionSelectors,
-  tracksSocialActions,
-  addToCollectionUIActions,
-  CommonState,
-  useEditTrackModal
-} from '@audius/common'
-import {
   ShareSource,
   RepostSource,
   FavoriteSource,
@@ -19,6 +8,17 @@ import {
   ID
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  cacheCollectionsActions,
+  collectionPageSelectors,
+  tracksSocialActions,
+  addToCollectionUIActions,
+  useEditTrackModal,
+  playbackPositionActions,
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

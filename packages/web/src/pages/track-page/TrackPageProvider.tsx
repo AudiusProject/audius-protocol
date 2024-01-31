@@ -1,25 +1,6 @@
 import { Component, ComponentType } from 'react'
 
 import {
-  accountSelectors,
-  cacheTracksActions as cacheTrackActions,
-  lineupSelectors,
-  trackPageActions,
-  trackPageSelectors,
-  trackPageLineupActions,
-  OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
-  tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
-import {
   Name,
   ShareSource,
   RepostSource,
@@ -32,6 +13,25 @@ import {
   ID,
   Track
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  cacheTracksActions as cacheTrackActions,
+  lineupSelectors,
+  trackPageLineupActions,
+  trackPageActions,
+  trackPageSelectors,
+  queueSelectors,
+  tracksSocialActions as socialTracksActions,
+  usersSocialActions as socialUsersActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
 import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'

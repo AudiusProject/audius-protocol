@@ -1,15 +1,4 @@
 import {
-  withdrawUSDCActions,
-  solanaSelectors,
-  getUSDCUserBank,
-  getContext,
-  TOKEN_LISTING_MAP,
-  withdrawUSDCModalActions,
-  WithdrawUSDCModalPages,
-  WithdrawMethod,
-  buyUSDCActions
-} from '@audius/common'
-import {
   Name,
   ErrorLevel,
   Status,
@@ -22,6 +11,17 @@ import {
   relayTransaction,
   relayVersionedTransaction
 } from '@audius/common/services'
+import {
+  buyUSDCActions,
+  getUSDCUserBank,
+  solanaSelectors,
+  withdrawUSDCActions,
+  WithdrawUSDCModalPages,
+  withdrawUSDCModalActions,
+  TOKEN_LISTING_MAP,
+  WithdrawMethod,
+  getContext
+} from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   createAssociatedTokenAccountInstruction,

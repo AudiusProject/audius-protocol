@@ -1,10 +1,11 @@
 import {
   accountSelectors,
-  searchResultsPageActions as searchPageActions,
+  processAndCacheUsers,
   searchResultsPageTracksLineupActions as tracksLineupActions,
-  SearchKind,
-  processAndCacheUsers
-} from '@audius/common'
+  searchResultsPageActions as searchPageActions,
+  SearchKind
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { FeatureFlags } from '@audius/common/services'
 import { trimToAlphaNumeric, removeNullable } from '@audius/common/utils'
 import { flatMap, zip } from 'lodash'

@@ -1,10 +1,13 @@
-import { useEffect, useCallback, useContext } from 'react'
-
 import {
+  notificationsActions,
   notificationsSelectors,
   Notification as Notifications,
-  notificationsActions
-} from '@audius/common'
+  Notifications
+} from '@audius/common/store'
+
+import { useEffect, useCallback, useContext } from 'react'
+
+import {} from '@audius/common'
 import { Status } from '@audius/common/models'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'

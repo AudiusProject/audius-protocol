@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback, useEffect } from 'react'
 
-import { useLeavingAudiusModal } from '@audius/common'
 import { useLinkUnfurlMetadata } from '@audius/common/hooks'
+import { useLeavingAudiusModal } from '@audius/common/store'
 import { isAudiusUrl } from '@audius/common/utils'
 import cn from 'classnames'
 

@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
-
 import {
   notificationsSelectors,
   TrackEntity,
   TrendingUndergroundNotification as TrendingUndergroundNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'

@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { useUSDCBalance } from '@audius/common/hooks'
+import { Name, Status, BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
   useAddFundsModal
-} from '@audius/common'
-import { useUSDCBalance } from '@audius/common/hooks'
-import { Name, Status, BNUSDC } from '@audius/common/models'
+} from '@audius/common/store'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber

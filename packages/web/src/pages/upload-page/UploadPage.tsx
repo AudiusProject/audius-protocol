@@ -1,11 +1,11 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
 import {
-  UploadType,
-  uploadActions,
   uploadConfirmationModalUIActions,
-  uploadSelectors
-} from '@audius/common'
+  uploadActions,
+  uploadSelectors,
+  UploadType
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'

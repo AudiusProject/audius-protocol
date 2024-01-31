@@ -1,12 +1,14 @@
-import { Suspense, useEffect } from 'react'
-
 import {
   accountSelectors,
-  Image,
   InstagramProfile,
   TwitterProfile,
-  TikTokProfile
-} from '@audius/common'
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
+
+import { Suspense, useEffect } from 'react'
+
+import {} from '@audius/common'
 import { Status, ID, User } from '@audius/common/models'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

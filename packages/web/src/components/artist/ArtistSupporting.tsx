@@ -1,13 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
+import { ID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   tippingSelectors,
   tippingActions,
   userListActions,
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG
-} from '@audius/common'
-import { ID, User } from '@audius/common/models'
+} from '@audius/common/store'
 import {
   stringWeiToBN,
   MAX_ARTIST_HOVER_TOP_SUPPORTING

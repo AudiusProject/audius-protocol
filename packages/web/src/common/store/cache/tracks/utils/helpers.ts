@@ -1,9 +1,10 @@
 import {
   accountSelectors,
   cacheActions,
-  getContext,
-  reformatUser
-} from '@audius/common'
+  reformatUser,
+  getContext
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Kind, TrackMetadata, User } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'

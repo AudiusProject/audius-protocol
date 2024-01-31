@@ -1,4 +1,5 @@
-import { lineupActions, lineupReducer } from '@audius/common'
+import { lineupActions, lineupReducer } from '@audius/common/store'
+import {} from '@audius/common'
 import { LineupState, Track } from '@audius/common/models'
 
 import { PREFIX } from 'pages/deleted-page/store/lineups/more-by/actions'

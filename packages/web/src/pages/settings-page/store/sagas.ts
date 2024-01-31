@@ -1,10 +1,10 @@
+import { Name } from '@audius/common/models'
 import {
-  settingsPageActions as actions,
   settingsPageSelectors,
+  settingsPageActions as actions,
   BrowserNotificationSetting,
   getContext
-} from '@audius/common'
-import { Name } from '@audius/common/models'
+} from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 

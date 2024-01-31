@@ -1,4 +1,14 @@
 import {
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
+  shareModalUIActions,
+  playerSelectors,
+  gatedContentActions
+} from '@audius/common/store'
+
+import {
   memo,
   useState,
   useCallback,
@@ -7,15 +17,7 @@ import {
   useRef
 } from 'react'
 
-import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  tracksSocialActions,
-  shareModalUIActions,
-  playerSelectors,
-  gatedContentActions
-} from '@audius/common'
+import {} from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,

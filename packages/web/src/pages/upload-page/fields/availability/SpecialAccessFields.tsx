@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'

@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-
 import {
-  useAddFundsModal,
   buyUSDCActions,
   buyUSDCSelectors,
-  BuyUSDCStage
-} from '@audius/common'
+  BuyUSDCStage,
+  useAddFundsModal
+} from '@audius/common/store'
+
+import { useCallback, useEffect, useState } from 'react'
+
+import {} from '@audius/common'
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { ModalContent, ModalHeader } from '@audius/stems'

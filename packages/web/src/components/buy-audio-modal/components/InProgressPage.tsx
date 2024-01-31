@@ -2,9 +2,9 @@ import { ReactNode } from 'react'
 
 import {
   buyAudioSelectors,
-  BuyAudioStage,
-  OnRampProvider
-} from '@audius/common'
+  OnRampProvider,
+  BuyAudioStage
+} from '@audius/common/store'
 import { formatNumberString } from '@audius/common/utils'
 import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
 import { useSelector } from 'react-redux'

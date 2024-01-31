@@ -1,12 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  WithdrawUSDCModalPages,
-  accountSelectors,
-  useUSDCTransactionDetailsModal,
-  useWithdrawUSDCModal
-} from '@audius/common'
-import {
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   Id
@@ -21,6 +15,12 @@ import {
   USDCTransactionDetails,
   BNUSDC
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  useUSDCTransactionDetailsModal,
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal
+} from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import BN from 'bn.js'

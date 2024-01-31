@@ -1,4 +1,13 @@
 import {
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  shareModalUIActions,
+  playerSelectors
+} from '@audius/common/store'
+
+import {
   MouseEvent,
   memo,
   useMemo,
@@ -9,14 +18,7 @@ import {
   useRef
 } from 'react'
 
-import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  collectionsSocialActions,
-  shareModalUIActions,
-  playerSelectors
-} from '@audius/common'
+import {} from '@audius/common'
 import {
   Name,
   ShareSource,

@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { Name, CreateAccountOpen } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { put, select, cancel } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

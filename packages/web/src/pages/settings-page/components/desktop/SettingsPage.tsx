@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
-  BrowserNotificationSetting,
-  EmailFrequency,
-  TikTokProfile,
-  settingsPageSelectors
-} from '@audius/common'
 import { OS, Theme, ID, ProfilePictureSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  settingsPageSelectors,
+  BrowserNotificationSetting,
+  EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
+  TikTokProfile,
+  Notifications
+} from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { IconAppearance } from '@audius/harmony'
 import {

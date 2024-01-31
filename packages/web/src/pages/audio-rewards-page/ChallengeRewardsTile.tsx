@@ -1,11 +1,13 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react'
-
 import {
   challengesSelectors,
+  audioRewardsPageSelectors,
   audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+
+import { ReactNode, useEffect, useMemo, useState } from 'react'
+
+import {} from '@audius/common'
 import {
   Name,
   ChallengeName,

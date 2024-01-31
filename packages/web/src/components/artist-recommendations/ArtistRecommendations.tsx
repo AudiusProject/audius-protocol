@@ -1,13 +1,6 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
 import {
-  relatedArtistsUISelectors,
-  relatedArtistsUIActions,
-  usersSocialActions as socialActions,
-  cacheUsersSelectors,
-  CommonState
-} from '@audius/common'
-import {
   Name,
   FollowSource,
   SquareSizes,
@@ -15,6 +8,13 @@ import {
   ProfilePictureSizes,
   User
 } from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  usersSocialActions as socialActions,
+  relatedArtistsUISelectors,
+  relatedArtistsUIActions,
+  CommonState
+} from '@audius/common/store'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'

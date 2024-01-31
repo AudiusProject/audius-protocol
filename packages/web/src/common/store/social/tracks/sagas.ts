@@ -1,14 +1,15 @@
 import {
   accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   cacheActions,
-  gatedContentSelectors,
-  getContext,
+  cacheUsersSelectors,
   tracksSocialActions as socialActions,
+  getContext,
+  gatedContentSelectors,
   confirmerActions,
   confirmTransaction
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {

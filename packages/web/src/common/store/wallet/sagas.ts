@@ -1,13 +1,14 @@
 import {
-  accountSelectors,
   accountActions,
+  accountSelectors,
   tokenDashboardPageActions,
+  solanaSelectors,
   walletSelectors,
-  InputSendDataAction,
   walletActions,
   getContext,
-  solanaSelectors
-} from '@audius/common'
+  InputSendDataAction
+} from '@audius/common/store'
+import {} from '@audius/common'
 import {
   Name,
   Chain,

@@ -3,7 +3,8 @@ import {
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { UserCollectionMetadata } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { keccak_256 } from 'js-sha3'

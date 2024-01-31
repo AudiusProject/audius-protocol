@@ -1,4 +1,11 @@
 import {
+  accountSelectors,
+  badgeTiers,
+  collectibleDetailsUISelectors,
+  collectibleDetailsUIActions
+} from '@audius/common/store'
+
+import {
   Suspense,
   lazy,
   useCallback,
@@ -7,12 +14,7 @@ import {
   useState
 } from 'react'
 
-import {
-  accountSelectors,
-  badgeTiers,
-  collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
-} from '@audius/common'
+import {} from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'

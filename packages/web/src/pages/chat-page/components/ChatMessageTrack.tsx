@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import {
-  QueueSource,
-  accountSelectors,
-  ChatMessageTileProps,
-  cacheTracksActions
-} from '@audius/common'
 import { useGetTrackByPermalink } from '@audius/common/api'
 import {
   TrackPlayback,
@@ -20,6 +14,12 @@ import {
   Status,
   ID
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  cacheTracksActions,
+  QueueSource,
+  ChatMessageTileProps
+} from '@audius/common/store'
 import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,10 +1,11 @@
 import {
-  getContext,
   accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
+  getContext,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import {
   FeedFilter,
   Kind,

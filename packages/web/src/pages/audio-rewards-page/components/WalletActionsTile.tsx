@@ -1,4 +1,8 @@
-import { tokenDashboardPageActions, walletSelectors } from '@audius/common'
+import {
+  tokenDashboardPageActions,
+  walletSelectors
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { BNWei } from '@audius/common/models'
 import { isNullOrUndefined } from '@audius/common/utils'
 import { Button, ButtonType } from '@audius/stems'

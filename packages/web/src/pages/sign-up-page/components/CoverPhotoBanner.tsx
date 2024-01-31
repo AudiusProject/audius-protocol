@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
 
 import {

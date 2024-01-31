@@ -1,19 +1,6 @@
 import { Component } from 'react'
 
 import {
-  accountSelectors,
-  lineupSelectors,
-  queueActions,
-  RepeatMode,
-  tracksSocialActions,
-  themeSelectors,
-  playerActions,
-  playerSelectors,
-  queueSelectors,
-  playbackRateValueMap,
-  cacheTracksSelectors
-} from '@audius/common'
-import {
   Name,
   RepostSource,
   FavoriteSource,
@@ -21,6 +8,19 @@ import {
   Kind
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  cacheTracksSelectors,
+  lineupSelectors,
+  queueActions,
+  queueSelectors,
+  RepeatMode,
+  tracksSocialActions,
+  themeSelectors,
+  playerActions,
+  playerSelectors,
+  playbackRateValueMap
+} from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

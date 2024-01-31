@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
-
 import {
-  Entity,
   notificationsSelectors,
+  Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import { StringUSDC } from '@audius/common/models'
 import {
   stringUSDCToBN,

@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { useGetTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { getPathFromTrackUrl } from '@audius/common/utils'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'

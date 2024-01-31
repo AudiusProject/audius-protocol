@@ -1,21 +1,21 @@
 import {
   averageColorReducer,
-  ChangePasswordState,
-  SmartCollectionState,
   remixesPageReducer as RemixesPageReducer,
-  HistoryPageState,
-  CollectionsPageState,
   queueReducer as QueueReducer,
-  ReachabilityState,
   remoteConfigReducer as RemoteConfigReducer,
   stemsUploadReducer as StemsUploadReducer,
-  RepostsPageState,
-  NotificationUsersPageState,
-  FollowingPageState,
-  FollowersPageState,
+  ChangePasswordState,
+  CollectionsPageState,
+  HistoryPageState,
+  SmartCollectionState,
+  ReachabilityState,
+  CommonState,
   FavoritesPageState,
-  CommonState
-} from '@audius/common'
+  FollowersPageState,
+  FollowingPageState,
+  NotificationUsersPageState,
+  RepostsPageState
+} from '@audius/common/store'
 import { RouterState } from 'connected-react-router'
 
 import SignOnPageState from 'common/store/pages/signon/types'

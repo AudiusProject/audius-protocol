@@ -824,7 +824,7 @@ getDirectories(async function (err, res) {
         let match = content.match(regex)?.[2]
 
         if (match) {
-          matches.push(exportName)
+          matches.push(match.replace(',', ''))
 
           // Delete old import
           newContent = newContent.replace(regex, '$1$4')

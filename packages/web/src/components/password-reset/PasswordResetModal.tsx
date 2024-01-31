@@ -1,6 +1,8 @@
+import { accountSelectors } from '@audius/common/store'
+
 import { useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import {} from '@audius/common'
 import { Status } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 import { Modal } from '@audius/stems'

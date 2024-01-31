@@ -1,4 +1,9 @@
-import { Notification as Notifications, NotificationType } from '@audius/common'
+import {
+  NotificationType,
+  Notification as Notifications,
+  Notifications
+} from '@audius/common/store'
+import {} from '@audius/common'
 
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 

@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
-import { useEditPlaylistModal } from '@audius/common'
+import { useEditPlaylistModal } from '@audius/common/store'
+
+import {} from '@audius/common'
 import { ButtonProps, ButtonType, IconPencil } from '@audius/stems'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'

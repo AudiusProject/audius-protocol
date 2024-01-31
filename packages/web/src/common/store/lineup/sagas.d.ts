@@ -1,4 +1,5 @@
-import { LineupBaseActions } from '@audius/common'
+import { LineupBaseActions } from '@audius/common/store'
+import {} from '@audius/common'
 import { Collection, LineupState, LineupTrack } from '@audius/common/models'
 
 export class LineupSagas {

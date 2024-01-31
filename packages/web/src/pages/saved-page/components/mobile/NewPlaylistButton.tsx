@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { cacheCollectionsActions } from '@audius/common'
 import { Name, CreatePlaylistSource } from '@audius/common/models'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 

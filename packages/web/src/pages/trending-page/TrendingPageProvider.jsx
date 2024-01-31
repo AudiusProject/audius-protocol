@@ -1,14 +1,16 @@
-import { PureComponent } from 'react'
-
 import {
   accountSelectors,
   lineupSelectors,
   trendingPageLineupActions,
-  trendingPageSelectors,
   trendingPageActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  trendingPageSelectors,
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
+
+import { PureComponent } from 'react'
+
+import {} from '@audius/common'
 import { Name, TimeRange } from '@audius/common/models'
 import { GENRES } from '@audius/common/utils'
 import {

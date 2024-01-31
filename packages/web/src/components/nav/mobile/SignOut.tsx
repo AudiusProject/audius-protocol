@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { signOutActions } from '@audius/common'
 import { Name } from '@audius/common/models'
+import { signOutActions } from '@audius/common/store'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

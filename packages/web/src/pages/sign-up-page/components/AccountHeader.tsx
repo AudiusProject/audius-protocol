@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { Name, SquareSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Avatar,
   Box,

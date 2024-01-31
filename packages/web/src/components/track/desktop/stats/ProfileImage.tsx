@@ -1,6 +1,8 @@
+import { cacheUsersSelectors } from '@audius/common/store'
+
 import { memo } from 'react'
 
-import { cacheUsersSelectors } from '@audius/common'
+import {} from '@audius/common'
 import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { connect } from 'react-redux'

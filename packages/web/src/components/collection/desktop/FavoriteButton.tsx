@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
-
 import {
   accountSelectors,
   collectionPageSelectors,
-  CommonState,
-  collectionsSocialActions
-} from '@audius/common'
+  collectionsSocialActions,
+  CommonState
+} from '@audius/common/store'
+
+import { useCallback } from 'react'
+
+import {} from '@audius/common'
 import {
   FavoriteSource,
   Collection,

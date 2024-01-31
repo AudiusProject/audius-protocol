@@ -3,7 +3,8 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { Button } from '@audius/harmony'

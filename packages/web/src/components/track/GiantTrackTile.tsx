@@ -1,10 +1,12 @@
+import {
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions,
+  CommonState
+} from '@audius/common/store'
+
 import { useCallback, useState } from 'react'
 
-import {
-  publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
+import {} from '@audius/common'
 import {
   isContentUSDCPurchaseGated,
   ID,

@@ -1,11 +1,11 @@
 import { useCallback, ReactNode, useState } from 'react'
 
+import { SquareSizes, WidthSizes } from '@audius/common/models'
 import {
   accountSelectors,
-  CommonState,
-  cacheUsersSelectors
-} from '@audius/common'
-import { SquareSizes, WidthSizes } from '@audius/common/models'
+  cacheUsersSelectors,
+  CommonState
+} from '@audius/common/store'
 import Popover from 'antd/lib/popover'
 import cn from 'classnames'
 

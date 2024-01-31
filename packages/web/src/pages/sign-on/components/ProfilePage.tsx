@@ -1,16 +1,16 @@
 import { useState, useCallback, KeyboardEvent, useContext } from 'react'
 
 import {
-  Image,
-  InstagramProfile,
-  TwitterProfile,
-  TikTokProfile
-} from '@audius/common'
-import {
   formatTwitterProfile,
   formatInstagramProfile,
   formatTikTokProfile
 } from '@audius/common/services'
+import {
+  InstagramProfile,
+  TwitterProfile,
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
 import cn from 'classnames'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'

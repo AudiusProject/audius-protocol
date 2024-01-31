@@ -3,7 +3,8 @@ import {
   cacheTracksSelectors,
   trackPageLineupActions,
   trackPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { waitForValue } from '@audius/common/utils'
 import { call, select } from 'typed-redux-saga'
 

@@ -3,12 +3,14 @@ import { useCallback, useEffect, useContext, useMemo } from 'react'
 import {
   accountSelectors,
   challengesSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  ClaimStatus,
   audioRewardsPageSelectors,
-  musicConfettiActions
-} from '@audius/common'
+  audioRewardsPageActions,
+  ClaimStatus,
+  musicConfettiActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+
+import {} from '@audius/common'
 import {
   fillString,
   formatNumberCommas,

@@ -1,10 +1,12 @@
-import { ComponentType, createRef, PureComponent } from 'react'
-
 import {
   LineupBaseActions,
   tippingSelectors,
   playerSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+
+import { ComponentType, createRef, PureComponent } from 'react'
+
+import {} from '@audius/common'
 import {
   Name,
   PlaybackSource,

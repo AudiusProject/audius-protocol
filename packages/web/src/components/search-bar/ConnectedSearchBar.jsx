@@ -1,6 +1,8 @@
+import { getTierForUser } from '@audius/common/store'
+
 import { Component } from 'react'
 
-import { getTierForUser } from '@audius/common'
+import {} from '@audius/common'
 import {
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty

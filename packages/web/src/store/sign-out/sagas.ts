@@ -1,10 +1,10 @@
-import {
-  signOutActions,
-  getContext,
-  accountActions,
-  tokenDashboardPageActions
-} from '@audius/common'
 import { Name } from '@audius/common/models'
+import {
+  accountActions,
+  tokenDashboardPageActions,
+  signOutActions,
+  getContext
+} from '@audius/common/store'
 import { takeLatest, put } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'

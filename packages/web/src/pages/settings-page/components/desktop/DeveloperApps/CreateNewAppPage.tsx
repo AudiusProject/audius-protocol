@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import {
   DEVELOPER_APP_DESCRIPTION_MAX_LENGTH,
   DEVELOPER_APP_NAME_MAX_LENGTH,
@@ -8,6 +7,7 @@ import {
   useAddDeveloperApp
 } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Button, ButtonType } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { z } from 'zod'

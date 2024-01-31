@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { accountSelectors, CommonState } from '@audius/common'
 import {
   Name,
   ErrorLevel,
   statusIsNotFinalized,
   User
 } from '@audius/common/models'
+import { accountSelectors, CommonState } from '@audius/common/store'
 import { encodeHashId } from '@audius/common/utils'
 import * as queryString from 'query-string'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,5 +1,4 @@
 import { Maybe } from '@audius/common/utils'
-
 import {
   sdk,
   full as FullSdk,

@@ -1,4 +1,4 @@
-import { JupiterTokenSymbol, TOKEN_LISTING_MAP } from '@audius/common'
+import { TOKEN_LISTING_MAP, JupiterTokenSymbol } from '@audius/common/store'
 import { convertBigIntToAmountObject } from '@audius/common/utils'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'

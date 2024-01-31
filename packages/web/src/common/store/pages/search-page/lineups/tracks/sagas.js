@@ -1,9 +1,10 @@
 import {
   cacheTracksSelectors,
+  searchResultsPageTracksLineupActions as tracksActions,
   searchResultsPageSelectors,
-  SearchKind,
-  searchResultsPageTracksLineupActions as tracksActions
-} from '@audius/common'
+  SearchKind
+} from '@audius/common/store'
+import {} from '@audius/common'
 import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call, getContext } from 'redux-saga/effects'
 

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

@@ -1,4 +1,9 @@
-import { accountSelectors, getContext, getUSDCUserBank } from '@audius/common'
+import {
+  accountSelectors,
+  getUSDCUserBank,
+  getContext
+} from '@audius/common/store'
+import {} from '@audius/common'
 import {
   Name,
   isContentCollectibleGated,

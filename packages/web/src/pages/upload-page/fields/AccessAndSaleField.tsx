@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import {
   USDCPurchaseConfig,
   useFeatureFlag,
@@ -22,6 +21,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
 import { formatPrice, Nullable } from '@audius/common/utils'
 import {
   IconCart,

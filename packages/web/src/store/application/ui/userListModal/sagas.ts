@@ -1,16 +1,16 @@
+import { FavoriteType } from '@audius/common/models'
 import {
   topSupportersUserListActions as topSupporterActions,
   supportingUserListActions as supportingActions,
-  RepostType,
   repostsUserListActions as repostActions,
   notificationsUserListActions as notificationActions,
   mutualsUserListActions,
   followingUserListActions as followingActions,
   followersUserListActions as followerActions,
   favoritesUserListActions as favoritesActions,
-  relatedArtistsUserListActions
-} from '@audius/common'
-import { FavoriteType } from '@audius/common/models'
+  relatedArtistsUserListActions,
+  RepostType
+} from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { setUsers } from './slice'

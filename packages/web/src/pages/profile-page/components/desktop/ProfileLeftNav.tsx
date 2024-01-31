@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common'
 import { ID } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'

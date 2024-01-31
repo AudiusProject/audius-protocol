@@ -1,4 +1,4 @@
-import { collectiblesSelectors } from '@audius/common'
+import { collectiblesSelectors } from '@audius/common/store'
 import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

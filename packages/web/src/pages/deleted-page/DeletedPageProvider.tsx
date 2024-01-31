@@ -1,11 +1,11 @@
 import { useEffect, useCallback, ComponentType } from 'react'
 
+import { Playable, User } from '@audius/common/models'
 import {
   lineupSelectors,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
-import { Playable, User } from '@audius/common/models'
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

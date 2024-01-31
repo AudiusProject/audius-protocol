@@ -1,14 +1,14 @@
 import { Component, ComponentType } from 'react'
 
+import { Name, ID, User } from '@audius/common/models'
 import {
+  accountActions,
   accountSelectors,
   InstagramProfile,
-  Image,
   TwitterProfile,
-  accountActions,
-  TikTokProfile
-} from '@audius/common'
-import { Name, ID, User } from '@audius/common/models'
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
 import {
   push as pushRoute,
   replace as replaceRoute,
