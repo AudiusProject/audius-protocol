@@ -1,6 +1,5 @@
 import { View } from 'react-native'
 
-import IconAnnouncement from 'app/assets/images/iconAnnouncement.svg'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -22,7 +21,6 @@ export const EmptyNotifications = () => {
   const styles = useStyles()
   return (
     <View style={styles.root}>
-      <IconAnnouncement width={60} height={60} />
       <Text variant='h2' style={styles.text}>
         {messages.empty}
       </Text>

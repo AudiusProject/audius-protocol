@@ -1,11 +1,11 @@
+import { ID } from '@audius/common/models'
 import {
-  ID,
   UserListSagaFactory,
-  relatedArtistsUserListSelectors,
   relatedArtistsUserListActions,
+  relatedArtistsUserListSelectors,
   RELATED_ARTISTS_USER_LIST_TAG,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchRelatedArtistsError } from './errorSagas'

@@ -2,14 +2,17 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
-  ID,
-  CommonState,
+  useDownloadableContentAccess
+} from '@audius/common/hooks'
+import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import {
   cacheTracksSelectors,
-  DownloadQuality,
-  useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  CommonState,
+  useWaitForDownloadModal,
+  tracksSocialActions as socialTracksActions,
+  toastActions
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
@@ -21,16 +24,22 @@ import {
   IconLockUnlocked
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
-import { shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import {
+  useAuthenticatedCallback,
+  useAuthenticatedClickCallback
+} from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { DownloadRow } from './DownloadRow'
 
 const { getTrack } = cacheTracksSelectors
+const { toast } = toastActions
 
 const ORIGINAL_TRACK_INDEX = 1
 const STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK = 1
@@ -43,18 +52,17 @@ const messages = {
   original: 'Original',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
-  purchased: 'purchased'
+  purchased: 'purchased',
+  followToDownload: 'Must follow artist to download.'
 }
 
 type DownloadSectionProps = {
   trackId: ID
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
 }
 
-export const DownloadSection = ({
-  trackId,
-  onDownload
-}: DownloadSectionProps) => {
+export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
+  const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -75,6 +83,7 @@ export const DownloadSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
@@ -88,6 +97,37 @@ export const DownloadSection = ({
     )
   }, [])
 
+  const handleDownload = useAuthenticatedCallback(
+    ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
+      if (isMobile && shouldDisplayDownloadFollowGated) {
+        // On mobile, show a toast instead of a tooltip
+        dispatch(toast({ content: messages.followToDownload }))
+      } else if (track && track.access.download) {
+        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
+        dispatch(
+          socialTracksActions.downloadTrack({
+            trackIds,
+            parentTrackId,
+            original: quality === DownloadQuality.ORIGINAL
+          })
+        )
+        const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
+          id: parentTrackId ?? trackIds[0],
+          parent_track_id: parentTrackId
+        })
+        dispatch(trackEvent)
+      }
+    },
+    [
+      dispatch,
+      isMobile,
+      openWaitForDownloadModal,
+      quality,
+      shouldDisplayDownloadFollowGated,
+      track
+    ]
+  )
+
   const options = [
     {
       key: DownloadQuality.MP3,
@@ -98,6 +138,25 @@ export const DownloadSection = ({
       text: messages.original
     }
   ]
+
+  const downloadAllButton = () => (
+    <Button
+      variant='secondary'
+      size='small'
+      iconLeft={IconReceive}
+      onClick={() =>
+        handleDownload({
+          trackIds: stemTracks.map((s) => s.id),
+          parentTrackId: trackId
+        })
+      }
+      disabled={
+        shouldDisplayDownloadFollowGated || shouldDisplayPremiumDownloadLocked
+      }
+    >
+      {messages.downloadAll}
+    </Button>
+  )
 
   return (
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
@@ -190,23 +249,14 @@ export const DownloadSection = ({
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>
                   <Text>size</Text>
-                  {shouldDisplayDownloadAll ? (
-                    <Button
-                      variant='secondary'
-                      size='small'
-                      iconLeft={IconReceive}
-                    >
-                      {messages.downloadAll}
-                    </Button>
-                  ) : null}
+                  {shouldDisplayDownloadAll ? downloadAllButton() : null}
                 </Flex>
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
-                onDownload={onDownload}
-                quality={quality}
+                onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
               />
@@ -215,8 +265,7 @@ export const DownloadSection = ({
               <DownloadRow
                 trackId={s.id}
                 key={s.id}
-                onDownload={onDownload}
-                quality={quality}
+                onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
                 index={
                   i +
@@ -230,9 +279,7 @@ export const DownloadSection = ({
             because the download all button will not be displayed at the top right. */}
             {!track?.is_original_available && shouldDisplayDownloadAll ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
-                <Button variant='secondary' size='small' iconLeft={IconReceive}>
-                  {messages.downloadAll}
-                </Button>
+                {downloadAllButton()}
               </Flex>
             ) : null}
           </Box>

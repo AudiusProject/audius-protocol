@@ -1,15 +1,12 @@
 import { useEffect, useContext } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { ID, LineupState, Track, User } from '@audius/common/models'
 import {
-  ID,
-  LineupState,
-  Track,
-  User,
   trackPageLineupActions,
-  QueueItem,
   OverflowAction,
-  useGatedContentAccess
-} from '@audius/common'
+  QueueItem
+} from '@audius/common/store'
 
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
@@ -63,9 +60,17 @@ export type OwnProps = {
   ) => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   // Tracks Lineup Props
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
   currentQueueItem: QueueItem
   isPlaying: boolean
   isBuffering: boolean
@@ -159,8 +164,10 @@ const TrackPage = ({
     <MobilePageContainer
       title={title}
       description={description}
+      ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      noIndex={defaults.isUnlisted}
     >
       <div className={styles.trackContent}>
         <TrackPageHeader

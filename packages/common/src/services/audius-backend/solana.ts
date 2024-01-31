@@ -11,7 +11,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 

@@ -5,10 +5,11 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
-import { Name } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { PurchaseVendor } from 'models/PurchaseContent'
-import { Status } from 'models/Status'
+import { Name } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { PurchaseVendor } from '~/models/PurchaseContent'
+import { Status } from '~/models/Status'
+import { StringUSDC } from '~/models/Wallet'
 import {
   createPaymentRouterRouteTransaction,
   createRootWalletRecoveryTransaction,
@@ -19,19 +20,20 @@ import {
   getTokenAccountInfo,
   pollForTokenBalanceChange,
   relayTransaction
-} from 'services/audius-backend/solana'
-import { getAccountUser } from 'store/account/selectors'
-import { getContext } from 'store/effects'
-import { getFeePayer } from 'store/solana/selectors'
+} from '~/services/audius-backend/solana'
+import { getAccountUser } from '~/store/account/selectors'
+import { getContext } from '~/store/effects'
+import { getFeePayer } from '~/store/solana/selectors'
 import {
   transactionCanceled as coinflowTransactionCanceled,
   transactionFailed as coinflowTransactionFailed,
   transactionSucceeded as coinflowTransactionSucceeded
-} from 'store/ui/coinflow-modal/slice'
-import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
-import { setVisibility } from 'store/ui/modals/parentSlice'
-import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
-import { waitForValue } from 'utils'
+} from '~/store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from '~/store/ui/modals/coinflow-onramp-modal'
+import { setVisibility } from '~/store/ui/modals/parentSlice'
+import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
+import { setUSDCBalance } from '~/store/wallet/slice'
+import { waitForValue } from '~/utils'
 
 import {
   buyUSDCFlowFailed,
@@ -46,8 +48,6 @@ import {
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
-import { setUSDCBalance } from 'store/wallet/slice'
-import { StringUSDC } from 'models/Wallet'
 
 type PurchaseStepParams = {
   desiredAmount: number

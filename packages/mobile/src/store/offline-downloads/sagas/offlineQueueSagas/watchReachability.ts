@@ -1,4 +1,4 @@
-import { reachabilityActions } from '@audius/common'
+import { reachabilityActions } from '@audius/common/store'
 import { takeEvery, put, select } from 'typed-redux-saga'
 
 import { getOfflineQueue, getQueueStatus } from '../../selectors'

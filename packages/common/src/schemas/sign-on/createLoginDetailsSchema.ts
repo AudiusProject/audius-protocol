@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { AudiusQueryContextType } from 'audius-query'
-import { isNotCommonPassword } from 'utils/commonPasswordCheck'
+import { AudiusQueryContextType } from '~/audius-query'
+import { isNotCommonPassword } from '~/utils/commonPasswordCheck'
 
 import { emailSchema } from './emailSchema'
 

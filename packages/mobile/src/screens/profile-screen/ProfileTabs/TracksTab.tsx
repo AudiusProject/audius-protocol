@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
 import {
-  profilePageSelectors,
   profilePageTracksLineupActions as tracksActions,
-  useProxySelector
-} from '@audius/common'
+  profilePageSelectors
+} from '@audius/common/store'
 
 import { Lineup } from 'app/components/lineup'
 

@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 
-import type { BNWei } from '@audius/common'
+import type { BNWei } from '@audius/common/models'
+import { Chain } from '@audius/common/models'
 import {
   formatWei,
-  shortenEthAddress,
   shortenSPLAddress,
-  Chain
-} from '@audius/common'
+  shortenEthAddress
+} from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
+import { IconCopy } from '@audius/harmony-native'
 import { ChainLogo, Text } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useToast } from 'app/hooks/useToast'

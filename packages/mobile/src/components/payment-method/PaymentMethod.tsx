@@ -1,20 +1,22 @@
 import { useEffect } from 'react'
 
-import type { Nullable, BNUSDC } from '@audius/common'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import type { BNUSDC } from '@audius/common/models'
 import {
-  PurchaseMethod,
-  formatUSDCWeiToFloorCentsNumber,
   formatCurrencyBalance,
-  PurchaseVendor,
-  removeNullable
-} from '@audius/common'
+  removeNullable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import BN from 'bn.js'
 import { FlatList, View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCreditCard from 'app/assets/images/iconCreditCard.svg'
-import IconDonate from 'app/assets/images/iconDonate.svg'
-import IconTransaction from 'app/assets/images/iconTransaction.svg'
+import {
+  IconCreditCard,
+  IconDonate,
+  IconTransaction
+} from '@audius/harmony-native'
 import { Divider, RadioButton, Text } from 'app/components/core'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
@@ -175,7 +177,7 @@ export const PaymentMethod = ({
         <View style={styles.rowTitle}>
           <RadioButton checked={isSelected} disabled={disabled} />
           <View style={styles.rowTitleText}>
-            <Icon />
+            <Icon color='default' />
           </View>
           {label}
         </View>

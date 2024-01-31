@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 
-import { InstagramProfile } from '@audius/common'
+import { InstagramProfile } from '@audius/common/store'
 
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 

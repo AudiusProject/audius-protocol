@@ -5,10 +5,12 @@ import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconDownload from 'app/assets/images/iconDownloadQueued.svg'
-import IconFavorite from 'app/assets/images/iconFavorite.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import {
+  IconCart,
+  IconCloudDownload,
+  IconHeart,
+  IconRepost
+} from '@audius/harmony-native'
 import { Button, Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
@@ -146,7 +148,7 @@ export const OfflineListeningDrawer = () => {
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
         <HarmonyModalHeader
-          icon={IconDownload}
+          icon={IconCloudDownload}
           title={messages.offlineListeningTitle}
         />
         <Text weight='medium' fontSize='large' style={styles.descriptionText}>
@@ -154,7 +156,7 @@ export const OfflineListeningDrawer = () => {
         </Text>
         <OfflineListeningOptionToggle
           title={messages.favorites}
-          icon={IconFavorite}
+          icon={IconHeart}
           value={isFavoritesOn}
           onValueChange={handleToggleFavorites}
         />

@@ -1,21 +1,23 @@
 import { useCallback } from 'react'
 
 import {
-  chatActions,
   accountSelectors,
+  cacheUsersSelectors,
+  chatActions,
   chatSelectors,
   ChatPermissionAction,
-  cacheUsersSelectors,
-  formatCount,
   useInboxUnavailableModal
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconBlockMessages from 'app/assets/images/iconBlockMessages.svg'
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
+import {
+  IconMessageBlock,
+  IconKebabHorizontal,
+  IconUser
+} from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
@@ -254,7 +256,7 @@ export const ChatUserListItem = ({
                   </>
                 ) : (
                   <View style={styles.ctaContainer}>
-                    <IconBlockMessages
+                    <IconMessageBlock
                       fill={styles.iconBlock.fill}
                       width={styles.iconBlock.width}
                       height={styles.iconBlock.height}

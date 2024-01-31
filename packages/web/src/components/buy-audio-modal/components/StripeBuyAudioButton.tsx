@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import {
+  stripeModalUIActions,
   buyAudioActions,
   buyAudioSelectors,
-  stripeModalUIActions,
-  OnRampProvider,
-  modalsActions
-} from '@audius/common'
+  modalsActions,
+  OnRampProvider
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { OnRampButton } from 'components/on-ramp-button'

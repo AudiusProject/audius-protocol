@@ -1,12 +1,10 @@
+import { TimeRange } from '@audius/common/models'
 import {
-  TimeRange,
-  TRENDING_GENRES,
-  ELECTRONIC_PREFIX,
-  Genre,
   trendingPageLineupActions,
   trendingPageActions,
   trendingPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { Genre, ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

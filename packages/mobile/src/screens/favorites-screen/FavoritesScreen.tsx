@@ -1,7 +1,9 @@
-import IconAlbum from 'app/assets/images/iconAlbum.svg'
-import IconLibrary from 'app/assets/images/iconLibrary.svg'
-import IconNote from 'app/assets/images/iconNote.svg'
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
+import {
+  IconAlbum,
+  IconLibrary,
+  IconNote,
+  IconPlaylists
+} from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'

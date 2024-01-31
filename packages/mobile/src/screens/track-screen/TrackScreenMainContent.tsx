@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react'
 
 import type {
-  ID,
   LineupState,
-  Track,
-  User,
-  Nullable,
+  SearchUser,
   SearchTrack,
-  SearchUser
-} from '@audius/common'
+  Track,
+  User
+} from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -28,7 +27,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type TrackScreenMainContentProps = {
-  lineup: LineupState<{ id: ID }>
+  lineup: LineupState<Track>
   lineupHeader: ReactNode
   remixParentTrack: Nullable<Track & { user: User }>
   track: Track | SearchTrack

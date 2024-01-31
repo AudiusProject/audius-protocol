@@ -21,17 +21,17 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from 'models'
-import { User } from 'models/User'
-import { IntKeys } from 'services/remote-config'
-import { accountSelectors } from 'store/account'
-import { cacheActions, cacheTracksSelectors } from 'store/cache'
-import { collectiblesActions } from 'store/collectibles'
-import { getContext } from 'store/effects'
-import { musicConfettiActions } from 'store/music-confetti'
-import { usersSocialActions } from 'store/social'
-import { tippingActions } from 'store/tipping'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models'
+import { User } from '~/models/User'
+import { IntKeys } from '~/services/remote-config'
+import { accountSelectors } from '~/store/account'
+import { cacheActions, cacheTracksSelectors } from '~/store/cache'
+import { collectiblesActions } from '~/store/collectibles'
+import { getContext } from '~/store/effects'
+import { musicConfettiActions } from '~/store/music-confetti'
+import { usersSocialActions } from '~/store/social'
+import { tippingActions } from '~/store/tipping'
+import { Nullable } from '~/utils/typeUtils'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
@@ -352,16 +352,10 @@ function* updateGatedTrackAccess(
 
   const allTracks = {
     ...cachedTracks,
-    ...newlyUpdatedTracks.reduce(
-      (
-        acc: { [id: ID]: Track },
-        curr: { id: number; uid: string; metadata: Track }
-      ) => {
-        acc[curr.metadata.track_id] = curr.metadata
-        return acc
-      },
-      []
-    )
+    ...newlyUpdatedTracks.reduce((acc: { [id: ID]: Track }, curr: any) => {
+      acc[curr.metadata.track_id] = curr.metadata
+      return acc
+    }, [])
   }
 
   // Handle newly loading special access tracks that should have a signature but do not yet.

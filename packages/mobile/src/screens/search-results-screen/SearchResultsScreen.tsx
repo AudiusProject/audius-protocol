@@ -2,10 +2,12 @@ import { useMemo } from 'react'
 
 import { useIsFocused } from '@react-navigation/native'
 
-import IconAlbum from 'app/assets/images/iconAlbum.svg'
-import IconNote from 'app/assets/images/iconNote.svg'
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
+import {
+  IconAlbum,
+  IconNote,
+  IconPlaylists,
+  IconUser
+} from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import {
   TabNavigator,

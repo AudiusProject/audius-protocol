@@ -3,9 +3,11 @@ import { useCallback } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
-import IconRocket from 'app/assets/images/iconRocket.svg'
+import {
+  IconArrowRight,
+  IconExternalLink,
+  IconRocket
+} from '@audius/harmony-native'
 import { Button, Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -138,7 +140,7 @@ export const GatedContentUploadPromptDrawer = ({
             text: styles.buttonText
           }}
           size='large'
-          icon={IconArrow}
+          icon={IconArrowRight}
           fullWidth
         />
       </View>

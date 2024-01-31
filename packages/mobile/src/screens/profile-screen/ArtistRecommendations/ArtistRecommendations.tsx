@@ -1,21 +1,24 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 
-import type { CommonState, ID, User } from '@audius/common'
+import { FollowSource } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import {
-  FollowSource,
+  cacheUsersSelectors,
   usersSocialActions,
   relatedArtistsUISelectors,
-  relatedArtistsUIActions,
-  cacheUsersSelectors
-} from '@audius/common'
+  relatedArtistsUIActions
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { isEmpty } from 'lodash'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconFollow from 'app/assets/images/iconFollow.svg'
-import IconFollowing from 'app/assets/images/iconFollowing.svg'
-import IconClose from 'app/assets/images/iconRemove.svg'
+import {
+  IconUserFollow,
+  IconUserFollowing,
+  IconClose
+} from '@audius/harmony-native'
 import { Button, IconButton, Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -202,7 +205,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         title={
           isFollowingAllArtists ? messages.followingAll : messages.followAll
         }
-        icon={isFollowingAllArtists ? IconFollowing : IconFollow}
+        icon={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
         iconPosition='left'
         fullWidth
         onPress={handlePressFollow}

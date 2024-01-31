@@ -1,7 +1,6 @@
 import { View } from 'react-native'
 
-import IconLock from 'app/assets/images/iconLock.svg'
-import IconLockUnlocked from 'app/assets/images/iconLockUnlocked.svg'
+import { IconLock, IconLockUnlocked } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'

@@ -1,25 +1,26 @@
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
-import type { ID } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   SquareSizes,
-  getDogEarType,
+  GatedContentType,
   isContentCollectibleGated,
-  useGatedContentAccess,
-  cacheUsersSelectors,
-  cacheTracksSelectors,
-  isContentUSDCPurchaseGated,
-  GatedContentType
-} from '@audius/common'
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
+import { getDogEarType } from '@audius/common/utils'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import {
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { DogEar, Text } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'

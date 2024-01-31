@@ -1,6 +1,9 @@
-import { TrackDownload as TrackDownloadBase } from '@audius/common'
-import type { Nullable } from '@audius/common'
+import type { DownloadTrackArgs } from '@audius/common/services'
+import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
+import { tracksSocialActions } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { Platform, Share } from 'react-native'
+import { zip } from 'react-native-zip-archive'
 import type {
   FetchBlobResponse,
   RNFetchBlobConfig,
@@ -9,16 +12,16 @@ import type {
 import RNFetchBlob from 'rn-fetch-blob'
 
 import { dispatch } from 'app/store'
-import {
-  setDownloadedPercentage,
-  setFileInfo,
-  setFetchCancel
-} from 'app/store/download/slice'
+import { setFetchCancel, setFileInfo } from 'app/store/download/slice'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { audiusBackendInstance } from './audius-backend-instance'
 
+const { downloadFinished } = tracksSocialActions
+
 let fetchTask: Nullable<StatefulPromise<FetchBlobResponse>> = null
+
+const audiusDownloadsDirectory = 'AudiusDownloads'
 
 const cancelDownloadTask = () => {
   if (fetchTask) {
@@ -29,20 +32,20 @@ const cancelDownloadTask = () => {
 /**
  * Download a file via RNFetchBlob
  */
-const download = async ({
+const downloadOne = async ({
   fileUrl,
-  fileName,
+  filename,
   directory,
   getFetchConfig,
   onFetchComplete
 }: {
   fileUrl: string
-  fileName: string
+  filename: string
   directory: string
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
-  onFetchComplete?: (response: FetchBlobResponse) => Promise<void>
+  onFetchComplete?: (path: string) => Promise<void>
 }) => {
-  const filePath = directory + '/' + fileName
+  const filePath = directory + '/' + filename
 
   try {
     fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
@@ -50,18 +53,18 @@ const download = async ({
       fileUrl
     )
 
-    // Do this while download is occuring
-    // TODO: The RNFetchBlob library is currently broken for download progress events on Android.
-    fetchTask.progress({ interval: 250 }, (received, total) => {
-      dispatch(setDownloadedPercentage((received / total) * 100))
-    })
+    // TODO: The RNFetchBlob library is currently broken for download progress events on both platforms.
+    // fetchTask.progress({ interval: 250 }, (received, total) => {
+    //   dispatch(setDownloadedPercentage((received / total) * 100))
+    // })
 
     const fetchRes = await fetchTask
 
     // Do this after download is done
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
-    await onFetchComplete?.(fetchRes)
+    await onFetchComplete?.(fetchRes.path())
+    fetchRes.flush()
   } catch (err) {
     console.error(err)
 
@@ -74,59 +77,139 @@ const download = async ({
   }
 }
 
-type DownloadTrackConfig = { url: string; filename: string }
+/**
+ * Download multiple files via RNFetchBlob
+ */
+const downloadMany = async ({
+  files,
+  directory,
+  getFetchConfig,
+  onFetchComplete
+}: {
+  files: { url: string; filename: string }[]
+  directory: string
+  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  onFetchComplete?: (path: string) => Promise<void>
+}) => {
+  try {
+    const responsePromises = files.map(async ({ url, filename }) =>
+      RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(
+        'GET',
+        url
+      )
+    )
+    const responses = await Promise.all(responsePromises)
+    if (!responses.every((response) => response.info().status === 200)) {
+      throw new Error('Download unsuccessful')
+    }
 
-const downloadTrack = async ({ url, filename }: DownloadTrackConfig) => {
-  const fileUrl = url
-  const fileName = filename
-  const trackName = fileName.split('.').slice(0, -1).join('')
+    await zip(directory, directory + '.zip')
+    await onFetchComplete?.(directory + '.zip')
+    responses.forEach((response) => response.flush())
+  } catch (err) {
+    console.error(err)
 
-  dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: true }))
-  dispatch(setFileInfo({ trackName, fileName }))
+    // On failure attempt to delete the files
+    try {
+      const exists = await RNFetchBlob.fs.exists(directory)
+      if (!exists) return
+      await RNFetchBlob.fs.unlink(directory)
+    } catch {}
+  }
+}
+
+const download = async ({ files, rootDirectoryName }: DownloadTrackArgs) => {
+  if (files.length === 0) return
+
+  dispatch(
+    setFileInfo({
+      trackName: rootDirectoryName ?? '',
+      fileName: files[0].filename
+    })
+  )
   dispatch(setFetchCancel(cancelDownloadTask))
 
+  const audiusDirectory =
+    RNFetchBlob.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
+  const onFetchComplete = async (path: string) => {
+    dispatch(downloadFinished())
+    await Share.share({
+      url: path
+    })
+  }
+
   if (Platform.OS === 'ios') {
-    download({
-      fileUrl,
-      fileName,
-      directory: RNFetchBlob.fs.dirs.DocumentDir,
-      getFetchConfig: (filePath) => ({
-        // On iOS fetch & cache the track, let user choose where to download it
-        // with the share sheet, then delete the cached copy of the track.
-        fileCache: true,
-        path: filePath
-      }),
-      onFetchComplete: async (fetchRes) => {
-        await Share.share({
-          url: fetchRes.path()
-        })
-        fetchRes.flush()
-      }
-    })
-  } else {
-    download({
-      fileUrl,
-      fileName,
-      directory: RNFetchBlob.fs.dirs.DownloadDir,
-      getFetchConfig: (filePath) => ({
-        // On android save to FS and trigger notification that it is saved
-        addAndroidDownloads: {
-          description: trackName,
-          mediaScannable: true,
-          mime: 'audio/mpeg',
-          notification: true,
-          path: filePath,
-          title: trackName,
-          useDownloadManager: true
-        }
+    if (files.length === 1) {
+      const { url, filename } = files[0]
+      downloadOne({
+        fileUrl: url,
+        filename,
+        directory: audiusDirectory,
+        getFetchConfig: (filePath) => ({
+          // On iOS fetch & cache the track, let user choose where to download it
+          // with the share sheet, then delete the cached copy of the track.
+          fileCache: true,
+          path: filePath
+        }),
+        onFetchComplete
       })
-    })
+    } else {
+      downloadMany({
+        files,
+        directory: audiusDirectory + '/' + rootDirectoryName,
+        getFetchConfig: (filePath) => ({
+          // On iOS fetch & cache the track, let user choose where to download it
+          // with the share sheet, then delete the cached copy of the track.
+          fileCache: true,
+          path: filePath
+        }),
+        onFetchComplete
+      })
+    }
+  } else {
+    if (files.length === 1) {
+      const { url, filename } = files[0]
+      downloadOne({
+        fileUrl: url,
+        filename,
+        directory: RNFetchBlob.fs.dirs.DownloadDir,
+        getFetchConfig: (filePath) => ({
+          // On android save to FS and trigger notification that it is saved
+          addAndroidDownloads: {
+            description: filename,
+            mediaScannable: true,
+            mime: 'audio/mpeg',
+            notification: true,
+            path: filePath,
+            title: filename,
+            useDownloadManager: true
+          }
+        })
+      })
+    } else {
+      downloadMany({
+        files,
+        directory: RNFetchBlob.fs.dirs.DownloadDir,
+        getFetchConfig: (filePath) => ({
+          // On android save to FS and trigger notification that it is saved
+          addAndroidDownloads: {
+            description: rootDirectoryName,
+            mediaScannable: true,
+            mime: 'audio/mpeg',
+            notification: true,
+            path: filePath,
+            title: rootDirectoryName,
+            useDownloadManager: true
+          }
+        })
+      })
+    }
   }
 }
 
 class TrackDownload extends TrackDownloadBase {
-  async downloadTrack({ url, filename }: { url: string; filename: string }) {
-    await downloadTrack({ filename, url })
+  async downloadTracks(args: DownloadTrackArgs) {
+    await download(args)
   }
 }
 

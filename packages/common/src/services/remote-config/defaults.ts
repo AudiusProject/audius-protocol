@@ -1,7 +1,7 @@
 import { IntKeys, StringKeys, DoubleKeys, BooleanKeys } from './types'
 
 const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL || ''
-const DEFAULT_ENTRY_TTL = 1 /* min */ * 60 /* seconds */ * 1000 /* ms */
+export const DEFAULT_ENTRY_TTL = 1 /* min */ * 60 /* seconds */ * 1000 /* ms */
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 
 export const MIN_USDC_PURCHASE_AMOUNT_CENTS = 100

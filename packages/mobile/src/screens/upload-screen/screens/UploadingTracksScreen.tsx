@@ -1,14 +1,18 @@
 import { useEffect } from 'react'
 
-import type { UploadTrack } from '@audius/common'
-import { uploadSelectors, UploadType, uploadActions } from '@audius/common'
+import type { UploadTrack } from '@audius/common/store'
+import {
+  uploadActions,
+  uploadSelectors,
+  UploadType
+} from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 import { useKeepAwake } from '@sayem314/react-native-keep-awake'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconCloudUpload } from '@audius/harmony-native'
 import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -98,7 +102,7 @@ export const UploadingTracksScreen = () => {
   return (
     <Screen
       title={messages.uploading}
-      icon={IconUpload}
+      icon={IconCloudUpload}
       style={styles.root}
       topbarLeft={null}
       url='/uploading-track'
@@ -106,7 +110,7 @@ export const UploadingTracksScreen = () => {
       <ScreenContent>
         <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
           <View style={styles.title}>
-            <IconUpload
+            <IconCloudUpload
               fill={neutralLight4}
               width={24}
               height={24}

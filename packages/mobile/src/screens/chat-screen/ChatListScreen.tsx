@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
-import { chatActions, chatSelectors, Status } from '@audius/common'
+import { Status } from '@audius/common/models'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCompose from 'app/assets/images/iconCompose.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
+import { IconCompose, IconMessage } from '@audius/harmony-native'
 import Button, { ButtonType } from 'app/components/button'
 import { Text, Screen, FlatList, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'

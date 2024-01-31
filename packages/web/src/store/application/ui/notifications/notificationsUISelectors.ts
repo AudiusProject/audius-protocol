@@ -1,8 +1,8 @@
 import {
-  AnnouncementNotification,
   notificationsSelectors,
-  Nullable
-} from '@audius/common'
+  AnnouncementNotification
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 
 import { AppState } from 'store/types'
 

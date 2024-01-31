@@ -1,12 +1,8 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import {
-  UID,
-  ID,
-  formatSeconds,
-  EnhancedCollectionTrack,
-  Genre
-} from '@audius/common'
+import { ID, UID } from '@audius/common/models'
+import { EnhancedCollectionTrack } from '@audius/common/store'
+import { Genre, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
@@ -111,7 +107,7 @@ const TrackListItem = ({
 
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    includeAddToPlaylist: true,
+    includeAddToPlaylist: !track.is_stream_gated,
     includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,

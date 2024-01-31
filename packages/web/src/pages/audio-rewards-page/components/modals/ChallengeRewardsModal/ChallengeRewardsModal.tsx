@@ -1,27 +1,30 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
-  fillString,
-  formatNumberCommas,
   accountSelectors,
   challengesSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  ClaimStatus,
   audioRewardsPageSelectors,
-  getAAOErrorEmojis,
+  audioRewardsPageActions,
+  ClaimStatus,
   musicConfettiActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+import {
+  fillString,
+  formatNumberCommas,
+  getAAOErrorEmojis,
   challengeRewardsConfig,
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
-} from '@audius/common'
+} from '@audius/common/utils'
 import {
   Button,
   ButtonType,
   ProgressBar,
   IconCheck,
   IconVerified,
-  IconTwitterBird
+  IconTwitterBird,
+  ModalContent
 } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -524,7 +527,9 @@ export const ChallengeRewardsModal = () => {
       showDismissButton={!isHCaptchaModalOpen}
       dismissOnClickOutside={!isHCaptchaModalOpen}
     >
-      <ChallengeRewardsBody dismissModal={onClose} />
+      <ModalContent>
+        <ChallengeRewardsBody dismissModal={onClose} />
+      </ModalContent>
     </ModalDrawer>
   )
 }

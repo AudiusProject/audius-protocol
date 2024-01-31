@@ -1,4 +1,4 @@
-import { pluralize } from '@audius/common'
+import { pluralize } from '@audius/common/utils'
 
 export const messages = {
   artistPick: 'Artist Pick',

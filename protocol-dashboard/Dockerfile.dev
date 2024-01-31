@@ -1,14 +1,41 @@
-FROM node:18
+FROM node:18.17-slim as base
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+# First stage: Set up a minimal monorepo
+FROM base AS turbo-builder
 WORKDIR /app
+RUN npm install turbo --global
+COPY . .
+RUN turbo prune --scope=audius-protocol-dashboard --docker
 
-COPY package*.json ./
+# Second stage: Install and build dist
+FROM base AS app-builder
+WORKDIR /app
+RUN apt update && \
+    apt install -y \
+    python3 \
+    make \
+    gcc \
+    g++ \
+    libusb-1.0-0-dev \
+    libudev-dev \
+    libsecret-1-dev \
+    pkg-config && \
+    rm -rf /var/lib/apt/lists/*
 ENV DASHBOARD_BASE_URL="/dashboard/"
-RUN npm install --legacy-peer-deps
-COPY .env* index.html tsconfig.json tsconfig.node.json vite.config.ts ./
-COPY src ./src
-COPY scripts ./scripts
-COPY public ./public
-COPY types ./types
-
-CMD npm run start:stage
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=turbo-builder /app/out/json/ .
+COPY --from=turbo-builder /app/out/package-lock.json ./package-lock.json
+COPY --from=turbo-builder /app/scripts ./scripts
+RUN CI=true npm i
+# Build the app and its dependencies
+COPY --from=turbo-builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
+COPY turbo.json turbo.json
+CMD npm run start:stage -w audius-protocol-dashboard

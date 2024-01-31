@@ -1,4 +1,4 @@
-import { DeveloperApp } from '@audius/common'
+import { DeveloperApp } from '@audius/common/api'
 
 export enum CreateAppsPages {
   YOUR_APPS = 'your_apps',

@@ -1,14 +1,16 @@
-import type { Nullable } from '@audius/common'
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import Rive from 'rive-react-native'
 
-import IconDownloadFailed from 'app/assets/images/iconDownloadFailed.svg'
-import IconDownloadInactive from 'app/assets/images/iconDownloadInactive.svg'
-import IconDownloadQueued from 'app/assets/images/iconDownloadQueued.svg'
-import IconDownloaded from 'app/assets/images/iconDownloaded.svg'
+import {
+  IconCloudDownloadError,
+  IconCloudDownloadInactive,
+  IconCloudDownloadQueued,
+  IconCloudDownload
+} from '@audius/harmony-native'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
@@ -21,16 +23,16 @@ export type DownloadStatusIndicatorProps = {
 }
 
 const useStyles = makeStyles(({ palette }) => ({
-  iconDownloadQueued: {
+  IconCloudDownloadQueued: {
     fill: palette.neutralLight4
   },
-  iconDownloaded: {
+  IconCloudDownload: {
     fill: palette.secondary
   },
   iconDownloadFailed: {
     fill: palette.secondary
   },
-  iconDownloadInactive: {
+  IconCloudDownloadInactive: {
     fill: palette.neutralLight4
   }
 }))
@@ -48,8 +50,8 @@ export const DownloadStatusIndicator = (
     // since we only show the user successfully downloaded things.
     if (!isReachable && status !== OfflineDownloadStatus.INACTIVE) {
       return (
-        <IconDownloaded
-          fill={styles.iconDownloaded.fill}
+        <IconCloudDownload
+          fill={styles.IconCloudDownload.fill}
           height={size}
           width={size}
         />
@@ -58,8 +60,8 @@ export const DownloadStatusIndicator = (
     switch (status) {
       case OfflineDownloadStatus.INIT:
         return (
-          <IconDownloadQueued
-            fill={styles.iconDownloadQueued.fill}
+          <IconCloudDownloadQueued
+            fill={styles.IconCloudDownloadQueued.fill}
             height={size}
             width={size}
           />
@@ -76,8 +78,8 @@ export const DownloadStatusIndicator = (
         )
       case OfflineDownloadStatus.SUCCESS:
         return (
-          <IconDownloaded
-            fill={styles.iconDownloaded.fill}
+          <IconCloudDownload
+            fill={styles.IconCloudDownload.fill}
             height={size}
             width={size}
           />
@@ -85,7 +87,7 @@ export const DownloadStatusIndicator = (
       case OfflineDownloadStatus.ERROR:
       case OfflineDownloadStatus.ABANDONED:
         return (
-          <IconDownloadFailed
+          <IconCloudDownloadError
             fill={styles.iconDownloadFailed.fill}
             height={size}
             width={size}
@@ -93,8 +95,8 @@ export const DownloadStatusIndicator = (
         )
       case OfflineDownloadStatus.INACTIVE:
         return (
-          <IconDownloadInactive
-            fill={styles.iconDownloadInactive.fill}
+          <IconCloudDownloadInactive
+            fill={styles.IconCloudDownloadInactive.fill}
             height={size}
             width={size}
           />

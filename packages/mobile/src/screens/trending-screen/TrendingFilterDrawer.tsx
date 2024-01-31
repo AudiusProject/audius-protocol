@@ -1,14 +1,16 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import {
+  trendingPageLineupActions,
+  trendingPageActions,
+  trendingPageSelectors
+} from '@audius/common/store'
+import {
+  Genre,
   ELECTRONIC_PREFIX,
   ELECTRONIC_SUBGENRES,
-  Genre,
-  GENRES,
-  trendingPageLineupActions,
-  trendingPageSelectors,
-  trendingPageActions
-} from '@audius/common'
+  GENRES
+} from '@audius/common/utils'
 import { FlatList, Keyboard, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

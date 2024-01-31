@@ -1,14 +1,15 @@
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import type { ID, Track, SuggestedTrack } from '@audius/common'
-import { SquareSizes, cacheUsersSelectors } from '@audius/common'
+import type { SuggestedTrack } from '@audius/common/api'
+import { SquareSizes } from '@audius/common/models'
+import type { ID, Track } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
-import IconRefresh from 'app/assets/images/iconRefresh.svg'
+import { IconCaretDown, IconRefresh } from '@audius/harmony-native'
 import {
   Button,
   Divider,

@@ -1,11 +1,11 @@
+import { UserCollectionMetadata, Collection } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  UserCollectionMetadata,
-  StringKeys,
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 
@@ -69,13 +69,16 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   return processed
 }
 
-class TrendingPlaylistSagas extends LineupSagas {
+class TrendingPlaylistSagas extends LineupSagas<Collection> {
   constructor() {
     super(
       trendingPlaylistsPageLineupActions.prefix,
       trendingPlaylistsPageLineupActions,
       getLineup,
-      getPlaylists
+      getPlaylists,
+      undefined,
+      undefined,
+      undefined
     )
   }
 }

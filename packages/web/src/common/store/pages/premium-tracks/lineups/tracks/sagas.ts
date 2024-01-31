@@ -1,9 +1,10 @@
+import { Track } from '@audius/common/models'
 import {
   accountSelectors,
-  premiumTracksPageLineupActions,
   premiumTracksPageLineupSelectors,
+  premiumTracksPageLineupActions,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -32,7 +33,7 @@ function* getPremiumTracks({
   return processedTracks
 }
 
-class PremiumTracksSagas extends LineupSagas {
+class PremiumTracksSagas extends LineupSagas<Track> {
   constructor() {
     super(
       premiumTracksPageLineupActions.prefix,

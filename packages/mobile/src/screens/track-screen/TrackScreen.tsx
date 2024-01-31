@@ -1,17 +1,17 @@
 import { useCallback } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
 import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  useProxySelector,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
@@ -79,7 +79,7 @@ export const TrackScreen = () => {
     dispatch(tracksActions.reset())
     dispatch(
       fetchTrack(
-        id,
+        id ?? null,
         decodeURIComponent(slug ?? ''),
         handle ?? user?.handle,
         canBeUnlisted
@@ -132,6 +132,8 @@ export const TrackScreen = () => {
           count={isReachable ? 6 : 0}
           header={
             <TrackScreenMainContent
+              // @ts-ignore not sure why but it's registering
+              //  as LineupState<{ id: number }> instead of Track
               lineup={lineup}
               remixParentTrack={remixParentTrack}
               track={track}
@@ -147,7 +149,7 @@ export const TrackScreen = () => {
               <View style={styles.buttonContainer}>
                 <Button
                   title={messages.viewOtherRemixes}
-                  icon={IconArrow}
+                  icon={IconArrowRight}
                   variant='primary'
                   size='small'
                   onPress={handlePressGoToRemixes}

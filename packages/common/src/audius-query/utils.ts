@@ -1,7 +1,7 @@
 import { mapValues } from 'lodash'
 
-import { Kind } from 'models/Kind'
-import { CommonState } from 'store/reducers'
+import { Kind } from '~/models/Kind'
+import { CommonState } from '~/store/reducers'
 
 import * as cacheSelectors from '../store/cache/selectors'
 

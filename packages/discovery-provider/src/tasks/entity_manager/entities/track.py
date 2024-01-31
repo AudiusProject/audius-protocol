@@ -292,11 +292,17 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 # casting to string because datetime doesn't work for some reason
                 parsed_release_date = parse_release_date(track_metadata["release_date"])
                 # postgres will convert to a timestamp
+
+                if (
+                    parsed_release_date
+                    and parsed_release_date > datetime.now().astimezone(timezone.utc)
+                ):
+                    # ignore release date if in the future and updating public tracks
+                    if action == Action.UPDATE and track_record.is_unlisted == False:
+                        continue
+
                 if parsed_release_date:
                     track_record.release_date = str(parsed_release_date)  # type: ignore
-                    logger.info(
-                        f"asdf set release_date {parsed_release_date} {track_record.release_date}"
-                    )
         elif key == "is_unlisted":
             if "is_unlisted" in track_metadata:
                 track_record.is_unlisted = track_metadata["is_unlisted"]

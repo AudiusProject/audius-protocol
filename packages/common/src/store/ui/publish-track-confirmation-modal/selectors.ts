@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 export const getConfirmCallback = (state: CommonState) =>
   state.ui.publishTrackConfirmationModal.confirmCallback

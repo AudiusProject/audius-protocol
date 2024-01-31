@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
+import { ShareSource } from '@audius/common/models'
 import {
-  ShareSource,
-  shareModalUIActions,
   profilePageSelectors,
+  chatActions,
   chatSelectors,
-  chatActions
-} from '@audius/common'
+  shareModalUIActions
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'

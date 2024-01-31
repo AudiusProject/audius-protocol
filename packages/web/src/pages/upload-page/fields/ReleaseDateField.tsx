@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { getLocalTimezone } from '@audius/common'
+import { getLocalTimezone } from '@audius/common/utils'
 import { IconInfo, Flex } from '@audius/harmony'
 import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
@@ -24,9 +24,9 @@ import { formatCalendarTime } from 'utils/dateUtils'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
-import { IS_UNLISTED } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
+import { IS_UNLISTED } from './types'
 
 const messages = {
   title: 'Release Date',
@@ -96,7 +96,7 @@ export const ReleaseDateField = () => {
 
   const initialValues = useMemo(() => {
     return {
-      [RELEASE_DATE]: trackReleaseDate ?? moment().startOf('day').toString(),
+      [RELEASE_DATE]: trackReleaseDate ?? moment().toString(),
       [RELEASE_DATE_HOUR]: trackReleaseDate
         ? moment(trackReleaseDate).format('h:mm')
         : moment().format('h:mm'),

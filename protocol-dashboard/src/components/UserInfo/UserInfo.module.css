@@ -1,4 +1,5 @@
 /* User Info Tile */
+
 .userInfo {
   position: relative;
   flex: 1;
@@ -9,6 +10,27 @@
   box-sizing: border-box;
   min-height: 202px;
   justify-content: center;
+}
+
+.externalLinkIcon {
+  position: absolute;
+  right: 18px;
+}
+
+.externalLinkIcon:hover {
+  opacity: 0.8;
+}
+
+.externalLinkIcon:active {
+  opacity: 0.5;
+}
+
+.externalLinkIcon path {
+  fill: var(--neutral);
+}
+
+.userInfoContainer {
+  padding: 18px;
 }
 
 /* Rank */
@@ -29,7 +51,7 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 
-  color: #777C96;
+  color: #777c96;
 }
 
 .rankValue {
@@ -38,7 +60,11 @@
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
 
-  color: #BEC5E0;
+  color: #bec5e0;
+}
+
+.imageContainer {
+  display: flex;
 }
 
 .userImg {
@@ -54,19 +80,22 @@
   font-weight: var(--font-regular);
   text-align: center;
 
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .userName {
-  font-size: var(--font-2xl);
-  min-height: var(--font-2xl);
-  margin-bottom: 8px
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+  font-size: var(--font-m);
+  min-height: var(--font-m);
+  font-weight: var(--font-medium);
+  margin-bottom: 8px;
 }
-
 
 .userWallet {
   font-size: var(--font-s);
-  margin-bottom: 24px
+  margin-bottom: 24px;
 }
 
 .buttonContainer {
@@ -82,7 +111,7 @@
   line-height: 17px;
   text-align: center;
   text-transform: uppercase;
-  color: #BEC5E0;
+  color: #bec5e0;
   margin-bottom: 4px;
 }
 
@@ -92,7 +121,7 @@
   font-size: var(--font-2xl);
   line-height: 29px;
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .boxName {
@@ -100,7 +129,7 @@
 }
 
 .boxSpacing {
-  margin-bottom: 16px
+  margin-bottom: 16px;
 }
 
 .undelegateButton {

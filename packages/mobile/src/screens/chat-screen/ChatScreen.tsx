@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import type { ChatMessageWithExtras } from '@audius/common'
+import { useCanSendMessage } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import type { ChatMessageWithExtras } from '@audius/common/models'
 import {
-  Status,
   accountSelectors,
   chatActions,
-  chatCanFetchMoreMessages,
   chatSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import {
+  encodeUrlName,
   decodeHashId,
   encodeHashId,
-  encodeUrlName,
   isEarliestUnread,
-  playerSelectors,
-  useCanSendMessage
-} from '@audius/common'
+  chatCanFetchMoreMessages
+} from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
@@ -30,8 +32,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
+import { IconKebabHorizontal, IconMessage } from '@audius/harmony-native'
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import {
   KeyboardAvoidingView,

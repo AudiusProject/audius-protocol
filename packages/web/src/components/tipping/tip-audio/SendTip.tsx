@@ -6,26 +6,24 @@ import {
   useState
 } from 'react'
 
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
+import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
-  BadgeTier,
-  BNWei,
-  StringAudio,
-  StringWei,
-  formatWei,
-  stringWeiToBN,
-  weiToString,
   accountSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
   getTierAndNumberForBalance,
-  useGetFirstOrTopSupporter,
-  OnRampProvider,
   buyAudioActions,
-  FeatureFlags,
-  StringKeys,
-  isNullOrUndefined
-} from '@audius/common'
+  OnRampProvider
+} from '@audius/common/store'
+import {
+  isNullOrUndefined,
+  stringWeiToBN,
+  weiToString,
+  formatWei
+} from '@audius/common/utils'
 import {
   IconTrophy,
   TokenAmountInput,

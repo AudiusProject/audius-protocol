@@ -34,9 +34,15 @@ const RepeatButtonProvider = ({
     const loadAnimations = async () => {
       if (isMatrix) {
         if (!matrixAnimations.current) {
-          const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllMatrix.json')
-          const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleMatrix.json')
-          const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffMatrix.json')
+          const { default: pbIconRepeatAll } = (await import(
+            'assets/animations/pbIconRepeatAllMatrix.json'
+          )) as any
+          const { default: pbIconRepeatSingle } = (await import(
+            'assets/animations/pbIconRepeatSingleMatrix.json'
+          )) as any
+          const { default: pbIconRepeatOff } = (await import(
+            'assets/animations/pbIconRepeatOffMatrix.json'
+          )) as any
           matrixAnimations.current = {
             pbIconRepeatAll,
             pbIconRepeatSingle,
@@ -47,9 +53,15 @@ const RepeatButtonProvider = ({
         setAnimations({ ...matrixAnimations.current })
       } else if (darkMode) {
         if (!darkAnimations.current) {
-          const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllDark.json')
-          const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleDark.json')
-          const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffDark.json')
+          const { default: pbIconRepeatAll } = (await import(
+            'assets/animations/pbIconRepeatAllDark.json'
+          )) as any
+          const { default: pbIconRepeatSingle } = (await import(
+            'assets/animations/pbIconRepeatSingleDark.json'
+          )) as any
+          const { default: pbIconRepeatOff } = (await import(
+            'assets/animations/pbIconRepeatOffDark.json'
+          )) as any
           darkAnimations.current = {
             pbIconRepeatAll,
             pbIconRepeatSingle,

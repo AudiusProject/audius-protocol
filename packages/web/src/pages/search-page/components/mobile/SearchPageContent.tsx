@@ -1,20 +1,20 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
-  UID,
   Name,
-  UserCollection,
-  LineupState,
   Status,
-  User,
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
-} from '@audius/common'
+  UserCollection,
+  UID,
+  LineupState,
+  User
+} from '@audius/common/models'
+import { searchResultsPageTracksLineupActions as tracksActions } from '@audius/common/store'
+import { trimToAlphaNumeric } from '@audius/common/utils'
+import { IconAlbum } from '@audius/harmony'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'

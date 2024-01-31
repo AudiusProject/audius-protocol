@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react'
 
 import {
   CreatePlaylistSource,
-  Collection,
   SquareSizes,
+  Collection
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'

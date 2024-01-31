@@ -1,4 +1,4 @@
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 export type Environment = 'development' | 'staging' | 'production'
 

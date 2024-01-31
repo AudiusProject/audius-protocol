@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
 
+import { FavoriteSource, SmartCollectionVariant } from '@audius/common/models'
 import {
-  FavoriteSource,
-  SmartCollectionVariant,
   accountSelectors,
-  collectionsSocialActions,
-  playlistLibraryHelpers
-} from '@audius/common'
+  playlistLibraryHelpers,
+  collectionsSocialActions
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollections'

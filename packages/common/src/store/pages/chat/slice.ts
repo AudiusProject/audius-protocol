@@ -15,11 +15,11 @@ import {
   EntityState
 } from '@reduxjs/toolkit'
 
-import { ID, Status, ChatMessageWithExtras } from 'models'
-import { signOut } from 'store/sign-out/slice'
-import { hasTail } from 'utils/chatUtils'
-import dayjs from 'utils/dayjs'
-import { encodeHashId } from 'utils/hashIds'
+import { ID, Status, ChatMessageWithExtras } from '~/models'
+import { signOut } from '~/store/sign-out/slice'
+import { hasTail } from '~/utils/chatUtils'
+import dayjs from '~/utils/dayjs'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 

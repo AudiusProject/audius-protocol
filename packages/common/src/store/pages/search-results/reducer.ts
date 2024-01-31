@@ -1,4 +1,4 @@
-import { asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import {
   FETCH_SEARCH_PAGE_RESULTS,
   FETCH_SEARCH_PAGE_RESULTS_SUCCEEDED,
@@ -12,13 +12,13 @@ import {
   FetchSearchPageTagsAction,
   FetchSearchPageTagsSucceededAction,
   FetchSearchPageTagsFailedAction
-} from 'store/pages/search-results/actions'
-import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
+} from '~/store/pages/search-results/actions'
+import { PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/search-results/lineup/tracks/reducer'
+} from '~/store/pages/search-results/lineup/tracks/reducer'
 
-import { Status } from '../../../models'
+import { Status, Track } from '../../../models'
 
 import { SearchPageState } from './types'
 
@@ -128,15 +128,16 @@ const tracksLineupReducer = asLineup(PREFIX, tracksReducer)
 
 function reducer(
   state: SearchPageState = initialState,
-  action: SearchPageActions
+  action: SearchPageActions | LineupActions<Track>
 ) {
-  // @ts-ignore this technically will never hit with actions typed the way they are
-  const tracks = tracksLineupReducer(state.tracks, action)
+  const tracks = tracksLineupReducer(
+    state.tracks,
+    action as LineupActions<Track>
+  )
   if (tracks !== state.tracks) return { ...state, tracks }
 
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  // @ts-ignore for some reason action is never ts 4.0 may help
   return matchingReduceFunction(state, action as SearchPageActions)
 }
 

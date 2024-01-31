@@ -1,4 +1,6 @@
-import { SquareSizes, type ID, cacheUsersSelectors } from '@audius/common'
+import type { ID } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import type { AvatarProps } from '@audius/harmony-native'

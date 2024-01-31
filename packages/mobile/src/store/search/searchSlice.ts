@@ -1,4 +1,4 @@
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'

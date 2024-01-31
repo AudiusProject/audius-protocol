@@ -1,23 +1,25 @@
 import { useCallback } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
-  ID,
   SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  ID,
   CoverArtSizes,
   FieldVisibility,
   Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { OverflowAction } from '@audius/common/store'
+import {
   getCanonicalName,
   formatSeconds,
   formatDate,
-  OverflowAction,
-  imageBlank as placeholderArt,
-  AccessConditions,
-  Nullable,
   getDogEarType,
-  FeatureFlags,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  Nullable
+} from '@audius/common/utils'
 import {
   Button,
   ButtonSize,
@@ -139,7 +141,15 @@ type TrackHeaderProps = {
   onShare: () => void
   onSave: () => void
   onRepost: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   goToFavoritesPage: (trackId: ID) => void
   goToRepostsPage: (trackId: ID) => void
 }

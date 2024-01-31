@@ -1,4 +1,4 @@
-import type { Image } from '@audius/common'
+import type { Image } from '@audius/common/store'
 import { ActionSheetIOS, Alert, Platform } from 'react-native'
 import type {
   Image as CropPickerImage,

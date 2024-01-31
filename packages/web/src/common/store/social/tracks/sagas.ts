@@ -1,27 +1,27 @@
+import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
-  Kind,
-  ID,
-  Name,
-  Track,
-  User,
-  makeKindId,
-  formatShareText,
   accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   cacheActions,
-  gatedContentSelectors,
-  getContext,
+  cacheUsersSelectors,
   tracksSocialActions as socialActions,
-  waitForValue,
-  QueryParams,
-  encodeHashId,
-  getQueryParams,
+  getContext,
+  gatedContentSelectors,
   confirmerActions,
-  confirmTransaction
-} from '@audius/common'
-import { fork } from 'redux-saga/effects'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+  confirmTransaction,
+  modalsActions
+} from '@audius/common/store'
+import {
+  formatShareText,
+  encodeHashId,
+  makeKindId,
+  waitForValue,
+  getQueryParams,
+  removeNullable
+} from '@audius/common/utils'
+import { capitalize } from 'lodash'
+import { call, select, takeEvery, put, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -35,6 +35,7 @@ const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
+const { setVisibility } = modalsActions
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -592,8 +593,9 @@ export function* watchSetArtistPick() {
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* waitForWrite()
-      const userId = yield* select(getUserId)
+      const userId: ID | null = yield* select(getUserId)
 
+      if (!userId) return
       yield* put(
         cacheActions.update(Kind.USERS, [
           {
@@ -605,7 +607,7 @@ export function* watchSetArtistPick() {
         ])
       )
       const user = yield* call(waitForValue, getUser, { id: userId })
-      yield fork(updateProfileAsync, { metadata: user })
+      yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -618,6 +620,7 @@ export function* watchUnsetArtistPick() {
     yield* waitForWrite()
     const userId = yield* select(getUserId)
 
+    if (!userId) return
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
@@ -629,7 +632,7 @@ export function* watchUnsetArtistPick() {
       ])
     )
     const user = yield* call(waitForValue, getUser, { id: userId })
-    yield fork(updateProfileAsync, { metadata: user })
+    yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)
@@ -638,12 +641,14 @@ export function* watchUnsetArtistPick() {
 
 /* DOWNLOAD TRACK */
 
-function* downloadTrack({
+function* downloadTrackV1Helper({
   track,
-  filename
+  filename,
+  original
 }: {
   track: Track
   filename: string
+  original?: boolean
 }) {
   try {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -659,16 +664,135 @@ function* downloadTrack({
       nftAccessSignature
     })) as unknown as QueryParams
     queryParams.filename = filename
+    queryParams.original = original
 
     const encodedTrackId = encodeHashId(trackId)
     const url = apiClient.makeUrl(
       `/tracks/${encodedTrackId}/download`,
       queryParams
     )
-    yield* call(trackDownload.downloadTrack, { url, filename })
+    yield* call(trackDownload.downloadTracks, { files: [{ url, filename }] })
   } catch (e) {
     console.error(
       `Could not download track ${track.track_id}: ${
+        (e as Error).message
+      }. Error: ${e}`
+    )
+  }
+}
+
+function* downloadTrackV1(
+  action: ReturnType<typeof socialActions.downloadTrack>
+) {
+  yield* call(waitForRead)
+  const {
+    trackIds: [trackId],
+    original,
+    stemName
+  } = action
+
+  // Check if there is a logged in account and if not,
+  // wait for one so we can trigger the download immediately after
+  // logging in.
+  const accountUserId = yield* select(getUserId)
+  if (!accountUserId) {
+    yield* call(waitForValue, getUserId)
+  }
+
+  const track = yield* select(getTrack, { id: trackId })
+  if (!track) return
+
+  const userId = track.owner_id
+  const user = yield* select(getUser, { id: userId })
+  if (!user) return
+
+  let filename
+  if (track.stem_of?.parent_track_id) {
+    const parentTrack = yield* select(getTrack, {
+      id: track.stem_of.parent_track_id
+    })
+    filename = `${parentTrack?.title} - ${stemName} - ${user.name} (Audius).mp3`
+  } else {
+    filename = `${track.title} - ${user.name} (Audius).mp3`
+  }
+
+  yield* call(downloadTrackV1Helper, { track, filename, original })
+}
+
+const getFilename = ({
+  track,
+  user,
+  original
+}: {
+  track: Track
+  user: User
+  original?: boolean
+}) => {
+  let filename
+  const hasCategory = !!track.stem_of?.category
+
+  // Fallback case - should not occur
+  if (!track.orig_filename) {
+    filename = `${track.title} ${
+      hasCategory ? `- ${capitalize(track.stem_of?.category)}` : null
+    } - ${user.name} (Audius)${original ? '.wav' : '.mp3'}`
+  } else if (original) {
+    filename = `${track.orig_filename}`
+  } else {
+    const dotIndex = track.orig_filename.lastIndexOf('.')
+    filename =
+      dotIndex !== -1
+        ? track.orig_filename.substring(0, dotIndex) + '.mp3'
+        : track.orig_filename + '.mp3'
+  }
+  return filename
+}
+
+/**
+ * Downloads all tracks in the given quality. Can be used for a single
+ * track or multiple tracks (usually for stems). First track is the parent track.
+ */
+function* downloadTracks({
+  tracks,
+  original,
+  rootDirectoryName
+}: {
+  tracks: { trackId: ID; filename: string }[]
+  original?: boolean
+  rootDirectoryName?: string
+}) {
+  const { trackId: parentTrackId } = tracks[0]
+  try {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const apiClient = yield* getContext('apiClient')
+    const trackDownload = yield* getContext('trackDownload')
+    let queryParams: QueryParams = {}
+
+    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
+    const nftAccessSignature = nftAccessSignatureMap[parentTrackId]
+    queryParams = (yield* call(getQueryParams, {
+      audiusBackendInstance,
+      nftAccessSignature
+    })) as unknown as QueryParams
+    queryParams.original = original
+
+    const files = tracks.map(({ trackId, filename }) => {
+      queryParams.filename = filename
+      return {
+        url: apiClient.makeUrl(
+          `/tracks/${encodeHashId(trackId)}/download`,
+          queryParams
+        ),
+        filename
+      }
+    })
+    yield* call(trackDownload.downloadTracks, {
+      files,
+      rootDirectoryName
+    })
+  } catch (e) {
+    console.error(
+      `Could not download files for track ${parentTrackId}: ${
         (e as Error).message
       }. Error: ${e}`
     )
@@ -679,7 +803,29 @@ function* watchDownloadTrack() {
   yield* takeEvery(
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
+      const { trackIds, parentTrackId, original } = action
+      if (
+        trackIds === undefined ||
+        trackIds.length === 0 ||
+        (trackIds.length > 1 && !parentTrackId)
+      ) {
+        console.error(
+          `Could not download track ${trackIds}: Invalid trackIds or missing parentTrackId`
+        )
+        return
+      }
+
       yield* call(waitForRead)
+
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isLosslessDownloadsEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+      )
+      if (!isLosslessDownloadsEnabled) {
+        yield* call(downloadTrackV1, action)
+        return
+      }
 
       // Check if there is a logged in account and if not,
       // wait for one so we can trigger the download immediately after
@@ -689,24 +835,50 @@ function* watchDownloadTrack() {
         yield* call(waitForValue, getUserId)
       }
 
-      const track = yield* select(getTrack, { id: action.trackId })
-      if (!track) return
-
-      const userId = track.owner_id
+      const mainTrackId = parentTrackId ?? trackIds[0]
+      const mainTrack = yield* select(getTrack, {
+        id: mainTrackId
+      })
+      if (!mainTrack) return
+      const userId = mainTrack?.owner_id
       const user = yield* select(getUser, { id: userId })
       if (!user) return
+      const rootDirectoryName = `${user.name} - ${mainTrack.title} (Audius)`
+      // Mobile typecheck complains if this array isn't typed
+      const tracks: { trackId: ID; filename: string }[] = []
 
-      let filename
-      if (track.stem_of?.parent_track_id) {
-        const parentTrack = yield* select(getTrack, {
-          id: track.stem_of?.parent_track_id
+      for (const trackId of [...trackIds, parentTrackId].filter(
+        removeNullable
+      )) {
+        const track: Track | null = yield* select(getTrack, { id: trackId })
+        if (!track) return
+
+        tracks.push({
+          trackId,
+          filename: getFilename({
+            track,
+            user,
+            original
+          })
         })
-        filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
-      } else {
-        filename = `${track.title} - ${user.name} (Audius).mp3`
       }
 
-      yield* call(downloadTrack, { track, filename })
+      yield* call(downloadTracks, {
+        tracks,
+        original,
+        rootDirectoryName
+      })
+    }
+  )
+}
+
+function* watchDownloadFinished() {
+  yield* takeEvery(
+    socialActions.DOWNLOAD_FINISHED,
+    function* (action: ReturnType<typeof socialActions.downloadFinished>) {
+      yield* put(
+        setVisibility({ modal: 'WaitForDownloadModal', visible: false })
+      )
     }
   )
 }
@@ -719,7 +891,7 @@ function* watchShareTrack() {
     function* (action: ReturnType<typeof socialActions.shareTrack>) {
       const { trackId } = action
 
-      const track = yield* select(getTrack, { id: trackId })
+      const track: Track | null = yield* select(getTrack, { id: trackId })
       if (!track) return
 
       const user = yield* select(getUser, { id: track.owner_id })
@@ -750,6 +922,7 @@ const sagas = () => {
     watchSetArtistPick,
     watchUnsetArtistPick,
     watchDownloadTrack,
+    watchDownloadFinished,
     watchShareTrack,
     watchTrackErrors
   ]

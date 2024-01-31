@@ -1,23 +1,27 @@
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
-  FeatureFlags,
-  Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
-  getDogEarType,
   isContentUSDCPurchaseGated,
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
+  CommonState
+} from '@audius/common/store'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import { Box, Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 import {
@@ -57,13 +61,18 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { DownloadSection } from './DownloadSection'
 import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const DownloadSection = lazy(() =>
+  import('./DownloadSection').then((module) => ({
+    default: module.DownloadSection
+  }))
+)
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -121,7 +130,17 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -745,7 +764,9 @@ export const GiantTrackTile = ({
           {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
           {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
-              <DownloadSection trackId={trackId} onDownload={onDownload} />
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
             </Box>
           ) : null}
         </ClientOnly>

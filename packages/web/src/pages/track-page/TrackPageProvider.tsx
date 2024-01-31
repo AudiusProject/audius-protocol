@@ -1,37 +1,38 @@
 import { Component, ComponentType } from 'react'
 
 import {
-  ID,
-  PlayableType,
-  FollowSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
   Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource,
   PlaybackSource,
   FavoriteType,
+  PlayableType,
   Status,
-  Track,
-  Uid,
-  formatDate,
+  ID,
+  Track
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheTracksActions as cacheTrackActions,
   lineupSelectors,
+  trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  trackPageLineupActions,
-  OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
+  queueSelectors,
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
+import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -491,6 +492,7 @@ class TrackPageProvider extends Component<
     return (
       <>
         {!!track?._stems?.[0] && <StemsSEOHint />}
+        {/* @ts-ignore lineup has wrong type LineupState<{ id: number }> */}
         <this.props.children
           key={this.state.routeKey}
           {...childProps}
@@ -598,8 +600,22 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
-    downloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => {
-      dispatch(socialTracksActions.downloadTrack(trackId, category))
+    downloadTrack: ({
+      trackId,
+      category,
+      parentTrackId
+    }: {
+      trackId: ID
+      category?: string
+      parentTrackId?: ID
+    }) => {
+      dispatch(
+        socialTracksActions.downloadTrack({
+          trackIds: [trackId],
+          stemName: category,
+          parentTrackId
+        })
+      )
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
         id: trackId,
         category,

@@ -1,20 +1,11 @@
-import { useCallback } from 'react'
-
-import {
-  CommonState,
-  ID,
-  cacheTracksSelectors,
-  DownloadQuality,
-  useDownloadableContentAccess,
-  toastActions
-} from '@audius/common'
+import { useDownloadableContentAccess } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
+import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
-import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'hooks/useIsMobile'
-const { toast } = toastActions
 
 const { getTrack } = cacheTracksSelectors
 
@@ -25,8 +16,7 @@ const messages = {
 
 type DownloadRowProps = {
   trackId: ID
-  quality: DownloadQuality
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   hideDownload?: boolean
   index: number
 }
@@ -37,8 +27,6 @@ export const DownloadRow = ({
   hideDownload,
   index
 }: DownloadRowProps) => {
-  const isMobile = useIsMobile()
-  const dispatch = useDispatch()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -47,25 +35,13 @@ export const DownloadRow = ({
     trackId
   })
 
-  const handleClick = useCallback(() => {
-    if (isMobile && shouldDisplayDownloadFollowGated) {
-      // On mobile, show a toast instead of a tooltip
-      dispatch(toast({ content: messages.followToDownload }))
-    } else if (track && track.access.download) {
-      onDownload(trackId, track.stem_of?.category, trackId)
-    }
-  }, [
-    dispatch,
-    isMobile,
-    onDownload,
-    shouldDisplayDownloadFollowGated,
-    track,
-    trackId
-  ])
-
   const downloadButton = () => (
     <PlainButton
-      onClick={handleClick}
+      onClick={() =>
+        onDownload({
+          trackIds: [trackId]
+        })
+      }
       disabled={shouldDisplayDownloadFollowGated}
     >
       <Icon icon={IconReceive} size='small' />

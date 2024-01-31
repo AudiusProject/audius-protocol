@@ -1,14 +1,14 @@
 import { useCallback, useEffect } from 'react'
 
+import { StringKeys } from '@audius/common/services'
 import {
-  Nullable,
+  accountSelectors,
   tippingSelectors,
   tippingActions,
-  TippingSendStatus,
   walletActions,
-  StringKeys,
-  accountSelectors
-} from '@audius/common'
+  TippingSendStatus
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

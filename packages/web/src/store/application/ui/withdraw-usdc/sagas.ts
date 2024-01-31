@@ -1,23 +1,28 @@
 import {
-  withdrawUSDCActions,
-  solanaSelectors,
-  ErrorLevel,
-  SolanaWalletAddress,
-  getUSDCUserBank,
-  getContext,
-  TOKEN_LISTING_MAP,
-  getUserbankAccountInfo,
-  BNUSDC,
-  relayVersionedTransaction,
-  relayTransaction,
-  formatUSDCWeiToFloorCentsNumber,
   Name,
+  ErrorLevel,
+  Status,
   WithdrawUSDCTransferEventFields,
-  withdrawUSDCModalActions,
+  BNUSDC,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import {
+  getUserbankAccountInfo,
+  relayTransaction,
+  relayVersionedTransaction
+} from '@audius/common/services'
+import {
+  buyUSDCActions,
+  getUSDCUserBank,
+  solanaSelectors,
+  withdrawUSDCActions,
   WithdrawUSDCModalPages,
+  withdrawUSDCModalActions,
+  TOKEN_LISTING_MAP,
   WithdrawMethod,
-  buyUSDCActions
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync
@@ -52,9 +57,11 @@ const {
   coinflowWithdrawalCanceled,
   coinflowWithdrawalSucceeded,
   withdrawUSDCFailed,
-  withdrawUSDCSucceeded
+  withdrawUSDCSucceeded,
+  cleanup: cleanupWithdrawUSDC
 } = withdrawUSDCActions
-const { set: setWithdrawUSDCModalData } = withdrawUSDCModalActions
+const { set: setWithdrawUSDCModalData, close: closeWithdrawUSDCModal } =
+  withdrawUSDCModalActions
 const { getFeePayer } = solanaSelectors
 
 /**
@@ -359,6 +366,30 @@ function* doWithdrawUSDCCoinflow({
       )
     } else {
       yield* put(buyUSDCActions.startRecoveryIfNecessary())
+      // Wait for the recovery to succeed or error
+      const action = yield* take<
+        ReturnType<typeof buyUSDCActions.recoveryStatusChanged>
+      >((action: any) => {
+        return (
+          action.type === buyUSDCActions.recoveryStatusChanged.type &&
+          (action?.payload?.status === Status.SUCCESS ||
+            action?.payload.status === Status.ERROR)
+        )
+      })
+      yield* put(cleanupWithdrawUSDC())
+      yield* put(closeWithdrawUSDCModal())
+      // Buy USDC recovery already logs to sentry and makes an analytics event
+      // so add some logs to help discern which flow the recovery was triggered
+      // from and help aid in debugging should this ever hit.
+      if (action.payload.status === Status.ERROR) {
+        // Breadcrumb hint:
+        console.warn(
+          'Failed to transfer funds back from root wallet:',
+          rootSolanaAccount.publicKey.toBase58()
+        )
+        // Console error for sentry issue
+        console.error('Failed to recover funds from Coinflow Withdraw')
+      }
     }
   } catch (e: unknown) {
     const error = e as Error

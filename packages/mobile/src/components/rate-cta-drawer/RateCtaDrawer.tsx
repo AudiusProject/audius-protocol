@@ -1,14 +1,12 @@
 import { useCallback, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
-import IconHeart from 'app/assets/images/iconHeart.svg'
-import IconThumbsDown from 'app/assets/images/iconThumbsDown.svg'
-import IconThumbsUp from 'app/assets/images/iconThumbsUp.svg'
+import { IconHeart, IconThumbsDown, IconThumbsUp } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'

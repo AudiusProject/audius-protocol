@@ -1,16 +1,15 @@
+import { Chain, Kind } from '@audius/common/models'
+import { newUserMetadata } from '@audius/common/schemas'
 import {
   accountSelectors,
   cacheActions,
-  Chain,
-  confirmerActions,
-  ConfirmRemoveWalletAction,
-  getContext,
-  Kind,
-  newUserMetadata,
   tokenDashboardPageActions,
   walletActions,
-  confirmTransaction
-} from '@audius/common'
+  getContext,
+  confirmerActions,
+  confirmTransaction,
+  ConfirmRemoveWalletAction
+} from '@audius/common/store'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {
@@ -110,14 +109,16 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     yield* put(getBalance())
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
     const updatedCID = yield* call(getAccountMetadataCID)
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: accountUserId,
-          metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
-        }
-      ])
-    )
+    if (accountUserId) {
+      yield* put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: accountUserId,
+            metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
+          }
+        ])
+      )
+    }
 
     yield* fork(fetchSolanaCollectibles, updatedMetadata)
     yield* fork(fetchOpenSeaAssets, updatedMetadata)

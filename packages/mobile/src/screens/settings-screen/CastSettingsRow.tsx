@@ -1,10 +1,14 @@
 import { useCallback } from 'react'
 
-import type { CastMethod } from '@audius/common'
-import { accountSelectors, castSelectors, castActions } from '@audius/common'
+import type { CastMethod } from '@audius/common/store'
+import {
+  accountSelectors,
+  castSelectors,
+  castActions
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconVolume2 from 'app/assets/images/iconVolume2.svg'
+import { IconVolumeLevel2 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 
 import { SettingsRowLabel } from './SettingRowLabel'
@@ -46,7 +50,7 @@ export const CastSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.cast} icon={IconVolume2} />
+      <SettingsRowLabel label={messages.cast} icon={IconVolumeLevel2} />
       <SettingsRowDescription>
         {messages.castDescription}
       </SettingsRowDescription>

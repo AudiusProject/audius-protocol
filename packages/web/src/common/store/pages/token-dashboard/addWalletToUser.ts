@@ -1,14 +1,13 @@
+import { Kind, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
-  confirmerActions,
-  getContext,
-  Kind,
   tokenDashboardPageActions,
-  User,
   walletActions,
+  getContext,
+  confirmerActions,
   confirmTransaction
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'
@@ -57,7 +56,7 @@ export function* addWalletToUser(
 
     const updatedCID = yield* call(getAccountMetadataCID)
 
-    if (updatedCID) {
+    if (updatedCID && accountUserId) {
       yield* put(
         cacheActions.update(Kind.USERS, [
           {

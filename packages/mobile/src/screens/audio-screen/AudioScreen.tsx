@@ -1,30 +1,32 @@
 import { useCallback, useEffect } from 'react'
 
-import type { StringWei, CommonState } from '@audius/common'
+import type { StringWei } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  tokenDashboardPageActions,
-  StringKeys,
-  vipDiscordModalActions,
-  formatWei,
   tokenDashboardPageSelectors,
+  tokenDashboardPageActions,
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions,
-  isNullOrUndefined
-} from '@audius/common'
+  vipDiscordModalActions,
+  modalsActions
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCrown from 'app/assets/images/iconCrown.svg'
-import IconDiscord from 'app/assets/images/iconDiscord.svg'
-import IconInfo from 'app/assets/images/iconInfo.svg'
-import IconReceive from 'app/assets/images/iconReceive.svg'
-import IconSend from 'app/assets/images/iconSend.svg'
-import IconWallet from 'app/assets/images/iconWallet.svg'
+import {
+  IconCrown,
+  IconDiscord,
+  IconInfo,
+  IconReceive,
+  IconSend,
+  IconWallet
+} from '@audius/harmony-native'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
 import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'

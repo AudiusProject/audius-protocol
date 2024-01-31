@@ -1,10 +1,10 @@
-import type { UploadTrack } from '@audius/common'
+import { newTrackMetadata } from '@audius/common/schemas'
+import type { UploadTrack } from '@audius/common/store'
 import {
-  ALLOWED_AUDIO_FILE_EXTENSIONS,
-  ALLOWED_AUDIO_FILE_MIME,
   ALLOWED_MAX_AUDIO_SIZE_BYTES,
-  newTrackMetadata
-} from '@audius/common'
+  ALLOWED_AUDIO_FILE_EXTENSIONS,
+  ALLOWED_AUDIO_FILE_MIME
+} from '@audius/common/utils'
 import { FFprobeKit } from 'ffmpeg-kit-react-native'
 import type { DocumentPickerResponse } from 'react-native-document-picker'
 

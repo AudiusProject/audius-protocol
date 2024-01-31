@@ -1,15 +1,15 @@
 import { PureComponent } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Name,
   accountSelectors,
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
   feedPageActions as discoverPageAction,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import {
   push as pushRoute,
   replace as replaceRoute

@@ -53,11 +53,15 @@ export function apiGatewayFetcher(
 
 export function useServiceProviders(
   env: string,
-  type: 'content' | 'discovery'
+  type: 'content' | 'discovery',
+  excludeUnregistered = false
 ) {
   const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
     const sps = await apiGatewayFetcher(env, type)
     hostSort(sps)
+    if (type === 'discovery' && !excludeUnregistered) {
+      sps.push(...unregisteredNodes(env === 'prod'))
+    }
     return sps
   })
   return { data: sps, error }
@@ -75,4 +79,38 @@ export function hostSort(sps: SP[]) {
   const hostSortKey = (sp: SP) =>
     new URL(sp.endpoint).hostname.split('.').reverse().join('.')
   sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
+}
+
+function unregisteredNodes(prod: boolean) {
+  if (prod) {
+    return [
+      {
+        delegateOwnerWallet: '0x32bF5092890bb03A45bd03AaeFAd11d4afC9a851',
+        endpoint: 'https://discoveryprovider4.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+      {
+        delegateOwnerWallet: 'Metabase (no wallet)',
+        endpoint: 'https://insights.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+    ]
+  } else {
+    return [
+      {
+        delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
+        endpoint: 'https://discoveryprovider4.staging.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+      {
+        delegateOwnerWallet: 'DDEX (no wallet)',
+        endpoint: 'https://audius-stage.ddex.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+    ]
+  }
 }

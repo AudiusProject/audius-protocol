@@ -21,7 +21,7 @@ export type PlaylistTrackId = {
   uid?: UID
 }
 
-type PlaylistContents = {
+export type PlaylistContents = {
   track_ids: Array<PlaylistTrackId | { track: string }>
 }
 

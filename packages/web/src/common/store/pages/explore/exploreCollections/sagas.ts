@@ -1,11 +1,10 @@
+import { Collection, UserCollectionMetadata } from '@audius/common/models'
 import {
   accountSelectors,
-  Collection,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
-  getContext,
-  UserCollectionMetadata
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
 import { uniq } from 'lodash'
 import { takeEvery, call, select, put } from 'typed-redux-saga'
 

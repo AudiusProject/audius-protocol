@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconStars from 'app/assets/images/iconStars.svg'
+import { IconStars } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
