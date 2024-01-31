@@ -1680,49 +1680,6 @@ export const audiusBackend = ({
     return audiusLibs.Account.resetPassword(email, password)
   }
 
-  async function changeAuthCredentials(
-    email: string,
-    password: string,
-    oldpassword: string,
-    oldusername?: string
-  ) {
-    await waitForLibsInit()
-    return audiusLibs.Account.changePassword(
-      email,
-      password,
-      oldpassword,
-      oldusername
-    )
-  }
-
-  async function changeEmail(email: string, otp?: string) {
-    const { signature, data } = await signData()
-    return await fetch(`${identityServiceUrl}/user/email`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        [AuthHeaders.Signature]: signature,
-        [AuthHeaders.Message]: data
-      },
-      body: JSON.stringify({ email, otp })
-    })
-  }
-
-  async function confirmCredentials(
-    email: string,
-    password: string,
-    otp?: string,
-    checkAuthOnly = false
-  ) {
-    await waitForLibsInit()
-    return audiusLibs.Account.confirmCredentials(
-      email,
-      password,
-      otp,
-      checkAuthOnly
-    )
-  }
-
   async function sendRecoveryEmail() {
     await waitForLibsInit()
     const host = getHostUrl()
@@ -3293,10 +3250,7 @@ export const audiusBackend = ({
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
-    changeEmail,
-    changeAuthCredentials,
     clearNotificationBadges,
-    confirmCredentials,
     createPlaylist,
     currentDiscoveryProvider,
     dangerouslySetPlaylistOrder,

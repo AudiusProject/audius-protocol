@@ -181,12 +181,40 @@ export class IdentityService {
     }
   }
 
+  /**
+   * Check if the lookupKey exists.
+   * WARNING: might not be the auth credentials for the current user!
+   * Only use when just a soft check is necessary. Use confirmCredentials.
+   */
   async checkAuth({ lookupKey }: { lookupKey: string }) {
-    return await this._makeRequest({
-      url: '/authentication/check',
-      method: 'GET',
-      params: { lookupKey }
-    })
+    const headers = await this._signData()
+    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
+      return await this._makeRequest({
+        url: '/authentication/check',
+        method: 'GET',
+        headers,
+        params: { lookupKey }
+      })
+    } else {
+      throw new Error('Cannot check credentials - user is not authenticated')
+    }
+  }
+
+  /**
+   * Change the user's email used for notifications and display.
+   */
+  async changeEmail({ email, otp }: { email: string; otp?: string }) {
+    const headers = await this._signData()
+    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
+      return await this._makeRequest({
+        url: '/user/email',
+        method: 'PUT',
+        headers,
+        data: { email, otp }
+      })
+    } else {
+      throw new Error('Cannot change user email - user is not authenticated')
+    }
   }
 
   /**

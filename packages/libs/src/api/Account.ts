@@ -1,3 +1,4 @@
+import type { Hedgehog } from '@audius/hedgehog'
 import { PublicKey } from '@solana/web3.js'
 import type { BN } from 'ethereumjs-util'
 
@@ -28,7 +29,7 @@ export class Account extends Base {
     this.logout = this.logout.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
     this.confirmCredentials = this.confirmCredentials.bind(this)
-    this.changePassword = this.changePassword.bind(this)
+    this.changeCredentials = this.changeCredentials.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
     this.getUserEmail = this.getUserEmail.bind(this)
@@ -149,7 +150,10 @@ export class Account extends Base {
         // If an owner wallet already exists, don't try to recreate it
         if (!hasWallet) {
           phase = phases.HEDGEHOG_SIGNUP
-          const ownerWallet = await this.hedgehog.signUp(email, password)
+          const ownerWallet = await this.hedgehog.signUp({
+            username: email,
+            password
+          })
           this.web3Manager.setOwnerWallet(ownerWallet)
           if (generateRecoveryLink) {
             await this.generateRecoveryLink({ handle: metadata.handle, host })
@@ -216,32 +220,28 @@ export class Account extends Base {
     }
   }
 
-  async resetPassword(email: string, newpassword: string) {
-    return await this.hedgehog.resetPassword(email, newpassword)
+  async resetPassword(args: Parameters<Hedgehog['resetPassword']>[0]) {
+    this.REQUIRES(Services.HEDGEHOG)
+    return await this.hedgehog.resetPassword(args)
   }
 
-  async changePassword(
-    email: string,
-    newpassword: string,
-    oldpassword: string
-  ) {
-    return await this.hedgehog.changePassword(email, newpassword, oldpassword)
+  async changeCredentials(args: Parameters<Hedgehog['changeCredentials']>[0]) {
+    this.REQUIRES(Services.HEDGEHOG)
+    return await this.hedgehog.changeCredentials(args)
   }
 
   async confirmCredentials(
-    email: string,
-    password: string,
-    otp?: string,
-    checkAuthOnly = false
+    args: Parameters<Hedgehog['confirmCredentials']>[0] & {
+      softCheck?: boolean
+    }
   ) {
-    return await this.hedgehog.confirmCredentials(
-      email,
-      password,
-      // @ts-ignore - hedgehog.confirmCredentials is overridden
-      otp,
-      // @ts-ignore - hedgehog.confirmCredentials is overridden
-      checkAuthOnly
-    )
+    this.REQUIRES(Services.HEDGEHOG)
+    if (args.softCheck) {
+      // @ts-expect-error hard to type this hedgehog addon
+      const lookupKey = await this.hedgehog.getLookupKey(args)
+      return await this.identityService.checkAuth({ lookupKey })
+    }
+    return await this.hedgehog.confirmCredentials(args)
   }
 
   /**

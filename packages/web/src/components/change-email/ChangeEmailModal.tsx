@@ -60,6 +60,8 @@ type ChangeEmailModalProps = {
   onClose: () => void
 }
 
+const OTP_ERROR = 'Missing otp'
+
 const ConfirmPasswordPage = () => {
   const [{ value: email }] = useField('email')
   return (
@@ -83,8 +85,8 @@ const ConfirmPasswordPage = () => {
 }
 
 const NewEmailPage = () => {
-  const [newEmailField] = useField('newEmail')
-  const [{ value: email }, { error }] = useField('email')
+  const [newEmailField, { error }] = useField('newEmail')
+  const [{ value: email }] = useField('email')
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.newEmailHelp}</Text>
@@ -115,7 +117,15 @@ const VerifyEmailPage = () => {
   const resend = useCallback(() => {
     setIsSending(true)
     const fn = async () => {
-      await audiusBackendInstance.changeEmail(newEmail)
+      const libs = await audiusBackendInstance.getAudiusLibsTyped()
+      try {
+        // Trigger email by not including otp
+        await libs.identityService!.changeEmail({
+          email: newEmail
+        })
+      } catch (e) {
+        //do nothing
+      }
       setIsSending(false)
       toast(messages.resentToast)
     }
@@ -213,13 +223,14 @@ type ChangeEmailFormValues = {
   email: string
   password: string
   newEmail: string
-  otp?: string
+  otp: string
 }
 
 const initialValues: ChangeEmailFormValues = {
   email: '',
   password: '',
-  newEmail: ''
+  newEmail: '',
+  otp: ''
 }
 
 export const ChangeEmailModal = ({
@@ -232,60 +243,77 @@ export const ChangeEmailModal = ({
     setPage(ChangeEmailPage.ConfirmPassword)
   }, [setPage])
 
+  const checkPassword = useCallback(
+    async (values: ChangeEmailFormValues, onError: () => void) => {
+      const { email, password } = values
+      const libs = await audiusBackendInstance.getAudiusLibsTyped()
+      try {
+        await libs.Account?.confirmCredentials({
+          username: email,
+          password,
+          softCheck: true
+        })
+        setPage(ChangeEmailPage.NewEmail)
+      } catch (e) {
+        onError()
+      }
+    },
+    [setPage]
+  )
+
+  const changeEmail = useCallback(
+    async (values: ChangeEmailFormValues, onError: () => void) => {
+      const { email, password, newEmail, otp } = values
+      const sanitizedOtp = otp.replace(/\s/g, '')
+      const libs = await audiusBackendInstance.getAudiusLibsTyped()
+      try {
+        // Try to change email
+        await libs.identityService!.changeEmail({
+          email: newEmail,
+          otp: sanitizedOtp
+        })
+        await libs.Account!.changeCredentials({
+          newUsername: newEmail,
+          newPassword: password,
+          oldUsername: email,
+          oldPassword: password
+        })
+        setPage(ChangeEmailPage.Success)
+      } catch (e) {
+        // If missing OTP, go to verify email page
+        if (
+          'response' in (e as any) &&
+          (e as any).response?.data?.error === OTP_ERROR
+        ) {
+          setPage(ChangeEmailPage.VerifyEmail)
+        } else {
+          onError()
+        }
+      }
+    },
+    [page, setPage]
+  )
+
   const handleSubmit = useCallback(
     async (
       values: ChangeEmailFormValues,
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
-      const { email, password, newEmail, otp } = values
-      const sanitizedOtp = otp ? otp.replace(/\s/g, '') : undefined
       if (page === ChangeEmailPage.ConfirmPassword) {
-        const confirmed = await audiusBackendInstance.confirmCredentials(
-          email,
-          password,
-          undefined, // otp
-          true // don't check otp, dont return creds
-        )
-        if (confirmed) {
-          setPage(ChangeEmailPage.NewEmail)
-        } else {
+        await checkPassword(values, () => {
           helpers.setFieldError('password', messages.invalidCredentials)
-        }
+        })
+      } else if (page === ChangeEmailPage.VerifyEmail) {
+        await changeEmail(values, () => {
+          helpers.setFieldError('otp', messages.invalidCredentials)
+        })
       } else {
-        try {
-          // Try to change email
-          const res = await audiusBackendInstance.changeEmail(
-            newEmail,
-            sanitizedOtp
-          )
-          if (res.ok) {
-            await audiusBackendInstance.changeAuthCredentials(
-              newEmail,
-              password,
-              password,
-              email
-            )
-            setPage(ChangeEmailPage.Success)
-          } else {
-            // If OTP missing, go to OTP page
-            const body = await res.json()
-            if (body?.error === 'Missing otp') {
-              setPage(ChangeEmailPage.VerifyEmail)
-            } else {
-              // avoid duplicate error handling logic by throwing here
-              throw new Error(res.statusText)
-            }
-          }
-        } catch (e) {
-          if (page === ChangeEmailPage.VerifyEmail) {
-            helpers.setFieldError('otp', messages.invalidCredentials)
-          } else {
-            helpers.setFieldError('newEmail', messages.somethingWrong)
-          }
-        }
+        await changeEmail(values, () => {
+          helpers.setFieldError('newEmail', messages.somethingWrong)
+        })
       }
     },
-    [page]
+    [page, setPage]
   )
 
   return (

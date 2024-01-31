@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@audius/fixed-decimal": "*",
-    "@audius/hedgehog": "2.1.0",
+    "@audius/hedgehog": "3.0.0-alpha.0",
     "@audius/spl": "*",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",

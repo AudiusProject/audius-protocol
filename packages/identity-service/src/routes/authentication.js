@@ -7,6 +7,7 @@ const {
   errorResponseUnauthorized
 } = require('../apiHelpers')
 const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
+const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
   /**
@@ -76,10 +77,11 @@ module.exports = function (app) {
   /**
    * Checks to see if a given lookup key exists in the authentications table.
    * Does not log a user in. Does not return credential information. Does not
-   * send OTP emails.
+   * send OTP emails. Requires a signed in user.
    */
   app.get(
     '/authentication/check',
+    authMiddleware,
     handleResponse(async (req, _res, _next) => {
       const { lookupKey } = req.query
       if (!lookupKey) {
