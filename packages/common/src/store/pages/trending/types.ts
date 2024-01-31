@@ -1,9 +1,9 @@
-import { Collection, LineupState, TimeRange, Track } from '../../../models'
+import { LineupState, TimeRange, Track } from '../../../models'
 
 export type TrendingPageState = {
-  trendingWeek: LineupState<Track | Collection>
-  trendingMonth: LineupState<Track | Collection>
-  trendingAllTime: LineupState<Track | Collection>
+  trendingWeek: LineupState<Track>
+  trendingMonth: LineupState<Track>
+  trendingAllTime: LineupState<Track>
   trendingTimeRange: TimeRange
   trendingGenre: string | null
   lastFetchedTrendingGenre: string | null

@@ -47,7 +47,7 @@ export type ProfileState = {
   followees: ProfilePageFollow
   followeeFollows: ProfilePageFollow
   feed: LineupState<Track | Collection>
-  tracks: LineupState<Track | Collection>
+  tracks: LineupState<Track>
   isNotificationSubscribed: boolean
   error?: string
 }

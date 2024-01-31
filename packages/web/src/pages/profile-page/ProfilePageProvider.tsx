@@ -1002,6 +1002,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
 
     return (
+      // @ts-ignore wrong lineup type
       <this.props.children
         key={getPathname(this.props.location)}
         {...childProps}

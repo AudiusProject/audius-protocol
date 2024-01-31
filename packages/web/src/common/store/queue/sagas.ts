@@ -240,7 +240,7 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
-        const lineup: LineupState<Track | Collection> = yield* select(
+        const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
         if (!lineup) return

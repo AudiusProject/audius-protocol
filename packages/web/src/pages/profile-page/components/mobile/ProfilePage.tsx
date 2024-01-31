@@ -93,7 +93,7 @@ export type ProfilePageProps = {
   playlists: Collection[] | null
   status: Status
   goToRoute: (route: string) => void
-  artistTracks: LineupState<Track | Collection>
+  artistTracks: LineupState<Track>
   userFeed: LineupState<Track | Collection>
   playArtistTrack: (uid: UID) => void
   pauseArtistTrack: () => void
