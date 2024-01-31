@@ -20,6 +20,7 @@ import type {
   CacheType
 } from '@audius/common'
 import { pick } from 'lodash'
+import { SelectEffect } from 'redux-saga/effects'
 import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 const { CACHE_PRUNE_MIN } = cacheConfig
@@ -46,25 +47,29 @@ type AddToCacheHandler = (
   metadatas: Metadata[]
 ) => Generator<never, Metadata[] | void, unknown>
 
-type RetrieveArgs = {
-  ids: ID[]
-  selectFromCache: (ids: ID[]) => Generator<never, Record<ID, Entry>, Entry[]>
-  getEntriesTimestamp: (ids: ID[]) => Generator<
-    never,
+type RetrieveArgs<T> = {
+  ids: (ID | string)[]
+  selectFromCache: (
+    ids: (ID | string)[]
+  ) => Generator<SelectEffect, Record<ID | string, T>, T>
+  getEntriesTimestamp: (ids: (ID | string)[]) => Generator<
+    SelectEffect,
     {
       [id: ID]: number | null
     },
-    Entry[]
+    any
   >
-  retrieveFromSource: (ids: ID[]) => Metadata[]
+  retrieveFromSource: (
+    ids: (ID | string)[]
+  ) => Promise<T[]> | Generator<any, T[], any>
   kind: Kind
   idField: string
   requiredFields?: Set<string>
-  forceRetrieveFromSource: boolean
-  shouldSetLoading: boolean
-  deleteExistingEntry: boolean
-  onBeforeAddToCache: AddToCacheHandler
-  onAfterAddToCache: AddToCacheHandler
+  forceRetrieveFromSource?: boolean
+  shouldSetLoading?: boolean
+  deleteExistingEntry?: boolean
+  onBeforeAddToCache?: AddToCacheHandler
+  onAfterAddToCache?: AddToCacheHandler
 }
 
 /**
@@ -92,7 +97,7 @@ type RetrieveArgs = {
  * @param {function*} args.onAfterAddToCache callback to invoke with metadatas after they are added to the cache
  *
  */
-export function* retrieve({
+export function* retrieve<T>({
   ids,
   selectFromCache,
   getEntriesTimestamp,
@@ -105,10 +110,13 @@ export function* retrieve({
   deleteExistingEntry = false,
   onBeforeAddToCache = function* (_metadatas) {},
   onAfterAddToCache = function* (_metadatas) {}
-}: RetrieveArgs) {
+}: RetrieveArgs<T>): Generator<
+  any,
+  { entries: Record<ID | string, T>; uids: string[] }
+> {
   if (!ids.length) {
     return {
-      entries: [],
+      entries: {},
       uids: []
     }
   }
