@@ -13,10 +13,10 @@ import type {
 } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { TileProps } from '../core'
-import type { ImageProps } from '../image/FastImage'
 
 /**
  * Optional variant to modify the lineup item features and styles

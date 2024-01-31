@@ -3,9 +3,8 @@ import type { ReactNode } from 'react'
 import type { Track, User, SearchTrack, SearchUser, ID } from '@audius/common'
 import type { TextStyle } from 'react-native'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
-
-import type { ImageProps } from '../image/FastImage'
 
 export type DetailsTileDetail = {
   icon?: ReactNode

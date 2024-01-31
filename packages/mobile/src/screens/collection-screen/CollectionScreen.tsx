@@ -33,6 +33,7 @@ import type {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { ImageProps } from '@audius/harmony-native'
 import {
   ScreenContent,
   Screen,
@@ -40,7 +41,6 @@ import {
   Divider
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import type { ImageProps } from 'app/components/image/FastImage'
 import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'

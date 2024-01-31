@@ -16,6 +16,7 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -24,7 +25,6 @@ import { makeStyles, shadow } from 'app/styles'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
-import type { ImageProps } from '../image/FastImage'
 const { getCollectionId } = collectionPageSelectors
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =

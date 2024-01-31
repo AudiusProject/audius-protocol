@@ -1,10 +1,9 @@
 import type { ID } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 
+import type { FastImageProps } from '@audius/harmony-native'
 import { UserImage } from 'app/components/image/UserImage'
 import { makeStyles } from 'app/styles'
-
-import type { FastImageProps } from '../image/FastImage'
 
 const useStyles = makeStyles(({ palette }) => ({
   profilePhoto: {

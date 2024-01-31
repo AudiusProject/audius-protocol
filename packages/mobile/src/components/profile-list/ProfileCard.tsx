@@ -3,13 +3,12 @@ import { useCallback } from 'react'
 import type { User } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'
 import type { ProfileCardProps as BaseProfileCardProps } from 'app/components/card'
 import { UserImage } from 'app/components/image/UserImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
-
-import type { ImageProps } from '../image/FastImage'
 
 const formatProfileCardSecondaryText = (followers: number) => {
   const followersText = followers === 1 ? 'Follower' : 'Followers'

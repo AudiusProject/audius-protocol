@@ -46,10 +46,10 @@ import {
   IconRobot,
   IconSpecialAccess
 } from '@audius/harmony-native'
+import type { ImageProps } from '@audius/harmony-native'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
-import type { ImageProps } from 'app/components/image/FastImage'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'

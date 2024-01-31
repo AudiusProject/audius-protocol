@@ -30,13 +30,12 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
-
-import type { ImageProps } from '../image/FastImage'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
