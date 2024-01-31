@@ -17,7 +17,9 @@ import {
   WithdrawUSDCModalPages,
   WithdrawMethod,
   buyUSDCActions,
-  Status
+  Status,
+  MEMO_PROGRAM_ID,
+  PREPARE_WITHDRAWAL_MEMO_STRING
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -27,6 +29,7 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
+  TransactionInstruction,
   sendAndConfirmTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -312,6 +315,18 @@ function* doWithdrawUSDCCoinflow({
       }
     )
 
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: rootSolanaAccount.publicKey,
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(PREPARE_WITHDRAWAL_MEMO_STRING)
+    })
+
     // Relay the withdrawal transfer so that the user doesn't need SOL if the account already exists
     const { blockhash, lastValidBlockHeight } = yield* call([
       connection,
@@ -322,7 +337,10 @@ function* doWithdrawUSDCCoinflow({
       lastValidBlockHeight,
       feePayer: feePayerPubkey
     })
-    transferTransaction.add(...transferInstructions)
+
+    transferTransaction.add(...transferInstructions, memoInstruction)
+    transferTransaction.partialSign(rootSolanaAccount)
+
     const {
       res: transactionSignature,
       error,

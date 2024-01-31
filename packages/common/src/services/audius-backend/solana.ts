@@ -27,7 +27,9 @@ import { AudiusBackend } from './AudiusBackend'
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
-const RECOVERY_MEMO_STRING = 'recovery'
+export const RECOVERY_MEMO_STRING = 'Recover Withdrawal'
+export const WITHDRAWAL_MEMO_STRING = 'Withdrawal'
+export const PREPARE_WITHDRAWAL_MEMO_STRING = 'Prepare Withdrawal'
 
 /**
  * Memo program V1
@@ -544,13 +546,26 @@ export const decorateCoinflowWithdrawalTransaction = async (
       feePayerKey: feePayer
     })
 
+  const withdrawalMemoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(WITHDRAWAL_MEMO_STRING)
+  })
+
   // Remove original transfer instruction and replace with our set of transfer steps
   const instructions = [...transaction.instructions]
   instructions.splice(
     transferInstructionIndex,
     1,
     transferToUserBankInstruction,
-    ...transferFromUserBankInstructions
+    ...transferFromUserBankInstructions,
+    withdrawalMemoInstruction
   )
 
   const { blockhash, lastValidBlockHeight } =
