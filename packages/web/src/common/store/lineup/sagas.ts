@@ -237,14 +237,14 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       // in the form of { id: [uid1, uid2] }
       const uidForSource = queueUids
         .filter((uid) => uid.source === source)
-        .reduce((mapping, uid) => {
+        .reduce<{ [id: string]: string[] }>((mapping, uid) => {
           if (uid.id in mapping) {
             mapping[uid.id].push(uid.toString())
           } else {
             mapping[uid.id] = [uid.toString()]
           }
           return mapping
-        }, {} as { [id: string]: string[] })
+        }, {})
 
       // Filter out deletes (and premium content if disabled)
       const responseFilteredDeletes = yield* call(
