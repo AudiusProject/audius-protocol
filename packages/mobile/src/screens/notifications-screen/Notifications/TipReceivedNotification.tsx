@@ -26,7 +26,7 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  ProfilePicture,
+  NotificationProfilePicture,
   TipText,
   UserNameLink,
   NotificationTwitterButton,
@@ -117,7 +117,7 @@ export const TipReceivedNotification = (
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} />{' '}
           {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}

@@ -14,7 +14,7 @@ import {
   NotificationTitle,
   EntityLink,
   UserNameLink,
-  ProfilePicture
+  NotificationProfilePicture
 } from '../Notification'
 const { getNotificationEntities } = notificationsSelectors
 
@@ -53,7 +53,7 @@ export const AddTrackToPlaylistNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={playlistOwner} />
+        <NotificationProfilePicture profile={playlistOwner} />
         <View style={{ flex: 1 }}>
           <NotificationText>
             <UserNameLink user={playlistOwner} />

@@ -5,7 +5,7 @@ import { View, Text } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
-import { ProfilePicture } from './ProfilePicture'
+import { NotificationProfilePicture } from './NotificationProfilePicture'
 import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
 
 const USER_LENGTH_LIMIT = 9
@@ -88,7 +88,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
   const useSmallText = imageWidth < defaultImageDimensions.width
 
   // We want the View containing the "+" count to be the size of the
-  // inside content of the ProfilePicture it is sitting above.
+  // inside content of the NotificationProfilePicture it is sitting above.
   // So we will set its width and height to be the image's minus the
   // border width, accounting for both edges.
   const dimWidth = imageWidth - PROFILE_PICTURE_BORDER_WIDTH * 2
@@ -116,7 +116,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
         .filter((u) => !u.is_deactivated)
         .slice(0, sliceLimit)
         .map((user, idx) => (
-          <ProfilePicture
+          <NotificationProfilePicture
             profile={user}
             key={user.user_id}
             style={[
@@ -132,7 +132,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
         ))}
       {showUserListDrawer ? (
         <View style={styles.imageExtraRoot}>
-          <ProfilePicture
+          <NotificationProfilePicture
             profile={users[limit - 1]}
             style={[styles.image, imageStyles]}
             navigationType={navigationType}

@@ -22,7 +22,7 @@ import {
   UserNameLink,
   TipText,
   NotificationText,
-  ProfilePicture,
+  NotificationProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
 import { reactionMap } from '../Reaction'
@@ -47,7 +47,7 @@ const useStyles = makeStyles(() => ({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  profilePicture: {
+  NotificationProfilePicture: {
     position: 'absolute',
     bottom: 0,
     right: 0,
@@ -115,7 +115,7 @@ export const TipReactionNotification = (
       <View style={styles.body}>
         <View>
           <Reaction autoPlay={true} isVisible={isVisible} />
-          <ProfilePicture profile={user} style={styles.profilePicture} />
+          <NotificationProfilePicture profile={user} style={styles.NotificationProfilePicture} />
         </View>
         <View style={styles.content}>
           <View style={styles.userNameLink}>

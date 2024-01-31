@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconCaretRight, IconTrophy } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
-import { ProfilePictureListSkeleton } from 'app/screens/notifications-screen/Notification/ProfilePictureListSkeleton'
+import { ProfilePictureListSkeleton } from 'app/screens/notifications-screen/Notification/NotificationProfilePictureListSkeleton'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

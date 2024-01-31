@@ -19,7 +19,7 @@ import {
   NotificationTile,
   NotificationTitle,
   NotificationTwitterButton,
-  ProfilePicture,
+  NotificationProfilePicture,
   UserNameLink
 } from '../Notification'
 
@@ -84,7 +84,7 @@ export const SupporterDethronedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <ProfilePicture profile={supportedUser} />
+        <NotificationProfilePicture profile={supportedUser} />
         <NotificationText>
           <UserNameLink user={usurpingUser} />
           {messages.body1}

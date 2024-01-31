@@ -15,7 +15,7 @@ import {
   NotificationTile,
   NotificationTitle,
   NotificationTwitterButton,
-  ProfilePicture
+  NotificationProfilePicture
 } from '../Notification'
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
@@ -88,7 +88,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
           alignItems: 'center'
         }}
       >
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <NotificationText style={{ flexShrink: 1 }}>
           {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}
           <TipText value={uiAmount} /> {messages.to}{' '}
