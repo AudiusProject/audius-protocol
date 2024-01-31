@@ -1,4 +1,4 @@
-import type { PickRename } from '@audius/common'
+import type { PickRename } from '@audius/common/utils'
 import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { View } from 'react-native'
