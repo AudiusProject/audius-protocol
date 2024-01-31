@@ -17,7 +17,8 @@ import {
   IconCart,
   Text,
   TextLink,
-  IconError
+  IconError,
+  useTheme
 } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import { useFormikContext } from 'formik'
@@ -57,6 +58,7 @@ export const DownloadAvailability = ({
   value,
   setValue
 }: DownloadAvailabilityProps) => {
+  const { color } = useTheme()
   const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
@@ -90,17 +92,17 @@ export const DownloadAvailability = ({
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
       text: messages.public,
-      icon: <IconVisibilityPublic size='s' fill='#858199' />
+      icon: <IconVisibilityPublic size='s' fill={color.neutral.neutral} />
     },
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
       text: messages.followers,
-      icon: <IconUserFollowing size='s' fill='#858199' />
+      icon: <IconUserFollowing size='s' fill={color.neutral.neutral} />
     },
     {
       key: DownloadTrackAvailabilityType.USDC_PURCHASE,
       text: messages.premium,
-      icon: <IconCart size='s' fill='#858199' />
+      icon: <IconCart size='s' fill={color.neutral.neutral} />
     }
   ]
 
@@ -136,7 +138,10 @@ export const DownloadAvailability = ({
             <Text>
               {getCalloutMessage()}
               &nbsp;
-              <TextLink onClick={handleCalloutClick} css={{ color: '#a30cb3' }}>
+              <TextLink
+                onClick={handleCalloutClick}
+                css={{ color: color.primary.p500 }}
+              >
                 {messages.callout.accessAndSale}
               </TextLink>
               .
