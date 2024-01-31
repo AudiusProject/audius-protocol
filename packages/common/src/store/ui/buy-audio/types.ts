@@ -1,5 +1,3 @@
-import { TOKEN_LISTING_MAP } from './constants'
-
 /**
  * From Jupiter API documentation:
  * https://docs.jup.ag/jupiter-core/jupiter-sdk/v2/full-guide
@@ -19,8 +17,6 @@ export enum OnRampProvider {
   STRIPE = 'stripe',
   UNKNOWN = 'unknown'
 }
-
-export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
 export enum PurchaseInfoErrorType {
   MAX_AUDIO_EXCEEDED = 'max_audio_exceeded',

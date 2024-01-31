@@ -57,9 +57,9 @@ export * from './publish-playlist-confirmation-modal/types'
 
 export {
   default as reactionsUIReducer,
-  actions as reactionsUIActions,
-  selectors as reactionsUISelectors
+  actions as reactionsUIActions
 } from './reactions/slice'
+export { selectors as reactionsUISelectors } from './reactions/selectors'
 export * from './reactions/types'
 export * from './reactions/utils'
 
