@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { passwordSchema } from '@audius/common'
+import { passwordSchema } from '@audius/common/schemas'
 import {
   Button,
   Flex,

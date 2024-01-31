@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { formatOtp } from '@audius/common'
+import { formatOtp } from '@audius/common/schemas'
 import {
   Box,
   Button,
