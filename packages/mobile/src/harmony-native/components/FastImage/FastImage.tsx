@@ -14,6 +14,10 @@ export type ImageProps = Omit<FastImageProps, 'source'>
 
 /**
  * Utility component that wraps react-native-fast-image
+ * NOTE: react-native-fast-image seems to be pretty much abandoned
+ * It is also a hard blocker as we upgrade RN https://github.com/DylanVann/react-native-fast-image/issues/985
+ * For the time being it's working and whenever we upgrade we should consider
+ * alternatives like expo-image
  */
 export const FastImage = (props: FastImageProps) => {
   const { source, priority, ...other } = props
