@@ -6,7 +6,7 @@ import tracksReducer, {
   initialState as initialTracksLineupState
 } from 'store/pages/profile/lineups/tracks/reducer'
 
-import { Status, Track } from '../../../models'
+import { Collection, Status, Track } from '../../../models'
 
 import {
   FETCH_PROFILE,
@@ -329,7 +329,10 @@ const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
 const reducer = (
   state = initialState,
-  action: ProfilePageAction | LineupActions<Track>
+  action:
+    | ProfilePageAction
+    | LineupActions<Track>
+    | LineupActions<Track | Collection>
 ) => {
   const { currentUser, entries } = state
 
@@ -339,7 +342,10 @@ const reducer = (
 
   let newEntry = entries[profileHandle] ?? initialProfileState
 
-  const feed = feedLineupReducer(newEntry.feed, action as LineupActions<Track>)
+  const feed = feedLineupReducer(
+    newEntry.feed,
+    action as LineupActions<Track | Collection>
+  )
   if (feed !== newEntry.feed) {
     newEntry = { ...newEntry, feed }
   }
