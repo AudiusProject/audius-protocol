@@ -16,7 +16,6 @@ import {
 import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
-import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { confirmCredentials } = changePasswordActions
 const { getConfirmCredentialsStatus } = changePasswordSelectors
