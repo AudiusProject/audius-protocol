@@ -1,6 +1,6 @@
 import { KeyboardEventHandler, useState } from 'react'
 
-import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common'
+import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common/assets'
 import {
   MAX_HANDLE_LENGTH,
   MAX_DISPLAY_NAME_LENGTH

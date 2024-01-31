@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { getTierForUser, imageProfilePicEmpty } from '@audius/common'
+import { getTierForUser } from '@audius/common'
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, Kind } from '@audius/common/models'
 import { SelectProps } from 'antd'
 import { useDispatch } from 'react-redux'

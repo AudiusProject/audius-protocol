@@ -1,8 +1,5 @@
-import {
-  accountSelectors,
-  cacheUsersSelectors,
-  imageProfilePicEmpty
-} from '@audius/common'
+import { accountSelectors, cacheUsersSelectors } from '@audius/common'
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Maybe } from '@audius/common/utils'
 import {

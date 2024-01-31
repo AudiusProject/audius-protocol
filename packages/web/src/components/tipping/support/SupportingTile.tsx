@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { cacheUsersSelectors } from '@audius/common'
 import {
-  cacheUsersSelectors,
-  imageCoverPhotoBlank,
-  imageProfilePicEmpty as profilePicEmpty
-} from '@audius/common'
+  imageProfilePicEmpty as profilePicEmpty,
+  imageCoverPhotoBlank
+} from '@audius/common/assets'
 import {
   SquareSizes,
   WidthSizes,

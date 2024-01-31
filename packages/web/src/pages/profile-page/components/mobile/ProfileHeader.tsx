@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
-import { imageCoverPhotoBlank, imageProfilePicEmpty } from '@audius/common'
+import {
+  imageCoverPhotoBlank,
+  imageProfilePicEmpty
+} from '@audius/common/assets'
 import {
   Name,
   SquareSizes,

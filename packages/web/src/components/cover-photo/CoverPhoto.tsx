@@ -1,6 +1,6 @@
 import { memo, useState } from 'react'
 
-import { imageCoverPhotoBlank } from '@audius/common'
+import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { WidthSizes } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'

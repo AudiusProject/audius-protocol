@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
+import { cacheUsersActions, cacheUsersSelectors } from '@audius/common'
 import {
-  cacheUsersActions,
   imageCoverPhotoBlank,
-  cacheUsersSelectors,
   imageProfilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, WidthSizes, CoverPhotoSizes } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
