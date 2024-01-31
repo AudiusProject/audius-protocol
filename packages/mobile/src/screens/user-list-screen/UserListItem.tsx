@@ -6,7 +6,7 @@ import { accountSelectors } from '@audius/common/store'
 import { Pressable, View, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconUser from 'app/assets/images/iconUser.svg'
+import { IconUser } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import {
   FollowButton,

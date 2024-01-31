@@ -10,7 +10,7 @@ import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import IconCart from 'app/assets/images/iconCart.svg'
+import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

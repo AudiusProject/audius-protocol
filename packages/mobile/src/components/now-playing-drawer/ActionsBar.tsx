@@ -29,10 +29,12 @@ import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import IconAirplay from 'app/assets/images/iconAirplay.svg'
-import IconChromecast from 'app/assets/images/iconChromecast.svg'
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import {
+  IconCastAirplay,
+  IconCastChromecast,
+  IconKebabHorizontal,
+  IconShare
+} from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { Button, IconButton } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
@@ -251,7 +253,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       return (
         <IconButton
           onPress={openAirplayDialog}
-          icon={IconAirplay}
+          icon={IconCastAirplay}
           fill={isCasting ? primary : neutral}
           styles={{ icon: styles.icon, root: styles.button }}
         />
@@ -259,7 +261,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
     return isOfflineModeEnabled && !isReachable ? (
       <View style={{ ...styles.button, width: 24 }}>
-        <IconChromecast
+        <IconCastChromecast
           fill={neutralLight6}
           height={30}
           width={30}

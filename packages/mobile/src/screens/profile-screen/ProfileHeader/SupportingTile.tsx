@@ -8,7 +8,7 @@ import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useSelector } from 'react-redux'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrophy } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
 import { ProfilePicture } from 'app/components/user'

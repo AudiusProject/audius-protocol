@@ -11,10 +11,10 @@ import {
   QueueItem,
   CommonState
 } from '@audius/common/store'
+import { IconAlbum } from '@audius/harmony'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import FilterInput from 'components/filter-input/FilterInput'

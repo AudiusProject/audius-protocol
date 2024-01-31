@@ -7,11 +7,13 @@ import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconDonate from 'app/assets/images/iconDonate.svg'
-import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconLink from 'app/assets/images/iconLink.svg'
-import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import {
+  IconDonate,
+  IconInstagram,
+  IconLink,
+  IconTikTok,
+  IconTwitter
+} from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
@@ -107,7 +109,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
           name='twitter_handle'
           label='Twitter Handle'
           prefix='@'
-          icon={IconTwitterBird}
+          icon={IconTwitter}
         />
         <ProfileTextField
           editable={!isInstagramVerified}
@@ -121,7 +123,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
           name='tiktok_handle'
           label='TikTok Handle'
           prefix='@'
-          icon={IconTikTokInverted}
+          icon={IconTikTok}
         />
         <ProfileTextField name='website' label='Website' icon={IconLink} />
         <ProfileTextField name='donation' label='Donation' icon={IconDonate} />

@@ -1,0 +1,27 @@
+{
+  "name": "@audius/ddex-publisher",
+  "version": "0.0.1",
+  "description": "Server that publishes DDEX entities queued for release",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start:prod": "NODE_ENV=production node dist/index.js",
+    "start": "nodemon src/index.ts",
+    "dev:stage": "NODE_ENV=stage turbo run start --filter=@audius/ddex-publisher",
+    "dev:prod": "NODE_ENV=production turbo run start --filter=@audius/ddex-publisher",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "verify": "concurrently \"npm:build\" \"npm:lint\""
+  },
+  "keywords": [],
+  "author": "Audius",
+  "dependencies": {
+    "mongodb": "6.3.0",
+    "mongoose": "8.1.0",
+    "dotenv": "16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.10",
+    "typescript": "5.3.3"
+  }
+}

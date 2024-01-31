@@ -277,11 +277,13 @@ export function* watchReset() {
 export function* watchStop() {
   yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
     const id = yield* select(getTrackId)
-    yield* put(
-      cacheActions.unsubscribe(Kind.TRACKS, [
-        { uid: PLAYER_SUBSCRIBER_NAME, id }
-      ])
-    )
+    if (id) {
+      yield* put(
+        cacheActions.unsubscribe(Kind.TRACKS, [
+          { uid: PLAYER_SUBSCRIBER_NAME, id }
+        ])
+      )
+    }
     const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.stop()
   })

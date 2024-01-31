@@ -5,7 +5,7 @@ import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationTy
 import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
+import { IconPlaylists } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

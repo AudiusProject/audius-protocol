@@ -6,9 +6,11 @@ import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import {
+  IconArrowRight,
+  IconCaretLeft,
+  IconCloudUpload
+} from '@audius/harmony-native'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
@@ -103,7 +105,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     <>
       <FormScreen
         title={title}
-        icon={IconUpload}
+        icon={IconCloudUpload}
         topbarLeft={
           <TopBarIconButton
             icon={IconCaretLeft}
@@ -122,7 +124,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             <Button
               variant='primary'
               size='large'
-              icon={IconArrow}
+              icon={IconArrowRight}
               fullWidth
               title={doneText}
               onPress={() => {

@@ -7,14 +7,16 @@ import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 
-import IconCrown from 'app/assets/images/iconCrown.svg'
-import IconDonate from 'app/assets/images/iconDonate.svg'
-import IconEmbed from 'app/assets/images/iconEmbed.svg'
-import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconSettings from 'app/assets/images/iconSettings.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
+import {
+  IconCrown,
+  IconDonate,
+  IconEmbed,
+  IconListeningHistory,
+  IconMessage,
+  IconSettings,
+  IconCloudUpload,
+  IconUser
+} from '@audius/harmony-native'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
 import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
 import { env } from 'app/env'
@@ -103,7 +105,7 @@ const WrappedLeftNavDrawer = () => {
         <AudioBalancePill />
       </LeftNavLink>
       <LeftNavLink
-        icon={IconUpload}
+        icon={IconCloudUpload}
         iconProps={{
           height: spacing(8),
           width: spacing(8),

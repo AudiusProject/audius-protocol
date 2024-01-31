@@ -10,7 +10,7 @@ import type { Nullable } from '@audius/common/utils'
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 
-import IconTastemaker from 'app/assets/images/iconTastemaker.svg'
+import { IconTastemaker } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

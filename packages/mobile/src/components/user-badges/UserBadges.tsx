@@ -5,7 +5,7 @@ import type { User } from '@audius/common/models'
 import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
 import { StyleSheet, View, Text } from 'react-native'
 
-import IconVerified from 'app/assets/images/iconVerified.svg'
+import { IconVerified } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
 import { useThemePalette } from 'app/utils/theme'
 

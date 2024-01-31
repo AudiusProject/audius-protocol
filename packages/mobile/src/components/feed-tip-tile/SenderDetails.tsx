@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { User } from '@audius/common/models'
 import { Platform, TouchableOpacity, View } from 'react-native'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTipping } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -71,7 +71,7 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
 
   return (
     <TouchableOpacity style={styles.root} onPress={handlePressTippers}>
-      <IconTip fill={neutralLight4} height={16} width={16} />
+      <IconTipping fill={neutralLight4} height={16} width={16} />
       <Text style={styles.wasTippedBy}>
         {Platform.OS === 'ios'
           ? messages.receivedAudioFrom

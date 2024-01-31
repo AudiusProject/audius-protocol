@@ -66,7 +66,7 @@ export class Uid {
   }
 }
 
-export function makeUids(kinds: string[], ids: number[], source: string) {
+export function makeUids(kinds: string[], ids: number[], source?: string) {
   if (Array.isArray(kinds)) {
     // Multiple kinds in the ids array.
     const totals: Record<string, number> = {}

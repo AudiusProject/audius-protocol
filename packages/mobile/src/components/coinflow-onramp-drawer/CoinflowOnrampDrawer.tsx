@@ -10,7 +10,7 @@ import { Transaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
+import { IconCloseAlt } from '@audius/harmony-native'
 import { AppDrawer } from 'app/components/drawer'
 import { env } from 'app/env'
 import { getCoinflowDeviceId } from 'app/services/coinflow'

@@ -6,6 +6,7 @@ import {
   getContext,
   CommonState
 } from '@audius/common/store'
+import { Track } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -22,10 +23,10 @@ function* getTracks({
 }: {
   offset: number
   limit: number
-  payload: { aiUserHandle: string | null }
+  payload?: { aiUserHandle: string | null }
 }) {
   const apiClient = yield* getContext('apiClient')
-  const { aiUserHandle } = payload
+  const { aiUserHandle } = payload ?? {}
   if (!aiUserHandle) return []
   yield* waitForRead()
 
@@ -50,7 +51,7 @@ function* getTracks({
 const sourceSelector = (state: CommonState) =>
   `${tracksActions.prefix}:${getAiUserHandle(state)}`
 
-class TracksSagas extends LineupSagas {
+class TracksSagas extends LineupSagas<Track> {
   constructor() {
     super(
       tracksActions.prefix,

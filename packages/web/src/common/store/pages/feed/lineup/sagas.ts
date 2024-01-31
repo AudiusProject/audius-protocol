@@ -116,14 +116,16 @@ const keepActivityTimeStamp = (
   activityTimestamp: entry.activity_timestamp
 })
 
-class FeedSagas extends LineupSagas {
+class FeedSagas extends LineupSagas<FeedItem> {
   constructor() {
     super(
       feedActions.prefix,
       feedActions,
       (store: CommonState) => store.pages.feed.feed,
       getTracks,
-      keepActivityTimeStamp
+      keepActivityTimeStamp,
+      undefined,
+      undefined
     )
   }
 }

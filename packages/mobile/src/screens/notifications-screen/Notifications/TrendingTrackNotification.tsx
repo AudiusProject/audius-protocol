@@ -9,7 +9,7 @@ import { notificationsSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import IconTrending from 'app/assets/images/iconTrending.svg'
+import { IconTrending } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

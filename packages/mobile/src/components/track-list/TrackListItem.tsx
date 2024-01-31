@@ -25,10 +25,12 @@ import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import IconDrag from 'app/assets/images/iconDrag.svg'
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconLock from 'app/assets/images/iconLock.svg'
-import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
+import {
+  IconDrag,
+  IconKebabHorizontal,
+  IconLock,
+  IconRemove
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -476,7 +478,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ) : null}
           {trackItemAction === 'remove' ? (
             <IconButton
-              icon={IconRemoveTrack}
+              icon={IconRemove}
               styles={{
                 root: styles.iconContainer,
                 icon: styles.removeIcon

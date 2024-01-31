@@ -9,9 +9,8 @@ import type {
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
 
+import { IconCaretLeft, IconSearch } from '@audius/harmony-native'
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
-import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'

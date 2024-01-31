@@ -3,9 +3,15 @@ import {
   PlaybackSource,
   Kind,
   ID,
-  UID,
+  Name,
+  PlaybackSource,
   LineupState,
-  User
+  User,
+  Collectible,
+  Track,
+  Collection,
+  UserTrackMetadata,
+  LineupEntry
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -61,7 +67,10 @@ const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
+export function* getToQueue(
+  prefix: string,
+  entry: LineupEntry<Track | Collection>
+) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
     if (!collection) return
@@ -232,17 +241,14 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
-        // @ts-ignore todo
-        const lineup: LineupState<{ id: number }> = yield* select(
+        const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
           yield* put(clear({}))
           const toQueue = yield* all(
-            lineup.entries.map((e: { kind: Kind; uid: UID }) =>
-              call(getToQueue, lineup.prefix, e)
-            )
+            lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
           )
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))
@@ -403,7 +409,7 @@ export function* watchQueueAutoplay() {
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
-      const tracks = yield* call(
+      const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,
         exclusionList,
@@ -431,7 +437,7 @@ export function* watchPrevious() {
       }
 
       // For the audio nft playlist flow
-      const collectible = yield* select(getCollectible)
+      const collectible: Collectible | null = yield* select(getCollectible)
       if (collectible) {
         const event = make(Name.PLAYBACK_PLAY, {
           id: `${collectible.id}`,

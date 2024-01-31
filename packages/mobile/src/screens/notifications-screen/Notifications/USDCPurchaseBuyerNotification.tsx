@@ -10,7 +10,7 @@ import type { Nullable } from '@audius/common/utils'
 import { make } from 'audius-client/src/common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 
-import IconCart from 'app/assets/images/iconCart.svg'
+import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

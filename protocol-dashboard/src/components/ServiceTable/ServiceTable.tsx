@@ -50,7 +50,11 @@ const ServiceTable: React.FC<ServiceTableProps> = ({
 
   const renderRow = (data: NodeService) => {
     let error: boolean, uptimeData: DataObject[]
-    const { uptime } = useIndividualNodeUptime(data.endpoint, Bucket.DAY)
+    const { uptime } = useIndividualNodeUptime(
+      data.type,
+      data.endpoint,
+      Bucket.DAY
+    )
     if (uptime === MetricError.ERROR) {
       error = true
       uptimeData = []

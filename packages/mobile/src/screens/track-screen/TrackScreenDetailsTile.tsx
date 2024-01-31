@@ -49,11 +49,13 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconRobot from 'app/assets/images/iconRobot.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import {
+  IconCart,
+  IconCollectible,
+  IconVisibilityHidden,
+  IconRobot,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
@@ -546,7 +548,7 @@ export const TrackScreenDetailsTile = ({
 
     return is_unlisted && !isScheduledRelease ? (
       <View style={styles.hiddenDetailsTileWrapper}>
-        <IconHidden fill={neutralLight4} />
+        <IconVisibilityHidden fill={neutralLight4} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
       </View>
     ) : (

@@ -9,7 +9,7 @@ import {
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTipping } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { makeStyles } from 'app/styles'
@@ -107,7 +107,7 @@ export const TipReactionNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconTip}>
+      <NotificationHeader icon={IconTipping}>
         <NotificationTitle>
           <UserNameLink user={user} /> {messages.reacted}
         </NotificationTitle>

@@ -1,8 +1,7 @@
 import type { User } from '@audius/common/models'
 import { View } from 'react-native'
 
-import IconTip from 'app/assets/images/iconTip.svg'
-import IconTrending from 'app/assets/images/iconTrending.svg'
+import { IconTipping, IconTrending } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -42,7 +41,7 @@ export const SupporterAndSupportingNotificationContent = ({
 
   return (
     <>
-      <NotificationHeader icon={IconTip}>
+      <NotificationHeader icon={IconTipping}>
         <NotificationTitle>{title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>

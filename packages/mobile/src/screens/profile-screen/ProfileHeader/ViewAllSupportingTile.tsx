@@ -7,7 +7,7 @@ import {
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Tile, TextButton } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
@@ -91,7 +91,7 @@ export const ViewAllSupportingTile = () => {
         disabled
         showDisabled={false}
         variant='neutralLight4'
-        icon={IconArrow}
+        icon={IconArrowRight}
         iconPosition='right'
         title={viewAllString}
         TextProps={{ fontSize: 'small', weight: 'bold' }}

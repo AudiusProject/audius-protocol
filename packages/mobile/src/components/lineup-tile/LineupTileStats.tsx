@@ -13,11 +13,13 @@ import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { IconCalendarMonth } from '@audius/harmony-native'
-import IconHeart from 'app/assets/images/iconHeart.svg'
-import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
-import IconStar from 'app/assets/images/iconStar.svg'
+import {
+  IconCalendarMonth,
+  IconHeart,
+  IconVisibilityHidden,
+  IconRepost,
+  IconStar
+} from '@audius/harmony-native'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
@@ -183,7 +185,7 @@ export const LineupTileStats = ({
         ) : null}
         {isUnlisted && !isScheduledRelease ? (
           <View style={styles.tagContainer}>
-            <IconHidden
+            <IconVisibilityHidden
               fill={neutralLight4}
               height={spacing(4)}
               width={spacing(4)}

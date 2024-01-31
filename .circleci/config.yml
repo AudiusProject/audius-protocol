@@ -82,6 +82,7 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
+            - ./packages/ddex/webapp/node_modules
             - ./packages/trpc-server/node_modules
 
   generate-release-branch:
@@ -443,7 +444,7 @@ workflows:
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/.* run-ddex-workflow true
+            packages/ddex/webapp/.* run-ddex-webapp-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
@@ -453,7 +454,7 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
+            .circleci/.* run-ddex-webapp-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
@@ -485,7 +486,7 @@ workflows:
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
             packages/libs/.* run-protocol-dashboard-workflow true
-            packages/libs/.* run-ddex-workflow true
+            packages/libs/.* run-ddex-webapp-workflow true
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
@@ -528,7 +529,7 @@ workflows:
             packages/mobile/.* run-mobile-workflow true
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
-            packages/ddex/.* run-ddex-workflow true
+            packages/ddex/webapp/.* run-ddex-webapp-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:

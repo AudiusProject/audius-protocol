@@ -12,7 +12,7 @@ import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import { IconClose } from '@audius/harmony-native'
 import { FadeInView, Tile } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { localStorage } from 'app/services/local-storage'
@@ -104,7 +104,7 @@ export const FeedTipTile = () => {
       <FadeInView>
         <View style={styles.header}>
           <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />
-          <IconRemove {...styles.iconRemove} onPress={handlePressClose} />
+          <IconClose {...styles.iconRemove} onPress={handlePressClose} />
         </View>
         <SenderDetails
           senders={[

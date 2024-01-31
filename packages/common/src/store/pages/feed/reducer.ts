@@ -1,16 +1,19 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
-import { asLineup } from '~/store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import {
   SET_SUGGESTED_FOLLOWS,
-  SET_FEED_FILTER
+  SET_FEED_FILTER,
+  SetSuggestedFollowsAction,
+  SetFeedFilterAction,
+  FeedPageAction
 } from '~/store/pages/feed/actions'
 import { PREFIX as FeedPrefix } from '~/store/pages/feed/lineup/actions'
 import feedReducer, {
   initialState as feedLinupInitialState
 } from '~/store/pages/feed/lineup/reducer'
 
-import { FeedFilter } from '../../../models'
+import { FeedFilter, Track } from '../../../models'
+
+import { FeedPageState } from './types'
 
 const initialState = {
   suggestedFollows: [],
@@ -19,13 +22,16 @@ const initialState = {
 }
 
 const actionsMap = {
-  [SET_SUGGESTED_FOLLOWS](state, action) {
+  [SET_SUGGESTED_FOLLOWS](
+    state: FeedPageState,
+    action: SetSuggestedFollowsAction
+  ) {
     return {
       ...state,
       suggestedFollows: action.userIds
     }
   },
-  [SET_FEED_FILTER](state, action) {
+  [SET_FEED_FILTER](state: FeedPageState, action: SetFeedFilterAction) {
     return {
       ...state,
       feedFilter: action.filter
@@ -35,13 +41,16 @@ const actionsMap = {
 
 const feedLineupReducer = asLineup(FeedPrefix, feedReducer)
 
-const reducer = (state = initialState, action) => {
-  const feed = feedLineupReducer(state.feed, action)
+const reducer = (
+  state = initialState,
+  action: FeedPageAction | LineupActions<Track>
+) => {
+  const feed = feedLineupReducer(state.feed, action as LineupActions<Track>)
   if (feed !== state.feed) return { ...state, feed }
 
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  return matchingReduceFunction(state, action as FeedPageAction)
 }
 
 export default reducer

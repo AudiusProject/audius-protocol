@@ -6,7 +6,7 @@ import {
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTipping } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -28,7 +28,7 @@ export const SupportingUsersScreen = () => {
   }, [dispatch, userId])
 
   return (
-    <UserListScreen title={messages.title} titleIcon={IconTip}>
+    <UserListScreen title={messages.title} titleIcon={IconTipping}>
       <UserList
         userSelector={getUserList}
         tag='SUPPORTING'

@@ -70,7 +70,7 @@ export type OwnProps = {
     parentTrackId?: ID
   }) => void
   // Tracks Lineup Props
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
   currentQueueItem: QueueItem
   isPlaying: boolean
   isBuffering: boolean

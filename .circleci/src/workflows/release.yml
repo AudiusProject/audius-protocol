@@ -71,9 +71,19 @@ jobs:
       service: uptime
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-ddex
+      name: push-ddex-web
       context: [GCP, dockerhub, slack-secrets]
-      service: ddex
+      service: ddex-web
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex-ingester
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex-ingester
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex-publisher
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex-publisher
       notify_slack_on_failure: true
 
   - push-arm-image:
@@ -150,11 +160,23 @@ jobs:
       requires:
         - push-uptime
   - push-arm-image:
-      name: push-ddex-arm
+      name: push-ddex-web-arm
       context: [Vercel, dockerhub]
-      service: ddex
+      service: ddex-web
       requires:
-        - push-ddex
+        - push-ddex-web
+  - push-arm-image:
+      name: push-ddex-ingester-arm
+      context: [Vercel, dockerhub]
+      service: ddex-ingester
+      requires:
+        - push-ddex-ingester
+  - push-arm-image:
+      name: push-ddex-publisher-arm
+      context: [Vercel, dockerhub]
+      service: ddex-publisher
+      requires:
+        - push-ddex-publisher
 
   - release-github-draft-trigger:
       type: approval
@@ -195,7 +217,9 @@ jobs:
         - push-healthz
         - push-protocol-dashboard
         - push-uptime
-        - push-ddex
+        - push-ddex-web
+        - push-ddex-ingester
+        - push-ddex-publisher
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
@@ -209,7 +233,9 @@ jobs:
         # - push-healthz-arm
         # - push-protocol-dashboard-arm
         # - push-uptime-arm
-        # - push-ddex-arm
+        # - push-ddex-web-arm
+        # - push-ddex-ingester-arm
+        # - push-ddex-publisher-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

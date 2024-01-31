@@ -9,7 +9,8 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes,
   LineupState,
-  User
+  User,
+  Track
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
@@ -18,9 +19,9 @@ import {
   badgeTiers,
   ProfileUser
 } from '@audius/common/store'
+import { IconAlbum } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconAlbum from 'assets/img/iconAlbum.svg'
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
@@ -94,8 +95,8 @@ export type ProfilePageProps = {
   playlists: Collection[] | null
   status: Status
   goToRoute: (route: string) => void
-  artistTracks: LineupState<{ id: ID }>
-  userFeed: LineupState<{ id: ID }>
+  artistTracks: LineupState<Track>
+  userFeed: LineupState<Track | Collection>
   playArtistTrack: (uid: UID) => void
   pauseArtistTrack: () => void
   playUserFeedTrack: (uid: UID) => void

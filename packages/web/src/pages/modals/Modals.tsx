@@ -36,6 +36,7 @@ import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import { WaitForDownloadModal } from 'components/wait-for-download-modal/WaitForDownloadModal'
 import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
@@ -110,7 +111,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
   AddFundsModal,
-  CoinflowWithdraw: CoinflowWithdrawModal
+  CoinflowWithdraw: CoinflowWithdrawModal,
+  WaitForDownloadModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

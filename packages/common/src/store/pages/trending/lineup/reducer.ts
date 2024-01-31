@@ -22,7 +22,7 @@ type ResetSucceededAction = {
   type: typeof RESET_SUCCEEDED
 }
 
-export const makeInitialState = (prefix: string) => ({
+export const makeInitialState = (prefix: string): TrendingLineupState => ({
   ...initialState,
   entryIds: new Set() as Set<UID>,
   prefix

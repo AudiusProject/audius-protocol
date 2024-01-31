@@ -5,7 +5,7 @@ import type { FollowNotification as FollowNotificationType } from '@audius/commo
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
-import IconUser from 'app/assets/images/iconUser.svg'
+import { IconUser } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

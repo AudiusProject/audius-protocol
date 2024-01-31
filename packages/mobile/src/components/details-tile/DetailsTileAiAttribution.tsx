@@ -6,7 +6,7 @@ import { View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconRobot from 'app/assets/images/iconRobot.svg'
+import { IconRobot } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'

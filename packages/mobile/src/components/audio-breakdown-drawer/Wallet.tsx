@@ -10,7 +10,7 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
+import { IconCopy } from '@audius/harmony-native'
 import { ChainLogo, Text } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useToast } from 'app/hooks/useToast'

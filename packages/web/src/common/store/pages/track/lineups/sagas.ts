@@ -1,4 +1,5 @@
 import {
+  Track,
   accountSelectors,
   cacheTracksSelectors,
   trackPageLineupActions,
@@ -20,7 +21,7 @@ function* getTracks({
   offset = 0,
   limit = 6
 }: {
-  payload: {
+  payload?: {
     ownerHandle: string
     /** Permalink of track that should be loaded first */
     heroTrackPermalink: string
@@ -28,7 +29,7 @@ function* getTracks({
   offset?: number
   limit?: number
 }) {
-  const { ownerHandle, heroTrackPermalink } = payload
+  const { ownerHandle, heroTrackPermalink } = payload ?? {}
   yield* waitForRead()
   const currentUserId = yield* select(getUserId)
 
@@ -62,7 +63,7 @@ function* getTracks({
   }
 
   const processed = yield* call(retrieveUserTracks, {
-    handle: ownerHandle,
+    handle: ownerHandle!,
     currentUserId,
     sort: 'plays',
     limit: limit + 2,
@@ -83,11 +84,12 @@ function* getTracks({
     .slice(0, limit)
 }
 
-class TracksSagas extends LineupSagas {
+class TracksSagas extends LineupSagas<Track> {
   constructor() {
     super(
       PREFIX,
       tracksActions,
+      // @ts-ignore type is wrongly inferred as LineupState<{ id: number }>
       getLineup,
       getTracks,
       undefined,

@@ -12,7 +12,7 @@ import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconLock from 'app/assets/images/iconLock.svg'
+import { IconLock } from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'

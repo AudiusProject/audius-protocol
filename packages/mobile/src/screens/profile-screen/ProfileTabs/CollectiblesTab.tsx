@@ -8,7 +8,7 @@ import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconShare } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'

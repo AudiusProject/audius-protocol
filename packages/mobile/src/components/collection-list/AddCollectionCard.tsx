@@ -7,7 +7,7 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconSave from 'app/assets/images/iconMultiselectAdd.svg'
+import { IconSave } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

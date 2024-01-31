@@ -9,7 +9,7 @@ import {
 import { sampleSize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconWand from 'app/assets/images/iconWand.svg'
+import { IconWand } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

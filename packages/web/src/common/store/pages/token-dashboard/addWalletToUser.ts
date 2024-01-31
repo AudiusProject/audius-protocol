@@ -56,7 +56,7 @@ export function* addWalletToUser(
 
     const updatedCID = yield* call(getAccountMetadataCID)
 
-    if (updatedCID) {
+    if (updatedCID && accountUserId) {
       yield* put(
         cacheActions.update(Kind.USERS, [
           {

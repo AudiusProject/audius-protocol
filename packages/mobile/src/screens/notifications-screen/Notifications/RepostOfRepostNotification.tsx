@@ -5,7 +5,7 @@ import type { RepostOfRepostNotification as RepostOfRepostNotificationType } fro
 import { notificationsSelectors, Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import { IconRepost } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

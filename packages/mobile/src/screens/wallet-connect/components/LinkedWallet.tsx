@@ -8,8 +8,7 @@ import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
-import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
+import { IconCopy, IconRemove } from '@audius/harmony-native'
 import { ChainLogo, IconButton, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -149,7 +148,7 @@ export const LinkedWallet = ({
         ) : (
           <IconButton
             isDisabled={!canConnectNewWallet}
-            icon={IconRemoveTrack}
+            icon={IconRemove}
             styles={{
               root: styles.removeButton,
               icon: styles.removeIcon

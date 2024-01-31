@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { Dimensions, View } from 'react-native'
 
-import IconVisibilityPublic from 'app/assets/images/iconVisibilityPublic.svg'
+import { IconVisibilityPublic } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'

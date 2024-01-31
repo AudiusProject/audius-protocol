@@ -3,12 +3,14 @@ import { useCallback } from 'react'
 import { FeatureFlags } from '@audius/common/services'
 import { Image, Platform } from 'react-native'
 
+import {
+  IconCloudDownload,
+  IconInfo,
+  IconMessage,
+  IconNotificationOn,
+  IconSettings
+} from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
-import IconDownload from 'app/assets/images/iconCloudDownload.svg'
-import IconInfo from 'app/assets/images/iconInfo.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconNotificationOn from 'app/assets/images/iconNotificationOn.svg'
-import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -111,7 +113,7 @@ export const SettingsScreen = () => {
             <SettingsRow onPress={handlePressDownloads}>
               <SettingsRowLabel
                 label={messages.downloads}
-                icon={IconDownload}
+                icon={IconCloudDownload}
               />
             </SettingsRow>
           ) : null}

@@ -11,7 +11,7 @@ import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconRemix from 'app/assets/images/iconRemix.svg'
+import { IconRemix } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'

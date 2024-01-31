@@ -13,6 +13,7 @@ import { PremiumContentPurchaseModalState } from './premium-content-purchase-mod
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
+import { WaitForDownloadModalState } from './wait-for-download-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
 
 export type Modals =
@@ -69,6 +70,7 @@ export type Modals =
   | 'AddFundsModal'
   | 'Welcome'
   | 'CoinflowWithdraw'
+  | 'WaitForDownloadModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -88,6 +90,7 @@ export type StatefulModalsState = {
   AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
   CoinflowWithdraw: CoinflowWithdrawModalState
+  WaitForDownloadModal: WaitForDownloadModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

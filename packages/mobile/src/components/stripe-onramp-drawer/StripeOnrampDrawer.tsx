@@ -7,7 +7,7 @@ import {
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
+import { IconCloseAlt } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'

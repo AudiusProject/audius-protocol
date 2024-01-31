@@ -15,8 +15,7 @@ import BN from 'bn.js'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import { IconArrowRight, IconClose } from '@audius/harmony-native'
 import { Button, ErrorText } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -123,7 +122,7 @@ export const SendTipScreen = () => {
   return (
     <TipScreen
       title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleBack} />}
+      topbarLeft={<TopBarIconButton icon={IconClose} onPress={handleBack} />}
     >
       <DegradationNotice />
       <ReceiverDetails />
@@ -142,7 +141,7 @@ export const SendTipScreen = () => {
         size='large'
         title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
         onPress={handleSendTip}
-        icon={IconArrow}
+        icon={IconArrowRight}
         iconPosition='right'
         fullWidth
         disabled={

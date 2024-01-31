@@ -5,6 +5,7 @@ import {
   trendingUndergroundPageLineupActions,
   getContext
 } from '@audius/common/store'
+import { Track } from '@audius/common/models'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 
@@ -51,13 +52,16 @@ function* getTrendingUnderground({
   return processed
 }
 
-class UndergroundTrendingSagas extends LineupSagas {
+class UndergroundTrendingSagas extends LineupSagas<Track> {
   constructor() {
     super(
       trendingUndergroundPageLineupActions.prefix,
       trendingUndergroundPageLineupActions,
       getLineup,
-      getTrendingUnderground
+      getTrendingUnderground,
+      undefined,
+      undefined,
+      undefined
     )
   }
 }

@@ -5,7 +5,7 @@ import type { FavoriteOfRepostNotification as FavoriteOfRepostNotificationType }
 import { notificationsSelectors, Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
-import IconHeart from 'app/assets/images/iconHeart.svg'
+import { IconHeart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

@@ -20,10 +20,13 @@ import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
-import IconPause from 'app/assets/images/iconPause.svg'
-import IconPlay from 'app/assets/images/iconPlay.svg'
-import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
+import {
+  Text as HarmonyText,
+  IconCalendarMonth,
+  IconPause,
+  IconPlay,
+  IconRepeatOff
+} from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
 import { Button, Hyperlink, Tile, DogEar, Text } from 'app/components/core'
@@ -313,7 +316,7 @@ export const DetailsTile = ({
     isNewPodcastControlsEnabled &&
     playbackPositionInfo?.status === 'COMPLETED' &&
     !isCurrentTrack
-      ? IconRepeat
+      ? IconRepeatOff
       : IconPlay
 
   const PreviewButton = () => (
@@ -466,7 +469,7 @@ export const DetailsTile = ({
                     source={descriptionLinkPressSource}
                     style={styles.description}
                     linkStyle={styles.link}
-                    text={squashNewLines(description)}
+                    text={squashNewLines(description) ?? ''}
                   />
                 ) : null}
               </View>
