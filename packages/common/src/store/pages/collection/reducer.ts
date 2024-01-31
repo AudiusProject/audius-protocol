@@ -1,4 +1,4 @@
-import { Collection } from 'models/Collection'
+import { Collection } from '~/models/Collection'
 import tracksReducer, {
   initialState as initialLineupState
 } from '~/store/pages/collection/lineup/reducer'

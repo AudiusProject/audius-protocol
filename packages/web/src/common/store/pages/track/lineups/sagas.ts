@@ -1,5 +1,5 @@
+import { Track } from '@audius/common/models'
 import {
-  Track,
   accountSelectors,
   cacheTracksSelectors,
   trackPageLineupActions,

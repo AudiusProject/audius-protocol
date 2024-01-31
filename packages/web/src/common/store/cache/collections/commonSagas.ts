@@ -4,8 +4,15 @@ import {
   Kind,
   PlaylistContents,
   ID,
-  Collection
+  Collection,
+  PlaylistTrackId,
+  UserCollectionMetadata,
+  User,
+  UserFollowees,
+  FolloweeRepost,
+  UID
 } from '@audius/common/models'
+import { TransactionReceipt } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -21,7 +28,9 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  SubscriptionInfo,
+  Entry
 } from '@audius/common/store'
 import {
   squashNewLines,

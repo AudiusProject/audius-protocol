@@ -19,6 +19,7 @@ import {
   badgeTiers,
   ProfileUser
 } from '@audius/common/store'
+import { IconAlbum } from '@audius/harmony'
 
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'

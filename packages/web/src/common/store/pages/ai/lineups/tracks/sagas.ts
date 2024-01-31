@@ -1,3 +1,4 @@
+import { Track } from '@audius/common/models'
 import {
   accountSelectors,
   aiPageLineupActions as tracksActions,
@@ -6,7 +7,6 @@ import {
   getContext,
   CommonState
 } from '@audius/common/store'
-import { Track } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common/models'
+import { Kind, Collection, ID } from '@audius/common/models'
 import {
   cacheCollectionsActions as collectionActions,
   cacheActions,
@@ -8,8 +8,7 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
-import { call, put } from 'redux-saga/effects'
-import { Collection, ID } from '@audius/common/models'
+import { call, put } from 'typed-redux-saga'
 
 import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { retrieveCollection } from './utils/retrieveCollections'

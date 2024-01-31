@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { useDownloadableContentAccess } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'

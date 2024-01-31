@@ -1,10 +1,10 @@
+import { Track } from '@audius/common/models'
 import {
   accountSelectors,
   premiumTracksPageLineupSelectors,
   premiumTracksPageLineupActions,
   getContext
 } from '@audius/common/store'
-import { Track } from '@audius/common/models'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

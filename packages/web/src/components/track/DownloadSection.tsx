@@ -4,9 +4,8 @@ import {
   useCurrentStems,
   useDownloadableContentAccess
 } from '@audius/common/hooks'
-import { ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
 import {
-  Name,
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
   CommonState,

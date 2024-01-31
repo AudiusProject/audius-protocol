@@ -5,11 +5,9 @@ import {
   LineupEntry,
   Track,
   Collection,
-  LineupEntry,
-  LineupEntry,
-  Track,
   UID,
-  LineupState
+  LineupState,
+  CollectionMetadata
 } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
@@ -26,12 +24,12 @@ import {
   playerSelectors,
   SubscriberInfo,
   SubscriptionInfo,
-  CollectionMetadata,
   Entry,
   LineupBaseActions,
-  QueueSource
+  QueueSource,
+  UnsubscribeInfo
 } from '@audius/common/store'
-import { Uid, makeUids, makeUid } from '@audius/common/utils'
+import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
 import {
   all,
   call,

@@ -1,25 +1,20 @@
 import { Status } from '@audius/common/models'
+import type { ID, Kind, Cache } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   cacheActions,
   cacheConfig,
   cacheSelectors,
-  confirmerSelectors
-} from '@audius/common/store'
-import { makeUids, getIdFromKindId } from '@audius/common/utils'
-import {
-  FeatureFlags,
   confirmerSelectors,
-  IntKeys,
   getContext
-} from '@audius/common'
-import type { ID, Kind, Cache } from '@audius/common/models'
+} from '@audius/common/store'
 import type {
   Metadata,
   Entry,
   SubscriberInfo,
   CacheType
 } from '@audius/common/store'
+import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 

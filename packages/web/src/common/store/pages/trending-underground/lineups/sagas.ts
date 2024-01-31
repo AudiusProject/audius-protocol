@@ -1,3 +1,4 @@
+import { Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -5,7 +6,6 @@ import {
   trendingUndergroundPageLineupActions,
   getContext
 } from '@audius/common/store'
-import { Track } from '@audius/common/models'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 

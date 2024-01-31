@@ -1,6 +1,5 @@
+import { ID, UserCollectionMetadata } from '@audius/common/models'
 import {
-  ID,
-  UserCollectionMetadata,
   accountSelectors,
   cacheCollectionsSelectors,
   getContext

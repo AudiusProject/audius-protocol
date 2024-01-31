@@ -1,5 +1,5 @@
-import { accountSelectors } from '@audius/common/store'
 import { Track } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

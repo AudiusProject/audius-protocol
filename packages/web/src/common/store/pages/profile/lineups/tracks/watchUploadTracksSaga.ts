@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common/models'
+import { Kind, Track } from '@audius/common/models'
 import {
   accountSelectors,
   profilePageTracksLineupActions,
@@ -6,7 +6,6 @@ import {
   uploadActions
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
-import { Track } from '@audius/common/models'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
 const { UPLOAD_TRACKS_SUCCEEDED, uploadTracksSucceeded } = uploadActions

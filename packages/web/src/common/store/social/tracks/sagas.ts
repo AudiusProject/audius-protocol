@@ -10,15 +10,15 @@ import {
   gatedContentSelectors,
   confirmerActions,
   confirmTransaction,
-  modalsActions,
-  removeNullable
+  modalsActions
 } from '@audius/common/store'
 import {
   formatShareText,
   encodeHashId,
   makeKindId,
   waitForValue,
-  getQueryParams
+  getQueryParams,
+  removeNullable
 } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { call, select, takeEvery, put, fork } from 'typed-redux-saga'
