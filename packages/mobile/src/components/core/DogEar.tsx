@@ -2,12 +2,14 @@ import { DogEarType } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
+import {
+  IconCart,
+  IconCollectible,
+  IconVisibilityHidden,
+  IconSpecialAccess,
+  IconStar
+} from '@audius/harmony-native'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
-import IconStar from 'app/assets/images/iconStar.svg'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -73,7 +75,7 @@ export const DogEar = (props: DogEarProps) => {
       colors: [secondary, pageHeaderGradientColor2]
     },
     [DogEarType.HIDDEN]: {
-      icon: IconHidden,
+      icon: IconVisibilityHidden,
       colors: [neutral, neutralLight3]
     },
     [DogEarType.COLLECTIBLE_GATED]: {

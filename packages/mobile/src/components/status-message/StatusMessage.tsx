@@ -1,8 +1,10 @@
 import type { TextStyle, ViewStyle } from 'react-native'
 import { Text, View } from 'react-native'
 
-import IconValidationCheck from 'app/assets/images/iconValidationCheck.svg'
-import IconValidationX from 'app/assets/images/iconValidationX.svg'
+import {
+  IconValidationCheck,
+  IconMultiselectRemove
+} from '@audius/harmony-native'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -53,7 +55,7 @@ export const StatusMessage = ({
     status === 'valid'
       ? IconValidationCheck
       : status === 'error'
-      ? IconValidationX
+      ? IconMultiselectRemove
       : View
 
   return (

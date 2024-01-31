@@ -3,11 +3,13 @@ import type { ComponentType } from 'react'
 import type { Nullable } from '@audius/common'
 import type { SvgProps } from 'react-native-svg'
 
-import IconAllowAttribution from 'app/assets/images/creativeCommons/by.svg'
-import IconCreativeCommons from 'app/assets/images/creativeCommons/cc.svg'
-import IconNonCommercialUse from 'app/assets/images/creativeCommons/nc.svg'
-import IconNoDerivatives from 'app/assets/images/creativeCommons/nd.svg'
-import IconShareAlike from 'app/assets/images/creativeCommons/sa.svg'
+import {
+  IconCcBy,
+  IconCcCC,
+  IconCcNC,
+  IconCcND,
+  IconCcSA
+} from '@audius/harmony-native'
 
 export const computeLicenseIcons = (
   allowAttribution: boolean,
@@ -16,12 +18,12 @@ export const computeLicenseIcons = (
 ) => {
   if (!allowAttribution) return null
   const icons: [Icon: ComponentType<SvgProps>, key: string][] = [
-    [IconCreativeCommons, 'cc'],
-    [IconAllowAttribution, 'by']
+    [IconCcCC, 'cc'],
+    [IconCcBy, 'by']
   ]
-  if (!commercialUse) icons.push([IconNonCommercialUse, 'nc'])
-  if (derivativeWorks === true) icons.push([IconShareAlike, 'sa'])
-  else if (derivativeWorks === false) icons.push([IconNoDerivatives, 'nd'])
+  if (!commercialUse) icons.push([IconCcNC, 'nc'])
+  if (derivativeWorks === true) icons.push([IconCcSA, 'sa'])
+  else if (derivativeWorks === false) icons.push([IconCcND, 'nd'])
 
   return icons
 }

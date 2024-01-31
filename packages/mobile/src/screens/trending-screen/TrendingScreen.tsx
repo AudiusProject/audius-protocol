@@ -1,10 +1,12 @@
 import { TimeRange, trendingPageSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import IconAllTime from 'app/assets/images/iconAllTime.svg'
-import IconDay from 'app/assets/images/iconDay.svg'
-import IconMonth from 'app/assets/images/iconMonth.svg'
-import IconTrending from 'app/assets/images/iconTrending.svg'
+import {
+  IconAllTime,
+  IconCalendarDay,
+  IconCalendarMonth,
+  IconTrending
+} from '@audius/harmony-native'
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
@@ -36,13 +38,13 @@ const trendingScreens = [
   {
     name: 'ThisWeek',
     label: 'This Week',
-    Icon: IconDay,
+    Icon: IconCalendarDay,
     component: ThisWeekTab
   },
   {
     name: 'ThisMonth',
     label: 'This Month',
-    Icon: IconMonth,
+    Icon: IconCalendarMonth,
     component: ThisMonthTab
   },
   {

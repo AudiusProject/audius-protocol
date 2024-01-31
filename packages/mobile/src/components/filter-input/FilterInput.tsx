@@ -1,7 +1,7 @@
 import type { TextInputProps } from 'react-native'
 import Animated, { Layout } from 'react-native-reanimated'
 
-import IconFilter from 'app/assets/images/iconFilter.svg'
+import { IconFilter } from '@audius/harmony-native'
 import { TextInput, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

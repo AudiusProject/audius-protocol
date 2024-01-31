@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import type { UploadTrack } from '@audius/common'
 import { View } from 'react-native'
 
-import IconImage from 'app/assets/images/iconImage.svg'
+import { IconImage } from '@audius/harmony-native'
 import { DynamicImage, LinearProgress, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

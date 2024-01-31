@@ -11,8 +11,7 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconClose from 'app/assets/images/iconRemove.svg'
-import IconTrash from 'app/assets/images/iconTrash.svg'
+import { IconClose, IconTrash } from '@audius/harmony-native'
 import {
   Divider,
   TextButton,

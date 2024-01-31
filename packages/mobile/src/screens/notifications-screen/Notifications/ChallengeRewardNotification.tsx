@@ -6,7 +6,7 @@ import type {
 } from '@audius/common'
 import { Platform } from 'react-native'
 
-import IconAudius from 'app/assets/images/iconAudius.svg'
+import { IconAudiusLogo } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -97,7 +97,7 @@ export const ChallengeRewardNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconAudius}>
+      <NotificationHeader icon={IconAudiusLogo}>
         <NotificationTitle>
           {Platform.OS === 'ios' && iosTitle != null ? iosTitle : title}
         </NotificationTitle>

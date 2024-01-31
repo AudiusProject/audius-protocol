@@ -5,7 +5,7 @@ import { creativeCommons } from '@audius/common'
 import { useField } from 'formik'
 import { ScrollView, View } from 'react-native'
 
-import IconCreativeCommons from 'app/assets/images/creativeCommons/cc.svg'
+import { IconCcCC } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
 import { Divider, SegmentedControl, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -116,11 +116,7 @@ export const LicenseTypeScreen = () => {
   }
 
   return (
-    <FormScreen
-      title={messages.title}
-      icon={IconCreativeCommons}
-      variant='white'
-    >
+    <FormScreen title={messages.title} icon={IconCcCC} variant='white'>
       <ScrollView>
         <View style={styles.content}>
           <View style={styles.licenseSection}>

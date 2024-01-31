@@ -10,9 +10,11 @@ import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
+import {
+  IconCaretRight,
+  IconCollectible,
+  IconExternalLink
+} from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'

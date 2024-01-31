@@ -5,10 +5,12 @@ import { cacheUsersSelectors } from '@audius/common'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
-import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
-import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
-import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
-import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
+import {
+  IconTokenBronze,
+  IconTokenGold,
+  IconTokenPlatinum,
+  IconTokenSilver
+} from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -30,31 +32,31 @@ const messages = {
 
 const tierInfoMap = {
   none: {
-    icon: IconBronzeBadge,
+    icon: IconTokenBronze,
     label: 'None',
     amount: 0,
     twitterIcon: ''
   },
   bronze: {
-    icon: IconBronzeBadge,
+    icon: IconTokenBronze,
     label: 'Bronze',
     amount: 10,
     twitterIcon: '🥉'
   },
   silver: {
-    icon: IconSilverBadge,
+    icon: IconTokenSilver,
     label: 'Silver',
     amount: 100,
     twitterIcon: '🥈'
   },
   gold: {
-    icon: IconGoldBadge,
+    icon: IconTokenGold,
     label: 'Gold',
     amount: 10000,
     twitterIcon: '🥇'
   },
   platinum: {
-    icon: IconPlatinumBadge,
+    icon: IconTokenPlatinum,
     label: 'Platinum',
     amount: 100000,
     twitterIcon: '🥇'

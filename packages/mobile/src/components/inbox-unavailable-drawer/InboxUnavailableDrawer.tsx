@@ -15,8 +15,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconMessageLocked, IconTipping } from '@audius/harmony-native'
 import { Text, Button, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -212,7 +211,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
             title={messages.sendAudio}
             onPress={handleTipPress}
             variant={'primary'}
-            icon={IconTip}
+            icon={IconTipping}
             iconPosition='left'
             styles={{
               root: styles.button,

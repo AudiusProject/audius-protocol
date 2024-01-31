@@ -21,9 +21,11 @@ import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
-import IconFollow from 'app/assets/images/iconFollow.svg'
-import IconTip from 'app/assets/images/iconTip.svg'
+import {
+  IconExternalLink,
+  IconUserFollow,
+  IconTipping
+} from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { Button, LockedStatusBadge, useLink } from 'app/components/core'
@@ -313,7 +315,7 @@ export const DetailsTileNoAccess = ({
             title={messages.followArtist}
             size='large'
             iconPosition='left'
-            icon={IconFollow}
+            icon={IconUserFollow}
             onPress={handleFollowArtist}
             fullWidth
           />
@@ -335,7 +337,7 @@ export const DetailsTileNoAccess = ({
             title={messages.sendTip}
             size='large'
             iconPosition='right'
-            icon={IconTip}
+            icon={IconTipping}
             onPress={handleSendTip}
             fullWidth
           />

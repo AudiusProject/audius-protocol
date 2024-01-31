@@ -4,8 +4,7 @@ import type { OptimisticUserChallenge } from '@audius/common'
 import { ChallengeName, ClaimStatus, formatNumberCommas } from '@audius/common'
 import { ScrollView, View } from 'react-native'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconArrowRight, IconCloudUpload } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -57,12 +56,12 @@ const ctaButtonProps: {
   >
 } = {
   [ChallengeName.AudioMatchingBuy]: {
-    icon: IconArrow,
+    icon: IconArrowRight,
     iconPosition: 'right',
     title: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
-    icon: IconUpload,
+    icon: IconCloudUpload,
     iconPosition: 'left',
     title: messages.uploadTrack
   }
@@ -140,7 +139,7 @@ export const AudioMatchingChallengeDrawerContent = ({
             variant='primary'
             onPress={onClaim}
             title={messages.claimAudio(formatNumberCommas(claimableAmount))}
-            icon={claimInProgress ? LoadingSpinner : IconArrow}
+            icon={claimInProgress ? LoadingSpinner : IconArrowRight}
             iconPosition='right'
             fullWidth
           />

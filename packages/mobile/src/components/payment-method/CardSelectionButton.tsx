@@ -5,7 +5,7 @@ import { modalsActions } from '@audius/common'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
+import { IconCaretDown } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

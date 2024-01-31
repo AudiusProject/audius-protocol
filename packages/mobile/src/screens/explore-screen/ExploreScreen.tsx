@@ -2,11 +2,13 @@ import { explorePageActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconExplore from 'app/assets/images/iconExplore.svg'
-import IconForYou from 'app/assets/images/iconExploreForYou.svg'
-import IconMoods from 'app/assets/images/iconExploreMoods.svg'
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
+import {
+  IconExplore,
+  IconStars,
+  IconMood,
+  IconPlaylists,
+  IconUser
+} from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
@@ -27,12 +29,12 @@ const exploreScreens = [
   {
     name: 'forYou',
     label: messages.forYou,
-    Icon: IconForYou,
+    Icon: IconStars,
     component: ForYouTab
   },
   {
     name: 'moods',
-    Icon: IconMoods,
+    Icon: IconMood,
     component: MoodsTab
   },
   {

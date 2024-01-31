@@ -1,6 +1,6 @@
 import { TouchableOpacity } from 'react-native'
 
-import IconCopy from 'app/assets/images/iconCopy2.svg'
+import { IconCopy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

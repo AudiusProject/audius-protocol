@@ -1,6 +1,6 @@
 import { TouchableOpacity, View } from 'react-native'
 
-import IconLink from 'app/assets/images/iconLink.svg'
+import { IconLink } from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

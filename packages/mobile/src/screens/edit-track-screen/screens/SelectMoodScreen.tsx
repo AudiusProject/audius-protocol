@@ -1,7 +1,7 @@
 import { useField } from 'formik'
 import { View, Image } from 'react-native'
 
-import IconMood from 'app/assets/images/iconMood.svg'
+import { IconMood } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'

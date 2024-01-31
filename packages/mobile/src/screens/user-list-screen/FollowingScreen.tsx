@@ -6,7 +6,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import IconUserList from 'app/assets/images/iconUserList.svg'
+import { IconUserList } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'

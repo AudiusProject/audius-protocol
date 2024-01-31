@@ -12,7 +12,7 @@ import { ImageBackground, Text, View } from 'react-native'
 import { SvgUri } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPlay from 'app/assets/images/pbIconPlay.svg'
+import { IconPlay } from '@audius/harmony-native'
 import { ChainLogo, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

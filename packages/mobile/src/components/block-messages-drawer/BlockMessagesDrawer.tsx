@@ -4,8 +4,7 @@ import { cacheUsersSelectors, chatActions, chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconBlockMessages from 'app/assets/images/iconBlockMessages.svg'
-import IconInfo from 'app/assets/images/iconInfo.svg'
+import { IconMessageBlock, IconInfo } from '@audius/harmony-native'
 import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -165,7 +164,7 @@ export const BlockMessagesDrawer = () => {
     <NativeDrawer drawerName={BLOCK_MESSAGES_MODAL_NAME}>
       <View style={styles.drawer}>
         <View style={styles.titleContainer}>
-          <IconBlockMessages fill={neutralLight2} />
+          <IconMessageBlock fill={neutralLight2} />
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <Text style={styles.confirm}>
