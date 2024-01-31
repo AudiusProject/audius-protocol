@@ -1,3 +1,4 @@
+import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -9,12 +10,10 @@ import {
   OverflowSource,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors,
-  CommonState
+  playbackPositionSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback } from 'react'
 
 import {
   ShareSource,

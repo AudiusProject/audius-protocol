@@ -1,10 +1,13 @@
-import { accountSelectors, settingsPageSelectors, settingsPageInitialState as initialState, settingsPageActions
-, PushNotificationSetting, getContext, PushNotifications as TPushNotifications } from '@audius/common'
 import {
-  accountSelectors } from '@audius/common/store'
-     import type { 
-  
-  } from '@audius/common'
+  accountSelectors,
+  settingsPageSelectors,
+  settingsPageInitialState as initialState,
+  settingsPageActions,
+  PushNotificationSetting,
+  getContext
+} from '@audius/common'
+import type { PushNotifications as TPushNotifications } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import {
   getErrorMessage,
   waitForValue,

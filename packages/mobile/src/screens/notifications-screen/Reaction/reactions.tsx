@@ -1,7 +1,7 @@
-import { ReactionTypes  } from '@audius/common/store'
-     import type { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import type { } from '@audius/common'
+import type { ReactionTypes } from '@audius/common/store'
+
 import type { SetOptional } from 'type-fest'
 
 import type { ReactionProps as BaseReactionProps } from './Reaction'

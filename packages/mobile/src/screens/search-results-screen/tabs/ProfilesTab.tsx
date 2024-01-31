@@ -1,9 +1,5 @@
-import {
-  searchResultsPageSelectors,
-  SearchKind,
-  CommonState
-} from '@audius/common/store'
-import type {} from '@audius/common'
+import type { CommonState } from '@audius/common/store'
+import { searchResultsPageSelectors, SearchKind } from '@audius/common/store'
 
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'

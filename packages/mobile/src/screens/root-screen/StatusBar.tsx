@@ -1,6 +1,5 @@
-import { accountSelectors } from '@audius/common/store'
-
 import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { NavigationBar, StatusBar as RNStatusBar } from 'react-native-bars'
 import { useSelector } from 'react-redux'
 

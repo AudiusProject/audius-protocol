@@ -1,6 +1,6 @@
-import { tippingSelectors, tippingActions } from '@audius/common/store'
 import { useCallback, useEffect } from 'react'
 
+import { tippingSelectors, tippingActions } from '@audius/common/store'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useKeepAwake } from '@sayem314/react-native-keep-awake'
 import { Platform } from 'react-native'

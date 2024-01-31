@@ -1,13 +1,15 @@
-import {
-  notificationsSelectors,
-  reactionsUIActions,
-  reactionsUISelectors,
+import { useCallback } from 'react'
+
+import type {
   TipReceiveNotification,
   ReactionTypes
 } from '@audius/common/store'
-import { useCallback } from 'react'
+import {
+  notificationsSelectors,
+  reactionsUIActions,
+  reactionsUISelectors
+} from '@audius/common/store'
 
-import type {} from '@audius/common'
 import { useUIAudio } from '@audius/common/hooks'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'

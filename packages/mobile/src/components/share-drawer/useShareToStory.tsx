@@ -1,13 +1,12 @@
-import { modalsActions, ShareContent } from '@audius/common/store'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import EventEmitter from 'events'
 import path from 'path'
 
-import type {} from '@audius/common'
-
 import { ErrorLevel, SquareSizes } from '@audius/common/models'
 import type { Color } from '@audius/common/models'
+import { modalsActions } from '@audius/common/store'
+import type { ShareContent } from '@audius/common/store'
 import { encodeHashId, uuid } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import {

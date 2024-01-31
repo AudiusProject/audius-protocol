@@ -1,9 +1,3 @@
-import {
-  usersSocialActions,
-  tippingActions,
-  usePremiumContentPurchaseModal,
-  gatedContentSelectors
-} from '@audius/common/store'
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
@@ -18,6 +12,12 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
+import {
+  usersSocialActions,
+  tippingActions,
+  usePremiumContentPurchaseModal,
+  gatedContentSelectors
+} from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'

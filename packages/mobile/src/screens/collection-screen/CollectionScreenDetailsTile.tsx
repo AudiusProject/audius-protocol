@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useMemo } from 'react'
+
+import { Name, PlaybackSource, Status } from '@audius/common/models'
+import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
@@ -5,10 +9,6 @@ import {
   reachabilitySelectors,
   playerSelectors
 } from '@audius/common/store'
-import { useCallback, useEffect, useMemo } from 'react'
-
-import { Name, PlaybackSource, Status } from '@audius/common/models'
-import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
 import type { Maybe } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'

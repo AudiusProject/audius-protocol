@@ -1,8 +1,8 @@
-import { accountSelectors } from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
 import { isContentFollowGated, isContentTipGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'

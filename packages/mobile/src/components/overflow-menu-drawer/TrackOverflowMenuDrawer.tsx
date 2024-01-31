@@ -1,3 +1,4 @@
+import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -11,13 +12,10 @@ import {
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
   OverflowAction,
-  playbackPositionActions,
-  CommonState,
-  OverflowActionCallbacks
+  playbackPositionActions
 } from '@audius/common/store'
-import { useContext } from 'react'
 
-import type {} from '@audius/common'
+import { useContext } from 'react'
 
 import {
   ShareSource,

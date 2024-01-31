@@ -1,9 +1,9 @@
-import { notificationsSelectors , AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common'
-import { notificationsSelectors  } from '@audius/common/store'
-     import { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import type { } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'

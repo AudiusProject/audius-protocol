@@ -1,5 +1,4 @@
 import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
-
 import { useField } from 'formik'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'

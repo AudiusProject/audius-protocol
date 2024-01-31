@@ -1,11 +1,11 @@
+import { useCallback } from 'react'
+
+import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   savedPageTracksLineupActions,
   savedPageSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
-import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { orderBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'

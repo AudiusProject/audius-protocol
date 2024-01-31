@@ -1,12 +1,12 @@
+import type { ComponentType } from 'react'
+import { useCallback, useContext } from 'react'
+
+import type { User } from '@audius/common/models'
 import {
   accountSelectors,
   followingUserListActions,
   followersUserListActions
 } from '@audius/common/store'
-import type { ComponentType } from 'react'
-import { useCallback, useContext } from 'react'
-
-import type { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

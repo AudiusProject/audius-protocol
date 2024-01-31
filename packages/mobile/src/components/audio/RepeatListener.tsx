@@ -1,5 +1,4 @@
 import { playerActions } from '@audius/common/store'
-
 import TrackPlayer, { RepeatMode, useProgress } from 'react-native-track-player'
 import { useDispatch } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'

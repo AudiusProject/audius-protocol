@@ -1,5 +1,5 @@
-import { AnnouncementNotification as AnnouncementNotificationType  } from '@audius/common/store'
-     import type { } from '@audius/common'
+import type { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common/store'
+
 import { View } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 

@@ -1,7 +1,7 @@
-import { modalsSelectors, modalsActions, Modals } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type {} from '@audius/common'
+import type { Modals } from '@audius/common/store'
+import { modalsSelectors, modalsActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 import type { SetOptional } from 'type-fest'
 

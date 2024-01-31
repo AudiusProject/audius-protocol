@@ -1,6 +1,5 @@
-import { cacheUsersSelectors } from '@audius/common/store'
-
 import type { SquareSizes, ID } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 

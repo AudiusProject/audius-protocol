@@ -1,13 +1,11 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import type { CommonState, UserListStoreState } from '@audius/common/store'
 import {
   cacheUsersSelectors,
   userListActions,
-  userListSelectors,
-  CommonState,
-  UserListStoreState
+  userListSelectors
 } from '@audius/common/store'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-
-import type {} from '@audius/common'
 
 import type { ID, User } from '@audius/common/models'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'

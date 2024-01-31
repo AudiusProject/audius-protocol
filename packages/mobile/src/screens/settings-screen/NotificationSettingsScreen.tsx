@@ -1,9 +1,8 @@
+import { FeatureFlags } from '@audius/common/services'
 import {
   settingsPageActions,
   PushNotificationSetting
 } from '@audius/common/store'
-
-import { FeatureFlags } from '@audius/common/services'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 

@@ -1,11 +1,7 @@
-import {
-  cacheTracksSelectors,
-  tracksSocialActions,
-  CommonState
-} from '@audius/common/store'
-import { useCallback } from 'react'
+import type { CommonState } from '@audius/common/store'
+import { cacheTracksSelectors, tracksSocialActions } from '@audius/common/store'
 
-import type {} from '@audius/common'
+import { useCallback } from 'react'
 
 import { useDownloadableContentAccess } from '@audius/common/hooks'
 import { Name, DownloadQuality } from '@audius/common/models'

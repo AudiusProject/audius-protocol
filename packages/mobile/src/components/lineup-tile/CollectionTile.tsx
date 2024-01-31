@@ -1,3 +1,4 @@
+import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -8,13 +9,10 @@ import {
   OverflowAction,
   OverflowSource,
   RepostType,
-  playerSelectors,
-  EnhancedCollectionTrack,
-  CommonState
+  playerSelectors
 } from '@audius/common/store'
-import { useCallback, useMemo } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback, useMemo } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
 import {

@@ -1,7 +1,7 @@
-import { cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import type { Supporting } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'

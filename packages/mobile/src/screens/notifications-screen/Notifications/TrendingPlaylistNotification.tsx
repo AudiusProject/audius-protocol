@@ -1,12 +1,12 @@
-import { notificationsSelectors , CollectionEntity, TrendingPlaylistNotification as TrendingPlaylistNotificationType
-} from '@audius/common'
-import { notificationsSelectors  } from '@audius/common/store'
-     import { useCallback } from 'react'
+import { useCallback } from 'react'
 
+import { notificationsSelectors } from '@audius/common'
 import type {
-  
-  } from '@audius/common'
+  CollectionEntity,
+  TrendingPlaylistNotification as TrendingPlaylistNotificationType
+} from '@audius/common'
 import { Name } from '@audius/common/models'
+import { notificationsSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 

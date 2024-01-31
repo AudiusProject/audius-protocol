@@ -1,7 +1,6 @@
-import { playerSelectors } from '@audius/common/store'
-
 import { useGatedContentAccess } from '@audius/common/hooks'
 import type { Track, User } from '@audius/common/models'
+import { playerSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'

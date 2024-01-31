@@ -1,13 +1,13 @@
-import {
-  lineupSelectors,
-  feedPageLineupActions as feedActions,
-  feedPageSelectors
-} from '@audius/common/store'
 import { useCallback } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  lineupSelectors,
+  feedPageLineupActions as feedActions,
+  feedPageSelectors
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import IconFeed from 'app/assets/images/iconFeed.svg'

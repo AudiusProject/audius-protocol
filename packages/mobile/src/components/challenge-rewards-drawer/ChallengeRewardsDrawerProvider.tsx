@@ -1,13 +1,12 @@
+import { useCallback, useEffect } from 'react'
+
+import type { CommonState } from '@audius/common/store'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
-  ClaimStatus,
-  CommonState
+  ClaimStatus
 } from '@audius/common/store'
-import { useCallback, useEffect } from 'react'
-
-import type {} from '@audius/common'
 
 import { IntKeys, StringKeys } from '@audius/common/services'
 import {

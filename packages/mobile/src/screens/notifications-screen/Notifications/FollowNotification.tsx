@@ -1,9 +1,9 @@
-import { notificationsSelectors , FollowNotification as FollowNotificationType } from '@audius/common'
-import { notificationsSelectors  } from '@audius/common/store'
-     import { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import type { } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
+import type { FollowNotification as FollowNotificationType } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
+import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import IconUser from 'app/assets/images/iconUser.svg'

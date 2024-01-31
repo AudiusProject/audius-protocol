@@ -1,11 +1,11 @@
+import { useCallback, useEffect } from 'react'
+
+import { useProxySelector } from '@audius/common/hooks'
 import {
   cacheUsersSelectors,
   tippingSelectors,
   tippingActions
 } from '@audius/common/store'
-import { useCallback, useEffect } from 'react'
-
-import { useProxySelector } from '@audius/common/hooks'
 import { removeNullable } from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

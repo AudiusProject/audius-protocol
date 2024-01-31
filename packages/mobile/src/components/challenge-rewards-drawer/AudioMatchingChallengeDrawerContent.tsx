@@ -1,8 +1,8 @@
-import { ClaimStatus } from '@audius/common/store'
 import React from 'react'
 
 import type { OptimisticUserChallenge } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
+import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 

@@ -1,17 +1,3 @@
-import {
-  accountSelectors,
-  collectionPageSelectors,
-  collectionPageActions,
-  collectionsSocialActions,
-  mobileOverflowMenuUIActions,
-  publishPlaylistConfirmationModalUIActions,
-  shareModalUIActions,
-  OverflowAction,
-  OverflowSource,
-  repostsUserListActions,
-  favoritesUserListActions,
-  RepostType
-} from '@audius/common/store'
 import { useCallback, useMemo } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -29,6 +15,20 @@ import type {
   User
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  collectionPageSelectors,
+  collectionPageActions,
+  collectionsSocialActions,
+  mobileOverflowMenuUIActions,
+  publishPlaylistConfirmationModalUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType
+} from '@audius/common/store'
 import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'

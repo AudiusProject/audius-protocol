@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
+import type { StringWei, BNWei } from '@audius/common/models'
 import {
   accountSelectors,
   tippingSelectors,
@@ -5,10 +9,6 @@ import {
   walletSelectors,
   walletActions
 } from '@audius/common/store'
-import { useCallback, useEffect, useState } from 'react'
-
-import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
-import type { StringWei, BNWei } from '@audius/common/models'
 import { stringWeiToBN } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'

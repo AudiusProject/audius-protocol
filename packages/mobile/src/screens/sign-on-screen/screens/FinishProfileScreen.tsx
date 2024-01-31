@@ -1,7 +1,7 @@
-import { Image  } from '@audius/common/store'
-     import { useCallback } from 'react'
+import type { Image } from '@audius/common/store'
 
-import type { } from '@audius/common'
+import { useCallback } from 'react'
+
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { finishProfileSchema } from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'

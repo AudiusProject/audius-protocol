@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { PlaybackSource, Status } from '@audius/common/models'
+import type { ID, UID, Track, User } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -8,10 +12,6 @@ import {
   SavedPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-
-import { PlaybackSource, Status } from '@audius/common/models'
-import type { ID, UID, Track, User } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'

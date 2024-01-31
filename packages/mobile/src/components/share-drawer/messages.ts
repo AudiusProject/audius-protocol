@@ -1,5 +1,4 @@
-import { ShareType  } from '@audius/common/store'
-     import type { } from '@audius/common'
+import type { ShareType } from '@audius/common/store'
 
 const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',

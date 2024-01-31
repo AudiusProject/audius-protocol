@@ -1,6 +1,5 @@
-import type { CommonStoreContext } from '@audius/common/store'
-import type {} from '@audius/common'
 import { OpenSeaClient, SolanaClient } from '@audius/common/services'
+import type { CommonStoreContext } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 

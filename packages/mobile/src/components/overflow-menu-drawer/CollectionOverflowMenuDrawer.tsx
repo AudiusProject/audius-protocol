@@ -1,3 +1,4 @@
+import type { OverflowActionCallbacks } from '@audius/common/store'
 import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
@@ -5,12 +6,10 @@ import {
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
   publishPlaylistConfirmationModalUIActions,
-  OverflowAction,
-  OverflowActionCallbacks
+  OverflowAction
 } from '@audius/common/store'
-import { useContext } from 'react'
 
-import type {} from '@audius/common'
+import { useContext } from 'react'
 
 import {
   ShareSource,

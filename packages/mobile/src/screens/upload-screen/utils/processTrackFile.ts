@@ -1,5 +1,5 @@
-import { UploadTrack  } from '@audius/common/store'
-     import type { } from '@audius/common'
+import type { UploadTrack } from '@audius/common/store'
+
 import { newTrackMetadata } from '@audius/common/schemas'
 import {
   ALLOWED_MAX_AUDIO_SIZE_BYTES,

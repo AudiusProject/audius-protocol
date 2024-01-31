@@ -1,12 +1,11 @@
+import type { ChatMessageTileProps } from '@audius/common/store'
 import {
   accountSelectors,
   QueueSource,
-  playerSelectors,
-  ChatMessageTileProps
+  playerSelectors
 } from '@audius/common/store'
-import { useCallback, useMemo, useEffect } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback, useMemo, useEffect } from 'react'
 
 import {
   useGetTracksByIds,

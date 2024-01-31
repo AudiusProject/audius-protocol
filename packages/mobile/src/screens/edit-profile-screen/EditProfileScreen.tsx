@@ -1,8 +1,8 @@
-import { accountSelectors, profilePageActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import type { UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
+import { accountSelectors, profilePageActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

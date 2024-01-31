@@ -1,5 +1,4 @@
 import { vipDiscordModalSelectors } from '@audius/common/store'
-
 import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'

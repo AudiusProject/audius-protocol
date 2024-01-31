@@ -1,12 +1,11 @@
+import { useCallback } from 'react'
+
+import type { CastMethod } from '@audius/common/store'
 import {
   accountSelectors,
   castSelectors,
-  castActions,
-  CastMethod
+  castActions
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
-import type {} from '@audius/common'
 
 import { useDispatch, useSelector } from 'react-redux'
 

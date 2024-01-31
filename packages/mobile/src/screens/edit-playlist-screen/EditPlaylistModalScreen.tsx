@@ -1,11 +1,10 @@
-import {
-  cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  EditPlaylistValues
-} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type {} from '@audius/common'
+import type { EditPlaylistValues } from '@audius/common/store'
+import {
+  cacheCollectionsActions,
+  cacheCollectionsSelectors
+} from '@audius/common/store'
 
 import { SquareSizes } from '@audius/common/models'
 import { Formik } from 'formik'

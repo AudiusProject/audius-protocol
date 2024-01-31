@@ -1,9 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   favoritesUserListActions,
   favoritesUserListSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'

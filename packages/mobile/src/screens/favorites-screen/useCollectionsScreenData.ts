@@ -1,13 +1,11 @@
+import type { CommonState, CollectionType } from '@audius/common/store'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
   savedPageSelectors,
   SavedPageTabs,
-  reachabilitySelectors,
-  CommonState,
-  CollectionType
+  reachabilitySelectors
 } from '@audius/common/store'
-import type {} from '@audius/common'
 
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'

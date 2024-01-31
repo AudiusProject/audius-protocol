@@ -1,7 +1,7 @@
-import { useLeavingAudiusModal } from '@audius/common/store'
 import type { ComponentProps } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useLeavingAudiusModal } from '@audius/common/store'
 import {
   isInteralAudiusUrl,
   getPathFromAudiusUrl,

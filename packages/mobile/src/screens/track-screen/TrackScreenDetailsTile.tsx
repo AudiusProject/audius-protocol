@@ -1,19 +1,3 @@
-import {
-  accountSelectors,
-  trackPageLineupActions,
-  queueSelectors,
-  reachabilitySelectors,
-  tracksSocialActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  OverflowAction,
-  OverflowSource,
-  repostsUserListActions,
-  favoritesUserListActions,
-  RepostType,
-  playerSelectors,
-  playbackPositionSelectors
-} from '@audius/common/store'
 import { useCallback } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -36,6 +20,22 @@ import type {
   User
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  trackPageLineupActions,
+  queueSelectors,
+  reachabilitySelectors,
+  tracksSocialActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
 import {
   Genre,
   getCanonicalName,

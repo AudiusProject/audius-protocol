@@ -1,10 +1,10 @@
+import { useCallback } from 'react'
+
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { fillString } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'

@@ -1,8 +1,8 @@
-import { cacheTracksSelectors, notificationsSelectors , RemixCreateNotification as RemixCreateNotificationType } from '@audius/common'
-import { cacheTracksSelectors } from '@audius/common/store'
-     import { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import type { } from '@audius/common'
+import { cacheTracksSelectors, notificationsSelectors } from '@audius/common'
+import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common'
+import { cacheTracksSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'

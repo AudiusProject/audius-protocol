@@ -1,6 +1,6 @@
-import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
+import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

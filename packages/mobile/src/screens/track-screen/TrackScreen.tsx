@@ -1,12 +1,12 @@
+import { useCallback } from 'react'
+
+import { useProxySelector } from '@audius/common/hooks'
 import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
-import { useProxySelector } from '@audius/common/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

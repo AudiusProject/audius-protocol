@@ -1,7 +1,7 @@
-import { chatSelectors } from '@audius/common/store'
 import { useCallback, useMemo } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
+import { chatSelectors } from '@audius/common/store'
 import { View, TouchableHighlight } from 'react-native'
 
 import { Text } from 'app/components/core'

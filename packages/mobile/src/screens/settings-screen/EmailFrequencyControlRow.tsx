@@ -1,10 +1,10 @@
+import { useCallback } from 'react'
+
 import {
   settingsPageSelectors,
   settingsPageActions,
   EmailFrequency
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SegmentedControl } from 'app/components/core'

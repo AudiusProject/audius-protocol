@@ -1,6 +1,5 @@
-import { cacheCollectionsSelectors } from '@audius/common/store'
-
 import type { ID } from '@audius/common/models'
+import { cacheCollectionsSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'

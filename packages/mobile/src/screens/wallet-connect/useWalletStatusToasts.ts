@@ -1,9 +1,9 @@
+import { useEffect } from 'react'
+
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions
 } from '@audius/common/store'
-import { useEffect } from 'react'
-
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useToast } from 'app/hooks/useToast'

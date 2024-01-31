@@ -1,4 +1,3 @@
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
@@ -10,6 +9,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { getDogEarType } from '@audius/common/utils'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'

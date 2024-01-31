@@ -1,12 +1,11 @@
-import {
-  notificationsUserListActions,
+import { useCallback } from 'react'
+
+import type {
   FollowNotification,
   RepostNotification,
   FavoriteNotification
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
-import type {} from '@audius/common'
+import { notificationsUserListActions } from '@audius/common/store'
 
 import type { User } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'

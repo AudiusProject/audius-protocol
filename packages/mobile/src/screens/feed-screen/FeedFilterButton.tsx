@@ -1,7 +1,7 @@
-import { feedPageSelectors, modalsActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import { FeedFilter } from '@audius/common/models'
+import { feedPageSelectors, modalsActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ScreenHeaderButton } from 'app/components/core'

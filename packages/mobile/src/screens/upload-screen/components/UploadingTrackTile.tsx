@@ -1,7 +1,7 @@
-import { UploadTrack  } from '@audius/common/store'
-     import { useMemo } from 'react'
+import { useMemo } from 'react'
 
-import type { } from '@audius/common'
+import type { UploadTrack } from '@audius/common/store'
+
 import { View } from 'react-native'
 
 import IconImage from 'app/assets/images/iconImage.svg'

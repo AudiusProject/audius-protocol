@@ -1,11 +1,6 @@
-import {
-  profilePageSelectors,
-  badgeTiers,
-  BadgeTierInfo
-} from '@audius/common/store'
-
-import type {} from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import type { BadgeTierInfo } from '@audius/common/store'
+import { profilePageSelectors, badgeTiers } from '@audius/common/store'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

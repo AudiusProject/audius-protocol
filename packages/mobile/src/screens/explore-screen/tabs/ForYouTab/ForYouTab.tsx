@@ -1,6 +1,6 @@
-import { ExploreCollectionsVariant } from '@audius/common/store'
 import { useRef } from 'react'
 
+import { ExploreCollectionsVariant } from '@audius/common/store'
 import { View } from 'react-native'
 
 import type { ScrollViewElement } from 'app/components/core'

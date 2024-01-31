@@ -1,9 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   stripeModalUIActions,
   stripeModalUISelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

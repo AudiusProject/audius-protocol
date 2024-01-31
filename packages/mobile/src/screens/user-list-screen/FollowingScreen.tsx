@@ -1,9 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   followingUserListActions,
   followingUserListSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useDispatch } from 'react-redux'
 
 import IconUserList from 'app/assets/images/iconUserList.svg'

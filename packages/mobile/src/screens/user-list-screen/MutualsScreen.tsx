@@ -1,10 +1,10 @@
+import { useCallback } from 'react'
+
 import {
   mutualsUserListActions,
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useDispatch } from 'react-redux'
 
 import IconFollowing from 'app/assets/images/iconFollowing.svg'

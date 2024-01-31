@@ -1,8 +1,8 @@
-import { accountSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common/models'
 import { FollowSource } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Pressable, View, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 

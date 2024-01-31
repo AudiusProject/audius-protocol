@@ -1,10 +1,10 @@
+import { useCallback } from 'react'
+
 import {
   NotificationType,
   notificationsUserListActions,
   notificationsUserListSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useDispatch } from 'react-redux'
 
 import { useRoute } from 'app/hooks/useRoute'

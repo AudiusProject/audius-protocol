@@ -1,7 +1,7 @@
-import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { useEffect } from 'react'
 
 import type { ID } from '@audius/common/models'
+import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'

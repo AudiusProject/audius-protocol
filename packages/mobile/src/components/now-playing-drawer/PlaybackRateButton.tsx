@@ -1,5 +1,5 @@
-import { playerSelectors, PlaybackRate } from '@audius/common/store'
-import type {} from '@audius/common'
+import type { PlaybackRate } from '@audius/common/store'
+import { playerSelectors } from '@audius/common/store'
 
 import { useSelector } from 'react-redux'
 

@@ -1,10 +1,9 @@
-import { InstagramAccountPayload, TwitterProfile, TikTokProfile, Image
- } from '@audius/common/store'
-     import type {
-  
-  
-  
-  } from '@audius/common'
+import type {
+  InstagramAccountPayload,
+  TwitterProfile,
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
 
 import type { Provider } from './reducer'
 import type { Credentials } from './types'

@@ -1,7 +1,7 @@
-import { tokenDashboardPageActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import type { Chain, BNWei } from '@audius/common/models'
+import { tokenDashboardPageActions } from '@audius/common/store'
 import { formatWei } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'

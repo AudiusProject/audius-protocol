@@ -1,5 +1,5 @@
-import { playerSelectors, CommonState } from '@audius/common/store'
-import type {} from '@audius/common'
+import type { CommonState } from '@audius/common/store'
+import { playerSelectors } from '@audius/common/store'
 
 import type { UID, LineupTrack } from '@audius/common/models'
 import { range } from 'lodash'

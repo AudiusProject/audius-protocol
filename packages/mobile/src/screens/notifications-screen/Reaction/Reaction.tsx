@@ -1,7 +1,7 @@
-import { ReactionTypes  } from '@audius/common/store'
-     import { useEffect, useCallback, useRef, useState } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 
-import type { } from '@audius/common'
+import type { ReactionTypes } from '@audius/common/store'
+
 import type { LottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type {

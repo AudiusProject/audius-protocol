@@ -1,5 +1,4 @@
 import { reachabilityActions } from '@audius/common/store'
-
 import type { NetInfoState } from '@react-native-community/netinfo'
 import NetInfo from '@react-native-community/netinfo'
 import { debounce } from 'lodash'

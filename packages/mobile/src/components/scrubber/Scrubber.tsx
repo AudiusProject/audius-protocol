@@ -1,6 +1,6 @@
-import { playerActions } from '@audius/common/store'
 import { useCallback, useState } from 'react'
 
+import { playerActions } from '@audius/common/store'
 import { formatSeconds } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'

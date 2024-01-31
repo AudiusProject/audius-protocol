@@ -1,7 +1,7 @@
-import { modalsActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { modalsActions } from '@audius/common/store'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'

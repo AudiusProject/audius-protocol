@@ -1,3 +1,7 @@
+import { useCallback, useMemo } from 'react'
+
+import type { Collection } from '@audius/common/models'
+import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -5,10 +9,6 @@ import {
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
 } from '@audius/common/store'
-import { useCallback, useMemo } from 'react'
-
-import type { Collection } from '@audius/common/models'
-import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
 import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'

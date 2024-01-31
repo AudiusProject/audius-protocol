@@ -1,3 +1,14 @@
+import { useCallback, useLayoutEffect } from 'react'
+
+import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  ModalSource
+} from '@audius/common/models'
+import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -11,17 +22,6 @@ import {
   usePremiumContentPurchaseModal,
   playbackPositionSelectors
 } from '@audius/common/store'
-import { useCallback, useLayoutEffect } from 'react'
-
-import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  ModalSource
-} from '@audius/common/models'
-import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'

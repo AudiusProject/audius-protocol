@@ -1,3 +1,6 @@
+import { useCallback } from 'react'
+
+import { FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   smartCollectionPageSelectors,
@@ -6,9 +9,6 @@ import {
   playlistLibraryHelpers,
   collectionsSocialActions
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
-import { FavoriteSource } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

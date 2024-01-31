@@ -1,11 +1,10 @@
+import type { RepostType } from '@audius/common/store'
 import {
   repostsUserListActions,
-  favoritesUserListActions,
-  RepostType
+  favoritesUserListActions
 } from '@audius/common/store'
-import { useCallback } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback } from 'react'
 
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'

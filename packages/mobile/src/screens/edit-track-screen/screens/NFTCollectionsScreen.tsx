@@ -1,8 +1,8 @@
-import { collectiblesSelectors } from '@audius/common/store'
 import { useCallback, useMemo } from 'react'
 
 import { Chain, isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
+import { collectiblesSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image } from 'react-native'

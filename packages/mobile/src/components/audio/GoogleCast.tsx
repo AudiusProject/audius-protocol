@@ -1,11 +1,11 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { SquareSizes } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   castActions,
   playerSelectors
 } from '@audius/common/store'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-
-import { SquareSizes } from '@audius/common/models'
 import { encodeHashId } from '@audius/common/utils'
 import {
   CastState,

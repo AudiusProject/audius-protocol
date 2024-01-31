@@ -1,9 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   notificationsActions,
   notificationsSelectors
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 

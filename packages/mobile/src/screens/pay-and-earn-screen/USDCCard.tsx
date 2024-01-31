@@ -1,8 +1,8 @@
-import { useAddFundsModal } from '@audius/common/store'
 import React, { useCallback } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
 import type { BNUSDC } from '@audius/common/models'
+import { useAddFundsModal } from '@audius/common/store'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber

@@ -1,11 +1,11 @@
+import { useCallback, useContext } from 'react'
+
 import {
   lineupSelectors,
   searchResultsPageTracksLineupActions as tracksActions,
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
-import { useCallback, useContext } from 'react'
-
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'

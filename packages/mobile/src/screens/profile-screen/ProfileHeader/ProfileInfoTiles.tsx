@@ -1,11 +1,11 @@
-import {
-  accountSelectors,
-  relatedArtistsUISelectors
-} from '@audius/common/store'
 import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  relatedArtistsUISelectors
+} from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
 import { View, ScrollView } from 'react-native'
 import { useSelector } from 'react-redux'

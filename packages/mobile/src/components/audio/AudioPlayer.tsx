@@ -1,3 +1,10 @@
+import { useRef, useEffect, useCallback, useState } from 'react'
+
+import { useAppContext } from '@audius/common/context'
+import { SquareSizes } from '@audius/common/models'
+import type { ID, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import type { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -13,19 +20,9 @@ import {
   playbackRateValueMap,
   playbackPositionActions,
   playbackPositionSelectors,
-  gatedContentSelectors,
-  Queueable,
-  CommonState
+  gatedContentSelectors
 } from '@audius/common/store'
-import { useRef, useEffect, useCallback, useState } from 'react'
-
-import type {} from '@audius/common'
-
-import { useAppContext } from '@audius/common/context'
-import { SquareSizes } from '@audius/common/models'
-import type { ID, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
-import type { QueryParams } from '@audius/common/services'
+import type { Queueable, CommonState } from '@audius/common/store'
 import {
   Genre,
   encodeHashId,

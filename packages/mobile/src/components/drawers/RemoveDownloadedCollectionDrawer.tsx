@@ -1,6 +1,6 @@
-import { cacheCollectionsSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
+import { cacheCollectionsSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'

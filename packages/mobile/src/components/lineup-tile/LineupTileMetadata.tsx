@@ -1,7 +1,7 @@
-import { playerSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import type { Remix, User } from '@audius/common/models'
+import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

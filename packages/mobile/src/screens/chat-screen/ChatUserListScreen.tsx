@@ -1,3 +1,4 @@
+import type { CreateChatModalState } from '@audius/common/store'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -8,12 +9,10 @@ import {
   userListActions,
   followersUserListActions,
   followersUserListSelectors,
-  FOLLOWERS_USER_LIST_TAG,
-  CreateChatModalState
+  FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
-import { useCallback, useEffect, useState } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
 import { Status, statusIsNotFinalized } from '@audius/common/models'

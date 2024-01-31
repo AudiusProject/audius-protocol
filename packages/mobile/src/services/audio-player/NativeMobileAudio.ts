@@ -1,5 +1,5 @@
-import { PlaybackRate  } from '@audius/common/store'
-     import type { } from '@audius/common'
+import type { PlaybackRate } from '@audius/common/store'
+
 import type { Nullable } from '@audius/common/utils'
 import TrackPlayer from 'react-native-track-player'
 

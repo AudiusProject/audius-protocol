@@ -1,9 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   followingUserListActions,
   followersUserListActions
 } from '@audius/common/store'
-import { useCallback } from 'react'
-
 import { Pressable, Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

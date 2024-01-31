@@ -1,7 +1,7 @@
-import { Image  } from '@audius/common/store'
-     import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
-import type { } from '@audius/common'
+import type { Image } from '@audius/common/store'
+
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {

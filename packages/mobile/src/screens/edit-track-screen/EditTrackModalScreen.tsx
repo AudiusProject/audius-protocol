@@ -1,11 +1,7 @@
-import {
-  cacheTracksActions,
-  cacheTracksSelectors,
-  ExtendedTrackMetadata
-} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type {} from '@audius/common'
+import type { ExtendedTrackMetadata } from '@audius/common/store'
+import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
 
 import { SquareSizes } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'

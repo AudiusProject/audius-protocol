@@ -1,7 +1,3 @@
-import {
-  remixSettingsSelectors,
-  remixSettingsActions
-} from '@audius/common/store'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -12,6 +8,10 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { createRemixOfMetadata } from '@audius/common/schemas'
+import {
+  remixSettingsSelectors,
+  remixSettingsActions
+} from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'

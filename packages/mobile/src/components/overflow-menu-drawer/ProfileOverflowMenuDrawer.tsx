@@ -1,13 +1,11 @@
+import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import {
   cacheUsersSelectors,
   usersSocialActions,
   mobileOverflowMenuUISelectors,
   shareModalUIActions,
-  OverflowAction,
-  CommonState,
-  OverflowActionCallbacks
+  OverflowAction
 } from '@audius/common/store'
-import type {} from '@audius/common'
 
 import type { ID } from '@audius/common/models'
 import { ShareSource, FollowSource } from '@audius/common/models'

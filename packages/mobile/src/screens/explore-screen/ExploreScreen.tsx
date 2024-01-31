@@ -1,5 +1,4 @@
 import { explorePageActions } from '@audius/common/store'
-
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 

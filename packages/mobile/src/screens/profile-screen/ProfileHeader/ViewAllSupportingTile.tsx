@@ -1,10 +1,10 @@
-import { cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import {
   useRankedSupportingForUser,
   useProxySelector
 } from '@audius/common/hooks'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'

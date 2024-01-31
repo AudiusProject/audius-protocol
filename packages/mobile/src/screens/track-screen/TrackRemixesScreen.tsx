@@ -1,11 +1,11 @@
+import { useCallback, useEffect } from 'react'
+
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors
 } from '@audius/common/store'
-import { useCallback, useEffect } from 'react'
-
 import { pluralize } from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

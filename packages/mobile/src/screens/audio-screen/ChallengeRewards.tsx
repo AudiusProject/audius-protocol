@@ -1,14 +1,15 @@
+import type {
+  ChallengeRewardsModalType,
+  CommonState
+} from '@audius/common/store'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
-  modalsActions,
-  ChallengeRewardsModalType,
-  CommonState
+  modalsActions
 } from '@audius/common/store'
-import { useCallback, useEffect, useState } from 'react'
 
-import type {} from '@audius/common'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'

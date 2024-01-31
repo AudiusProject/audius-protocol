@@ -1,6 +1,5 @@
-import { accountSelectors } from '@audius/common/store'
-
 import type { ID } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

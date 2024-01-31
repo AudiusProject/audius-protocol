@@ -1,7 +1,7 @@
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
 import { useTwitterButtonStatus } from '@audius/common/hooks'
+import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
