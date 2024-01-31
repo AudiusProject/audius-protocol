@@ -7,6 +7,7 @@ import {
   modalsActions,
   Status
 } from '@audius/common'
+import { css } from '@emotion/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -18,8 +19,12 @@ import {
   IconUser,
   IconVerified
 } from '@audius/harmony-native'
-import { ScrollView, Screen, ScreenContent } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import {
+  ScrollView,
+  Screen,
+  ScreenContent,
+  ProfilePicture
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -59,10 +64,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   header: {
     alignItems: 'center',
     paddingVertical: spacing(8)
-  },
-  profilePhoto: {
-    height: 128,
-    width: 128
   },
   name: { ...typography.h2, color: palette.neutral, marginTop: spacing(1) },
   handle: {
@@ -125,7 +126,10 @@ export const AccountSettingsScreen = () => {
       <ScreenContent>
         <ScrollView>
           <View style={styles.header}>
-            <ProfilePicture profile={accountUser} style={styles.profilePhoto} />
+            <ProfilePicture
+              userId={accountUser.user_id}
+              style={css({ width: 128, height: 128 })}
+            />
             <Text style={styles.name}>{name}</Text>
             <Text style={styles.handle}>@{handle}</Text>
           </View>
