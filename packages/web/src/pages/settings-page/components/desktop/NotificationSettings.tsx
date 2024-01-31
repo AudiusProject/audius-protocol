@@ -6,10 +6,10 @@ import {
   BrowserNotificationSetting,
   EmailFrequency
 } from '@audius/common'
+import { IconClose as IconRemove } from '@audius/harmony'
 import { Modal, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
-import { IconClose as IconRemove } from '@audius/harmony'
 import Switch from 'components/switch/Switch'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'

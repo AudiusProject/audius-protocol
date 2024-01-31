@@ -5,7 +5,7 @@ import {
   makeSolanaTransactionLink
 } from '@audius/common'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
+import { IconExternalLink as IconExternalLink } from '@audius/harmony'
 import {
   IconUSD,
   IconSOL,

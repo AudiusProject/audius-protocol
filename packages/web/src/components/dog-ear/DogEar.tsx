@@ -1,4 +1,5 @@
 import { DogEarType } from '@audius/common'
+import { IconVisibilityHidden as IconHidden } from '@audius/harmony'
 import {
   IconCart,
   IconCollectible,
@@ -8,7 +9,6 @@ import {
 import cn from 'classnames'
 
 import Rectangle from 'assets/img/dogEarRectangle.svg'
-import IconHidden from 'assets/img/iconHidden.svg'
 import IconStar from 'assets/img/iconStar.svg'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'

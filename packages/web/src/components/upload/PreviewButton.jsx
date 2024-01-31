@@ -1,9 +1,9 @@
 import { Component } from 'react'
 
+import { IconPlaybackPlay as IconPlay } from '@audius/harmony'
 import PropTypes from 'prop-types'
 
 import IconStop from 'assets/img/iconStop.svg'
-import IconPlay from 'assets/img/pbIconPlay.svg'
 
 import styles from './PreviewButton.module.css'
 

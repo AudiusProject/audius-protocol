@@ -8,11 +8,11 @@ import {
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
+import { IconPlaybackPlay as IconPlay } from '@audius/harmony'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPlay from 'assets/img/pbIconPlay.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'

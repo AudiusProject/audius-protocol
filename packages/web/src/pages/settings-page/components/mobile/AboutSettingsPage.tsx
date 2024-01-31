@@ -1,6 +1,9 @@
+import {
+  IconMessage as IconContact,
+  IconUserGroup as IconCareers
+} from '@audius/harmony'
+
 import appIcon from 'assets/img/appIcon.png'
-import IconCareers from 'assets/img/iconCareers.svg'
-import IconContact from 'assets/img/iconContact.svg'
 import IconDiscord from 'assets/img/iconDiscord.svg'
 import IconInstagram from 'assets/img/iconInstagram.svg'
 import IconTwitter from 'assets/img/iconTwitterBird.svg'

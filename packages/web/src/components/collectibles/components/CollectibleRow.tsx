@@ -5,11 +5,11 @@ import {
   CollectibleMediaType,
   formatDateWithTimezoneOffset
 } from '@audius/common'
+import { IconRemove as IconHide } from '@audius/harmony'
 import cn from 'classnames'
 
 import IconDrag from 'assets/img/iconDrag.svg'
 import IconShow from 'assets/img/iconMultiselectAdd.svg'
-import IconHide from 'assets/img/iconRemoveTrack.svg'
 import {
   collectibleMessages,
   editTableContainerClass

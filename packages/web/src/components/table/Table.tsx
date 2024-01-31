@@ -8,6 +8,12 @@ import {
 } from 'react'
 
 import { ID, Kind, TrackMetadata } from '@audius/common'
+import {
+  IconCaretDown,
+  IconCaretLeft,
+  IconCaretRight,
+  IconCaretUp
+} from '@audius/harmony'
 import cn from 'classnames'
 import { debounce, range } from 'lodash'
 import moment from 'moment'
@@ -27,10 +33,6 @@ import {
   WindowScroller
 } from 'react-virtualized'
 
-import { IconCaretDown as IconCaretDown } from '@audius/harmony'
-import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
-import { IconCaretRight as IconCaretRight } from '@audius/harmony'
-import { IconCaretUp as IconCaretUp } from '@audius/harmony'
 import { Draggable, Droppable } from 'components/dragndrop'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'

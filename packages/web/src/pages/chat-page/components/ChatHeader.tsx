@@ -6,13 +6,13 @@ import {
   User,
   useCreateChatModal
 } from '@audius/common'
+import { IconMessageBlock } from '@audius/harmony'
 import {
   IconButton,
   IconCompose,
   IconSettings,
   IconKebabHorizontal,
   PopupMenu,
-  IconBlockMessages,
   IconUnblockMessages,
   IconUser,
   IconTrash,
@@ -128,7 +128,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
           }
         : {
             text: messages.block,
-            icon: <IconBlockMessages />,
+            icon: <IconMessageBlock />,
             onClick: handleBlockClicked
           },
       {

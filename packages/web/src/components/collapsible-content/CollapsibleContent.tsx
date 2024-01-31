@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react'
 
+import {
+  IconCaretDown as IconCaretDownLine,
+  IconCaretUp as IconCaretUpLine
+} from '@audius/harmony'
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
-
-import { IconCaretDown as IconCaretDownLine } from '@audius/harmony'
-import { IconCaretUp as IconCaretUpLine } from '@audius/harmony'
 
 import styles from './CollapsibleContent.module.css'
 

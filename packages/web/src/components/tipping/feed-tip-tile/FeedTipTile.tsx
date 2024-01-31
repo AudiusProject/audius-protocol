@@ -8,14 +8,16 @@ import {
   tippingSelectors,
   tippingActions
 } from '@audius/common'
+import {
+  IconClose as IconRemove,
+  IconTipping as IconTip
+} from '@audius/harmony'
 import { IconButton, PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import useMeasure from 'react-use-measure'
 
-import { IconClose as IconRemove } from '@audius/harmony'
-import IconTip from 'assets/img/iconTip.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { ArtistPopover } from 'components/artist/ArtistPopover'

@@ -1,6 +1,5 @@
-import cn from 'classnames'
-
 import { IconCosign as IconCoSign } from '@audius/harmony'
+import cn from 'classnames'
 
 import styles from './Check.module.css'
 import { Size } from './types'

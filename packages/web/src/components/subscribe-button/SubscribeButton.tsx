@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 
+import { IconNotificationOn as IconNotification } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconNotification from 'assets/img/iconNotification.svg'
 import IconNotificationOff from 'assets/img/iconNotificationOff.svg'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'

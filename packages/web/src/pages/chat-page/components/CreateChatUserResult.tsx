@@ -10,8 +10,8 @@ import {
   tippingSelectors,
   User
 } from '@audius/common'
+import { IconMessageBlock } from '@audius/harmony'
 import {
-  IconBlockMessages,
   IconButton,
   IconKebabHorizontal,
   IconMessage,
@@ -71,21 +71,21 @@ const renderCustomChip = (callToAction: ChatPermissionAction) => {
     case ChatPermissionAction.TIP:
       return (
         <div className={styles.notPermitted}>
-          <IconBlockMessages className={styles.icon} />
+          <IconMessageBlock className={styles.icon} />
           <span>{messages.sendTipRequired}</span>
         </div>
       )
     case ChatPermissionAction.UNBLOCK:
       return (
         <div className={styles.notPermitted}>
-          <IconBlockMessages className={styles.icon} />
+          <IconMessageBlock className={styles.icon} />
           <span>{messages.unblockRequired}</span>
         </div>
       )
     default:
       return (
         <div className={styles.notPermitted}>
-          <IconBlockMessages className={styles.icon} />
+          <IconMessageBlock className={styles.icon} />
           <span>{messages.notPermitted}</span>
         </div>
       )
@@ -151,7 +151,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
           onClick: handleUnblockClicked
         }
       : {
-          icon: <IconBlockMessages />,
+          icon: <IconMessageBlock />,
           text: messages.block,
           onClick: handleBlockClicked
         }

@@ -13,12 +13,12 @@ import {
   cacheUsersSelectors,
   CommonState
 } from '@audius/common'
+import { IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconClose as IconClose } from '@audius/harmony'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

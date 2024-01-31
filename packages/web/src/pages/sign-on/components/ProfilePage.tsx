@@ -9,9 +9,9 @@ import {
   formatTikTokProfile,
   TikTokProfile
 } from '@audius/common'
+import { IconCaretLeft } from '@audius/harmony'
 import cn from 'classnames'
 
-import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'

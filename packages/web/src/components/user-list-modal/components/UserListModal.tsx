@@ -24,6 +24,7 @@ import {
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
   ID
 } from '@audius/common'
+import { IconTipping as IconTip } from '@audius/harmony'
 import {
   Modal,
   IconTrophy,
@@ -33,7 +34,6 @@ import {
   IconUserGroup
 } from '@audius/stems'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'
 import { UserListType } from 'store/application/ui/userListModal/types'

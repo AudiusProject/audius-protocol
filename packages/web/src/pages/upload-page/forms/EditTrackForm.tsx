@@ -1,6 +1,7 @@
 import { useCallback, useContext, useMemo } from 'react'
 
 import { FeatureFlags } from '@audius/common'
+import { IconCaretLeft } from '@audius/harmony'
 import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -9,7 +10,6 @@ import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { IconCaretLeft as IconCaretLeft } from '@audius/harmony'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'

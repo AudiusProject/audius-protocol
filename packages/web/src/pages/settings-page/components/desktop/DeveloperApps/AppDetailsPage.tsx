@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { IconCopy as IconCopyPlain } from '@audius/harmony'
 import { IconButton, IconCaretRight } from '@audius/stems'
 
-import { IconCopy as IconCopyPlain } from '@audius/harmony'
 import IconWarning from 'assets/img/iconWarning.svg'
 import { Divider } from 'components/divider'
 import Toast from 'components/toast/Toast'

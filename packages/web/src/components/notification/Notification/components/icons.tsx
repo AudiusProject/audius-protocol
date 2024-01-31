@@ -1,6 +1,10 @@
 import { ReactNode } from 'react'
 
-import { IconAudiusLogo, useTheme } from '@audius/harmony'
+import {
+  IconAudiusLogo,
+  useTheme,
+  IconTipping as IconTipBase
+} from '@audius/harmony'
 import { IconCart as IconCartBase } from '@audius/stems'
 
 import IconHeart from 'assets/img/iconHeart.svg'
@@ -9,7 +13,6 @@ import IconRemixBase from 'assets/img/iconRemix.svg'
 import IconRepostBase from 'assets/img/iconRepost.svg'
 import IconStars from 'assets/img/iconStars.svg'
 import Tastemaker from 'assets/img/iconTastemaker.svg'
-import IconTipBase from 'assets/img/iconTip.svg'
 import IconTrendingBase from 'assets/img/iconTrending.svg'
 import IconTrophy from 'assets/img/iconTrophy.svg'
 import IconUser from 'assets/img/iconUser.svg'

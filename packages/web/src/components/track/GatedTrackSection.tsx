@@ -33,7 +33,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
+import { IconExternalLink as IconExternalLink } from '@audius/harmony'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { FollowButton } from 'components/follow-button/FollowButton'

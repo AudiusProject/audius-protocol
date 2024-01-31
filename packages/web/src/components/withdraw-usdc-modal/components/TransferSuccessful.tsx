@@ -22,7 +22,7 @@ import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
+import { IconExternalLink as IconExternalLink } from '@audius/harmony'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'

@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { TransactionMethod, TransactionType } from '@audius/common'
+import { IconTipping as IconTip } from '@audius/harmony'
 import cn from 'classnames'
 
 import AppIcon from 'assets/img/appIcon.png'
@@ -8,7 +9,6 @@ import IconCoinbaseMini from 'assets/img/iconCoinbaseMini.svg'
 import IconReceiveMini from 'assets/img/iconReceive.svg'
 import IconSendMini from 'assets/img/iconSend.svg'
 import IconStripeMini from 'assets/img/iconStripeMini.svg'
-import IconTip from 'assets/img/iconTip.svg'
 import IconTransaction from 'assets/img/iconTransaction.svg'
 import IconTrophy from 'assets/img/iconTrophy.svg'
 

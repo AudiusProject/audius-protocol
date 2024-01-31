@@ -7,12 +7,12 @@ import {
   Notification as Notifications,
   notificationsActions
 } from '@audius/common'
+import { IconNotificationOn as IconNotification } from '@audius/harmony'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
 
-import IconNotification from 'assets/img/iconNotification.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getModalNotification,

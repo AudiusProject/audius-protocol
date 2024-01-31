@@ -17,10 +17,9 @@ import {
   useSelectTierInfo,
   Track
 } from '@audius/common'
-import { IconAlbum } from '@audius/harmony'
+import { IconAlbum, IconCollectible as IconCollectibles } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconCollectibles from 'assets/img/iconCollectibles.svg'
 import IconNote from 'assets/img/iconNote.svg'
 import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import IconReposts from 'assets/img/iconRepost.svg'

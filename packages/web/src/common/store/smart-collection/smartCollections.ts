@@ -3,13 +3,15 @@ import {
   Variant,
   SmartCollectionVariant
 } from '@audius/common'
+import {
+  IconQuestionCircle as IconExploreFeelingLucky,
+  IconBoxHeart as IconExploreMostLoved,
+  IconStars as IconExploreNewReleases,
+  IconRemix as IconExploreRemixables,
+  IconRadar as IconExploreUnderRadar
+} from '@audius/harmony'
 
-import IconExploreFeelingLucky from 'assets/img/iconExploreFeelingLucky.svg'
-import IconExploreMostLoved from 'assets/img/iconExploreMostLoved.svg'
-import IconExploreNewReleases from 'assets/img/iconExploreNewReleases.svg'
-import IconExploreRemixables from 'assets/img/iconExploreRemixables.svg'
 import IconExploreRotation from 'assets/img/iconExploreRotation.svg'
-import IconExploreUnderRadar from 'assets/img/iconExploreUnderRadar.svg'
 
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,

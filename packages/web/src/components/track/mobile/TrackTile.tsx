@@ -14,12 +14,12 @@ import {
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
+import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
-import IconVolume from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'

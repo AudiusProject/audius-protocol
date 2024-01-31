@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
 import { FeatureFlags, ID } from '@audius/common'
+import { IconMessageBlock } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -11,7 +12,6 @@ import {
   IconMessage,
   PopupMenu,
   IconUnblockMessages,
-  IconBlockMessages,
   IconMessageLocked
 } from '@audius/stems'
 import cn from 'classnames'
@@ -101,7 +101,7 @@ const StatsPopupMenu = ({
         : {
             text: messages.blockMessages,
             onClick: onBlock,
-            icon: <IconBlockMessages />
+            icon: <IconMessageBlock />
           }
     )
   }

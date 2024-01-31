@@ -1,7 +1,6 @@
+import { IconCreatePlaylist } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-
-import { IconCreatePlaylist as IconCreatePlaylist } from '@audius/harmony'
 
 import styles from './CreatePlaylistButton.module.css'
 

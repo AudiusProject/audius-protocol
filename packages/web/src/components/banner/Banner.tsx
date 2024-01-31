@@ -1,6 +1,5 @@
-import cn from 'classnames'
-
 import { IconClose as IconRemove } from '@audius/harmony'
+import cn from 'classnames'
 
 import styles from './Banner.module.css'
 

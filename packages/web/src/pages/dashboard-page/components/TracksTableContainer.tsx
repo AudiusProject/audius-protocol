@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 
 import { Status, User, Track, isContentUSDCPurchaseGated } from '@audius/common'
-import { SelectablePill } from '@audius/harmony'
+import { SelectablePill, IconClose } from '@audius/harmony'
 import {
   IconHidden,
   IconVisibilityPublic,
@@ -12,7 +12,6 @@ import {
 } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconClose as IconClose } from '@audius/harmony'
 import { Input } from 'components/input'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 

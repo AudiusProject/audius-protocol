@@ -1,7 +1,6 @@
+import { IconCaretRight as IconCaret } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-
-import { IconCaretRight as IconCaret } from '@audius/harmony'
 
 import styles from './Delineator.module.css'
 

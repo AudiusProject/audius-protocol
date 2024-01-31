@@ -3,6 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useEffect, useRef, useState } from 'react'
 
+import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 import { Popup } from '@audius/stems'
 import { Origin } from '@audius/stems/dist/components/Popup/types'
 import cn from 'classnames'
@@ -12,8 +13,6 @@ import {
   isInclusivelyBeforeDay,
   DayPickerSingleDateController
 } from 'react-dates'
-
-import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 
 import styles from './DatePickerField.module.css'
 

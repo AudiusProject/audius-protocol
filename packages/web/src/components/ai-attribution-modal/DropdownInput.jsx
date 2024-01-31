@@ -1,10 +1,10 @@
 import { Component } from 'react'
 
+import { IconCaretDown } from '@audius/harmony'
 import Select from 'antd/lib/select'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { IconCaretDown as IconCaretDown } from '@audius/harmony'
 import { HelperText } from 'components/data-entry/HelperText'
 
 import styles from './DropdownInput.module.css'

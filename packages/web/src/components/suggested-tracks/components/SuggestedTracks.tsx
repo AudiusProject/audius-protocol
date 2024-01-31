@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
 import type { SuggestedTrack } from '@audius/common'
+import { IconCaretDown } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -13,7 +14,6 @@ import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useToggle } from 'react-use'
 
-import { IconCaretDown as IconCaretDown } from '@audius/harmony'
 import { Divider } from 'components/divider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

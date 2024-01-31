@@ -1,11 +1,13 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import { Name, TimeRange, trendingPageLineupActions } from '@audius/common'
-import { IconAllTime } from '@audius/harmony'
+import {
+  IconAllTime,
+  IconCalendarDay as IconDay,
+  IconCalendarMonth as IconMonth
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconDay from 'assets/img/iconDay.svg'
-import IconMonth from 'assets/img/iconMonth.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

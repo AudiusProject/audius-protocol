@@ -8,12 +8,11 @@ import {
   tokenDashboardPageActions,
   tokenDashboardPageSelectors
 } from '@audius/common'
+import { IconCopy, IconRemove } from '@audius/harmony'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { IconCopy as IconCopy } from '@audius/harmony'
-import IconRemove from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'

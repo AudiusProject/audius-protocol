@@ -13,13 +13,13 @@ import {
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
+import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
-import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'

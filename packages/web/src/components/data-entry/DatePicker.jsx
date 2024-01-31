@@ -2,12 +2,11 @@ import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 import { Component } from 'react'
 
+import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import PropTypes from 'prop-types'
 import { SingleDatePicker, isInclusivelyBeforeDay } from 'react-dates'
-
-import { IconCalendarMonth as IconCalendar } from '@audius/harmony'
 
 import styles from './DatePicker.module.css'
 

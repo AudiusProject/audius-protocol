@@ -1,12 +1,14 @@
 import { cloneElement, ReactElement } from 'react'
 
 import { ID, BadgeTier, Nullable, useSelectTierInfo } from '@audius/common'
+import {
+  IconTokenBronze as IconBronzeBadgeSVG,
+  IconTokenGold as IconGoldBadgeSVG,
+  IconTokenPlatinum as IconPlatinumBadgeSVG,
+  IconTokenSilver as IconSilverBadgeSVG
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconBronzeBadgeSVG from 'assets/img/IconBronzeBadge.svg'
-import IconGoldBadgeSVG from 'assets/img/IconGoldBadge.svg'
-import IconPlatinumBadgeSVG from 'assets/img/IconPlatinumBadge.svg'
-import IconSilverBadgeSVG from 'assets/img/IconSilverBadge.svg'
 import IconVerified from 'assets/img/iconVerified.svg'
 import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
