@@ -67,7 +67,8 @@ import {
   Achievement,
   Notification,
   IdentityNotification,
-  PushNotifications
+  PushNotifications,
+  ExtendedTrackMetadata
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -177,7 +178,7 @@ const combineLists = <Entity extends Track | User>(
 
 const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
-type TransactionReceipt = { blockHash: string; blockNumber: number }
+export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
 let preloadImageTimer: Timer
 const avoidGC: HTMLImageElement[] = []
@@ -1095,7 +1096,7 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } },
+    metadata: ExtendedTrackMetadata,
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
@@ -1448,10 +1449,7 @@ export const audiusBackend = ({
   // NOTE: This is called to explicitly set a playlist track ids w/out running validation checks.
   // This should NOT be used to set the playlist order
   // It's added for the purpose of manually fixing broken playlists
-  async function dangerouslySetPlaylistOrder(
-    playlistId: ID,
-    trackIds: PlaylistTrackId[]
-  ) {
+  async function dangerouslySetPlaylistOrder(playlistId: ID, trackIds: ID[]) {
     try {
       await audiusLibs.contracts.PlaylistFactoryClient.orderPlaylistTracks(
         playlistId,

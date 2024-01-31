@@ -27,6 +27,7 @@ import { config } from '../../config'
 import bs58 from 'bs58'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
 const CLAIMABLE_TOKEN_PROGRAM_ID = config.claimableTokenProgramId
 const REWARDS_MANAGER_PROGRAM_ID = config.rewardsManagerProgramId
 const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
@@ -390,6 +391,7 @@ export const assertRelayAllowedInstructions = async (
         break
       case Secp256k1Program.programId.toBase58():
       case MEMO_PROGRAM_ID:
+      case MEMO_V2_PROGRAM_ID:
       case TRACK_LISTEN_COUNT_PROGRAM_ID:
         // All instructions of these programs are allowed
         break

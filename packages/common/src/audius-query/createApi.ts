@@ -340,7 +340,7 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(Object.keys(entities), entities))
+      dispatch(addEntries(entities))
     } else {
       data = apiData
     }

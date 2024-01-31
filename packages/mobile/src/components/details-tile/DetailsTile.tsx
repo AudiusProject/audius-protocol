@@ -466,7 +466,7 @@ export const DetailsTile = ({
                     source={descriptionLinkPressSource}
                     style={styles.description}
                     linkStyle={styles.link}
-                    text={squashNewLines(description)}
+                    text={squashNewLines(description) ?? ''}
                   />
                 ) : null}
               </View>

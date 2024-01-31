@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
   getCanonicalName,
@@ -57,13 +57,18 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { DownloadSection } from './DownloadSection'
 import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const DownloadSection = lazy(() =>
+  import('./DownloadSection').then((module) => ({
+    default: module.DownloadSection
+  }))
+)
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -755,7 +760,9 @@ export const GiantTrackTile = ({
           {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
           {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
-              <DownloadSection trackId={trackId} onDownload={onDownload} />
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
             </Box>
           ) : null}
         </ClientOnly>

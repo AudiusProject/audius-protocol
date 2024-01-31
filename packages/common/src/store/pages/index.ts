@@ -25,7 +25,7 @@ export * as trackPageLineupActions from './track/lineup/actions'
 export { default as trackPageReducer } from './track/reducer'
 export * as trackPageActions from './track/actions'
 export * as trackPageSelectors from './track/selectors'
-export { default as TrackPageState } from './track/types'
+export { TrackPageState } from './track/types'
 
 export * as tokenDashboardPageSelectors from './token-dashboard/selectors'
 export * from './token-dashboard/types'

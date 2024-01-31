@@ -16,13 +16,12 @@ import {
   SET_EXPIRED,
   INCREMENT,
   AddSuccededAction,
-  CacheType,
   ADD_ENTRIES,
   AddEntriesAction,
   SetCacheConfigAction,
   SET_CACHE_CONFIG
 } from './actions'
-import { Metadata } from './types'
+import { CacheType, Metadata, SubscriptionInfo } from './types'
 
 type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
@@ -273,7 +272,7 @@ const actionsMap = {
   },
   [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
     const { entriesByKind, replace } = action
-    const matchingEntries = entriesByKind[kind]
+    const matchingEntries = entriesByKind[kind] ?? {}
     const cacheableEntries = Object.entries(matchingEntries).map(
       ([id, entry]) => ({
         id,
@@ -284,7 +283,7 @@ const actionsMap = {
   },
   [UPDATE](
     state: CacheState,
-    action: { entries: any[]; subscriptions: any[] }
+    action: { entries: any[]; subscriptions: SubscriptionInfo[] }
   ) {
     const { simple } = state
     const newEntries = { ...state.entries }
@@ -298,16 +297,12 @@ const actionsMap = {
     })
 
     if (!simple) {
-      action.subscriptions.forEach((s: { id: any; kind: any; uids: any }) => {
-        const { id, kind, uids } = s
+      action.subscriptions.forEach((s) => {
+        const { id, kind, uid } = s
         if (id in newSubscriptions) {
-          uids.forEach((uid: any) => {
-            newSubscriptions[id].add({ kind, uid })
-          })
+          newSubscriptions[id].add({ kind, uid })
         } else {
-          newSubscriptions[id] = new Set(
-            uids.map((uid: any) => ({ kind, uid }))
-          )
+          newSubscriptions[id] = new Set([{ kind, uid }])
         }
       })
 

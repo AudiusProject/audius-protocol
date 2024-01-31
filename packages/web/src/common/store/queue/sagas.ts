@@ -23,7 +23,9 @@ import {
   playerSelectors,
   queueSelectors,
   getContext,
-  lineupRegistry
+  lineupRegistry,
+  Collectible,
+  UserTrackMetadata
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -404,7 +406,7 @@ export function* watchQueueAutoplay() {
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
-      const tracks = yield* call(
+      const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,
         exclusionList,
@@ -432,7 +434,7 @@ export function* watchPrevious() {
       }
 
       // For the audio nft playlist flow
-      const collectible = yield* select(getCollectible)
+      const collectible: Collectible | null = yield* select(getCollectible)
       if (collectible) {
         const event = make(Name.PLAYBACK_PLAY, {
           id: `${collectible.id}`,

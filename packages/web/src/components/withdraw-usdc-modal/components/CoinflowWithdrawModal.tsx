@@ -54,7 +54,7 @@ export const CoinflowWithdrawModal = () => {
       dispatch(coinflowWithdrawalSucceeded({ transaction }))
       onClose()
     },
-    [dispatch]
+    [dispatch, onClose]
   )
 
   const showContent = isOpen && adapter

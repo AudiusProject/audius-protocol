@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import type {
-  ID,
   LineupState,
   Track,
   User,
@@ -28,7 +27,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type TrackScreenMainContentProps = {
-  lineup: LineupState<{ id: ID }>
+  lineup: LineupState<Track>
   lineupHeader: ReactNode
   remixParentTrack: Nullable<Track & { user: User }>
   track: Track | SearchTrack

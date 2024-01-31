@@ -1,4 +1,4 @@
-ddex-init:
+ddex-webapp-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
@@ -18,10 +18,11 @@ ddex-init:
     - run:
         name: lint & typecheck
         command: |
-          npx turbo run verify --filter=@audius/ddex-server --filter=@audius/ddex-client
+          npx turbo run verify --filter=@audius/ddex-webapp-server --filter=@audius/ddex-webapp-client
 
     - persist_to_workspace:
         root: ./
         paths:
           - node_modules
           - packages/ddex/node_modules
+          - packages/ddex/webapp/node_modules

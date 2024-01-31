@@ -1,9 +1,15 @@
-// @ts-nocheck
-
-import { ID, UID } from 'models/Identifiers'
+import { ID } from 'models/Identifiers'
 import { Kind } from 'models/Kind'
+import { Status } from 'models/Status'
 
-import { Metadata } from './types'
+import {
+  CacheType,
+  EntriesByKind,
+  Entry,
+  Metadata,
+  SubscriberInfo,
+  SubscriptionInfo
+} from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
@@ -19,21 +25,29 @@ export const REMOVE_SUCCEEDED = 'CACHE/REMOVE_SUCCEEDED'
 export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
 
-type Entry<EntryT extends Metadata = Metadata> = {
-  id: ID
-  uid?: UID
-  metadata: EntryT
-  timestamp?: number
+type BaseAddAction<EntryT extends Metadata = Metadata> = {
+  kind: Kind
+  entries: Entry<EntryT>[]
+  // replace optionally replaces the entire entry instead of joining metadata
+  replace?: boolean
+  // persist optionally persists the cache entry to indexdb
+  persist?: boolean
 }
+
+export type AddAction<EntryT extends Metadata = Metadata> =
+  BaseAddAction<EntryT> & {
+    type: typeof ADD
+  }
 
 /**
  * Signals to add an entry to the cache.
- * @param {Kind} kind
- * @param {array} entries { id, uid, metadata }
- * @param {boolean} replace optionally replaces the entire entry instead of joining metadata
- * @param {boolean} persist optionally persists the cache entry to indexdb
  */
-export const add = (kind, entries, replace = false, persist = true) => ({
+export const add = (
+  kind: Kind,
+  entries: Entry[],
+  replace = false,
+  persist = true
+): AddAction => ({
   type: ADD,
   kind,
   entries,
@@ -41,34 +55,10 @@ export const add = (kind, entries, replace = false, persist = true) => ({
   persist
 })
 
-export type AddSuccededAction<EntryT extends Metadata = Metadata> = {
-  type: typeof ADD_SUCCEEDED
-  kind: Kind
-  entries: {
-    id: ID
-    uid: UID
-    metadata: EntryT
-    timestamp: number
-  }[]
-  // replace optionally replaces the entire entry instead of joining metadata
-  replace?: boolean
-  // persist optionally persists the cache entry to indexdb
-  persist?: boolean
-}
-
-type EntriesByKind<EntryT extends Metadata = Metadata> = {
-  [key: Kind]: Entry<EntryT>[]
-}
-
-export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
-  type: typeof ADD_ENTRIES
-  kind: Kind[]
-  entriesByKind: EntriesByKind<EntryT>
-  // replace optionally replaces the entire entry instead of joining metadata
-  replace?: boolean
-  // persist optionally persists the cache entry to indexdb
-  persist?: boolean
-}
+export type AddSuccededAction<EntryT extends Metadata = Metadata> =
+  BaseAddAction<EntryT> & {
+    type: typeof ADD_SUCCEEDED
+  }
 
 /**
  * Adds entries to the cache.
@@ -78,7 +68,7 @@ export const addSucceeded = ({
   entries,
   replace = false,
   persist = true
-}: AddSuccededAction) => ({
+}: BaseAddAction): AddSuccededAction => ({
   type: ADD_SUCCEEDED,
   kind,
   entries,
@@ -86,21 +76,24 @@ export const addSucceeded = ({
   persist
 })
 
+export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
+  type: typeof ADD_ENTRIES
+  entriesByKind: EntriesByKind<EntryT>
+  // replace optionally replaces the entire entry instead of joining metadata
+  replace?: boolean
+  // persist optionally persists the cache entry to indexdb
+  persist?: boolean
+}
+
 /**
  * Signals to add an entries of multiple kinds to the cache.
- * @param {Kind} kind
- * @param {array} entries { id, uid, metadata }
- * @param {boolean} replace optionally replaces the entire entry instead of joining metadata
- * @param {boolean} persist optionally persists the cache entry to indexdb
  */
 export const addEntries = (
-  kind,
-  entriesByKind,
+  entriesByKind: EntriesByKind,
   replace = false,
   persist = true
 ): AddEntriesAction => ({
   type: ADD_ENTRIES,
-  kind,
   entriesByKind,
   replace,
   persist
@@ -110,11 +103,12 @@ export const addEntries = (
  * Updates an entry in the cache. Can also add transitive cache subscriptions.
  * E.g. if a collection references multiple tracks, the collection should be subscribed to those
  * tracks.
- * @param {Kind} kind
- * @param {array} entries { id, metadata }
- * @param {?array} subscriptions { id, kind, uids }
  */
-export const update = (kind, entries, subscriptions = []) => ({
+export const update = (
+  kind: Kind,
+  entries: Entry[],
+  subscriptions: SubscriptionInfo[] = []
+) => ({
   type: UPDATE,
   kind,
   entries,
@@ -126,10 +120,8 @@ export const update = (kind, entries, subscriptions = []) => ({
  * Only numeric fields should be part of the update if so, e.g.
  *  entries = [{ id: 2, metadata: { followee_count: 1 } }]
  * would yield an update to the cached followee_count of id 2 by 1.
- * @param {Kind} kind
- * @param {array} entries { id, metadata }
  */
-export const increment = (kind, entries) => ({
+export const increment = (kind: Kind, entries: Entry[]) => ({
   type: INCREMENT,
   kind,
   entries
@@ -138,10 +130,8 @@ export const increment = (kind, entries) => ({
 /**
  * Sets the status of an entry from the cache as to be removed. The
  * entries actually get removed by the removeSucceeded action
- * @param {Kind} kind
- * @param {array} ids
  */
-export const remove = (kind, ids) => ({
+export const remove = (kind: Kind, ids: (ID | string)[]) => ({
   type: REMOVE,
   kind,
   ids
@@ -149,10 +139,8 @@ export const remove = (kind, ids) => ({
 
 /**
  * Removes entries from the cache
- * @param {Kind} kind
- * @param {array} ids
  */
-export const removeSucceeded = (kind, ids) => ({
+export const removeSucceeded = (kind: Kind, ids: ID[]) => ({
   type: REMOVE_SUCCEEDED,
   kind,
   ids
@@ -160,10 +148,11 @@ export const removeSucceeded = (kind, ids) => ({
 
 /**
  * Sets the status of N entries.
- * @param {Kind} kind
- * @param {array} statuses {id, status}
  */
-export const setStatus = (kind, statuses) => ({
+export const setStatus = (
+  kind: Kind,
+  statuses: { id: ID; status: Status }[]
+) => ({
   type: SET_STATUS,
   kind,
   statuses
@@ -171,10 +160,8 @@ export const setStatus = (kind, statuses) => ({
 
 /**
  * Subscribes uids to ids in the cache.
- * @param {Kind} kind
- * @param {array} subscribers { uid, id }
  */
-export const subscribe = (kind, subscribers) => ({
+export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
   type: SUBSCRIBE,
   kind,
   subscribers
@@ -182,10 +169,8 @@ export const subscribe = (kind, subscribers) => ({
 
 /**
  * Unsubscribes a uid from an id in the cache. Automatically clears transitive subscriptions.
- * @param {Kind} kind
- * @param {array} unsubscribers { uid, id? } if id is not provided, looks it up in the cache uids
  */
-export const unsubscribe = (kind, unsubscribers) => ({
+export const unsubscribe = (kind: Kind, unsubscribers: SubscriberInfo[]) => ({
   type: UNSUBSCRIBE,
   kind,
   unsubscribers
@@ -193,10 +178,11 @@ export const unsubscribe = (kind, unsubscribers) => ({
 
 /**
  * Realizes an unsubscription action and potentially removes the entry from the cache.
- * @param {Kind} kind
- * @param {array} unsubscribers { uid, id? }
  */
-export const unsubscribeSucceeded = (kind, unsubscribers) => ({
+export const unsubscribeSucceeded = (
+  kind: Kind,
+  unsubscribers: SubscriberInfo[]
+) => ({
   type: UNSUBSCRIBE_SUCCEEDED,
   kind,
   unsubscribers
@@ -207,13 +193,11 @@ export const unsubscribeSucceeded = (kind, unsubscribers) => ({
  * @param {Kind} kind
  * @param {string} id
  */
-export const setExpired = (kind, id) => ({
+export const setExpired = (kind: Kind, id: ID) => ({
   type: SET_EXPIRED,
   kind,
   id
 })
-
-export type CacheType = 'normal' | 'fast' | 'safe-fast'
 
 export type SetCacheConfigAction = {
   cacheType: CacheType

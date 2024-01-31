@@ -4,6 +4,13 @@ export type TrackDownloadConfig = {
   audiusBackend: AudiusBackend
 }
 
+export type DownloadFile = { url: string; filename: string }
+
+export type DownloadTrackArgs = {
+  files: DownloadFile[]
+  rootDirectoryName?: string
+}
+
 export class TrackDownload {
   audiusBackend: AudiusBackend
 
@@ -11,11 +18,11 @@ export class TrackDownload {
     this.audiusBackend = config.audiusBackend
   }
 
-  async downloadTrack(_args: {
-    url: string
-    filename: string
-    original?: boolean
-  }) {
+  /**
+   * Download one or multiple tracks. rootDirectoryName must be supplied
+   * if downloading multiple tracks.
+   */
+  async downloadTracks(_args: DownloadTrackArgs) {
     throw new Error('downloadTrack not implemented')
   }
 }

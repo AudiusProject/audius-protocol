@@ -1,23 +1,12 @@
-import { useCallback } from 'react'
-
-import type { CommonState, ID } from '@audius/common'
-import {
-  Name,
-  cacheTracksSelectors,
-  tracksSocialActions,
-  useDownloadableContentAccess,
-  DownloadQuality
-} from '@audius/common'
+import type { CommonState, ID, DownloadQuality } from '@audius/common'
+import { cacheTracksSelectors } from '@audius/common'
 import { css } from '@emotion/native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Flex, Text, IconReceive, Box } from '@audius/harmony-native'
 import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/PlainButton'
-import { useToast } from 'app/hooks/useToast'
-import { make, track as trackAnalytics } from 'app/services/analytics'
 
 const { getTrack } = cacheTracksSelectors
-const { downloadTrack } = tracksSocialActions
 
 const messages = {
   fullTrack: 'Full Track',
@@ -30,6 +19,7 @@ type DownloadRowProps = {
   quality: DownloadQuality
   hideDownload?: boolean
   index: number
+  onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
 }
 
 export const DownloadRow = ({
@@ -37,46 +27,12 @@ export const DownloadRow = ({
   parentTrackId,
   quality,
   hideDownload,
-  index
+  index,
+  onDownload
 }: DownloadRowProps) => {
-  const dispatch = useDispatch()
-  const { toast } = useToast()
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { shouldDisplayDownloadFollowGated } = useDownloadableContentAccess({
-    trackId
-  })
-
-  const handlePress = useCallback(() => {
-    if (shouldDisplayDownloadFollowGated) {
-      toast({ content: messages.followToDownload })
-    } else if (track && track.access.download) {
-      dispatch(
-        downloadTrack(
-          trackId,
-          track.stem_of?.category,
-          quality === DownloadQuality.ORIGINAL
-        )
-      )
-      trackAnalytics(
-        make({
-          eventName: Name.TRACK_PAGE_DOWNLOAD,
-          id: trackId,
-          category: track.stem_of?.category,
-          parent_track_id: parentTrackId
-        })
-      )
-    }
-  }, [
-    dispatch,
-    parentTrackId,
-    quality,
-    shouldDisplayDownloadFollowGated,
-    toast,
-    track,
-    trackId
-  ])
 
   return (
     <Flex
@@ -112,7 +68,7 @@ export const DownloadRow = ({
         </Flex>
       </Flex>
       {hideDownload ? null : (
-        <PlainButton onPress={handlePress}>
+        <PlainButton onPress={() => onDownload({ trackIds: [trackId] })}>
           <Box ph='s' pv='m'>
             <IconReceive color='subdued' size='s' />
           </Box>

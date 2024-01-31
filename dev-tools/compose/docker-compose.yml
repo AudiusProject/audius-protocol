@@ -184,10 +184,40 @@ services:
 
   # DDEX
 
-  ddex:
+  ddex-web:
     extends:
       file: docker-compose.ddex.yml
-      service: ddex
+      service: ddex-web
+    <<: *common
+
+  ddex-crawler:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-crawler
+    <<: *common
+
+  ddex-indexer:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-indexer
+    <<: *common
+
+  ddex-parser:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-parser
+    <<: *common
+
+  ddex-mongo:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-mongo
+    <<: *common
+  
+  ddex-ingester:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-ingester
     <<: *common
 
   # Storage (content node)
@@ -249,6 +279,9 @@ services:
       service: solana-test-validator-build
     <<: *common
 
+networks:
+  ddex-network:
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -257,3 +290,4 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
+  ddex-mongo-db:

@@ -2,6 +2,7 @@ import { ModalSource } from 'models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
+import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -12,8 +13,8 @@ import { PremiumContentPurchaseModalState } from './premium-content-purchase-mod
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
+import { WaitForDownloadModalState } from './wait-for-download-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
-import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 
 export type Modals =
   | 'TiersExplainer'
@@ -69,6 +70,7 @@ export type Modals =
   | 'AddFundsModal'
   | 'Welcome'
   | 'CoinflowWithdraw'
+  | 'WaitForDownloadModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -88,6 +90,7 @@ export type StatefulModalsState = {
   AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
   CoinflowWithdraw: CoinflowWithdrawModalState
+  WaitForDownloadModal: WaitForDownloadModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

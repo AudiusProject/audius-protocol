@@ -1,0 +1,19 @@
+.modal {
+  width: 720px;
+}
+
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.spinner {
+  width: var(--unit-8);
+  height: var(--unit-8);
+}
+
+.mobileWrapper {
+  height: 100%;
+  padding: 0px 0px;
+}

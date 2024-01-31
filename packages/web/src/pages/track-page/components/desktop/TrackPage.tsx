@@ -61,6 +61,7 @@ export type OwnProps = {
   onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
+  makePublic: (trackId: ID) => void
   onDownloadTrack: ({
     trackId,
     category,
@@ -70,9 +71,8 @@ export type OwnProps = {
     category?: string
     parentTrackId?: ID
   }) => void
-  makePublic: (trackId: ID) => void
   // Tracks Lineup Props
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
   currentQueueItem: QueueItem
   isPlaying: boolean
   isBuffering: boolean
