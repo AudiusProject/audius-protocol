@@ -1,6 +1,5 @@
 import { cloneElement, ReactElement } from 'react'
 
-import { BadgeTier, badgeTiers, Nullable } from '@audius/common'
 import { User } from '@audius/sdk'
 
 import IconBronzeBadgeSVG from 'assets/img/iconBronzeBadge.svg?react'
@@ -8,6 +7,9 @@ import IconGoldBadgeSVG from 'assets/img/iconGoldBadge.svg?react'
 import IconPlatinumBadgeSVG from 'assets/img/iconPlatinumBadge.svg?react'
 import IconSilverBadgeSVG from 'assets/img/iconSilverBadge.svg?react'
 import IconVerifiedSVG from 'assets/img/iconVerified.svg?react'
+import { BadgeTier } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import { badgeTiers } from '@audius/common/store'
 
 import cn from 'classnames'
 

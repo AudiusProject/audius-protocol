@@ -1,15 +1,14 @@
 import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { DogEarType, SquareSizes } from '@audius/common/models'
 import {
-  SquareSizes,
-  playerSelectors,
-  cacheTracksSelectors,
-  CommonState,
   accountSelectors,
   averageColorSelectors,
-  DogEarType,
-  useGatedContentAccess
-} from '@audius/common'
+  cacheTracksSelectors,
+  playerSelectors,
+  CommonState
+} from '@audius/common/store'
 import { IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'

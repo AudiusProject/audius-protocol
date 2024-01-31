@@ -1,14 +1,14 @@
 import { EntityState, PayloadAction } from '@reduxjs/toolkit'
 
-import { ChallengeRewardID } from 'models/AudioRewards'
-import { BadgeTier } from 'models/BadgeTier'
-import { Collection } from 'models/Collection'
-import { ID } from 'models/Identifiers'
-import { Status } from 'models/Status'
-import { Track } from 'models/Track'
-import { User } from 'models/User'
-import { StringUSDC, StringWei } from 'models/Wallet'
-import { Nullable } from 'utils'
+import { ChallengeRewardID } from '~/models/AudioRewards'
+import { BadgeTier } from '~/models/BadgeTier'
+import { Collection } from '~/models/Collection'
+import { ID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
+import { Track } from '~/models/Track'
+import { User } from '~/models/User'
+import { StringUSDC, StringWei } from '~/models/Wallet'
+import { Nullable } from '~/utils'
 
 export enum NotificationType {
   Announcement = 'Announcement',

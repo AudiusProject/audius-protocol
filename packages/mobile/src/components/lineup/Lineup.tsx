@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID, UID, PlaybackSource } from '@audius/common'
-import { Kind, Status } from '@audius/common'
+import type { PlaybackSource, ID, UID } from '@audius/common/models'
+import { Kind, Status } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'

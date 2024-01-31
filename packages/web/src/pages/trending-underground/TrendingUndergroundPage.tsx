@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 import {
-  trendingUndergroundPageLineupActions,
-  trendingUndergroundPageLineupSelectors
-} from '@audius/common'
+  trendingUndergroundPageLineupSelectors,
+  trendingUndergroundPageLineupActions
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import DesktopHeader from 'components/header/desktop/Header'

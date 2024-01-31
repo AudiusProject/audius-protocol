@@ -1,18 +1,20 @@
 import { memo, useEffect, useContext } from 'react'
 
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import {
-  ID,
-  Collection,
-  SmartCollection,
   Variant,
   SmartCollectionVariant,
   Status,
-  User,
-  CollectionsPageType,
-  CollectionTrack,
+  Collection,
+  SmartCollection,
+  ID,
+  User
+} from '@audius/common/models'
+import {
   OverflowAction,
-  useGatedContentAccessMap
-} from '@audius/common'
+  CollectionTrack,
+  CollectionsPageType
+} from '@audius/common/store'
 
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

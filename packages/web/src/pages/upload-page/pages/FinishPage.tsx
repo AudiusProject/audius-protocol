@@ -1,15 +1,15 @@
 import { useCallback, useMemo } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { Name } from '@audius/common/models'
 import {
   accountSelectors,
-  CommonState,
-  imageBlank as placeholderArt,
-  Name,
-  ProgressState,
-  ProgressStatus,
   uploadSelectors,
-  UploadType
-} from '@audius/common'
+  UploadType,
+  ProgressStatus,
+  CommonState,
+  ProgressState
+} from '@audius/common/store'
 import {
   HarmonyPlainButton,
   IconArrow,

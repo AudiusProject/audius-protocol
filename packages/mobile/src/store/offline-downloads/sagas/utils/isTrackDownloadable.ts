@@ -1,4 +1,4 @@
-import type { ID, UserTrackMetadata } from '@audius/common'
+import type { ID, UserTrackMetadata } from '@audius/common/models'
 
 export const isTrackDownloadable = (
   track: UserTrackMetadata,

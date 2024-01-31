@@ -1,4 +1,7 @@
-import { reachabilityActions, reachabilitySelectors } from '@audius/common'
+import {
+  reachabilityActions,
+  reachabilitySelectors
+} from '@audius/common/store'
 import { NetInfoStateType } from '@react-native-community/netinfo'
 import { select, take } from 'typed-redux-saga'
 

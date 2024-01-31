@@ -1,5 +1,5 @@
-import { ID } from 'models/Identifiers'
-import { Nullable } from 'utils/typeUtils'
+import { ID } from '~/models/Identifiers'
+import { Nullable } from '~/utils/typeUtils'
 
 import { createModal } from '../createModal'
 

@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
-import type { CastMethod } from '@audius/common'
-import { accountSelectors, castSelectors, castActions } from '@audius/common'
+import type { CastMethod } from '@audius/common/store'
+import {
+  accountSelectors,
+  castSelectors,
+  castActions
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconVolumeLevel2 } from '@audius/harmony-native'

@@ -7,7 +7,7 @@ import {
   CSSProperties
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import { Switch, useHistory } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'

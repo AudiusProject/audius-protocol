@@ -1,11 +1,11 @@
+import { Track } from '@audius/common/models'
 import {
-  Track,
   accountSelectors,
   cacheTracksSelectors,
   trackPageLineupActions,
-  trackPageSelectors,
-  waitForValue
-} from '@audius/common'
+  trackPageSelectors
+} from '@audius/common/store'
+import { waitForValue } from '@audius/common/utils'
 import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

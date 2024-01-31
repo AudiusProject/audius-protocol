@@ -5,6 +5,11 @@
   overflow: auto;
 }
 
+.newModalContainer {
+  max-width: unset;
+  min-width: 600px;
+}
+
 .modalContainer {
   max-width: 536px;
   /* Need to account for the dropdown outside modal */
@@ -20,7 +25,7 @@
 }
 
 .modalTitle {
-  color: var(--neutral);
+  color: var(--neutral-light-4);
   font-size: var(--font-l);
   font-weight: var(--font-heavy);
   text-transform: uppercase;
@@ -100,6 +105,10 @@
   width: 32px;
 }
 
+.dropzoneIcon g path {
+  fill: var(--neutral-light-4);
+}
+
 .deleteButton {
   margin-left: auto;
   margin-right: 22px;
@@ -132,6 +141,20 @@
 }
 .dropzoneDisabled path {
   fill: var(--neutral-light-4) !important;
+}
+
+.stemPreview {
+  padding-top: var(--unit-2);
+  padding-bottom: var(--unit-2);
+  border-top: none;
+  border-bottom: 1px solid var(--border-default);
+}
+.stemPreview:last-child {
+  border-bottom: none;
+}
+.stemPreview:hover {
+  background: var(--background-surface-1);
+  border-top: none;
 }
 
 .doneButton {

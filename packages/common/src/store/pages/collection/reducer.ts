@@ -1,7 +1,7 @@
-import { Collection } from 'models/Collection'
+import { Collection } from '~/models/Collection'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/collection/lineup/reducer'
+} from '~/store/pages/collection/lineup/reducer'
 
 import { Status } from '../../../models/Status'
 import { LineupActions, asLineup } from '../../../store/lineup/reducer'

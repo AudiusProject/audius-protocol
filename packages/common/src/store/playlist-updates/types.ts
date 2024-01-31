@@ -1,6 +1,6 @@
 import { EntityState, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 export type PlaylistUpdate = {
   playlist_id: number

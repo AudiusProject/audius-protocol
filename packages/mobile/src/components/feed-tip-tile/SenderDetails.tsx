@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { Platform, TouchableOpacity, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'

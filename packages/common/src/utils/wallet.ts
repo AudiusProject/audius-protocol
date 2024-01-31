@@ -7,8 +7,8 @@ import {
   StringAudio,
   StringUSDC,
   StringWei
-} from 'models/Wallet'
-import { AmountObject } from 'store/ui'
+} from '~/models/Wallet'
+import { AmountObject } from '~/store/ui'
 import {
   WEI_DIVISOR,
   trimRightZeros,
@@ -16,8 +16,8 @@ import {
   formatWeiToAudioString,
   parseWeiNumber,
   convertFloatToWei
-} from 'utils/formatUtil'
-import { Nullable } from 'utils/typeUtils'
+} from '~/utils/formatUtil'
+import { Nullable } from '~/utils/typeUtils'
 
 /** AUDIO utils */
 const WEI_DECIMALS = 18 // 18 decimals on ETH AUDIO

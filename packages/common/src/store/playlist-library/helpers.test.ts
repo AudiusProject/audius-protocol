@@ -1,5 +1,8 @@
-import { PlaylistLibrary, PlaylistLibraryFolder } from 'models/PlaylistLibrary'
-import { SmartCollectionVariant } from 'models/SmartCollectionVariant'
+import {
+  PlaylistLibrary,
+  PlaylistLibraryFolder
+} from '~/models/PlaylistLibrary'
+import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
 
 import {
   addFolderToLibrary,

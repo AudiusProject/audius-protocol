@@ -16,6 +16,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label,
       options,
       onSelect,
+      isDisabled,
       variant = 'fillContainer',
       size = 'default',
       iconRight = IconCaretDown,
@@ -142,10 +143,12 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     const handleButtonClick = useCallback(() => {
       if (variant === 'fillContainer' && selection !== null) {
         setSelection(null)
+        // @ts-ignore
+        onSelect?.(null)
       } else {
         setIsOpen((isOpen: boolean) => !isOpen)
       }
-    }, [selection, variant, setIsOpen, setSelection])
+    }, [selection, variant, setIsOpen, setSelection, onSelect])
 
     const handleOptionSelect = useCallback(
       (option: FilterButtonOption) => {
@@ -170,6 +173,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
             ? IconCloseAlt
             : iconRight
         }
+        disabled={isDisabled}
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >

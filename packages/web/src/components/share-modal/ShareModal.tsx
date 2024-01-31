@@ -1,8 +1,8 @@
 import { useCallback, useContext } from 'react'
 
+import { Name, PlayableType } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Name,
-  FeatureFlags,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
@@ -10,9 +10,8 @@ import {
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
   modalsActions,
-  PlayableType,
   useCreateChatModal
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'

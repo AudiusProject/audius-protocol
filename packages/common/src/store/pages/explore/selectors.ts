@@ -1,8 +1,8 @@
 import { createSelector } from 'reselect'
 
-import { getCollections } from 'store/cache/collections/selectors'
-import { getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
+import { getCollections } from '~/store/cache/collections/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
 
 import { UserCollection, Status, User } from '../../../models'
 import { removeNullable } from '../../../utils'

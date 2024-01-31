@@ -11,17 +11,19 @@ import {
   useMemo
 } from 'react'
 
+import { useCanSendMessage } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
-  chatSelectors,
+  chatSelectors
+} from '@audius/common/store'
+import {
   encodeHashId,
-  Status,
   hasTail,
   isEarliestUnread,
-  chatCanFetchMoreMessages,
-  useCanSendMessage
-} from '@audius/common'
+  chatCanFetchMoreMessages
+} from '@audius/common/utils'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { throttle } from 'lodash'

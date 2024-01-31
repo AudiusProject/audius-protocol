@@ -1,6 +1,9 @@
 import { useContext, useEffect } from 'react'
 
-import { repostsUserListSelectors, REPOSTS_USER_LIST_TAG } from '@audius/common'
+import {
+  repostsUserListSelectors,
+  REPOSTS_USER_LIST_TAG
+} from '@audius/common/store'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'

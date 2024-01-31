@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'

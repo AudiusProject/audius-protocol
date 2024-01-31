@@ -1,11 +1,11 @@
 import { MouseEvent, memo } from 'react'
 
 import {
-  Nullable,
+  isContentUSDCPurchaseGated,
   AccessConditions,
-  GatedTrackStatus,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  GatedTrackStatus
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'

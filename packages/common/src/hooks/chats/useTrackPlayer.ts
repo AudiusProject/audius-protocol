@@ -2,11 +2,11 @@ import { useCallback } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ID, Name } from 'models'
-import { getPlaying, getUid } from 'store/player/selectors'
-import { QueueSource, Queueable, queueActions } from 'store/queue'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { Nullable } from 'utils'
+import { ID, Name } from '~/models'
+import { getPlaying, getUid } from '~/store/player/selectors'
+import { QueueSource, Queueable, queueActions } from '~/store/queue'
+import { makeGetCurrent } from '~/store/queue/selectors'
+import { Nullable } from '~/utils'
 
 import { TrackPlayback } from './types'
 

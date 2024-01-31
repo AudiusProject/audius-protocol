@@ -2,7 +2,7 @@ import {
   lineupSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { RewardsBanner } from 'app/components/audio-rewards'

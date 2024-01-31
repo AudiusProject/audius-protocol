@@ -1,4 +1,4 @@
-import { BuyCryptoErrorCode } from 'store/buy-crypto/types'
+import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
 
 import { BuyUSDCErrorCode } from '../buy-usdc'
 

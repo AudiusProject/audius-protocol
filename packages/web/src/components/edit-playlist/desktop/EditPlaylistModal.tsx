@@ -5,7 +5,7 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   useEditPlaylistModal
-} from '@audius/common'
+} from '@audius/common/store'
 import {
   IconPlaylists,
   Modal,

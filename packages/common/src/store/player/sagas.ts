@@ -1,7 +1,7 @@
 import { call, put, takeEvery } from 'typed-redux-saga'
 
-import { FeatureFlags } from 'services/remote-config'
-import { getContext } from 'store/effects'
+import { FeatureFlags } from '~/services/remote-config'
+import { getContext } from '~/store/effects'
 
 import { setPlaybackRate } from './slice'
 import { PlaybackRate, PLAYBACK_RATE_LS_KEY } from './types'

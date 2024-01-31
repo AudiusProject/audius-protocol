@@ -1,5 +1,5 @@
-import { getUserId } from 'store/account/selectors'
-import { getUser } from 'store/cache/users/selectors'
+import { getUserId } from '~/store/account/selectors'
+import { getUser } from '~/store/cache/users/selectors'
 
 import { CommonState } from '../reducers'
 

@@ -4,16 +4,16 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
-import { UserTrackMetadata } from 'models/Track'
+import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
+import { UserTrackMetadata } from '~/models/Track'
 import {
   ContentType,
   PurchaseContentPage,
   isContentPurchaseInProgress,
   purchaseContentActions,
   purchaseContentSelectors
-} from 'store/purchase-content'
-import { Nullable } from 'utils/typeUtils'
+} from '~/store/purchase-content'
+import { Nullable } from '~/utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
 

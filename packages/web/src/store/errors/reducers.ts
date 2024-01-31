@@ -1,4 +1,4 @@
-import { SsrPageProps } from '@audius/common'
+import { SsrPageProps } from '@audius/common/models'
 import { createReducer } from 'typesafe-actions'
 
 import {

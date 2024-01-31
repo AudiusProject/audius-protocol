@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 
 export const findAncestor = (el: Element, selector: string) => {
   if (el.closest) {
