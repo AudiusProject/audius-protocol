@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { ProfilePicture } from 'app/components/user'
+import { ProfilePicture } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -30,6 +32,7 @@ export const AccountSettingsRow = () => {
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser)
   const navigation = useNavigation<ProfileTabScreenParamList>()
+  const { spacing } = useTheme()
 
   const handlePress = useCallback(() => {
     navigation.push('AccountSettingsScreen')
@@ -42,7 +45,10 @@ export const AccountSettingsRow = () => {
   return (
     <SettingsRow style={styles.root} onPress={handlePress}>
       <View style={styles.content}>
-        <ProfilePicture profile={accountUser} style={styles.profilePicture} />
+        <ProfilePicture
+          userId={accountUser.user_id}
+          style={css({ width: spacing.unit13, height: spacing.unit13 })}
+        />
         <View style={styles.info}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.handle}>@{handle}</Text>
