@@ -132,6 +132,8 @@ export const TrackScreen = () => {
           count={isReachable ? 6 : 0}
           header={
             <TrackScreenMainContent
+              // @ts-ignore not sure why but it's registering
+              //  as LineupState<{ id: number }> instead of Track
               lineup={lineup}
               remixParentTrack={remixParentTrack}
               track={track}
