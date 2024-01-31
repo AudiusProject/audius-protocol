@@ -1,4 +1,4 @@
-import { ID, Track, UserTrackMetadata } from '@audius/common/models'
+import { ID, Track } from '@audius/common/models'
 import { getContext } from '@audius/common/store'
 import { call } from 'typed-redux-saga'
 
