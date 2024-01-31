@@ -4,12 +4,13 @@ import {
   TimeRange,
   LineupState,
   Track,
-  Collection
+  Collection,
+  LineupTrack
 } from '../../../models'
 
 export type FeedPageState = {
   suggestedFollows: ID[]
-  feed: LineupState<{ id: ID; activityTimestamp: number }>
+  feed: LineupState<LineupTrack>
   trendingWeek: LineupState<Track | Collection>
   trendingMonth: LineupState<Track | Collection>
   trendingAllTime: LineupState<Track | Collection>

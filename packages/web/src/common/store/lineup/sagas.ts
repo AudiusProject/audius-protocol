@@ -20,8 +20,6 @@ import {
   accountSelectors,
   LineupBaseActions,
   LineupEntry,
-  CommonState,
-  Lineup,
   LineupState,
   Track,
   UID,
@@ -31,10 +29,8 @@ import {
   Entry,
   SubscriptionInfo,
   removeNullable,
-  lineupActions,
   QueueSource,
-  UnsubscribeInfo,
-  PlaybackSource
+  UnsubscribeInfo
 } from '@audius/common'
 import {
   all,
@@ -52,8 +48,7 @@ import {
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { isPreview } from 'common/utils/isPreview'
-import { C } from '@coinbase/cbpay-js/dist/CBPayInstance-ec1700c7'
-import { it } from 'vitest'
+import { AppState } from 'store/types'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
@@ -67,8 +62,8 @@ const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
 const flatten = (list: any[]): any[] =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
 
-function* filterDeletes(
-  tracksMetadata: LineupEntry<Track | Collection>[],
+function* filterDeletes<T extends Track | Collection>(
+  tracksMetadata: LineupEntry<T>[],
   removeDeleted: boolean,
   lineupPrefix: string
 ) {
@@ -178,23 +173,18 @@ function getCollectionCacheables(
     })
 }
 
-function* fetchLineupMetadatasAsync(
+function* fetchLineupMetadatasAsync<T extends Track | Collection>(
   lineupActions: LineupBaseActions,
   lineupMetadatasCall: (
     action: ReturnType<LineupBaseActions['fetchLineupMetadatas']>
-  ) =>
-    | Generator<any, LineupEntry<Track | Collection>[] | null, any>
-    | Promise<LineupEntry<Track | Collection>[] | null>,
-  lineupSelector: (
-    state: CommonState,
-    handle?: string
-  ) => LineupState<Track | Collection>,
-  retainSelector: (
-    entry: LineupEntry<Track | Collection>
-  ) => LineupEntry<Track | Collection>,
+  ) => Generator<any, T[] | null, any> | Promise<T[] | null>,
+  lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
+  retainSelector: (entry: LineupEntry<T>) => LineupEntry<T>,
   lineupPrefix: string,
   removeDeleted: boolean,
-  sourceSelector: (state: CommonState, handle?: string) => QueueSource | null,
+  sourceSelector:
+    | ((state: AppState, handle?: string) => QueueSource | string | null)
+    | undefined,
   action: ReturnType<LineupBaseActions['fetchLineupMetadatas']> & {
     handle?: string
   }
@@ -225,10 +215,10 @@ function* fetchLineupMetadatasAsync(
         yield* delay(100)
       }
 
-      const lineupMetadatasResponse: LineupEntry<Track | Collection>[] =
-        yield* call(lineupMetadatasCall, action) as unknown as LineupEntry<
-          Track | Collection
-        >[]
+      const lineupMetadatasResponse: LineupEntry<T>[] = yield* call(
+        lineupMetadatasCall,
+        action
+      ) as unknown as LineupEntry<T>[]
 
       if (lineupMetadatasResponse === null) {
         yield* put(lineupActions.fetchLineupMetadatasFailed())
@@ -258,7 +248,7 @@ function* fetchLineupMetadatasAsync(
 
       // Filter out deletes (and premium content if disabled)
       const responseFilteredDeletes = yield* call(
-        filterDeletes,
+        filterDeletes<T>,
         lineupMetadatasResponse,
         removeDeleted,
         lineupPrefix
@@ -271,7 +261,7 @@ function* fetchLineupMetadatasAsync(
 
       const allMetadatas = responseFilteredDeletes
         .map((item) => {
-          if (!item) return
+          if (!item) return null
           const id = 'track_id' in item ? item.track_id : item.playlist_id
           if (id && uidForSource[id] && uidForSource[id].length > 0) {
             const uid = uidForSource[id].shift()
@@ -392,7 +382,7 @@ function* fetchLineupMetadatasAsync(
 
       // Add additional items to the queue if need be.
       yield* fork(
-        updateQueueLineup,
+        updateQueueLineup<T>,
         lineupPrefix,
         source as QueueSource,
         lineupEntries
@@ -423,10 +413,10 @@ function* fetchLineupMetadatasAsync(
   })
 }
 
-function* updateQueueLineup(
+function* updateQueueLineup<T extends Track | Collection>(
   lineupPrefix: string,
   source: QueueSource,
-  lineupEntries: LineupEntry<Track | Collection>[]
+  lineupEntries: LineupEntry<T>[]
 ) {
   const queueSource = yield* select(getSource)
   const uid = yield* select(getUid)
@@ -443,12 +433,9 @@ function* updateQueueLineup(
   }
 }
 
-function* play(
+function* play<T extends Track | Collection>(
   _lineupActions: LineupBaseActions,
-  lineupSelector: (
-    state: CommonState,
-    handle?: string
-  ) => LineupState<Track | Collection>,
+  lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
   prefix: string,
   action: ReturnType<LineupBaseActions['play']>
 ) {
@@ -474,7 +461,7 @@ function* play(
       source !== lineup.prefix
     ) {
       const toQueue = yield* all(
-        lineup.entries.map(function* (e: LineupEntry<Track | Collection>) {
+        lineup.entries.map(function* (e: LineupEntry<T>) {
           const queueable = yield* call(getToQueue, lineup.prefix, e)
           // If the entry is the one we're playing, set isPreview to incoming
           // value
@@ -507,12 +494,9 @@ function* pause(_action: ReturnType<LineupBaseActions['pause']>) {
   yield* put(queueActions.pause({}))
 }
 
-function* togglePlay(
+function* togglePlay<T extends Track | Collection>(
   lineupActions: LineupBaseActions,
-  _lineupSelector: (
-    state: CommonState,
-    handle?: string
-  ) => LineupState<Track | Collection>,
+  _lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
   _prefix: string,
   action: ReturnType<LineupBaseActions['togglePlay']>
 ) {
@@ -539,14 +523,13 @@ function* togglePlay(
   }
 }
 
-function* reset(
+function* reset<T extends Track | Collection>(
   lineupActions: LineupBaseActions,
   lineupPrefix: string,
-  lineupSelector: (
-    state: CommonState,
-    handle?: string
-  ) => LineupState<Track | Collection>,
-  sourceSelector: (state: CommonState, handle?: string) => QueueSource | null,
+  lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
+  sourceSelector:
+    | ((state: AppState, handle?: string) => QueueSource | string | null)
+    | undefined,
   action: ReturnType<LineupBaseActions['reset']>
 ) {
   const lineup = yield* select(lineupSelector)
@@ -619,14 +602,20 @@ function* remove(action: ReturnType<LineupBaseActions['remove']>) {
 
 function* updateLineupOrder(
   lineupPrefix: string,
-  sourceSelector: (state: CommonState, handle?: string) => QueueSource | null,
+  sourceSelector:
+    | ((state: AppState, handle?: string) => QueueSource | string | null)
+    | undefined,
   action: ReturnType<LineupBaseActions['updateLineupOrder']>
 ) {
   // TODO: Investigate a better way to handle reordering of the lineup and transitively
   // reordering the queue. This implementation is slightly buggy in that the source may not
   // be set on the queue item when reordering and the next track won't resume correctly.
   const queueSource = yield* select(getSource)
-  const source = yield* select(sourceSelector)
+  const source = sourceSelector
+    ? yield* select((state) =>
+        sourceSelector(state, action.handle?.toLowerCase())
+      )
+    : lineupPrefix
   const uid = yield* select(getUid)
   const currentUidSource = uid && Uid.fromString(uid).source
   if (
@@ -637,12 +626,9 @@ function* updateLineupOrder(
   }
 }
 
-function* refreshInView(
+function* refreshInView<T extends Track | Collection>(
   lineupActions: LineupBaseActions,
-  lineupSelector: (
-    state: CommonState,
-    handle?: string
-  ) => LineupState<Track | Collection>,
+  lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
   action: ReturnType<LineupBaseActions['refreshInView']>
 ) {
   const lineup = yield* select(lineupSelector)
@@ -658,7 +644,9 @@ function* refreshInView(
   )
 }
 
-const keepUidAndKind = (entry: LineupEntry<Track | Collection>) => ({
+const keepUidAndKind = <T extends Track | Collection>(
+  entry: LineupEntry<T>
+) => ({
   uid: entry.uid,
   kind: entry.kind ?? ('track_id' in entry ? Kind.TRACKS : Kind.COLLECTIONS),
   id: 'track_id' in entry ? entry.track_id : entry.playlist_id
@@ -681,19 +669,23 @@ const keepUidAndKind = (entry: LineupEntry<Track | Collection>) => ({
  *    return new PlaylistSagas().getSagas()
  *  }
  */
-export class LineupSagas {
+export class LineupSagas<T extends Track | Collection> {
   prefix: string
   actions: LineupBaseActions
-  selector: (state: CommonState) => LineupState<Track | Collection>
-  lineupMetadatasCall: () =>
-    | Generator<any, LineupEntry<Track | Collection>[] | null, any>
-    | Promise<LineupEntry<Track | Collection>[] | null>
-  retainSelector: (entry: LineupEntry<Track | Collection>) => LineupEntry<any>
+  selector: (state: AppState) => LineupState<T>
+  lineupMetadatasCall: (args: {
+    limit: number
+    offset: number
+  }) => Generator<any, T[] | null, any> | Promise<T[] | null>
+
+  retainSelector: (entry: LineupEntry<T>) => LineupEntry<any>
   removeDeleted: boolean
-  sourceSelector: (
-    state: CommonState,
-    handle?: string | undefined
-  ) => QueueSource | null
+  sourceSelector:
+    | ((
+        state: AppState,
+        handle?: string | undefined
+      ) => QueueSource | string | null)
+    | undefined
 
   /**
    * @param {string} prefix the prefix for the lineup, e.g. FEED
@@ -709,18 +701,22 @@ export class LineupSagas {
   constructor(
     prefix: string,
     actions: LineupBaseActions,
-    selector: (state: CommonState) => LineupState<Track | Collection>,
-    lineupMetadatasCall: () =>
-      | Generator<any, LineupEntry<Track | Collection>[] | null, any>
-      | Promise<LineupEntry<Track | Collection>[] | null>,
+    selector: (state: AppState) => LineupState<T>,
+    lineupMetadatasCall: (args: {
+      limit: number
+      offset: number
+      payload?: any
+    }) => Generator<any, T[] | null, any> | Promise<T[] | null>,
     retainSelector: (
-      entry: LineupEntry<Track | Collection>
+      entry: LineupEntry<T>
     ) => LineupEntry<any> = keepUidAndKind,
     removeDeleted: boolean = true,
-    sourceSelector: (
-      state: CommonState,
-      handle?: string | undefined
-    ) => QueueSource | null
+    sourceSelector:
+      | ((
+          state: AppState,
+          handle?: string | undefined
+        ) => QueueSource | string | null)
+      | undefined
   ) {
     this.prefix = prefix
     this.actions = actions
@@ -739,7 +735,7 @@ export class LineupSagas {
           instance.prefix,
           baseLineupActions.FETCH_LINEUP_METADATAS
         ),
-        fetchLineupMetadatasAsync,
+        fetchLineupMetadatasAsync<T>,
         instance.actions,
         instance.lineupMetadatasCall,
         instance.selector,
