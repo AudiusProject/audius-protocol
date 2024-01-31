@@ -47,7 +47,7 @@ const useStyles = makeStyles(() => ({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  NotificationProfilePicture: {
+  profilePicture: {
     position: 'absolute',
     bottom: 0,
     right: 0,
@@ -117,7 +117,7 @@ export const TipReactionNotification = (
           <Reaction autoPlay={true} isVisible={isVisible} />
           <NotificationProfilePicture
             profile={user}
-            style={styles.NotificationProfilePicture}
+            style={styles.profilePicture}
           />
         </View>
         <View style={styles.content}>
