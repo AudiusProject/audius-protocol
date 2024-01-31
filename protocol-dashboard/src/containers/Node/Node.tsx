@@ -62,7 +62,10 @@ const ContentNode: React.FC<ContentNodeProps> = ({
       </div>
       {contentNode ? (
         <div className={clsx(styles.section, styles.chart)}>
-          <IndividualNodeUptimeChart nodeType={ServiceType.ContentNode} node={contentNode.endpoint} />
+          <IndividualNodeUptimeChart
+            nodeType={ServiceType.ContentNode}
+            node={contentNode.endpoint}
+          />
         </div>
       ) : null}
     </>
@@ -109,7 +112,10 @@ const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
             <IndividualServiceUniqueUsersChart node={discoveryNode?.endpoint} />
           </div>
           <div className={clsx(styles.section, styles.chart)}>
-            <IndividualNodeUptimeChart nodeType={ServiceType.DiscoveryProvider} node={discoveryNode.endpoint} />
+            <IndividualNodeUptimeChart
+              nodeType={ServiceType.DiscoveryProvider}
+              node={discoveryNode.endpoint}
+            />
           </div>
         </>
       ) : null}

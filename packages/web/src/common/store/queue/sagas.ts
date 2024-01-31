@@ -25,7 +25,10 @@ import {
   getContext,
   lineupRegistry,
   Collectible,
-  UserTrackMetadata
+  UserTrackMetadata,
+  LineupEntry,
+  Track,
+  Collection
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -64,7 +67,10 @@ const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
+export function* getToQueue(
+  prefix: string,
+  entry: LineupEntry<Track | Collection>
+) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
     if (!collection) return

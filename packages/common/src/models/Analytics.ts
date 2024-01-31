@@ -20,6 +20,8 @@ type JsonMap = Record<string, unknown>
 export type AnalyticsEvent = {
   eventName: string
   properties?: JsonMap
+  id?: string
+  source?: string
 }
 
 export enum Name {
