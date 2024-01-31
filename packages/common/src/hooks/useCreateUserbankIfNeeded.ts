@@ -3,7 +3,10 @@ import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
 import { AnalyticsEvent } from '~/models/Analytics'
-import { AudiusBackend, createUserBankIfNeeded } from '~/services/audius-backend'
+import {
+  AudiusBackend,
+  createUserBankIfNeeded
+} from '~/services/audius-backend'
 import { solanaSelectors } from '~/store/solana'
 const { getFeePayer } = solanaSelectors
 

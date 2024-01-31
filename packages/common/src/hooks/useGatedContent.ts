@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
+import { useGetCurrentUserId } from '~/api'
 import { Chain } from '~/models/Chain'
 import { ID } from '~/models/Identifiers'
 import {
@@ -12,7 +13,6 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { useGetCurrentUserId } from '~/api'
 import { getAccountUser } from '~/store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'

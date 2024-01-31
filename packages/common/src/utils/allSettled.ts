@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties */
 export const allSettled = Promise.allSettled
   ? Promise.allSettled.bind(Promise)
   : (promises: any[]) =>

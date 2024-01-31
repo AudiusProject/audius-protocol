@@ -35,7 +35,6 @@ web-init:
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules
-          - packages/common/dist
           - packages/libs/node_modules
           - packages/libs/dist
 

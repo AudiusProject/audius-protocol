@@ -4,7 +4,11 @@ import { FeedFilter } from '~/models/FeedFilter'
 import { ID, PlayableType } from '~/models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
 import { TimeRange } from '~/models/TimeRange'
-import { SolanaWalletAddress, StringAudio, WalletAddress } from '~/models/Wallet'
+import {
+  SolanaWalletAddress,
+  StringAudio,
+  WalletAddress
+} from '~/models/Wallet'
 import { MintName } from '~/services/index'
 import { Prettify } from '~/utils/typeUtils'
 
