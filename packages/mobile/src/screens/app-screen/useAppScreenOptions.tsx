@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,

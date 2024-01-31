@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { useEffect, memo, useCallback, useRef, useState } from 'react'
 
-import { useInstanceVar } from '@audius/common'
-import type { Maybe } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
+import type { Maybe } from '@audius/common/utils'
 import type {
   ImageProps,
   ImageSourcePropType,

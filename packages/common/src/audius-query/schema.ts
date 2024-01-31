@@ -1,6 +1,6 @@
 import { schema } from 'normalizr'
 
-import { Kind } from 'models/Kind'
+import { Kind } from '~/models/Kind'
 
 export type SchemaKey = 'user' | 'users' | 'track' | 'tracks'
 

@@ -1,4 +1,4 @@
-import { formatPrice } from '@audius/common'
+import { formatPrice } from '@audius/common/utils'
 
 import { Text } from 'app/components/core'
 

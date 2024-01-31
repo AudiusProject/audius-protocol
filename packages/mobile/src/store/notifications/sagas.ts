@@ -1,8 +1,8 @@
 import {
   accountSelectors,
-  getContext,
-  notificationsActions
-} from '@audius/common'
+  notificationsActions,
+  getContext
+} from '@audius/common/store'
 import commonNotificationsSagas, {
   getPollingIntervalMs
 } from 'audius-client/src/common/store/notifications/sagas'

@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { UploadType } from '@audius/common'
+import { UploadType } from '@audius/common/store'
 import { useUnmount } from 'react-use'
 
 import { EditCollectionForm } from '../forms/EditCollectionForm'

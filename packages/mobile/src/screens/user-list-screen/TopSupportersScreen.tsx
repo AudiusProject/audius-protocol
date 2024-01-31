@@ -2,9 +2,9 @@ import { useCallback } from 'react'
 
 import {
   cacheUsersSelectors,
-  topSupportersUserListSelectors,
-  topSupportersUserListActions
-} from '@audius/common'
+  topSupportersUserListActions,
+  topSupportersUserListSelectors
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

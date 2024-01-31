@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
-  Nullable,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from '@audius/common'
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import {
   Box,
   Flex,

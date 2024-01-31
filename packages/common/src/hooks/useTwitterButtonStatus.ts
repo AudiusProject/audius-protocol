@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { User } from 'models/User'
-import { Nullable } from 'utils/typeUtils'
+import { User } from '~/models/User'
+import { Nullable } from '~/utils/typeUtils'
 
 type ShareStatus = 'idle' | 'loading' | 'success'
 

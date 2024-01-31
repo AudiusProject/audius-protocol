@@ -5,15 +5,15 @@ import {
   useState
 } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { AccessConditions } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  AccessConditions,
-  FeatureFlags,
-  Nullable,
-  decimalIntegerToHumanReadable,
   filterDecimalString,
   padDecimalValue,
-  useFeatureFlag
-} from '@audius/common'
+  decimalIntegerToHumanReadable,
+  Nullable
+} from '@audius/common/utils'
 import { IconInfo } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'

@@ -1,4 +1,4 @@
-import type { Credentials as TikTokCredentials } from '@audius/common'
+import type { Credentials as TikTokCredentials } from '@audius/common/hooks'
 
 export type InstagramCredentials = {
   code: string

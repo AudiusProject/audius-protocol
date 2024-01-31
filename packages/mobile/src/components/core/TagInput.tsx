@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { trimToAlphaNumeric } from '@audius/common'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import type {
   NativeSyntheticEvent,

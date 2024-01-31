@@ -1,4 +1,4 @@
-import { Maybe } from '@audius/common'
+import { Maybe } from '@audius/common/utils'
 import { useField } from 'formik'
 
 const getFieldName = (base: string, index: number, path: string) =>

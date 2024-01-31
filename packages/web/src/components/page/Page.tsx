@@ -8,7 +8,7 @@ import {
   MutableRefObject
 } from 'react'
 
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'

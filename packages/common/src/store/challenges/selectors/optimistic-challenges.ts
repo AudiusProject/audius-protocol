@@ -2,10 +2,10 @@ import {
   getUndisbursedUserChallenges,
   getUserChallenges,
   getUserChallengesOverrides
-} from 'store/pages/audio-rewards/selectors'
-import { UndisbursedUserChallenge } from 'store/pages/audio-rewards/types'
-import { isCooldownChallengeClaimable } from 'utils/challenges'
-import { removeNullable } from 'utils/typeUtils'
+} from '~/store/pages/audio-rewards/selectors'
+import { UndisbursedUserChallenge } from '~/store/pages/audio-rewards/types'
+import { isCooldownChallengeClaimable } from '~/utils/challenges'
+import { removeNullable } from '~/utils/typeUtils'
 
 import {
   ChallengeRewardID,

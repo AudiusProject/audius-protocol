@@ -1,12 +1,11 @@
 import { useCallback, useContext } from 'react'
 
+import { Name, Status } from '@audius/common/models'
 import {
-  Name,
-  Status,
   accountSelectors,
   notificationsSelectors,
   searchResultsPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'

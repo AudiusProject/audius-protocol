@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { audioRewardsPageActions, modalsActions } from '@audius/common'
+import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import { Text, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'

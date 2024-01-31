@@ -1,8 +1,8 @@
 import { createJupiterApiClient, Instruction } from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
-import { Name } from 'models/Analytics'
-import { CommonStoreContext } from 'store/storeContext'
+import { Name } from '~/models/Analytics'
+import { CommonStoreContext } from '~/store/storeContext'
 
 /**
  * The error that gets returned if the slippage is exceeded

@@ -1,13 +1,9 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
-import type { Nullable } from '@audius/common'
-import {
-  SystemAppearance,
-  Theme,
-  themeActions,
-  themeSelectors
-} from '@audius/common'
+import { Theme, SystemAppearance } from '@audius/common/models'
+import { themeActions, themeSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAppState } from '@react-native-community/hooks'
 import { useDarkMode } from 'react-native-dynamic'

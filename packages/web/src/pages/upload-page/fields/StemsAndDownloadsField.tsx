@@ -1,20 +1,20 @@
 import { useCallback, useMemo } from 'react'
 
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   AccessConditions,
   Download,
   DownloadTrackAvailabilityType,
-  FeatureFlags,
   FollowGatedConditions,
-  Nullable,
   StemUpload,
   USDCPurchaseConditions,
-  accountSelectors,
   isContentFollowGated,
   isContentUSDCPurchaseGated,
-  stemCategoryFriendlyNames,
-  useUSDCPurchaseConfig
-} from '@audius/common'
+  stemCategoryFriendlyNames
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { IconCart } from '@audius/stems'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'

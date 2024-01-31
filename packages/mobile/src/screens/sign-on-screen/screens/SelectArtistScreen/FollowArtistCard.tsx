@@ -1,7 +1,7 @@
 import type { ChangeEvent } from 'react'
 import { useCallback, useContext } from 'react'
 
-import type { UserMetadata } from '@audius/common'
+import type { UserMetadata } from '@audius/common/models'
 import { css } from '@emotion/native'
 import {
   addFollowArtists,

@@ -1,19 +1,20 @@
 import { lazy, Component, Suspense } from 'react'
 
 import {
-  Client,
   Name,
+  Client,
   SmartCollectionVariant,
   Status,
-  Theme,
-  StringKeys,
+  Theme
+} from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   ExploreCollectionsVariant,
-  themeSelectors,
   themeActions,
-  UploadType,
-  FeatureFlags
-} from '@audius/common'
+  themeSelectors,
+  UploadType
+} from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'

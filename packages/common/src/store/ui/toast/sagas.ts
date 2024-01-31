@@ -1,6 +1,6 @@
 import { put, takeEvery, delay } from 'typed-redux-saga'
 
-import { uuid } from 'utils/uid'
+import { uuid } from '~/utils/uid'
 
 import { registerToast, dismissToast, toast } from './slice'
 import { ToastAction } from './types'

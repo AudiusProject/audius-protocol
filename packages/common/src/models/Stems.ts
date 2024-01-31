@@ -1,4 +1,4 @@
-import { Track } from 'models/Track'
+import { Track } from '~/models/Track'
 
 export enum StemCategory {
   INSTRUMENTAL = 'INSTRUMENTAL',

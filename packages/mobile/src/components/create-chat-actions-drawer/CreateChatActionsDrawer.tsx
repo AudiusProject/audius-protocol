@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { chatSelectors } from '@audius/common'
+import { chatSelectors } from '@audius/common/store'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

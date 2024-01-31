@@ -1,22 +1,21 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import type { Collection, ID, Track, UID, User } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
+  accountSelectors,
   cacheCollectionsSelectors,
-  useGatedContentAccess,
-  FeatureFlags,
-  playbackPositionSelectors,
-  Genre,
-  removeNullable,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  mobileOverflowMenuUIActions,
   OverflowAction,
   OverflowSource,
-  mobileOverflowMenuUIActions,
-  accountSelectors,
-  cacheUsersSelectors,
-  cacheTracksSelectors,
-  playerSelectors
-} from '@audius/common'
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
+import { Genre, removeNullable } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
   NativeTouchEvent,

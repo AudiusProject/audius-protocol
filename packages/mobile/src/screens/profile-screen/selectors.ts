@@ -1,12 +1,11 @@
 import { useContext } from 'react'
 
-import type { Nullable, User, CommonState } from '@audius/common'
-import {
-  Status,
-  useProxySelector,
-  accountSelectors,
-  profilePageSelectors
-} from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import type { User } from '@audius/common/models'
+import { accountSelectors, profilePageSelectors } from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 

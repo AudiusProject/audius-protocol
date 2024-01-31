@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { publishTrackConfirmationModalUISelectors } from '@audius/common'
+import { publishTrackConfirmationModalUISelectors } from '@audius/common/store'
 import { IconRocket } from '@audius/harmony'
 import {
   Button,

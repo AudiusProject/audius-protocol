@@ -1,4 +1,4 @@
-import { getLocalTimezone } from '@audius/common'
+import { getLocalTimezone } from '@audius/common/utils'
 import moment from 'moment'
 import { Nullable } from 'vitest'
 

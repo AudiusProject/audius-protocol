@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 
-import { isNullOrUndefined, Nullable } from 'utils/typeUtils'
+import { isNullOrUndefined, Nullable } from '~/utils/typeUtils'
 
 import { Chain } from '../../models/Chain'
 import { StringUSDC, StringWei } from '../../models/Wallet'

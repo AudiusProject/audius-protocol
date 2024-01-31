@@ -1,5 +1,5 @@
-import type { BNWei } from '@audius/common'
-import { formatWei } from '@audius/common'
+import type { BNWei } from '@audius/common/models'
+import { formatWei } from '@audius/common/utils'
 import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 

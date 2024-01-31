@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   Chain,
-  collectiblesSelectors,
-  FeatureFlags,
-  isContentCollectibleGated,
-  Nullable,
   StreamTrackAvailabilityType,
-  useFeatureFlag
-} from '@audius/common'
+  isContentCollectibleGated
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { collectiblesSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { Box, IconInfo } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'

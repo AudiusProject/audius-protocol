@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 
 import {
   accountSelectors,
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+  tokenDashboardPageSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
 import { useWalletConnect as useWalletConnectBase } from '@walletconnect/react-native-dapp'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'

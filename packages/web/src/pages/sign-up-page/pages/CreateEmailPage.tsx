@@ -1,10 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  emailSchema,
-  createEmailPageMessages as messages,
-  useAudiusQueryContext
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { createEmailPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/schemas'
 import {
   Box,
   Button,
@@ -104,7 +102,7 @@ export const CreateEmailPage = () => {
 
   const signInLink = (
     <TextLink variant='visible' asChild>
-      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+      <Link to={SIGN_IN_PAGE}>{createEmailPageMessages.signIn}</Link>
     </TextLink>
   )
 
@@ -135,11 +133,11 @@ export const CreateEmailPage = () => {
             )}
           </Box>
           <Heading
-            heading={messages.title}
+            heading={createEmailPageMessages.title}
             description={
               <>
-                {messages.subHeader.line1}
-                <br /> {messages.subHeader.line2}
+                {createEmailPageMessages.subHeader.line1}
+                <br /> {createEmailPageMessages.subHeader.line2}
               </>
             }
             tag='h1'
@@ -149,7 +147,7 @@ export const CreateEmailPage = () => {
             <NewEmailField />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
-                {messages.socialsDividerText}
+                {createEmailPageMessages.socialsDividerText}
               </Text>
             </Divider>
             <SocialMediaLoginOptions
@@ -166,7 +164,7 @@ export const CreateEmailPage = () => {
               iconRight={IconArrowRight}
               isLoading={isSubmitting}
             >
-              {messages.signUp}
+              {createEmailPageMessages.signUp}
             </Button>
 
             <Text
@@ -174,15 +172,17 @@ export const CreateEmailPage = () => {
               size={isMobile ? 'm' : 'l'}
               textAlign={isMobile ? 'center' : undefined}
             >
-              {messages.haveAccount} {signInLink}
+              {createEmailPageMessages.haveAccount} {signInLink}
             </Text>
           </Flex>
           {!isMobile && window.ethereum ? (
             <Flex direction='column' gap='s'>
               <SignUpWithMetaMaskButton />
               <Text size='s' variant='body'>
-                {messages.metaMaskNotRecommended}{' '}
-                <TextLink variant='visible'>{messages.learnMore}</TextLink>
+                {createEmailPageMessages.metaMaskNotRecommended}{' '}
+                <TextLink variant='visible'>
+                  {createEmailPageMessages.learnMore}
+                </TextLink>
               </Text>
             </Flex>
           ) : null}

@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 export const getCollectibleDetails = (state: CommonState) => {
   return state.ui.collectibleDetails

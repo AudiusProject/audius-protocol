@@ -1,6 +1,6 @@
-import { ID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { Status } from '~/models/Status'
 
 import {
   CacheType,

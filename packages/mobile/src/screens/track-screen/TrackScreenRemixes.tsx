@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { View } from 'react-native'
 
 import { IconArrowRight, IconRemix } from '@audius/harmony-native'

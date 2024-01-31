@@ -1,4 +1,4 @@
-import { collectionsSocialActions } from '@audius/common'
+import { collectionsSocialActions } from '@audius/common/store'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
 import {

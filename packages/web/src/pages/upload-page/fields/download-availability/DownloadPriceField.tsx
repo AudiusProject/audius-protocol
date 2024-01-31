@@ -9,7 +9,7 @@ import {
   decimalIntegerToHumanReadable,
   filterDecimalString,
   padDecimalValue
-} from '@audius/common'
+} from '@audius/common/utils'
 import { useField } from 'formik'
 
 import { BoxedTextField } from '../BoxedTextField'

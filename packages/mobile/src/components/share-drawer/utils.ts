@@ -1,5 +1,5 @@
-import type { ShareContent } from '@audius/common'
-import { makeTwitterShareUrl } from '@audius/common'
+import type { ShareContent } from '@audius/common/store'
+import { makeTwitterShareUrl } from '@audius/common/utils'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {

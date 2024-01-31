@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { chatSelectors, useProxySelector } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import { chatSelectors } from '@audius/common/store'
 import type { UserChat } from '@audius/sdk'
 import cn from 'classnames'
 

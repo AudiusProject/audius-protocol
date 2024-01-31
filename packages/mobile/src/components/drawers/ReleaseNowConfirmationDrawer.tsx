@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { cacheTracksActions, useGetTrackById } from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
+import { cacheTracksActions } from '@audius/common/store'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 

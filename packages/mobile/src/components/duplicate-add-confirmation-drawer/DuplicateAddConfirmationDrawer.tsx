@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  duplicateAddConfirmationModalUISelectors,
-  fillString
-} from '@audius/common'
+  duplicateAddConfirmationModalUISelectors
+} from '@audius/common/store'
+import { fillString } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

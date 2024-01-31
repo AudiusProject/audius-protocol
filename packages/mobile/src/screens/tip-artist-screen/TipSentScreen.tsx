@@ -1,11 +1,8 @@
 import { useCallback } from 'react'
 
-import type { SolanaWalletAddress } from '@audius/common'
-import {
-  formatNumberCommas,
-  accountSelectors,
-  tippingSelectors
-} from '@audius/common'
+import type { SolanaWalletAddress } from '@audius/common/models'
+import { accountSelectors, tippingSelectors } from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

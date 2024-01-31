@@ -1,4 +1,5 @@
-import { Chain, getContext } from '@audius/common'
+import { Chain } from '@audius/common/models'
+import { getContext } from '@audius/common/store'
 import { call } from 'typed-redux-saga'
 
 import {

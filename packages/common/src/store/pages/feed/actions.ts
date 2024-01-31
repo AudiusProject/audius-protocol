@@ -1,5 +1,5 @@
-import { FeedFilter } from 'models/FeedFilter'
-import { ID } from 'models/Identifiers'
+import { FeedFilter } from '~/models/FeedFilter'
+import { ID } from '~/models/Identifiers'
 
 export const FETCH_SUGGESTED_FOLLOW_USERS = 'FEED/FETCH_SUGGESTED_FOLLOW_USERS'
 export const FOLLOW_USERS = 'FEED/FOLLOW_USERS'

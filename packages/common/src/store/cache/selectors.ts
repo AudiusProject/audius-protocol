@@ -1,5 +1,5 @@
-import { CommonState } from 'store/commonStore'
-import { Uid } from 'utils/uid'
+import { CommonState } from '~/store/commonStore'
+import { Uid } from '~/utils/uid'
 
 import { Collection } from '../../models/Collection'
 import { ID, UID } from '../../models/Identifiers'

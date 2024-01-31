@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { BNWei, StringWei } from '@audius/common'
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
+import type { StringWei, BNWei } from '@audius/common/models'
 import {
-  stringWeiToBN,
   accountSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
-  walletActions,
-  useGetFirstOrTopSupporter
-} from '@audius/common'
+  walletActions
+} from '@audius/common/store'
+import { stringWeiToBN } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'
 import { Platform } from 'react-native'

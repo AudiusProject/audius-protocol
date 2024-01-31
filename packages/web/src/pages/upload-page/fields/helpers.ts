@@ -1,4 +1,5 @@
-import { ID, Nullable } from '@audius/common'
+import { ID } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 
 /**
  * Allows us to store all the user selections in the Access & Sale modal

@@ -1,13 +1,13 @@
 import type { full } from '@audius/sdk'
 
-import { createApi } from 'audius-query'
-import { ID } from 'models'
+import { createApi } from '~/audius-query'
+import { ID } from '~/models'
 import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
-} from 'models/USDCTransactions'
-import { StringUSDC } from 'models/Wallet'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models/USDCTransactions'
+import { StringUSDC } from '~/models/Wallet'
+import { Nullable } from '~/utils/typeUtils'
 
 import { trackApiFetch } from './track'
 import { HashId, Id } from './utils'

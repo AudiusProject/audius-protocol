@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import path from 'path'
 import react from '@vitejs/plugin-react-swc'
 import svgr from 'vite-plugin-svgr'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
@@ -31,7 +32,8 @@ export default defineConfig({
       hooks: '/src/hooks',
       models: '/src/models',
       types: '/src/types',
-      assets: '/src/assets'
+      assets: '/src/assets',
+      '~': path.resolve(__dirname, '../packages/common/src')
     }
   },
 
