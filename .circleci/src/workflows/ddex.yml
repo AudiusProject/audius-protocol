@@ -1,3 +1,7 @@
 when: << pipeline.parameters.run-ddex-webapp-workflow >>
 jobs:
   - ddex-webapp-init
+
+when: << pipeline.parameters.run-ddex-publisher-workflow >>
+jobs:
+  - ddex-publisher-init
