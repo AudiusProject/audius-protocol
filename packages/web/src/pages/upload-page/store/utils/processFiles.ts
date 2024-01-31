@@ -93,7 +93,8 @@ export const processFiles = (
       preview: audio,
       metadata: newTrackMetadata({
         title,
-        artwork
+        artwork,
+        orig_filename: file.name
       })
     }
   })
