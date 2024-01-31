@@ -24,9 +24,9 @@ import { formatCalendarTime } from 'utils/dateUtils'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
-import { IS_UNLISTED } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
+import { IS_UNLISTED } from './types'
 
 const messages = {
   title: 'Release Date',

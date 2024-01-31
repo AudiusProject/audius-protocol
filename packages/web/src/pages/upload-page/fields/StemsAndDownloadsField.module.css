@@ -1,0 +1,9 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.fields :global(.ant-divider) {
+  margin: 0;
+}

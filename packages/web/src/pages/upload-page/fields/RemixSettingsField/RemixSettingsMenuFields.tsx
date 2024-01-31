@@ -16,8 +16,8 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
-import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../AccessAndSaleField'
 import { SwitchRowField } from '../SwitchRowField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'

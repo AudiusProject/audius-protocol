@@ -69,7 +69,6 @@ import IconNoteSVG from '../assets/icons/Note.svg'
 import IconNotificationOffSVG from '../assets/icons/NotificationOff.svg'
 import IconNotificationOnSVG from '../assets/icons/NotificationOn.svg'
 import IconPauseSVG from '../assets/icons/Pause.svg'
-import IconPenSquareSVG from '../assets/icons/PenSquare.svg'
 import IconPencilSVG from '../assets/icons/Pencil.svg'
 import IconPlaySVG from '../assets/icons/Play.svg'
 import IconPlaylistsSVG from '../assets/icons/Playlists.svg'
@@ -218,7 +217,6 @@ export const IconCloudDownloadQueued =
 export const IconPause = IconPauseSVG as IconComponent
 export const IconTurntable = IconTurntableSVG as IconComponent
 export const IconCloudUpload = IconCloudUploadSVG as IconComponent
-export const IconPenSquare = IconPenSquareSVG as IconComponent
 export const IconPencil = IconPencilSVG as IconComponent
 export const IconUser = IconUserSVG as IconComponent
 export const IconCollectible = IconCollectibleSVG as IconComponent

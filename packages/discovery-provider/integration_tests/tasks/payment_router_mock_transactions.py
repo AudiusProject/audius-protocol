@@ -2776,9 +2776,7 @@ mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx = GetTransaction
 )
 
 
-# Routes $1.00 to a single recipient w/ a recovery memo that does not specify
-# a source transaction. The sending address should match the recipient of a previous
-# transaction in order to trigger recovery
+# Routes $1.00 to a user bank w/ a recovery memo.
 mock_valid_transfer_single_recipient_recovery_tx = GetTransactionResp.from_json(
     json.dumps(
         {
@@ -2817,8 +2815,8 @@ mock_valid_transfer_single_recipient_recovery_tx = GetTransactionResp.from_json(
                             {
                                 "programIdIndex": 6,
                                 "accounts": [0],
-                                # "recovery"
-                                "data": "L8nXdrNsKha",
+                                # "Recover Withdrawal"
+                                "data": "4RDcbHgG9pB3vm5rAKgbs5F47",
                                 "stackHeight": None,
                             },
                             {
