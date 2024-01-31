@@ -10,7 +10,7 @@ class USDCTransactionType(str, enum.Enum):
     purchase_content = "PURCHASE_CONTENT"
     transfer = "TRANSFER"
     prepare_withdrawal = "PREPARE_WITHDRAWAL"
-    recovery = "RECOVERY"
+    recover_withdrawal = "RECOVER_WITHDRAWAL"
     withdrawal = "WITHDRAWAL"
     purchase_stripe = "PURCHASE_STRIPE"
 

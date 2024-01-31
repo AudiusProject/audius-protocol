@@ -94,7 +94,7 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 # The amount of USDC that represents one USD cent
 USDC_PER_USD_CENT = 10000
 
-RECOVERY_MEMO_STRING = "recovery"
+RECOVERY_MEMO_STRING = "Recover Withdrawal"
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
@@ -477,7 +477,7 @@ def validate_and_index_usdc_transfers(
     # it as a regular transfer from the sender_account.
     else:
         transaction_type = (
-            USDCTransactionType.recovery
+            USDCTransactionType.recover_withdrawal
             if memo is not None and memo["type"] is RouteTransactionMemoType.recovery
             else USDCTransactionType.transfer
         )

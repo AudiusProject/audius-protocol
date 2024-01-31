@@ -115,6 +115,9 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 INITIAL_FETCH_SIZE = 10
 
+PREPARE_WITHDRAWAL_MEMO_STRING = "Prepare Withdrawal"
+WITHDRAWAL_MEMO_STRING = "Withdrawal"
+
 # Used to find the correct accounts for sender/receiver in the transaction and the ClaimableTokensPDA
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
@@ -262,9 +265,9 @@ def process_create_userbank_instruction(
 def get_transfer_type_from_memo(memos: List[str]) -> USDCTransactionType:
     """Checks the list of memos for one matching containing a transaction type and returns it if found. Defaults to USDCTransactionType.transfer if no matching memo is found"""
     for memo in memos:
-        if memo == "prepareWithdrawal":
+        if memo == PREPARE_WITHDRAWAL_MEMO_STRING:
             return USDCTransactionType.prepare_withdrawal
-        elif memo == "withdrawal":
+        elif memo == WITHDRAWAL_MEMO_STRING:
             return USDCTransactionType.withdrawal
     return USDCTransactionType.transfer
 

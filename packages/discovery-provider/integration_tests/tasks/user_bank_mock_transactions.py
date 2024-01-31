@@ -56,10 +56,10 @@ USDC_PDA = "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt"
 PURCHASE_TRACK1_MEMO_DATA = "7YSwHDhdZsHu6X"
 # base58.b58encode("track:2:10").decode("utf-8")
 PURCHASE_TRACK2_MEMO_DATA = "7YSwHDhdZtmtNs"
-# base58.b58encode("prepareWithdrawal").decode("utf-8")
-PREPARE_WITHDRAWAL_MEMO = "24HfgZLA1xLzYULPugQYu3E3"
-# base58.b58encode("withdrawal").decode("utf-8")
-WITHDRAWAL_MEMO = "7i7LKvjAnvWieF"
+# base58.b58encode("Prepare Withdrawal").decode("utf-8")
+PREPARE_WITHDRAWAL_MEMO = "4LXeTxmZydvvx9jk2DnmBAwcX"
+# base58.b58encode("Withdrawal").decode("utf-8")
+WITHDRAWAL_MEMO = "5uqUSXZpY6AMST"
 
 # contentType:contentId:blockNumber:purchaserUserId
 # base58.b58encode("track:1:10:2").decode("utf-8")

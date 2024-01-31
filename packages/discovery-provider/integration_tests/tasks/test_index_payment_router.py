@@ -372,7 +372,10 @@ def test_process_payment_router_tx_details_transfer_recovery(app):
             .first()
         )
         assert transaction_record.method == USDCTransactionMethod.receive
-        assert transaction_record.transaction_type == USDCTransactionType.recovery
+        assert (
+            transaction_record.transaction_type
+            == USDCTransactionType.recover_withdrawal
+        )
         assert transaction_record.change == 1000000
         assert transaction_record.balance == 1000000
         assert transaction_record.tx_metadata == transactionSenderOwnerAccount

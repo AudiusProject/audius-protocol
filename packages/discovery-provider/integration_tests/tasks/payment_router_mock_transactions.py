@@ -2815,8 +2815,8 @@ mock_valid_transfer_single_recipient_recovery_tx = GetTransactionResp.from_json(
                             {
                                 "programIdIndex": 6,
                                 "accounts": [0],
-                                # "recovery"
-                                "data": "L8nXdrNsKha",
+                                # "Recover Withdrawal"
+                                "data": "4RDcbHgG9pB3vm5rAKgbs5F47",
                                 "stackHeight": None,
                             },
                             {
