@@ -2,13 +2,15 @@ import Hashids from 'hashids'
 
 jest.mock('hashids')
 
+const mockedHashids = Hashids as jest.Mock
+
 describe('decodeHashId', () => {
   afterEach(() => {
     jest.resetModules()
   })
 
   it('can decode a hash id', () => {
-    Hashids.mockImplementationOnce(() => {
+    mockedHashids.mockImplementationOnce(() => {
       return {
         decode: () => [11845]
       }
@@ -24,7 +26,7 @@ describe('decodeHashId', () => {
 
   it('can handle an error', () => {
     const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation()
-    Hashids.mockImplementationOnce(() => {
+    mockedHashids.mockImplementationOnce(() => {
       return {
         decode: () => []
       }
