@@ -7,7 +7,6 @@ import {
 
 import { useRef, useCallback, useEffect, RefObject } from 'react'
 
-import {} from '@audius/common'
 import { Status } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'

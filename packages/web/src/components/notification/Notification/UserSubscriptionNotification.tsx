@@ -6,7 +6,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

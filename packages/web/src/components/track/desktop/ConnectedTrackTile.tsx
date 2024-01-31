@@ -17,7 +17,6 @@ import {
   useRef
 } from 'react'
 
-import {} from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,

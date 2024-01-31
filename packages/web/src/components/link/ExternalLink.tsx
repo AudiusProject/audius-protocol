@@ -2,7 +2,6 @@ import { useLeavingAudiusModal } from '@audius/common/store'
 
 import { MouseEvent, useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { isAllowedExternalLink } from '@audius/common/utils'
 

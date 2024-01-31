@@ -5,7 +5,6 @@ import {
   audioRewardsPageActions
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCaretRight from 'assets/img/iconCaretRight.svg'

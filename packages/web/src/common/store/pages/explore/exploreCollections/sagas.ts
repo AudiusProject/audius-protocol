@@ -4,7 +4,7 @@ import {
   ExploreCollectionsVariant,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Collection, UserCollectionMetadata } from '@audius/common/models'
 import { uniq } from 'lodash'
 import { takeEvery, call, select, put } from 'typed-redux-saga'

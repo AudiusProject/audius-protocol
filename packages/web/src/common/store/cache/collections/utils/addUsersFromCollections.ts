@@ -4,7 +4,7 @@ import {
   reformatUser,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind, UserCollectionMetadata } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'

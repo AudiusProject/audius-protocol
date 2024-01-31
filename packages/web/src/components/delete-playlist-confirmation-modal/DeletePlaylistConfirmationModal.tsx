@@ -5,7 +5,6 @@ import {
   deletePlaylistConfirmationModalUISelectors
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 

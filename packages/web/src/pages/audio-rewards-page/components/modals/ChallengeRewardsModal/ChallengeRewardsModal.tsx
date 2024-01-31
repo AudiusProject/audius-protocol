@@ -10,7 +10,6 @@ import {
   ChallengeRewardsModalType
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import {
   fillString,
   formatNumberCommas,

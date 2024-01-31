@@ -2,7 +2,6 @@ import { accountSelectors } from '@audius/common/store'
 
 import { useMemo } from 'react'
 
-import {} from '@audius/common'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,

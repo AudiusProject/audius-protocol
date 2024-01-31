@@ -2,7 +2,6 @@ import { profilePageSelectors } from '@audius/common/store'
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useRankedSupportingForUser } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'

@@ -6,7 +6,7 @@ import {
   walletActions,
   Notification
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Dictionary } from '@reduxjs/toolkit'
 import { call, put, select } from 'typed-redux-saga'
 

@@ -3,7 +3,7 @@ import {
   trendingPageLineupActions,
   trendingPageSelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { TimeRange } from '@audius/common/models'
 import { select } from 'redux-saga/effects'
 

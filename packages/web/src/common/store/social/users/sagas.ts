@@ -8,7 +8,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, Kind, ID } from '@audius/common/models'
 import { makeKindId } from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'

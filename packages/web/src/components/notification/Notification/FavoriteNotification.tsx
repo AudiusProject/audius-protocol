@@ -6,7 +6,6 @@ import {
   FavoriteNotification as FavoriteNotificationType
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

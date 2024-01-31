@@ -2,7 +2,6 @@ import { gatedContentActions } from '@audius/common/store'
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
 import { IconLock, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'

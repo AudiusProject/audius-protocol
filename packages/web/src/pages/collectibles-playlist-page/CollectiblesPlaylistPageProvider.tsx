@@ -19,7 +19,6 @@ import {
   ComponentType
 } from 'react'
 
-import {} from '@audius/common'
 import {
   ShareSource,
   Chain,

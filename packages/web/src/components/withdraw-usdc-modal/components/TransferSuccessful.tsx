@@ -2,7 +2,6 @@ import { withdrawUSDCSelectors, WithdrawMethod } from '@audius/common/store'
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { Name, Status, BNUSDC } from '@audius/common/models'
 import {

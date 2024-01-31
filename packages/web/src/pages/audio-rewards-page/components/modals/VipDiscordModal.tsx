@@ -1,5 +1,4 @@
 import { vipDiscordModalSelectors } from '@audius/common/store'
-import {} from '@audius/common'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import { useSelector } from 'react-redux'
 

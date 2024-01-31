@@ -5,7 +5,7 @@ import {
   collectionPageActions as collectionActions,
   reachabilitySelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'

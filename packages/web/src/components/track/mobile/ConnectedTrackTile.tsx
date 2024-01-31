@@ -16,7 +16,6 @@ import {
 
 import { memo, MouseEvent } from 'react'
 
-import {} from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,

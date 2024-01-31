@@ -6,7 +6,7 @@ import {
   reformatUser,
   cacheUsersSelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { DefaultSizes, Kind } from '@audius/common/models'
 import { waitForValue, waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'

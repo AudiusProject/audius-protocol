@@ -1,5 +1,5 @@
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'

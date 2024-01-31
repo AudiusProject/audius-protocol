@@ -12,7 +12,7 @@ import {
   musicConfettiActions,
   UndisbursedUserChallenge
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   FailureReason,
   UserChallenge,

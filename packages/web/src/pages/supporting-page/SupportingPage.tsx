@@ -5,8 +5,6 @@ import {
   SUPPORTING_USER_LIST_TAG
 } from '@audius/common/store'
 
-import {} from '@audius/common'
-
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'

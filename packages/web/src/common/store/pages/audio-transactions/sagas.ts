@@ -7,7 +7,7 @@ import {
   InAppAudioPurchaseMetadata,
   TransactionDetails
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import type {} from '@audius/common'
 import { StringAudio } from '@audius/common/models'
 import { formatDate, Nullable } from '@audius/common/utils'

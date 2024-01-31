@@ -3,7 +3,7 @@ import {
   reformatCollection,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   Kind,
   CollectionMetadata,

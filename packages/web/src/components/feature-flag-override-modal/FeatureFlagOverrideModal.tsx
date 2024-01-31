@@ -2,7 +2,6 @@ import { accountSelectors } from '@audius/common/store'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {} from '@audius/common'
 import {
   OverrideSetting,
   FEATURE_FLAG_OVERRIDE_KEY

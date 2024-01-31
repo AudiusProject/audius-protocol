@@ -2,7 +2,6 @@ import { shareModalUIActions } from '@audius/common/store'
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { ShareSource, SmartCollectionVariant, ID } from '@audius/common/models'
 import { ButtonProps, ButtonType, IconShare } from '@audius/stems'
 import { useDispatch } from 'react-redux'

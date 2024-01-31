@@ -6,7 +6,7 @@ import {
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   FavoriteType,
   Favorite,

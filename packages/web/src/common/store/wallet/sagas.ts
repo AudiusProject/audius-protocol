@@ -8,7 +8,7 @@ import {
   getContext,
   InputSendDataAction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   Name,
   Chain,

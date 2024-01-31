@@ -18,7 +18,6 @@ import {
   useRef
 } from 'react'
 
-import {} from '@audius/common'
 import {
   Name,
   ShareSource,

@@ -5,7 +5,7 @@ import {
   RELATED_ARTISTS_USER_LIST_TAG,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { ID } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 

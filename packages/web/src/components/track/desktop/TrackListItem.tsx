@@ -2,7 +2,6 @@ import { EnhancedCollectionTrack } from '@audius/common/store'
 
 import { memo, MouseEvent, useRef } from 'react'
 
-import {} from '@audius/common'
 import { ID, UID } from '@audius/common/models'
 import { Genre, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'

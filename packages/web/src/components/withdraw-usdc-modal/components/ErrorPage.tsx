@@ -5,7 +5,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
 import {

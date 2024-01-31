@@ -2,8 +2,6 @@ import React, { ComponentType } from 'react'
 
 import { ReactionTypes } from '@audius/common/store'
 
-import {} from '@audius/common'
-
 import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
 
 export type ReactionProps = Omit<BaseReactionProps, 'animationData'>

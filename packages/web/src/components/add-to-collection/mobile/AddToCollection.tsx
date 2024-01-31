@@ -7,7 +7,6 @@ import {
 
 import { useCallback, useContext } from 'react'
 
-import {} from '@audius/common'
 import { CreatePlaylistSource, Collection, ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'

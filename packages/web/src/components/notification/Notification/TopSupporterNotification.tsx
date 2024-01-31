@@ -5,7 +5,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 
 import IconTrending from 'assets/img/iconTrending.svg'

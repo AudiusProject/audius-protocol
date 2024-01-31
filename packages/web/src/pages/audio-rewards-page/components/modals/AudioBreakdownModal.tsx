@@ -1,9 +1,8 @@
+import { BNWei } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
-import { BNWei } from '@audius/common/models'
 import { IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 

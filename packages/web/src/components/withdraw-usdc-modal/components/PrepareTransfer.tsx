@@ -8,7 +8,6 @@ import {
   CoinflowWithdrawState
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'

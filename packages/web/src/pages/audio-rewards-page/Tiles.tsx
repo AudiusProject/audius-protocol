@@ -5,8 +5,6 @@ import {
   tokenDashboardPageActions,
   walletSelectors
 } from '@audius/common/store'
-
-import {} from '@audius/common'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import cn from 'classnames'

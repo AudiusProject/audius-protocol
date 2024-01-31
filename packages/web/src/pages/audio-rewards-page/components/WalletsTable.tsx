@@ -1,12 +1,10 @@
+import { useCallback, useContext, useEffect, MouseEvent } from 'react'
+
+import { Chain, BNWei } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions
 } from '@audius/common/store'
-
-import { useCallback, useContext, useEffect, MouseEvent } from 'react'
-
-import {} from '@audius/common'
-import { Chain, BNWei } from '@audius/common/models'
 import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'

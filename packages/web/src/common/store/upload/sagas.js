@@ -13,7 +13,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, Kind } from '@audius/common/models'
 import {
   formatUrlName,

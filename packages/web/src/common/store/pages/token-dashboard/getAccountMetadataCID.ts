@@ -1,5 +1,5 @@
 import { accountSelectors, getContext } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { select, call } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'

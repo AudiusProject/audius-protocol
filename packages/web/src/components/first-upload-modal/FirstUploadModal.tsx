@@ -2,7 +2,6 @@ import { accountSelectors, musicConfettiActions } from '@audius/common/store'
 
 import { useCallback, useEffect } from 'react'
 
-import {} from '@audius/common'
 import { Name, SquareSizes } from '@audius/common/models'
 import { Modal } from '@audius/stems'
 import { connect, useDispatch } from 'react-redux'

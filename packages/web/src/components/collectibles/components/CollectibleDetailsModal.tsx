@@ -14,7 +14,6 @@ import {
   useState
 } from 'react'
 
-import {} from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'

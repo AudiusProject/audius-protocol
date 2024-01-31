@@ -3,7 +3,7 @@ import {
   processAndCacheUsers,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { ID, UserMetadata, User } from '@audius/common/models'
 import { AudiusAPIClient, AudiusBackend } from '@audius/common/services'
 import { call, select } from 'typed-redux-saga'

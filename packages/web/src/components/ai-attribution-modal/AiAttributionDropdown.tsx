@@ -2,7 +2,6 @@ import { getTierForUser } from '@audius/common/store'
 
 import { useCallback, useState } from 'react'
 
-import {} from '@audius/common'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, Kind } from '@audius/common/models'
 import { SelectProps } from 'antd'

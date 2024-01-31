@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
 import { audioRewardsPageActions, HCaptchaStatus } from '@audius/common/store'
-
-import {} from '@audius/common'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
 

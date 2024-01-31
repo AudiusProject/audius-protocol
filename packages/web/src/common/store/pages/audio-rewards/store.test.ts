@@ -9,7 +9,7 @@ import {
   modalsActions,
   AudioRewardsClaim
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   FailureReason,
   UserChallenge,

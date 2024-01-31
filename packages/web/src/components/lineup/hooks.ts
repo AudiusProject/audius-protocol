@@ -6,7 +6,6 @@ import {
 
 import { useMemo } from 'react'
 
-import {} from '@audius/common'
 import { LineupState } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 

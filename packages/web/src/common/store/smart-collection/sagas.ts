@@ -5,7 +5,7 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import {
   SmartCollectionVariant,
   Track,

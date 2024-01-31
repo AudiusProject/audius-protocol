@@ -2,7 +2,6 @@ import { Entity } from '@audius/common/store'
 
 import { MouseEventHandler, useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name, Collection, Track, User } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'

@@ -5,7 +5,6 @@ import {
 
 import { useCallback, useEffect, useState } from 'react'
 
-import {} from '@audius/common'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import { getHash } from '@audius/common/utils'
 import { LogoEth, LogoSol } from '@audius/stems'

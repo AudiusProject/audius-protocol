@@ -8,7 +8,6 @@ import {
 
 import { useCallback, useEffect } from 'react'
 
-import {} from '@audius/common'
 import { StringKeys } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'

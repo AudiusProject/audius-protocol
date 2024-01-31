@@ -4,7 +4,7 @@ import {
   profilePageSelectors,
   uploadActions
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { put, select, takeEvery } from 'typed-redux-saga'

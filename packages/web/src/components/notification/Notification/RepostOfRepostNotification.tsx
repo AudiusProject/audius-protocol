@@ -3,7 +3,6 @@ import {
   Entity,
   RepostOfRepostNotification as RepostOfRepostNotificationType
 } from '@audius/common/store'
-import {} from '@audius/common'
 
 import { useSelector } from 'utils/reducer'
 

@@ -12,7 +12,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, FavoriteSource } from '@audius/common/models'
 import {
   IntKeys,

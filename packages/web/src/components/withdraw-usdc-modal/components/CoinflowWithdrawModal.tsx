@@ -5,7 +5,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useCoinflowAdapter } from '@audius/common/hooks'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
 import { useDispatch } from 'react-redux'

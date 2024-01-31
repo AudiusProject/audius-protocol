@@ -2,7 +2,7 @@ import {
   profilePageActions,
   usersSocialActions as socialActions
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { FollowSource, ID } from '@audius/common/models'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

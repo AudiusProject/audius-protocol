@@ -6,7 +6,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { useDownloadableContentAccess } from '@audius/common/hooks'
 import { DownloadQuality, ID } from '@audius/common/models'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'

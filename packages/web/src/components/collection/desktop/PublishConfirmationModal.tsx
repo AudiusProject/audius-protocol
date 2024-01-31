@@ -6,7 +6,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Collection } from '@audius/common/models'
 import {
   Button,

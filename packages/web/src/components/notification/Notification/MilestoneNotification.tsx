@@ -7,7 +7,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name, User } from '@audius/common/models'
 import { formatCount, Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'

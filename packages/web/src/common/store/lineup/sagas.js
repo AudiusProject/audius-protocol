@@ -11,7 +11,7 @@ import {
   getContext,
   playerSelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, Kind, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import { Uid, makeUids, makeUid } from '@audius/common/utils'

@@ -15,7 +15,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, DefaultSizes, Kind } from '@audius/common/models'
 import {
   squashNewLines,

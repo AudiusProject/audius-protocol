@@ -7,7 +7,6 @@ import {
   CommonState
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   Button,

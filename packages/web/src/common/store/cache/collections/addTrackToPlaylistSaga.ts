@@ -11,7 +11,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, Kind, Collection, ID } from '@audius/common/models'
 import {
   makeUid,

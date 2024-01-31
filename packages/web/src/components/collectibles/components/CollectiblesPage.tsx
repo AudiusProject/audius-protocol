@@ -13,7 +13,6 @@ import {
   useState
 } from 'react'
 
-import {} from '@audius/common'
 import { useInstanceVar } from '@audius/common/hooks'
 import { CollectiblesMetadata, Collectible } from '@audius/common/models'
 import { getHash } from '@audius/common/utils'

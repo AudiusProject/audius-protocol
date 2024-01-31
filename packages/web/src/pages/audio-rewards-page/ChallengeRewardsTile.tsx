@@ -1,13 +1,5 @@
-import {
-  challengesSelectors,
-  audioRewardsPageSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType
-} from '@audius/common/store'
-
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
-import {} from '@audius/common'
 import {
   Name,
   ChallengeName,
@@ -15,6 +7,12 @@ import {
   OptimisticUserChallenge
 } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
+import {
+  challengesSelectors,
+  audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
 import {
   fillString,
   formatNumberCommas,

@@ -8,7 +8,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Name, DefaultSizes, SquareSizes, Kind } from '@audius/common/models'
 import {
   formatUrlName,

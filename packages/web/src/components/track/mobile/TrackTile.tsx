@@ -6,7 +6,6 @@ import {
 
 import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
-import {} from '@audius/common'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,

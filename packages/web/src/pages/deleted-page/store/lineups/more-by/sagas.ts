@@ -1,5 +1,4 @@
 import { accountSelectors } from '@audius/common/store'
-import {} from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

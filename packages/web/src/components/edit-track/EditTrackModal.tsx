@@ -9,7 +9,6 @@ import {
 
 import { useEffect, useState } from 'react'
 
-import {} from '@audius/common'
 import {
   StemCategory,
   ID,

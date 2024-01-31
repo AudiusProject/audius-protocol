@@ -16,7 +16,6 @@ import {
 
 import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
-import {} from '@audius/common'
 import {
   Name,
   ShareSource,

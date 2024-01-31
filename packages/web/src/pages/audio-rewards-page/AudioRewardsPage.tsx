@@ -1,9 +1,7 @@
-import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
-
 import { ReactNode, useContext, useEffect } from 'react'
 
-import {} from '@audius/common'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'

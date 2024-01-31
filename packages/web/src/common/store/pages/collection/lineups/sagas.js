@@ -4,7 +4,7 @@ import {
   collectionPageSelectors,
   queueSelectors
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind } from '@audius/common/models'
 import { removeNullable, Uid, waitForValue } from '@audius/common/utils'
 import { keyBy } from 'lodash'

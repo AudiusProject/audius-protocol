@@ -3,7 +3,7 @@ import {
   feedPageActions as discoverActions,
   usersSocialActions as socialActions
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { FollowSource, ID } from '@audius/common/models'
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'

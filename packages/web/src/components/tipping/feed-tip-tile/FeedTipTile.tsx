@@ -7,7 +7,6 @@ import {
 
 import { useCallback, useEffect, useRef } from 'react'
 
-import {} from '@audius/common'
 import { Name, User } from '@audius/common/models'
 import { IconButton, PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'

@@ -5,7 +5,6 @@ import {
 
 import { useCallback, useEffect, useState } from 'react'
 
-import {} from '@audius/common'
 import { useCoinflowAdapter } from '@audius/common/hooks'
 import { CoinflowPurchase } from '@coinflowlabs/react'
 import { Transaction } from '@solana/web3.js'

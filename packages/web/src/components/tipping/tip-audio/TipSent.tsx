@@ -2,7 +2,6 @@ import { accountSelectors, tippingSelectors } from '@audius/common/store'
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { Name } from '@audius/common/models'
 import { deriveUserBankAddress } from '@audius/common/services'
 import { formatNumberCommas } from '@audius/common/utils'

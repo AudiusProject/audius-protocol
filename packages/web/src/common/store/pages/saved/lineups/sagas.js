@@ -14,7 +14,7 @@ import {
   purchaseContentActions,
   ContentType
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { uniq } from 'lodash'

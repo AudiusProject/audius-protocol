@@ -4,7 +4,7 @@ import {
   settingsPageActions as actions,
   getContext
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { Kind } from '@audius/common/models'
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeEvery, select } from 'typed-redux-saga'

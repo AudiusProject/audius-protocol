@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { uploadConfirmationModalUISelectors } from '@audius/common/store'
 
-import {} from '@audius/common'
 import {
   Button,
   ButtonType,

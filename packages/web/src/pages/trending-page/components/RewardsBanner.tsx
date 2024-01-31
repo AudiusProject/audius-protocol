@@ -4,8 +4,6 @@ import {
   audioRewardsPageActions,
   TrendingRewardsModalType
 } from '@audius/common/store'
-
-import {} from '@audius/common'
 import { IconArrow, IconCrown } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

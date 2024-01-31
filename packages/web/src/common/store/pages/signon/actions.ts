@@ -4,7 +4,7 @@ import {
   TikTokProfile,
   Image
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { ID, User } from '@audius/common/models'
 import { createCustomAction } from 'typesafe-actions'
 

@@ -7,7 +7,7 @@ import {
   SUPPORTING_USER_LIST_TAG,
   SupportingMapForUser
 } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { ID, UserMetadata, User } from '@audius/common/models'
 import {
   responseAdapter as adapter,

@@ -7,7 +7,6 @@ import {
 
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
 import { StringUSDC } from '@audius/common/models'
 import {
   stringUSDCToBN,

@@ -1,3 +1,7 @@
+import { useCallback, useContext, useEffect, useMemo } from 'react'
+
+import { Client, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
@@ -5,12 +9,6 @@ import {
   buyAudioActions,
   OnRampProvider
 } from '@audius/common/store'
-
-import { useCallback, useContext, useEffect, useMemo } from 'react'
-
-import {} from '@audius/common'
-import { Client, BNWei } from '@audius/common/models'
-import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'

@@ -1,5 +1,4 @@
 import { collectionsSocialActions as socialCollectionActions } from '@audius/common/store'
-import {} from '@audius/common'
 
 import { createErrorSagas } from 'utils/errorSagas'
 

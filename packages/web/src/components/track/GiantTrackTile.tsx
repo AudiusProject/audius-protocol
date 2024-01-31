@@ -6,7 +6,6 @@ import {
 
 import { useCallback, useState } from 'react'
 
-import {} from '@audius/common'
 import {
   isContentUSDCPurchaseGated,
   ID,

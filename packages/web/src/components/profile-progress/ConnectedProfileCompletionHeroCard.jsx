@@ -1,5 +1,5 @@
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
-import {} from '@audius/common'
+
 import { connect } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'

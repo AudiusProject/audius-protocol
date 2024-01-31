@@ -5,7 +5,6 @@ import {
   trendingUndergroundPageLineupActions
 } from '@audius/common/store'
 
-import {} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import DesktopHeader from 'components/header/desktop/Header'
