@@ -1,5 +1,4 @@
 import { CommonState } from '@audius/common/store'
-
 import {
   useSelector as untypedUseSelector,
   TypedUseSelectorHook

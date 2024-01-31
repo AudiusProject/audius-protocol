@@ -1,6 +1,5 @@
-import { collectionPageSelectors, CommonState } from '@audius/common/store'
-
 import { Collection, ID } from '@audius/common/models'
+import { collectionPageSelectors, CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { FavoriteButton } from './FavoriteButton'

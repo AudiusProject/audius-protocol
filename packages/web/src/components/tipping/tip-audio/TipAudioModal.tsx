@@ -1,3 +1,6 @@
+import { useCallback, useEffect } from 'react'
+
+import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   tippingSelectors,
@@ -5,10 +8,6 @@ import {
   walletActions,
   TippingSendStatus
 } from '@audius/common/store'
-
-import { useCallback, useEffect } from 'react'
-
-import { StringKeys } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'

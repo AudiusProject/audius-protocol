@@ -1,10 +1,9 @@
+import { Kind, Status } from '@audius/common/models'
 import {
   cacheActions as actions,
   cacheConfig as config,
   cacheReducer
 } from '@audius/common/store'
-
-import { Kind, Status } from '@audius/common/models'
 import { makeKindId } from '@audius/common/utils'
 /* eslint-disable no-import-assign */
 import { combineReducers } from 'redux'

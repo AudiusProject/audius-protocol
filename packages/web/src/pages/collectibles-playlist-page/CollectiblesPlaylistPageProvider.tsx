@@ -1,16 +1,4 @@
 import {
-  cacheUsersSelectors,
-  profilePageActions,
-  queueActions,
-  QueueSource,
-  collectibleDetailsUIActions,
-  shareModalUIActions,
-  playerSelectors,
-  CollectionTrack,
-  CollectionPageTrackRecord
-} from '@audius/common/store'
-
-import {
   useCallback,
   useEffect,
   useMemo,
@@ -29,6 +17,17 @@ import {
   SmartCollection,
   User
 } from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  profilePageActions,
+  queueActions,
+  QueueSource,
+  collectibleDetailsUIActions,
+  shareModalUIActions,
+  playerSelectors,
+  CollectionTrack,
+  CollectionPageTrackRecord
+} from '@audius/common/store'
 import { getHash, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 import { push } from 'connected-react-router'

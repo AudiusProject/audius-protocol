@@ -1,11 +1,10 @@
+import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions,
   getContext
 } from '@audius/common/store'
-
-import { StringKeys } from '@audius/common/services'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 

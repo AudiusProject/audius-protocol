@@ -1,9 +1,8 @@
+import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   usersSocialActions as actions
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'

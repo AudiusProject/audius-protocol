@@ -1,9 +1,3 @@
-import {
-  LineupBaseActions,
-  tippingSelectors,
-  playerSelectors
-} from '@audius/common/store'
-
 import { ComponentType, createRef, PureComponent } from 'react'
 
 import {
@@ -15,6 +9,11 @@ import {
   UID,
   Lineup
 } from '@audius/common/models'
+import {
+  LineupBaseActions,
+  tippingSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'

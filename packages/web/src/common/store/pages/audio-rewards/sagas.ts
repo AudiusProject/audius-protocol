@@ -1,4 +1,16 @@
 import {
+  FailureReason,
+  UserChallenge,
+  StringAudio
+} from '@audius/common/models'
+import {
+  IntKeys,
+  StringKeys,
+  createUserBankIfNeeded,
+  Env,
+  RemoteConfigInstance
+} from '@audius/common/services'
+import {
   accountActions,
   accountSelectors,
   audioRewardsPageSelectors,
@@ -12,19 +24,6 @@ import {
   musicConfettiActions,
   UndisbursedUserChallenge
 } from '@audius/common/store'
-
-import {
-  FailureReason,
-  UserChallenge,
-  StringAudio
-} from '@audius/common/models'
-import {
-  IntKeys,
-  StringKeys,
-  createUserBankIfNeeded,
-  Env,
-  RemoteConfigInstance
-} from '@audius/common/services'
 import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
   call,

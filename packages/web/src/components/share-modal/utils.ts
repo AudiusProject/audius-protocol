@@ -1,6 +1,5 @@
-import { ShareContent } from '@audius/common/store'
-
 import { ShareToTwitter } from '@audius/common/models'
+import { ShareContent } from '@audius/common/store'
 
 import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {

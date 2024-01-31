@@ -1,9 +1,3 @@
-import {
-  cacheTracksSelectors,
-  publishTrackConfirmationModalUIActions,
-  CommonState
-} from '@audius/common/store'
-
 import { useCallback, useState } from 'react'
 
 import {
@@ -15,6 +9,11 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions,
+  CommonState
+} from '@audius/common/store'
 import {
   Genre,
   getCanonicalName,

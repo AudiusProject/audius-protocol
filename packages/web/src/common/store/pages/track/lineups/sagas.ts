@@ -4,7 +4,6 @@ import {
   trackPageLineupActions,
   trackPageSelectors
 } from '@audius/common/store'
-
 import { waitForValue } from '@audius/common/utils'
 import { call, select } from 'typed-redux-saga'
 

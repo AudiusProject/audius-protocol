@@ -6,7 +6,6 @@ import {
   cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
-
 import { fillString } from '@audius/common/utils'
 import {
   Button,

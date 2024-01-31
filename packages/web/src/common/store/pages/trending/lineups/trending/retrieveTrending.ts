@@ -1,3 +1,5 @@
+import { TimeRange, ID, Track, UserTrackMetadata } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   trendingPageLineupSelectors,
@@ -5,9 +7,6 @@ import {
   trendingPageSelectors,
   getContext
 } from '@audius/common/store'
-
-import { TimeRange, ID, Track, UserTrackMetadata } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
 import { Genre, Nullable } from '@audius/common/utils'
 import { keccak_256 } from 'js-sha3'
 import { call, put, select } from 'redux-saga/effects'

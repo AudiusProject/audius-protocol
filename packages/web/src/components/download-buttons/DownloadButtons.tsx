@@ -1,5 +1,3 @@
-import { toastActions } from '@audius/common/store'
-
 import { memo, useCallback } from 'react'
 
 import {
@@ -8,6 +6,7 @@ import {
   useDownloadTrackButtons
 } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { toastActions } from '@audius/common/store'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

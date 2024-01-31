@@ -1,3 +1,4 @@
+import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -8,8 +9,6 @@ import {
   tracksSocialActions,
   confirmerSelectors
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
 import {
   makeUid,
   getIdFromKindId,

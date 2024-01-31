@@ -1,11 +1,10 @@
+import { Kind, ID, UserTrackMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
   getContext
 } from '@audius/common/store'
-
-import { Kind, ID, UserTrackMetadata } from '@audius/common/models'
 import { removeNullable, waitForValue } from '@audius/common/utils'
 import { select, call, put } from 'typed-redux-saga'
 

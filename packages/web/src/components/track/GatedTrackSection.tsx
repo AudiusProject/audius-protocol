@@ -1,11 +1,3 @@
-import {
-  cacheUsersSelectors,
-  usersSocialActions as socialActions,
-  tippingActions,
-  usePremiumContentPurchaseModal,
-  gatedContentSelectors
-} from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import {
@@ -20,6 +12,13 @@ import {
   AccessConditions,
   User
 } from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  usersSocialActions as socialActions,
+  tippingActions,
+  usePremiumContentPurchaseModal,
+  gatedContentSelectors
+} from '@audius/common/store'
 import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import {
   Button,

@@ -1,10 +1,4 @@
 import {
-  cacheUsersSelectors,
-  searchUsersModalActions,
-  searchUsersModalSelectors
-} from '@audius/common/store'
-
-import {
   ChangeEvent,
   ReactNode,
   useCallback,
@@ -15,6 +9,11 @@ import {
 
 import { useProxySelector } from '@audius/common/hooks'
 import { Status, ID, User } from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  searchUsersModalActions,
+  searchUsersModalSelectors
+} from '@audius/common/store'
 import {
   IconButton,
   IconRemove,

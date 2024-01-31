@@ -1,11 +1,10 @@
+import { useCallback } from 'react'
+
+import { useCoinflowAdapter } from '@audius/common/hooks'
 import {
   withdrawUSDCActions,
   useCoinflowWithdrawModal
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { useCoinflowAdapter } from '@audius/common/hooks'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
 import { useDispatch } from 'react-redux'
 

@@ -1,10 +1,9 @@
-import { profilePageTracksLineupActions as tracksActions } from '@audius/common'
 import { Kind } from '@audius/common/models'
 import {
+  profilePageTracksLineupActions as tracksActions,
   accountSelectors,
   cacheTracksActions,
   cacheTracksSelectors,
-  lineupActions,
   profilePageTracksLineupActions as lineupActions,
   profilePageSelectors,
   TracksSortMode,

@@ -1,3 +1,18 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  ModalSource,
+  DogEarType,
+  SquareSizes,
+  ID
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -16,22 +31,6 @@ import {
   gatedContentSelectors,
   OverflowActionCallbacks
 } from '@audius/common/store'
-
-import { useCallback, useEffect, useRef, useState } from 'react'
-
-import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  Name,
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  ModalSource,
-  DogEarType,
-  SquareSizes,
-  ID
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'

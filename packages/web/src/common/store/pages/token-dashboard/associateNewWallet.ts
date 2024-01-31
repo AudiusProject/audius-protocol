@@ -1,12 +1,11 @@
+import { Name, Chain } from '@audius/common/models'
+import { newUserMetadata } from '@audius/common/schemas'
 import {
   accountSelectors,
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
   getContext
 } from '@audius/common/store'
-
-import { Name, Chain } from '@audius/common/models'
-import { newUserMetadata } from '@audius/common/schemas'
 import { call, put, select } from 'typed-redux-saga'
 
 const { getAccountUser } = accountSelectors

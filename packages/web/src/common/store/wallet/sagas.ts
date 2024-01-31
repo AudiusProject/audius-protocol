@@ -1,4 +1,12 @@
 import {
+  Name,
+  Chain,
+  ErrorLevel,
+  BNWei,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import { FeatureFlags, createUserBankIfNeeded } from '@audius/common/services'
+import {
   accountActions,
   accountSelectors,
   tokenDashboardPageActions,
@@ -8,15 +16,6 @@ import {
   getContext,
   InputSendDataAction
 } from '@audius/common/store'
-
-import {
-  Name,
-  Chain,
-  ErrorLevel,
-  BNWei,
-  SolanaWalletAddress
-} from '@audius/common/models'
-import { FeatureFlags, createUserBankIfNeeded } from '@audius/common/services'
 import {
   getErrorMessage,
   isNullOrUndefined,

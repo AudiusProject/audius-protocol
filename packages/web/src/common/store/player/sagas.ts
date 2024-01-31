@@ -1,3 +1,5 @@
+import { Kind } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -12,9 +14,6 @@ import {
   playbackPositionSelectors,
   gatedContentSelectors
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   Genre,
   encodeHashId,

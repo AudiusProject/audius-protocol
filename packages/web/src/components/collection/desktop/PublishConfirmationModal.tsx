@@ -1,12 +1,11 @@
+import { useCallback } from 'react'
+
+import { Collection } from '@audius/common/models'
 import {
   cacheCollectionsActions,
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { Collection } from '@audius/common/models'
 import {
   Button,
   ButtonType,

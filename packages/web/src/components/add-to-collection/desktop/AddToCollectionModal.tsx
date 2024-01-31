@@ -1,3 +1,10 @@
+import { useMemo, useState } from 'react'
+
+import {
+  CreatePlaylistSource,
+  SquareSizes,
+  Collection
+} from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -6,14 +13,6 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
-
-import { useMemo, useState } from 'react'
-
-import {
-  CreatePlaylistSource,
-  SquareSizes,
-  Collection
-} from '@audius/common/models'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'

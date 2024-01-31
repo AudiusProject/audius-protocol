@@ -1,13 +1,12 @@
+import { useCallback, useContext } from 'react'
+
+import { CreatePlaylistSource, Collection, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   addToCollectionUIActions
 } from '@audius/common/store'
-
-import { useCallback, useContext } from 'react'
-
-import { CreatePlaylistSource, Collection, ID } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'

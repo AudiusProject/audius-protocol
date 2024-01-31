@@ -1,6 +1,5 @@
-import { getContext } from '@audius/common/store'
-
 import { ID, Track } from '@audius/common/models'
+import { getContext } from '@audius/common/store'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 

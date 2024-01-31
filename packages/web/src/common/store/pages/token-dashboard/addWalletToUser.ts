@@ -1,3 +1,4 @@
+import { Kind, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -7,8 +8,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-
-import { Kind, User } from '@audius/common/models'
 import { call, put, select } from 'typed-redux-saga'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'

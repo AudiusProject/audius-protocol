@@ -1,8 +1,7 @@
-import { accountSelectors, tracksSocialActions } from '@audius/common/store'
-
 import { memo } from 'react'
 
 import { ID } from '@audius/common/models'
+import { accountSelectors, tracksSocialActions } from '@audius/common/store'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

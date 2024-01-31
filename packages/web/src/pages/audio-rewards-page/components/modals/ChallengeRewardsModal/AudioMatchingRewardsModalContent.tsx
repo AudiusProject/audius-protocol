@@ -1,9 +1,8 @@
-import { challengesSelectors } from '@audius/common/store'
-
 import { ReactNode, useCallback } from 'react'
 
 import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
 import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
+import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig

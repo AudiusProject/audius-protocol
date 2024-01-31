@@ -1,4 +1,11 @@
 import {
+  FavoriteType,
+  Favorite,
+  UserTrackMetadata,
+  User
+} from '@audius/common/models'
+import { responseAdapter, APIActivityV2 } from '@audius/common/services'
+import {
   accountSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as actions,
@@ -6,14 +13,6 @@ import {
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
-
-import {
-  FavoriteType,
-  Favorite,
-  UserTrackMetadata,
-  User
-} from '@audius/common/models'
-import { responseAdapter, APIActivityV2 } from '@audius/common/services'
 import {
   decodeHashId,
   encodeHashId,

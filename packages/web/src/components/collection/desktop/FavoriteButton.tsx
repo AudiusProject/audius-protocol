@@ -1,10 +1,3 @@
-import {
-  accountSelectors,
-  collectionPageSelectors,
-  collectionsSocialActions,
-  CommonState
-} from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import {
@@ -13,6 +6,12 @@ import {
   SmartCollection,
   ID
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  collectionPageSelectors,
+  collectionsSocialActions,
+  CommonState
+} from '@audius/common/store'
 import { ButtonProps, ButtonType, IconHeart } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 

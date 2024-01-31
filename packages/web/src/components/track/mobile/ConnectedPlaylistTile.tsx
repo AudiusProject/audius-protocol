@@ -1,3 +1,16 @@
+import { memo, useCallback, useMemo, MouseEvent } from 'react'
+
+import {
+  Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  FavoriteType,
+  ID,
+  Track
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -13,20 +26,6 @@ import {
   RepostType,
   playerSelectors
 } from '@audius/common/store'
-
-import { memo, useCallback, useMemo, MouseEvent } from 'react'
-
-import {
-  Name,
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  FavoriteType,
-  ID,
-  Track
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

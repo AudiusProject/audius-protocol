@@ -1,3 +1,4 @@
+import { Name, FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   playlistLibraryActions,
@@ -6,8 +7,6 @@ import {
   ReorderAction,
   CommonState
 } from '@audius/common/store'
-
-import { Name, FavoriteSource } from '@audius/common/models'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { make } from '../analytics/actions'

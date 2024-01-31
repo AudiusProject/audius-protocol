@@ -1,6 +1,5 @@
 import { ComponentType, PureComponent } from 'react'
 
-import { SavedPageTabs as ProfileTabs } from '@audius/common'
 import {
   Name,
   RepostSource,
@@ -11,6 +10,7 @@ import {
   LineupTrack
 } from '@audius/common/models'
 import {
+  SavedPageTabs as ProfileTabs,
   accountActions,
   accountSelectors,
   lineupSelectors,

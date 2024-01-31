@@ -1,9 +1,8 @@
+import { PlayableType } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors
 } from '@audius/common/store'
-
-import { PlayableType } from '@audius/common/models'
 
 import { AppState } from 'store/types'
 const { getTrack } = cacheTracksSelectors

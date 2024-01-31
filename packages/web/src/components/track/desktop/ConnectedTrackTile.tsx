@@ -1,14 +1,4 @@
 import {
-  accountSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  tracksSocialActions,
-  shareModalUIActions,
-  playerSelectors,
-  gatedContentActions
-} from '@audius/common/store'
-
-import {
   memo,
   useState,
   useCallback,
@@ -25,6 +15,15 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
+  shareModalUIActions,
+  playerSelectors,
+  gatedContentActions
+} from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'

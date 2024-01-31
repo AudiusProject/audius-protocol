@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
 import { confirmerSelectors } from '@audius/common/store'
-
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 

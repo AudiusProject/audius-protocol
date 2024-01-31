@@ -1,13 +1,12 @@
+import { useCallback } from 'react'
+
+import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
   Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { Name } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

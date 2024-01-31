@@ -1,4 +1,11 @@
 import {
+  Kind,
+  ID,
+  TrackMetadata,
+  Track,
+  UserTrackMetadata
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheTracksActions,
   cacheTracksSelectors,
@@ -8,14 +15,6 @@ import {
   getContext,
   CommonState
 } from '@audius/common/store'
-
-import {
-  Kind,
-  ID,
-  TrackMetadata,
-  Track,
-  UserTrackMetadata
-} from '@audius/common/models'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'

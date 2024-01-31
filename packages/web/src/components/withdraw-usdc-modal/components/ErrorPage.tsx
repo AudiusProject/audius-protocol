@@ -1,12 +1,11 @@
-import {
-  WithdrawUSDCModalPages,
-  useWithdrawUSDCModal
-} from '@audius/common/store'
-
 import { useCallback } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
+import {
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal
+} from '@audius/common/store'
 import {
   decimalIntegerToHumanReadable,
   formatCurrencyBalance,

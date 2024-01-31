@@ -5,7 +5,6 @@ import {
   Entity,
   RepostNotification as RepostNotificationType
 } from '@audius/common/store'
-
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

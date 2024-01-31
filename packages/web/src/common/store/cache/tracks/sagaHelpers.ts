@@ -1,5 +1,3 @@
-import { accountSelectors } from '@audius/common/store'
-
 import {
   Name,
   TrackAccessType,
@@ -9,6 +7,7 @@ import {
   isContentUSDCPurchaseGated,
   Track
 } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

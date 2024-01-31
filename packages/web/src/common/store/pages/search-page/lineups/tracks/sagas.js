@@ -4,7 +4,6 @@ import {
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
-
 import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, all, call, getContext } from 'redux-saga/effects'
 

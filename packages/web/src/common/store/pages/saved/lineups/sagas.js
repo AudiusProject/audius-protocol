@@ -1,3 +1,4 @@
+import { Kind } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -14,8 +15,6 @@ import {
   purchaseContentActions,
   ContentType
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import moment from 'moment'

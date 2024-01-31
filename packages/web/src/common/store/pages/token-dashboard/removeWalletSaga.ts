@@ -1,3 +1,5 @@
+import { Chain, Kind } from '@audius/common/models'
+import { newUserMetadata } from '@audius/common/schemas'
 import {
   accountSelectors,
   cacheActions,
@@ -8,9 +10,6 @@ import {
   confirmTransaction,
   ConfirmRemoveWalletAction
 } from '@audius/common/store'
-
-import { Chain, Kind } from '@audius/common/models'
-import { newUserMetadata } from '@audius/common/schemas'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

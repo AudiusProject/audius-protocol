@@ -3,7 +3,6 @@ import {
   cacheCollectionsSelectors,
   getContext
 } from '@audius/common/store'
-
 import { call, select } from 'redux-saga/effects'
 
 import { waitForWrite } from 'utils/sagaHelpers'

@@ -1,10 +1,4 @@
 import {
-  WithdrawUSDCModalPages,
-  useWithdrawUSDCModal,
-  WithdrawMethod
-} from '@audius/common/store'
-
-import {
   ChangeEventHandler,
   FocusEventHandler,
   useCallback,
@@ -14,6 +8,11 @@ import {
 import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal,
+  WithdrawMethod
+} from '@audius/common/store'
 import {
   filterDecimalString,
   padDecimalValue,

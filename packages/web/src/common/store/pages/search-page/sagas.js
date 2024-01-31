@@ -1,3 +1,4 @@
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   processAndCacheUsers,
@@ -5,8 +6,6 @@ import {
   searchResultsPageActions as searchPageActions,
   SearchKind
 } from '@audius/common/store'
-
-import { FeatureFlags } from '@audius/common/services'
 import { trimToAlphaNumeric, removeNullable } from '@audius/common/utils'
 import { flatMap, zip } from 'lodash'
 import {

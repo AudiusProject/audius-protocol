@@ -6,7 +6,6 @@ import {
   useInboxUnavailableModal,
   CommonState
 } from '@audius/common/store'
-
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   Button,

@@ -1,5 +1,3 @@
-import { accountSelectors } from '@audius/common/store'
-
 import { useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
@@ -16,6 +14,7 @@ import {
   AccessConditions,
   Track
 } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   Button,

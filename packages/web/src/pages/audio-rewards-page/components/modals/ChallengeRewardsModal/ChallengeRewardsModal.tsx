@@ -9,7 +9,6 @@ import {
   musicConfettiActions,
   ChallengeRewardsModalType
 } from '@audius/common/store'
-
 import {
   fillString,
   formatNumberCommas,

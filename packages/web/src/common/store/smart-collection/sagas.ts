@@ -1,17 +1,16 @@
 import {
+  SmartCollectionVariant,
+  Track,
+  UserTrackMetadata,
+  UserTrack
+} from '@audius/common/models'
+import {
   accountSelectors,
   smartCollectionPageActions,
   collectionPageLineupActions,
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-
-import {
-  SmartCollectionVariant,
-  Track,
-  UserTrackMetadata,
-  UserTrack
-} from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 

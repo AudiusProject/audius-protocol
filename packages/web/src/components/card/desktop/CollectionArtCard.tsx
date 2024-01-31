@@ -1,13 +1,12 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { SquareSizes, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors
 } from '@audius/common/store'
-
-import { useCallback, useEffect, useState } from 'react'
-
-import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

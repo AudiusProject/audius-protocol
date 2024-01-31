@@ -4,7 +4,6 @@ import {
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions
 } from '@audius/common/store'
-
 import { useDispatch } from 'react-redux'
 
 import DesktopHeader from 'components/header/desktop/Header'

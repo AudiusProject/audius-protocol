@@ -1,3 +1,8 @@
+import { ID, User } from '@audius/common/models'
+import {
+  responseAdapter as adapter,
+  SupporterResponse
+} from '@audius/common/services'
 import {
   cacheUsersSelectors,
   tippingActions,
@@ -7,12 +12,6 @@ import {
   TOP_SUPPORTERS_USER_LIST_TAG,
   SupportersMapForUser
 } from '@audius/common/store'
-
-import { ID, User } from '@audius/common/models'
-import {
-  responseAdapter as adapter,
-  SupporterResponse
-} from '@audius/common/services'
 import { decodeHashId, removeNullable } from '@audius/common/utils'
 import { put, select } from 'typed-redux-saga'
 

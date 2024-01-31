@@ -1,11 +1,4 @@
 import {
-  accountSelectors,
-  badgeTiers,
-  collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
-} from '@audius/common/store'
-
-import {
   Suspense,
   lazy,
   useCallback,
@@ -16,6 +9,12 @@ import {
 
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
+import {
+  accountSelectors,
+  badgeTiers,
+  collectibleDetailsUISelectors,
+  collectibleDetailsUIActions
+} from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   Button,

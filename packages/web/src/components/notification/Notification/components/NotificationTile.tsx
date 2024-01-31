@@ -6,7 +6,6 @@ import {
 } from 'react'
 
 import { Notification } from '@audius/common/store'
-
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

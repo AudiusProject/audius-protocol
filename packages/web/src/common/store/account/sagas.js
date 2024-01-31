@@ -1,3 +1,9 @@
+import { ErrorLevel, Kind } from '@audius/common/models'
+import {
+  FeatureFlags,
+  recordIP,
+  createUserBankIfNeeded
+} from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -7,13 +13,6 @@ import {
   solanaSelectors,
   getContext
 } from '@audius/common/store'
-
-import { ErrorLevel, Kind } from '@audius/common/models'
-import {
-  FeatureFlags,
-  recordIP,
-  createUserBankIfNeeded
-} from '@audius/common/services'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'

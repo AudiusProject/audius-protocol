@@ -1,3 +1,4 @@
+import { Name } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -5,8 +6,6 @@ import {
   tracksSocialActions,
   getContext
 } from '@audius/common/store'
-
-import { Name } from '@audius/common/models'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

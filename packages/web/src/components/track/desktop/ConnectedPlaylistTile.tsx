@@ -1,13 +1,4 @@
 import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  collectionsSocialActions,
-  shareModalUIActions,
-  playerSelectors
-} from '@audius/common/store'
-
-import {
   MouseEvent,
   memo,
   useMemo,
@@ -28,6 +19,14 @@ import {
   UID,
   Track
 } from '@audius/common/models'
+import {
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  shareModalUIActions,
+  playerSelectors
+} from '@audius/common/store'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'

@@ -1,4 +1,14 @@
 import {
+  Name,
+  DefaultSizes,
+  Kind,
+  CollectionMetadata,
+  Collection,
+  ID,
+  Track
+} from '@audius/common/models'
+import { newCollectionMetadata } from '@audius/common/schemas'
+import {
   accountActions,
   accountSelectors,
   cacheCollectionsActions,
@@ -15,17 +25,6 @@ import {
   EditPlaylistValues,
   RequestConfirmationError
 } from '@audius/common/store'
-
-import {
-  Name,
-  DefaultSizes,
-  Kind,
-  CollectionMetadata,
-  Collection,
-  ID,
-  Track
-} from '@audius/common/models'
-import { newCollectionMetadata } from '@audius/common/schemas'
 import { makeKindId, Nullable } from '@audius/common/utils'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 

@@ -1,11 +1,10 @@
+import { ChallengeRewardID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   TransactionType,
   TransactionMethod,
   TransactionDetails
 } from '@audius/common/store'
-
-import { ChallengeRewardID, User } from '@audius/common/models'
 import {
   formatAudio,
   formatCapitalizeString,

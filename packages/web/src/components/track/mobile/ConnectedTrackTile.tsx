@@ -1,3 +1,14 @@
+import { memo, MouseEvent } from 'react'
+
+import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FavoriteType,
+  ID
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -13,18 +24,6 @@ import {
   RepostType,
   playerSelectors
 } from '@audius/common/store'
-
-import { memo, MouseEvent } from 'react'
-
-import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  FavoriteType,
-  ID
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Genre } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

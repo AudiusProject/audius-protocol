@@ -1,6 +1,5 @@
-import { recoveryEmailActions, getContext } from '@audius/common/store'
-
 import { Name } from '@audius/common/models'
+import { recoveryEmailActions, getContext } from '@audius/common/store'
 import { takeLatest, put, call } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

@@ -1,8 +1,7 @@
-import { themeSelectors } from '@audius/common/store'
-
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
 import { Status, Track } from '@audius/common/models'
+import { themeSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { each } from 'lodash'

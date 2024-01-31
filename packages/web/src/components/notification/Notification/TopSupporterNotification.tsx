@@ -1,11 +1,10 @@
+import { useCallback } from 'react'
+
+import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
   SupporterRankUpNotification
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { Name } from '@audius/common/models'
 
 import IconTrending from 'assets/img/iconTrending.svg'
 import { make } from 'common/store/analytics/actions'

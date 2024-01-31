@@ -1,6 +1,5 @@
-import { remixesPageActions } from '@audius/common/store'
-
 import { TrackMetadata, Track } from '@audius/common/models'
+import { remixesPageActions } from '@audius/common/store'
 import { takeEvery, call, put } from 'redux-saga/effects'
 
 import {

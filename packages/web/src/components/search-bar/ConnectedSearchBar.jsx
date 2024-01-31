@@ -1,5 +1,3 @@
-import { getTierForUser } from '@audius/common/store'
-
 import { Component } from 'react'
 
 import {
@@ -7,6 +5,7 @@ import {
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
+import { getTierForUser } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'

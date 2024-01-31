@@ -1,3 +1,10 @@
+import { Name, FavoriteSource } from '@audius/common/models'
+import {
+  IntKeys,
+  FeatureFlags,
+  MAX_HANDLE_LENGTH,
+  getCityAndRegion
+} from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -12,14 +19,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-
-import { Name, FavoriteSource } from '@audius/common/models'
-import {
-  IntKeys,
-  FeatureFlags,
-  MAX_HANDLE_LENGTH,
-  getCityAndRegion
-} from '@audius/common/services'
 import {
   Genre,
   ELECTRONIC_SUBGENRES,

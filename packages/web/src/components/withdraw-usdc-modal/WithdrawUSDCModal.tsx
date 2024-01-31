@@ -1,11 +1,3 @@
-import {
-  withdrawUSDCActions,
-  withdrawUSDCSelectors,
-  WithdrawUSDCModalPages,
-  useWithdrawUSDCModal,
-  WithdrawMethod
-} from '@audius/common/store'
-
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -20,6 +12,13 @@ import {
   SolanaWalletAddress
 } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
+import {
+  withdrawUSDCActions,
+  withdrawUSDCSelectors,
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal,
+  WithdrawMethod
+} from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'

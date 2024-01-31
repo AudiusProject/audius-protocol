@@ -1,10 +1,4 @@
 import {
-  accountSelectors,
-  getUSDCUserBank,
-  getContext
-} from '@audius/common/store'
-
-import {
   Name,
   isContentCollectibleGated,
   isContentFollowGated,
@@ -13,6 +7,11 @@ import {
   TrackMetadata
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  getUSDCUserBank,
+  getContext
+} from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'

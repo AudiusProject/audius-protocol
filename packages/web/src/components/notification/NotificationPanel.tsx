@@ -1,13 +1,11 @@
-import {
-  notificationsActions,
-  notificationsSelectors,
-  Notification as Notifications,
-  Notifications
-} from '@audius/common/store'
-
 import { useRef, useCallback, useEffect, RefObject } from 'react'
 
 import { Status } from '@audius/common/models'
+import {
+  notificationsActions,
+  notificationsSelectors,
+  Notification as Notifications
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'

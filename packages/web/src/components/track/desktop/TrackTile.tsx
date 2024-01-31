@@ -1,14 +1,13 @@
+import { memo } from 'react'
+
+import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
   CommonState
 } from '@audius/common/store'
-
-import { memo } from 'react'
-
-import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   formatCount,
   Genre,

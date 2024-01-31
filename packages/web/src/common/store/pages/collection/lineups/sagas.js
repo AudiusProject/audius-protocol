@@ -1,11 +1,10 @@
+import { Kind } from '@audius/common/models'
 import {
   smartCollectionPageSelectors,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   queueSelectors
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
 import { removeNullable, Uid, waitForValue } from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import moment from 'moment'

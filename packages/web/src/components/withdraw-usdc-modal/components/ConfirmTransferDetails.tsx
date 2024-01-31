@@ -1,13 +1,12 @@
+import { useCallback, useState } from 'react'
+
+import { useUSDCBalance } from '@audius/common/hooks'
+import { BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
-
-import { useCallback, useState } from 'react'
-
-import { useUSDCBalance } from '@audius/common/hooks'
-import { BNUSDC } from '@audius/common/models'
 import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber

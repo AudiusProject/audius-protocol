@@ -3,7 +3,6 @@ import {
   notificationsSelectors,
   FetchNotificationsAction
 } from '@audius/common/store'
-
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 

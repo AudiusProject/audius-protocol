@@ -1,3 +1,5 @@
+import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -9,9 +11,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-
-import { Name, Kind, ID, Track, User } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   formatShareText,
   encodeHashId,

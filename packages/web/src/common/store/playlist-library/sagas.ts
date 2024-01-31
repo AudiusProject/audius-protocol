@@ -1,16 +1,15 @@
 import {
+  Kind,
+  PlaylistLibraryID,
+  PlaylistIdentifier
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheActions,
   playlistLibraryActions,
   playlistLibraryHelpers,
   AccountCollection
 } from '@audius/common/store'
-
-import {
-  Kind,
-  PlaylistLibraryID,
-  PlaylistIdentifier
-} from '@audius/common/models'
 import { fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { updateProfileAsync } from 'common/store/profile/sagas'

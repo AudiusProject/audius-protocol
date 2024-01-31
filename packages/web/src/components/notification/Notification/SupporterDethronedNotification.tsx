@@ -1,12 +1,11 @@
+import { useCallback } from 'react'
+
+import { Name } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   notificationsSelectors,
   SupporterDethronedNotification as SupporterDethroned
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { Name } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
 import crown from 'assets/img/crown2x.png'

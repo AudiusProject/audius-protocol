@@ -1,5 +1,4 @@
 import { notificationsUserListActions } from '@audius/common/store'
-
 import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'store/errors/actions'

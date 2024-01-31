@@ -1,6 +1,5 @@
-import { getContext } from '@audius/common/store'
-
 import { ID } from '@audius/common/models'
+import { getContext } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { call } from 'typed-redux-saga'
 

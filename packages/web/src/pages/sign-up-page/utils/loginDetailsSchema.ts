@@ -1,4 +1,4 @@
-import { AudiusQueryContextType } from '@audius/common'
+import { AudiusQueryContextType } from '@audius/common/audius-query'
 import { emailSchema } from '@audius/common/schemas'
 import { isNotCommonPassword } from '@audius/common/utils'
 import { z } from 'zod'

@@ -1,12 +1,11 @@
+import { Status } from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   cacheActions,
   cacheConfig,
   cacheSelectors,
   confirmerSelectors
 } from '@audius/common/store'
-
-import { Status } from '@audius/common/models'
-import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import {

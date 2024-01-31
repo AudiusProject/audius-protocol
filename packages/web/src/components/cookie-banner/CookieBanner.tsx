@@ -1,7 +1,6 @@
 import { memo } from 'react'
 
 import { playerSelectors } from '@audius/common/store'
-
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

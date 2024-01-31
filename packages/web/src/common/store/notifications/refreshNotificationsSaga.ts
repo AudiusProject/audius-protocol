@@ -1,5 +1,4 @@
 import { notificationsActions } from '@audius/common/store'
-
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeLatest } from 'typed-redux-saga'
 

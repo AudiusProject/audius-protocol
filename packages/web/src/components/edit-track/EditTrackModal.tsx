@@ -1,12 +1,3 @@
-import {
-  cacheTracksActions as cacheTrackActions,
-  stemsUploadActions,
-  stemsUploadSelectors,
-  publishTrackConfirmationModalUIActions,
-  editTrackModalSelectors,
-  useEditTrackModal
-} from '@audius/common/store'
-
 import { useEffect, useState } from 'react'
 
 import {
@@ -15,6 +6,14 @@ import {
   StemUploadWithFile,
   Track
 } from '@audius/common/models'
+import {
+  cacheTracksActions as cacheTrackActions,
+  stemsUploadActions,
+  stemsUploadSelectors,
+  publishTrackConfirmationModalUIActions,
+  editTrackModalSelectors,
+  useEditTrackModal
+} from '@audius/common/store'
 import { removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'

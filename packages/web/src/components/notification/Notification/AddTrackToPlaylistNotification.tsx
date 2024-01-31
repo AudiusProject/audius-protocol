@@ -1,13 +1,12 @@
+import { useCallback } from 'react'
+
+import { Name, Track } from '@audius/common/models'
 import {
   notificationsSelectors,
   Entity,
   CollectionEntity,
   AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType
 } from '@audius/common/store'
-
-import { useCallback } from 'react'
-
-import { Name, Track } from '@audius/common/models'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

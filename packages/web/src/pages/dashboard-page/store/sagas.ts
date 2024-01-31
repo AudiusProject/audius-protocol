@@ -1,11 +1,10 @@
+import { Collection, ID, Track } from '@audius/common/models'
+import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
   walletActions,
   getContext
 } from '@audius/common/store'
-
-import { Collection, ID, Track } from '@audius/common/models'
-import { IntKeys } from '@audius/common/services'
 import { waitForValue, doEvery } from '@audius/common/utils'
 import { each } from 'lodash'
 import moment from 'moment'

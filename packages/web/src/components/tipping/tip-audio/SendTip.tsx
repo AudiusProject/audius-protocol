@@ -1,14 +1,4 @@
 import {
-  accountSelectors,
-  tippingSelectors,
-  tippingActions,
-  walletSelectors,
-  getTierAndNumberForBalance,
-  buyAudioActions,
-  OnRampProvider
-} from '@audius/common/store'
-
-import {
   cloneElement,
   ReactNode,
   useCallback,
@@ -19,6 +9,15 @@ import {
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  tippingSelectors,
+  tippingActions,
+  walletSelectors,
+  getTierAndNumberForBalance,
+  buyAudioActions,
+  OnRampProvider
+} from '@audius/common/store'
 import {
   isNullOrUndefined,
   stringWeiToBN,

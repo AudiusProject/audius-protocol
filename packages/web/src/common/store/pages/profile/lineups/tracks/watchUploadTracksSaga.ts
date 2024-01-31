@@ -1,11 +1,10 @@
+import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   profilePageTracksLineupActions,
   profilePageSelectors,
   uploadActions
 } from '@audius/common/store'
-
-import { Kind } from '@audius/common/models'
 import { makeUid } from '@audius/common/utils'
 import { put, select, takeEvery } from 'typed-redux-saga'
 

@@ -1,3 +1,4 @@
+import { Name, DefaultSizes, SquareSizes, Kind } from '@audius/common/models'
 import {
   accountSelectors,
   averageColorActions,
@@ -8,8 +9,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-
-import { Name, DefaultSizes, SquareSizes, Kind } from '@audius/common/models'
 import {
   formatUrlName,
   squashNewLines,

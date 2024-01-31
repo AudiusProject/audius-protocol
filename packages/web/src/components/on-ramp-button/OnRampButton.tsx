@@ -1,5 +1,4 @@
 import { OnRampProvider } from '@audius/common/store'
-
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 

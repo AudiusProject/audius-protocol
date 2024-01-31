@@ -1,9 +1,3 @@
-import {
-  usePremiumContentPurchaseModal,
-  gatedContentActions,
-  gatedContentSelectors
-} from '@audius/common/store'
-
 import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
 import {
@@ -12,6 +6,11 @@ import {
   ID,
   AccessConditions
 } from '@audius/common/models'
+import {
+  usePremiumContentPurchaseModal,
+  gatedContentActions,
+  gatedContentSelectors
+} from '@audius/common/store'
 import {
   formatCount,
   Genre,

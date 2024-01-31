@@ -1,5 +1,4 @@
 import { useUSDCTransactionDetailsModal } from '@audius/common/store'
-
 import {
   formatUSDCWeiToUSDString,
   makeSolanaTransactionLink

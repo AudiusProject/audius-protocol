@@ -1,8 +1,7 @@
-import { gatedContentSelectors } from '@audius/common/store'
-
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
 import { ID, FieldVisibility, AccessConditions } from '@audius/common/models'
+import { gatedContentSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'

@@ -1,3 +1,4 @@
+import { Collection, ID, Track } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -7,8 +8,6 @@ import {
   RepostType,
   REPOSTS_USER_LIST_TAG
 } from '@audius/common/store'
-
-import { Collection, ID, Track } from '@audius/common/models'
 import { put, select } from 'typed-redux-saga'
 
 import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'

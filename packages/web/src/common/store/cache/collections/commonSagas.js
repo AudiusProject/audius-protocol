@@ -1,3 +1,4 @@
+import { Name, DefaultSizes, Kind } from '@audius/common/models'
 import {
   accountActions,
   accountSelectors,
@@ -15,8 +16,6 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-
-import { Name, DefaultSizes, Kind } from '@audius/common/models'
 import {
   squashNewLines,
   removeNullable,

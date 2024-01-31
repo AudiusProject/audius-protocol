@@ -1,8 +1,7 @@
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
-
 import { useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common/models'
+import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

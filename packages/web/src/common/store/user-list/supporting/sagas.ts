@@ -1,3 +1,8 @@
+import { ID, UserMetadata, User } from '@audius/common/models'
+import {
+  responseAdapter as adapter,
+  SupportingResponse
+} from '@audius/common/services'
 import {
   cacheUsersSelectors,
   tippingActions,
@@ -7,12 +12,6 @@ import {
   SUPPORTING_USER_LIST_TAG,
   SupportingMapForUser
 } from '@audius/common/store'
-
-import { ID, UserMetadata, User } from '@audius/common/models'
-import {
-  responseAdapter as adapter,
-  SupportingResponse
-} from '@audius/common/services'
 import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
 import { put, select } from 'typed-redux-saga'
 
