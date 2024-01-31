@@ -25,7 +25,8 @@ import {
   getContext,
   lineupRegistry,
   Collectible,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Track
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -235,8 +236,7 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
-        // @ts-ignore todo
-        const lineup: LineupState<{ id: number }> = yield* select(
+        const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
         if (!lineup) return
