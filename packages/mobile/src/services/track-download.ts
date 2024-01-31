@@ -1,6 +1,7 @@
-import { tracksSocialActions } from '@audius/common/store'
+import type { DownloadTrackArgs } from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
-import type { DownloadTrackArgs, Nullable } from '@audius/common/utils'
+import { tracksSocialActions } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { Platform, Share } from 'react-native'
 import { zip } from 'react-native-zip-archive'
 import type {
