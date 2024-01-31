@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  imageBlank as placeholderArt
+  cacheUsersSelectors
 } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

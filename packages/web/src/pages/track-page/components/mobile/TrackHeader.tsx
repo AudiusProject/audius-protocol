@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { OverflowAction, imageBlank as placeholderArt } from '@audius/common'
+import { OverflowAction } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   SquareSizes,
   isContentCollectibleGated,

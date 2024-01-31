@@ -1,10 +1,10 @@
 import { Component } from 'react'
 
+import { getTierForUser } from '@audius/common'
 import {
-  getTierForUser,
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'

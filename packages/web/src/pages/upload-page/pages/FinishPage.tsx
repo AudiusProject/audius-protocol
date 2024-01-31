@@ -3,12 +3,12 @@ import { useCallback, useMemo } from 'react'
 import {
   accountSelectors,
   CommonState,
-  imageBlank as placeholderArt,
   ProgressState,
   ProgressStatus,
   uploadSelectors,
   UploadType
 } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Name } from '@audius/common/models'
 import {
   HarmonyPlainButton,

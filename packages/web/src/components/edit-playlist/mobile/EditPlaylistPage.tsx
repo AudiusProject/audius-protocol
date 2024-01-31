@@ -4,11 +4,11 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions,
-  imageBlank as placeholderCoverArt,
   EditPlaylistValues,
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common'
+import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'

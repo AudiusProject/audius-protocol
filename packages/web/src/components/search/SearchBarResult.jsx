@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Kind } from '@audius/common/models'
 import cn from 'classnames'
 import PropTypes from 'prop-types'

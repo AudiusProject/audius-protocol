@@ -8,7 +8,7 @@ import {
   MouseEventHandler
 } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   DogEarType,
   SquareSizes,

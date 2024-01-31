@@ -1,10 +1,7 @@
 import { ComponentType, SVGProps, useCallback, useEffect } from 'react'
 
-import {
-  cacheCollectionsSelectors,
-  imageBlank,
-  useEditPlaylistModal
-} from '@audius/common'
+import { cacheCollectionsSelectors, useEditPlaylistModal } from '@audius/common'
+import { imageBlank } from '@audius/common/assets'
 import { SquareSizes, CoverArtSizes } from '@audius/common/models'
 import { Button, ButtonType, IconPencil } from '@audius/stems'
 
