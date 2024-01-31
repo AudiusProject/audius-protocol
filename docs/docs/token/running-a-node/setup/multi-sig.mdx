@@ -1,0 +1,1788 @@
+---
+id: multi-sig
+title: Multi-Sig Wallets Tutorial
+pagination_label: Multi-Sig Wallets
+sidebar_label: Multi-Sig Wallets
+description: Audius Protocol Documentation
+slug: /token/multi-sig
+sidebar_position: 2
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+This tutorial walks through the process of delegating 100 $AUDIO from a freshly created [Safe{Wallet}](https://safe.global/) ("Safe") to a node operated by the Open Audio Foundation.
+
+:::note
+
+Nodes operated by the Open Audio Foundation have a 100% fee associated with them - 3rd-parties should not choose to delegate to the Open Audio Foundation nodes, and this fee is set as such to discourage that.
+
+<!-- TODO: link to "read more about fees and delegation here" docs -->
+
+:::
+
+
+## Create a Safe
+
+This tutorial uses a Safe at the address `0xAf80DA268009750424E7B17E3B2D679825A73a92` in a "3 of 5" configuration using the following wallets as signers:
+
+- `0x0x1cF73c5023572F2d5dc6BD3c5E4F24b4F3b6B76F`
+- `0x0x1f028B15f1b346AFf43B7AB11F6a7F84b1B22792`
+- `0x0x9a9C3DA4488d2c83D8a8e0A5B270FdE729F8F6cE`
+- `0x0x40251Fa93F7253e83A7eA8BAcB7dD94366C3946D`
+- `0x0x77C4A7007784Cdc964e6580C5E12D506A89Ecbc4`
+
+:::tip Stay Up to Date
+
+For the most up to date instructions on creating a Safe, follow the onboarding process on [https://safe.global](https://safe.global)
+
+:::
+
+Get started by navigating to [https://app.safe.global](https://app.safe.global) and connecting a wallet, this tutorial uses Metamask.
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/create/create-new-safe.png')}  />
+  <figcaption>
+      Create new Safe screen
+  </figcaption>
+</figure>
+
+
+
+<details><summary>Network Selection</summary>
+
+
+Give the Safe a name and confirm the Ethereum is selected in the drop down menu.
+
+This tutorial was completed using the Goerli Testnet, be sure to use the Ethereum Mainnet when creating a Safe for use with Audius.
+
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/create/create-network-selection.png')} style={{  }} />
+  <figcaption>
+      Select the desired network from the dropdown menu.
+  </figcaption>
+</figure>
+
+
+</details>
+
+### Add Owners and Set Signing Thresholds
+
+Add multiple trusted wallet addresses as signers and confirm the required minimum number of signers to accommodate your security needs.
+
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/create/create-signers.png')}  />
+  <figcaption>
+      Giving each member wallet address a meaningful nickname helps trouble shoot and identify wallets in the future.
+  </figcaption>
+</figure>
+
+
+Work with the other members of the Safe to determine the safety and convenience trade offs and select a minimum number of member wallets required to sign transactions. More signers can imply greater security, but it also requires more signers to actively participate in the process. On the other hand, a threshold of 1 could be chosen to allow any member wallet to act on behalf of the group.
+
+
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/create/create-threshold.png')}  />
+  <figcaption>
+      This tutorial requires 3 of the 5 signers to participate in signing transactions, meaning that any subset of 3 wallet members will be required to sign transactions.
+  </figcaption>
+</figure>
+
+
+
+
+
+
+---
+
+## Deposit $AUDIO Tokens
+
+Once a Safe has been created, send the amount of $AUDIO to delegate to the Safe address. The address can be seen, and copied, from the top left corner of the Safe homepage.
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/transact/transact-safe-address.png')}  />
+  <figcaption>
+      new transaction button
+  </figcaption>
+</figure>
+
+
+
+## Function Calls
+
+You now need to call two functions via the safe - approve (to permit the delegation system to
+transfer $AUDIO tokens on your behalf) and delegation
+
+
+### Approve
+
+Select the "New Transaction" button on the Safe home page, and then choose "Transaction Builder".
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/transact/transact-new.png')}  />
+  <figcaption>
+      new transaction button
+  </figcaption>
+</figure>
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/multisig-wallet/transact/transact-builder.png')}  />
+  <figcaption>
+      Builder button
+  </figcaption>
+</figure>
+
+
+On the next screen, complete the form as follows:
+
+- Address or ENS Name: use the [AUDIO address `0x18aaa7115705e8be94bffebde57af9bfc265b998`](https://etherscan.io/token/0x18aaa7115705e8be94bffebde57af9bfc265b998?a=0x44617f9dced9787c3b06a05b35b4c779a2aa1334)
+- Enter ABI: copy and paste the ABI code from the [bottom of this page](/token/multi-sig#audius-token), or directly from source on [GitHub](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json)
+- Contract Method Selector: `addMinter`
+- account (address): use the staking proxy address `0xe6D97B2099F142513be7A2a068bE040656Ae4591`
+
+- Fill in the modal as follows:
+
+  - Audius token contract address should be the address:
+    `0x18aaa7115705e8be94bffebde57af9bfc265b998`
+  - The ABI it detects will be incorrect - paste the long data from above for `Audius Token` into
+    the ABI field
+    <!-- TODO: link to json blob at bottom of page -->
+  - You should now see a list of functions available underneath the ABI field like this when you
+    click the dropdown:
+
+  <figure className="screensnippet-wrapper">
+    <img src={useBaseUrl('/img/gnosis-safe/function-list.png')} />
+    <figcaption>caption goes here</figcaption>
+  </figure>
+
+  - Select "Approve"
+  - Put in the Staking proxy address as the “spender”: `0xe6D97B2099F142513be7A2a068bE040656Ae4591`
+  - Amount is taken in wei rather than full $AUDIO tokens - please convert the number of $AUDIO
+    tokens you want to delegate (in this tutorial 100) to the equivalent wei number by multiplying
+    by “1,000,000,000,000,000,000” (10^18). (eg. see here for the tutorial calculation:
+    https://www.wolframalpha.com/input/?i=1%2C000%2C000%2C000%2C000%2C000%2C000*100). Put this
+    resulting number in as “amount” (in our case 100000000000000000000).
+    - To validate this is being done correctly, we recommend double-checking your number using an
+      ETH to WEI converter such as this: [https://eth-converter.com/](https://eth-converter.com/) if
+      you put your expected number of $AUDIO tokens into the ETH field, it should return the same
+      number for “WEI” that you calculated above.
+  - After completion, your modal should look like this:
+
+  <figure className="screensnippet-wrapper">
+    <img src={useBaseUrl('/img/gnosis-safe/contract-interaction-approve-filled.png')}  />
+    <figcaption>caption goes here</figcaption>
+  </figure>
+
+  - Click “review” to proceed
+
+- You will now have the chance to review everything was put in correctly - double check the values
+  from above, and if all feels right, press “Submit” which will open MetaMask for you to “sign” the
+  transaction (likely not yet ready to be submitted depending on number of signers you set up
+  above).
+- After signing, if you go to the transactions view in the gnosis safe, you should see something
+  like this:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/accept-awaiting.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Have all other signers sign into the gnosis safe, and click “confirm” in this same view. It should
+  appear like this:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/accept-signed.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Important note: when the final confirmer hits “confirm”, this will trigger submission of the
+  transaction as well. Make sure this address has enough ETH available to proceed.
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/approve.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Then confirm in MetaMask (we recommend using the “fast” gas setting):
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/metamask-confirm.png')} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Once the transaction confirms, you should see this in the Gnosis UI:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/executed.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Double check that the transaction hash on Etherscan has no errors - you can find the transaction
+  by looking up your gnosis safe address on Etherscan. In our case, our gnosis safe is at
+  0xE0670fBFd3adB450795f5E32820a7dA1399f3AE3 and the transaction for this step is here:
+  https://etherscan.io/tx/0x63c37b6e004b74a86b86a781bc1f610271f41b3d8536187cd6895c6a9b3f5825
+
+### Delegate
+
+- Click the “New Transaction” button in the Gnosis safe interface
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/new-transaction.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Click “Contract Interaction” in the modal that pops up:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/contract-interaction.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- The contract address for Delegation is `0x4d7968ebfD390D5E7926Cb3587C39eFf2F9FB225`
+- Paste in the ABI value from below for the “Delegation” contract
+- Select “DelegateStake” from the drop down menu. This should pop up two additional required text
+  fields
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/contract-interaction-delegate.png')}  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- `targetSP` is the address of the node operator you wish to delegate to. This can be found on the
+  Dashboard (dashboard.audius.org) by going to the “Services” tab, selecting your desired node
+  operator and copying their wallet address.
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/audius-dashboard-operator-address.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Use the converted amount you generated per the notes in the “approve” section for `amount`
+- With the values filled in, the Contract Interaction modal should look something like this:
+
+<figure className="screensnippet-wrapper">
+  <img
+    src={useBaseUrl('/img/gnosis-safe/contract-interaction-delegate-filled.png')}
+    style={{  }}
+  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- If you click “Review”, it will show you a Contract Interaction confirmation modal like:
+
+<figure className="screensnippet-wrapper">
+  <img
+    src={useBaseUrl('/img/gnosis-safe/contract-interaction-delegate-review.png')}
+    style={{  }}
+  />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Clicking Submit should pop up a MetaMask modal to ask you to Sign the transaction like this:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/metamask-delegate-sign.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Once you Sign, if you go back to the “Transactions” section in the Gnosis safe, you should see
+  another “Awaiting confirmations” item:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/delegate-awaiting.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Have the other signers go to the “transaction” section now - they should see something like the
+  following:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/delegate-signed.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Similar to the process for “approve” we followed above, have all other signers sign - they should
+  see a screen like this:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/delegate-signed.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- The final signer submitting the TX to chain as well. Make sure this signer has enough ETH
+  available to pay for the transaction. They will see this flow:
+
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/gnosis-safe/delegate-approve.png')} style={{  }} />
+  <figcaption>caption goes here</figcaption>
+</figure>
+
+- Click “approve” and then proceed to the next step in MetaMask
+
+- Unfortunately MetaMask does not correctly estimate gas in this instance, so we will have to edit
+  that field manually. Click “edit” on the popup that comes up like below:
+
+  <figure className="screensnippet-wrapper">
+    <img src={useBaseUrl('/img/gnosis-safe/delegate-metamask-confirm.png')} style={{  }} />
+    <figcaption>caption goes here</figcaption>
+  </figure>
+
+    - Select the “fast” option in the window that pops up:
+
+    <figure className="screensnippet-wrapper">
+      <img src={useBaseUrl('/img/gnosis-safe/delegate-metamask-fast.png')} style={{  }} />
+      <figcaption>caption goes here</figcaption>
+    </figure>
+
+    - You should see a tab at the top that says “Advanced” - select that now
+    - You should now see a form like this:
+
+    <figure className="screensnippet-wrapper">
+      <img src={useBaseUrl('/img/gnosis-safe/delegate-metamask-customize-gas.png')} style={{  }} />
+      <figcaption>caption goes here</figcaption>
+    </figure>
+
+    - Put 1000000 (1 million) into the gas limit - this is very high but the unspent difference will be returned to you after the transaction. Afterward, your form should look something like this (but with different Gas Price and chart):
+
+    <figure className="screensnippet-wrapper">
+      <img src={useBaseUrl('/img/gnosis-safe/delegate-metamask-customize-gas-filled.png')} style={{  }} />
+      <figcaption>caption goes here</figcaption>
+    </figure>
+
+    - Click “Save”, and then click “Confirm” in the final window, submitting your transaction to chain
+    - Double check the transaction hash on Etherscan completed with no errors - you can see this by looking up your gnosis safe address on Etherscan. In our case, our gnosis safe is at 0xE0670fBFd3adB450795f5E32820a7dA1399f3AE3 and the transaction is here: https://etherscan.io/tx/0xdf33245469e879c69cd3de4ba78c72741e2f4f617647b70cd53b968c49fd8920
+      - Note: the failed transaction in the Gnosis safe history was due to the gas amount being insufficient - MetaMask seems to incorrectly estimate the gas fee for the delegate transaction. This is why there is an added step to edit that included above.
+      - If you look at our Etherscan page for the gnosis safe, you can actually see a small exclamation point next to the transaction indicating this. After the transaction confirms, go back to the service that you delegated to and confirm that your address shows up in “Delegators” (you may need to click “View All Delegators”)
+
+      <figure className="screensnippet-wrapper">
+        <img src={useBaseUrl('/img/gnosis-safe/audius-dashboard-all-delegators.png')} style={{  }} />
+        <figcaption>caption goes here</figcaption>
+      </figure>
+
+      - Alternatively, you can also view the page for your gnosis safe by replacing the address in this url: https://dashboard.audius.org/services/user/0xE0670fBFd3adB450795f5E32820a7dA1399f3AE3
+
+- You are now successfully delegated!
+
+- To undelegate, you must submit a request to undelegate, allow one week to elapse, then execute
+  your request. This requires two function calls via the Gnosis safe that can be used in the flow
+  above (select them in the dropdown step when interacting with the delegate manager):
+  “requestUndelegateStake” and “undelegateStake”. As mentioned, a sufficient number of blocks must
+  pass (46523) between these two function calls.
+
+---
+
+## ABI Resources
+
+> copy paste them in when prompted
+
+### Audius Token
+
+[hosted version](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json)
+
+<details><summary>Show JSON</summary>
+<p>
+
+```json title="Audius token"
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "MinterAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "MinterRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "PauserAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "PauserRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "DOMAIN_SEPARATOR",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "PERMIT_TYPEHASH",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "addMinter",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "addPauser",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "burn",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "burnFrom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "subtractedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "addedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "isMinter",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "isPauser",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "mint",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "nonces",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "pause",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceMinter",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renouncePauser",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      },
+      {
+        "internalType": "uint8",
+        "name": "decimals",
+        "type": "uint8"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "governance",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      }
+    ],
+    "name": "permit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+</p>
+</details>
+
+
+
+### Delegate Manager ABI
+
+<details><summary>Show JSON</summary>
+<p>
+
+```json title="Delegate Manager ABI"
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_claimer", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "_rewards", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "_newTotal", "type": "uint256" }
+    ],
+    "name": "Claim",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_newClaimsManagerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ClaimsManagerAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_newGovernanceAddress",
+        "type": "address"
+      }
+    ],
+    "name": "GovernanceAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "_increaseAmount", "type": "uint256" }
+    ],
+    "name": "IncreaseDelegatedStake",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "_maxDelegators", "type": "uint256" }
+    ],
+    "name": "MaxDelegatorsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_minDelegationAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinDelegationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_removeDelegatorEvalDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "RemoveDelegatorEvalDurationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_removeDelegatorLockupDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "RemoveDelegatorLockupDurationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" }
+    ],
+    "name": "RemoveDelegatorRequestCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_serviceProvider",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_delegator",
+        "type": "address"
+      },
+      { "indexed": true, "internalType": "uint256", "name": "_unstakedAmount", "type": "uint256" }
+    ],
+    "name": "RemoveDelegatorRequestEvaluated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_lockupExpiryBlock",
+        "type": "uint256"
+      }
+    ],
+    "name": "RemoveDelegatorRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_spMinDelegationAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SPMinDelegationAmountUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_newServiceProviderFactoryAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ServiceProviderFactoryAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_target", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "_amount", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "_newTotal", "type": "uint256" }
+    ],
+    "name": "Slash",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_newStakingAddress",
+        "type": "address"
+      }
+    ],
+    "name": "StakingAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_undelegateLockupDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "UndelegateLockupDurationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+    ],
+    "name": "UndelegateStakeRequestCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "_amount", "type": "uint256" }
+    ],
+    "name": "UndelegateStakeRequestEvaluated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "_delegator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_lockupExpiryBlock",
+        "type": "uint256"
+      }
+    ],
+    "name": "UndelegateStakeRequested",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_tokenAddress", "type": "address" },
+      { "internalType": "address", "name": "_governanceAddress", "type": "address" },
+      { "internalType": "uint256", "name": "_undelegateLockupDuration", "type": "uint256" }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_targetSP", "type": "address" },
+      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+    ],
+    "name": "delegateStake",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_target", "type": "address" },
+      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+    ],
+    "name": "requestUndelegateStake",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "cancelUndelegateStakeRequest",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "undelegateStake",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "address", "name": "_serviceProvider", "type": "address" }],
+    "name": "claimRewards",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      { "internalType": "address", "name": "_slashAddress", "type": "address" }
+    ],
+    "name": "slash",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_serviceProvider",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "_delegator", "type": "address" }
+    ],
+    "name": "requestRemoveDelegator",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "_delegator",
+        "type": "address"
+      }
+    ],
+    "name": "cancelRemoveDelegatorRequest",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "internalType": "address", "name": "_delegator", "type": "address" }
+    ],
+    "name": "removeDelegator",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      { "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "internalType": "uint256", "name": "_spMinDelegationAmount", "type": "uint256" }
+    ],
+    "name": "updateSPMinDelegationAmount",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "uint256", "name": "_duration", "type": "uint256" }],
+    "name": "updateUndelegateLockupDuration",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "uint256", "name": "_maxDelegators", "type": "uint256" }],
+    "name": "updateMaxDelegators",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minDelegationAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateMinDelegationAmount",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "uint256", "name": "_duration", "type": "uint256" }],
+    "name": "updateRemoveDelegatorLockupDuration",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "uint256", "name": "_duration", "type": "uint256" }],
+    "name": "updateRemoveDelegatorEvalDuration",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "address", "name": "_governanceAddress", "type": "address" }],
+    "name": "setGovernanceAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "address", "name": "_stakingAddress", "type": "address" }],
+    "name": "setStakingAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{ "internalType": "address", "name": "_spFactory", "type": "address" }],
+    "name": "setServiceProviderFactoryAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_claimsManagerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setClaimsManagerAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_sp", "type": "address" }],
+    "name": "getDelegatorsList",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_delegator", "type": "address" }],
+    "name": "getTotalDelegatorStake",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_sp", "type": "address" }],
+    "name": "getTotalDelegatedToServiceProvider",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_sp", "type": "address" }],
+    "name": "getTotalLockedDelegationForServiceProvider",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      { "internalType": "address", "name": "_delegator", "type": "address" },
+      { "internalType": "address", "name": "_serviceProvider", "type": "address" }
+    ],
+    "name": "getDelegatorStakeForServiceProvider",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_delegator", "type": "address" }],
+    "name": "getPendingUndelegateRequest",
+    "outputs": [
+      { "internalType": "address", "name": "target", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "lockupExpiryBlock", "type": "uint256" }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      { "internalType": "address", "name": "_serviceProvider", "type": "address" },
+      { "internalType": "address", "name": "_delegator", "type": "address" }
+    ],
+    "name": "getPendingRemoveDelegatorRequest",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{ "internalType": "address", "name": "_serviceProvider", "type": "address" }],
+    "name": "getSPMinDelegationAmount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getUndelegateLockupDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getMaxDelegators",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getMinDelegationAmount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getRemoveDelegatorLockupDuration",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getRemoveDelegatorEvalDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getGovernanceAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getServiceProviderFactoryAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getClaimsManagerAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getStakingAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+```
+
+</p>
+</details>
+
