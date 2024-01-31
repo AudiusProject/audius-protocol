@@ -31,7 +31,7 @@ const Template: Story<ModalProps> = ({
   )
 }
 
-export const Composed = Template.bind({})
+export const Composed: any = Template.bind({})
 
 Composed.args = {
   children: (
@@ -126,7 +126,7 @@ const LongContent = () => (
     leo in vitae turpis massa sed.
   </div>
 )
-export const LotsOfContent = Template.bind({})
+export const LotsOfContent: any = Template.bind({})
 LotsOfContent.args = {
   children: (
     <>
@@ -143,4 +143,4 @@ LotsOfContent.args = {
   )
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})

@@ -19,9 +19,9 @@ const Template: Story<ModalHeaderProps> = ({
   return <ModalHeader {...args}>{children}</ModalHeader>
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})
 
-export const WithModalTitle = Template.bind({})
+export const WithModalTitle: any = Template.bind({})
 
 WithModalTitle.args = {
   children: <ModalTitle title='Title' subtitle='Subtitle' />

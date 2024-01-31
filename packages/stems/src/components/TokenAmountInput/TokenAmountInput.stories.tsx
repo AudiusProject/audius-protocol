@@ -11,7 +11,7 @@ export default {
   title: 'Components/TokenAmountInput'
 }
 
-const ControlledTemplate: Story<TokenAmountInputProps> = (args) => {
+const ControlledTemplate: Story<TokenAmountInputProps> = (args: any) => {
   const [value, setValue] = useState<string>('')
   const [, setValueBN] = useState<BN | undefined>(new BN(0))
   const ref = useRef<HTMLInputElement>(null)
@@ -28,7 +28,7 @@ const ControlledTemplate: Story<TokenAmountInputProps> = (args) => {
   )
 }
 
-const UncontrolledTemplate: Story<TokenAmountInputProps> = (args) => (
+const UncontrolledTemplate: Story<TokenAmountInputProps> = (args: any) => (
   <TokenAmountInput {...args} />
 )
 

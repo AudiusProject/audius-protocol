@@ -21,7 +21,7 @@ const Template: Story<PopupMenuProps> = (args) => {
             text='Click me'
             // @ts-ignore
             ref={anchorRef}
-            onClick={triggerPopup}
+            onClick={triggerPopup as any}
             {...triggerProps}
           />
         )
@@ -31,7 +31,7 @@ const Template: Story<PopupMenuProps> = (args) => {
 }
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 const primaryProps: Omit<PopupMenuProps, 'renderTrigger'> = {
   items: [
     {
@@ -53,7 +53,7 @@ const primaryProps: Omit<PopupMenuProps, 'renderTrigger'> = {
 Primary.args = primaryProps
 
 // WithIcons
-export const WithIcons = Template.bind({})
+export const WithIcons: any = Template.bind({})
 const withIconsProps: Omit<PopupMenuProps, 'renderTrigger'> = {
   items: [
     {

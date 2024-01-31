@@ -43,13 +43,13 @@ const baseProps: SegmentedControlProps<string> = {
 }
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 Primary.args = { ...baseProps }
 
 // Full Width
-export const FullWidth = Template.bind({})
+export const FullWidth: any = Template.bind({})
 FullWidth.args = { ...baseProps, fullWidth: true }
 
 // Mobile
-export const Mobile = Template.bind({})
+export const Mobile: any = Template.bind({})
 Mobile.args = { ...baseProps, isMobile: true }

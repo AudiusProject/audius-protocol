@@ -18,4 +18,4 @@ const Template: Story<RadioPillButtonProps> = (args) => {
 }
 
 // Default
-export const Default = Template.bind({})
+export const Default: any = Template.bind({})

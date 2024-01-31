@@ -16,8 +16,8 @@ const Template: Story<PillButtonProps> = (args) => {
 }
 
 // Default
-export const Default = Template.bind({})
+export const Default: any = Template.bind({})
 
 // Disabled
-export const Disabled = Template.bind({})
+export const Disabled: any = Template.bind({})
 Disabled.args = { disabled: true }

@@ -105,4 +105,4 @@ const Template: Story<ModalProps> = ({
   )
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})

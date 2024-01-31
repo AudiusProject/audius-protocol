@@ -29,17 +29,17 @@ const baseProps: Partial<HarmonySelectablePillProps> = {
 }
 
 // Default
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 Primary.args = { ...baseProps }
 
 // Large
-export const Large = Template.bind({})
+export const Large: any = Template.bind({})
 Large.args = { size: 'large', ...baseProps }
 
 // Icon
-export const WithIcon = Template.bind({})
+export const WithIcon: any = Template.bind({})
 WithIcon.args = { ...baseProps, icon: IconHeart }
 
 // Icon - large
-export const LargeWithIcon = Template.bind({})
+export const LargeWithIcon: any = Template.bind({})
 LargeWithIcon.args = { ...baseProps, size: 'large', icon: IconHeart }

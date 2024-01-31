@@ -19,4 +19,4 @@ const Template: Story<ModalContentProps> = ({
   return <ModalContent {...args}>{children}</ModalContent>
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})

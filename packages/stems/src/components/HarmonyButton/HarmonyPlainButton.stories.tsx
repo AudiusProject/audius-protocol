@@ -68,14 +68,14 @@ const Template: Story<StoryArgs> = ({ dark = false, props }) => (
 )
 
 // Default
-export const Default = Template.bind({})
+export const Default: any = Template.bind({})
 
 // Subdued
-export const Subdued = Template.bind({})
+export const Subdued: any = Template.bind({})
 Subdued.args = { props: { variant: HarmonyPlainButtonType.SUBDUED } }
 
 // Inverted
-export const Inverted = Template.bind({})
+export const Inverted: any = Template.bind({})
 Inverted.args = {
   dark: true,
   props: { variant: HarmonyPlainButtonType.INVERTED }

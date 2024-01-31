@@ -42,7 +42,7 @@ const Template: Story<PopupProps> = (args) => {
 }
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 const primaryProps: Omit<
   PopupProps,
   'children' | 'anchorRef' | 'isVisible' | 'onClose'
@@ -51,7 +51,7 @@ const primaryProps: Omit<
 Primary.args = primaryProps
 
 // With Header
-export const WithHeader = Template.bind({})
+export const WithHeader: any = Template.bind({})
 const withHeaderProps: Omit<
   PopupProps,
   'children' | 'anchorRef' | 'isVisible' | 'onClose'

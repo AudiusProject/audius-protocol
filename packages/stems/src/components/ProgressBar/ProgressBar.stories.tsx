@@ -17,18 +17,22 @@ const baseProps: ProgressBarProps = {
 }
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 Primary.args = { ...baseProps }
 
 // With Labels
-export const WithLabels = Template.bind({})
+export const WithLabels: any = Template.bind({})
 WithLabels.args = { ...baseProps, showLabels: true }
 
 // With Label Wrappers
-export const WithLabelWrappers = Template.bind({})
+export const WithLabelWrappers: any = Template.bind({})
 WithLabelWrappers.args = {
   ...baseProps,
   showLabels: true,
-  minWrapper: ({ value }) => <span>{value.toString()} $AUDIO</span>,
-  maxWrapper: ({ value }) => <span>{value.toString()} $AUDIO</span>
+  minWrapper: ({ value }: { value: number }) => (
+    <span>{value.toString()} $AUDIO</span>
+  ),
+  maxWrapper: ({ value }: { value: number }) => (
+    <span>{value.toString()} $AUDIO</span>
+  )
 }

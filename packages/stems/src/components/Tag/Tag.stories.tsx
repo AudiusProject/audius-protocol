@@ -11,7 +11,7 @@ const Template: Story<TagProps<'span'>> = (args) => {
   return <Tag {...args} />
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})
 
 Base.args = {
   tag: 'example tag'

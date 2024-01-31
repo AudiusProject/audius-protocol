@@ -9,11 +9,11 @@ export default {
   title: 'Components/IconButton'
 }
 
-const Template: Story<IconButtonProps> = (args) => {
+const Template: Story<IconButtonProps> = (args: any) => {
   return <IconButton {...args} />
 }
 
-export const Base = Template.bind({})
+export const Base: any = Template.bind({})
 const baseProps: IconButtonProps = {
   icon: <IconPlaylists />,
   'aria-label': 'Add playlist'

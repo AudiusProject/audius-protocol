@@ -3,8 +3,6 @@ import { forwardRef, CSSProperties, ElementType, ForwardedRef } from 'react'
 import cn from 'classnames'
 
 import { useMediaQueryListener } from 'hooks/useMediaQueryListener'
-import { CSSCustomProperties } from 'styles/types'
-import { toCSSVariableName } from 'utils/styles'
 
 import styles from './Button.module.css'
 import { ButtonProps, Type, Size } from './types'
@@ -102,9 +100,8 @@ export const Button = forwardRef(function Button<
       <span className={cn(styles.textLabel, textClassName)}>{text}</span>
     )
 
-  const style: CSSCustomProperties = {
-    minWidth: minWidth && isTextVisible ? `${minWidth}px` : 'unset',
-    '--button-color': color ? `var(${toCSSVariableName(color)})` : undefined
+  const style: CSSProperties = {
+    minWidth: minWidth && isTextVisible ? `${minWidth}px` : 'unset'
   }
 
   const RootComponent: ElementType = as ?? 'button'

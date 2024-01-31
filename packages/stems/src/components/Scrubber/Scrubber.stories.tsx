@@ -17,17 +17,17 @@ const baseProps: Partial<ScrubberProps> = {
 }
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 Primary.args = { ...baseProps }
 
 // Disabled
-export const Disabled = Template.bind({})
+export const Disabled: any = Template.bind({})
 Disabled.args = { ...baseProps, isDisabled: true }
 
 // No Timestamps
-export const NoTimestamps = Template.bind({})
+export const NoTimestamps: any = Template.bind({})
 NoTimestamps.args = { ...baseProps, includeTimestamps: false }
 
 // Mobile
-export const Mobile = Template.bind({})
+export const Mobile: any = Template.bind({})
 Mobile.args = { ...baseProps, isMobile: true }

@@ -64,24 +64,24 @@ const Template: Story<HarmonyButtonProps> = (args) => (
 )
 
 // Primary
-export const Primary = Template.bind({})
+export const Primary: any = Template.bind({})
 
 // Primary w/ color
-export const PrimaryWithColor = Template.bind({})
+export const PrimaryWithColor: any = Template.bind({})
 PrimaryWithColor.args = { color: 'accentBlue' }
 
 // Secondary
-export const Secondary = Template.bind({})
+export const Secondary: any = Template.bind({})
 Secondary.args = { variant: HarmonyButtonType.SECONDARY }
 
 // Tertiary
-export const Tertiary = Template.bind({})
+export const Tertiary: any = Template.bind({})
 Tertiary.args = { variant: HarmonyButtonType.TERTIARY }
 
 // Destructive
-export const Destructive = Template.bind({})
+export const Destructive: any = Template.bind({})
 Destructive.args = { variant: HarmonyButtonType.DESTRUCTIVE }
 
 // Ghost
-export const Ghost = Template.bind({})
+export const Ghost: any = Template.bind({})
 Ghost.args = { variant: HarmonyButtonType.GHOST }
