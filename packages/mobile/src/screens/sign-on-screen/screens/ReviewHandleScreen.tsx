@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { reviewHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'

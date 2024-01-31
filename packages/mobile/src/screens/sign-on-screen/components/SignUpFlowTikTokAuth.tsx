@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTikTokProfile } from '@audius/common/services'

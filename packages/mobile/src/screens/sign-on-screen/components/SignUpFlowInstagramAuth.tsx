@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'

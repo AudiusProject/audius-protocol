@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
 import { emailSchema, createLoginDetailsSchema } from '@audius/common/schemas'
 import { css } from '@emotion/native'

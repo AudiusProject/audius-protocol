@@ -4,10 +4,10 @@ import {
   accountSelectors,
   cacheCollectionsSelectors,
   reachabilitySelectors,
-  useAllPaginatedQuery,
   savedPageSelectors
 } from '@audius/common'
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
