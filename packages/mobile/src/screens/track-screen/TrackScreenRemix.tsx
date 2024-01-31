@@ -6,14 +6,16 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors
 } from '@audius/common'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import CoSign, { Size } from 'app/components/co-sign'
+import { ProfilePicture } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
-import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
@@ -43,15 +45,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderColor: palette.neutralLight8,
     borderRadius: 4,
     overflow: 'hidden'
-  },
-
-  profilePicture: {
-    zIndex: 1,
-    position: 'absolute',
-    top: spacing(-2),
-    left: spacing(-2),
-    height: 36,
-    width: 36
   },
 
   artist: {
@@ -108,6 +101,7 @@ const TrackScreenRemixComponent = ({
   user
 }: TrackScreenRemixComponentProps) => {
   const styles = useStyles()
+  const { spacing } = useTheme()
 
   const { _co_sign, track_id } = track
   const { name, handle } = user
@@ -123,7 +117,17 @@ const TrackScreenRemixComponent = ({
 
   const images = (
     <>
-      <ProfilePicture profile={user} style={styles.profilePicture} />
+      <ProfilePicture
+        userId={user.user_id}
+        style={css({
+          zIndex: 1,
+          position: 'absolute',
+          top: -spacing.unit2,
+          left: -spacing.unit2,
+          height: spacing.unit9,
+          width: spacing.unit9
+        })}
+      />
       <TrackImage
         track={track}
         style={styles.coverArt}
