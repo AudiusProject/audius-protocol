@@ -4,8 +4,7 @@ import type { User } from '@audius/common'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import { Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -17,10 +16,6 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing(4)
-  },
-  profilePicture: {
-    width: 42,
-    height: 42
   },
   receiverInfo: {
     marginLeft: spacing(2)
@@ -58,7 +53,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
   return (
     <View style={styles.receiver}>
       <TouchableOpacity onPress={goToReceiverProfile}>
-        <ProfilePicture profile={receiver} style={styles.profilePicture} />
+        <ProfilePicture userId={receiver.user_id} size='medium' />
       </TouchableOpacity>
       <View style={styles.receiverInfo}>
         <PressableText onPress={goToReceiverProfile}>
