@@ -5,14 +5,17 @@ import {
   changePasswordSelectors,
   changePasswordActions
 } from '@audius/common/store'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight } from '@audius/harmony-native'
-import { Button, TextInput } from 'app/components/core'
+import {
+  Flex,
+  IconArrowRight,
+  PasswordInput,
+  TextInput
+} from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
-import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { confirmCredentials } = changePasswordActions
 const { getConfirmCredentialsStatus } = changePasswordSelectors
@@ -33,19 +36,8 @@ const messages = {
   errorText: 'Invalid Credentials'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  input: {
-    marginTop: spacing(3),
-    paddingVertical: spacing(3)
-  },
-  button: {
-    marginTop: spacing(4)
-  }
-}))
-
 export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
   const dispatch = useDispatch()
-  const styles = useStyles()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorSeen, setErrorSeen] = useState(false)
@@ -75,22 +67,18 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
   }, [email, hasSubmitted, onComplete, password, status])
 
   return (
-    <View style={{ width: '100%' }}>
+    <Flex w='100%' gap='l' mt='xl'>
       <TextInput
-        style={styles.input}
         onChangeText={handleEmailChange}
         onKeyPress={handleKeyPress}
         textContentType='emailAddress'
-        placeholder={messages.emailPlaceholder}
+        label={messages.emailPlaceholder}
         value={email}
       />
-      <TextInput
-        style={styles.input}
+      <PasswordInput
         onChangeText={handlePasswordChange}
         onKeyPress={handleKeyPress}
-        textContentType='password'
-        secureTextEntry
-        placeholder={messages.passwordPlaceholder}
+        label={messages.passwordPlaceholder}
         value={password}
       />
       {status === Status.ERROR && !errorSeen ? (
@@ -98,7 +86,6 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
       ) : null}
       <Button
         styles={{
-          root: styles.button,
           button: {
             width: '100%',
             borderRadius: 4,
@@ -111,6 +98,6 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
         iconPosition='right'
         title={messages.buttonText}
       />
-    </View>
+    </Flex>
   )
 }

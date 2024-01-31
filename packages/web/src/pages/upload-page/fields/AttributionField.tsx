@@ -106,8 +106,11 @@ const derivativeWorksValues = [
   { key: null, text: messages.derivativeWorks.options.null }
 ]
 
-const isrcRegex = /^[A-Z]{2}-[A-Z\d]{3}-\d{2}-\d{5}$/i
-const iswcRegex = /^T-\d{9}-\d$/i
+// Use standard ISRC and ISWC formats, but allow for optional periods and hyphens
+// ISRC: https://www.wikidata.org/wiki/Property:P1243
+// ISWC: https://www.wikidata.org/wiki/Property:P1827
+const isrcRegex = /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i
+const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 
 const AttributionFormSchema = z
   .object({
