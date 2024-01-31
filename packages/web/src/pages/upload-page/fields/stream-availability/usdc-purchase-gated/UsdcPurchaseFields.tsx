@@ -6,20 +6,23 @@ import {
 } from 'react'
 
 import {
+  AccessConditions,
+  FeatureFlags,
+  Nullable,
   decimalIntegerToHumanReadable,
   filterDecimalString,
-  padDecimalValue
+  padDecimalValue,
+  useFeatureFlag
 } from '@audius/common'
+import { IconInfo } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
-import { TextField, TextFieldProps } from 'components/form-fields'
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
-import { PREVIEW, PRICE } from '../../AccessAndSaleField'
-
-import styles from './UsdcPurchaseFields.module.css'
+import { BoxedTextField } from '../../BoxedTextField'
+import { DOWNLOAD_CONDITIONS, PREVIEW, PRICE } from '../../types'
 
 const messages = {
   price: {
@@ -37,7 +40,9 @@ const messages = {
   },
   dollars: '$',
   usdc: '(USDC)',
-  seconds: '(Seconds)'
+  seconds: '(Seconds)',
+  premiumDownloads:
+    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 export enum UsdcPurchaseType {
@@ -45,17 +50,25 @@ export enum UsdcPurchaseType {
   FOLLOW = 'follow'
 }
 
-type TrackAvailabilityFieldsProps = {
+export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       <PriceField disabled={disabled} />
       <PreviewField disabled={disabled} />
+      {isLosslessDownloadsEnabled && downloadConditions ? (
+        <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
+      ) : null}
     </div>
   )
 }
@@ -130,25 +143,5 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
       onBlur={handlePriceBlur}
       disabled={disabled}
     />
-  )
-}
-
-type BoxedTextFieldProps = {
-  title: string
-  description: string
-} & TextFieldProps
-
-const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, ...inputProps } = props
-  return (
-    <div
-      className={cn(styles.inputContainer, layoutStyles.col, layoutStyles.gap4)}
-    >
-      <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
-        <Text variant='title'>{title}</Text>
-        <Text>{description}</Text>
-      </div>
-      <TextField inputRootClassName={styles.inputRoot} {...inputProps} />
-    </div>
   )
 }

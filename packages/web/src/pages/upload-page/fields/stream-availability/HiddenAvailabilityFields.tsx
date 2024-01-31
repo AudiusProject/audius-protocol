@@ -3,7 +3,7 @@ import { useField } from 'formik'
 
 import { Text } from 'components/typography'
 
-import { FIELD_VISIBILITY } from '../AccessAndSaleField'
+import { FIELD_VISIBILITY } from '../types'
 
 import styles from './HiddenAvailabilityFields.module.css'
 

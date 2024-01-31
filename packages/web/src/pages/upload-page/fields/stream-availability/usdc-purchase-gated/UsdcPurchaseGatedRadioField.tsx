@@ -4,7 +4,7 @@ import {
   FeatureFlags,
   Name,
   AccessConditions,
-  TrackAvailabilityType,
+  StreamTrackAvailabilityType,
   useAccessAndRemixSettings,
   useFeatureFlag
 } from '@audius/common'
@@ -78,7 +78,7 @@ export const UsdcPurchaseGatedRadioField = (
       icon={<IconCart />}
       label={messages.usdcPurchase}
       description={messages.usdcPurchaseSubtitle}
-      value={TrackAvailabilityType.USDC_PURCHASE}
+      value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
       hintIcon={<IconStars />}
       hintContent={!isUsdcUploadEnabled ? helpContent : undefined}

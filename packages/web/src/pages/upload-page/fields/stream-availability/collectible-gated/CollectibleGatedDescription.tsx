@@ -1,4 +1,5 @@
 import { collectiblesSelectors } from '@audius/common'
+import { Text } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
@@ -43,7 +44,7 @@ export const CollectibleGatedDescription = (
 
   return (
     <div className={styles.innerDescription}>
-      {messages.collectibleGatedSubtitle}
+      <Text variant='body'>{messages.collectibleGatedSubtitle}</Text>
       {!hasCollectibles && isUpload ? (
         <HelpCallout content={helpContent} />
       ) : null}
