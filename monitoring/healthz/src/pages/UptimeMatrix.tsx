@@ -80,7 +80,7 @@ export function UptimeMatrix() {
                     className="px-4 py-2 text-center"
                     title={`${other.replace('https://', '')}/d_api/uptime?host=${host}`}
                   >
-                    <a href={`${other}/d_api/uptime?host=${host}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`${other}/d_api/uptime?host=${host}&durationHours=1`} target="_blank" rel="noopener noreferrer">
                       {nodeHealthStatus[host] === undefined ? '⏳' : ''}
                       {nodeHealthStatus[host] !== undefined && (nodeHealthStatus[host][other] ? '✅' : '❌')}
                     </a>
