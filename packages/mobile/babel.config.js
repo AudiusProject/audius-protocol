@@ -14,7 +14,8 @@ module.exports = (api) => {
           '@audius/common/context': '../common/src/context',
           '@audius/common/api': '../common/src/api',
           '@audius/common/models': '../common/src/models',
-          '@audius/common/utils': '../common/src/utils'
+          '@audius/common/utils': '../common/src/utils',
+          '@audius/common/schemas': '../common/src/schemas'
         }
       }
     ]
