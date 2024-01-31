@@ -9,7 +9,6 @@ import {
   formatCount,
   useInboxUnavailableModal
 } from '@audius/common'
-import { css } from '@emotion/native'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'

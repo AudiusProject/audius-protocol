@@ -14,7 +14,6 @@ import {
   playerSelectors,
   useCanSendMessage
 } from '@audius/common'
-import { css } from '@emotion/native'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'

@@ -115,7 +115,10 @@ export const TipReactionNotification = (
       <View style={styles.body}>
         <View>
           <Reaction autoPlay={true} isVisible={isVisible} />
-          <NotificationProfilePicture profile={user} style={styles.NotificationProfilePicture} />
+          <NotificationProfilePicture
+            profile={user}
+            style={styles.NotificationProfilePicture}
+          />
         </View>
         <View style={styles.content}>
           <View style={styles.userNameLink}>

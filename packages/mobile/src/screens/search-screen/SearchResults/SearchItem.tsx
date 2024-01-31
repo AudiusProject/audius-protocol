@@ -2,8 +2,6 @@ import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common'
 import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
-import { css } from '@emotion/native'
-import { useTheme } from '@emotion/react'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
