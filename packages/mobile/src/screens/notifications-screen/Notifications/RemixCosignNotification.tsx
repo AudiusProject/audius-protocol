@@ -1,10 +1,12 @@
+import {
+  notificationsSelectors,
+  TrackEntity,
+  RemixCosignNotification as RemixCosignNotificationType
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type {
-  RemixCosignNotification as RemixCosignNotificationType,
-  TrackEntity
-} from '@audius/common'
-import { notificationsSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import { useProxySelector } from '@audius/common/hooks'
 import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'

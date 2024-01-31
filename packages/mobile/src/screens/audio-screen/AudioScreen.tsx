@@ -1,15 +1,17 @@
-import { useCallback, useEffect } from 'react'
-
-import type { CommonState } from '@audius/common'
 import {
-  tokenDashboardPageActions,
-  vipDiscordModalActions,
   tokenDashboardPageSelectors,
+  tokenDashboardPageActions,
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions
-} from '@audius/common'
+  vipDiscordModalActions,
+  modalsActions,
+  CommonState
+} from '@audius/common/store'
+import { useCallback, useEffect } from 'react'
+
+import type {} from '@audius/common'
+
 import type { StringWei } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'

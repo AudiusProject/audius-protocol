@@ -1,5 +1,5 @@
-import { cacheTracksSelectors } from '@audius/common'
 import type { ID, TrackMetadata } from '@audius/common/models'
+import { cacheTracksSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 
 import type { AppState } from 'app/store'

@@ -1,6 +1,6 @@
+import { tracksSocialActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { tracksSocialActions } from '@audius/common'
 import type { ButtonType as DownloadButtonType } from '@audius/common/hooks'
 import { ButtonState, useDownloadTrackButtons } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'

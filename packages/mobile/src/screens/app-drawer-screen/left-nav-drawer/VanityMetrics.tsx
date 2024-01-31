@@ -1,11 +1,11 @@
+import {
+  accountSelectors,
+  followingUserListActions,
+  followersUserListActions
+} from '@audius/common/store'
 import type { ComponentType } from 'react'
 import { useCallback, useContext } from 'react'
 
-import {
-  accountSelectors,
-  followersUserListActions,
-  followingUserListActions
-} from '@audius/common'
 import type { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import { View } from 'react-native'

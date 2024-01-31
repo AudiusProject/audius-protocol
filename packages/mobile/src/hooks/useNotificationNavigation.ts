@@ -1,53 +1,56 @@
 import { useCallback, useMemo } from 'react'
 
 import type {
-  AddTrackToPlaylistNotification,
-  AddTrackToPlaylistPushNotification,
   AnnouncementNotification,
-  ChallengeRewardNotification,
-  FavoriteNotification,
-  FavoriteOfRepostNotification,
-  FavoritePushNotification,
+  UserSubscriptionNotification,
   FollowNotification,
   FollowPushNotification,
-  MilestoneFavoritePushNotification,
-  MilestoneFollowPushNotification,
-  MilestoneListenPushNotification,
-  MilestoneNotification,
-  MilestoneRepostPushNotification,
-  ReactionNotification,
-  ReactionPushNotification,
-  RemixCosignNotification,
-  RemixCosignPushNotification,
-  RemixCreateNotification,
-  RemixCreatePushNotification,
   RepostNotification,
+  RepostPushNotification,
   RepostOfRepostNotification,
   RepostOfRepostPushNotification,
-  RepostPushNotification,
-  SupporterDethronedNotification,
-  SupporterRankUpNotification,
-  SupporterRankUpPushNotification,
-  SupportingRankUpNotification,
-  SupportingRankUpPushNotification,
+  FavoriteOfRepostNotification,
+  FavoriteNotification,
+  FavoritePushNotification,
+  MilestoneNotification,
+  MilestoneFollowPushNotification,
+  MilestoneListenPushNotification,
+  MilestoneRepostPushNotification,
+  MilestoneFavoritePushNotification,
+  RemixCreateNotification,
+  RemixCreatePushNotification,
+  RemixCosignNotification,
+  RemixCosignPushNotification,
+  TrendingTrackNotification,
+  ChallengeRewardNotification,
   TierChangeNotification,
+  ReactionNotification,
+  ReactionPushNotification,
   TipReceiveNotification,
   TipReceivePushNotification,
   TipSendNotification,
   TipSendPushNotification,
-  TrendingTrackNotification,
-  UserSubscriptionNotification,
+  SupporterRankUpNotification,
+  SupporterRankUpPushNotification,
+  SupportingRankUpNotification,
+  SupportingRankUpPushNotification,
+  SupporterDethronedNotification,
+  AddTrackToPlaylistNotification,
+  AddTrackToPlaylistPushNotification,
   MessagePushNotification,
   MessageReactionPushNotification
-} from '@audius/common'
+} from '@audius/common/store'
 import {
-  notificationsUserListActions,
-  tippingActions,
-  Achievement,
-  Entity,
   NotificationType,
-  PushNotificationType
-} from '@audius/common'
+  PushNotificationType,
+  Entity,
+  Achievement,
+  tippingActions,
+  notificationsUserListActions
+} from '@audius/common/store'
+
+import type {} from '@audius/common'
+
 import type { AppState } from 'audius-client/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 

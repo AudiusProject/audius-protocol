@@ -1,8 +1,3 @@
-import {
-  accountSelectors,
-  getContext,
-  gatedContentSelectors
-} from '@audius/common'
 import type {
   ID,
   TrackMetadata,
@@ -11,6 +6,11 @@ import type {
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import type { QueryParams } from '@audius/common/services'
+import {
+  accountSelectors,
+  getContext,
+  gatedContentSelectors
+} from '@audius/common/store'
 import {
   encodeHashId,
   removeNullable,

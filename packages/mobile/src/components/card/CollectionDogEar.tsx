@@ -1,4 +1,5 @@
-import { cacheCollectionsSelectors } from '@audius/common'
+import { cacheCollectionsSelectors } from '@audius/common/store'
+
 import type { ID } from '@audius/common/models'
 import { DogEarType } from '@audius/common/models'
 import { useSelector } from 'react-redux'

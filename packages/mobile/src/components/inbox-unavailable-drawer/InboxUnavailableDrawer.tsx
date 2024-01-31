@@ -1,16 +1,16 @@
+import {
+  accountSelectors,
+  cacheUsersSelectors,
+  chatActions,
+  chatSelectors,
+  makeChatId,
+  ChatPermissionAction,
+  tippingActions,
+  useInboxUnavailableModal
+} from '@audius/common/store'
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import {
-  chatSelectors,
-  chatActions,
-  tippingActions,
-  ChatPermissionAction,
-  accountSelectors,
-  makeChatId,
-  useInboxUnavailableModal,
-  cacheUsersSelectors
-} from '@audius/common'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

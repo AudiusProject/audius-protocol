@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { decodeHashId } from '@audius/common/utils'
 import type {
   LinkingOptions,

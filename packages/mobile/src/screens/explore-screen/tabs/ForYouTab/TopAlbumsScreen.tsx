@@ -1,10 +1,10 @@
+import {
+  explorePageCollectionsSelectors,
+  explorePageCollectionsActions,
+  ExploreCollectionsVariant
+} from '@audius/common/store'
 import { useEffect } from 'react'
 
-import {
-  ExploreCollectionsVariant,
-  explorePageCollectionsSelectors,
-  explorePageCollectionsActions
-} from '@audius/common'
 import { Status } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,6 +1,6 @@
+import { reachabilitySelectors } from '@audius/common/store'
 import type { ReactNode } from 'react'
 
-import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 const { getIsReachable } = reachabilitySelectors

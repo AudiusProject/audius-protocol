@@ -4,7 +4,7 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   deletePlaylistConfirmationModalUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 

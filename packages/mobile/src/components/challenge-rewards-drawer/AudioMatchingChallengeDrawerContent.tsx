@@ -1,6 +1,6 @@
+import { ClaimStatus } from '@audius/common/store'
 import React from 'react'
 
-import { ClaimStatus } from '@audius/common'
 import type { OptimisticUserChallenge } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
 import { formatNumberCommas } from '@audius/common/utils'

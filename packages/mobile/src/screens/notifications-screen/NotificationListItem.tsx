@@ -1,5 +1,5 @@
-import type { Notification } from '@audius/common'
-import { NotificationType } from '@audius/common'
+import { NotificationType, Notification } from '@audius/common/store'
+import type {} from '@audius/common'
 
 import { NotificationErrorBoundary } from './NotificationErrorBoundary'
 import {

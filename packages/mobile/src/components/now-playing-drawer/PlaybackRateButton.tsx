@@ -1,5 +1,6 @@
-import type { PlaybackRate } from '@audius/common'
-import { playerSelectors } from '@audius/common'
+import { playerSelectors, PlaybackRate } from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useSelector } from 'react-redux'
 
 import Icon0_5x from 'app/assets/images/iconPlaybackRate0_5x.svg'

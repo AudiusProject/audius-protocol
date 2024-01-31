@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
-
 import {
   accountSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
   walletActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useEffect, useState } from 'react'
+
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import type { StringWei, BNWei } from '@audius/common/models'
 import { stringWeiToBN } from '@audius/common/utils'

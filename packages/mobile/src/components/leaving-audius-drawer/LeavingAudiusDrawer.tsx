@@ -1,6 +1,6 @@
+import { useLeavingAudiusModal } from '@audius/common/store'
 import React from 'react'
 
-import { useLeavingAudiusModal } from '@audius/common'
 import { View } from 'react-native'
 
 import IconExternalLink from 'app/assets/images/iconExternalLink.svg'

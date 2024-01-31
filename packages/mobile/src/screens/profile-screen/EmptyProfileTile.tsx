@@ -1,4 +1,5 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
+
 import type { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 

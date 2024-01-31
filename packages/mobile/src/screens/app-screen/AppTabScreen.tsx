@@ -1,10 +1,11 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { NotificationType, RepostType, CreateChatModalState
+ } from '@audius/common/store'
+     import { useCallback, useContext, useEffect } from 'react'
 
 import type {
-  NotificationType,
-  RepostType,
-  CreateChatModalState
-} from '@audius/common'
+  
+  
+  } from '@audius/common'
 import type {
   FavoriteType,
   TipSource,

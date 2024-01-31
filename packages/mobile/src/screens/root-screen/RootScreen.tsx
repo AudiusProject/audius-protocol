@@ -1,6 +1,10 @@
+import {
+  accountSelectors,
+  chatActions,
+  playerActions
+} from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors, chatActions, playerActions } from '@audius/common'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'

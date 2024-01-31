@@ -1,4 +1,5 @@
-import type { EditPlaylistValues } from '@audius/common'
+import { EditPlaylistValues  } from '@audius/common/store'
+     import type { } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { FormikProps } from 'formik'
 

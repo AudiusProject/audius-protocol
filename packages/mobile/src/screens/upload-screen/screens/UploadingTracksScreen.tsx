@@ -1,7 +1,13 @@
+import {
+  uploadActions,
+  uploadSelectors,
+  UploadType,
+  UploadTrack
+} from '@audius/common/store'
 import { useEffect } from 'react'
 
-import type { UploadTrack } from '@audius/common'
-import { uploadSelectors, UploadType, uploadActions } from '@audius/common'
+import type {} from '@audius/common'
+
 import { useRoute } from '@react-navigation/native'
 import { useKeepAwake } from '@sayem314/react-native-keep-awake'
 import { View } from 'react-native'

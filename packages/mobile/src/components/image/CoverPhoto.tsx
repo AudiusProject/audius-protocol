@@ -1,4 +1,5 @@
-import { cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common/store'
+
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'

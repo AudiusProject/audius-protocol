@@ -1,9 +1,9 @@
-import { useCallback } from 'react'
-
 import {
   feedPageLineupActions as feedActions,
   feedPageActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { Dimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

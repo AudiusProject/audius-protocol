@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { UploadTrack  } from '@audius/common/store'
+     import { useCallback } from 'react'
 
-import { type UploadTrack } from '@audius/common'
+import { type } from '@audius/common'
 import { FeatureFlags } from '@audius/common/services'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'

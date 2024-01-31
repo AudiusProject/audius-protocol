@@ -1,11 +1,11 @@
+import {
+  profilePageSelectors,
+  chatActions,
+  chatSelectors,
+  shareModalUIActions
+} from '@audius/common/store'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import {
-  shareModalUIActions,
-  profilePageSelectors,
-  chatSelectors,
-  chatActions
-} from '@audius/common'
 import { ShareSource } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 

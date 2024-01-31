@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'

@@ -1,10 +1,12 @@
-import type { CommonState, RemoteConfigState } from '@audius/common'
+import type { CommonState, RemoteConfigState } from '@audius/common/store'
 import {
-  toastActions,
+  chatMiddleware,
   remoteConfigReducer as remoteConfig,
-  reducers as commonReducers,
-  chatMiddleware
-} from '@audius/common'
+  toastActions,
+  reducers as commonReducers
+} from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { ErrorLevel } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import backend from 'audius-client/src/common/store/backend/reducer'

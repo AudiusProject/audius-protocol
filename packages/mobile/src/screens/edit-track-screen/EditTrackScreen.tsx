@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { UploadTrack  } from '@audius/common/store'
+     import { useCallback, useMemo } from 'react'
 
-import type { UploadTrack } from '@audius/common'
+import type { } from '@audius/common'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { creativeCommons, formatPrice } from '@audius/common/utils'

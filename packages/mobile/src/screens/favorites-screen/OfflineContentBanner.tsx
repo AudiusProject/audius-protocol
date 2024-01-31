@@ -1,4 +1,5 @@
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
+
 import { View } from 'react-native'
 import Animated, { SlideOutUp } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'

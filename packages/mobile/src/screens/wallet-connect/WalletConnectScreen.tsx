@@ -1,4 +1,5 @@
-import { tokenDashboardPageActions } from '@audius/common'
+import { tokenDashboardPageActions } from '@audius/common/store'
+
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'

@@ -1,10 +1,10 @@
+import {
+  buyUSDCActions,
+  useUSDCManualTransferModal,
+  useAddFundsModal
+} from '@audius/common/store'
 import { useCallback, useState } from 'react'
 
-import {
-  useAddFundsModal,
-  useUSDCManualTransferModal,
-  buyUSDCActions
-} from '@audius/common'
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { View } from 'react-native'

@@ -1,10 +1,10 @@
-import {
-  accountSelectors,
-  getContext,
-  tokenDashboardPageActions
-} from '@audius/common'
 import type { WalletAddress } from '@audius/common/models'
 import { Name, Chain } from '@audius/common/models'
+import {
+  accountSelectors,
+  tokenDashboardPageActions,
+  getContext
+} from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import bs58 from 'bs58'

@@ -1,7 +1,12 @@
+import {
+  accountSelectors,
+  chatSelectors,
+  ReactionTypes
+} from '@audius/common/store'
 import { memo, useCallback, useState } from 'react'
 
-import type { ReactionTypes } from '@audius/common'
-import { accountSelectors, chatSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import { Status } from '@audius/common/models'
 import {
   formatMessageDate,

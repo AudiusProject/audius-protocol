@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-
 import {
   accountSelectors,
   chatActions,
   chatSelectors,
   playerSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import type { ChatMessageWithExtras } from '@audius/common/models'

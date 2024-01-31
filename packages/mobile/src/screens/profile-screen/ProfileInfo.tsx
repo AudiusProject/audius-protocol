@@ -1,12 +1,12 @@
-import { useEffect } from 'react'
-
 import {
   accountSelectors,
-  chatSelectors,
-  chatActions,
   profilePageSelectors,
+  chatActions,
+  chatSelectors,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useEffect } from 'react'
+
 import { FollowSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { View, Text } from 'react-native'

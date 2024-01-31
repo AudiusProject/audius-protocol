@@ -1,7 +1,8 @@
-import { useCallback } from 'react'
+import { notificationsSelectors, Entity , RepostOfRepostNotification as RepostOfRepostNotificationType } from '@audius/common'
+import { notificationsSelectors } from '@audius/common/store'
+     import { useCallback } from 'react'
 
-import type { RepostOfRepostNotification as RepostOfRepostNotificationType } from '@audius/common'
-import { notificationsSelectors, Entity } from '@audius/common'
+import type { } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import { formatCount } from '@audius/common/utils'
 

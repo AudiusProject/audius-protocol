@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { Status } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import * as signOnActions from 'common/store/pages/signon/actions'

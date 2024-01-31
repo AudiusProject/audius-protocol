@@ -1,6 +1,6 @@
+import { searchResultsPageSelectors } from '@audius/common/store'
 import type { ReactNode } from 'react'
 
-import { searchResultsPageSelectors } from '@audius/common'
 import { Status } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 

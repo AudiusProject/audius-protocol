@@ -1,7 +1,7 @@
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
-import { cacheUsersSelectors, cacheTracksSelectors } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   SquareSizes,

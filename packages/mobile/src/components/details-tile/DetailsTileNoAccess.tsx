@@ -1,12 +1,12 @@
+import {
+  usersSocialActions,
+  tippingActions,
+  usePremiumContentPurchaseModal,
+  gatedContentSelectors
+} from '@audius/common/store'
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import {
-  gatedContentSelectors,
-  tippingActions,
-  usePremiumContentPurchaseModal,
-  usersSocialActions
-} from '@audius/common'
 import { useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,

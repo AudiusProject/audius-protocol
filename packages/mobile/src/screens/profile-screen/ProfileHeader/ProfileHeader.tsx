@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'

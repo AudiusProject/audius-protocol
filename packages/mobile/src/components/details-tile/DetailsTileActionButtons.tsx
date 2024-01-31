@@ -1,5 +1,6 @@
-import type { CommonState } from '@audius/common'
-import { cacheCollectionsSelectors } from '@audius/common'
+import { cacheCollectionsSelectors, CommonState } from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'

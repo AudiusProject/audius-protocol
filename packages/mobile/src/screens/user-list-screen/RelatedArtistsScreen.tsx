@@ -1,10 +1,10 @@
-import { useCallback } from 'react'
-
 import {
   relatedArtistsUserListActions,
   relatedArtistsUserListSelectors,
   RELATED_ARTISTS_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import { useDispatch } from 'react-redux'
 
 import IconUserGroup from 'app/assets/images/iconUserGroup.svg'

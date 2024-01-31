@@ -1,5 +1,6 @@
-import type { CommonState } from '@audius/common'
-import { themeSelectors } from '@audius/common'
+import { themeSelectors, CommonState } from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useSelector } from 'react-redux'
 
 const { getTheme, getSystemAppearance } = themeSelectors

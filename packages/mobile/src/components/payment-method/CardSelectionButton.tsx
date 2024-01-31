@@ -1,6 +1,6 @@
+import { modalsActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { modalsActions } from '@audius/common'
 import type { PurchaseVendor } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'

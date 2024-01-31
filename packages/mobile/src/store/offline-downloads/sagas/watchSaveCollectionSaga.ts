@@ -1,5 +1,5 @@
-import { collectionsSocialActions } from '@audius/common'
 import { FavoriteSource } from '@audius/common/models'
+import { collectionsSocialActions } from '@audius/common/store'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'

@@ -1,6 +1,6 @@
+import { tippingActions } from '@audius/common/store'
 import { useEffect, useMemo } from 'react'
 
-import { tippingActions } from '@audius/common'
 import { useRankedSupportingForUser } from '@audius/common/hooks'
 import type { Supporting } from '@audius/common/models'
 import { MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'

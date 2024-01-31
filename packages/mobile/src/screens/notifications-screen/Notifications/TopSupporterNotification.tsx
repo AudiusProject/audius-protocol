@@ -1,7 +1,11 @@
+import {
+  notificationsSelectors,
+  SupporterRankUpNotification
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type { SupporterRankUpNotification } from '@audius/common'
-import { notificationsSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 

@@ -1,7 +1,12 @@
+import {
+  accountSelectors,
+  QueueSource,
+  ChatMessageTileProps
+} from '@audius/common/store'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import type { ChatMessageTileProps } from '@audius/common'
-import { QueueSource, accountSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import { useGetTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'

@@ -1,21 +1,21 @@
-import { useCallback } from 'react'
-
 import {
-  playerSelectors,
   accountSelectors,
   trackPageLineupActions,
+  queueSelectors,
+  reachabilitySelectors,
   tracksSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  RepostType,
+  OverflowAction,
+  OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
-  reachabilitySelectors,
-  playbackPositionSelectors,
-  queueSelectors
-} from '@audius/common'
+  RepostType,
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,

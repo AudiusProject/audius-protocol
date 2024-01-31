@@ -1,6 +1,7 @@
-import type { ComponentType } from 'react'
+import { Modals  } from '@audius/common/store'
+     import type { ComponentType } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { } from '@audius/common'
 
 import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'

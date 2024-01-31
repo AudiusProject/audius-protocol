@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { ChallengeRewardNotification as ChallengeRewardNotificationType  } from '@audius/common/store'
+     import { useCallback } from 'react'
 
-import type { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common'
+import type { } from '@audius/common'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { Platform } from 'react-native'
 

@@ -1,9 +1,9 @@
-import { useCallback } from 'react'
-
 import {
   repostsUserListActions,
   repostsUserListSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import { useDispatch } from 'react-redux'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'

@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react'
-import { useState, useCallback } from 'react'
-
 import {
   accountSelectors,
   collectibleDetailsUIActions,
   modalsActions
-} from '@audius/common'
+} from '@audius/common/store'
+import type { ReactNode } from 'react'
+import { useState, useCallback } from 'react'
+
 import type { Collectible, ID } from '@audius/common/models'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'

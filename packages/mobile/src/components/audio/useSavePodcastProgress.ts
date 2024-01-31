@@ -1,11 +1,11 @@
-import { useEffect } from 'react'
-
 import {
   accountSelectors,
   cacheTracksSelectors,
-  playbackPositionActions,
-  playerSelectors
-} from '@audius/common'
+  playerSelectors,
+  playbackPositionActions
+} from '@audius/common/store'
+import { useEffect } from 'react'
+
 import { Genre } from '@audius/common/utils'
 import { useProgress } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'

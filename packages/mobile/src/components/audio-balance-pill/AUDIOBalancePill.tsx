@@ -1,4 +1,5 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
+
 import {
   useSelectTierInfo,
   useTotalBalanceWithFallback

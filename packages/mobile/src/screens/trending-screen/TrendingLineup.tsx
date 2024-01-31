@@ -1,11 +1,11 @@
-import { useCallback, useEffect } from 'react'
-
 import {
   lineupSelectors,
   trendingPageLineupActions,
   trendingPageActions,
   trendingPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useEffect } from 'react'
+
 import { Name, TimeRange } from '@audius/common/models'
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'

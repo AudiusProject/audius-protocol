@@ -1,5 +1,10 @@
-import type { AssociatedWallet } from '@audius/common'
-import { tokenDashboardPageSelectors, walletSelectors } from '@audius/common'
+import {
+  tokenDashboardPageSelectors,
+  walletSelectors,
+  AssociatedWallet
+} from '@audius/common/store'
+import type {} from '@audius/common'
+
 import type { BNWei } from '@audius/common/models'
 import { Chain } from '@audius/common/models'
 import { formatWei } from '@audius/common/utils'

@@ -1,4 +1,10 @@
 import {
+  cacheUsersSelectors,
+  queueActions,
+  playerActions,
+  playerSelectors
+} from '@audius/common/store'
+import {
   memo,
   useCallback,
   useContext,
@@ -7,12 +13,6 @@ import {
   useState
 } from 'react'
 
-import {
-  cacheUsersSelectors,
-  queueActions,
-  playerSelectors,
-  playerActions
-} from '@audius/common'
 import { Genre } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import type {

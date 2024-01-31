@@ -1,6 +1,6 @@
+import { chatActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { chatActions } from '@audius/common'
 import type { User } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { useDispatch } from 'react-redux'

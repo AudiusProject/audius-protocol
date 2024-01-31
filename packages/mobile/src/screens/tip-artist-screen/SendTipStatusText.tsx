@@ -1,4 +1,5 @@
-import { tippingSelectors } from '@audius/common'
+import { tippingSelectors } from '@audius/common/store'
+
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

@@ -1,12 +1,12 @@
-import { useCallback } from 'react'
-
 import {
-  cacheActions,
   cacheCollectionsSelectors,
+  cacheActions,
   collectionPageLineupActions,
   collectionPageSelectors,
   queueSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
 import { areSetsEqual, Uid, makeUid } from '@audius/common/utils'

@@ -1,12 +1,12 @@
+import {
+  cacheCollectionsSelectors,
+  collectionPageLineupActions as tracksActions,
+  collectionPageSelectors,
+  reachabilitySelectors,
+  playerSelectors
+} from '@audius/common/store'
 import { useCallback, useEffect, useMemo } from 'react'
 
-import {
-  collectionPageSelectors,
-  playerSelectors,
-  collectionPageLineupActions as tracksActions,
-  reachabilitySelectors,
-  cacheCollectionsSelectors
-} from '@audius/common'
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'

@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
-
 import {
   cacheUsersSelectors,
   collectibleDetailsUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useMemo } from 'react'
+
 import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

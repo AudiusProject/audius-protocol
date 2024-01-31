@@ -1,6 +1,6 @@
+import { collectiblesSelectors } from '@audius/common/store'
 import { useCallback, useMemo } from 'react'
 
-import { collectiblesSelectors } from '@audius/common'
 import { Chain, isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'

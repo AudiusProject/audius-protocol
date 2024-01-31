@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
-
-import type { RepostType } from '@audius/common'
 import {
   repostsUserListActions,
-  favoritesUserListActions
-} from '@audius/common'
+  favoritesUserListActions,
+  RepostType
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
+import type {} from '@audius/common'
+
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
 import { dayjs, formatCount } from '@audius/common/utils'

@@ -1,7 +1,7 @@
+import { reactionOrder, ReactionTypes } from '@audius/common/store'
 import { useCallback, useContext, useRef, useState } from 'react'
 
-import { reactionOrder } from '@audius/common'
-import type { ReactionTypes } from '@audius/common'
+import type {} from '@audius/common'
 import type { Nullable } from '@audius/common/utils'
 import type {
   ViewStyle,

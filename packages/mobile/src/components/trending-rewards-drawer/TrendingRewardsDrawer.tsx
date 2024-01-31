@@ -1,10 +1,13 @@
+import type { TrendingRewardsModalType } from '@audius/common/store'
+import {
+  audioRewardsPageSelectors,
+  audioRewardsPageActions
+} from '@audius/common/store'
+
 import { useCallback } from 'react'
 
-import type { TrendingRewardsModalType } from '@audius/common'
-import {
-  audioRewardsPageActions,
-  audioRewardsPageSelectors
-} from '@audius/common'
+import type {} from '@audius/common'
+
 import { Theme } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import type { ImageStyle } from 'react-native'

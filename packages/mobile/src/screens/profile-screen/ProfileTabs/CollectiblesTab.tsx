@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback, useMemo, useRef } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import type { Collectible } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'

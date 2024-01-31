@@ -1,5 +1,10 @@
-import type { CommonState } from '@audius/common'
-import { averageColorSelectors, playerSelectors } from '@audius/common'
+import {
+  averageColorSelectors,
+  playerSelectors,
+  CommonState
+} from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { DogEarType, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'

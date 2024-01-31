@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { Modals  } from '@audius/common/store'
+     import { useCallback } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { } from '@audius/common'
 import { View } from 'react-native'
 
 import IconInfo from 'app/assets/images/iconInfo.svg'

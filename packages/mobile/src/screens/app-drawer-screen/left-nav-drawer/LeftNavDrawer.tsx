@@ -1,4 +1,5 @@
-import { accountSelectors, chatSelectors } from '@audius/common'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
+
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
 import { Name } from '@audius/common/models'

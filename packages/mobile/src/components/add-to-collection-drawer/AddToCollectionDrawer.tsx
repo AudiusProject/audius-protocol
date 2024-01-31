@@ -1,12 +1,12 @@
-import { useCallback, useMemo } from 'react'
-
 import {
-  duplicateAddConfirmationModalUIActions,
   accountSelectors,
   cacheCollectionsActions,
+  collectionPageSelectors,
   addToCollectionUISelectors,
-  collectionPageSelectors
-} from '@audius/common'
+  duplicateAddConfirmationModalUIActions
+} from '@audius/common/store'
+import { useCallback, useMemo } from 'react'
+
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
 import { fetchAccountCollections } from 'common/store/saved-collections/actions'

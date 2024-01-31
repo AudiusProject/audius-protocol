@@ -1,6 +1,6 @@
+import { feedPageSelectors, modalsActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { feedPageSelectors, modalsActions } from '@audius/common'
 import { FeedFilter } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { RepostType, EnhancedCollectionTrack  } from '@audius/common/store'
+     import type { ReactNode } from 'react'
 
-import type { RepostType, EnhancedCollectionTrack } from '@audius/common'
+import type {  } from '@audius/common'
 import type {
   PlaybackSource,
   FavoriteType,

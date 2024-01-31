@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
-
 import {
   historyPageTracksLineupActions as tracksActions,
   historyPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useMemo } from 'react'
+
 import { useProxySelector } from '@audius/common/hooks'
 import { PlaybackSource, Status } from '@audius/common/models'
 import type { ID, UID } from '@audius/common/models'

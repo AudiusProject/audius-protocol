@@ -1,14 +1,16 @@
-import { useCallback, type ReactNode, useEffect } from 'react'
-
-import type { PurchaseContentError } from '@audius/common'
 import {
-  PurchaseContentPage,
-  PurchaseContentStage,
-  isContentPurchaseInProgress,
+  usePremiumContentPurchaseModal,
   purchaseContentActions,
   purchaseContentSelectors,
-  usePremiumContentPurchaseModal
-} from '@audius/common'
+  PurchaseContentStage,
+  PurchaseContentPage,
+  PurchaseContentError,
+  isContentPurchaseInProgress
+} from '@audius/common/store'
+import { useCallback, type ReactNode, useEffect } from 'react'
+
+import type {} from '@audius/common'
+
 import { useGetTrackById } from '@audius/common/api'
 import {
   useRemoteVar,

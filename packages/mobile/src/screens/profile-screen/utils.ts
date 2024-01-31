@@ -1,5 +1,6 @@
-import type { CommonState } from '@audius/common'
-import { badgeTiers } from '@audius/common'
+import { badgeTiers, CommonState } from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 

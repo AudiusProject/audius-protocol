@@ -1,4 +1,8 @@
-import { tippingSelectors, supportingUserListSelectors } from '@audius/common'
+import {
+  tippingSelectors,
+  supportingUserListSelectors
+} from '@audius/common/store'
+
 import type { User } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 

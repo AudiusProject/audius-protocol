@@ -1,7 +1,8 @@
 import {
-  isContentPurchaseInProgress,
-  purchaseContentSelectors
-} from '@audius/common'
+  purchaseContentSelectors,
+  isContentPurchaseInProgress
+} from '@audius/common/store'
+
 import { useUSDCBalance } from '@audius/common/hooks'
 import { useSelector } from 'react-redux'
 

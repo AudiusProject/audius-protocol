@@ -1,10 +1,12 @@
-import type { LibraryCategoryType } from '@audius/common'
 import {
-  LibraryCategory,
   savedPageActions,
   savedPageSelectors,
-  SavedPageTabs
-} from '@audius/common'
+  LibraryCategory,
+  SavedPageTabs,
+  LibraryCategoryType
+} from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { useNavigationState } from '@react-navigation/native'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

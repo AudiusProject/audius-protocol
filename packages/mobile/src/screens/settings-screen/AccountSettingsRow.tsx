@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

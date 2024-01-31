@@ -1,10 +1,11 @@
-import { useCallback } from 'react'
+import { notificationsSelectors, Achievement , EntityType, MilestoneNotification as MilestoneNotificationType
+} from '@audius/common'
+import { notificationsSelectors } from '@audius/common/store'
+     import { useCallback } from 'react'
 
 import type {
-  EntityType,
-  MilestoneNotification as MilestoneNotificationType
-} from '@audius/common'
-import { notificationsSelectors, Achievement } from '@audius/common'
+  
+  } from '@audius/common'
 import { useProxySelector } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'

@@ -1,10 +1,10 @@
-import { useLayoutEffect, useState } from 'react'
-
 import {
   accountSelectors,
-  reachabilitySelectors,
-  collectionPageSelectors
-} from '@audius/common'
+  collectionPageSelectors,
+  reachabilitySelectors
+} from '@audius/common/store'
+import { useLayoutEffect, useState } from 'react'
+
 import { useThrottledCallback } from '@audius/common/hooks'
 import { Variant } from '@audius/common/models'
 import type { SmartCollectionVariant, Collection } from '@audius/common/models'

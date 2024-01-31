@@ -1,6 +1,6 @@
+import { cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors } from '@audius/common'
 import {
   useRankedSupportingForUser,
   useProxySelector

@@ -1,12 +1,14 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
-
-import type { CommonState } from '@audius/common'
 import {
+  cacheUsersSelectors,
   usersSocialActions,
   relatedArtistsUISelectors,
   relatedArtistsUIActions,
-  cacheUsersSelectors
-} from '@audius/common'
+  CommonState
+} from '@audius/common/store'
+import { Fragment, useCallback, useEffect, useState } from 'react'
+
+import type {} from '@audius/common'
+
 import { FollowSource } from '@audius/common/models'
 import type { ID, User } from '@audius/common/models'
 import { isEmpty } from 'lodash'

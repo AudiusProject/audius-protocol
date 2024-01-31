@@ -1,4 +1,5 @@
-import { notificationsSelectors } from '@audius/common'
+import { notificationsSelectors } from '@audius/common/store'
+
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 

@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
-
 import {
   shareSoundToTiktokModalActions,
-  ShareSoundToTiktokModalStatus,
-  shareSoundToTiktokModalSelectors
-} from '@audius/common'
+  shareSoundToTiktokModalSelectors,
+  ShareSoundToTiktokModalStatus
+} from '@audius/common/store'
+import { useMemo } from 'react'
+
 import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'

@@ -1,6 +1,7 @@
-import type { ComponentType, ReactElement } from 'react'
+import { LineupBaseActions, CommonState  } from '@audius/common/store'
+     import type { ComponentType, ReactElement } from 'react'
 
-import type { LineupBaseActions, CommonState } from '@audius/common'
+import type {  } from '@audius/common'
 import type { Kind, ID, UID, Lineup as LineupData } from '@audius/common/models'
 import type { Maybe } from '@audius/common/utils'
 import type { SectionListProps } from 'react-native'

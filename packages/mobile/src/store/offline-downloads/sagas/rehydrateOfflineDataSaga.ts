@@ -1,4 +1,3 @@
-import { cacheActions } from '@audius/common'
 import type {
   CollectionMetadata,
   ID,
@@ -7,6 +6,7 @@ import type {
   UserMetadata
 } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
+import { cacheActions } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { call, select, put } from 'typed-redux-saga'
 

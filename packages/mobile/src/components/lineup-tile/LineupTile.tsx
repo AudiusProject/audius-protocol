@@ -1,6 +1,6 @@
+import { accountSelectors, gatedContentActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { accountSelectors, gatedContentActions } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { Genre, getDogEarType } from '@audius/common/utils'
 import moment from 'moment'

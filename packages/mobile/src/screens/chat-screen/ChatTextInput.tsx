@@ -1,6 +1,6 @@
+import { chatActions, playerSelectors } from '@audius/common/store'
 import { useCallback, useState } from 'react'
 
-import { chatActions, playerSelectors } from '@audius/common'
 import { Platform, Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

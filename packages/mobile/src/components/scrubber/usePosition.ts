@@ -1,6 +1,6 @@
+import { playerSelectors, playbackRateValueMap } from '@audius/common/store'
 import { useCallback, useEffect, useRef } from 'react'
 
-import { playerSelectors, playbackRateValueMap } from '@audius/common'
 import { formatSeconds } from '@audius/common/utils'
 import { useAppState } from '@react-native-community/hooks'
 import type { TextInput } from 'react-native'

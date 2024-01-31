@@ -1,7 +1,8 @@
+import { collectionsSocialActions, CommonState } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type { CommonState } from '@audius/common'
-import { collectionsSocialActions } from '@audius/common'
+import type {} from '@audius/common'
+
 import { FavoriteSource } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,6 +1,6 @@
+import { remixSettingsActions } from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
-import { remixSettingsActions } from '@audius/common'
 import { Theme } from '@audius/common/models'
 import { dayjs, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'

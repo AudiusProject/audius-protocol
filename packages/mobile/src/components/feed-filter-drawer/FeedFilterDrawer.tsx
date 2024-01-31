@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
-
 import {
   feedPageLineupActions as feedActions,
   feedPageActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback, useMemo } from 'react'
+
 import { Name, FeedFilter } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 

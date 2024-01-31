@@ -2,7 +2,7 @@ const glob = require('glob')
 const fs = require('fs')
 
 var getDirectories = function (callback) {
-  glob('./web/src/**/*', callback)
+  glob('./mobile/src/**/*', callback)
 }
 
 const DIRECTORY = 'store'

@@ -1,6 +1,6 @@
+import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { profilePageSelectors, profilePageActions } from '@audius/common'
 import type { User } from '@audius/common/models'
 import { useDispatch, useSelector } from 'react-redux'
 

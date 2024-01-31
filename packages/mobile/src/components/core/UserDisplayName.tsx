@@ -1,4 +1,5 @@
-import { cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common/store'
+
 import { useSelectTierInfo } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { useSelector } from 'react-redux'

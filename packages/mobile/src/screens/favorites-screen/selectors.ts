@@ -1,4 +1,5 @@
-import type { CommonState } from '@audius/common'
+import { CommonState  } from '@audius/common/store'
+     import type { } from '@audius/common'
 import type { Cacheable, Collection, ID, User } from '@audius/common/models'
 
 const matchesFilter = (

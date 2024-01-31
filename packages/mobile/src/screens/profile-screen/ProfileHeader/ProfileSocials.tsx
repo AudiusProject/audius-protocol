@@ -1,6 +1,6 @@
+import { cacheUsersActions } from '@audius/common/store'
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
-import { cacheUsersActions } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { View, Animated } from 'react-native'
 import { useDispatch } from 'react-redux'

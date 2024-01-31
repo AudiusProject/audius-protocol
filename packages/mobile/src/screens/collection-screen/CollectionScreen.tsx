@@ -1,19 +1,19 @@
-import { useCallback, useMemo } from 'react'
-
 import {
-  collectionPageActions,
   accountSelectors,
   collectionPageSelectors,
+  collectionPageActions,
   collectionsSocialActions,
+  mobileOverflowMenuUIActions,
+  publishPlaylistConfirmationModalUIActions,
+  shareModalUIActions,
   OverflowAction,
   OverflowSource,
-  publishPlaylistConfirmationModalUIActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
   repostsUserListActions,
-  favoritesUserListActions
-} from '@audius/common'
+  favoritesUserListActions,
+  RepostType
+} from '@audius/common/store'
+import { useCallback, useMemo } from 'react'
+
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ShareSource,

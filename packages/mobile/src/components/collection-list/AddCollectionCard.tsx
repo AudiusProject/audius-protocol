@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import { cacheCollectionsActions } from '@audius/common'
 import type { ID } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'

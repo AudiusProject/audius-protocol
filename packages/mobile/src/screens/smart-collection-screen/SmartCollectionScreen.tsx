@@ -1,13 +1,13 @@
-import { useCallback } from 'react'
-
 import {
   accountSelectors,
   smartCollectionPageSelectors,
-  collectionsSocialActions,
   smartCollectionPageActions,
+  collectionPageActions,
   playlistLibraryHelpers,
-  collectionPageActions
-} from '@audius/common'
+  collectionsSocialActions
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import { FavoriteSource } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'

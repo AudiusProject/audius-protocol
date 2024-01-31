@@ -1,6 +1,6 @@
+import { trendingPageSelectors, modalsActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { trendingPageSelectors, modalsActions } from '@audius/common'
 import { Genre } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 

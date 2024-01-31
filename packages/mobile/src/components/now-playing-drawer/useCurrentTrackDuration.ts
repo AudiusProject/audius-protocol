@@ -1,4 +1,5 @@
-import { playerSelectors } from '@audius/common'
+import { playerSelectors } from '@audius/common/store'
+
 import { getTrackPreviewDuration } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 

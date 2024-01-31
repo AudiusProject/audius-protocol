@@ -1,5 +1,9 @@
-import type { AssociatedWallet } from '@audius/common'
-import { tokenDashboardPageSelectors } from '@audius/common'
+import {
+  tokenDashboardPageSelectors,
+  AssociatedWallet
+} from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { Chain } from '@audius/common/models'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'

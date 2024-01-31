@@ -1,7 +1,13 @@
+import {
+  accountSelectors,
+  castSelectors,
+  castActions,
+  CastMethod
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type { CastMethod } from '@audius/common'
-import { accountSelectors, castSelectors, castActions } from '@audius/common'
+import type {} from '@audius/common'
+
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconVolume2 from 'app/assets/images/iconVolume2.svg'

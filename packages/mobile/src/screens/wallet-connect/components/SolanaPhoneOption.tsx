@@ -1,6 +1,9 @@
+import {
+  accountSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { accountSelectors, tokenDashboardPageActions } from '@audius/common'
 import { Theme } from '@audius/common/models'
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol'
 import { View } from 'react-native'

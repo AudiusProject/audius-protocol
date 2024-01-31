@@ -1,6 +1,9 @@
+import {
+  remixSettingsSelectors,
+  remixSettingsActions
+} from '@audius/common/store'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { remixSettingsActions, remixSettingsSelectors } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Status,

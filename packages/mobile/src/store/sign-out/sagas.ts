@@ -1,11 +1,11 @@
-import {
-  signOutActions,
-  accountActions,
-  feedPageLineupActions,
-  themeActions,
-  tokenDashboardPageActions
-} from '@audius/common'
 import { Name, Theme } from '@audius/common/models'
+import {
+  accountActions,
+  tokenDashboardPageActions,
+  feedPageLineupActions,
+  signOutActions,
+  themeActions
+} from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors'

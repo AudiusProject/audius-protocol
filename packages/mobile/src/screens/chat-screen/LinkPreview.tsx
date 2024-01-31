@@ -1,6 +1,6 @@
+import { useLeavingAudiusModal } from '@audius/common/store'
 import { useCallback, useEffect } from 'react'
 
-import { useLeavingAudiusModal } from '@audius/common'
 import { useLinkUnfurlMetadata } from '@audius/common/hooks'
 import { isAudiusUrl, isAllowedExternalLink } from '@audius/common/utils'
 import type { GestureResponderEvent, ViewStyle } from 'react-native'

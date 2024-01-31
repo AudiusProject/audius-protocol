@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { isContentFollowGated, isContentTipGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'

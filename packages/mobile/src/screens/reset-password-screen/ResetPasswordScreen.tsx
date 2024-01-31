@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import { useResetPassword } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'

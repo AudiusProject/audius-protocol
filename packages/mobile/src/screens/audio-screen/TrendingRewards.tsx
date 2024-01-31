@@ -1,5 +1,11 @@
-import { audioRewardsPageActions, modalsActions } from '@audius/common'
-import type { TrendingRewardsModalType, Modals } from '@audius/common'
+import {
+  audioRewardsPageActions,
+  modalsActions,
+  TrendingRewardsModalType,
+  Modals
+} from '@audius/common/store'
+
+import type {} from '@audius/common'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { View } from 'react-native'

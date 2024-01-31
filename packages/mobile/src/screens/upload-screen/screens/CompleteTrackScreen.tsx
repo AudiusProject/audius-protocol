@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { UploadTrack , ExtendedTrackMetadata } from '@audius/common/store'
+     import { useCallback } from 'react'
 
-import type { ExtendedTrackMetadata, UploadTrack } from '@audius/common'
+import type {  } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 
 import { useNavigation } from 'app/hooks/useNavigation'

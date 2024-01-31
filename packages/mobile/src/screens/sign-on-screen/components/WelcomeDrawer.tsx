@@ -1,6 +1,6 @@
+import { settingsPageActions } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { settingsPageActions } from '@audius/common'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { fillString } from '@audius/common/utils'
 import { css } from '@emotion/native'

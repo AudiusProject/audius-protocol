@@ -1,6 +1,6 @@
+import { cacheUsersSelectors } from '@audius/common/store'
 import { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import { cacheUsersSelectors } from '@audius/common'
 import type { SuggestedTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'

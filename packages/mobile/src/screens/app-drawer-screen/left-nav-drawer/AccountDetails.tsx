@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common/store'
 import { useCallback, useContext } from 'react'
 
-import { accountSelectors } from '@audius/common'
 import type { User } from '@audius/common/models'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'

@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-
 import {
-  HCaptchaStatus,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
-  modalsActions,
-  modalsSelectors
-} from '@audius/common'
+  HCaptchaStatus,
+  modalsSelectors,
+  modalsActions
+} from '@audius/common/store'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import ConfirmHcaptcha from '@hcaptcha/react-native-hcaptcha'
 import type { NativeSyntheticEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

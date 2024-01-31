@@ -1,13 +1,13 @@
+import {
+  profilePageActions,
+  profilePageSelectors,
+  reachabilitySelectors,
+  relatedArtistsUIActions,
+  shareModalUIActions,
+  modalsActions
+} from '@audius/common/store'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  profilePageSelectors,
-  profilePageActions,
-  reachabilitySelectors,
-  shareModalUIActions,
-  modalsActions,
-  relatedArtistsUIActions
-} from '@audius/common'
 import { ShareSource, Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { encodeUrlName } from '@audius/common/utils'

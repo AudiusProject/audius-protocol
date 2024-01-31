@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useState } from 'react'
-
 import {
   trendingPageLineupActions,
-  trendingPageSelectors,
-  trendingPageActions
-} from '@audius/common'
+  trendingPageActions,
+  trendingPageSelectors
+} from '@audius/common/store'
+import { useCallback, useMemo, useState } from 'react'
+
 import {
   Genre,
   ELECTRONIC_PREFIX,

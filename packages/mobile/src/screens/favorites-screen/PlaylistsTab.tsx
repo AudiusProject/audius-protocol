@@ -1,12 +1,14 @@
+import {
+  savedPageSelectors,
+  LibraryCategory,
+  SavedPageTabs,
+  reachabilitySelectors,
+  CommonState
+} from '@audius/common/store'
 import { useCallback, useState } from 'react'
 
-import type { CommonState } from '@audius/common'
-import {
-  SavedPageTabs,
-  LibraryCategory,
-  reachabilitySelectors,
-  savedPageSelectors
-} from '@audius/common'
+import type {} from '@audius/common'
+
 import {
   CreatePlaylistSource,
   statusIsNotFinalized

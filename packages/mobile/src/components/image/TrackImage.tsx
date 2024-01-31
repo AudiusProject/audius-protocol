@@ -1,4 +1,5 @@
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
+
 import type { SquareSizes, ID, SearchTrack, Track } from '@audius/common/models'
 import type { Nullable, Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'

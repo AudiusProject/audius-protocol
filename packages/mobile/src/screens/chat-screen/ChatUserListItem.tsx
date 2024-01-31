@@ -1,13 +1,13 @@
-import { useCallback } from 'react'
-
 import {
-  chatActions,
   accountSelectors,
+  cacheUsersSelectors,
+  chatActions,
   chatSelectors,
   ChatPermissionAction,
-  cacheUsersSelectors,
   useInboxUnavailableModal
-} from '@audius/common'
+} from '@audius/common/store'
+import { useCallback } from 'react'
+
 import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'

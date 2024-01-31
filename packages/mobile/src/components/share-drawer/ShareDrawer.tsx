@@ -1,13 +1,13 @@
-import React, { useCallback, useRef } from 'react'
-
 import {
   accountSelectors,
   collectionsSocialActions,
-  shareModalUISelectors,
-  shareSoundToTiktokModalActions,
   tracksSocialActions,
-  usersSocialActions
-} from '@audius/common'
+  usersSocialActions,
+  shareModalUISelectors,
+  shareSoundToTiktokModalActions
+} from '@audius/common/store'
+import React, { useCallback, useRef } from 'react'
+
 import { Name, ShareSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import Clipboard from '@react-native-clipboard/clipboard'

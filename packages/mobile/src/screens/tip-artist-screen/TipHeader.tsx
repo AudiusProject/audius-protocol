@@ -1,4 +1,5 @@
-import { tippingSelectors } from '@audius/common'
+import { tippingSelectors } from '@audius/common/store'
+
 import { formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'

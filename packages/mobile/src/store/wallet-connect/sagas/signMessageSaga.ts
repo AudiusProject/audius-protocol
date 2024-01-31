@@ -1,5 +1,7 @@
-import type { CommonState } from '@audius/common'
-import { tokenDashboardPageSelectors, getContext } from '@audius/common'
+import type { CommonState } from '@audius/common/store'
+import { tokenDashboardPageSelectors, getContext } from '@audius/common/store'
+import type {} from '@audius/common'
+
 import { Name } from '@audius/common/models'
 import { getErrorMessage, waitForValue } from '@audius/common/utils'
 import bs58 from 'bs58'

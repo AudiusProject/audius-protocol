@@ -1,6 +1,6 @@
+import { playerSelectors } from '@audius/common/store'
 import { useCallback, useEffect, useRef } from 'react'
 
-import { playerSelectors } from '@audius/common'
 import { Animated, Dimensions, Easing } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import TrackPlayer from 'react-native-track-player'

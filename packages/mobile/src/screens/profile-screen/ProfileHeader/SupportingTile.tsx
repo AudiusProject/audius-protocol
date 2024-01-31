@@ -1,6 +1,6 @@
+import { cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors } from '@audius/common'
 import type { Supporting } from '@audius/common/models'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import type { StyleProp, ViewStyle } from 'react-native'

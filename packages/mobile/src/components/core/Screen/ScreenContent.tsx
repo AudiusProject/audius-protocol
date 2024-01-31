@@ -1,6 +1,6 @@
+import { reachabilitySelectors } from '@audius/common/store'
 import type { ReactNode } from 'react'
 
-import { reachabilitySelectors } from '@audius/common'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'

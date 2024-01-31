@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
+import { Modals  } from '@audius/common/store'
+     import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { } from '@audius/common'
 import type { TextStyle, ViewStyle } from 'react-native'
 import { TouchableHighlight, View } from 'react-native'
 import type { SetOptional } from 'type-fest'

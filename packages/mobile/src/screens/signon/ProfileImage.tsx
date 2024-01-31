@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { Image as ImageType  } from '@audius/common/store'
+     import { useEffect, useRef, useState } from 'react'
 
-import type { Image as ImageType } from '@audius/common'
+import type { } from '@audius/common'
 import {
   Animated,
   TouchableOpacity,

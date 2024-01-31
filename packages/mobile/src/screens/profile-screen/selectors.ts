@@ -1,7 +1,12 @@
+import {
+  accountSelectors,
+  profilePageSelectors,
+  CommonState
+} from '@audius/common/store'
 import { useContext } from 'react'
 
-import type { CommonState } from '@audius/common'
-import { accountSelectors, profilePageSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import type { User } from '@audius/common/models'

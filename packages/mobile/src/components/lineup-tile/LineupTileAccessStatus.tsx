@@ -1,10 +1,10 @@
+import {
+  usePremiumContentPurchaseModal,
+  gatedContentActions,
+  gatedContentSelectors
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import {
-  gatedContentActions,
-  gatedContentSelectors,
-  usePremiumContentPurchaseModal
-} from '@audius/common'
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
 import { formatPrice } from '@audius/common/utils'

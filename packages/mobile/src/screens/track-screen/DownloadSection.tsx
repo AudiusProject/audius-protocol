@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react'
-
 import {
   cacheTracksSelectors,
-  usePremiumContentPurchaseModal
-} from '@audius/common'
-import type { CommonState } from '@audius/common'
+  usePremiumContentPurchaseModal,
+  CommonState
+} from '@audius/common/store'
+import { useCallback, useState } from 'react'
+
+import type {} from '@audius/common'
 import {
   useCurrentStems,
   useDownloadableContentAccess

@@ -1,4 +1,5 @@
-import { trendingPageSelectors } from '@audius/common'
+import { trendingPageSelectors } from '@audius/common/store'
+
 import { TimeRange } from '@audius/common/models'
 import { useSelector } from 'react-redux'
 

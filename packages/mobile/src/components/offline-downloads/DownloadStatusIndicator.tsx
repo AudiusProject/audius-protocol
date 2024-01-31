@@ -1,4 +1,5 @@
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
+
 import type { Nullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'

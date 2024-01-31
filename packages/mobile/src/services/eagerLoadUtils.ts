@@ -4,8 +4,6 @@ import { getEagerDiscprov, makeEagerRequest } from '@audius/common/services'
  * protocol before libs has initialized.
  */
 
-import {} from '@audius/common'
-
 import { env } from 'app/env'
 
 import { audiusLibs, waitForLibsInit } from './libs'

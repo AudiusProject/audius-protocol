@@ -1,6 +1,6 @@
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common'
 import type { ID, Track, User } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'

@@ -1,6 +1,6 @@
+import { useInboxUnavailableModal } from '@audius/common/store'
 import { useCallback } from 'react'
 
-import { useInboxUnavailableModal } from '@audius/common'
 import type { ID } from '@audius/common/models'
 
 import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'

@@ -1,7 +1,7 @@
+import { themeActions, themeSelectors } from '@audius/common/store'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
-import { themeActions, themeSelectors } from '@audius/common'
 import { Theme, SystemAppearance } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'

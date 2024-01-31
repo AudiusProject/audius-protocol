@@ -1,7 +1,12 @@
+import {
+  stripeModalUIActions,
+  stripeModalUISelectors,
+  StripeSessionData
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import type { StripeSessionData } from '@audius/common'
-import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
+import type {} from '@audius/common'
+
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'

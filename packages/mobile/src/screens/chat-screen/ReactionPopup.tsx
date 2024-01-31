@@ -1,7 +1,12 @@
+import {
+  accountSelectors,
+  chatActions,
+  ReactionTypes
+} from '@audius/common/store'
 import { useCallback, useRef } from 'react'
 
-import type { ReactionTypes } from '@audius/common'
-import { chatActions, accountSelectors } from '@audius/common'
+import type {} from '@audius/common'
+
 import type { ChatMessageWithExtras } from '@audius/common/models'
 import { encodeHashId } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'

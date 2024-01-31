@@ -1,10 +1,10 @@
+import {
+  lineupSelectors,
+  premiumTracksPageLineupSelectors,
+  premiumTracksPageLineupActions
+} from '@audius/common/store'
 import { useCallback } from 'react'
 
-import {
-  premiumTracksPageLineupActions,
-  premiumTracksPageLineupSelectors,
-  lineupSelectors
-} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
