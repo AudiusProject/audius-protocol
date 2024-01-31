@@ -6,12 +6,11 @@ import {
   gatedContentSelectors,
   getContext,
   tracksSocialActions as socialActions,
-  QueryParams,
   confirmerActions,
-  confirmTransaction,
-  FeatureFlags
+  confirmTransaction
 } from '@audius/common'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
   formatShareText,
   encodeHashId,

@@ -16,8 +16,7 @@ import {
   queueSelectors,
   playbackRateValueMap,
   gatedContentSelectors,
-  usePremiumContentPurchaseModal,
-  FeatureFlags
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -31,6 +30,7 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'

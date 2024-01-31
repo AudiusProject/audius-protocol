@@ -5,9 +5,7 @@ import {
   WithdrawUSDCModalPages,
   withdrawUSDCActions,
   withdrawUSDCSelectors,
-  WithdrawMethod,
-  FeatureFlags,
-  IntKeys
+  WithdrawMethod
 } from '@audius/common'
 import {
   useFeatureFlag,
@@ -20,6 +18,7 @@ import {
   BNUSDC,
   SolanaWalletAddress
 } from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'

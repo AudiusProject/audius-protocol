@@ -1,5 +1,5 @@
-import { IntKeys } from '@audius/common'
 import { Name, ServiceMonitorType, MonitorPayload } from '@audius/common/models'
+import { IntKeys } from '@audius/common/services'
 
 import { track } from 'services/analytics'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'

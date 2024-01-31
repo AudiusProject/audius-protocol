@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
-  StringKeys,
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
@@ -13,6 +12,7 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
   fillString,
   formatNumberCommas,

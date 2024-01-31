@@ -1,10 +1,10 @@
 import {
   accountSelectors,
   tokenDashboardPageActions,
-  tokenDashboardPageSelectors,
-  PhantomProvider
+  tokenDashboardPageSelectors
 } from '@audius/common'
 import { Chain } from '@audius/common/models'
+import { PhantomProvider } from '@audius/common/services'
 import { call, put, select } from 'typed-redux-saga'
 
 import { WalletConnection } from './types'

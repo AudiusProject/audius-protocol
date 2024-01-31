@@ -1,4 +1,4 @@
-import { TrackDownload as TrackDownloadBase } from '@audius/common'
+import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 

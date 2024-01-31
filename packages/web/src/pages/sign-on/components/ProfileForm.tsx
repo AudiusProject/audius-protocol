@@ -1,10 +1,10 @@
 import { KeyboardEventHandler, useState } from 'react'
 
+import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common'
 import {
-  imageProfilePicEmpty as profilePicEmpty,
-  MAX_DISPLAY_NAME_LENGTH,
-  MAX_HANDLE_LENGTH
-} from '@audius/common'
+  MAX_HANDLE_LENGTH,
+  MAX_DISPLAY_NAME_LENGTH
+} from '@audius/common/services'
 import { getErrorMessage } from '@audius/common/utils'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'

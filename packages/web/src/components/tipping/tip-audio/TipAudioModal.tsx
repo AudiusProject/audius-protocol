@@ -5,9 +5,9 @@ import {
   tippingActions,
   TippingSendStatus,
   walletActions,
-  StringKeys,
   accountSelectors
 } from '@audius/common'
+import { StringKeys } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'

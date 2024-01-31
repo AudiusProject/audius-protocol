@@ -1,9 +1,9 @@
 import { useCallback, useRef } from 'react'
 
-import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common'
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { finishProfileSchema } from '@audius/common/schemas'
+import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

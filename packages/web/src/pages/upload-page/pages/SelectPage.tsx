@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import { UploadType, FeatureFlags } from '@audius/common'
+import { UploadType } from '@audius/common'
 import { newCollectionMetadata } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
 import cn from 'classnames'

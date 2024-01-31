@@ -1,9 +1,6 @@
-import {
-  BooleanKeys,
-  getContext,
-  tokenDashboardPageActions
-} from '@audius/common'
+import { getContext, tokenDashboardPageActions } from '@audius/common'
 import { Chain } from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put } from 'typed-redux-saga'
 

@@ -5,11 +5,13 @@ import {
   UserListSagaFactory,
   supportingUserListActions,
   supportingUserListSelectors,
-  SUPPORTING_USER_LIST_TAG,
-  responseAdapter as adapter,
-  SupportingResponse
+  SUPPORTING_USER_LIST_TAG
 } from '@audius/common'
 import { ID, UserMetadata, User } from '@audius/common/models'
+import {
+  responseAdapter as adapter,
+  SupportingResponse
+} from '@audius/common/services'
 import { decodeHashId, stringWeiToBN } from '@audius/common/utils'
 import { put, select } from 'typed-redux-saga'
 

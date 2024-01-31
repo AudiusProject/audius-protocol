@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { FeatureFlags, accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import {
   OverrideSetting,
   FEATURE_FLAG_OVERRIDE_KEY
 } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Modal,
   ModalContent,

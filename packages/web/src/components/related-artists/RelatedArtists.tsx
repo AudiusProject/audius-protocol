@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
-import { profilePageSelectors, FeatureFlags } from '@audius/common'
+import { profilePageSelectors } from '@audius/common'
 import { useGetRelatedArtists } from '@audius/common/api'
 import { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
 import { IconUserGroup } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'

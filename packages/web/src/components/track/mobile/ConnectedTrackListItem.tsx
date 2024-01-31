@@ -6,10 +6,10 @@ import {
   tracksSocialActions,
   OverflowAction,
   OverflowSource,
-  mobileOverflowMenuUIActions,
-  FeatureFlags
+  mobileOverflowMenuUIActions
 } from '@audius/common'
 import { RepostSource, FavoriteSource, ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

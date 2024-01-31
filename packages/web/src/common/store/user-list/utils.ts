@@ -1,11 +1,10 @@
 import {
   accountSelectors,
   getContext,
-  AudiusAPIClient,
-  AudiusBackend,
   processAndCacheUsers
 } from '@audius/common'
 import { ID, UserMetadata, User } from '@audius/common/models'
+import { AudiusAPIClient, AudiusBackend } from '@audius/common/services'
 import { call, select } from 'typed-redux-saga'
 
 import { AppState } from 'store/types'

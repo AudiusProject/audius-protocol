@@ -3,10 +3,10 @@ import {
   UserListSagaFactory,
   mutualsUserListActions,
   mutualsUserListSelectors,
-  MUTUALS_USER_LIST_TAG,
-  AudiusBackend
+  MUTUALS_USER_LIST_TAG
 } from '@audius/common'
 import { ID, User } from '@audius/common/models'
+import { AudiusBackend } from '@audius/common/services'
 import { put, select } from 'typed-redux-saga'
 
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'

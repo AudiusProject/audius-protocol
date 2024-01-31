@@ -8,7 +8,6 @@ import {
   playbackPositionSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
-  FeatureFlags,
   CommonState,
   useEditTrackModal
 } from '@audius/common'
@@ -19,6 +18,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Genre } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

@@ -1,10 +1,8 @@
 import {
-  APIActivityV2,
   LibraryCategoryType,
   accountSelectors,
   savedPageActions as actions,
   getContext,
-  responseAdapter,
   savedPageSelectors,
   savedPageTracksLineupActions as tracksActions
 } from '@audius/common'
@@ -14,6 +12,7 @@ import {
   UserTrackMetadata,
   User
 } from '@audius/common/models'
+import { responseAdapter, APIActivityV2 } from '@audius/common/services'
 import {
   decodeHashId,
   encodeHashId,

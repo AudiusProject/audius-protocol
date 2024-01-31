@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import { chatActions, FeatureFlags, chatSelectors } from '@audius/common'
+import { chatActions, chatSelectors } from '@audius/common'
 import { useCanSendMessage } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

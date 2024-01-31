@@ -1,5 +1,4 @@
 import {
-  IntKeys,
   getContext,
   walletActions,
   TOKEN_LISTING_MAP,
@@ -13,15 +12,18 @@ import {
   TransactionMethod,
   TransactionDetails,
   walletSelectors,
-  createUserBankIfNeeded,
   modalsActions,
   AmountObject,
-  FeatureFlags,
-  LocalStorage,
-  solanaSelectors,
-  deriveUserBankPubkey
+  solanaSelectors
 } from '@audius/common'
 import { Name, ErrorLevel, BNWei } from '@audius/common/models'
+import {
+  IntKeys,
+  FeatureFlags,
+  deriveUserBankPubkey,
+  createUserBankIfNeeded,
+  LocalStorage
+} from '@audius/common/services'
 import {
   dayjs,
   isNullOrUndefined,

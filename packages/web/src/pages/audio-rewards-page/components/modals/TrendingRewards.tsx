@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  StringKeys,
   audioRewardsPageActions,
   TrendingRewardsModalType,
   audioRewardsPageSelectors
 } from '@audius/common'
 import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

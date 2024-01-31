@@ -1,8 +1,8 @@
-import { FeatureFlags } from '@audius/common'
 import {
   OverrideSetting,
   FEATURE_FLAG_OVERRIDE_KEY
 } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 
 import { remoteConfigInstance } from './remote-config-instance'
 

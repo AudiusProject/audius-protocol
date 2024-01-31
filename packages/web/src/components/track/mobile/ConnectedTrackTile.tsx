@@ -13,8 +13,7 @@ import {
   RepostType,
   repostsUserListActions,
   favoritesUserListActions,
-  playerSelectors,
-  FeatureFlags
+  playerSelectors
 } from '@audius/common'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -24,6 +23,7 @@ import {
   FavoriteType,
   ID
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Genre } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

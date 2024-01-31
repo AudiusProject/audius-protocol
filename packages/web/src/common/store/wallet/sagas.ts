@@ -1,5 +1,4 @@
 import {
-  FeatureFlags,
   accountSelectors,
   accountActions,
   tokenDashboardPageActions,
@@ -7,7 +6,6 @@ import {
   InputSendDataAction,
   walletActions,
   getContext,
-  createUserBankIfNeeded,
   solanaSelectors
 } from '@audius/common'
 import {
@@ -17,6 +15,7 @@ import {
   BNWei,
   SolanaWalletAddress
 } from '@audius/common/models'
+import { FeatureFlags, createUserBankIfNeeded } from '@audius/common/services'
 import {
   getErrorMessage,
   isNullOrUndefined,

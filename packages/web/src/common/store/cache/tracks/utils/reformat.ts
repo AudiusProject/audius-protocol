@@ -1,5 +1,5 @@
-import { AudiusBackend } from '@audius/common'
 import { TrackMetadata, Track } from '@audius/common/models'
+import { AudiusBackend } from '@audius/common/services'
 import { omit } from 'lodash'
 
 /**

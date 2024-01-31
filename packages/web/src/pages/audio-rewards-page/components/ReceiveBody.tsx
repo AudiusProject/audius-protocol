@@ -1,6 +1,6 @@
-import { FeatureFlags } from '@audius/common'
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Button, ButtonType, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 

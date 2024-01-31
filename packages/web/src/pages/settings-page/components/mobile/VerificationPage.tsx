@@ -1,11 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  BooleanKeys,
-  InstagramProfile,
-  TwitterProfile,
-  TikTokProfile
-} from '@audius/common'
+import { InstagramProfile, TwitterProfile, TikTokProfile } from '@audius/common'
 import {
   Name,
   SquareSizes,
@@ -13,6 +8,7 @@ import {
   ID,
   ProfilePictureSizes
 } from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
 import {
   Button,
   ButtonSize,

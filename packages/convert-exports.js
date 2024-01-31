@@ -5,7 +5,7 @@ var getDirectories = function (callback) {
   glob('./web/src/**/*', callback)
 }
 
-const DIRECTORY = 'schemas'
+const DIRECTORY = 'services'
 const EXPORTS = [
   'IntKeys',
   'StringKeys',

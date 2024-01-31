@@ -1,10 +1,9 @@
 import {
   accountActions,
   getContext,
-  IntKeys,
-  playlistUpdatesActions,
-  remoteConfigIntDefaults
+  playlistUpdatesActions
 } from '@audius/common'
+import { IntKeys, remoteConfigIntDefaults } from '@audius/common/services'
 import { call, fork, take } from 'typed-redux-saga'
 
 import {

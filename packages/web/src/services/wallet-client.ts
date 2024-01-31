@@ -1,4 +1,4 @@
-import { WalletClient } from '@audius/common'
+import { WalletClient } from '@audius/common/services'
 
 import { apiClient } from './audius-api-client'
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'

@@ -1,7 +1,8 @@
 import { memo } from 'react'
 
-import { OverflowAction, FeatureFlags } from '@audius/common'
+import { OverflowAction } from '@audius/common'
 import { Variant, SquareSizes } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   formatCount,
   formatSecondsAsText,
