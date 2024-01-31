@@ -24,12 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import {
-  CompletionCheck,
-  IconArrowRight,
-  IconCheck,
-  IconMultiselectRemove
-} from '@audius/harmony-native'
+import { CompletionCheck, IconArrowRight } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
@@ -200,21 +195,6 @@ const Checkbox = ({
       useNativeDriver: true
     }).start(() => {})
   }
-
-  const animatedStyles = [
-    styles.iconCheck,
-    {
-      opacity,
-      transform: [
-        {
-          scale: opacity.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1]
-          })
-        }
-      ]
-    }
-  ]
 
   if (met) {
     return (

@@ -454,11 +454,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove
-            style={styles.errorIcon}
-            width={12}
-            height={12}
-          />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -467,11 +463,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove
-            style={styles.errorIcon}
-            width={12}
-            height={12}
-          />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -481,11 +473,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove
-            style={styles.errorIcon}
-            width={12}
-            height={12}
-          />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -495,11 +483,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove
-            style={styles.errorIcon}
-            width={12}
-            height={12}
-          />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
@@ -508,8 +492,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
       <View style={styles.errorContainer}>
         <IconMultiselectRemove
           style={[styles.errorIcon, { opacity: 0 }]}
-          width={12}
-          height={12}
+          size='m'
         />
         <Text />
       </View>
