@@ -60,7 +60,11 @@ export const StatusMessage = ({
 
   return (
     <View style={[styles.root, style, stylesProp.root]}>
-      <Icon style={[styles.iconPlaceholder, styles.icon]} />
+      <Icon
+        style={[styles.iconPlaceholder, styles.icon]}
+        height={16}
+        width={16}
+      />
       <Text
         style={[
           styles.label,
