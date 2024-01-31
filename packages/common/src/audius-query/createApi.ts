@@ -27,6 +27,7 @@ import { CommonState } from '~/store/reducers'
 import { getErrorMessage } from '~/utils/error'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
+import { Track } from '../models/Track'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 
@@ -53,7 +54,6 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
-import { Track } from '../models/Track'
 
 type Entity = Collection | Track | User
 

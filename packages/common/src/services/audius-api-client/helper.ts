@@ -1,4 +1,8 @@
-import { UserCollectionMetadata, UserTrackMetadata, UserMetadata } from '~/models'
+import {
+  UserCollectionMetadata,
+  UserTrackMetadata,
+  UserMetadata
+} from '~/models'
 import { removeNullable } from '~/utils'
 
 import * as adapter from './ResponseAdapter'

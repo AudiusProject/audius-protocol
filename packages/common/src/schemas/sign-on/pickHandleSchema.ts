@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
+import { signUpFetch } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query'
 import { MAX_HANDLE_LENGTH } from '~/services/oauth'
-import { signUpFetch } from '~/api'
 import { restrictedHandles as commonRestrictedHandles } from '~/utils/restrictedHandles'
 
 export const pickHandleErrorMessages = {

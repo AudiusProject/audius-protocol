@@ -4,9 +4,9 @@ import type { AudiusSdk } from '@audius/sdk'
 import { ChatPermission } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { Status } from '~/models/Status'
-import { useAppContext } from '~/context/appContext'
 import { accountSelectors } from '~/store/account'
 import { chatActions, chatSelectors } from '~/store/pages'
 

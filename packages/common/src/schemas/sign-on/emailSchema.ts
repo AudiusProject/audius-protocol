@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { AudiusQueryContextType } from '~/audius-query'
 import { signUpFetch } from '~/api'
+import { AudiusQueryContextType } from '~/audius-query'
 import { EMAIL_REGEX } from '~/utils/email'
 
 export const emailSchemaMessages = {
