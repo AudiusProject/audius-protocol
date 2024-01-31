@@ -1,11 +1,8 @@
 import { useCallback, useContext, useState } from 'react'
 
-import {
-  accountSelectors,
-  useAllPaginatedQuery,
-  useUSDCPurchaseDetailsModal
-} from '@audius/common'
+import { accountSelectors, useUSDCPurchaseDetailsModal } from '@audius/common'
 import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import {
   Status,
   statusIsNotFinalized,

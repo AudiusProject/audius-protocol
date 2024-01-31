@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext } from '@audius/common/audius-query'
 import {
   pickHandlePageMessages,
   socialMediaMessages

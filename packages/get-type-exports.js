@@ -2,7 +2,7 @@ const glob = require('glob')
 const fs = require('fs')
 
 var getDirectories = function (callback) {
-  glob('./common/dist/services/**/*', callback)
+  glob('./common/dist/audius-client/**/*', callback)
 }
 
 getDirectories(async function (err, res) {

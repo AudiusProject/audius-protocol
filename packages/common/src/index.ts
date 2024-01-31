@@ -1,6 +1,5 @@
-import * as e from './services'
+import * as e from './audius-query'
 console.log('exports', Object.keys(e))
 
-export * from './audius-query'
 export * from './store'
 export * from './assets'

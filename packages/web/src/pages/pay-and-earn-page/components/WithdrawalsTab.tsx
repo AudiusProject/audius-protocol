@@ -3,7 +3,6 @@ import { useCallback, useContext, useState } from 'react'
 import {
   WithdrawUSDCModalPages,
   accountSelectors,
-  useAllPaginatedQuery,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal
 } from '@audius/common'
@@ -12,6 +11,7 @@ import {
   useGetUSDCTransactionsCount,
   Id
 } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
 import {
   Name,

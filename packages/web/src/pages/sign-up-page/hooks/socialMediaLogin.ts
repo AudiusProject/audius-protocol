@@ -1,11 +1,7 @@
 import { useContext } from 'react'
 
-import {
-  AudiusQueryContext,
-  InstagramProfile,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
+import { InstagramProfile, TikTokProfile, TwitterProfile } from '@audius/common'
+import { AudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import {
