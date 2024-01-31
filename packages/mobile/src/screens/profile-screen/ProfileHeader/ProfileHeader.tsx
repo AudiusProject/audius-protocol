@@ -1,20 +1,22 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
 import { accountSelectors, useSelectTierInfo } from '@audius/common'
+import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { Divider } from 'app/components/core'
+import { Box, useTheme } from '@audius/harmony-native'
+import { Divider, ProfilePicture } from 'app/components/core'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'
 import { ProfileCoverPhoto } from '../ProfileCoverPhoto'
 import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
-import { ProfilePicture } from '../ProfilePicture'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
@@ -111,10 +113,22 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
   }, [isExpanded, setIsExpanded])
 
+  const { spacing } = useTheme()
+
   return (
     <>
       <ProfileCoverPhoto scrollY={scrollY} />
-      <ProfilePicture />
+      <Box
+        style={css({
+          position: 'absolute',
+          top: spacing.unit13,
+          left: spacing.unit3,
+          zIndex: zIndex.PROFILE_PAGE_PROFILE_PICTURE
+        })}
+        pointerEvents='none'
+      >
+        <ProfilePicture userId={userId} size='xl' />
+      </Box>
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
         <OnlineOnly>
