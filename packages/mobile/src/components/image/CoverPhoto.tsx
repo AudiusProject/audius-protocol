@@ -4,12 +4,12 @@ import { BlurView } from '@react-native-community/blur'
 import { Animated, StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import type { FastImageProps } from '@audius/harmony-native'
+import { FastImage } from '@audius/harmony-native'
 import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'
 import type { ContentNodeImageSource } from 'app/hooks/useContentNodeImage'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 
-import type { FastImageProps } from './FastImage'
-import { FastImage } from './FastImage'
 import { useProfilePicture } from './UserImage'
 
 const { getUser } = cacheUsersSelectors

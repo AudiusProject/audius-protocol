@@ -9,15 +9,14 @@ import type {
 import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
+import { FastImage } from '@audius/harmony-native'
+import type { FastImageProps } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { getLocalCollectionCoverArtPath } from 'app/services/offline-downloader'
 import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { useThemeColors } from 'app/utils/theme'
-
-import type { FastImageProps } from './FastImage'
-import { FastImage } from './FastImage'
 
 const { getIsReachable } = reachabilitySelectors
 

@@ -9,15 +9,14 @@ import type {
 import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
+import type { FastImageProps } from '@audius/harmony-native'
+import { FastImage } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { getLocalTrackCoverArtPath } from 'app/services/offline-downloader'
 import { getTrackDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { useThemeColors } from 'app/utils/theme'
-
-import type { FastImageProps } from './FastImage'
-import { FastImage } from './FastImage'
 
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'

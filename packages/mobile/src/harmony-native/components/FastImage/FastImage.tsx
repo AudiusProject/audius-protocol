@@ -12,6 +12,9 @@ export type FastImageProps = Omit<RNFastImageProps, 'source'> & {
 
 export type ImageProps = Omit<FastImageProps, 'source'>
 
+/**
+ * Utility component that wraps react-native-fast-image
+ */
 export const FastImage = (props: FastImageProps) => {
   const { source, priority, ...other } = props
 

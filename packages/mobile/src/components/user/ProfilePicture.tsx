@@ -32,7 +32,7 @@ export type ProfilePictureProps = Partial<FastImageProps> &
 
 /**
  * @deprecated
- * Use image/ProfilePicture instead
+ * Use components/core/ProfilePicture instead
  */
 export const ProfilePicture = (props: ProfilePictureProps) => {
   const { style: styleProp, ...other } = props
