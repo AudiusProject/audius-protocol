@@ -15,6 +15,8 @@ import {
   stemCategoryFriendlyNames,
   useUSDCPurchaseConfig
 } from '@audius/common'
+import { IconCart } from '@audius/stems'
+import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -30,30 +32,26 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useTrackField } from '../hooks'
 
 import {
-  DOWNLOAD_CONDITIONS,
-  IS_DOWNLOAD_GATED,
-  getCombinedDefaultGatedConditionValues,
-  STREAM_CONDITIONS
-} from './AccessAndSaleField'
-import {
-  ALLOW_DOWNLOAD,
-  DOWNLOAD_AVAILABILITY_TYPE,
-  FOLLOWER_GATED,
-  IS_DOWNLOADABLE,
-  IS_ORIGINAL_AVAILABLE,
-  STEMS,
-  StemsAndDownloadsFormValues,
   StemsAndDownloadsMenuFields,
   stemsAndDownloadsSchema
 } from './StemsAndDownloadsMenuFields'
-import { DOWNLOAD_PRICE_HUMANIZED } from './download-availability/DownloadPriceField'
+import { getCombinedDefaultGatedConditionValues } from './helpers'
+import {
+  IS_DOWNLOAD_GATED,
+  DOWNLOAD_CONDITIONS,
+  STREAM_CONDITIONS,
+  CID,
+  DOWNLOAD,
+  DOWNLOAD_AVAILABILITY_TYPE,
+  DOWNLOAD_PRICE_HUMANIZED,
+  DOWNLOAD_REQUIRES_FOLLOW,
+  IS_DOWNLOADABLE,
+  IS_ORIGINAL_AVAILABLE,
+  STEMS,
+  StemsAndDownloadsFormValues
+} from './types'
 
 const { getUserId } = accountSelectors
-
-const ALLOW_DOWNLOAD_BASE = 'is_downloadable'
-const FOLLOWER_GATED_BASE = 'requires_follow'
-const CID_BASE = 'cid'
-const CID = 'download.cid'
 
 const messages = {
   title: 'Stems & Downloads',
@@ -63,21 +61,23 @@ const messages = {
     allowDownload: 'Full Track Available',
     allowOriginal: 'Lossless Files Available',
     followerGated: 'Followers Only'
-  }
+  },
+  price: (price: number) =>
+    price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 }
 
-export const StemsAndDownloadsField = () => {
+type StemsAndDownloadsFieldProps = {
+  closeMenuCallback?: (data?: any) => void
+}
+
+export const StemsAndDownloadsField = ({
+  closeMenuCallback
+}: StemsAndDownloadsFieldProps) => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
-  const [{ value: allowDownloadValue }, , { setValue: setAllowDownloadValue }] =
-    useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
-  const [{ value: followerGatedValue }, , { setValue: setFollowerGatedValue }] =
-    useTrackField<Download[typeof FOLLOWER_GATED_BASE]>(FOLLOWER_GATED)
-  const [{ value: cid }, , { setValue: setCidValue }] =
-    useTrackField<Download[typeof CID_BASE]>(CID)
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
     useTrackField<boolean>(IS_DOWNLOADABLE)
   const [
@@ -85,6 +85,14 @@ export const StemsAndDownloadsField = () => {
     ,
     { setValue: setisOriginalAvailable }
   ] = useTrackField<boolean>(IS_ORIGINAL_AVAILABLE)
+  const [, , { setValue: setDownloadRequiresFollow }] = useTrackField<boolean>(
+    DOWNLOAD_REQUIRES_FOLLOW
+  )
+  const [{ value: stemsValue }, , { setValue: setStemsValue }] =
+    useTrackField<StemUpload[]>(STEMS)
+  const [, , { setValue: setDownloadValue }] = useTrackField<Download>(DOWNLOAD)
+  const [{ value: cid }, , { setValue: setCidValue }] =
+    useTrackField<Nullable<string>>(CID)
   const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
     useTrackField<boolean>(IS_DOWNLOAD_GATED)
   const [
@@ -94,8 +102,6 @@ export const StemsAndDownloadsField = () => {
   ] = useTrackField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
-  const [{ value: stemsValue }, , { setValue: setStemsValue }] =
-    useTrackField<StemUpload[]>(STEMS)
 
   /**
    * Stream conditions from inside the modal.
@@ -113,12 +119,15 @@ export const StemsAndDownloadsField = () => {
 
   const initialValues = useMemo(() => {
     const initialValues = {}
-    set(initialValues, ALLOW_DOWNLOAD, allowDownloadValue ?? false)
-    set(initialValues, FOLLOWER_GATED, followerGatedValue ?? false)
-    set(initialValues, CID, cid ?? null)
-    set(initialValues, STEMS, stemsValue ?? [])
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, IS_ORIGINAL_AVAILABLE, isOriginalAvailable)
+    set(
+      initialValues,
+      DOWNLOAD_REQUIRES_FOLLOW,
+      isContentFollowGated(savedDownloadConditions)
+    )
+    set(initialValues, STEMS, stemsValue ?? [])
+    set(initialValues, CID, cid ?? null)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
@@ -144,95 +153,130 @@ export const StemsAndDownloadsField = () => {
     set(initialValues, DOWNLOAD_AVAILABILITY_TYPE, availabilityType)
     return initialValues as StemsAndDownloadsFormValues
   }, [
-    savedDownloadConditions,
-    allowDownloadValue,
-    followerGatedValue,
     isDownloadable,
     isOriginalAvailable,
-    cid,
     stemsValue,
-    streamConditions,
+    cid,
     isDownloadGated,
-    tempDownloadConditions
+    tempDownloadConditions,
+    savedDownloadConditions,
+    streamConditions
   ])
 
   const handleSubmit = useCallback(
     (values: StemsAndDownloadsFormValues) => {
       const availabilityType = get(values, DOWNLOAD_AVAILABILITY_TYPE)
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
+      const isDownloadable = get(values, IS_DOWNLOADABLE)
+      const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
 
-      // note that there is some redundancy with the is_downloadable field
-      // this will go away once we remove the download object from track
-      // and only keep the top level fields
-      const allowsDownload =
-        get(values, ALLOW_DOWNLOAD) ?? allowDownloadValue ?? false
-      setAllowDownloadValue(allowsDownload)
-      setIsDownloadable(allowsDownload)
-      setFollowerGatedValue(
-        get(values, FOLLOWER_GATED) ?? followerGatedValue ?? false
-      )
-      setisOriginalAvailable(
-        get(values, IS_ORIGINAL_AVAILABLE) ?? isOriginalAvailable ?? false
-      )
+      setIsDownloadable(isDownloadable)
+      setisOriginalAvailable(get(values, IS_ORIGINAL_AVAILABLE))
       setStemsValue(get(values, STEMS))
       setCidValue(null)
 
-      // If download does not inherit from stream conditions,
-      // extract the correct download conditions based on the selected availability type
-      const inheritConditions = !!streamConditions
-      if (!inheritConditions) {
-        setIsDownloadGated(false)
-        setDownloadConditions(null)
+      // Note that there is some redundancy with the download fields
+      // this will go away once we remove the download object from track
+      // and only keep the top level fields.
 
-        switch (availabilityType) {
-          case DownloadTrackAvailabilityType.USDC_PURCHASE: {
-            const {
-              usdc_purchase: { price }
-            } = downloadConditions as USDCPurchaseConditions
-            setDownloadConditions({
-              // @ts-ignore fully formed in saga (validated + added splits)
-              usdc_purchase: { price: Math.round(price) }
-            })
-            setIsDownloadGated(true)
-            break
+      if (isLosslessDownloadsEnabled) {
+        // If download does not inherit from stream conditions,
+        // extract the correct download conditions based on the selected availability type.
+        if (!streamConditions) {
+          setIsDownloadGated(false)
+          setDownloadConditions(null)
+          setDownloadRequiresFollow(false)
+          setDownloadValue({
+            is_downloadable: isDownloadable,
+            requires_follow: false,
+            cid: null
+          })
+          switch (availabilityType) {
+            case DownloadTrackAvailabilityType.USDC_PURCHASE: {
+              setIsDownloadGated(true)
+              const {
+                usdc_purchase: { price }
+              } = downloadConditions as USDCPurchaseConditions
+              setDownloadConditions({
+                // @ts-ignore fully formed in saga (validated + added splits)
+                usdc_purchase: { price: Math.round(price) }
+              })
+              break
+            }
+            case DownloadTrackAvailabilityType.FOLLOWERS: {
+              setIsDownloadGated(true)
+              const { follow_user_id } =
+                downloadConditions as FollowGatedConditions
+              setDownloadConditions({ follow_user_id })
+              setDownloadRequiresFollow(true)
+              setDownloadValue({
+                is_downloadable: isDownloadable,
+                requires_follow: true,
+                cid: null
+              })
+              break
+            }
+            case DownloadTrackAvailabilityType.PUBLIC: {
+              break
+            }
           }
-          case DownloadTrackAvailabilityType.FOLLOWERS: {
-            const { follow_user_id } =
-              downloadConditions as FollowGatedConditions
-            setDownloadConditions({ follow_user_id })
-            setIsDownloadGated(true)
-            setFollowerGatedValue(true)
-            break
-          }
-          case DownloadTrackAvailabilityType.PUBLIC: {
-            break
-          }
+        }
+      } else {
+        // If download does not inherit from stream conditions,
+        // set the download conditions to be follow gated if requires follow switch is on.
+        if (!streamConditions) {
+          setIsDownloadGated(downloadRequiresFollow)
+          setDownloadConditions(
+            downloadRequiresFollow
+              ? ({
+                  follow_user_id: accountUserId
+                } as FollowGatedConditions)
+              : null
+          )
+          setDownloadRequiresFollow(downloadRequiresFollow)
+          setDownloadValue({
+            is_downloadable: isDownloadable,
+            requires_follow: downloadRequiresFollow,
+            cid: null
+          })
         }
       }
     },
     [
-      allowDownloadValue,
-      followerGatedValue,
-      isOriginalAvailable,
+      isLosslessDownloadsEnabled,
+      accountUserId,
       streamConditions,
-      setAllowDownloadValue,
-      setFollowerGatedValue,
       setIsDownloadable,
+      setDownloadRequiresFollow,
       setisOriginalAvailable,
       setStemsValue,
       setCidValue,
       setIsDownloadGated,
-      setDownloadConditions
+      setDownloadConditions,
+      setDownloadValue
     ]
   )
 
   const renderValue = () => {
     let values = []
-    if (allowDownloadValue || isDownloadable) {
-      values.push(messages.values.allowDownload)
+    if (!streamConditions) {
+      if (
+        isLosslessDownloadsEnabled &&
+        isContentUSDCPurchaseGated(savedDownloadConditions)
+      ) {
+        values.push({
+          label: messages.price(
+            savedDownloadConditions.usdc_purchase.price / 100
+          ),
+          icon: IconCart
+        })
+      }
+      if (isContentFollowGated(savedDownloadConditions)) {
+        values.push(messages.values.followerGated)
+      }
     }
-    if (followerGatedValue) {
-      values.push(messages.values.followerGated)
+    if (isDownloadable) {
+      values.push(messages.values.allowDownload)
     }
     if (isLosslessDownloadsEnabled && isOriginalAvailable) {
       values.push(messages.values.allowOriginal)
@@ -245,9 +289,11 @@ export const StemsAndDownloadsField = () => {
 
     return (
       <SelectedValues>
-        {values.map((value) => (
-          <SelectedValue key={value} label={value} />
-        ))}
+        {values.map((value) => {
+          const valueProps =
+            typeof value === 'string' ? { label: value } : value
+          return <SelectedValue key={valueProps.label} {...valueProps} />
+        })}
       </SelectedValues>
     )
   }
@@ -264,6 +310,12 @@ export const StemsAndDownloadsField = () => {
         stemsAndDownloadsSchema(usdcPurchaseConfig)
       )}
       menuFields={<StemsAndDownloadsMenuFields />}
+      closeMenuCallback={closeMenuCallback}
+      displayMenuErrorMessage={(
+        errors: FormikErrors<StemsAndDownloadsFormValues>
+      ) => {
+        return errors[IS_DOWNLOAD_GATED] ?? null
+      }}
     />
   )
 }

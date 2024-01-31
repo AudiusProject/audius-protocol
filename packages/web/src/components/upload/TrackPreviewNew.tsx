@@ -60,6 +60,8 @@ type TrackPreviewProps = {
   isStem?: boolean
   stemCategory?: StemCategory
   onEditStemCategory?: (stemCategory: StemCategory) => void
+  isEdit?: boolean
+  isDisabled?: boolean
   className?: string
 }
 
@@ -80,10 +82,12 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     isStem,
     stemCategory,
     onEditStemCategory,
+    isEdit,
+    isDisabled,
     className
   } = props
 
-  const Icon = fileTypeIcon(fileType)
+  const Icon = isEdit ? iconFileUnknown : fileTypeIcon(fileType)
   const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -129,6 +133,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
+              isDisabled={isDisabled}
             />
           </Box>
         ) : null}
@@ -137,7 +142,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           size='small'
           color='neutralLight2'
         >
-          {numeral(fileSize).format('0.0 b')}
+          {isEdit ? '' : numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>

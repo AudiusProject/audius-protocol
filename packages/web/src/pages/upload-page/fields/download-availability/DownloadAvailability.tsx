@@ -22,11 +22,12 @@ import {
 import { SegmentedControl } from '@audius/stems'
 import { useFormikContext } from 'formik'
 
+import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { useTrackField } from 'pages/upload-page/hooks'
 
-import { STREAM_CONDITIONS } from '../AccessAndSaleField'
+import { STREAM_CONDITIONS } from '../types'
 
 import { DownloadPriceField } from './DownloadPriceField'
 
@@ -38,7 +39,7 @@ const messages = {
   premium: 'Premium',
   callout: {
     premium:
-      "You're uploading a premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
     specialAccess:
       "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
     collectibleGated:
@@ -56,7 +57,7 @@ export const DownloadAvailability = ({
   value,
   setValue
 }: DownloadAvailabilityProps) => {
-  const { submitForm } = useFormikContext()
+  const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
@@ -81,8 +82,9 @@ export const DownloadAvailability = ({
   }, [isCollectibleGated, isSpecialAccess, isUsdcGated])
 
   const handleCalloutClick = useCallback(() => {
+    setStatus(MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE)
     submitForm()
-  }, [submitForm])
+  }, [setStatus, submitForm])
 
   const options = [
     {

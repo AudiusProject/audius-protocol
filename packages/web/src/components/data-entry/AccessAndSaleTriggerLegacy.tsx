@@ -31,21 +31,21 @@ import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { defaultFieldVisibility } from 'pages/track-page/utils'
+import { AccessAndSaleFormSchema } from 'pages/upload-page/fields/AccessAndSaleField'
+import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleMenuFields'
+import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
 import {
-  STREAM_AVAILABILITY_TYPE,
-  AccessAndSaleFormSchema,
   AccessAndSaleFormValues,
-  AccessAndSaleMenuFields,
   FIELD_VISIBILITY,
   IS_STREAM_GATED,
   IS_UNLISTED,
-  STREAM_CONDITIONS,
   PREVIEW,
   PRICE_HUMANIZED,
   SPECIAL_ACCESS_TYPE,
-  getCombinedDefaultGatedConditionValues
-} from 'pages/upload-page/fields/AccessAndSaleField'
-import { SpecialAccessType } from 'pages/upload-page/fields/stream-availability/SpecialAccessFields'
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS,
+  SpecialAccessType
+} from 'pages/upload-page/fields/types'
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'

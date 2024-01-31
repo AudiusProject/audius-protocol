@@ -16,6 +16,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label,
       options,
       onSelect,
+      isDisabled,
       variant = 'fillContainer',
       size = 'default',
       iconRight = IconCaretDown,
@@ -172,6 +173,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
             ? IconCloseAlt
             : iconRight
         }
+        disabled={isDisabled}
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >

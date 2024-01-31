@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common'
 import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
@@ -124,6 +125,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { isEnabled: isScheduledReleasesEnabled } = useFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
+  const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
   return (
     <Form>
@@ -145,9 +147,19 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               ) : (
                 <ReleaseDateFieldLegacy />
               )}
-              <AccessAndSaleField isUpload />
+              <AccessAndSaleField
+                isUpload
+                forceOpen={forceOpenAccessAndSale}
+                setForceOpen={setForceOpenAccessAndSale}
+              />
               <AttributionField />
-              <StemsAndDownloadsField />
+              <StemsAndDownloadsField
+                closeMenuCallback={(data) => {
+                  if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+                    setForceOpenAccessAndSale(true)
+                  }
+                }}
+              />
               <RemixSettingsField />
             </div>
             <PreviewButton

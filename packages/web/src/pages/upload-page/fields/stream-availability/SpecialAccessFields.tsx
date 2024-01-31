@@ -1,18 +1,27 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import {
+  AccessConditions,
+  FeatureFlags,
+  Nullable,
+  accountSelectors,
+  useFeatureFlag
+} from '@audius/common'
 import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 import Tooltip from 'components/tooltip/Tooltip'
 import { Text } from 'components/typography'
 
 import {
   AccessAndSaleFormValues,
-  STREAM_CONDITIONS
-} from '../AccessAndSaleField'
+  DOWNLOAD_CONDITIONS,
+  STREAM_CONDITIONS,
+  SpecialAccessType
+} from '../types'
 
 import styles from './SpecialAccessFields.module.css'
 
@@ -21,12 +30,9 @@ const { getUserId } = accountSelectors
 const messages = {
   followersOnly: 'Available to Followers Only',
   supportersOnly: 'Available to Supporters Only',
-  supportersInfo: 'Supporters are users who have sent you a tip.'
-}
-
-export enum SpecialAccessType {
-  TIP = 'tip',
-  FOLLOW = 'follow'
+  supportersInfo: 'Supporters are users who have sent you a tip.',
+  premiumDownloads:
+    'Setting your track to Special Access will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 type TrackAvailabilityFieldsProps = {
@@ -46,6 +52,11 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
     useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -67,37 +78,42 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   )
 
   return (
-    <RadioButtonGroup
-      className={styles.root}
-      {...specialAccessTypeField}
-      onChange={handleChange}
-      defaultValue={SpecialAccessType.FOLLOW}
-    >
-      <label className={cn(styles.row, { [styles.disabled]: disabled })}>
-        <RadioButton
-          className={styles.radio}
-          value={SpecialAccessType.FOLLOW}
-          disabled={disabled}
-        />
-        <Text>{messages.followersOnly}</Text>
-      </label>
-      <label className={cn(styles.row, { [styles.disabled]: disabled })}>
-        <RadioButton
-          className={styles.radio}
-          value={SpecialAccessType.TIP}
-          disabled={disabled}
-        />
-        <Text>{messages.supportersOnly}</Text>
-        <Tooltip
-          className={styles.tooltip}
-          text={messages.supportersInfo}
-          mouseEnterDelay={0.1}
-          mount={'parent'}
-          color='--secondary'
-        >
-          <IconInfo className={styles.icon} />
-        </Tooltip>
-      </label>
-    </RadioButtonGroup>
+    <>
+      <RadioButtonGroup
+        className={styles.root}
+        {...specialAccessTypeField}
+        onChange={handleChange}
+        defaultValue={SpecialAccessType.FOLLOW}
+      >
+        <label className={cn(styles.row, { [styles.disabled]: disabled })}>
+          <RadioButton
+            className={styles.radio}
+            value={SpecialAccessType.FOLLOW}
+            disabled={disabled}
+          />
+          <Text>{messages.followersOnly}</Text>
+        </label>
+        <label className={cn(styles.row, { [styles.disabled]: disabled })}>
+          <RadioButton
+            className={styles.radio}
+            value={SpecialAccessType.TIP}
+            disabled={disabled}
+          />
+          <Text>{messages.supportersOnly}</Text>
+          <Tooltip
+            className={styles.tooltip}
+            text={messages.supportersInfo}
+            mouseEnterDelay={0.1}
+            mount={'parent'}
+            color='--secondary'
+          >
+            <IconInfo className={styles.icon} />
+          </Tooltip>
+        </label>
+      </RadioButtonGroup>
+      {isLosslessDownloadsEnabled && downloadConditions ? (
+        <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
+      ) : null}
+    </>
   )
 }

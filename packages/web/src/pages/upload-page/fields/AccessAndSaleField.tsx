@@ -2,25 +2,20 @@ import { useCallback, useMemo } from 'react'
 
 import {
   accountSelectors,
-  FeatureFlags,
   FieldVisibility,
   formatPrice,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  Nullable,
   StreamTrackAvailabilityType,
   USDCPurchaseConfig,
   useUSDCPurchaseConfig,
-  useAccessAndRemixSettings,
   CollectibleGatedConditions,
   USDCPurchaseConditions,
   FollowGatedConditions,
   TipGatedConditions,
-  ID,
-  useFeatureFlag,
-  AccessConditions
+  Download
 } from '@audius/common'
 import {
   IconCart,
@@ -28,10 +23,8 @@ import {
   IconHidden,
   IconNote,
   IconSpecialAccess,
-  IconVisibilityPublic,
-  RadioButtonGroup
+  IconVisibilityPublic
 } from '@audius/stems'
-import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -43,51 +36,46 @@ import {
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
-import layoutStyles from 'components/layout/layout.module.css'
-import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
+import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
 import { REMIX_OF } from './RemixSettingsField'
-import { HiddenAvailabilityFields } from './stream-availability/HiddenAvailabilityFields'
+import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
-  SpecialAccessFields,
+  AccessAndSaleFormValues,
+  DOWNLOAD,
+  DOWNLOAD_CONDITIONS,
+  DOWNLOAD_REQUIRES_FOLLOW,
+  FIELD_VISIBILITY,
+  IS_DOWNLOADABLE,
+  IS_DOWNLOAD_GATED,
+  IS_SCHEDULED_RELEASE,
+  IS_STREAM_GATED,
+  IS_UNLISTED,
+  PREVIEW,
+  PRICE,
+  PRICE_HUMANIZED,
+  SPECIAL_ACCESS_TYPE,
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS,
   SpecialAccessType
-} from './stream-availability/SpecialAccessFields'
-import { CollectibleGatedRadioField } from './stream-availability/collectible-gated/CollectibleGatedRadioField'
-import { UsdcPurchaseGatedRadioField } from './stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
+} from './types'
+
 const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Access & Sale',
   description:
     "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
-  modalDescription:
-    'Control who has access to listen. Create gated experiences or require users pay to unlock your music.',
-  isRemix:
-    'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
-  done: 'Done',
   public: 'Public (Free to Stream)',
-  publicSubtitle:
-    'Public tracks are visible to all users and appear throughout Audius.',
   specialAccess: 'Special Access',
-  specialAccessSubtitle:
-    'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
   collectibleGated: 'Collectible Gated',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.',
   hidden: 'Hidden',
-  hiddenSubtitle:
-    "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
-  hiddenHint: 'Scheduled tracks are hidden by default until release.',
-  learnMore: 'Learn More',
   fieldVisibility: {
     genre: 'Show Genre',
     mood: 'Show Mood',
@@ -118,28 +106,6 @@ const messages = {
     }
   },
   required: 'Required'
-}
-export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
-export const IS_UNLISTED = 'is_unlisted'
-export const IS_STREAM_GATED = 'is_stream_gated'
-export const STREAM_CONDITIONS = 'stream_conditions'
-export const IS_DOWNLOAD_GATED = 'is_download_gated'
-export const DOWNLOAD_CONDITIONS = 'download_conditions'
-export const STREAM_AVAILABILITY_TYPE = 'stream_availability_type'
-export const SPECIAL_ACCESS_TYPE = 'special_access_type'
-export const FIELD_VISIBILITY = 'field_visibility'
-export const PRICE = 'stream_conditions.usdc_purchase.price'
-export const PRICE_HUMANIZED = 'price_humanized'
-export const PREVIEW = 'preview_start_seconds'
-
-export type AccessAndSaleFormValues = {
-  [IS_UNLISTED]: boolean
-  [STREAM_AVAILABILITY_TYPE]: StreamTrackAvailabilityType
-  [STREAM_CONDITIONS]: Nullable<AccessConditions>
-  [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
-  [FIELD_VISIBILITY]: FieldVisibility
-  [PRICE_HUMANIZED]: string
-  [PREVIEW]?: number
 }
 
 export type USDCPurchaseRemoteConfig = Pick<
@@ -221,28 +187,15 @@ export const AccessAndSaleFormSchema = (
       { message: messages.errors.preview.tooLate, path: [PREVIEW] }
     )
 
-/**
- * Allows us to store all the user selections in the Access & Sale modal
- * so that their previous selections is remembered as they change between the radio button options.
- * On submit (saving the changes in the Access & Sale modal), we only save the corresponding
- * stream conditions based on the availability type they have currently selected.
- */
-export const getCombinedDefaultGatedConditionValues = (
-  userId: Nullable<ID>
-) => ({
-  usdc_purchase: { price: null },
-  follow_user_id: userId,
-  tip_user_id: userId,
-  nft_collection: undefined
-})
-
 type AccessAndSaleFieldProps = {
   isUpload?: boolean
   trackLength?: number
+  forceOpen?: boolean
+  setForceOpen?: (value: boolean) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload } = props
+  const { isUpload, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -282,6 +235,28 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: preview }, , { setValue: setPreviewValue }] =
     useTrackField<SingleTrackEditValues[typeof PREVIEW]>(PREVIEW)
 
+  const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
+    useTrackField<SingleTrackEditValues[typeof IS_DOWNLOAD_GATED]>(
+      IS_DOWNLOAD_GATED
+    )
+  const [
+    { value: downloadConditions },
+    ,
+    { setValue: setDownloadConditionsValue }
+  ] =
+    useTrackField<SingleTrackEditValues[typeof DOWNLOAD_CONDITIONS]>(
+      DOWNLOAD_CONDITIONS
+    )
+  const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
+    useField(IS_DOWNLOADABLE)
+  const [
+    { value: downloadRequiresFollow },
+    ,
+    { setValue: setDownloadRequiresFollow }
+  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
+  const [{ value: download }, , { setValue: setDownload }] =
+    useTrackField<Download>(DOWNLOAD)
+
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   /**
@@ -308,6 +283,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
+    set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
+    set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
+    set(initialValues, IS_DOWNLOADABLE, isDownloadable)
+    set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
+    set(initialValues, DOWNLOAD, download)
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -343,6 +323,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isUnlisted,
     isStreamGated,
     tempStreamConditions,
+    isDownloadGated,
+    downloadConditions,
+    isDownloadable,
+    downloadRequiresFollow,
+    download,
     fieldVisibility,
     preview,
     isScheduledRelease
@@ -368,33 +353,69 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
-          setPreviewValue(preview ?? 0)
-          const {
-            usdc_purchase: { price }
-          } = streamConditions as USDCPurchaseConditions
-          setStreamConditionsValue({
-            // @ts-ignore fully formed in saga (validated + added splits)
-            usdc_purchase: { price: Math.round(price) }
-          })
+          // type cast because the object is fully formed in saga (validated + added splits)
+          const conditions = {
+            usdc_purchase: {
+              price: Math.round(
+                (streamConditions as USDCPurchaseConditions).usdc_purchase.price
+              )
+            }
+          } as USDCPurchaseConditions
           setIsStreamGated(true)
+          setStreamConditionsValue(conditions)
+          setPreviewValue(preview ?? 0)
+          setIsDownloadGated(true)
+          setDownloadConditionsValue(conditions)
+          setIsDownloadable(true)
+          setDownloadRequiresFollow(false)
+          setDownload({
+            cid: null,
+            is_downloadable: true,
+            requires_follow: false
+          })
           break
         }
         case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
           if (specialAccessType === SpecialAccessType.FOLLOW) {
             const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
+            setDownloadConditionsValue({ follow_user_id })
+            setDownloadRequiresFollow(true)
+            setDownload({
+              cid: null,
+              is_downloadable: true,
+              requires_follow: true
+            })
           } else {
             const { tip_user_id } = streamConditions as TipGatedConditions
             setStreamConditionsValue({ tip_user_id })
+            setDownloadConditionsValue({ tip_user_id })
+            setDownloadRequiresFollow(false)
+            setDownload({
+              cid: null,
+              is_downloadable: true,
+              requires_follow: false
+            })
           }
           setIsStreamGated(true)
+          setIsDownloadGated(true)
+          setIsDownloadable(true)
           break
         }
         case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
           const { nft_collection } =
             streamConditions as CollectibleGatedConditions
-          setStreamConditionsValue({ nft_collection })
           setIsStreamGated(true)
+          setStreamConditionsValue({ nft_collection })
+          setIsDownloadGated(true)
+          setDownloadConditionsValue({ nft_collection })
+          setIsDownloadable(true)
+          setDownloadRequiresFollow(false)
+          setDownload({
+            cid: null,
+            is_downloadable: true,
+            requires_follow: false
+          })
           break
         }
         case StreamTrackAvailabilityType.HIDDEN: {
@@ -416,6 +437,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated,
       setIsUnlistedValue,
       setStreamConditionsValue,
+      setIsDownloadGated,
+      setDownloadConditionsValue,
+      setIsDownloadable,
+      setDownloadRequiresFollow,
+      setDownload,
       setPreviewValue,
       isUnlisted
     ]
@@ -531,107 +557,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isScheduledRelease={isScheduledRelease}
         />
       }
+      forceOpen={forceOpen}
+      setForceOpen={setForceOpen}
     />
-  )
-}
-
-type AccesAndSaleMenuFieldsProps = {
-  streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
-  isRemix: boolean
-  isUpload?: boolean
-  isInitiallyUnlisted?: boolean
-  isScheduledRelease?: boolean
-  initialStreamConditions?: AccessConditions
-}
-
-export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
-  const {
-    isRemix,
-    isUpload,
-    isInitiallyUnlisted,
-    initialStreamConditions,
-    isScheduledRelease
-  } = props
-
-  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
-  const { isEnabled: isCollectibleGatedEnabled } = useFlag(
-    FeatureFlags.COLLECTIBLE_GATED_ENABLED
-  )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
-    FeatureFlags.SPECIAL_ACCESS_ENABLED
-  )
-
-  const [availabilityField] = useField({
-    name: STREAM_AVAILABILITY_TYPE
-  })
-
-  const { noSpecialAccessGate, noSpecialAccessGateFields, noHidden } =
-    useAccessAndRemixSettings({
-      isUpload: !!isUpload,
-      isRemix,
-      initialStreamConditions: initialStreamConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted,
-      isScheduledRelease: !!isScheduledRelease
-    })
-
-  return (
-    <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
-      <Text>{messages.modalDescription}</Text>
-      <RadioButtonGroup {...availabilityField} aria-label={messages.title}>
-        <ModalRadioItem
-          icon={<IconVisibilityPublic className={styles.icon} />}
-          label={messages.public}
-          description={messages.publicSubtitle}
-          value={StreamTrackAvailabilityType.PUBLIC}
-        />
-        {isUsdcEnabled ? (
-          <UsdcPurchaseGatedRadioField
-            isRemix={isRemix}
-            isUpload={isUpload}
-            initialStreamConditions={initialStreamConditions}
-            isInitiallyUnlisted={isInitiallyUnlisted}
-          />
-        ) : null}
-
-        {isSpecialAccessEnabled ? (
-          <ModalRadioItem
-            icon={<IconSpecialAccess />}
-            label={messages.specialAccess}
-            description={messages.specialAccessSubtitle}
-            value={StreamTrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccessGate}
-            checkedContent={
-              <SpecialAccessFields disabled={noSpecialAccessGateFields} />
-            }
-          />
-        ) : null}
-        {isCollectibleGatedEnabled ? (
-          <CollectibleGatedRadioField
-            isRemix={isRemix}
-            isUpload={isUpload}
-            initialStreamConditions={initialStreamConditions}
-            isInitiallyUnlisted={isInitiallyUnlisted}
-          />
-        ) : null}
-        <ModalRadioItem
-          icon={<IconHidden />}
-          label={messages.hidden}
-          value={StreamTrackAvailabilityType.HIDDEN}
-          description={messages.hiddenSubtitle}
-          disabled={noHidden}
-          // isInitiallyUnlisted is undefined on create
-          // show hint on scheduled releases that are in create or already unlisted
-          hintContent={
-            isScheduledRelease && isInitiallyUnlisted !== false
-              ? messages.hiddenHint
-              : ''
-          }
-          checkedContent={<HiddenAvailabilityFields />}
-        />
-      </RadioButtonGroup>
-    </div>
   )
 }

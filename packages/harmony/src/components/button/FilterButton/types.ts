@@ -66,6 +66,11 @@ export type FilterButtonProps = {
   onSelect?: (label: string) => void
 
   /**
+   * Whether interaction is disabled
+   */
+  isDisabled?: boolean
+
+  /**
    * Popup anchor origin
    * @default { horizontal: 'center', vertical: 'bottom' }
    */
