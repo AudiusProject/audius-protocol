@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common'
+import { Track, accountSelectors } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
@@ -16,14 +16,14 @@ function* getTracks({
 }: {
   offset: number
   limit: number
-  payload: { handle: string }
+  payload?: { handle: string }
 }) {
-  const { handle } = payload
+  const { handle } = payload ?? {}
 
   yield* waitForRead()
   const currentUserId = yield* select(getUserId)
   const processed = yield* call(retrieveUserTracks, {
-    handle,
+    handle: handle!,
     currentUserId,
     sort: 'plays',
     limit: 5
@@ -34,7 +34,7 @@ function* getTracks({
 
 const sourceSelector = () => PREFIX
 
-class MoreBySagas extends LineupSagas {
+class MoreBySagas extends LineupSagas<Track> {
   constructor() {
     super(
       PREFIX,

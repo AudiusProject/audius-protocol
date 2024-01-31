@@ -491,6 +491,7 @@ class TrackPageProvider extends Component<
     return (
       <>
         {!!track?._stems?.[0] && <StemsSEOHint />}
+        {/* @ts-ignore lineup has wrong type LineupState<{ id: number }> */}
         <this.props.children
           key={this.state.routeKey}
           {...childProps}

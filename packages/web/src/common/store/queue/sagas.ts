@@ -1,7 +1,6 @@
 import {
   Kind,
   ID,
-  UID,
   Name,
   PlaybackSource,
   LineupState,
@@ -26,7 +25,9 @@ import {
   lineupRegistry,
   Collectible,
   UserTrackMetadata,
-  Track
+  LineupEntry,
+  Track,
+  Collection
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -65,7 +66,10 @@ const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
+export function* getToQueue(
+  prefix: string,
+  entry: LineupEntry<Track | Collection>
+) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
     if (!collection) return
@@ -243,9 +247,7 @@ export function* watchPlay() {
         if (lineup.entries.length > 0) {
           yield* put(clear({}))
           const toQueue = yield* all(
-            lineup.entries.map((e: { kind: Kind; uid: UID }) =>
-              call(getToQueue, lineup.prefix, e)
-            )
+            lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
           )
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))
