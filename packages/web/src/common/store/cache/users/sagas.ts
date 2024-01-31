@@ -1,19 +1,15 @@
+import { DefaultSizes, Kind, User, UserMetadata } from '@audius/common/models'
 import {
-  DefaultSizes,
-  Kind,
+  Metadata,
   accountSelectors,
   cacheActions,
-  cacheUsersSelectors,
-  cacheReducer,
   cacheUsersActions as userActions,
-  waitForValue,
-  waitForAccount,
-  reformatUser,
+  cacheReducer,
+  cacheUsersSelectors,
   getContext,
-  User,
-  Metadata,
-  UserMetadata
-} from '@audius/common'
+  reformatUser
+} from '@audius/common/store'
+import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -62,7 +58,7 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
-  const user = yield* apiClient.getUserByHandle({
+  const user: UserMetadata = yield apiClient.getUserByHandle({
     handle,
     currentUserId: userId,
     retry
