@@ -219,7 +219,7 @@ jobs:
         - push-uptime
         - push-ddex-web
         - push-ddex-ingester
-        - push-ddex-publisher
+        # - push-ddex-publisher
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
