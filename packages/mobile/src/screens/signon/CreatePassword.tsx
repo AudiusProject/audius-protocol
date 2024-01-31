@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import {
+  CompletionCheck,
   IconArrowRight,
   IconCheck,
   IconMultiselectRemove
@@ -107,27 +108,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignContent: 'flex-start',
     marginTop: 16,
+    gap: 8,
     width: '100%'
-  },
-  unchecked: {
-    width: 16,
-    height: 16,
-    borderWidth: 2,
-    borderColor: '#858199',
-    borderRadius: 12,
-    marginRight: 13
-  },
-  iconCheck: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    zIndex: 2
-  },
-  errorIcon: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    zIndex: 2
   },
   uncheckedDescription: {
     color: '#858199',
@@ -237,20 +219,14 @@ const Checkbox = ({
   if (met) {
     return (
       <View style={styles.checkboxContainer}>
-        <Animated.View style={animatedStyles}>
-          <IconCheck style={styles.iconCheck} />
-        </Animated.View>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='complete' />
         <Text style={styles.uncheckedDescription}>{messages.checks[i]}</Text>
       </View>
     )
   } else if (error) {
     return (
       <View style={styles.checkboxContainer}>
-        <Animated.View style={animatedStyles}>
-          <IconMultiselectRemove style={styles.iconCheck} />
-        </Animated.View>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='error' />
         <Text
           style={[styles.uncheckedDescription, { color: errorBorderColor }]}
         >
@@ -261,7 +237,7 @@ const Checkbox = ({
   } else {
     return (
       <View style={styles.checkboxContainer}>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='incomplete' />
         <Text style={styles.uncheckedDescription}>{messages.checks[i]}</Text>
       </View>
     )
