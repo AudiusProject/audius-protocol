@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "outDir": "build",
+      "skipLibCheck": true,
+      "target": "es5",
+      "esModuleInterop": true,
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "isolatedModules": true
+    }
+  }
+  
