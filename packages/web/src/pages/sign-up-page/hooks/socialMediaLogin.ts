@@ -10,7 +10,7 @@ import {
   TwitterProfile
 } from '@audius/common'
 import { Name } from '@audius/common/models'
-import { pickHandleSchema } from '@audius/common/utils'
+import { pickHandleSchema } from '@audius/common/schemas'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

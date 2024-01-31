@@ -1,5 +1,5 @@
+import { newTrackMetadata } from '@audius/common/schemas'
 import {
-  newTrackMetadata,
   ALLOWED_MAX_AUDIO_SIZE_BYTES,
   ALLOWED_AUDIO_FILE_EXTENSIONS,
   ALLOWED_AUDIO_FILE_MIME

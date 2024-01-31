@@ -5,7 +5,7 @@ var getDirectories = function (callback) {
   glob('./web/src/**/*', callback)
 }
 
-const DIRECTORY = 'utils'
+const DIRECTORY = 'schemas'
 const EXPORTS = [
   'newTrackMetadata',
   'newCollectionMetadata',

@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common'
 import { createEmailPageMessages } from '@audius/common/messages'
-import { emailSchema } from '@audius/common/utils'
+import { emailSchema } from '@audius/common/schemas'
 import {
   Box,
   Button,

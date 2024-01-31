@@ -7,11 +7,8 @@ import {
 } from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
-import {
-  selectArtistsSchema,
-  Genre,
-  convertGenreLabelToValue
-} from '@audius/common/utils'
+import { selectArtistsSchema } from '@audius/common/schemas'
+import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'

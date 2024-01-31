@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react'
 
 import { createEmailPageMessages } from '@audius/common/messages'
-import { emailSchemaMessages } from '@audius/common/utils'
+import { emailSchemaMessages } from '@audius/common/schemas'
 import { Hint, IconError, TextLink } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'

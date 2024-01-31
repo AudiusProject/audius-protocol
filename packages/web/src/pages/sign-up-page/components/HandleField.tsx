@@ -6,7 +6,7 @@ import {
   socialMediaMessages,
   pickHandlePageMessages as messages
 } from '@audius/common/messages'
-import { pickHandleErrorMessages } from '@audius/common/utils'
+import { pickHandleErrorMessages } from '@audius/common/schemas'
 import { TextLink } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'

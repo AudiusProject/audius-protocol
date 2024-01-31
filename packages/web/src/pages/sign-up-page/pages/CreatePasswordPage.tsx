@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import { createPasswordPageMessages } from '@audius/common/messages'
-import { passwordSchema } from '@audius/common/utils'
+import { passwordSchema } from '@audius/common/schemas'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

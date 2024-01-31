@@ -5,7 +5,7 @@ import {
   confirmEmailSchema,
   formatOtp,
   confirmEmailErrorMessages
-} from '@audius/common/utils'
+} from '@audius/common/schemas'
 import { Text, TextLink } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'

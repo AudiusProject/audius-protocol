@@ -9,7 +9,7 @@ import {
   confirmTransaction
 } from '@audius/common'
 import { Chain, Kind } from '@audius/common/models'
-import { newUserMetadata } from '@audius/common/utils'
+import { newUserMetadata } from '@audius/common/schemas'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

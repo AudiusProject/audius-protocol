@@ -38,12 +38,8 @@ import {
   ID,
   UID
 } from '@audius/common/models'
-import {
-  newUserMetadata,
-  getErrorMessage,
-  formatCount,
-  Nullable
-} from '@audius/common/utils'
+import { newUserMetadata } from '@audius/common/schemas'
+import { getErrorMessage, formatCount, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'

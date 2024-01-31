@@ -5,7 +5,7 @@ import {
   tokenDashboardPageSelectors
 } from '@audius/common'
 import { Name, Chain } from '@audius/common/models'
-import { newUserMetadata } from '@audius/common/utils'
+import { newUserMetadata } from '@audius/common/schemas'
 import { call, put, select } from 'typed-redux-saga'
 
 const { getAccountUser } = accountSelectors

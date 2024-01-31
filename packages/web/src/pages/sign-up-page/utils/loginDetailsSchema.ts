@@ -1,5 +1,6 @@
 import { AudiusQueryContextType } from '@audius/common'
-import { emailSchema, isNotCommonPassword } from '@audius/common/utils'
+import { emailSchema } from '@audius/common/schemas'
+import { isNotCommonPassword } from '@audius/common/utils'
 import { z } from 'zod'
 
 // Due to issue with zod merge, manually rewriting
