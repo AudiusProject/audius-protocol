@@ -1,8 +1,7 @@
 import { Ref, useCallback, useMemo } from 'react'
 
-import { cacheCollectionsActions } from '@audius/common'
+import { FeatureFlags, cacheCollectionsActions } from '@audius/common'
 import { Name, CreatePlaylistSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import {
   Box,
   HTMLButtonProps,

@@ -3,6 +3,7 @@ import {
   accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
+  GetSocialFeedArgs,
   CommonState
 } from '@audius/common'
 import {
@@ -15,7 +16,6 @@ import {
   UserTrackMetadata,
   LineupTrack
 } from '@audius/common/models'
-import { GetSocialFeedArgs } from '@audius/common/schemas'
 import { select, all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

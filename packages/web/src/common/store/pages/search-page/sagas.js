@@ -3,9 +3,9 @@ import {
   searchResultsPageActions as searchPageActions,
   searchResultsPageTracksLineupActions as tracksLineupActions,
   SearchKind,
-  processAndCacheUsers
+  processAndCacheUsers,
+  FeatureFlags
 } from '@audius/common'
-import { FeatureFlags } from '@audius/common/schemas'
 import { trimToAlphaNumeric, removeNullable } from '@audius/common/utils'
 import { flatMap, zip } from 'lodash'
 import {

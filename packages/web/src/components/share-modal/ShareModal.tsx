@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
 import {
+  FeatureFlags,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
@@ -11,7 +12,6 @@ import {
   useCreateChatModal
 } from '@audius/common'
 import { Name, PlayableType } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'

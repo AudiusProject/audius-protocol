@@ -1,9 +1,9 @@
-import { CommonStoreContext } from '@audius/common'
 import {
-  FeatureFlags,
+  SolanaClient,
+  CommonStoreContext,
   OpenSeaClient,
-  SolanaClient
-} from '@audius/common/schemas'
+  FeatureFlags
+} from '@audius/common'
 import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'

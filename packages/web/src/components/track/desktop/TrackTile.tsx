@@ -3,11 +3,11 @@ import { memo } from 'react'
 import {
   accountSelectors,
   playbackPositionSelectors,
+  FeatureFlags,
   CommonState,
   usePremiumContentPurchaseModal
 } from '@audius/common'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import {
   formatCount,
   Genre,

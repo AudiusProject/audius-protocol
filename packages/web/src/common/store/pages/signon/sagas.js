@@ -1,8 +1,11 @@
 import {
+  FeatureFlags,
+  MAX_HANDLE_LENGTH,
   accountActions,
   accountSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
+  getCityAndRegion,
   getContext,
   processAndCacheUsers,
   settingsPageActions,
@@ -10,15 +13,10 @@ import {
   solanaSelectors,
   toastActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  IntKeys
 } from '@audius/common'
 import { Name, FavoriteSource } from '@audius/common/models'
-import {
-  IntKeys,
-  FeatureFlags,
-  MAX_HANDLE_LENGTH,
-  getCityAndRegion
-} from '@audius/common/schemas'
 import {
   Genre,
   ELECTRONIC_SUBGENRES,

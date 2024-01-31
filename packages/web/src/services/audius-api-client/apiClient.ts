@@ -1,4 +1,4 @@
-import { AudiusAPIClient } from '@audius/common/schemas'
+import { AudiusAPIClient } from '@audius/common'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'

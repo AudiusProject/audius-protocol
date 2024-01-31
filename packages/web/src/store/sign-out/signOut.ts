@@ -1,4 +1,4 @@
-import { LocalStorage, AudiusBackend } from '@audius/common/schemas'
+import { AudiusBackend, LocalStorage } from '@audius/common'
 
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
 

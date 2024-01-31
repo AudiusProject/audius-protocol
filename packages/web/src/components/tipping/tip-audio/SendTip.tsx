@@ -13,11 +13,12 @@ import {
   walletSelectors,
   getTierAndNumberForBalance,
   OnRampProvider,
-  buyAudioActions
+  buyAudioActions,
+  FeatureFlags,
+  StringKeys
 } from '@audius/common'
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
-import { StringKeys, FeatureFlags } from '@audius/common/schemas'
 import {
   isNullOrUndefined,
   stringWeiToBN,

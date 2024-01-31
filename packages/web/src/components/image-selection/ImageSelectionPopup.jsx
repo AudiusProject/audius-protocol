@@ -1,8 +1,7 @@
 import { useState, useCallback, useRef, useContext } from 'react'
 
-import { accountSelectors, badgeTiers } from '@audius/common'
+import { RandomImage, accountSelectors, badgeTiers } from '@audius/common'
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { RandomImage } from '@audius/common/schemas'
 import { removeNullable } from '@audius/common/utils'
 import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'

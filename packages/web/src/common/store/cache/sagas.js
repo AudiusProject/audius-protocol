@@ -2,10 +2,11 @@ import {
   cacheActions,
   cacheSelectors,
   cacheConfig,
-  confirmerSelectors
+  FeatureFlags,
+  confirmerSelectors,
+  IntKeys
 } from '@audius/common'
 import { Status } from '@audius/common/models'
-import { IntKeys, FeatureFlags } from '@audius/common/schemas'
 import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import {

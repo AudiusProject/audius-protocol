@@ -1,4 +1,7 @@
 import {
+  IntKeys,
+  StringKeys,
+  RemoteConfigInstance,
   getContext,
   accountSelectors,
   accountActions,
@@ -10,20 +13,15 @@ import {
   solanaSelectors,
   walletActions,
   modalsActions,
-  musicConfettiActions
+  Env,
+  musicConfettiActions,
+  createUserBankIfNeeded
 } from '@audius/common'
 import {
   FailureReason,
   UserChallenge,
   StringAudio
 } from '@audius/common/models'
-import {
-  IntKeys,
-  StringKeys,
-  createUserBankIfNeeded,
-  Env,
-  RemoteConfigInstance
-} from '@audius/common/schemas'
 import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
   call,

@@ -1,11 +1,10 @@
 import { ReactNode } from 'react'
 
-import { audioRewardsPageActions } from '@audius/common'
+import { StringKeys, audioRewardsPageActions } from '@audius/common'
 import {
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/schemas'
 import { ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

@@ -1,4 +1,5 @@
 import {
+  StringKeys,
   cacheTracksActions as trackCacheActions,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -8,7 +9,6 @@ import {
   reachabilitySelectors
 } from '@audius/common'
 import { Kind } from '@audius/common/models'
-import { StringKeys } from '@audius/common/schemas'
 import { makeUid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { keccak_256 } from 'js-sha3'

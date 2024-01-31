@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { StringKeys } from '@audius/common/schemas'
+import { StringKeys } from '@audius/common'
 import { IconRemove } from '@audius/stems'
 import cn from 'classnames'
 

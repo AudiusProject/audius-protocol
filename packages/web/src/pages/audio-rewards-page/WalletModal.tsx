@@ -1,6 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 
 import {
+  FeatureFlags,
   accountSelectors,
   tokenDashboardPageActions,
   TokenDashboardPageModalState,
@@ -8,7 +9,6 @@ import {
   walletSelectors
 } from '@audius/common'
 import { Chain, StringWei, BNWei, WalletAddress } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import { stringWeiToBN, weiToString, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

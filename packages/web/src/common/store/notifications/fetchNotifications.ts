@@ -1,5 +1,4 @@
-import { getContext } from '@audius/common'
-import { IntKeys, FeatureFlags } from '@audius/common/schemas'
+import { FeatureFlags, getContext, IntKeys } from '@audius/common'
 import { removeNullable } from '@audius/common/utils'
 import { partition } from 'lodash'
 import { call } from 'typed-redux-saga'

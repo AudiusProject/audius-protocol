@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import {
+  BooleanKeys,
   TwitterProfile,
   InstagramProfile,
   musicConfettiActions,
@@ -13,7 +14,6 @@ import {
   ID,
   ProfilePictureSizes
 } from '@audius/common/models'
-import { BooleanKeys } from '@audius/common/schemas'
 import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

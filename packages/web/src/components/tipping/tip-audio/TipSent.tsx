@@ -1,8 +1,11 @@
 import { useCallback } from 'react'
 
-import { accountSelectors, tippingSelectors } from '@audius/common'
+import {
+  accountSelectors,
+  tippingSelectors,
+  deriveUserBankAddress
+} from '@audius/common'
 import { Name } from '@audius/common/models'
-import { deriveUserBankAddress } from '@audius/common/schemas'
 import { formatNumberCommas } from '@audius/common/utils'
 import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
 import cn from 'classnames'

@@ -3,7 +3,8 @@ import { ChangeEvent, useMemo } from 'react'
 import {
   CollectionTrack,
   CollectionPageTrackRecord,
-  CollectionsPageType
+  CollectionsPageType,
+  FeatureFlags
 } from '@audius/common'
 import {
   Variant,
@@ -14,7 +15,6 @@ import {
   ID,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 
 import {
   CollectiblesPlaylistTableColumn,

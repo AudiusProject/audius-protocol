@@ -7,8 +7,13 @@ import {
   walletSelectors,
   walletActions,
   getContext,
+  GetTipsArgs,
+  GetSupportingArgs,
+  GetSupportersArgs,
+  LocalStorage,
   processAndCacheUsers,
   solanaSelectors,
+  createUserBankIfNeeded,
   chatActions
 } from '@audius/common'
 import {
@@ -23,13 +28,6 @@ import {
   BNWei,
   SolanaWalletAddress
 } from '@audius/common/models'
-import {
-  createUserBankIfNeeded,
-  LocalStorage,
-  GetSupportingArgs,
-  GetSupportersArgs,
-  GetTipsArgs
-} from '@audius/common/schemas'
 import {
   decodeHashId,
   isNullOrUndefined,

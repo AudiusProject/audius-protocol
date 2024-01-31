@@ -1,4 +1,6 @@
 import {
+  IntKeys,
+  StringKeys,
   accountSelectors,
   audioRewardsPageActions,
   AudioRewardsClaim,
@@ -15,7 +17,6 @@ import {
   ChallengeRewardID,
   StringAudio
 } from '@audius/common/models'
-import { IntKeys, StringKeys } from '@audius/common/schemas'
 import { stringAudioToStringWei } from '@audius/common/utils'
 import delayP from '@redux-saga/delay-p'
 import { all, fork } from 'redux-saga/effects'

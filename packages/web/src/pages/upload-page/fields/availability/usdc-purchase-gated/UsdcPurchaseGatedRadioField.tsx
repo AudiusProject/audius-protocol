@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
   Name,
   TrackAvailabilityType,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'

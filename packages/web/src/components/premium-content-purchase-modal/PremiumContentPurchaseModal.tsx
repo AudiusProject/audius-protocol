@@ -7,7 +7,8 @@ import {
   purchaseContentActions,
   purchaseContentSelectors,
   isContentPurchaseInProgress,
-  PurchaseContentPage
+  PurchaseContentPage,
+  FeatureFlags
 } from '@audius/common'
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -18,7 +19,6 @@ import {
   isTrackPurchaseable
 } from '@audius/common/hooks'
 import { PurchaseVendor, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
 import {

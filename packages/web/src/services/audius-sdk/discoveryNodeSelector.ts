@@ -1,4 +1,4 @@
-import { DiscoveryNodeSelectorService } from '@audius/common/schemas'
+import { DiscoveryNodeSelectorService } from '@audius/common'
 
 import { env } from '../env'
 import { remoteConfigInstance } from '../remote-config/remote-config-instance'

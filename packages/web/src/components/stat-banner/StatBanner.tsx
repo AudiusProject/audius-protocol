@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import {
   Button,
   ButtonSize,

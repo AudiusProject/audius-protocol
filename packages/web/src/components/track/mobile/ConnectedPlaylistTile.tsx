@@ -13,7 +13,8 @@ import {
   RepostType,
   favoritesUserListActions,
   repostsUserListActions,
-  playerSelectors
+  playerSelectors,
+  FeatureFlags
 } from '@audius/common'
 import {
   Name,
@@ -25,7 +26,6 @@ import {
   ID,
   Track
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

@@ -3,9 +3,9 @@ import {
   reactionsMap,
   reactionsUIActions,
   reactionsUISelectors,
-  getContext
+  getContext,
+  AudiusBackend
 } from '@audius/common'
-import { AudiusBackend } from '@audius/common/schemas'
 import { getErrorMessage, removeNullable } from '@audius/common/utils'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 

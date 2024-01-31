@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { OverflowAction, imageBlank as placeholderArt } from '@audius/common'
+import {
+  OverflowAction,
+  imageBlank as placeholderArt,
+  FeatureFlags
+} from '@audius/common'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -11,7 +15,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/schemas'
 import {
   getCanonicalName,
   formatSeconds,
