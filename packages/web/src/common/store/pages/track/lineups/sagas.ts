@@ -89,6 +89,7 @@ class TracksSagas extends LineupSagas<Track> {
     super(
       PREFIX,
       tracksActions,
+      // @ts-ignore type is wrongly inferred as LineupState<{ id: number }>
       getLineup,
       getTracks,
       undefined,
