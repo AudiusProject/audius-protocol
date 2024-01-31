@@ -1,10 +1,7 @@
-import {
-  Name,
-  FeedFilter,
-  feedPageLineupActions as feedActions,
-  FeatureFlags,
-  useFeatureFlag
-} from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name, FeedFilter } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { feedPageLineupActions as feedActions } from '@audius/common/store'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/desktop/Header'

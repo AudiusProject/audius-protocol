@@ -1,6 +1,6 @@
 import { call, put, takeEvery } from 'typed-redux-saga'
 
-import { getContext } from 'store/effects'
+import { getContext } from '~/store/effects'
 
 import { updateMethod } from './slice'
 import { CastMethod, CAST_METHOD } from './types'

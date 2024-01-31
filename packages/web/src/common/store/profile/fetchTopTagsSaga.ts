@@ -1,4 +1,4 @@
-import { getContext, profilePageActions } from '@audius/common'
+import { profilePageActions, getContext } from '@audius/common/store'
 import { takeLatest, call, put } from 'typed-redux-saga'
 const {
   FETCH_TOP_TAGS,

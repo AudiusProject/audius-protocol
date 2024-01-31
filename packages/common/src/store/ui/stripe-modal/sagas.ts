@@ -10,10 +10,10 @@ import {
   FixedTask
 } from 'typed-redux-saga'
 
-import { Name } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { createStripeSession } from 'services/audius-backend/stripe'
-import { getContext } from 'store/effects'
+import { Name } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { createStripeSession } from '~/services/audius-backend/stripe'
+import { getContext } from '~/store/effects'
 
 import { setVisibility } from '../modals/parentSlice'
 import { toast } from '../toast/slice'

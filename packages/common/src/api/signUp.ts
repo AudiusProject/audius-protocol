@@ -1,10 +1,10 @@
 import { isEmpty } from 'lodash'
 
-import { createApi } from 'audius-query'
-import { FeatureFlags } from 'services/remote-config/feature-flags'
-import { IntKeys } from 'services/remote-config/types'
-import { parseHandleReservedStatusFromSocial } from 'utils/handleReservedStatus'
-import { promiseWithTimeout } from 'utils/promiseWithTimeout'
+import { createApi } from '~/audius-query'
+import { FeatureFlags } from '~/services/remote-config/feature-flags'
+import { IntKeys } from '~/services/remote-config/types'
+import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatus'
+import { promiseWithTimeout } from '~/utils/promiseWithTimeout'
 
 import { userApiFetch } from './user'
 

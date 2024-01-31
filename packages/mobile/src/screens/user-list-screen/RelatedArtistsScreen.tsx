@@ -4,7 +4,7 @@ import {
   relatedArtistsUserListActions,
   relatedArtistsUserListSelectors,
   RELATED_ARTISTS_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { IconUserGroup } from '@audius/harmony-native'

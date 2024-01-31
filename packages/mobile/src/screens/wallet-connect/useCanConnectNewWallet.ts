@@ -1,4 +1,4 @@
-import { tokenDashboardPageSelectors } from '@audius/common'
+import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 const { getConfirmingWalletStatus, getRemoveWallet } =

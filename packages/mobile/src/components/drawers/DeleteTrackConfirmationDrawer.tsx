@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { cacheTracksActions } from '@audius/common'
+import { cacheTracksActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'

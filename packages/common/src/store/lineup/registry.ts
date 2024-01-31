@@ -1,4 +1,4 @@
-import { LineupState } from 'models/Lineup'
+import { LineupState } from '~/models/Lineup'
 import {
   aiPageLineupActions,
   aiPageSelectors,
@@ -25,7 +25,7 @@ import {
   trendingPlaylistsPageLineupSelectors,
   trendingUndergroundPageLineupActions,
   trendingUndergroundPageLineupSelectors
-} from 'store/pages'
+} from '~/store/pages'
 
 import { CommonState } from '..'
 

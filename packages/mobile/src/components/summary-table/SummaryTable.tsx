@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import React, { useCallback, useState } from 'react'
 
-import { removeNullable } from '@audius/common'
+import { removeNullable } from '@audius/common/utils'
 import { LayoutAnimation, View } from 'react-native'
 
 import { Text } from 'app/components/core'

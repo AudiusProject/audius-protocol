@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { IntKeys } from 'services/remote-config'
+import { IntKeys } from '~/services/remote-config'
 
 import { useRemoteVar } from '../useRemoteVar'
 

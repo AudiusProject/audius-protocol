@@ -1,4 +1,4 @@
-import { OverflowAction, OverflowActionCallbacks } from '@audius/common'
+import { OverflowAction, OverflowActionCallbacks } from '@audius/common/store'
 
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 

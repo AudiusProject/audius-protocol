@@ -1,17 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable, AccessConditions } from '@audius/common'
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
-  TrackAvailabilityType,
+  isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentCollectibleGated,
-  FeatureFlags,
-  removeNullable,
   isContentUSDCPurchaseGated,
-  useAccessAndRemixSettings,
-  useFeatureFlag
-} from '@audius/common'
+  StreamTrackAvailabilityType
+} from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
 import { IconCaretLeft, IconCart } from '@audius/harmony-native'
@@ -48,11 +48,12 @@ const messages = {
   done: 'Done'
 }
 
-const publicAvailability = TrackAvailabilityType.PUBLIC
-const premiumAvailability = TrackAvailabilityType.USDC_PURCHASE
-const specialAccessAvailability = TrackAvailabilityType.SPECIAL_ACCESS
-const collectibleGatedAvailability = TrackAvailabilityType.COLLECTIBLE_GATED
-const hiddenAvailability = TrackAvailabilityType.HIDDEN
+const publicAvailability = StreamTrackAvailabilityType.PUBLIC
+const premiumAvailability = StreamTrackAvailabilityType.USDC_PURCHASE
+const specialAccessAvailability = StreamTrackAvailabilityType.SPECIAL_ACCESS
+const collectibleGatedAvailability =
+  StreamTrackAvailabilityType.COLLECTIBLE_GATED
+const hiddenAvailability = StreamTrackAvailabilityType.HIDDEN
 
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
@@ -104,21 +105,21 @@ export const AccessAndSaleScreen = () => {
   const initialStreamConditions = initialValues?.stream_conditions ?? null
   const initialAvailability = useMemo(() => {
     if (isUsdcEnabled && isContentUSDCPurchaseGated(streamConditions)) {
-      return TrackAvailabilityType.USDC_PURCHASE
+      return StreamTrackAvailabilityType.USDC_PURCHASE
     }
     if (isContentCollectibleGated(streamConditions)) {
-      return TrackAvailabilityType.COLLECTIBLE_GATED
+      return StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
     if (
       isContentFollowGated(streamConditions) ||
       isContentTipGated(streamConditions)
     ) {
-      return TrackAvailabilityType.SPECIAL_ACCESS
+      return StreamTrackAvailabilityType.SPECIAL_ACCESS
     }
     if (isUnlisted && !isScheduledRelease) {
-      return TrackAvailabilityType.HIDDEN
+      return StreamTrackAvailabilityType.HIDDEN
     }
-    return TrackAvailabilityType.PUBLIC
+    return StreamTrackAvailabilityType.PUBLIC
     // we only care about what the initial value was here
     // eslint-disable-next-line
   }, [])
@@ -141,7 +142,7 @@ export const AccessAndSaleScreen = () => {
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
 
   const [availability, setAvailability] =
-    useState<TrackAvailabilityType>(initialAvailability)
+    useState<StreamTrackAvailabilityType>(initialAvailability)
 
   const previousStreamConditions = useMemo(
     () => streamConditions ?? initialStreamConditions,
@@ -179,7 +180,7 @@ export const AccessAndSaleScreen = () => {
   const items = {
     [publicAvailability]: (
       <PublicAvailabilityRadioField
-        selected={availability === TrackAvailabilityType.PUBLIC}
+        selected={availability === StreamTrackAvailabilityType.PUBLIC}
       />
     )
   }
@@ -187,7 +188,7 @@ export const AccessAndSaleScreen = () => {
   if (isUsdcEnabled) {
     items[premiumAvailability] = (
       <PremiumRadioField
-        selected={availability === TrackAvailabilityType.USDC_PURCHASE}
+        selected={availability === StreamTrackAvailabilityType.USDC_PURCHASE}
         disabled={noUsdcGate}
         disabledContent={noUsdcGate}
         previousStreamConditions={previousStreamConditions}
@@ -197,7 +198,7 @@ export const AccessAndSaleScreen = () => {
 
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
-      selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
+      selected={availability === StreamTrackAvailabilityType.SPECIAL_ACCESS}
       disabled={noSpecialAccessGate}
       disabledContent={noSpecialAccessGateFields}
       previousStreamConditions={previousStreamConditions}
@@ -206,7 +207,7 @@ export const AccessAndSaleScreen = () => {
 
   items[collectibleGatedAvailability] = (
     <CollectibleGatedAvailability
-      selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
+      selected={availability === StreamTrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={noCollectibleGate}
       disabledContent={noCollectibleGateFields}
       previousStreamConditions={previousStreamConditions}
@@ -215,7 +216,7 @@ export const AccessAndSaleScreen = () => {
 
   items[hiddenAvailability] = (
     <HiddenAvailability
-      selected={availability === TrackAvailabilityType.HIDDEN}
+      selected={availability === StreamTrackAvailabilityType.HIDDEN}
       disabled={noHidden}
       isScheduledRelease={isScheduledRelease}
       isUnlisted={isUnlisted}

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  Notifications,
   BrowserNotificationSetting,
-  EmailFrequency
-} from '@audius/common'
+  EmailFrequency,
+  Notifications
+} from '@audius/common/store'
 import { Modal, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 

@@ -1,4 +1,4 @@
-import { Favorite } from 'models/Favorite'
+import { Favorite } from '~/models/Favorite'
 
 import { LibraryCategory, LibraryCategoryType, SavedPageTabs } from './types'
 

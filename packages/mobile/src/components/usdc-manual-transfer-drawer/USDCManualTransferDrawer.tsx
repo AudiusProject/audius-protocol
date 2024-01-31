@@ -1,4 +1,4 @@
-import { useUSDCManualTransferModal } from '@audius/common'
+import { useUSDCManualTransferModal } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'

@@ -1,8 +1,8 @@
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import {
   tippingSelectors,
   topSupportersUserListSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

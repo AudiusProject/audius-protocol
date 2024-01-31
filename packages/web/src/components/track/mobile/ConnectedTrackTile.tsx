@@ -1,28 +1,30 @@
 import { memo, MouseEvent } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
   FavoriteType,
+  ID
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   themeSelectors,
-  RepostType,
+  OverflowAction,
+  OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
-  playerSelectors,
-  useGatedContentAccess,
-  FeatureFlags,
-  Genre
-} from '@audius/common'
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

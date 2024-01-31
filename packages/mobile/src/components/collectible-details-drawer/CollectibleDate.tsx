@@ -1,4 +1,4 @@
-import { formatDateWithTimezoneOffset } from '@audius/common'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'

@@ -5,7 +5,7 @@ import {
   aiPageLineupActions as tracksActions,
   aiPageActions,
   aiPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

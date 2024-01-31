@@ -1,4 +1,4 @@
-import { Status } from '@audius/common'
+import { Status } from '@audius/common/models'
 
 import { ActionsMap } from 'utils/reducer'
 

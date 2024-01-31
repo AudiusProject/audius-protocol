@@ -1,10 +1,10 @@
 import {
   accountActions,
   accountSelectors,
+  accountSagas as commonAccountSagas,
   settingsPageActions,
-  modalsActions,
-  accountSagas as commonAccountSagas
-} from '@audius/common'
+  modalsActions
+} from '@audius/common/store'
 import { call, getContext, put, select, takeEvery } from 'typed-redux-saga'
 
 import webCommonAccountSagas from 'common/store/account/sagas'

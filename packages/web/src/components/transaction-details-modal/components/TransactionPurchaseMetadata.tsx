@@ -1,9 +1,9 @@
+import { InAppAudioPurchaseMetadata } from '@audius/common/store'
 import {
-  InAppAudioPurchaseMetadata,
   formatNumberString,
-  Nullable,
-  makeSolanaTransactionLink
-} from '@audius/common'
+  makeSolanaTransactionLink,
+  Nullable
+} from '@audius/common/utils'
 
 import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import {

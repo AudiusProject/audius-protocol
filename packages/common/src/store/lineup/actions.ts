@@ -1,4 +1,4 @@
-import { Collection, LineupEntry, PlaybackSource } from 'models'
+import { Collection, LineupEntry, PlaybackSource } from '~/models'
 
 import { ID, UID } from '../../models/Identifiers'
 import { Track, TrackMetadata } from '../../models/Track'

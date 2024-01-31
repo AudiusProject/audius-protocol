@@ -1,4 +1,4 @@
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 
 import type { Image } from 'app/types/image'
 

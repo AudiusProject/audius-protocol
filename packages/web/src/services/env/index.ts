@@ -1,5 +1,4 @@
-import { Environment } from '@audius/common'
-import type { Env } from '@audius/common'
+import { Environment, Env } from '@audius/common/services'
 
 import { env as envDev } from './env.dev'
 import { env as envProd } from './env.prod'

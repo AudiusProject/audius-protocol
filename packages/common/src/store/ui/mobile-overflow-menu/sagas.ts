@@ -1,6 +1,6 @@
 import { put, takeEvery } from 'typed-redux-saga'
 
-import { setVisibility } from 'store/ui/modals/parentSlice'
+import { setVisibility } from '~/store/ui/modals/parentSlice'
 
 import { open } from './slice'
 

@@ -1,9 +1,7 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
-import {
-  USDCTransactionDetails,
-  formatUSDCWeiToUSDString
-} from '@audius/common'
+import { USDCTransactionDetails } from '@audius/common/models'
+import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import moment from 'moment'
 
 import { Table } from 'components/table'

@@ -1,4 +1,4 @@
-import { playlistUpdatesSagas } from '@audius/common'
+import { playlistUpdatesSagas } from '@audius/common/store'
 
 import { playlistUpdatesPollingDaemon } from './playlistUpdatesPollingDaemon'
 

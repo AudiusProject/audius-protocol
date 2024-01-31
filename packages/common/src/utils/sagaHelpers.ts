@@ -14,7 +14,7 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
-import { waitForReachability } from 'store/reachability/sagas'
+import { waitForReachability } from '~/store/reachability/sagas'
 
 import { Status } from '../models/Status'
 

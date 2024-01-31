@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
 
-import type { Nullable, BNUSDC } from '@audius/common'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import type { BNUSDC } from '@audius/common/models'
 import {
-  PurchaseMethod,
-  formatUSDCWeiToFloorCentsNumber,
   formatCurrencyBalance,
-  PurchaseVendor,
-  removeNullable
-} from '@audius/common'
+  removeNullable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import BN from 'bn.js'
 import { FlatList, View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

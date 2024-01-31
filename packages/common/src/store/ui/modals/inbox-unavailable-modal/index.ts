@@ -1,6 +1,6 @@
 import { Action } from '@reduxjs/toolkit'
 
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 import { createModal } from '../createModal'
 

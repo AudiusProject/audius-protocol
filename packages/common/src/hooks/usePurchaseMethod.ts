@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod } from '~/models/PurchaseContent'
 
 import { useUSDCBalance } from './useUSDCBalance'
 

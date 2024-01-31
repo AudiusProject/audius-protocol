@@ -1,4 +1,5 @@
-import { SmartCollection, CollectionsPageType } from '@audius/common'
+import { SmartCollection } from '@audius/common/models'
+import { CollectionsPageType } from '@audius/common/store'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 

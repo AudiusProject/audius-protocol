@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 
 import {
-  musicConfettiActions,
   accountSelectors,
-  challengesSelectors
-} from '@audius/common'
+  challengesSelectors,
+  musicConfettiActions
+} from '@audius/common/store'
 import { connect, useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'

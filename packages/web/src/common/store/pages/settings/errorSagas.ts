@@ -1,4 +1,4 @@
-import { settingsPageActions as actions } from '@audius/common'
+import { settingsPageActions as actions } from '@audius/common/store'
 
 import { createErrorSagas } from '../../../../utils/errorSagas'
 

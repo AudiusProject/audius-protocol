@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  Nullable,
-  ShareSoundToTiktokModalStatus,
   shareSoundToTiktokModalActions,
-  shareSoundToTiktokModalSelectors
-} from '@audius/common'
+  shareSoundToTiktokModalSelectors,
+  ShareSoundToTiktokModalStatus
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import {
   Button,
   Modal,

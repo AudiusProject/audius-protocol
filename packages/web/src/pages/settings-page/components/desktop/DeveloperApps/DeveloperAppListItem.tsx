@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { DeveloperApp } from '@audius/common'
+import { DeveloperApp } from '@audius/common/api'
 import {
   IconButton,
   IconKebabHorizontal,

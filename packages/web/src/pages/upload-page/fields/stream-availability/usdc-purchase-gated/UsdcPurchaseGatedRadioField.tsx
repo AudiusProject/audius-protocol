@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
-  FeatureFlags,
   Name,
-  AccessConditions,
-  TrackAvailabilityType,
-  useAccessAndRemixSettings,
-  useFeatureFlag
-} from '@audius/common'
+  StreamTrackAvailabilityType,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'
@@ -78,7 +77,7 @@ export const UsdcPurchaseGatedRadioField = (
       icon={<IconCart />}
       label={messages.usdcPurchase}
       description={messages.usdcPurchaseSubtitle}
-      value={TrackAvailabilityType.USDC_PURCHASE}
+      value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
       hintIcon={<IconStars />}
       hintContent={!isUsdcUploadEnabled ? helpContent : undefined}

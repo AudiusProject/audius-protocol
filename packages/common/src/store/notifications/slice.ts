@@ -1,7 +1,7 @@
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'
 
-import { Status } from 'models/Status'
-import { signOut } from 'store/sign-out/slice'
+import { Status } from '~/models/Status'
+import { signOut } from '~/store/sign-out/slice'
 
 import {
   AddNotificationsAction,

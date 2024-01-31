@@ -1,6 +1,6 @@
 import { MouseEvent as ReactMouseEvent, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import {

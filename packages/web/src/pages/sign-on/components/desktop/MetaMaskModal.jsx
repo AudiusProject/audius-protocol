@@ -1,6 +1,6 @@
 import { Component } from 'react'
 
-import { BackendUtils as Utils } from '@audius/common'
+import { BackendUtils as Utils } from '@audius/common/services'
 import { Box, Text } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

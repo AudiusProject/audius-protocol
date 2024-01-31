@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import type { CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common/store'
 import {
-  uploadActions,
-  cacheTracksSelectors,
   accountSelectors,
+  cacheTracksSelectors,
   trackPageActions,
+  uploadActions,
   uploadSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

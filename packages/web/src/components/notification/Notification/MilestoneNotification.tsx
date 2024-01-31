@@ -1,15 +1,13 @@
 import { useCallback } from 'react'
 
+import { Name, User } from '@audius/common/models'
 import {
-  Name,
-  User,
-  Nullable,
-  formatCount,
   notificationsSelectors,
   Achievement,
   EntityType,
   MilestoneNotification as MilestoneNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatCount, Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

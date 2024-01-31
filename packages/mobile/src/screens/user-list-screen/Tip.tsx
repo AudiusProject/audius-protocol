@@ -1,5 +1,5 @@
-import type { StringWei } from '@audius/common'
-import { formatWei, stringWeiToBN } from '@audius/common'
+import type { StringWei } from '@audius/common/models'
+import { stringWeiToBN, formatWei } from '@audius/common/utils'
 import { View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'

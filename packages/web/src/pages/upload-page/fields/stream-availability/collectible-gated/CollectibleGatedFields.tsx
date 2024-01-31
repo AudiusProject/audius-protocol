@@ -1,11 +1,16 @@
 import { useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
+  AccessConditions,
   Chain,
-  collectiblesSelectors,
-  isContentCollectibleGated,
-  TrackAvailabilityType
-} from '@audius/common'
+  StreamTrackAvailabilityType,
+  isContentCollectibleGated
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { collectiblesSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { Box, IconInfo } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
@@ -14,9 +19,10 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
   AccessAndSaleFormValues,
-  AVAILABILITY_TYPE,
+  DOWNLOAD_CONDITIONS,
+  STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
-} from '../../AccessAndSaleField'
+} from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
 
@@ -27,7 +33,9 @@ const messages = {
   pickACollection: 'Pick a Collection',
   compatibilityTitle: "Not seeing what you're looking for?",
   compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.'
+    'Unverified Solana NFT Collections are not compatible at this time.',
+  premiumDownloads:
+    'Setting your track to Collectible Gated will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 type CollectibleGatedFieldsProps = {
@@ -37,7 +45,7 @@ type CollectibleGatedFieldsProps = {
 export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   const { disabled } = props
   const [, , { setValue: setAvailabilityValue }] = useField({
-    name: AVAILABILITY_TYPE
+    name: STREAM_AVAILABILITY_TYPE
   })
   const [
     { value: streamConditionsValue },
@@ -47,6 +55,11 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -147,7 +160,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
                 slug: value
               }
             })
-            setAvailabilityValue(TrackAvailabilityType.COLLECTIBLE_GATED)
+            setAvailabilityValue(StreamTrackAvailabilityType.COLLECTIBLE_GATED)
           } else if (solCollectionMap[value]) {
             setStreamConditionsValue({
               nft_collection: {
@@ -158,7 +171,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
                 externalLink: solCollectionMap[value].externalLink
               }
             })
-            setAvailabilityValue(TrackAvailabilityType.COLLECTIBLE_GATED)
+            setAvailabilityValue(StreamTrackAvailabilityType.COLLECTIBLE_GATED)
           }
         }}
         size='large'
@@ -167,6 +180,14 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         footer={renderFooter()}
         disabled={disabled}
       />
+      {isLosslessDownloadsEnabled && downloadConditions ? (
+        <Box mt='l'>
+          <HelpCallout
+            icon={<IconInfo />}
+            content={messages.premiumDownloads}
+          />
+        </Box>
+      ) : null}
     </div>
   )
 }

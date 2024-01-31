@@ -6,15 +6,15 @@
 // import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 // import signOutSagas from 'common/store/sign-out/sagas'
 
-import { accountSagas } from 'store/account'
-import { buyUSDCSagas } from 'store/buy-usdc'
-import { sagas as castSagas } from 'store/cast/sagas'
-import { gatedContentSagas } from 'store/gated-content'
-import { chatSagas } from 'store/pages/chat'
-import { playbackPositionSagas } from 'store/playback-position'
-import { playerSagas } from 'store/player'
-import { purchaseContentSagas } from 'store/purchase-content'
-import remoteConfigSagas from 'store/remote-config/sagas'
+import { accountSagas } from '~/store/account'
+import { buyUSDCSagas } from '~/store/buy-usdc'
+import { sagas as castSagas } from '~/store/cast/sagas'
+import { gatedContentSagas } from '~/store/gated-content'
+import { chatSagas } from '~/store/pages/chat'
+import { playbackPositionSagas } from '~/store/playback-position'
+import { playerSagas } from '~/store/player'
+import { purchaseContentSagas } from '~/store/purchase-content'
+import remoteConfigSagas from '~/store/remote-config/sagas'
 import {
   searchUsersModalSagas,
   toastSagas,
@@ -27,7 +27,7 @@ import {
   uploadConfirmationModalUISagas,
   publishTrackConfirmationModalUISagas,
   modalsSagas
-} from 'store/ui'
+} from '~/store/ui'
 
 import { buyCryptoSagas } from './buy-crypto'
 import { playlistUpdatesSagas } from './playlist-updates'

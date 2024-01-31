@@ -1,8 +1,9 @@
 import { CSSProperties, MouseEventHandler, ReactNode } from 'react'
+
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
-import { TwitterProfile } from '@audius/common'
+import { TwitterProfile } from '@audius/common/store'
 import { captureException } from '@sentry/browser'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'

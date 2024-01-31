@@ -1,16 +1,18 @@
 import { useCallback, useEffect } from 'react'
 
-import type { Maybe, CommonState } from '@audius/common'
+import { IntKeys, StringKeys } from '@audius/common/services'
+import type { CommonState } from '@audius/common/store'
 import {
-  IntKeys,
-  StringKeys,
   challengesSelectors,
-  audioRewardsPageActions,
-  ClaimStatus,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  ClaimStatus
+} from '@audius/common/store'
+import {
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
-} from '@audius/common'
+} from '@audius/common/utils'
+import type { Maybe } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
