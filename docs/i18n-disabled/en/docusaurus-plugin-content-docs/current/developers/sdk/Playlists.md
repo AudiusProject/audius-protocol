@@ -272,13 +272,21 @@ const { playlistId } = await audiusSdk.playlists.createPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                                                                                              | Description                                                                   | Required?    |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- | :----------- |
-| `coverArtFile` | `File`                                                                                                                                            | A file that will be used as the cover art for the playlist                    | _Optional_   |
-| `metadata`     | <code>{<br/>&nbsp;&nbsp;playlistName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;isPrivate?: boolean;&nbsp;&nbsp;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
-| `onProgress`   | `(progress: number) => void`                                                                                                                      | A function that will be called with progress events as the image file uploads | _Optional_   |
-| `trackIds`     | `Array<string>`                                                                                                                                   | An array of track IDs to be included in the playlist                          | **Required** |
-| `userId`       | `string`                                                                                                                                          | The ID of the user                                                            | **Required** |
+| Name           | Type                         | Description                                                                   | Required?    |
+| :------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile` | `File`                       | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`     | _see code sample below_      | An object containing the details of the playlist                              | **Required** |
+| `onProgress`   | `(progress: number) => void` | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackIds`     | `Array<string>`              | An array of track IDs to be included in the playlist                          | **Required** |
+| `userId`       | `string`                     | The ID of the user                                                            | **Required** |
+
+```json
+{
+  playlistName: string;
+  description?: string;
+  isPrivate?: boolean;
+}
+```
 
 #### `advancedOptions`
 
@@ -360,14 +368,27 @@ const { playlistId } = await audiusSdk.playlists.uploadPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type                                                                                                                                                                                                                                                                                                | Description                                                                   | Required?    |
-| :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `coverArtFile`   | `File`                                                                                                                                                                                                                                                                                              | A file that will be used as the cover art for the playlist                    | _Optional_   |
-| `metadata`       | <code>{ <br/>&nbsp;&nbsp;genre: Genre;<br/>&nbsp;&nbsp;playlistName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;license?: string; <br/>&nbsp;&nbsp;mood?: Mood; <br/>&nbsp;&nbsp;releaseDate?: Date; <br/>&nbsp;&nbsp;tags?: string; <br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
-| `onProgress`     | `(progress: number) => void`                                                                                                                                                                                                                                                                        | A function that will be called with progress events as the image file uploads | _Optional_   |
-| `trackFiles`     | `Array<File>`                                                                                                                                                                                                                                                                                       | An array of track audio files                                                 | **Required** |
-| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                                                                                                                                        | An array of track files                                                       | _Optional_   |
-| `userId`         | `string`                                                                                                                                                                                                                                                                                            | The ID of the user                                                            | **Required** |
+| Name             | Type                                                         | Description                                                                   | Required?    |
+| :--------------- | :----------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile`   | `File`                                                       | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`       | _see code sample below_                                      | An object containing the details of the playlist                              | **Required** |
+| `onProgress`     | `(progress: number) => void`                                 | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackFiles`     | `Array<File>`                                                | An array of track audio files                                                 | **Required** |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]` | An array of track files                                                       | _Optional_   |
+| `userId`         | `string`                                                     | The ID of the user                                                            | **Required** |
+
+```json
+{
+  playlistName?: string;
+  description?: string;
+  playlistContents?: {trackId: string, time: number}[],
+  license?: string;
+  mood?: Mood;
+  releaseDate?: Date;
+  tags?: string;
+  upc?: string;
+}
+```
 
 #### `advancedOptions`
 
@@ -524,13 +545,26 @@ const { playlistId } = await audiusSdk.playlists.updatePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                                                                                                                                                                                                                                                                                    | Description                                                                   | Required?    |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `playlistId`   | `string`                                                                                                                                                                                                                                                                                                                                | The ID of the playlist                                                        | **Required** |
-| `userId`       | `string`                                                                                                                                                                                                                                                                                                                                | The ID of the User                                                            | **Required** |
-| `coverArtFile` | `string`                                                                                                                                                                                                                                                                                                                                | A file that will be used as the cover art for the playlist                    | _Optional_   |
-| `metadata`     | <code>{<br/>&nbsp;&nbsp;playlistName?: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;playlistContents?: {trackId: string, time: number}[],<br/>&nbsp;&nbsp;license?: string;<br/>&nbsp;&nbsp;mood?: Mood;<br/>&nbsp;&nbsp;releaseDate?: Date;<br/>&nbsp;&nbsp;tags?: string;<br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
-| `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                                                                                                                            | A function that will be called with progress events as the image file uploads | _Optional_   |
+| Name           | Type                         | Description                                                                   | Required?    |
+| :------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `playlistId`   | `string`                     | The ID of the playlist                                                        | **Required** |
+| `userId`       | `string`                     | The ID of the User                                                            | **Required** |
+| `coverArtFile` | `string`                     | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`     | _see code sample below_      | An object containing the details of the playlist                              | **Required** |
+| `onProgress`   | `(progress: number) => void` | A function that will be called with progress events as the image file uploads | _Optional_   |
+
+```json
+{
+  playlistName?: string;
+  description?: string;
+  playlistContents?: {trackId: string, time: number}[],
+  license?: string;
+  mood?: Mood;
+  releaseDate?: Date;
+  tags?: string;
+  upc?: string;
+}
+```
 
 #### `advancedOptions`
 
@@ -613,11 +647,17 @@ await audiusSdk.playlists.favoritePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                                                         | Description                                     | Required?    |
-| :----------- | :----------------------------------------------------------- | :---------------------------------------------- | :----------- |
-| `playlistId` | `string`                                                     | The ID of the playlist                          | **Required** |
-| `userId`     | `string`                                                     | The ID of the User                              | **Required** |
-| `metadata`   | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | An object containing details about the favorite | _Optional_   |
+| Name         | Type                    | Description                                     | Required?    |
+| :----------- | :---------------------- | :---------------------------------------------- | :----------- |
+| `playlistId` | `string`                | The ID of the playlist                          | **Required** |
+| `userId`     | `string`                | The ID of the User                              | **Required** |
+| `metadata`   | _see code sample below_ | An object containing details about the favorite | _Optional_   |
+
+```json
+{
+  isSaveOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 
@@ -700,11 +740,17 @@ await audiusSdk.playlists.repostPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                                                           | Description                                   | Required?    |
-| :----------- | :------------------------------------------------------------- | :-------------------------------------------- | :----------- |
-| `playlistId` | `string`                                                       | The ID of the playlist                        | **Required** |
-| `userId`     | `string`                                                       | The ID of the User                            | **Required** |
-| `metadata`   | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | An object containing details about the repost | _Optional_   |
+| Name         | Type                    | Description                                   | Required?    |
+| :----------- | :---------------------- | :-------------------------------------------- | :----------- |
+| `playlistId` | `string`                | The ID of the playlist                        | **Required** |
+| `userId`     | `string`                | The ID of the User                            | **Required** |
+| `metadata`   | _see code sample below_ | An object containing details about the repost | _Optional_   |
+
+```json
+{
+  isRepostOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 
