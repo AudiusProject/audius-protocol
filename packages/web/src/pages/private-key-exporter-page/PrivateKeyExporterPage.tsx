@@ -25,6 +25,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import Switch from 'components/switch/Switch'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
 import { SETTINGS_PAGE, TRENDING_PAGE } from 'utils/route'
 
@@ -333,6 +334,7 @@ const AgreeAndContinue = () => {
 }
 
 export const PrivateKeyExporterPage = () => {
+  useRequiresAccount()
   const record = useRecord()
   const user = useSelector(getAccountUser) ?? undefined
   const [hasViewed, setHasViewed] = useState(false)
@@ -348,7 +350,7 @@ export const PrivateKeyExporterPage = () => {
     }
   }, [user, hasViewed, record])
   return (
-    <Flex direction='column'>
+    <Flex direction='column' css={{ width: '100%' }}>
       <Header />
       <Box
         mt='3xl'
@@ -358,7 +360,8 @@ export const PrivateKeyExporterPage = () => {
         border='strong'
         borderRadius='m'
         css={{
-          margin: '48px 56px 96px',
+          margin: '48px auto',
+          maxWidth: 960,
           boxShadow:
             '0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)'
         }}
@@ -374,6 +377,7 @@ export const PrivateKeyExporterPage = () => {
         <Divider orientation='horizontal' />
         <AgreeAndContinue />
       </Box>
+      <Box pt='3xl' />
     </Flex>
   )
 }
