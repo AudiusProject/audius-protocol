@@ -22,7 +22,6 @@ import {
   useFeatureFlag,
   AccessConditions
 } from '@audius/common'
-import { RadioButtonGroup } from '@audius/stems'
 import {
   IconCart,
   IconCollectible,
@@ -31,6 +30,7 @@ import {
   IconSpecialAccess,
   IconVisibilityPublic
 } from '@audius/harmony'
+import { RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'

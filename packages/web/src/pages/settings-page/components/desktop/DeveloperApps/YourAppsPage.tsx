@@ -1,6 +1,6 @@
 import { Status, accountSelectors, useGetDeveloperApps } from '@audius/common'
-import { Button, ButtonSize, ButtonType, ModalContentText } from '@audius/stems'
 import { IconPlus } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, ModalContentText } from '@audius/stems'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

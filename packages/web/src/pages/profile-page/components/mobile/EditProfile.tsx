@@ -1,5 +1,6 @@
-import { IconLink, IconTikTok } from '@audius/harmony'
 import {
+  IconLink,
+  IconTikTok,
   IconTwitter as IconTwitterBird,
   IconInstagram,
   IconDonate

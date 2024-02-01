@@ -1,5 +1,6 @@
-import { IconAudiusLogoHorizontalColor, IconTelegram } from '@audius/harmony'
 import {
+  IconAudiusLogoHorizontalColor,
+  IconTelegram,
   IconInstagram,
   IconTwitter as IconTwitterBird,
   IconDiscord

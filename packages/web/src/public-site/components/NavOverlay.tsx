@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { IconSupport, IconMerch, IconBlog, IconFoundation } from '@audius/stems'
+
 import {
   IconAudiusLogoHorizontal,
   IconInstagram,
@@ -9,6 +9,7 @@ import {
   IconTelegram,
   IconCloudDownload as IconDownloadQueued
 } from '@audius/harmony'
+import { IconSupport, IconMerch, IconBlog, IconFoundation } from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'

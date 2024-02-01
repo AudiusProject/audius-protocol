@@ -1,4 +1,11 @@
 import {
+  IconEmbed,
+  IconLink,
+  IconMessage,
+  IconShare,
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import {
   Button,
   ButtonProps,
   ButtonType,
@@ -7,13 +14,6 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import {
-  IconEmbed,
-  IconLink,
-  IconMessage,
-  IconShare,
-  IconTwitter as IconTwitterBird
-} from '@audius/harmony'
 import cn from 'classnames'
 
 import { messages } from '../messages'

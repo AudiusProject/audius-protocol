@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { User, chatActions } from '@audius/common'
+import { IconMessageUnblock as IconUnblockMessages } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -10,7 +11,6 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import { IconMessageUnblock as IconUnblockMessages } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'

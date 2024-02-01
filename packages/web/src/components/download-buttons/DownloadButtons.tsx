@@ -7,8 +7,8 @@ import {
   useDownloadTrackButtons,
   toastActions
 } from '@audius/common'
-import { IconButton } from '@audius/stems'
 import { IconCloudDownload } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'

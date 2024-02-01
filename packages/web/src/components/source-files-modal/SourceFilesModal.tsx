@@ -6,6 +6,7 @@ import {
   StemUpload,
   Download
 } from '@audius/common'
+import { IconRemove } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -13,7 +14,6 @@ import {
   Modal,
   IconButton
 } from '@audius/stems'
-import { IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

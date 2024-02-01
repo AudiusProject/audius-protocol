@@ -1,6 +1,6 @@
 import { DogEarType } from '@audius/common'
 import {
-  IconVisibilityHidden as IconVisibilityHidden,
+  IconVisibilityHidden,
   IconStar,
   IconSpecialAccess,
   IconCart,

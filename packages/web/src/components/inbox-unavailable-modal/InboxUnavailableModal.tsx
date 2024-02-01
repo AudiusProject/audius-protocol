@@ -12,7 +12,11 @@ import {
   tippingActions,
   useInboxUnavailableModal
 } from '@audius/common'
-import { IconMessageUnblock as IconUnblockMessages } from '@audius/harmony'
+import {
+  IconMessageUnblock as IconUnblockMessages,
+  IconMessageLocked,
+  IconTipping
+} from '@audius/harmony'
 import {
   ModalTitle,
   Modal,
@@ -22,7 +26,6 @@ import {
   ModalFooter,
   ButtonType
 } from '@audius/stems'
-import { IconMessageLocked, IconTipping } from '@audius/harmony'
 import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 

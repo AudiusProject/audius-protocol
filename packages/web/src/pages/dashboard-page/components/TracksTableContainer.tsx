@@ -6,9 +6,7 @@ import {
   IconClose,
   IconSpecialAccess,
   IconCollectible,
-  IconSearch
-} from '@audius/harmony'
-import {
+  IconSearch,
   IconVisibilityHidden,
   IconVisibilityPublic,
   IconCart

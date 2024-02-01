@@ -8,8 +8,10 @@ import {
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
-import { IconPlaybackPlay as IconPlay } from '@audius/harmony'
-import { IconSolana as LogoSol } from '@audius/harmony'
+import {
+  IconPlaybackPlay as IconPlay,
+  IconSolana as LogoSol
+} from '@audius/harmony'
 import { LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
