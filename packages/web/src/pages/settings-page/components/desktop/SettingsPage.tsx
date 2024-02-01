@@ -44,7 +44,11 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+import {
+  PRIVACY_POLICY,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  TERMS_OF_SERVICE
+} from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -109,7 +113,8 @@ const messages = {
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
   changePasswordButtonText: 'Change Password',
-  desktopAppButtonText: 'Get The App'
+  desktopAppButtonText: 'Get The App',
+  showPrivateKey: 'Show Private Key (Advanced)'
 }
 
 export type SettingsPageProps = {
@@ -464,6 +469,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.privacy}
           </Link>
         </span>
+        <Link
+          className={cn(styles.link, styles.showPrivateKey)}
+          to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+        >
+          {messages.showPrivateKey}
+        </Link>
       </div>
       <Modal
         title={

@@ -1,3 +1,6 @@
+import { useCallback, useState } from 'react'
+
+import { accountSelectors } from '@audius/common'
 import {
   Box,
   Text,
@@ -12,9 +15,19 @@ import {
   TextLink,
   Button
 } from '@audius/harmony'
-import { Switch } from '@audius/stems'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom'
 
-import Page from 'components/page/Page'
+import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
+import { Avatar } from 'components/avatar/Avatar'
+import Switch from 'components/switch/Switch'
+import { useSelector } from 'utils/reducer'
+import { SETTINGS_PAGE, TRENDING_PAGE } from 'utils/route'
+
+import styles from './PrivateKeyExporterPage.module.css'
+
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   backToSettings: 'Back To Settings',
@@ -56,10 +69,49 @@ const messages = {
   proceed: 'I Understand The Risks'
 }
 
+const AUDIUS_SUPPORT_EMAIL = 'support@audius.co'
+
+const Header = () => {
+  const user = useSelector(getAccountUser) ?? undefined
+  return (
+    <Flex
+      alignItems='center'
+      justifyContent='space-between'
+      backgroundColor='white'
+      pv='xl'
+      css={{
+        paddingLeft: 80,
+        paddingRight: 80
+      }}
+    >
+      <Link to={TRENDING_PAGE}>
+        <img
+          alt='Audius Logo'
+          src={HorizontalLogo}
+          className={styles.horizontalLogo}
+        />
+      </Link>
+      <Flex direction='row-reverse'>
+        <Avatar userId={user?.user_id} css={{ width: 52, height: 52 }} />
+      </Flex>
+    </Flex>
+  )
+}
+
 const BackToSettings = () => {
   const { color } = useTheme()
+  const dispatch = useDispatch()
+  const handleClick = useCallback(() => {
+    dispatch(pushRoute(SETTINGS_PAGE))
+  }, [dispatch])
   return (
-    <Flex alignItems='center' gap='s' pt='xl'>
+    <Flex
+      alignItems='center'
+      gap='s'
+      pt='xl'
+      onClick={handleClick}
+      className={styles.backToSettings}
+    >
       <IconCaretLeft size='m' fill={color.neutral.n800} />
       <Text variant='title'>{messages.backToSettings}</Text>
     </Flex>
@@ -207,8 +259,8 @@ const NeedHelp = () => {
       <Text variant='body' textAlign='left'>
         {messages.featureIntended}&nbsp;
         <TextLink
+          href={`mailto:${AUDIUS_SUPPORT_EMAIL}`}
           target='_blank'
-          isExternal
           css={{ color: color.primary.p500 }}
         >
           {messages.support}
@@ -219,18 +271,24 @@ const NeedHelp = () => {
 }
 
 const AgreeAndContinue = () => {
+  const dispatch = useDispatch()
+  const [agreed, setAgreed] = useState(false)
   const bulletPoints = [
     messages.iUnderstand,
     messages.iAccept,
     messages.iAcknowledge
   ]
+  const handleCancel = useCallback(() => {
+    dispatch(pushRoute(SETTINGS_PAGE))
+  }, [dispatch])
+  const handleProceed = useCallback(() => {}, [])
   return (
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='xl'>
       <Text variant='title' css={{ fontSize: 24 }}>
         {messages.agree}
       </Text>
       <Flex alignItems='flex-start' gap='xl'>
-        <Switch />
+        <Switch isOn={agreed} handleToggle={() => setAgreed(!agreed)} />
         <Flex direction='column' gap='s'>
           {bulletPoints.map((bulletPoint, i) => (
             <Text
@@ -249,8 +307,16 @@ const AgreeAndContinue = () => {
         </Flex>
       </Flex>
       <Flex gap='xl' mt='s'>
-        <Button variant='secondary'>{messages.goBack}</Button>
-        <Button variant='destructive'>{messages.proceed}</Button>
+        <Button variant='secondary' onClick={handleCancel}>
+          {messages.goBack}
+        </Button>
+        <Button
+          variant='destructive'
+          onClick={handleProceed}
+          disabled={!agreed}
+        >
+          {messages.proceed}
+        </Button>
       </Flex>
     </Flex>
   )
@@ -258,14 +324,17 @@ const AgreeAndContinue = () => {
 
 export const PrivateKeyExporterPage = () => {
   return (
-    <Page>
+    <Flex direction='column'>
+      <Header />
       <Box
-        pv='xl'
+        mt='3xl'
+        pt='xl'
         ph='4xl'
         backgroundColor='white'
         border='strong'
         borderRadius='m'
         css={{
+          margin: '48px 56px 96px',
           boxShadow:
             '0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)'
         }}
@@ -281,6 +350,6 @@ export const PrivateKeyExporterPage = () => {
         <Divider orientation='horizontal' />
         <AgreeAndContinue />
       </Box>
-    </Page>
+    </Flex>
   )
 }
