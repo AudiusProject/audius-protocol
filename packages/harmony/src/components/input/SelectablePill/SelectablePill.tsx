@@ -19,14 +19,7 @@ const InputRoot = styled.input({
 })
 
 export const SelectablePill = (props: SelectablePillProps) => {
-  const {
-    isSelected,
-    size = 'small',
-    _isHovered,
-    label,
-    icon: Icon,
-    ...other
-  } = props
+  const { isSelected, size = 'small', _isHovered, icon: Icon, ...other } = props
 
   const { disabled, type } = other
 
@@ -88,7 +81,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
   }
 
   const iconCss = {
-    marginRight: spacing.xs,
     width: spacing.l,
     height: spacing.l,
 
@@ -100,9 +92,11 @@ export const SelectablePill = (props: SelectablePillProps) => {
   const pillContent = (
     <>
       {Icon ? <Icon css={iconCss} /> : null}
-      <Text variant='body' tag='span'>
-        {label}
-      </Text>
+      {'label' in other ? (
+        <Text variant='body' tag='span'>
+          {other.label}
+        </Text>
+      ) : null}
     </>
   )
 

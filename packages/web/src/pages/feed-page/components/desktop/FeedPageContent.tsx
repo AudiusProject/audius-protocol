@@ -16,9 +16,7 @@ import Page from 'components/page/Page'
 import EmptyFeed from 'pages/feed-page/components/EmptyFeed'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 
-import FeedFilters from './FeedFilters'
-
-const initialFilters = [FeedFilter.ALL, FeedFilter.ORIGINAL, FeedFilter.REPOST]
+import { FeedFilters } from './FeedFilters'
 
 const messages = {
   feedHeaderTitle: 'Your Feed'
@@ -81,11 +79,10 @@ const FeedPageContent = ({
   const header = (
     <Header
       primary={messages.feedHeaderTitle}
-      variant={'main'}
+      variant='main'
       rightDecorator={
         <FeedFilters
-          initialFilters={initialFilters}
-          filter={feedFilter}
+          currentFilter={feedFilter}
           didSelectFilter={didSelectFilter}
         />
       }

@@ -16,7 +16,7 @@ import { TrendingPageContentProps } from 'pages/trending-page/types'
 import RewardsBanner from '../RewardsBanner'
 
 import GenreSelectionModal from './GenreSelectionModal'
-import TrendingGenreFilters from './TrendingGenreFilters'
+import { TrendingGenreFilters } from './TrendingGenreFilters'
 import styles from './TrendingPageContent.module.css'
 const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
@@ -29,13 +29,6 @@ const messages = {
   endOfLineupDescription: "Looks like you've reached the end of this list...",
   disabledTabTooltip: 'Nothing available'
 }
-
-const initialGenres = [
-  messages.allGenres,
-  'Electronic',
-  'Hip-Hop/Rap',
-  'Alternative'
-]
 
 const RANK_ICON_COUNT = 5
 
@@ -339,8 +332,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       bottomBar={tabs}
       rightDecorator={
         <TrendingGenreFilters
-          initialGenres={initialGenres}
-          genre={trendingGenre}
+          currentGenre={trendingGenre}
           didSelectGenre={setGenre}
           didSelectMore={() => setModalIsOpen(true)}
         />
