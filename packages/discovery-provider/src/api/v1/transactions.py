@@ -259,6 +259,9 @@ class GetUSDCTransactionHistoryCount(Resource):
             {
                 "user_id": authed_user_id,
                 "transaction_type": args.get("type", None),
+                "include_system_transactions": args.get(
+                    "include_system_transactions", False
+                ),
                 "transaction_method": args.get("method", None),
             }
         )
