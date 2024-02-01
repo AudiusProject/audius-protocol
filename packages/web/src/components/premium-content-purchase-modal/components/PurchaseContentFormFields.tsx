@@ -15,7 +15,6 @@ import {
   IntKeys
 } from '@audius/common'
 import { Flex, IconCheck } from '@audius/harmony'
-import {} from '@audius/stems'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'

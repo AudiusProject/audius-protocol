@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 
 import { IconAllTime, IconCart, IconUserGroup } from '@audius/harmony'
-import {} from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'

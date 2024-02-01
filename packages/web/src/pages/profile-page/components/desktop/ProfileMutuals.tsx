@@ -6,7 +6,6 @@ import {
   cacheUsersSelectors,
   profilePageSelectors
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconUserFollowing } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'

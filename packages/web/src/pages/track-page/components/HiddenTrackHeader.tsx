@@ -1,4 +1,3 @@
-import {} from '@audius/stems'
 import { IconVisibilityHidden } from '@audius/harmony'
 import cn from 'classnames'
 

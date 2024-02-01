@@ -12,7 +12,6 @@ import {
   queueSelectors,
   useGatedContentAccess
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'

@@ -1,4 +1,3 @@
-import {} from '@audius/stems'
 import { IconComponent } from '@audius/harmony'
 
 import { Text } from 'components/typography'

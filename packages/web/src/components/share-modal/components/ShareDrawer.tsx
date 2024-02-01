@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import {} from '@audius/stems'
 import { IconLink, IconShare, IconTwitter } from '@audius/harmony'
 import cn from 'classnames'
 

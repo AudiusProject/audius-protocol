@@ -4,7 +4,6 @@ import {
   collectiblesSelectors,
   useAccessAndRemixSettings
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconCollectible } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'

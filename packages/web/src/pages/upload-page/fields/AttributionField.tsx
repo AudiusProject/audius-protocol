@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import { creativeCommons } from '@audius/common'
 import { IconCcBy as IconCreativeCommons, IconRobot } from '@audius/harmony'
-import {} from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'

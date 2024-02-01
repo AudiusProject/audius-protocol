@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import {} from '@audius/stems'
 import { IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'

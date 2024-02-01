@@ -12,7 +12,6 @@ import {
   IconCart,
   IconRepost
 } from '@audius/harmony'
-import {} from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'

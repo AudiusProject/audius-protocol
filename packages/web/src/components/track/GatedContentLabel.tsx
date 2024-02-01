@@ -4,7 +4,6 @@ import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
 import cn from 'classnames'
 

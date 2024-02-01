@@ -3,7 +3,6 @@ import {
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconInfo } from '@audius/harmony'
 import BN from 'bn.js'
 

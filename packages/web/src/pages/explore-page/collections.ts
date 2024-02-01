@@ -6,7 +6,6 @@ import {
   IconPlaylists as IconExploreTopPlaylists,
   IconCart
 } from '@audius/harmony'
-import {} from '@audius/stems'
 
 import IconCassette from 'assets/img/iconCassette.svg'
 import IconExploreDJ from 'assets/img/iconExploreDJ.svg'

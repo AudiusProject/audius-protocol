@@ -1,4 +1,3 @@
-import {} from '@audius/stems'
 import { IconLock, IconLockUnlocked } from '@audius/harmony'
 import cn from 'classnames'
 

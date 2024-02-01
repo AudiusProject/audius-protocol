@@ -6,7 +6,6 @@ import {
   TikTokProfile,
   TwitterProfile
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconImage, IconUser, IconVerified } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

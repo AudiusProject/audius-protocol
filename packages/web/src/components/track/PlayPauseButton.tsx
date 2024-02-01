@@ -12,7 +12,6 @@ import {
   IconPause,
   IconPlay
 } from '@audius/harmony'
-import {} from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { useFlag } from 'hooks/useRemoteConfig'

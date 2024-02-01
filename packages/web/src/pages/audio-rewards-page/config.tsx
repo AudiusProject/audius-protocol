@@ -6,7 +6,6 @@ import {
   Nullable,
   challengeRewardsConfig
 } from '@audius/common'
-import {} from '@audius/stems'
 import {
   IconArrowRight,
   IconCheck,

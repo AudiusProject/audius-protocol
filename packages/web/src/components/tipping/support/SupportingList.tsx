@@ -11,7 +11,6 @@ import {
   IconTipping as IconTip,
   IconArrowRight as IconArrow
 } from '@audius/harmony'
-import {} from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

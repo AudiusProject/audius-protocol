@@ -7,7 +7,6 @@ import {
   useGatedContentAccessMap,
   UserTrack
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconVisibilityHidden, IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'

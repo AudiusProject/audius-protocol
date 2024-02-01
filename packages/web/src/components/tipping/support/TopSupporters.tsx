@@ -8,7 +8,6 @@ import {
   tippingSelectors,
   MAX_PROFILE_TOP_SUPPORTERS
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconTrophy } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 

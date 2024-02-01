@@ -1,6 +1,5 @@
 import { PropsWithChildren } from 'react'
 
-import {} from '@audius/stems'
 import {
   IconEmailAddress,
   IconPencil,

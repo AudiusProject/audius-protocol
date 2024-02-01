@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common'
-import {} from '@audius/stems'
 import { IconRemove } from '@audius/harmony'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'

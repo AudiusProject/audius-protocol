@@ -13,7 +13,6 @@ import {
   IconTrophy,
   IconTrending
 } from '@audius/harmony'
-import {} from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'

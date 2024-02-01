@@ -8,7 +8,6 @@ import {
   useIsWaitingForValidation
 } from '@audius/common'
 import { TextLink, IconCheck } from '@audius/harmony'
-import {} from '@audius/stems'
 import { useField } from 'formik'
 
 import {

@@ -21,7 +21,6 @@ import {
   IconVisibilityHidden,
   IconTrending
 } from '@audius/harmony'
-import {} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import {} from '@audius/stems'
 import { IconCaretRight, IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'

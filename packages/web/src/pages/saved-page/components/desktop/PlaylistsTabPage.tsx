@@ -9,7 +9,6 @@ import {
   SavedPageTabs,
   statusIsNotFinalized
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconPlus } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 

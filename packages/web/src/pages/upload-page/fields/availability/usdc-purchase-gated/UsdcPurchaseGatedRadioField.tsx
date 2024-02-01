@@ -8,7 +8,6 @@ import {
   useAccessAndRemixSettings,
   useFeatureFlag
 } from '@audius/common'
-import {} from '@audius/stems'
 import { IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalLink } from 'components/link'
