@@ -58,7 +58,7 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
   if (Array.isArray(handle)) {
     handle = handle[0]
   }
-  const user: UserMetadata = yield apiClient.getUserByHandle({
+  const user = yield* call([apiClient, apiClient.getUserByHandle], {
     handle,
     currentUserId: userId,
     retry
@@ -77,13 +77,13 @@ export function* fetchUserByHandle(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // We only need to handle 1 handle
   const retrieveFromSource = function* (handles: (string | number)[]) {
-    return yield* call(retrieveUserByHandle, handles[0].toString(), retry)
+    return yield* retrieveUserByHandle(handles[0].toString(), retry)
   }
 
   const { entries: users } = yield* call(retrieve<UserMetadata>, {
     ids: [handle],
     selectFromCache: function* (handles) {
-      return yield* select(getUsers, { handles: handles.map(toString) })
+      return yield* select(getUsers, { handles: handles as string[] })
     },
     getEntriesTimestamp: function* (handles) {
       return yield* select(getUserTimestamps, {
