@@ -1,8 +1,18 @@
-export const email = ({ name, amount }: { name: string; amount: string }) => {
+export const email = ({
+  name,
+  amount,
+  wallet,
+  signature
+}: {
+  name: string
+  amount: string
+  wallet: string
+  signature: string
+}) => {
   return `
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-<head>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"> 
+<head> 
 	<!--[if gte mso 9]>
 	<xml>
 	<o:OfficeDocumentSettings>
@@ -10,19 +20,19 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 	<o:PixelsPerInch>96</o:PixelsPerInch>
 	</o:OfficeDocumentSettings>
 	</xml>
-	<![endif]-->
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-	<meta name="x-apple-disable-message-reformatting">
-	<title></title>
-	<style>html{-webkit-text-size-adjust:none;-ms-text-size-adjust:none}@media only screen and (max-device-width:600px),only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}@media only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_100 img,.mob_100 table{max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}.creative{width:100%!important;max-width:100%!important}.mail_preheader{display:none!important}form input, form textarea{font-family: Arial, sans-serif;width: 100%;box-sizing: border-box;font-size: 13px;color:#000000;outline:none;padding: 0px 15px;}form textarea{resize:vertical;line-height: normal;padding: 10px 15px;}form button{border: 0px none;cursor:pointer;}</style>
+	<![endif]--> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+	<meta name="viewport" content="width=device-width,initial-scale=1"> 
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/> 
+	<meta name="x-apple-disable-message-reformatting"> 
+	<title></title> 
+	<style>html{-webkit-text-size-adjust:none;-ms-text-size-adjust:none}@media only screen and (max-device-width:600px),only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}@media only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_100 img,.mob_100 table{max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}.creative{width:100%!important;max-width:100%!important}.mail_preheader{display:none!important}form input, form textarea{font-family: Arial, sans-serif;width: 100%;box-sizing: border-box;font-size: 13px;color:#000000;outline:none;padding: 0px 15px;}form textarea{resize:vertical;line-height: normal;padding: 10px 15px;}form button{border: 0px none;cursor:pointer;}</style> 
 	<!--[if (gte mso 9)|(IE)]>
 	<style type="text/css">table {border-collapse: collapse !important;}.outf14{font-size:14px !important;}    .w520px{ width: 520px !important;} .w520px{ width: 520px !important;} .not_for_outlook{mso-hide: all !important;display: none !important;font-size:0;max-height:0;line-height: 0;mso-hide: all;}.outpadding{padding-left: 0 !important;padding-right: 0 !important;}</style>
-	<![endif]-->
-	</head>
-	<body class="body" style="padding:0;margin:0">
-	<div class="full-wrap">
+	<![endif]--> 
+	</head> 
+	<body class="body" style="padding:0;margin:0"> 
+	<div class="full-wrap"> 
 	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="full-wrap">
 	<tr><td align="center" bgcolor="#f5f5f5" style="line-height: normal; hyphens: none;">
 	<div>
@@ -33,7 +43,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 	</div>
 	<!--
 	<![endif]-->
-</div>
+</div>  
 <div>
 	<!--[if (gte mso 9)|(IE)]>
 	<table width="700" border="0" cellspacing="0" cellpadding="0" style="width: 700px;">
@@ -58,7 +68,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 				</td></tr>
 				</table>
 				<![endif]-->
-			</div>
+			</div> 
 			<div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
 			<div>
 				<!--[if (gte mso 9)|(IE)]>
@@ -93,7 +103,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 										<div>
 											<div style="line-height: 34px;">
 												<span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 28px; color: #ffffff;">Transfer Confirmation!</span>
-											</div>
+											</div> 
 											<div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
 											<div style="line-height: 24px;">
 												<span style="font-family: Inter, sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Your Transfer Has Been Started</span>
@@ -118,7 +128,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 								<![endif]-->
 							</td></tr>
 							</table>
-						</div>
+						</div> 
 						<div>
 							<table border="0" cellspacing="0" cellpadding="0" width="100%">
 							<tr><td align="left" valign="top" style="padding: 40px;">
@@ -129,7 +139,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 											<div>
 												<div style="line-height: 24px;">
 													<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 20px; color: #858199;">Hello ${name},</span>
-												</div>
+												</div> 
 												<div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
 												<div style="line-height: 24px;">
 													<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;">We have successfully processed your Solana USD (USDC) transfer request.</span>
@@ -141,7 +151,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 								</div>
 							</td></tr>
 							</table>
-						</div>
+						</div> 
 						<div>
 							<table border="0" cellspacing="0" cellpadding="0" width="100%">
 							<tr><td align="left" valign="middle" style="padding: 40px; border-top: 1px solid #f2f2f4;">
@@ -152,16 +162,28 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 											<div>
 												<div style="line-height: 24px;">
 													<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 20px; color: #858199;">Transfer Details</span>
-												</div>
+												</div> 
 												<div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
 												<div style="line-height: 24px;">
-													<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;"><span style="text-decoration: none;">Transfer Amount:</span><span style="font-weight: normal; text-decoration: none;"> ${amount} USDC<br></span></span>
-												</div>
+													<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #858199;"><span style="text-decoration: none;">Transfer Amount:</span><span style="font-weight: normal; text-decoration: none;"> ${amount} USDC<br></span><span style="text-decoration: none;">Transfer To: </span><span style="font-weight: normal; text-decoration: none;">${wallet}</span></span>
+												</div> 
 												<div style="height: 16px; line-height: 16px; font-size: 14px;">&nbsp;</div>
+                        <a href="https://solscan.io/tx/${signature}" target="_blank">
+												<table border="0" cellspacing="0" cellpadding="0" width="190" style="width: 190px;">
+												<tr><td align="center" valign="middle" style="padding: 0px 4px 0px 0px;">
+													<div style="line-height: 16px; text-transform: capitalize;">
+														<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 14px; color: #858199;">View on Solana Explorer</span>
+													</div>
+												</td> 
+												<td align="left" valign="top" width="16" style="width: 16px; line-height: 16px;">
+													<img src="https://download.audius.co/support/i-1881077370.png" width="16" height="16" alt="" border="0" style="display: block;">
+												</td></tr>
+												</table>
+                        </a>
 											</div>
 										</td></tr>
 										</table>
-									</div>
+									</div> 
 									<div style="height: 24px; line-height: 24px; font-size: 22px;">&nbsp;</div>
 									<div>
 										<img src="https://download.audius.co/support/i-1756092256.png" width="520" alt="" border="0" style="display: block; max-width: 520px; width: 100%;" class="w520px">
@@ -177,7 +199,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 				</td></tr>
 				</table>
 				<![endif]-->
-			</div>
+			</div> 
 			<div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
 			<div>
 				<!--[if (gte mso 9)|(IE)]>
@@ -268,7 +290,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 								</div>
 							</td></tr>
 							</table>
-						</div>
+						</div> 
 						<div>
 							<table border="0" cellspacing="0" cellpadding="0" width="100%">
 							<tr><td align="center" valign="middle" style="padding: 8px 0px;">
@@ -424,7 +446,7 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 								</div>
 							</td></tr>
 							</table>
-						</div>
+						</div> 
 						<div>
 							<table border="0" cellspacing="0" cellpadding="0" width="100%">
 							<tr><td align="center" valign="top" style="padding: 8px 0px;">
@@ -453,9 +475,9 @@ export const email = ({ name, amount }: { name: string; amount: string }) => {
 	<![endif]-->
 </div>
 </td></tr>
-</table>
-</div>
-</body>
+</table> 
+</div> 
+</body> 
 </html>
 `
 }

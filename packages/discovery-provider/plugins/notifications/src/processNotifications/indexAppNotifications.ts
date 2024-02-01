@@ -72,6 +72,7 @@ export const notificationTypeMapping = {
   tastemaker: MappingVariable.PushTastemaker,
   usdc_purchase_seller: MappingVariable.PushUSDCPurchaseSeller,
   usdc_purchase_buyer: MappingVariable.PushUSDCPurchaseBuyer,
+  usdc_transfer: MappingVariable.PushUSDCTransfer,
   usdc_withdrawal: MappingVariable.PushUSDCWithdrawal,
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction
