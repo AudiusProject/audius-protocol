@@ -246,11 +246,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
 	echoServer.Use(middleware.CORS())
-	echoServer.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: func(c echo.Context) bool {
-			return c.Request().Method == "HEAD"
-		},
-	}))
+	echoServer.Use(middleware.Gzip())
 
 	ss := &MediorumServer{
 		echo:            echoServer,
