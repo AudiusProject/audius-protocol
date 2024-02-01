@@ -147,7 +147,7 @@ const WhatDoesThisDo = () => {
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='l'>
       <Flex alignItems='center' gap='s'>
         <IconQuestionCircle size='m' fill={color.neutral.n800} />
-        <Text variant='title' css={{ fontSize: 24 }}>
+        <Text variant='heading' size='m'>
           {messages.what}
         </Text>
       </Flex>
@@ -228,7 +228,7 @@ const KeepItSecret = () => {
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='l'>
       <Flex alignItems='center' gap='s'>
         <IconVisibilityHidden size='m' fill={color.neutral.n800} />
-        <Text variant='title' css={{ fontSize: 24 }}>
+        <Text variant='heading' size='m'>
           {messages.keepItSecret}
         </Text>
       </Flex>
@@ -261,7 +261,7 @@ const NeedHelp = () => {
           fill={color.neutral.n800}
           css={{ fill: 'yellow' }}
         />
-        <Text variant='title' css={{ fontSize: 24 }}>
+        <Text variant='heading' size='m'>
           {messages.needHelp}
         </Text>
       </Flex>
@@ -297,7 +297,7 @@ const AgreeAndContinue = () => {
   }, [setIsPrivateKeyExporterModalVisible])
   return (
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='xl'>
-      <Text variant='title' css={{ fontSize: 24 }}>
+      <Text variant='heading' size='m'>
         {messages.agree}
       </Text>
       <Flex alignItems='flex-start' gap='xl'>
