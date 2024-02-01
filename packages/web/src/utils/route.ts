@@ -158,6 +158,7 @@ export const ACCOUNT_VERIFICATION_SETTINGS_PAGE =
   '/settings/account/verification'
 export const NOTIFICATION_SETTINGS_PAGE = '/settings/notifications'
 export const ABOUT_SETTINGS_PAGE = '/settings/about'
+export const CHANGE_EMAIL_SETTINGS_PAGE = '/settings/change-email'
 export const CHANGE_PASSWORD_SETTINGS_PAGE = '/settings/change-password'
 export const TRENDING_GENRES = '/trending/genres'
 export const EMPTY_PAGE = '/empty_page'

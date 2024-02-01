@@ -1,14 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
-import { passwordSchema } from '@audius/common/schemas'
-import {
-  Button,
-  Flex,
-  IconArrowRight,
-  IconLock,
-  Text,
-  TextInput
-} from '@audius/harmony'
+import { useChangePasswordFormConfiguration } from '@audius/common/hooks'
+import { Button, Flex, IconArrowRight, IconLock, Text } from '@audius/harmony'
 import {
   Modal,
   ModalContentPages,
@@ -16,17 +9,13 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import { Formik, FormikHelpers, useField, useFormikContext } from 'formik'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
+import { Formik, useFormikContext } from 'formik'
 
-import {
-  VerifyEmailPage,
-  isOtpMissing
-} from 'components/change-email/ChangeEmailModal'
+import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { EnterPasswordSection } from 'pages/sign-up-page/components/EnterPasswordSection'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import styles from './ChangePasswordModal.module.css'
 
@@ -43,28 +32,29 @@ const messages = {
   done: 'Done'
 }
 
-enum ChangePasswordPage {
+export enum ChangePasswordPage {
   ConfirmCredentials = 0,
   VerifyEmail = 1,
   NewPassword = 2,
   Success = 3
 }
 
-const ConfirmCredentialsPage = () => {
-  const [emailField] = useField('email')
+export const ConfirmCredentialsPage = () => {
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.confirmPasswordHelp}</Text>
-      <TextInput label={messages.email} {...emailField} />
-      <HarmonyPasswordField
-        name='oldPassword'
-        label={messages.currentPassword}
+      <HarmonyTextField
+        name='email'
+        autoComplete='email'
+        label={messages.email}
+        autoFocus
       />
+      <HarmonyPasswordField name='password' label={messages.currentPassword} />
     </Flex>
   )
 }
 
-const NewPasswordPage = () => {
+export const NewPasswordPage = () => {
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.passwordCompletionHelp}</Text>
@@ -73,40 +63,23 @@ const NewPasswordPage = () => {
   )
 }
 
-const SuccessPage = () => {
+export const SuccessPage = () => {
   return <Text variant={'body'}>{messages.success}</Text>
 }
 
-const ChangePasswordModalForm = ({
+export const ChangePasswordModalForm = ({
   page,
   onClose
 }: {
   page: ChangePasswordPage
   onClose: () => void
 }) => {
-  const [{ value: email }] = useField('email')
-  const [{ value: oldPassword }] = useField('oldPassword')
   const { isSubmitting, isValid, dirty } = useFormikContext()
-  const handleResend = useCallback(async () => {
-    const libs = await audiusBackendInstance.getAudiusLibsTyped()
-    // Try to confirm without OTP to force OTP refresh
-    try {
-      await libs.Account?.confirmCredentials({
-        email,
-        username: email,
-        password: oldPassword
-      })
-    } catch (e) {
-      if (!isOtpMissing(e)) {
-        throw e
-      }
-    }
-  }, [email, oldPassword])
   return (
     <ModalForm>
       <ModalContentPages currentPage={page}>
         <ConfirmCredentialsPage />
-        <VerifyEmailPage onResendEmailClicked={handleResend} />
+        <VerifyEmailPage />
         <NewPasswordPage />
         <SuccessPage />
       </ModalContentPages>
@@ -148,99 +121,14 @@ type ChangePasswordModalProps = {
   onClose: () => void
 }
 
-type ChangePasswordFormValues = {
-  email: string
-  oldPassword: string
-  password: string
-  confirmPassword: string
-  otp: string
-}
-
-const initialValues: ChangePasswordFormValues = {
-  email: '',
-  oldPassword: '',
-  password: '',
-  confirmPassword: '',
-  otp: ''
-}
-
-const changePasswordFormikSchema = toFormikValidationSchema(passwordSchema)
-
 export const ChangePasswordModal = (props: ChangePasswordModalProps) => {
   const { isOpen, onClose } = props
-  const [page, setPage] = useState(ChangePasswordPage.ConfirmCredentials)
-
-  const validationSchema =
-    page === ChangePasswordPage.NewPassword
-      ? changePasswordFormikSchema
-      : undefined
+  const { page, setPage, ...formConfiguration } =
+    useChangePasswordFormConfiguration()
 
   const handleClosed = useCallback(() => {
     setPage(ChangePasswordPage.ConfirmCredentials)
   }, [setPage])
-
-  const confirmCredentials = useCallback(
-    async (values: ChangePasswordFormValues, onError: () => void) => {
-      const { email, oldPassword, otp } = values
-      const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackendInstance.getAudiusLibsTyped()
-      try {
-        const confirmed = await libs.Account?.confirmCredentials({
-          email,
-          username: email,
-          password: oldPassword,
-          otp: sanitizedOtp
-        })
-        if (confirmed) {
-          setPage(ChangePasswordPage.NewPassword)
-        } else {
-          onError()
-        }
-      } catch (e) {
-        if (isOtpMissing(e)) {
-          setPage(ChangePasswordPage.VerifyEmail)
-        } else {
-          onError()
-        }
-      }
-    },
-    [setPage]
-  )
-
-  const changeCredentials = useCallback(
-    async (values: ChangePasswordFormValues) => {
-      const { email, oldPassword, password } = values
-      const libs = await audiusBackendInstance.getAudiusLibsTyped()
-      await libs.Account?.changeCredentials({
-        newUsername: email,
-        newPassword: password,
-        oldUsername: email,
-        oldPassword
-      })
-      setPage(ChangePasswordPage.Success)
-    },
-    [setPage]
-  )
-
-  const onSubmit = useCallback(
-    async (
-      values: ChangePasswordFormValues,
-      helpers: FormikHelpers<ChangePasswordFormValues>
-    ) => {
-      if (page === ChangePasswordPage.ConfirmCredentials) {
-        await confirmCredentials(values, () => {
-          helpers.setFieldError('oldPassword', messages.invalidCredentials)
-        })
-      } else if (page === ChangePasswordPage.VerifyEmail) {
-        await confirmCredentials(values, () => {
-          helpers.setFieldError('otp', messages.invalidCredentials)
-        })
-      } else {
-        await changeCredentials(values)
-      }
-    },
-    [page, confirmCredentials, changeCredentials]
-  )
 
   return (
     <Modal
@@ -252,11 +140,7 @@ export const ChangePasswordModal = (props: ChangePasswordModalProps) => {
       <ModalHeader onClose={onClose}>
         <ModalTitle title={messages.changePassword} icon={<IconLock />} />
       </ModalHeader>
-      <Formik
-        initialValues={initialValues}
-        onSubmit={onSubmit}
-        validationSchema={validationSchema}
-      >
+      <Formik {...formConfiguration}>
         <ChangePasswordModalForm page={page} onClose={onClose} />
       </Formik>
     </Modal>

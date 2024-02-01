@@ -146,6 +146,7 @@ import {
   FAVORITING_USERS_ROUTE,
   ACCOUNT_SETTINGS_PAGE,
   CHANGE_PASSWORD_SETTINGS_PAGE,
+  CHANGE_EMAIL_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
@@ -804,6 +805,12 @@ class WebPlayer extends Component {
                   render={() => (
                     <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
                   )}
+                />
+                <MobileRoute
+                  exact
+                  path={CHANGE_EMAIL_SETTINGS_PAGE}
+                  isMobile={isMobile}
+                  render={() => <SettingsPage subPage={SubPage.CHANGE_EMAIL} />}
                 />
                 <MobileRoute
                   exact

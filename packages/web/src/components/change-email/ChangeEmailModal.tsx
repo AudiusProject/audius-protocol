@@ -1,5 +1,9 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import {
+  isOtpMissingError,
+  useChangeEmailFormConfiguration
+} from '@audius/common/hooks'
 import { formatOtp } from '@audius/common/schemas'
 import {
   Box,
@@ -8,7 +12,6 @@ import {
   IconArrowRight,
   IconKey,
   Text,
-  TextInput,
   TextLink
 } from '@audius/harmony'
 import {
@@ -18,10 +21,11 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import { Formik, FormikHelpers, useField, useFormikContext } from 'formik'
+import { Formik, useField, useFormikContext } from 'formik'
 import { useAsync } from 'react-use'
 
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -39,10 +43,11 @@ const messages = {
   continue: 'Continue',
   invalidCredentials: 'Invalid credentials.',
   somethingWrong: 'Something went wrong.',
-  verifyEmailHelp: 'Enter the verification code sent to your new email.',
+  verifyEmailHelp: 'Enter the verification code sent to your email.',
   resendHelp: 'Didn’t get an email? ',
   resend: 'Resend code.',
   code: 'Code',
+  otpPlaceholder: '123 456',
   success: (email: string) => `Email successfully updated from ${email} to `,
   done: 'Done',
   resentToast: 'Verification code resent.'
@@ -60,21 +65,59 @@ type ChangeEmailModalProps = {
   onClose: () => void
 }
 
-const OTP_ERROR = 'Missing otp'
-export const isOtpMissing = (e: unknown) => {
+export const ResendCodeLink = () => {
+  const [{ value: email }] = useField('email')
+
+  const [isSending, setIsSending] = useState(false)
+  const { toast } = useContext(ToastContext)
+
+  const handleClick = useCallback(async () => {
+    setIsSending(true)
+    const libs = await audiusBackendInstance.getAudiusLibsTyped()
+    // Try to confirm without OTP to force OTP refresh
+    try {
+      await libs.identityService?.changeEmail({
+        email
+      })
+    } catch (e) {
+      if (isOtpMissingError(e)) {
+        toast(messages.resentToast)
+      } else {
+        toast(messages.somethingWrong)
+      }
+    } finally {
+      setIsSending(false)
+    }
+  }, [email, toast])
   return (
-    e instanceof Object &&
-    'response' in e &&
-    e.response instanceof Object &&
-    'data' in e.response &&
-    e.response.data instanceof Object &&
-    'error' in e.response.data &&
-    e.response.data.error === OTP_ERROR
+    <TextLink variant='visible' disabled={isSending} onClick={handleClick}>
+      {messages.resend}
+    </TextLink>
   )
 }
 
-const ConfirmPasswordPage = () => {
-  const [{ value: email }] = useField('email')
+const CurrentEmail = () => {
+  const [{ value: oldEmail }, , { setValue: setOldEmail }] =
+    useField('oldEmail')
+  // Load the email for the user
+  const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
+  useEffect(() => {
+    if (emailRequest.value) {
+      setOldEmail(emailRequest.value)
+    }
+  }, [emailRequest.loading, emailRequest.value, setOldEmail])
+  return (
+    <Text variant='body' size='m'>
+      {oldEmail !== '' ? (
+        oldEmail
+      ) : (
+        <LoadingSpinner className={styles.inlineSpinner} />
+      )}
+    </Text>
+  )
+}
+
+export const ConfirmPasswordPage = () => {
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.confirmPasswordHelp}</Text>
@@ -82,22 +125,18 @@ const ConfirmPasswordPage = () => {
         <Text variant='label' size={'xs'}>
           {messages.currentEmail}
         </Text>
-        <Text variant='body' size='m'>
-          {email !== '' ? (
-            email
-          ) : (
-            <LoadingSpinner className={styles.inlineSpinner} />
-          )}
-        </Text>
+        <CurrentEmail />
       </Box>
-      <HarmonyPasswordField name='password' label={messages.currentPassword} />
+      <HarmonyPasswordField
+        name='password'
+        label={messages.currentPassword}
+        autoComplete={'password'}
+      />
     </Flex>
   )
 }
 
-const NewEmailPage = () => {
-  const [newEmailField, { error }] = useField('newEmail')
-  const [{ value: email }] = useField('email')
+export const NewEmailPage = () => {
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.newEmailHelp}</Text>
@@ -105,70 +144,39 @@ const NewEmailPage = () => {
         <Text variant='label' size={'xs'}>
           {messages.currentEmail}
         </Text>
-        <Text variant='body' size='m'>
-          {email}
-        </Text>
+        <CurrentEmail />
       </Box>
-      <TextInput
-        {...newEmailField}
-        error={!!error}
-        helperText={error}
-        label={messages.newEmail}
-      />
+      <HarmonyTextField name='email' label={messages.newEmail} />
     </Flex>
   )
 }
 
-export const VerifyEmailPage = ({
-  onResendEmailClicked
-}: {
-  onResendEmailClicked: () => Promise<void>
-}) => {
-  const [otpField, { error }] = useField('otp')
-  const [isSending, setIsSending] = useState(false)
-  const { toast } = useContext(ToastContext)
-
-  const resend = useCallback(() => {
-    setIsSending(true)
-    const fn = async () => {
-      await onResendEmailClicked()
-      setIsSending(false)
-      toast(messages.resentToast)
-    }
-    fn()
-  }, [onResendEmailClicked, toast])
-
+export const VerifyEmailPage = () => {
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.verifyEmailHelp}</Text>
-      <TextInput
-        {...otpField}
+      <HarmonyTextField
+        name={'otp'}
         label={messages.code}
-        error={!!error}
-        helperText={error}
-        onChange={(e) => {
-          e.target.value = formatOtp(e.target.value)
-          otpField.onChange(e)
-        }}
+        placeholder={messages.otpPlaceholder}
+        transformValueOnChange={formatOtp}
       />
       <Text variant='body'>
         {messages.resendHelp}
-        <TextLink variant='visible' disabled={isSending} onClick={resend}>
-          {messages.resend}
-        </TextLink>
+        <ResendCodeLink />
       </Text>
     </Flex>
   )
 }
 
-const SuccessPage = () => {
+export const SuccessPage = () => {
+  const [{ value: oldEmail }] = useField('oldEmail')
   const [{ value: email }] = useField('email')
-  const [{ value: newEmail }] = useField('newEmail')
   return (
     <Text variant={'body'}>
-      {messages.success(email)}
+      {messages.success(oldEmail)}
       <Text asChild strength={'strong'}>
-        <span>{newEmail}</span>
+        <span>{email}</span>
       </Text>
       !
     </Text>
@@ -182,27 +190,6 @@ const ChangeEmailModalForm = ({
   page: ChangeEmailPage
 }) => {
   const { isSubmitting } = useFormikContext()
-  const [{ value: email }, , { setValue: setEmail }] = useField('email')
-
-  const handleResendEmail = useCallback(async () => {
-    const libs = await audiusBackendInstance.getAudiusLibsTyped()
-    try {
-      // Trigger email by not including otp
-      await libs.identityService!.changeEmail({
-        email
-      })
-    } catch (e) {
-      // do nothing
-    }
-  }, [email])
-
-  // Load the email for the user
-  const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
-  useEffect(() => {
-    if (emailRequest.value) {
-      setEmail(emailRequest.value)
-    }
-  }, [emailRequest.loading, emailRequest.value, setEmail])
 
   const isSuccessPage = page === ChangeEmailPage.Success
 
@@ -214,7 +201,7 @@ const ChangeEmailModalForm = ({
       <ModalContentPages currentPage={page}>
         <ConfirmPasswordPage />
         <NewEmailPage />
-        <VerifyEmailPage onResendEmailClicked={handleResendEmail} />
+        <VerifyEmailPage />
         <SuccessPage />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
@@ -237,102 +224,15 @@ const ChangeEmailModalForm = ({
   )
 }
 
-type ChangeEmailFormValues = {
-  email: string
-  password: string
-  newEmail: string
-  otp: string
-}
-
-const initialValues: ChangeEmailFormValues = {
-  email: '',
-  password: '',
-  newEmail: '',
-  otp: ''
-}
-
 export const ChangeEmailModal = ({
   isOpen,
   onClose
 }: ChangeEmailModalProps) => {
-  const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
+  const { page, setPage, ...formikConfig } = useChangeEmailFormConfiguration()
 
   const handleClosed = useCallback(() => {
     setPage(ChangeEmailPage.ConfirmPassword)
   }, [setPage])
-
-  const checkPassword = useCallback(
-    async (values: ChangeEmailFormValues, onError: () => void) => {
-      const { email, password } = values
-      const libs = await audiusBackendInstance.getAudiusLibsTyped()
-      try {
-        const confirmed = await libs.Account?.confirmCredentials({
-          username: email,
-          password,
-          softCheck: true
-        })
-        if (confirmed) {
-          setPage(ChangeEmailPage.NewEmail)
-        } else {
-          onError()
-        }
-      } catch (e) {
-        onError()
-      }
-    },
-    [setPage]
-  )
-
-  const changeEmail = useCallback(
-    async (values: ChangeEmailFormValues, onError: () => void) => {
-      const { email, password, newEmail, otp } = values
-      const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackendInstance.getAudiusLibsTyped()
-      try {
-        // Try to change email
-        await libs.identityService!.changeEmail({
-          email: newEmail,
-          otp: sanitizedOtp
-        })
-        await libs.Account!.changeCredentials({
-          newUsername: newEmail,
-          newPassword: password,
-          oldUsername: email,
-          oldPassword: password
-        })
-        setPage(ChangeEmailPage.Success)
-      } catch (e) {
-        if (isOtpMissing(e)) {
-          setPage(ChangeEmailPage.VerifyEmail)
-        } else {
-          onError()
-        }
-      }
-    },
-    [setPage]
-  )
-
-  const handleSubmit = useCallback(
-    async (
-      values: ChangeEmailFormValues,
-      helpers: FormikHelpers<ChangeEmailFormValues>
-    ) => {
-      if (page === ChangeEmailPage.ConfirmPassword) {
-        await checkPassword(values, () => {
-          helpers.setFieldError('password', messages.invalidCredentials)
-        })
-      } else if (page === ChangeEmailPage.VerifyEmail) {
-        await changeEmail(values, () => {
-          helpers.setFieldError('otp', messages.invalidCredentials)
-        })
-      } else {
-        await changeEmail(values, () => {
-          helpers.setFieldError('newEmail', messages.somethingWrong)
-        })
-      }
-    },
-    [page, changeEmail, checkPassword]
-  )
 
   return (
     <Modal
@@ -341,7 +241,7 @@ export const ChangeEmailModal = ({
       onClosed={handleClosed}
       size='small'
     >
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik {...formikConfig}>
         <ChangeEmailModalForm onClose={onClose} page={page} />
       </Formik>
     </Modal>
