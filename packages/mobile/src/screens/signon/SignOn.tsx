@@ -224,8 +224,6 @@ const styles = StyleSheet.create({
   },
   errorIcon: {
     flex: 1,
-    width: 12,
-    height: 12,
     marginRight: 10,
     alignSelf: 'center'
   },
@@ -456,7 +454,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -465,7 +463,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -475,7 +473,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -485,14 +483,17 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
     }
     return (
       <View style={styles.errorContainer}>
-        <IconMultiselectRemove style={[styles.errorIcon, { opacity: 0 }]} />
+        <IconMultiselectRemove
+          style={[styles.errorIcon, { opacity: 0 }]}
+          size='m'
+        />
         <Text />
       </View>
     )
