@@ -68,7 +68,7 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
 
 export function* fetchUserByHandle(
   handle: string,
-  requiredFields: Set<string>,
+  requiredFields?: Set<string>,
   forceRetrieveFromSource = false,
   shouldSetLoading = true,
   deleteExistingEntry = false,

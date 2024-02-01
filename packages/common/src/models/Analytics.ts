@@ -813,7 +813,8 @@ export enum FollowSource {
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
   EMPTY_FEED = 'empty feed',
   HOW_TO_UNLOCK_TRACK_PAGE = 'how to unlock track page',
-  HOW_TO_UNLOCK_MODAL = 'how to unlock modal'
+  HOW_TO_UNLOCK_MODAL = 'how to unlock modal',
+  SIGN_UP = 'sign up'
 }
 
 type Share = {

@@ -6,7 +6,7 @@ import {
   useGetFeaturedArtists
 } from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
-import { Status } from '@audius/common/models'
+import { Status, UserMetadata } from '@audius/common/models'
 import { selectArtistsSchema } from '@audius/common/schemas'
 import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
@@ -209,7 +209,10 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistCard key={user.user_id} user={user} />
+                          <FollowArtistCard
+                            key={user.user_id}
+                            user={user as UserMetadata}
+                          />
                         ))}
                   </Flex>
                 </ArtistsList>

@@ -25,7 +25,7 @@ export const EmptyFeedSuggestedFollows = () => {
   )
   const handleArtistsSelected = useCallback(() => {
     // Set eager users and refetch lineup
-    dispatch(signOnActions.followArtists(selectedUserIds))
+    dispatch(signOnActions.followArtists())
     dispatch(feedActions.fetchLineupMetadatas())
     // Async go follow users
     dispatch(feedPageActions.followUsers(selectedUserIds))
