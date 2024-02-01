@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -11,9 +11,10 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
-import { useAsync } from 'react-use'
+import { usePrevious } from 'react-use'
 import type { AudiusSdk } from '@audius/sdk'
 import { encodeHashId } from 'utils/hashIds'
+import { isEqual } from 'lodash'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -101,25 +102,32 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
 }
 
 export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<AudiusSdk>, trackIds: ID[] }) => {
+  const previousTrackIds = usePrevious(trackIds)
   const [sizes, setSizes] = useState<{[trackId: ID]: number}>({})
-  useAsync(async () => {
-    const sdk = await audiusSdk()
-    const sizeResults = await Promise.all(trackIds.map(async trackId => {
-      if (sizes[trackId]) {
-        return ({ trackId, size: sizes[trackId] })
+  useEffect(() => {
+    if (!isEqual(previousTrackIds, trackIds)) {
+      const asyncFn = async () => {
+        const sdk = await audiusSdk()
+        const sizeResults = await Promise.all(trackIds.map(async trackId => {
+          if (sizes[trackId]) {
+            return ({ trackId, size: sizes[trackId] })
+          }
+          try {
+            const res = await sdk.tracks.inspectTrackRaw({ trackId: encodeHashId(trackId) })
+            return ({ trackId, size: res.raw.headers.get('Content-Length') || null })
+          } catch (e) {
+            console.error(e)
+            return ({ trackId, size: null })
+          }
+        }))
+        setSizes(sizes => ({ ...sizes, ...sizeResults.reduce((acc, curr) => {
+          acc[curr.trackId] = curr.size
+          return acc
+        }, {} as { trackId: ID, size: number }) }) )
       }
-      const res = await sdk.tracks.streamTrackRaw({
-        trackId: encodeHashId(trackId)
-      })
-      console.log(res)
-      return ({ trackId, size: res })
-    }))
-
-    setSizes(sizeResults.reduce((acc, curr) => {
-      acc[curr.trackId] = curr.size
-      return acc
-    }, {} as { trackId: ID, size: number }))
-  }, [trackIds, audiusSdk, sizes, setSizes])
+      asyncFn()
+    }
+  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes])
   return sizes
 }
 

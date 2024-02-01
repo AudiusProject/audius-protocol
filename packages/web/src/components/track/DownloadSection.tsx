@@ -88,7 +88,6 @@ export const DownloadSection = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const fileSizes = useFileSizes({ audiusSdk, trackIds: [trackId, ...stemTracks.map(s => s.id)] })
-  console.log({fileSizes})
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
@@ -203,7 +202,6 @@ export const DownloadSection = ({
                   />
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>
-                  {track ? <Text>{fileSizes[track.track_id]}</Text> : null }
                   {shouldDisplayDownloadAll ? (
                     <Button
                       variant='secondary'
