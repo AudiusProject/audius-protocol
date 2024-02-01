@@ -248,6 +248,7 @@ export type OfflineTrackMetadata = {
 export type Stem = {
   track_id: ID
   category: StemCategory
+  orig_filename: string
 }
 
 export type ComputedTrackProperties = {
