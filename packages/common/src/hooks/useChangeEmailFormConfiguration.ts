@@ -45,7 +45,7 @@ const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
 export const useChangeEmailFormConfiguration = () => {
   const { audiusBackend } = useAppContext()
-  const [page, setPage] = useState(ChangeEmailPage.Success)
+  const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const audiusQueryContext = useAudiusQueryContext()
   const EmailSchema = useMemo(
     () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
