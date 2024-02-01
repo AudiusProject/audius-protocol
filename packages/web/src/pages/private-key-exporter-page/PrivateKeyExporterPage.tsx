@@ -346,7 +346,7 @@ export const PrivateKeyExporterPage = () => {
         })
       )
     }
-  }, [user, record])
+  }, [user, hasViewed, record])
   return (
     <Flex direction='column'>
       <Header />

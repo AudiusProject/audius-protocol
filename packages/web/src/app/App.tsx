@@ -8,6 +8,7 @@ import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
+import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
 import { initWebVitals } from 'services/webVitals'
@@ -22,7 +23,6 @@ import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
-import { AppModal } from 'pages/modals/AppModal'
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))

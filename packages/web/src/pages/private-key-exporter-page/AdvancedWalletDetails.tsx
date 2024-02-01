@@ -54,7 +54,7 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
       }
     }
     toast(messages.copied)
-  }, [value, isPrivate, toast])
+  }, [value, user, isPrivate, record, toast])
   return (
     <Flex
       border='strong'
