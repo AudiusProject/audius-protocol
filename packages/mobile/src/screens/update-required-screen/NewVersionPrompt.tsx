@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconDownload from 'app/assets/images/iconDownload.svg'
+import { IconCloudDownload } from '@audius/harmony-native'
 import { Button, GradientText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -56,7 +56,7 @@ export const NewVersionPrompt = ({
         <Button
           title={buttonText}
           size='large'
-          icon={IconDownload}
+          icon={IconCloudDownload}
           iconPosition='left'
           url={url}
           onPress={onPress}

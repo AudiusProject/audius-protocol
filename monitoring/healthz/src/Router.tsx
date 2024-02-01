@@ -15,6 +15,7 @@ import { IdTranslator } from './pages/IdTranslator'
 import { DMs } from './pages/DMs'
 import { EnvironmentSelector } from './components/EnvironmentSelector'
 import { DMMatrix } from './pages/DMMatrix'
+import { UptimeMatrix } from './pages/UptimeMatrix'
 import { Rendezvous } from './pages/Rendezvous'
 import Nodes from './pages/Nodes'
 import { Fragment } from 'react'
@@ -51,6 +52,7 @@ const routeList: RouteObject[] = [
       { path: 'views/search', element: <DiscoverySearch /> },
       { path: 'views/dms', element: <DMs /> },
       { path: 'views/dm_matrix', element: <DMMatrix /> },
+      { path: 'views/uptime_matrix', element: <UptimeMatrix /> },
       { path: 'views/plugins', element: <DiscoveryPlugins /> },
 
       { path: 'utils/id', element: <IdTranslator /> },
@@ -111,6 +113,11 @@ const views = [
     name: 'DM Matrix',
     description: 'DMs matrix on a given day',
     href: '/views/dm_matrix',
+  },
+  {
+    name: 'Uptime Matrix',
+    description: 'Matrix of uptime for each node in the last hour',
+    href: '/views/uptime_matrix',
   },
   {
     name: 'Plugins',

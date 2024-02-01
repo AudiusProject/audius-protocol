@@ -101,7 +101,7 @@
 }
 
 .trackPreviewNew:hover .iconsContainer {
-  width: 80px;
+  width: 60px;
 }
 
 .trackPreviewNew:hover .removeButton,
@@ -127,7 +127,7 @@
 .fileSizeText {
   display: flex;
   transition: var(--hover);
-  width: 80px;
+  width: 60px;
   justify-content: flex-end;
 }
 

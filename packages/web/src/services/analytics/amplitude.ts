@@ -1,5 +1,6 @@
+import { Name, MobileOS } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 // Amplitude Analytics
-import { Name, Nullable, MobileOS } from '@audius/common'
 import amplitude from 'amplitude-js'
 
 import { env } from 'services/env'

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  removeNullable,
   accountSelectors,
   cacheUsersSelectors,
   profilePageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { IconFollowing } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'

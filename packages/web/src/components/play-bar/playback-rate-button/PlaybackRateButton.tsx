@@ -1,6 +1,10 @@
 import { MutableRefObject, useCallback, useMemo } from 'react'
 
-import { PlaybackRate, playerActions, playerSelectors } from '@audius/common'
+import {
+  playerActions,
+  playerSelectors,
+  PlaybackRate
+} from '@audius/common/store'
 import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'

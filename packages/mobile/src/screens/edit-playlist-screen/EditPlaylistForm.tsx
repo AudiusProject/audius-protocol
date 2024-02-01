@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 
-import {
-  deletePlaylistConfirmationModalUIActions,
-  useGetCurrentUserId,
-  useGetPlaylistById
-} from '@audius/common'
-import type { EditPlaylistValues } from '@audius/common'
+import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
+import type { EditPlaylistValues } from '@audius/common/store'
+import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconClose from 'app/assets/images/iconRemove.svg'
-import IconTrash from 'app/assets/images/iconTrash.svg'
+import { IconClose, IconTrash } from '@audius/harmony-native'
 import {
   Divider,
   TextButton,

@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import type { UserTrackMetadata } from '@audius/common'
+import type { UserTrackMetadata } from '@audius/common/models'
 import { View } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
-import IconVerified from 'app/assets/images/iconVerified.svg'
+import { IconCaretRight, IconVerified } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

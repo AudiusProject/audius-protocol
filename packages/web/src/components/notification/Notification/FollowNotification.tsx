@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   notificationsSelectors,
   FollowNotification as FollowNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

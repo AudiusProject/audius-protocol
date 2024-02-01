@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, AccessSignature, GatedTrackStatus } from 'models'
-import { Nullable } from 'utils'
+import { ID, AccessSignature, GatedTrackStatus } from '~/models'
+import { Nullable } from '~/utils'
 
 type GatedContentState = {
   nftAccessSignatureMap: { [id: ID]: Nullable<AccessSignature> }

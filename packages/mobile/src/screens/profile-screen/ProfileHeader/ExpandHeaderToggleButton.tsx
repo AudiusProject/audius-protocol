@@ -1,4 +1,4 @@
-import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
+import { IconCaretDown } from '@audius/harmony-native'
 import type { TextButtonProps } from 'app/components/core'
 import { TextButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'

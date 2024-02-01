@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 
 import type { Animated } from 'react-native'
 
-import IconAlbum from 'app/assets/images/iconAlbum.svg'
-import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
-import IconNote from 'app/assets/images/iconNote.svg'
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import {
+  IconAlbum,
+  IconCollectible,
+  IconNote,
+  IconPlaylists,
+  IconRepost
+} from '@audius/harmony-native'
 import {
   collapsibleTabScreen,
   CollapsibleTabNavigator
@@ -98,7 +100,7 @@ export const ProfileTabNavigator = ({
 
   const collectiblesScreen = collapsibleTabScreen({
     name: 'Collectibles',
-    Icon: IconCollectibles,
+    Icon: IconCollectible,
     component: CollectiblesTab,
     initialParams,
     refreshing,

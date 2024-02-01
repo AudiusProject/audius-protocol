@@ -1,6 +1,6 @@
-import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
-import { getUserFromTrack } from 'store/cache/users/combinedSelectors'
-import { CommonState } from 'store/commonStore'
+import { getTrack as getCachedTrack } from '~/store/cache/tracks/selectors'
+import { getUserFromTrack } from '~/store/cache/users/combinedSelectors'
+import { CommonState } from '~/store/commonStore'
 
 export const getBaseState = (state: CommonState) => state.pages.remixes
 

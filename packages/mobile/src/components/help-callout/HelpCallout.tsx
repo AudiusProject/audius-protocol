@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
+import { IconQuestionCircle } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'

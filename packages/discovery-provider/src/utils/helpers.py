@@ -511,6 +511,16 @@ def decode_all_solana_memos(tx_message: Message):
         return []
 
 
+def get_account_owner_from_balance_change(
+    account: str, balance_changes: dict[str, BalanceChange]
+):
+    """Finds the owner of the sender account by looking at the balance changes"""
+    if account in balance_changes:
+        return balance_changes[account]["owner"]
+    else:
+        return None
+
+
 def get_valid_instruction(
     tx_message: Message, meta: UiTransactionStatusMeta, program_address: str
 ) -> Optional[CompiledInstruction]:

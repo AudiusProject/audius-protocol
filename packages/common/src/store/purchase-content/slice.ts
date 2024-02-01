@@ -1,7 +1,7 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from 'models/Identifiers'
-import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
+import { ID } from '~/models/Identifiers'
+import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 
 import {
   ContentType,

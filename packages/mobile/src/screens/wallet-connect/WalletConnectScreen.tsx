@@ -1,10 +1,9 @@
-import { tokenDashboardPageActions } from '@audius/common'
+import { tokenDashboardPageActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconRemove from 'app/assets/images/iconRemove.svg'
-import IconWallet from 'app/assets/images/iconWallet.svg'
+import { IconClose, IconWallet } from '@audius/harmony-native'
 import { Text, Screen, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -66,7 +65,7 @@ export const WalletConnectScreen = () => {
       icon={IconWallet}
       variant='white'
       topbarLeft={
-        <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
+        <TopBarIconButton icon={IconClose} onPress={navigation.goBack} />
       }
       url='/wallet-connect'
     >

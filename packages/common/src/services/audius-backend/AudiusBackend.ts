@@ -17,8 +17,8 @@ import {
 import BN from 'bn.js'
 import queryString from 'query-string'
 
-import { Env } from 'services/env'
-import dayjs from 'utils/dayjs'
+import { Env } from '~/services/env'
+import dayjs from '~/utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
@@ -67,7 +67,8 @@ import {
   Achievement,
   Notification,
   IdentityNotification,
-  PushNotifications
+  PushNotifications,
+  ExtendedTrackMetadata
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -389,7 +390,7 @@ export const audiusBackend = ({
     const start = preloadImageTimer.start()
     const timeoutMs =
       getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-    let timeoutId: Nullable<NodeJS.Timeout> = null
+    let timeoutId: any = null
 
     try {
       const response = await Promise.race([
@@ -1095,7 +1096,7 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } },
+    metadata: ExtendedTrackMetadata,
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
@@ -1203,7 +1204,7 @@ export const audiusBackend = ({
     return null
   }
 
-  async function updateCreator(metadata: User, _id: ID) {
+  async function updateCreator(metadata: User, _id?: ID) {
     let newMetadata = { ...metadata }
     const associatedWallets = await fetchUserAssociatedWallets(metadata)
     newMetadata.associated_wallets =
@@ -1617,7 +1618,7 @@ export const audiusBackend = ({
       name?: string
       handle?: string
       isVerified?: boolean
-      location?: string
+      location?: string | null
       profilePicture: File | null
       coverPhoto: File | null
     }

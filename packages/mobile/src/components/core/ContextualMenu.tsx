@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { ViewStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import { IconCaretRight } from '@audius/harmony-native'
 import { Divider, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'

@@ -1,13 +1,8 @@
 import { useCallback, useRef, useState } from 'react'
 
-import {
-  Name,
-  Status,
-  TimeRange,
-  ELECTRONIC_PREFIX,
-  TRENDING_GENRES,
-  trendingPageLineupActions
-} from '@audius/common'
+import { Name, Status, TimeRange } from '@audius/common/models'
+import { trendingPageLineupActions } from '@audius/common/store'
+import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/desktop/Header'

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { imageBlank, imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank, imageBlank as placeholderArt } from '@audius/common/assets'
 import cn from 'classnames'
 
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'

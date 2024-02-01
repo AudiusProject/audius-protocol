@@ -1,6 +1,6 @@
-import { ID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { Status } from '~/models/Status'
 
 import {
   CacheType,
@@ -8,7 +8,8 @@ import {
   Entry,
   Metadata,
   SubscriberInfo,
-  SubscriptionInfo
+  SubscriptionInfo,
+  UnsubscribeInfo
 } from './types'
 
 export const ADD = 'CACHE/ADD'
@@ -151,7 +152,7 @@ export const removeSucceeded = (kind: Kind, ids: ID[]) => ({
  */
 export const setStatus = (
   kind: Kind,
-  statuses: { id: ID; status: Status }[]
+  statuses: { id: ID | string; status: Status }[]
 ) => ({
   type: SET_STATUS,
   kind,
@@ -170,7 +171,7 @@ export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
 /**
  * Unsubscribes a uid from an id in the cache. Automatically clears transitive subscriptions.
  */
-export const unsubscribe = (kind: Kind, unsubscribers: SubscriberInfo[]) => ({
+export const unsubscribe = (kind: Kind, unsubscribers: UnsubscribeInfo[]) => ({
   type: UNSUBSCRIBE,
   kind,
   unsubscribers
@@ -181,7 +182,7 @@ export const unsubscribe = (kind: Kind, unsubscribers: SubscriberInfo[]) => ({
  */
 export const unsubscribeSucceeded = (
   kind: Kind,
-  unsubscribers: SubscriberInfo[]
+  unsubscribers: UnsubscribeInfo[]
 ) => ({
   type: UNSUBSCRIBE_SUCCEEDED,
   kind,

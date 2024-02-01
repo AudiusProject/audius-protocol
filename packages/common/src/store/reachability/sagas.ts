@@ -1,6 +1,6 @@
 import { takeEvery, select, all, take } from 'typed-redux-saga'
 
-import { getContext } from 'store/effects'
+import { getContext } from '~/store/effects'
 
 import * as reachabilityActions from './actions'
 import * as reachabilitySelectors from './selectors'

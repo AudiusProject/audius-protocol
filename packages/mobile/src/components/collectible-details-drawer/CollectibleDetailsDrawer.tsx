@@ -3,11 +3,11 @@ import { useCallback, useMemo } from 'react'
 import {
   cacheUsersSelectors,
   collectibleDetailsUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconShare } from '@audius/harmony-native'
 import { Button, ChainLogo, Text } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'

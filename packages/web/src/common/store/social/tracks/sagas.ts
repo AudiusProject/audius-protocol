@@ -1,31 +1,27 @@
+import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
-  Kind,
-  ID,
-  Name,
-  Track,
-  User,
-  makeKindId,
-  formatShareText,
   accountSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   cacheActions,
-  gatedContentSelectors,
-  getContext,
+  cacheUsersSelectors,
   tracksSocialActions as socialActions,
-  waitForValue,
-  QueryParams,
-  encodeHashId,
-  getQueryParams,
+  getContext,
+  gatedContentSelectors,
   confirmerActions,
   confirmTransaction,
-  modalsActions,
-  removeNullable,
-  FeatureFlags
-} from '@audius/common'
+  modalsActions
+} from '@audius/common/store'
+import {
+  formatShareText,
+  encodeHashId,
+  makeKindId,
+  waitForValue,
+  getQueryParams,
+  removeNullable
+} from '@audius/common/utils'
 import { capitalize } from 'lodash'
-import { fork } from 'redux-saga/effects'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+import { call, select, takeEvery, put, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -611,7 +607,7 @@ export function* watchSetArtistPick() {
         ])
       )
       const user = yield* call(waitForValue, getUser, { id: userId })
-      yield fork(updateProfileAsync, { metadata: user })
+      yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -636,7 +632,7 @@ export function* watchUnsetArtistPick() {
       ])
     )
     const user = yield* call(waitForValue, getUser, { id: userId })
-    yield fork(updateProfileAsync, { metadata: user })
+    yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)
@@ -822,7 +818,7 @@ function* watchDownloadTrack() {
       yield* call(waitForRead)
 
       const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const isLosslessDownloadsEnabled = yield call(
+      const isLosslessDownloadsEnabled = yield* call(
         getFeatureEnabled,
         FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
       )
@@ -854,7 +850,7 @@ function* watchDownloadTrack() {
       for (const trackId of [...trackIds, parentTrackId].filter(
         removeNullable
       )) {
-        const track = yield* select(getTrack, { id: trackId })
+        const track: Track | null = yield* select(getTrack, { id: trackId })
         if (!track) return
 
         tracks.push({
@@ -895,7 +891,7 @@ function* watchShareTrack() {
     function* (action: ReturnType<typeof socialActions.shareTrack>) {
       const { trackId } = action
 
-      const track = yield* select(getTrack, { id: trackId })
+      const track: Track | null = yield* select(getTrack, { id: trackId })
       if (!track) return
 
       const user = yield* select(getUser, { id: track.owner_id })

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Maybe, Nullable } from '@audius/common'
+import { Nullable, Maybe } from '@audius/common/utils'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { ThemeColor } from 'utils/theme/theme'

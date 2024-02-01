@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { Modal, ModalHeader, ModalTitle, ModalContent } from '@audius/stems'
 

@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Name, User, Notification } from '@audius/common'
+import { Name, User } from '@audius/common/models'
+import { Notification } from '@audius/common/store'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

@@ -1,12 +1,5 @@
-import { Action } from '@reduxjs/toolkit'
-
 import { createModal } from '../createModal'
-
-export type CreateChatModalState = {
-  defaultUserList?: 'followers' | 'chats'
-  presetMessage?: string
-  onCancelAction?: Action
-}
+import { CreateChatModalState } from '../types'
 
 const createChatModal = createModal<CreateChatModalState>({
   reducerPath: 'CreateChatModal',

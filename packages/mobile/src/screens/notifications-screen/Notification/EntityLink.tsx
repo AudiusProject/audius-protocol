@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Collection, Track } from '@audius/common'
+import type { Collection, Track } from '@audius/common/models'
 
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'

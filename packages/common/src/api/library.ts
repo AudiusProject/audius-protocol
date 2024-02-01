@@ -1,12 +1,12 @@
 import type { full } from '@audius/sdk'
 
-import { AudiusQueryContextType, createApi } from 'audius-query'
-import { UserCollectionMetadata } from 'models/Collection'
-import { Kind } from 'models/Kind'
-import { makeActivity } from 'services/audius-api-client/ResponseAdapter'
-import { APIActivityV2 } from 'services/audius-api-client/types'
-import { encodeHashId } from 'utils/hashIds'
-import { removeNullable } from 'utils/typeUtils'
+import { AudiusQueryContextType, createApi } from '~/audius-query'
+import { UserCollectionMetadata } from '~/models/Collection'
+import { Kind } from '~/models/Kind'
+import { makeActivity } from '~/services/audius-api-client/ResponseAdapter'
+import { APIActivityV2 } from '~/services/audius-api-client/types'
+import { encodeHashId } from '~/utils/hashIds'
+import { removeNullable } from '~/utils/typeUtils'
 
 type GetLibraryItemsArgs = {
   userId: number

@@ -1,4 +1,6 @@
-import { aiPageActions, FetchAiUserAction, Maybe, User } from '@audius/common'
+import { UserMetadata } from '@audius/common/models'
+import { aiPageActions, FetchAiUserAction } from '@audius/common/store'
+import { Maybe } from '@audius/common/utils'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
@@ -17,10 +19,10 @@ function* fetchAiUserWorker(action: FetchAiUserAction) {
   yield* call(waitForRead)
   const { handle, userId } = action.payload
 
-  let user: Maybe<User>
+  let user: Maybe<UserMetadata>
 
   if (handle) {
-    user = yield* call(fetchUserByHandle, handle)
+    user = yield* call(fetchUserByHandle, handle, new Set())
   }
 
   if (userId) {

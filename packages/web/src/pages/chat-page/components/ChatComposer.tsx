@@ -8,7 +8,7 @@ import {
   useEffect
 } from 'react'
 
-import { chatActions } from '@audius/common'
+import { chatActions } from '@audius/common/store'
 import { IconButton, IconSend } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

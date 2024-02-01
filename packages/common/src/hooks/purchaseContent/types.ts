@@ -1,4 +1,4 @@
-import { USDCPurchaseConditions, UserTrackMetadata } from 'models/Track'
+import { USDCPurchaseConditions, UserTrackMetadata } from '~/models/Track'
 
 /** Denotes the 3 preset amounts to show on the form, values are in cents. */
 export type PayExtraAmountPresetValues = {

@@ -1,6 +1,6 @@
-import { createApi } from 'audius-query'
-import { ID } from 'models/Identifiers'
-import { Nullable } from 'utils/typeUtils'
+import { createApi } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
+import { Nullable } from '~/utils/typeUtils'
 
 type GetFavoritedTrackListArgs = {
   currentUserId: Nullable<ID>

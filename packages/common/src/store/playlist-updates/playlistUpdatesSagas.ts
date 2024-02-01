@@ -1,7 +1,7 @@
 import { call, takeEvery, select, put } from 'typed-redux-saga'
 
-import { Name } from 'models/Analytics'
-import { getContext } from 'store/effects'
+import { Name } from '~/models/Analytics'
+import { getContext } from '~/store/effects'
 
 import { getUserId } from '../account/selectors'
 

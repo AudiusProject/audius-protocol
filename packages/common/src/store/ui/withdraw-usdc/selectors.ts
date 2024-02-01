@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 export const getWithdrawDestinationAddress = (state: CommonState) => {
   return state.withdrawUSDC.destinationAddress

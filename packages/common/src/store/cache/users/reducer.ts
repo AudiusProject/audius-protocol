@@ -1,13 +1,13 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import { Cache } from 'models/Cache'
-import { ID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { SsrPageProps } from 'models/SsrPageProps'
-import { User } from 'models/User'
-import { makeUser } from 'services/audius-api-client/ResponseAdapter'
-import { initialCacheState } from 'store/cache/reducer'
-import { makeUid } from 'utils/uid'
+import { Cache } from '~/models/Cache'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { SsrPageProps } from '~/models/SsrPageProps'
+import { User } from '~/models/User'
+import { makeUser } from '~/services/audius-api-client/ResponseAdapter'
+import { initialCacheState } from '~/store/cache/reducer'
+import { makeUid } from '~/utils/uid'
 
 import {
   AddEntriesAction,

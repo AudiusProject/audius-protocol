@@ -1,3 +1,11 @@
+import {
+  averageColorSelectors,
+  queueSelectors,
+  themeSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { Name, SquareSizes, Track } from '@audius/common/models'
 import { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
@@ -10,23 +18,14 @@ import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import {
-  Nullable,
-  playerSelectors,
-  queueSelectors,
-  themeSelectors
-} from '@audius/common'
 
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { Name } from '@audius/common'
-import { Track } from '@audius/common'
-import { SquareSizes } from '@audius/common'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import { webglSupported } from './utils'
-import { averageColorSelectors } from '@audius/common'
+
 import IconRemove from 'assets/img/iconRemove.svg'
 import AudiusLogoHorizontal from 'assets/img/audiusLogoHorizontal.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'

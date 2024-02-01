@@ -1,11 +1,10 @@
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  User,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
   Image
-} from '@audius/common'
+} from '@audius/common/store'
 import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'
@@ -199,10 +198,10 @@ export function signUpSucceededWithId(userId: ID) {
   return { type: SIGN_UP_SUCCEEDED_WITH_ID, userId }
 }
 
-type SignUpFailedParams = {
+export type SignUpFailedParams = {
   error: string
   phase: string
-  redirectRoute: string
+  redirectRoute?: string
   shouldReport: boolean
   shouldToast: boolean
   message?: string
@@ -241,7 +240,7 @@ export function signIn(email: string, password: string, otp?: string) {
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
 export const signInFailed = (
   error: string,
-  phase: string,
+  phase?: string,
   shouldReport = true,
   uiErrorCode?: UiErrorCode
 ) => ({
@@ -269,7 +268,7 @@ export function getUsersToFollow() {
 /**
  * Requests all the users from which to pick suggested followed artists
  */
-export function setUsersToFollow(users: User[]) {
+export function setUsersToFollow(users: Record<ID, User>) {
   return { type: SET_USERS_TO_FOLLOW, users }
 }
 
@@ -382,11 +381,8 @@ export function setHidePreviewHint() {
  * Follows users in signup flow after user is created
  * @param userIds array of userIds to follow
  */
-export function followArtists(
-  userIds: ID[],
-  skipDefaultFollows: boolean = false
-) {
-  return { type: FOLLOW_ARTISTS, userIds, skipDefaultFollows }
+export function followArtists(skipDefaultFollows: boolean = false) {
+  return { type: FOLLOW_ARTISTS, skipDefaultFollows }
 }
 
 /**

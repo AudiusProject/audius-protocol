@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import { IconCaretRight } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'

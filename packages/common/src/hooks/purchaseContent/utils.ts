@@ -1,4 +1,4 @@
-import { UserTrackMetadata, isContentUSDCPurchaseGated } from 'models/Track'
+import { UserTrackMetadata, isContentUSDCPurchaseGated } from '~/models/Track'
 
 import {
   PayExtraAmountPresetValues,

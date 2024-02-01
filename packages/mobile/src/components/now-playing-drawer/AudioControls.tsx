@@ -1,19 +1,21 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  modalsActions,
   queueActions,
   queueSelectors,
-  RepeatMode
-} from '@audius/common'
+  RepeatMode,
+  modalsActions
+} from '@audius/common/store'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNext from 'app/assets/images/iconNext.svg'
-import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
-import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
-import IconPrev from 'app/assets/images/iconPrev.svg'
+import {
+  IconSkipNext,
+  IconPodcastBack,
+  IconPodcastForward,
+  IconSkipPrevious
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -143,7 +145,7 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onPrevious}
-        icon={isLongFormContent ? IconPodcastBack : IconPrev}
+        icon={isLongFormContent ? IconPodcastBack : IconSkipPrevious}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )
@@ -164,7 +166,7 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onNext}
-        icon={isLongFormContent ? IconPodcastForward : IconNext}
+        icon={isLongFormContent ? IconPodcastForward : IconSkipNext}
         styles={{ root: styles.button, icon: styles.nextPrevIcons }}
       />
     )

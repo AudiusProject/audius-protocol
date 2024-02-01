@@ -1,12 +1,13 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
-import { cacheCollectionsActions, CreatePlaylistSource } from '@audius/common'
+import type { ID } from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconSave from 'app/assets/images/iconMultiselectAdd.svg'
+import { IconSave } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

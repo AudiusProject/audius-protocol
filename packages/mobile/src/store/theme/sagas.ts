@@ -1,5 +1,5 @@
-import type { SetThemeAction } from '@audius/common'
-import { themeActions } from '@audius/common'
+import type { SetThemeAction } from '@audius/common/store'
+import { themeActions } from '@audius/common/store'
 import { takeEvery, call } from 'typed-redux-saga'
 
 import { THEME_STORAGE_KEY } from 'app/constants/storage-keys'

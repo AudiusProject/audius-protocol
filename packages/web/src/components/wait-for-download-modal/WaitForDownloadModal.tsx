@@ -2,7 +2,7 @@ import {
   CommonState,
   useWaitForDownloadModal,
   cacheTracksSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { Flex, IconReceive, Text } from '@audius/harmony'
 import { ModalHeader } from '@audius/stems'
 import cn from 'classnames'

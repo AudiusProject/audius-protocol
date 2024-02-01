@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'

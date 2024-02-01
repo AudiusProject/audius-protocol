@@ -1,4 +1,4 @@
-import { Playable, User } from '@audius/common'
+import { Playable, User } from '@audius/common/models'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 

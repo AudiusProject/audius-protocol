@@ -4,7 +4,7 @@ import {
   accountSelectors,
   explorePageActions,
   ExplorePageTabs
-} from '@audius/common'
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'

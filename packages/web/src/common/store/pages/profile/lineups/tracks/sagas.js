@@ -1,14 +1,14 @@
+import { Kind } from '@audius/common/models'
 import {
-  Kind,
+  profilePageTracksLineupActions as tracksActions,
   accountSelectors,
   cacheTracksActions,
   cacheTracksSelectors,
+  profilePageTracksLineupActions as lineupActions,
   profilePageSelectors,
   TracksSortMode,
-  profilePageTracksLineupActions as tracksActions,
-  profilePageTracksLineupActions as lineupActions,
   tracksSocialActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, select, takeEvery, put } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'

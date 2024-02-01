@@ -1,4 +1,4 @@
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
 
 import type { ThemeColors } from 'app/utils/theme'
 import {

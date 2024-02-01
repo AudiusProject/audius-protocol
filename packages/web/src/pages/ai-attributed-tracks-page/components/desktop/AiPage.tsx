@@ -1,5 +1,5 @@
-import { User } from '@audius/common'
 // import { IconRobot, IconRemix } from '@audius/stems'
+import { User } from '@audius/common/models'
 import cn from 'classnames'
 
 import IconRobot from 'assets/img/iconRobot.svg'

@@ -5,20 +5,20 @@ import {
   useState
 } from 'react'
 
+import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
+import { Name, BNUSDC } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  useUSDCBalance,
-  BNUSDC,
-  useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  formatUSDCWeiToFloorCentsNumber,
+  useWithdrawUSDCModal,
+  WithdrawMethod
+} from '@audius/common/store'
+import {
   filterDecimalString,
   padDecimalValue,
   decimalIntegerToHumanReadable,
-  Name,
-  WithdrawMethod,
-  FeatureFlags,
-  useFeatureFlag
-} from '@audius/common'
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import BN from 'bn.js'

@@ -1,8 +1,8 @@
 import {
-  passwordSchema,
   createPasswordPageMessages,
-  type CompletionChecklistType
-} from '@audius/common'
+  CompletionChecklistType
+} from '@audius/common/messages'
+import { passwordSchema } from '@audius/common/schemas'
 import { CompletionCheck, Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'

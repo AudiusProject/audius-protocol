@@ -1,6 +1,6 @@
-import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { initialLineupState } from 'store/lineup/reducer'
-import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
+import { RESET_SUCCEEDED, stripPrefix } from '~/store/lineup/actions'
+import { initialLineupState } from '~/store/lineup/reducer'
+import { PREFIX } from '~/store/pages/search-results/lineup/tracks/actions'
 
 import { LineupState, Track } from '../../../../../models'
 

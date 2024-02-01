@@ -1,8 +1,8 @@
 import { call } from 'typed-redux-saga'
 
-import { Name, StripeEventFields } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { getContext } from 'store/effects'
+import { Name, StripeEventFields } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { getContext } from '~/store/effects'
 
 import { StripeSessionData } from './types'
 

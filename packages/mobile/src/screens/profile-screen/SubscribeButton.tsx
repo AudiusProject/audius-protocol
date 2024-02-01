@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common'
-import { profilePageSelectors, profilePageActions } from '@audius/common'
+import type { User } from '@audius/common/models'
+import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNotification from 'app/assets/images/iconNotification.svg'
+import { IconNotificationOn } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -47,7 +47,7 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
       title={isSubscribed ? messages.subscribed : messages.subscribe}
       haptics={!isSubscribed}
       noText
-      icon={IconNotification}
+      icon={IconNotificationOn}
       variant={isSubscribed ? 'primary' : 'common'}
       size='small'
       onPress={handlePress}

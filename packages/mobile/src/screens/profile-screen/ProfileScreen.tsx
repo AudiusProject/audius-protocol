@@ -1,24 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ShareSource, Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Status,
-  ShareSource,
-  profilePageSelectors,
   profilePageActions,
+  profilePageSelectors,
   reachabilitySelectors,
+  relatedArtistsUIActions,
   shareModalUIActions,
-  encodeUrlName,
-  modalsActions,
-  FeatureFlags,
-  relatedArtistsUIActions
-} from '@audius/common'
+  modalsActions
+} from '@audius/common/store'
+import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconKebabHorizontal, IconShare } from '@audius/harmony-native'
 import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

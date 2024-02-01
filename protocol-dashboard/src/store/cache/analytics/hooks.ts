@@ -207,28 +207,37 @@ async function fetchTimeSeries(
   return metric
 }
 
-async function fetchUptime(nodeType: ServiceType, node: string, bucket: Bucket) {
+async function fetchUptime(
+  nodeType: ServiceType,
+  node: string,
+  bucket: Bucket
+) {
   if (bucket !== Bucket.DAY) {
     // currently only 24h uptime supported
     return MetricError.ERROR
   }
 
-  const endpoints = nodeType === ServiceType.DiscoveryProvider ? [
-    `https://discoveryprovider.audius.co`,
-    `https://discoveryprovider2.audius.co`,
-    `https://discoveryprovider3.audius.co`
-  ] : [
-    `https://creatornode.audius.co`,
-    `https://creatornode2.audius.co`,
-    `https://creatornode3.audius.co`
-  ]
+  const endpoints =
+    nodeType === ServiceType.DiscoveryProvider
+      ? [
+          `https://discoveryprovider.audius.co`,
+          `https://discoveryprovider2.audius.co`,
+          `https://discoveryprovider3.audius.co`
+        ]
+      : [
+          `https://creatornode.audius.co`,
+          `https://creatornode2.audius.co`,
+          `https://creatornode3.audius.co`
+        ]
 
   let highestUptimeRecord = { uptime_percentage: 0 }
   let error = false
 
   for (const endpoint of endpoints) {
     try {
-      const metric = await fetchWithTimeout(`${endpoint}/d_api/uptime?host=${node}`)
+      const metric = await fetchWithTimeout(
+        `${endpoint}/d_api/uptime?host=${node}`
+      )
       if (metric.uptime_percentage === 100) {
         return metric // If we find a 100% uptime, return early
       }
@@ -496,7 +505,11 @@ export const useApiCalls = (bucket: Bucket) => {
   return { apiCalls }
 }
 
-export const useIndividualNodeUptime = (nodeType: ServiceType, node: string, bucket: Bucket) => {
+export const useIndividualNodeUptime = (
+  nodeType: ServiceType,
+  node: string,
+  bucket: Bucket
+) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
   const uptime = useSelector(state =>
     getIndividualNodeUptime(state as AppState, { node, bucket })

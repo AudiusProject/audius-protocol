@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useDebouncedCallback } from '@audius/common'
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { useField, useFormikContext } from 'formik'
 import { Platform, View } from 'react-native'
 

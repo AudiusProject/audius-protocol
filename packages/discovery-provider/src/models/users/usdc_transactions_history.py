@@ -9,6 +9,9 @@ from src.models.model_utils import RepresentableMixin
 class USDCTransactionType(str, enum.Enum):
     purchase_content = "PURCHASE_CONTENT"
     transfer = "TRANSFER"
+    prepare_withdrawal = "PREPARE_WITHDRAWAL"
+    recover_withdrawal = "RECOVER_WITHDRAWAL"
+    withdrawal = "WITHDRAWAL"
     purchase_stripe = "PURCHASE_STRIPE"
 
 

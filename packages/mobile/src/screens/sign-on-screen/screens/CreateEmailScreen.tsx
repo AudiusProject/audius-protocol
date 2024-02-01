@@ -1,10 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  emailSchema,
-  useAudiusQueryContext,
-  createEmailPageMessages as messages
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { createEmailPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/schemas'
 import {
   setLinkedSocialOnFirstPage,
   setValueField,
@@ -104,12 +102,12 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
           ) : null}
           <Heading
-            heading={messages.title}
+            heading={createEmailPageMessages.title}
             description={
               <>
-                {messages.subHeader.line1}
+                {createEmailPageMessages.subHeader.line1}
                 {'\n'}
-                {messages.subHeader.line2}
+                {createEmailPageMessages.subHeader.line2}
               </>
             }
             centered
@@ -117,12 +115,12 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
           <Flex direction='column' gap='l'>
             <NewEmailField
               name='email'
-              label={messages.emailLabel}
+              label={createEmailPageMessages.emailLabel}
               onChangeScreen={onChangeScreen}
             />
             <Divider>
               <Text variant='body' size='s' color='subdued'>
-                {messages.socialsDividerText}
+                {createEmailPageMessages.socialsDividerText}
               </Text>
             </Divider>
             <SocialMediaSignUpButtons
@@ -138,15 +136,15 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               fullWidth
               iconRight={IconArrowRight}
             >
-              {messages.signUp}
+              {createEmailPageMessages.signUp}
             </Button>
             <Text variant='body' size='m' textAlign='center'>
-              {messages.haveAccount}{' '}
+              {createEmailPageMessages.haveAccount}{' '}
               <TextLink
                 variant='visible'
                 onPress={() => onChangeScreen('sign-in')}
               >
-                {messages.signIn}
+                {createEmailPageMessages.signIn}
               </TextLink>
             </Text>
           </Flex>
