@@ -62,7 +62,6 @@ export const BuyAudioModal = () => {
       >
         <ModalTitle
           title={messages.buyAudio}
-          // @ts-ignore
           icon={<IconTokenGold size='l' className={styles.noFill} />}
         />
       </ModalHeader>
