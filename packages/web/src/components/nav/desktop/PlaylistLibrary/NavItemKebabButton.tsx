@@ -1,12 +1,12 @@
 import { MouseEvent } from 'react'
 
 import {
-  IconKebabHorizontal,
   IconButton,
   IconButtonButtonProps,
   PopupMenu,
   PopupMenuProps
 } from '@audius/stems'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './NavItemKebabButton.module.css'

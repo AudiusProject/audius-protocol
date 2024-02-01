@@ -19,13 +19,8 @@ import {
   PurchaseVendor
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex } from '@audius/harmony'
-import {
-  IconCart,
-  ModalContentPages,
-  ModalFooter,
-  ModalHeader
-} from '@audius/stems'
+import { Flex, IconCart } from '@audius/harmony'
+import { ModalContentPages, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

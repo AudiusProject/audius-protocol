@@ -1,8 +1,8 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
-import { Button, IconTrash } from '@audius/harmony'
-import { IconError, IconUpload } from '@audius/stems'
+import { Button, IconTrash, IconError, IconCloudUpload } from '@audius/harmony'
+import {} from '@audius/stems'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
@@ -43,7 +43,7 @@ export const MultiTrackSidebar = () => {
             <Button
               onClick={scrollToTop}
               variant='primary'
-              iconRight={IconUpload}
+              iconRight={IconCloudUpload}
               type='submit'
               fullWidth
             >

@@ -1,6 +1,11 @@
 import { PropsWithChildren } from 'react'
 
-import { IconAtSign, IconPencil, IconVisibilityPublic } from '@audius/stems'
+import {} from '@audius/stems'
+import {
+  IconEmailAddress,
+  IconPencil,
+  IconVisibilityPublic
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -113,7 +118,7 @@ export const PermissionsSection = ({
           )}
         >
           <div>
-            <IconAtSign
+            <IconEmailAddress
               width={15}
               height={15}
               className={cn(styles.permissionIcon, styles.atSignIcon)}

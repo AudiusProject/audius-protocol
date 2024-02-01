@@ -13,8 +13,14 @@ import {
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
-import { IconVolumeLevel2 as IconVolume, IconStar } from '@audius/harmony'
-import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
+import {
+  IconVolumeLevel2 as IconVolume,
+  IconStar,
+  IconCheck,
+  IconCrown,
+  IconVisibilityHidden
+} from '@audius/harmony'
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
@@ -377,7 +383,7 @@ const TrackTile = ({
           >
             {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
-                <IconHidden className={styles.topRightIcon} />
+                <IconVisibilityHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
               </div>
             ) : null}

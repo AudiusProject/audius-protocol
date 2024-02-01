@@ -6,7 +6,7 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
 } from '@audius/common'
-import { IconBigSearch } from '@audius/harmony'
+import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
 import Card from 'components/card/desktop/Card'

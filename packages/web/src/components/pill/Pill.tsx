@@ -6,7 +6,7 @@ import cn from 'classnames'
 import styles from './Pill.module.css'
 
 const icons = {
-  save: <IconSave />
+  save: <IconSave color='subdued' />
 }
 
 type PillProps = ComponentProps<'button'> & {

@@ -22,15 +22,15 @@ import {
   useFeatureFlag,
   AccessConditions
 } from '@audius/common'
+import { RadioButtonGroup } from '@audius/stems'
 import {
   IconCart,
   IconCollectible,
-  IconHidden,
+  IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
-  IconVisibilityPublic,
-  RadioButtonGroup
-} from '@audius/stems'
+  IconVisibilityPublic
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'

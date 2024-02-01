@@ -14,8 +14,14 @@ import {
   usePremiumContentPurchaseModal,
   ModalSource
 } from '@audius/common'
-import { IconVolumeLevel2 as IconVolume, IconStar } from '@audius/harmony'
-import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
+import {
+  IconVolumeLevel2 as IconVolume,
+  IconStar,
+  IconCrown,
+  IconVisibilityHidden,
+  IconTrending
+} from '@audius/harmony'
+import {} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -318,7 +324,7 @@ const TrackTile = (props: CombinedProps) => {
         >
           {props.isUnlisted ? (
             <div className={styles.topRightIcon}>
-              <IconHidden />
+              <IconVisibilityHidden />
               {messages.hiddenTrack}
             </div>
           ) : null}

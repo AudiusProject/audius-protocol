@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
 import { useLeavingAudiusModal } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { Button, IconExternalLink, IconInfo } from '@audius/harmony'
 import {
-  IconExternalLink,
-  IconInfo,
   Modal,
   ModalContent,
   ModalFooter,

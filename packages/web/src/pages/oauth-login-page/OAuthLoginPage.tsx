@@ -6,7 +6,7 @@ import {
   Name,
   signOutActions
 } from '@audius/common'
-import { IconValidationX } from '@audius/stems'
+import { IconValidationX } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

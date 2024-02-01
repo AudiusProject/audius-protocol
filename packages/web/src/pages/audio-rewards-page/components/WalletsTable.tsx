@@ -8,8 +8,8 @@ import {
   tokenDashboardPageActions,
   tokenDashboardPageSelectors
 } from '@audius/common'
-import { IconCopy, IconRemove } from '@audius/harmony'
-import { LogoEth, LogoSol } from '@audius/stems'
+import { IconCopy, IconRemove, IconSolana as LogoSol } from '@audius/harmony'
+import { LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

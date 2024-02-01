@@ -1,4 +1,4 @@
-.popup {
+ficonn.popup {
   padding: 0;
   border: none;
   box-shadow: 0 4px 12px var(--notification-panel-box-shadow);
@@ -25,14 +25,9 @@
 }
 
 .iconNotification {
-  fill: var(--static-white);
   margin-right: var(--unit-2);
   height: 30px;
   width: 30px;
-}
-
-.iconNotification g {
-  fill: var(--static-white);
 }
 
 .title {

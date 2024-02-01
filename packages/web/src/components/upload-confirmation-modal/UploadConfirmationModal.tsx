@@ -4,7 +4,6 @@ import { uploadConfirmationModalUISelectors } from '@audius/common'
 import {
   Button,
   ButtonType,
-  IconUpload,
   Modal,
   ModalContent,
   ModalContentText,
@@ -12,6 +11,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { IconCloudUpload as IconUpload } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'

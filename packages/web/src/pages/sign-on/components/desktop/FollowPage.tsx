@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common'
-import { IconWand } from '@audius/harmony'
-import { Button, ButtonType, IconArrow, Scrollbar } from '@audius/stems'
+import { IconWand, IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 
 import {
@@ -139,7 +139,7 @@ export const FollowPage = (props: FollowPageProps) => {
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrow />}
+        rightIcon={<IconArrowRight />}
         type={
           followedArtists.length >= MINIMUM_FOLLOWER_COUNT
             ? ButtonType.PRIMARY_ALT

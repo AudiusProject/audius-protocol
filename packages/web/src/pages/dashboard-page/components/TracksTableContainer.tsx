@@ -1,15 +1,18 @@
 import { useState, useCallback, useMemo } from 'react'
 
 import { Status, User, Track, isContentUSDCPurchaseGated } from '@audius/common'
-import { SelectablePill, IconClose } from '@audius/harmony'
 import {
-  IconHidden,
-  IconVisibilityPublic,
-  IconCart,
+  SelectablePill,
+  IconClose,
   IconSpecialAccess,
   IconCollectible,
   IconSearch
-} from '@audius/stems'
+} from '@audius/harmony'
+import {
+  IconVisibilityHidden,
+  IconVisibilityPublic,
+  IconCart
+} from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Input } from 'components/input'
@@ -229,7 +232,7 @@ export const TracksTableContainer = ({
                 messages.hidden +
                 (hasOnlyOneSection ? ` ${messages.tracks}` : '')
               }
-              icon={IconHidden}
+              icon={IconVisibilityHidden}
               size='large'
               onClick={() => setSelectedPill(Pills.HIDDEN)}
             />

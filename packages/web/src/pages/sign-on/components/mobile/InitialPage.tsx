@@ -7,8 +7,12 @@ import {
   useState
 } from 'react'
 
-import { Flex, IconAudiusLogoHorizontalColor } from '@audius/harmony'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import {
+  Flex,
+  IconAudiusLogoHorizontalColor,
+  IconArrowRight
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
@@ -197,7 +201,7 @@ const SignUpEmail = ({
             isSubmitting && shouldShowLoadingSpinner ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
@@ -310,7 +314,7 @@ const SignIn = ({
             isLoading || (didSucceed && !hasAccount) ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={ButtonType.PRIMARY_ALT}

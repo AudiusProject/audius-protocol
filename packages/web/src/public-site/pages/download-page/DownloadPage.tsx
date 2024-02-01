@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { MobileOS, OS } from '@audius/common'
-import { IconDownload } from '@audius/stems'
+import {} from '@audius/stems'
+import { IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import queryString from 'query-string'
 import { useLocation } from 'react-router-dom'
@@ -58,7 +59,7 @@ const DesktopDownloadButton = ({ os }: { os: OS }) => {
       >
         {messages.getFor}{' '}
         <span className={styles.platformName}>
-          <IconDownload className={styles.platformIcon} />
+          <IconCloudDownload className={styles.platformIcon} />
           {platformName}
         </span>
       </button>
@@ -81,7 +82,7 @@ const AppDownloadLink = ({ os }: { os: MobileOS }) => {
       <a href={downloadLink} className={styles.downloadLink}>
         {messages.getFor}{' '}
         <span className={styles.platformName}>
-          <IconDownload className={styles.platformIcon} />
+          <IconCloudDownload className={styles.platformIcon} />
           {platformName}
         </span>
       </a>

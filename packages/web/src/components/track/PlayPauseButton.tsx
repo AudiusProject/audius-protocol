@@ -6,8 +6,13 @@ import {
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
-import { Button, IconRepeatOff as IconRepeat } from '@audius/harmony'
-import { IconPause, IconPlay } from '@audius/stems'
+import {
+  Button,
+  IconRepeatOff as IconRepeat,
+  IconPause,
+  IconPlay
+} from '@audius/harmony'
+import {} from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { useFlag } from 'hooks/useRemoteConfig'

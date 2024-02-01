@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { IconArrowRight as IconArrow } from '@audius/harmony'
-import { Button, ButtonType, IconRobot } from '@audius/stems'
+import { IconArrowRight as IconArrow, IconRobot } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

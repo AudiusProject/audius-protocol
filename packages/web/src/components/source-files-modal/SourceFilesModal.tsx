@@ -10,10 +10,10 @@ import {
   Button,
   ButtonSize,
   ButtonType,
-  IconRemove,
   Modal,
   IconButton
 } from '@audius/stems'
+import { IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

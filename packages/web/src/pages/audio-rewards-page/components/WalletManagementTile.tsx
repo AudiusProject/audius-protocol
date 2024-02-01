@@ -18,9 +18,11 @@ import {
   IconReceive,
   IconSend,
   IconSettings,
-  IconTransaction
+  IconTokenGold,
+  IconTransaction,
+  IconInfo
 } from '@audius/harmony'
-import { Button, ButtonType, IconInfo } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -28,7 +30,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { CollapsibleContent } from 'components/collapsible-content'
@@ -375,10 +376,9 @@ export const WalletManagementTile = () => {
         {!isMobileWeb() && isAnyProviderAllowed ? (
           <>
             <div className={styles.header}>
-              <img
+              <IconTokenGold
                 className={styles.headerIcon}
-                src={IconGoldBadge}
-                alt={messages.goldAudioToken}
+                aria-label={messages.goldAudioToken}
               />
               <div className={styles.headerText}>
                 <div className={styles.title}>{messages.buyAudio}</div>

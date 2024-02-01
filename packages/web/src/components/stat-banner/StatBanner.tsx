@@ -1,19 +1,16 @@
 import { useRef } from 'react'
 
 import { FeatureFlags, ID } from '@audius/common'
-import { IconMessageBlock } from '@audius/harmony'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
+  IconMessageBlock,
+  IconMessageUnblock,
+  IconMessageLocked,
   IconShare,
   IconPencil,
   IconKebabHorizontal,
-  IconMessage,
-  PopupMenu,
-  IconUnblockMessages,
-  IconMessageLocked
-} from '@audius/stems'
+  IconMessage
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, PopupMenu } from '@audius/stems'
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
@@ -96,7 +93,7 @@ const StatsPopupMenu = ({
         ? {
             text: messages.unblockMessages,
             onClick: onUnblock,
-            icon: <IconUnblockMessages />
+            icon: <IconMessageUnblock />
           }
         : {
             text: messages.blockMessages,

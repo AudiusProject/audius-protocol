@@ -26,24 +26,26 @@ import {
   StringKeys,
   isNullOrUndefined
 } from '@audius/common'
-import { IconQuestionCircle } from '@audius/harmony'
 import {
-  IconTrophy,
+  IconQuestionCircle,
+  IconTokenNoTier,
+  IconArrowRight as IconArrow,
+  IconTrophy
+} from '@audius/harmony'
+import {
   TokenAmountInput,
   TokenAmountInputChangeHandler,
   ButtonType,
-  Button,
-  IconArrow
+  Button
 } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -92,7 +94,7 @@ export const SendTip = () => {
   const { tier } = getTierAndNumberForBalance(
     weiToString(accountBalance ?? (new BN('0') as BNWei))
   )
-  const audioBadge = audioTierMapPng[tier as BadgeTier]
+  const audioBadge = audioTierMapSVG[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -179,7 +181,7 @@ export const SendTip = () => {
             width: 16
           })
         ) : (
-          <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
+          <IconTokenNoTier size='s' />
         )}
         <span className={styles.amountAvailable}>
           {isNullOrUndefined(accountBalance) ? (

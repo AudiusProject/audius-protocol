@@ -7,12 +7,8 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common'
-import {
-  PopupMenu,
-  IconFolder,
-  IconPlaylists,
-  PopupMenuItem
-} from '@audius/stems'
+import { PopupMenu, PopupMenuItem } from '@audius/stems'
+import { IconFolder, IconPlaylists } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { DeveloperApp } from '@audius/common'
-import { IconEmbed } from '@audius/harmony'
+import { IconEmbed, IconTrash } from '@audius/harmony'
 import {
   Modal,
   ModalHeader,
   ModalProps,
   ModalTitle,
-  ModalContentPages,
-  IconTrash
+  ModalContentPages
 } from '@audius/stems'
 
 import { AppDetailsPage } from './AppDetailsPage'

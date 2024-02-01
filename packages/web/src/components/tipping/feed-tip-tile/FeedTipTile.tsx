@@ -12,7 +12,7 @@ import {
   IconClose as IconRemove,
   IconTipping as IconTip
 } from '@audius/harmony'
-import { IconButton, PillButton } from '@audius/stems'
+import { PillButton, IconButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

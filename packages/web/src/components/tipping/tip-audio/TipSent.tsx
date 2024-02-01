@@ -7,7 +7,8 @@ import {
   tippingSelectors,
   deriveUserBankAddress
 } from '@audius/common'
-import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
+import { IconTwitter, IconCheck } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -101,7 +102,7 @@ export const TipSent = () => {
           type={ButtonType.PRIMARY}
           text={messages.shareToTwitter}
           onClick={handleShareClick}
-          leftIcon={<IconTwitterBird width={24} height={24} />}
+          leftIcon={<IconTwitter width={24} height={24} />}
         />
       </div>
     </div>

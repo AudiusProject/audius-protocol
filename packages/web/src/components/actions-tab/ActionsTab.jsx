@@ -91,6 +91,7 @@ const ExpandedActionsTab = (props) => {
             placement={direction === 'horizontal' ? 'top' : 'right'}
           >
             <IconRepost
+              size='m'
               className={cn(styles.iconRepost, {
                 [styles.reposted]: currentUserReposted
               })}
@@ -109,14 +110,17 @@ const ExpandedActionsTab = (props) => {
           onClick={isDisabled ? () => {} : onShare}
         >
           <div className={styles.actionIconContainer}>
-            <IconShare className={styles.iconShare} />
+            <IconShare size='m' className={styles.iconShare} />
           </div>
         </div>
       </Tooltip>
       <div className={cn(styles.actionButton, styles.menuKebabContainer)}>
         {isDisabled || isHidden ? (
           <div className={styles.iconKebabHorizontalWrapper}>
-            <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+            <IconKebabHorizontal
+              size='m'
+              className={styles.iconKebabHorizontal}
+            />
           </div>
         ) : (
           <Menu {...overflowMenu}>
@@ -126,7 +130,10 @@ const ExpandedActionsTab = (props) => {
                 onClick={triggerPopup}
               >
                 <div ref={ref} className={styles.iconKebabHorizontalRef}>
-                  <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+                  <IconKebabHorizontal
+                    size='m'
+                    className={styles.iconKebabHorizontal}
+                  />
                 </div>
               </div>
             )}

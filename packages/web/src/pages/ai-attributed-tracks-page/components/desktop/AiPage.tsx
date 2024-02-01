@@ -1,5 +1,4 @@
 import { User } from '@audius/common'
-// import { IconRobot, IconRemix } from '@audius/stems'
 import { IconRobot } from '@audius/harmony'
 import cn from 'classnames'
 

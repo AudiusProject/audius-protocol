@@ -10,15 +10,14 @@ import {
   tippingSelectors,
   User
 } from '@audius/common'
-import { IconMessageBlock } from '@audius/harmony'
 import {
-  IconButton,
+  IconMessageBlock,
   IconKebabHorizontal,
   IconMessage,
-  IconUnblockMessages,
-  IconUser,
-  PopupMenu
-} from '@audius/stems'
+  IconMessageUnblock as IconUnblockMessages,
+  IconUser
+} from '@audius/harmony'
+import { IconButton, PopupMenu } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

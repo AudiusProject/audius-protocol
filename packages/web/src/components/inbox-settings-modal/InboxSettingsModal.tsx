@@ -4,7 +4,6 @@ import { Status, useSetInboxPermissions } from '@audius/common'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,
-  IconMessage,
   Modal,
   ModalContent,
   ModalFooter,
@@ -12,6 +11,7 @@ import {
   ModalTitle,
   RadioButtonGroup
 } from '@audius/stems'
+import { IconMessage } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

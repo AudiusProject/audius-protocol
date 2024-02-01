@@ -12,9 +12,9 @@ import {
   IconTastemaker as Tastemaker,
   IconTrending as IconTrendingBase,
   IconTrophy,
-  IconUser
+  IconUser,
+  IconCart as IconCartBase
 } from '@audius/harmony'
-import { IconCart as IconCartBase } from '@audius/stems'
 
 import styles from './icons.module.css'
 

@@ -15,21 +15,18 @@ import {
   removeNullable,
   settingsPageSelectors
 } from '@audius/common'
-import { IconAppearance } from '@audius/harmony'
 import {
-  Modal,
-  Button,
-  ButtonType,
-  IconMail,
-  IconNotification,
+  IconAppearance,
+  IconDesktop,
+  IconRobot,
+  IconRecoveryEmail as IconMail,
+  IconNotificationOn as IconNotification,
   IconSignOut,
   IconVerified,
   IconSettings,
-  IconMessage,
-  SegmentedControl,
-  IconDesktop,
-  IconRobot
-} from '@audius/stems'
+  IconMessage
+} from '@audius/harmony'
+import { Modal, Button, ButtonType, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
@@ -402,7 +399,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </SettingsCard>
         ) : null}
         <SettingsCard
-          icon={<IconVerified className={styles.iconVerified} />}
+          icon={<IconVerified className={styles.iconVerified} size='l' />}
           title={messages.verificationCardTitle}
           description={messages.verificationCardDescription}
         >

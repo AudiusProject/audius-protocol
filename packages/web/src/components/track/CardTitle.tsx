@@ -5,7 +5,8 @@ import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated
 } from '@audius/common'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
+import {} from '@audius/stems'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'

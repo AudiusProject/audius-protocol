@@ -5,9 +5,11 @@ import {
   IconRemove as IconRemoveTrack,
   IconPlaybackPause as IconPause,
   IconPlaybackPlay as IconPlay,
-  IconDrag
+  IconDrag,
+  IconKebabHorizontal,
+  IconLock
 } from '@audius/harmony'
-import { IconKebabHorizontal, IconButton, IconLock } from '@audius/stems'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 

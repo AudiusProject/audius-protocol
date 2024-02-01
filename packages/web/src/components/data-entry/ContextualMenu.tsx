@@ -3,7 +3,6 @@ import { ReactNode, ReactElement, useCallback } from 'react'
 import {
   Button,
   ButtonType,
-  IconCaretRight,
   IconComponent,
   Modal,
   ModalContent,
@@ -11,6 +10,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { IconCaretRight } from '@audius/harmony'
 import {
   Form,
   Formik,

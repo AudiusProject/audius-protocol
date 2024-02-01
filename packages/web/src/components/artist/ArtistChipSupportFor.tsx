@@ -8,8 +8,12 @@ import {
   stringWeiToBN,
   tippingSelectors
 } from '@audius/common'
-import { IconTipping as IconTip } from '@audius/harmony'
-import { IconTrophy, IconTrending } from '@audius/stems'
+import {
+  IconTipping as IconTip,
+  IconTrophy,
+  IconTrending
+} from '@audius/harmony'
+import {} from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'

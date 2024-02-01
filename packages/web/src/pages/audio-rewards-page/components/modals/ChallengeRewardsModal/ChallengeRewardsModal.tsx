@@ -15,16 +15,14 @@ import {
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
 } from '@audius/common'
-import { IconCopy, IconValidationCheck } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
-  ProgressBar,
+  IconCopy,
+  IconValidationCheck,
   IconCheck,
   IconVerified,
-  IconTwitterBird,
-  ModalContent
-} from '@audius/stems'
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import { Button, ButtonType, ProgressBar, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

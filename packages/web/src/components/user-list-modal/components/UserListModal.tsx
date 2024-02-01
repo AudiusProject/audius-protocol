@@ -24,15 +24,14 @@ import {
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
   ID
 } from '@audius/common'
-import { IconTipping as IconTip } from '@audius/harmony'
 import {
-  Modal,
-  IconTrophy,
-  IconFollowing,
-  Scrollbar,
+  IconTipping as IconTip,
   IconUser,
-  IconUserGroup
-} from '@audius/stems'
+  IconUserGroup,
+  IconTrophy,
+  IconUserFollowing as IconFollowing
+} from '@audius/harmony'
+import { Modal, Scrollbar } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'

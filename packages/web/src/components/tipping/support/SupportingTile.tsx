@@ -10,7 +10,8 @@ import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common'
-import { IconTrophy } from '@audius/stems'
+import {} from '@audius/stems'
+import { IconTrophy } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

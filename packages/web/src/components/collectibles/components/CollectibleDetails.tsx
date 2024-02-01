@@ -9,7 +9,8 @@ import {
   getHash
 } from '@audius/common'
 import { IconPlaybackPlay as IconPlay } from '@audius/harmony'
-import { LogoEth, LogoSol } from '@audius/stems'
+import { IconSolana as LogoSol } from '@audius/harmony'
+import { LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

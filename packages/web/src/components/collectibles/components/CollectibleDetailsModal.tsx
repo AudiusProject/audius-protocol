@@ -21,19 +21,13 @@ import {
 import {
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
-  IconEmbed
-} from '@audius/harmony'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
+  IconEmbed,
   IconImage,
   IconLink,
   IconShare,
-  LogoEth,
-  LogoSol,
-  Modal
-} from '@audius/stems'
+  IconSolana as LogoSol
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, LogoEth, Modal } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,8 +1,8 @@
 import { useCallback, useContext, useMemo } from 'react'
 
 import { FeatureFlags } from '@audius/common'
-import { IconCaretLeft } from '@audius/harmony'
-import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
+import { IconCaretLeft, IconCaretRight } from '@audius/harmony'
+import { HarmonyPlainButton } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'

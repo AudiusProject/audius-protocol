@@ -134,7 +134,10 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
       >
         <div className={styles.panelContainer} ref={panelRef}>
           <div className={styles.header}>
-            <IconNotification className={styles.iconNotification} />
+            <IconNotification
+              color='staticWhite'
+              className={styles.iconNotification}
+            />
             <h3 className={styles.title}>{messages.title}</h3>
           </div>
           <Scrollbar className={styles.scrollContent} id={scrollbarId}>

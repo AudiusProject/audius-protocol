@@ -5,8 +5,7 @@ import {
   formatDate,
   useEditPlaylistModal
 } from '@audius/common'
-import { IconFilter } from '@audius/harmony'
-import { IconHidden, IconPencil } from '@audius/stems'
+import { IconFilter, IconVisibilityHidden, IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 
 import { Input } from 'components/input'
@@ -115,7 +114,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         />
         <div className={styles.infoSection}>
           <span className={cn(styles.typeLabel, fadeIn)}>
-            {!isPublished ? <IconHidden className={styles.labelIcon} /> : null}
+            {!isPublished ? (
+              <IconVisibilityHidden className={styles.labelIcon} />
+            ) : null}
             <p className={styles.label}>
               {type === 'playlist' && !isPublished ? 'hidden playlist' : type}
             </p>
@@ -190,7 +191,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <div className={styles.inputWrapper}>
             <Input
               placeholder={messages.filter}
-              prefix={<IconFilter />}
+              prefix={<IconFilter color='subdued' />}
               onChange={handleFilterChange}
               value={filterText}
               size='small'

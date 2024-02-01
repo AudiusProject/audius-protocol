@@ -2,14 +2,8 @@ import { useCallback } from 'react'
 
 import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
 import type { SuggestedTrack } from '@audius/common'
-import { IconCaretDown } from '@audius/harmony'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconButton,
-  IconRefresh
-} from '@audius/stems'
+import { IconCaretDown, IconRefresh } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useToggle } from 'react-use'

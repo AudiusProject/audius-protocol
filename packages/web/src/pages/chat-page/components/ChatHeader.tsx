@@ -6,18 +6,17 @@ import {
   User,
   useCreateChatModal
 } from '@audius/common'
-import { IconMessageBlock } from '@audius/harmony'
 import {
-  IconButton,
-  IconCompose,
-  IconSettings,
-  IconKebabHorizontal,
-  PopupMenu,
-  IconUnblockMessages,
+  IconMessageBlock,
+  IconMessageUnblock,
   IconUser,
   IconTrash,
-  IconError
-} from '@audius/stems'
+  IconError,
+  IconCompose,
+  IconSettings,
+  IconKebabHorizontal
+} from '@audius/harmony'
+import { IconButton, PopupMenu } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -123,7 +122,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       isBlocked
         ? {
             text: messages.unblock,
-            icon: <IconUnblockMessages />,
+            icon: <IconMessageUnblock />,
             onClick: handleUnblockClicked
           }
         : {
@@ -174,7 +173,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
                     <IconButton
                       ref={ref}
                       aria-label={messages.chatSettings}
-                      icon={<IconKebabHorizontal />}
+                      icon={<IconKebabHorizontal color='default' />}
                       onClick={() => trigger()}
                     />
                   )}

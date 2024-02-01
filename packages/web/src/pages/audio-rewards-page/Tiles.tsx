@@ -7,8 +7,8 @@ import {
   walletSelectors,
   isNullOrUndefined
 } from '@audius/common'
-import { IconReceive, IconSend } from '@audius/harmony'
-import { Button, ButtonType, IconInfo } from '@audius/stems'
+import { IconReceive, IconSend, IconInfo } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

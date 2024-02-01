@@ -17,9 +17,10 @@ import {
   IconFileMP3 as iconFileMp3,
   IconFileOGG as iconFileOgg,
   IconFileUnknown as iconFileUnknown,
-  IconFileWAV as iconFileWav
+  IconFileWAV as iconFileWav,
+  IconTrash
 } from '@audius/harmony'
-import { HarmonyPlainButton, IconTrash } from '@audius/stems'
+import { HarmonyPlainButton } from '@audius/stems'
 import numeral from 'numeral'
 
 import { Text } from 'components/typography'

@@ -7,8 +7,11 @@ import {
   User,
   formatCount
 } from '@audius/common'
-import { IconTipping as IconTip } from '@audius/harmony'
-import { IconArrow } from '@audius/stems'
+import {
+  IconTipping as IconTip,
+  IconArrowRight as IconArrow
+} from '@audius/harmony'
+import {} from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

@@ -392,7 +392,7 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
-            prefix={<IconSearch />}
+            prefix={<IconSearch color='subdued' />}
             onKeyDown={this.onKeyDown}
             spellCheck={false}
           />

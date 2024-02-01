@@ -6,17 +6,15 @@ import {
   useAccountHasClaimableRewards,
   StringKeys
 } from '@audius/common'
-import { IconKebabHorizontal } from '@audius/harmony'
 import {
+  IconKebabHorizontal,
   IconCrown,
   IconDashboard,
   IconMessage,
   IconSettings,
-  IconDonate,
-  PopupMenu,
-  PopupMenuItem,
-  PopupPosition
-} from '@audius/stems'
+  IconDonate
+} from '@audius/harmony'
+import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

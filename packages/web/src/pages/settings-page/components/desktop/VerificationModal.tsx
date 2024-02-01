@@ -12,8 +12,8 @@ import {
   musicConfettiActions,
   TikTokProfile
 } from '@audius/common'
-import { IconValidationX } from '@audius/harmony'
-import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
+import { IconValidationX, IconNote } from '@audius/harmony'
+import { Modal, Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

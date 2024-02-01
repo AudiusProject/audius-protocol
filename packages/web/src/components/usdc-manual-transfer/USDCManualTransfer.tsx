@@ -8,8 +8,8 @@ import {
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, IconLogoCircleUSDC } from '@audius/harmony'
-import { IconError } from '@audius/stems'
+import { Button, Flex, IconLogoCircleUSDC, IconError } from '@audius/harmony'
+import {} from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'

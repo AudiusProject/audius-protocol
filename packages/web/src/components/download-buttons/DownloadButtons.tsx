@@ -7,7 +7,8 @@ import {
   useDownloadTrackButtons,
   toastActions
 } from '@audius/common'
-import { IconDownload, IconButton } from '@audius/stems'
+import { IconButton } from '@audius/stems'
+import { IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -91,7 +92,7 @@ const DownloadButton = ({
 
     return (
       <div className={styles.iconDownload}>
-        <IconButton aria-label='Download' icon={<IconDownload />} />
+        <IconButton aria-label='Download' icon={<IconCloudDownload />} />
       </div>
     )
   }

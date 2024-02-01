@@ -7,13 +7,8 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common'
-import {
-  IconFolder,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+import { IconFolder } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

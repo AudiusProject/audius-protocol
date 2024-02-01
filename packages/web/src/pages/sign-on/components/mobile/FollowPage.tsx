@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import { ID, User } from '@audius/common'
-import { IconWand } from '@audius/harmony'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import { IconWand, IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import {
@@ -159,7 +159,7 @@ export const BottomSection = (props: BottomSectionProps) => {
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrow />}
+        rightIcon={<IconArrowRight />}
         type={
           followedArtists.length >= MINIMUM_FOLLOWER_COUNT
             ? ButtonType.PRIMARY_ALT

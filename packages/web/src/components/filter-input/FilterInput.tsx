@@ -18,7 +18,7 @@ const FilterInput = ({ placeholder, onChange, value }: FilterInputProps) => {
       <Input
         className={styles.filterInput}
         placeholder={placeholder}
-        prefix={<IconFilter />}
+        prefix={<IconFilter color='subdued' />}
         onChange={onChange}
         value={value}
         variant='bordered'

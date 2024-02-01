@@ -3,9 +3,10 @@ import { ComponentType, SVGProps } from 'react'
 import { ExploreCollectionsVariant } from '@audius/common'
 import {
   IconTurntable as IconExploreTopAlbums,
-  IconPlaylists as IconExploreTopPlaylists
+  IconPlaylists as IconExploreTopPlaylists,
+  IconCart
 } from '@audius/harmony'
-import { IconCart } from '@audius/stems'
+import {} from '@audius/stems'
 
 import IconCassette from 'assets/img/iconCassette.svg'
 import IconExploreDJ from 'assets/img/iconExploreDJ.svg'
