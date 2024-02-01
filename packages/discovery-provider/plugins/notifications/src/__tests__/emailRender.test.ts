@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { DMEntityType } from '../email/notifications/types'
-import { DMEmailNotification, FollowNotification } from '../types/notifications'
+import { DMEmailNotification } from '../types/notifications'
 import { createUsers, resetTests, setupTest } from '../utils/populateDB'
 
 const initDB = async (processor: Processor) => {

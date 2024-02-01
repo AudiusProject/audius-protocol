@@ -1,24 +1,24 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
-import { USDCWithdrawalNotification } from '../../types/notifications'
+import { USDCTransferNotification } from '../../types/notifications'
 import { BaseNotification } from './base'
-import { logger } from './../../logger'
+import { logger } from '../../logger'
 import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import { buildUserNotificationSettings } from './userNotificationSettings'
-import { email } from '../../email/notifications/preRendered/withdrawal'
+import { email } from '../../email/notifications/preRendered/transfer'
 import { formatUSDCWeiToUSDString } from '../../utils/format'
 
-type USDCWithdrawalRow = Omit<NotificationRow, 'data'> & {
-  data: USDCWithdrawalNotification
+type USDCTransferRow = Omit<NotificationRow, 'data'> & {
+  data: USDCTransferNotification
 }
 
-export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
+export class USDCTransfer extends BaseNotification<USDCTransferRow> {
   userId: number
   amount: string
   receiverAccount: string
   signature: string
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: USDCWithdrawalRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: USDCTransferRow) {
     super(dnDB, identityDB, notification)
     try {
       const userIds: number[] = this.notification.user_ids!
@@ -30,7 +30,7 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
       this.receiverAccount = this.notification.data.receiver_account
       this.signature = this.notification.data.signature
     } catch (e) {
-      logger.error('Unable to initialize USDCWithdrawal notification', e)
+      logger.error('Unable to initialize USDCTransfer notification', e)
     }
   }
 
@@ -50,9 +50,11 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
       email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
         name: user.name,
-        amount: this.amount
+        amount: this.amount,
+        wallet: this.receiverAccount,
+        signature: this.signature
       }),
-      subject: 'Your Withdrawal Has Been Started'
+      subject: 'Your Transfer Has Been Started'
     })
   }
 }
