@@ -8,7 +8,7 @@ import {
   InAppAudioPurchaseMetadata,
   TransactionDetails
 } from '@audius/common/store'
-import { formatDate, Nullable } from '@audius/common/utils'
+import { formatDate, Nullable, removeNullable } from '@audius/common/utils'
 import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
 

@@ -39,7 +39,8 @@ import {
   parseAudioInputToWei,
   waitForValue,
   MAX_PROFILE_TOP_SUPPORTERS,
-  SUPPORTING_PAGINATION_SIZE
+  SUPPORTING_PAGINATION_SIZE,
+  removeNullable
 } from '@audius/common/utils'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
