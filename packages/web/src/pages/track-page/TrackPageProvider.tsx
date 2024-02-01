@@ -1,37 +1,38 @@
 import { Component, ComponentType } from 'react'
 
 import {
-  ID,
-  PlayableType,
-  FollowSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
   Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  FollowSource,
   PlaybackSource,
   FavoriteType,
+  PlayableType,
   Status,
-  Track,
-  Uid,
-  formatDate,
+  ID,
+  Track
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheTracksActions as cacheTrackActions,
   lineupSelectors,
+  trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  trackPageLineupActions,
-  OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
+  queueSelectors,
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors
+} from '@audius/common/store'
+import { formatDate, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -298,7 +299,7 @@ class TrackPageProvider extends Component<
     play(uid)
     if (uid) {
       const trackId = Uid.fromString(uid).id
-      recordPlayMoreByArtist(trackId)
+      recordPlayMoreByArtist(trackId as number)
     }
   }
 

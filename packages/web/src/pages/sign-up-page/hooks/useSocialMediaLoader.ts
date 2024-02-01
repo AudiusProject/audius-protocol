@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
 import { useDispatch } from 'react-redux'
 import { AnyAction } from 'redux'
 

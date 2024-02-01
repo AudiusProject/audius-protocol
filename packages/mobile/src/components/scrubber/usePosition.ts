@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import {
-  formatSeconds,
-  playerSelectors,
-  playbackRateValueMap
-} from '@audius/common'
+import { playerSelectors, playbackRateValueMap } from '@audius/common/store'
+import { formatSeconds } from '@audius/common/utils'
 import { useAppState } from '@react-native-community/hooks'
 import type { TextInput } from 'react-native'
 import TrackPlayer from 'react-native-track-player'

@@ -1,10 +1,9 @@
 import {
   IntKeys,
   remoteConfigIntDefaults,
-  RemoteConfigInstance,
-  getContext,
-  notificationsActions
-} from '@audius/common'
+  RemoteConfigInstance
+} from '@audius/common/services'
+import { notificationsActions, getContext } from '@audius/common/store'
 import { call, takeEvery } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'

@@ -32,6 +32,7 @@
       "models/*": ["./src/models/*"],
       "types": ["./src/types"],
       "assets/*": ["./src/assets/*"],
+      "~/*": ["../packages/common/src/*"]
     }
   },
   "include": ["src"],

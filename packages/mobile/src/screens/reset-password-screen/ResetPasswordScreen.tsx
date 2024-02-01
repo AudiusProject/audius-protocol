@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status, accountSelectors, useResetPassword } from '@audius/common'
+import { useResetPassword } from '@audius/common/api'
+import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NavigationProp, RouteProp } from '@react-navigation/native'
 import { useNavigation, useRoute } from '@react-navigation/native'

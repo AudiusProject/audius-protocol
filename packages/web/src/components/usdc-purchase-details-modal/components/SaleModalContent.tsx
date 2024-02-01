@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import {
-  CommonState,
   chatActions,
   chatSelectors,
-  makeSolanaTransactionLink,
-  useInboxUnavailableModal
-} from '@audius/common'
+  useInboxUnavailableModal,
+  CommonState
+} from '@audius/common/store'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   Button,
   Flex,

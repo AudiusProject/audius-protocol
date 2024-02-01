@@ -1,7 +1,7 @@
-import { ID, User } from 'models'
-import { getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector } from 'utils'
+import { ID, User } from '~/models'
+import { getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
+import { removeNullable, createDeepEqualSelector } from '~/utils'
 
 import { relatedArtistsAdapater } from './slice'
 

@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
 import {
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+  tokenDashboardPageSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ConfirmationDrawer } from 'app/components/drawers'

@@ -1,20 +1,19 @@
 import { MouseEvent, ReactNode } from 'react'
 
 import {
+  PlaybackSource,
+  Collection,
+  Favorite,
   ID,
   UID,
-  PlaybackSource,
-  Favorite,
   CoverArtSizes,
   Repost,
   FieldVisibility,
-  LineupTrack,
   Remix,
   AccessConditions,
-  Nullable,
-  Genre,
-  Collection
-} from '@audius/common'
+  LineupTrack
+} from '@audius/common/models'
+import { Genre, Nullable } from '@audius/common/utils'
 
 export enum TrackTileSize {
   LARGE = 'LARGE',

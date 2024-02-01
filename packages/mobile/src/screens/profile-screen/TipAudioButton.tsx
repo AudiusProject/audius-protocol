@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { tippingActions, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors, tippingActions } from '@audius/common/store'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

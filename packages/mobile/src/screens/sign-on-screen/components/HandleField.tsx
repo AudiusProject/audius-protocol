@@ -1,7 +1,5 @@
-import {
-  MAX_HANDLE_LENGTH,
-  pickHandlePageMessages as messages
-} from '@audius/common'
+import { pickHandlePageMessages } from '@audius/common/messages'
+import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { useField, useFormikContext } from 'formik'
 
 import { IconCheck } from '@audius/harmony-native'
@@ -18,17 +16,17 @@ export const HandleField = (props: Partial<HarmonyTextFieldProps>) => {
     error && error !== 'handle required' && handle
       ? error
       : handle && isValid
-      ? messages.handleAvailable
+      ? pickHandlePageMessages.handleAvailable
       : ''
 
   return (
     <HarmonyTextField
       name={name}
-      label={messages.handle}
+      label={pickHandlePageMessages.handle}
       helperText={helperText}
       maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'
-      placeholder={messages.handle}
+      placeholder={pickHandlePageMessages.handle}
       transformValueOnChange={(value) => value.replace(/\s/g, '')}
       debouncedValidationMs={1000}
       endIcon={handle && isValid ? IconCheck : undefined}

@@ -1,4 +1,7 @@
-import { PlaylistLibraryItem, SmartCollectionVariant } from '@audius/common'
+import {
+  SmartCollectionVariant,
+  PlaylistLibraryItem
+} from '@audius/common/models'
 
 import { AudioNftPlaylistNavItem } from './AudioNftPlaylistNavItem'
 import { ExplorePlaylistNavItem } from './ExplorePlaylistNavItem'

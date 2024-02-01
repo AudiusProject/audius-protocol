@@ -1,8 +1,7 @@
 import { useContext } from 'react'
 
-import { platform } from 'os'
-
-import { BooleanKeys, socialMediaMessages } from '@audius/common'
+import { socialMediaMessages } from '@audius/common/messages'
+import { BooleanKeys } from '@audius/common/services'
 import { Box, Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'

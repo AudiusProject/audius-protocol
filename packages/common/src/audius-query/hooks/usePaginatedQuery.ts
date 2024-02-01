@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { isEqual } from 'lodash'
 import { useCustomCompareEffect } from 'react-use'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 
 import { QueryHookOptions, QueryHookResults } from '../types'
 

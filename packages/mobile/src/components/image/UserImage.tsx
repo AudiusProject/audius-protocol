@@ -1,13 +1,13 @@
-import { cacheUsersSelectors } from '@audius/common'
-import type { ID, Nullable, SquareSizes } from '@audius/common'
+import type { SquareSizes, ID } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
+import { FastImage } from '@audius/harmony-native'
+import type { FastImageProps } from '@audius/harmony-native'
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
 import type { ContentNodeImageSource } from 'app/hooks/useContentNodeImage'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
-
-import type { FastImageProps } from './FastImage'
-import { FastImage } from './FastImage'
 
 const { getUser } = cacheUsersSelectors
 

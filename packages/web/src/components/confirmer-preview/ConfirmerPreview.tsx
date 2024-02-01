@@ -1,4 +1,4 @@
-import { CommonState } from '@audius/common'
+import { CommonState } from '@audius/common/store'
 import { connect } from 'react-redux'
 
 import { useDevModeHotkey } from 'hooks/useHotkey'

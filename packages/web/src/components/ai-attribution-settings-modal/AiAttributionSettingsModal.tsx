@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { settingsPageActions, settingsPageSelectors } from '@audius/common'
+import {
+  settingsPageSelectors,
+  settingsPageActions
+} from '@audius/common/store'
 import {
   Button,
   ButtonSize,

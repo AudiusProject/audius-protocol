@@ -1,17 +1,17 @@
 import { useCallback } from 'react'
 
+import { useUIAudio } from '@audius/common/hooks'
+import type {
+  TipReceiveNotification,
+  ReactionTypes
+} from '@audius/common/store'
 import {
-  useUIAudio,
-  formatNumberCommas,
   notificationsSelectors,
   reactionsUIActions,
   reactionsUISelectors
-} from '@audius/common'
-import type {
-  Nullable,
-  TipReceiveNotification,
-  ReactionTypes
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -26,7 +26,7 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  ProfilePicture,
+  NotificationProfilePicture,
   TipText,
   UserNameLink,
   NotificationTwitterButton,
@@ -117,7 +117,7 @@ export const TipReceivedNotification = (
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} />{' '}
           {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { removeNullable } from '@audius/common'
+import { removeNullable } from '@audius/common/utils'
 import { useField } from 'formik'
 
 import TagInput, { TagInputProps } from 'components/data-entry/TagInput'

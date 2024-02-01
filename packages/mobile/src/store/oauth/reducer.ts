@@ -1,4 +1,4 @@
-import type { Image, TikTokProfile } from '@audius/common'
+import type { TikTokProfile, Image } from '@audius/common/store'
 
 import type { OAuthActions } from './actions'
 import {

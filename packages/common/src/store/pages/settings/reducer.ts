@@ -1,4 +1,4 @@
-import { ActionsMap } from 'utils/reducer'
+import { ActionsMap } from '~/utils/reducer'
 
 import {
   ToggleNotificationSetting,

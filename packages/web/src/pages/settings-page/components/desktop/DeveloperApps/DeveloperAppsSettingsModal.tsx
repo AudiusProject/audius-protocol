@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { DeveloperApp } from '@audius/common'
+import { DeveloperApp } from '@audius/common/api'
 import {
   Modal,
   ModalHeader,

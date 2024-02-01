@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import type { PlaybackRate } from '@audius/common'
-import { playerActions } from '@audius/common'
+import type { PlaybackRate } from '@audius/common/store'
+import { playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import ActionDrawer from '../action-drawer'

@@ -495,11 +495,17 @@ await audiusSdk.tracks.favoriteTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                                         | Description                                                          | Required?    |
-| :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------- | :----------- |
-| `trackId`  | `string`                                                     | The ID of the track                                                  | **Required** |
-| `userId`   | `string`                                                     | The ID of the user                                                   | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
+| Name       | Type                    | Description                                                          | Required?    |
+| :--------- | :---------------------- | :------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                | The ID of the track                                                  | **Required** |
+| `userId`   | `string`                | The ID of the user                                                   | **Required** |
+| `metadata` | _see code sample below_ | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
+
+```json
+{
+  isSaveOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 
@@ -582,11 +588,17 @@ await audiusSdk.tracks.repostTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                                           | Description                                                           | Required?    |
-| :--------- | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :----------- |
-| `trackId`  | `string`                                                       | The ID of the track                                                   | **Required** |
-| `userId`   | `string`                                                       | The ID of the user                                                    | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
+| Name       | Type                    | Description                                                           | Required?    |
+| :--------- | :---------------------- | :-------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                | The ID of the track                                                   | **Required** |
+| `userId`   | `string`                | The ID of the user                                                    | **Required** |
+| `metadata` | _see code sample below_ | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
+
+```json
+{
+  isRepostOfRepost: boolean
+}
+```
 
 #### `advancedOptions`
 

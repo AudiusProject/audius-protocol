@@ -111,7 +111,7 @@ export const createLoginDetailsPageMessages = {
   signIn: 'Sign In'
 }
 
-export const selectArtstsPageMessages = {
+export const selectArtistsPageMessages = {
   header: 'Follow At Least 3 Artists',
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',

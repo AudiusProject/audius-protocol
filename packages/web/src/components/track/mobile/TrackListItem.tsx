@@ -1,6 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { ID, CoverArtSizes, SquareSizes } from '@audius/common'
+import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
 import { IconKebabHorizontal, IconButton, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'

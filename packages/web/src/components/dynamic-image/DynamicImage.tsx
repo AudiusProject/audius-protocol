@@ -6,7 +6,7 @@ import {
   ComponentPropsWithoutRef
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import { Box } from '@audius/harmony'
 import cn from 'classnames'
 

@@ -1,22 +1,24 @@
 import { useEffect, useContext, MouseEvent, ReactNode } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
 import {
+  Status,
+  Collection,
   ID,
   UID,
-  Collection,
-  CoverPhotoSizes,
   ProfilePictureSizes,
+  CoverPhotoSizes,
   LineupState,
-  Status,
   User,
-  ProfilePageTabs,
-  ProfileUser,
-  profilePageTracksLineupActions as tracksActions,
-  profilePageFeedLineupActions as feedActions,
-  badgeTiers,
-  useSelectTierInfo,
   Track
-} from '@audius/common'
+} from '@audius/common/models'
+import {
+  profilePageFeedLineupActions as feedActions,
+  profilePageTracksLineupActions as tracksActions,
+  ProfilePageTabs,
+  badgeTiers,
+  ProfileUser
+} from '@audius/common/store'
 import { IconAlbum } from '@audius/harmony'
 import cn from 'classnames'
 

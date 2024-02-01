@@ -1,4 +1,4 @@
-import { getContext } from '@audius/common'
+import { getContext } from '@audius/common/store'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
 import * as actions from './actions'

@@ -1,19 +1,20 @@
 import {
-  ID,
-  Collection,
-  CollectionMetadata,
-  UserCollectionMetadata,
   Kind,
-  Nullable,
-  makeUid,
+  CollectionMetadata,
+  Collection,
+  UserCollectionMetadata,
+  ID
+} from '@audius/common/models'
+import {
   accountSelectors,
+  cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheSelectors,
-  CommonState,
+  reformatCollection,
   getContext,
-  cacheCollectionsActions,
-  reformatCollection
-} from '@audius/common'
+  CommonState
+} from '@audius/common/store'
+import { makeUid, Nullable } from '@audius/common/utils'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 
@@ -250,7 +251,7 @@ export function* retrieveCollections(
     deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield* call(retrieve, {
+  const { entries, uids } = yield* call(retrieve<Collection>, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
       const res: {

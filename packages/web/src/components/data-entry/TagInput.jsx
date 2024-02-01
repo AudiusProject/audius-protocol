@@ -1,6 +1,6 @@
 import { createRef, Component } from 'react'
 
-import { trimToAlphaNumeric } from '@audius/common'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import Tag from 'antd/lib/tag'
 import cn from 'classnames'
 

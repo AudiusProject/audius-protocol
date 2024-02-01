@@ -1,4 +1,5 @@
 import { AudiusLibs } from '@audius/sdk'
+import { u8 } from '@solana/buffer-layout'
 import {
   Account,
   TOKEN_PROGRAM_ID,
@@ -6,7 +7,6 @@ import {
   createTransferCheckedInstruction,
   decodeTransferCheckedInstruction
 } from '@solana/spl-token'
-import { u8 } from '@solana/buffer-layout'
 import {
   AddressLookupTableAccount,
   Keypair,
@@ -18,7 +18,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 

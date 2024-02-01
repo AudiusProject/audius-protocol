@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors, chatActions, chatSelectors } from '@audius/common'
+import {
+  cacheUsersSelectors,
+  chatActions,
+  chatSelectors
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,21 +1,22 @@
 import {
-  ChallengeRewardID,
   FailureReason,
   UserChallenge,
-  StringAudio,
-  IntKeys,
-  StringKeys,
+  ChallengeRewardID,
+  StringAudio
+} from '@audius/common/models'
+import { IntKeys, StringKeys } from '@audius/common/services'
+import {
   accountSelectors,
-  audioRewardsPageActions,
-  AudioRewardsClaim,
-  ClaimStatus,
-  HCaptchaStatus,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  HCaptchaStatus,
+  ClaimStatus,
   solanaSelectors,
   walletActions,
   modalsActions,
-  stringAudioToStringWei
-} from '@audius/common'
+  AudioRewardsClaim
+} from '@audius/common/store'
+import { stringAudioToStringWei } from '@audius/common/utils'
 import delayP from '@redux-saga/delay-p'
 import { all, fork } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'

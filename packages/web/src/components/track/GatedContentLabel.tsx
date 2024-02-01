@@ -1,9 +1,9 @@
 import {
-  AccessConditions,
-  Nullable,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  isContentUSDCPurchaseGated,
+  AccessConditions
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 
