@@ -23,7 +23,7 @@ begin
         new.created_at,
         notification_type,
         users_row.user_id,
-        notification_type || ':' || users_row.user_id || ': ' || 'signature:' || new.signature,
+        notification_type || ':' || users_row.user_id || ':' || 'signature:' || new.signature,
         json_build_object(
           'user_id', users_row.user_id,
           'user_bank', new.user_bank,
