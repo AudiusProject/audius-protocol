@@ -69,8 +69,12 @@ export class Account extends Base {
       this.REQUIRES(Services.HEDGEHOG)
 
       try {
-        // @ts-ignore - hedgehog.login is overridden
-        const ownerWallet = await this.hedgehog.login(email, password, otp)
+        const ownerWallet = await this.hedgehog.login({
+          email,
+          username: email,
+          password,
+          otp
+        })
         await this.web3Manager.setOwnerWallet(ownerWallet)
       } catch (e) {
         return { error: (e as Error).message, phase }
