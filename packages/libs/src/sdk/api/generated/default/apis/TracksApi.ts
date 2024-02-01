@@ -16,11 +16,14 @@
 
 import * as runtime from '../runtime';
 import type {
+  TopListener,
   TrackResponse,
   TrackSearch,
   TracksResponse,
 } from '../models';
 import {
+    TopListenerFromJSON,
+    TopListenerToJSON,
     TrackResponseFromJSON,
     TrackResponseToJSON,
     TrackSearchFromJSON,
@@ -33,7 +36,9 @@ export interface DownloadTrackRequest {
     trackId: string;
     userSignature?: string;
     userData?: string;
+    nftAccessSignature?: string;
     original?: boolean;
+    filename?: string;
 }
 
 export interface GetBulkTracksRequest {
@@ -43,6 +48,13 @@ export interface GetBulkTracksRequest {
 
 export interface GetTrackRequest {
     trackId: string;
+}
+
+export interface GetTrackTopListenersRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetTrendingTracksRequest {
@@ -65,8 +77,10 @@ export interface StreamTrackRequest {
     preview?: boolean;
     userSignature?: string;
     userData?: string;
-    streamSignature?: string;
+    nftAccessSignature?: string;
     skipPlayCount?: boolean;
+    filename?: string;
+    premiumContentSignature?: string;
 }
 
 /**
@@ -76,6 +90,7 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Download an original or mp3 track
      * Download the original or MP3 file of a track
      */
     async downloadTrackRaw(params: DownloadTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -93,8 +108,16 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_data'] = params.userData;
         }
 
+        if (params.nftAccessSignature !== undefined) {
+            queryParameters['nft_access_signature'] = params.nftAccessSignature;
+        }
+
         if (params.original !== undefined) {
             queryParameters['original'] = params.original;
+        }
+
+        if (params.filename !== undefined) {
+            queryParameters['filename'] = params.filename;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -110,6 +133,7 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
+     * Download an original or mp3 track
      * Download the original or MP3 file of a track
      */
     async downloadTrack(params: DownloadTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
@@ -179,6 +203,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListenersRaw(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopListener>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackTopListeners.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/top_listeners`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TopListenerFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the users that have listened to a track the most
+     */
+    async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopListener> {
+        const response = await this.getTrackTopListenersRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -293,7 +360,7 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+     * Stream an mp3 track This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
     async streamTrackRaw(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -315,12 +382,20 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_data'] = params.userData;
         }
 
-        if (params.streamSignature !== undefined) {
-            queryParameters['stream_signature'] = params.streamSignature;
+        if (params.nftAccessSignature !== undefined) {
+            queryParameters['nft_access_signature'] = params.nftAccessSignature;
         }
 
         if (params.skipPlayCount !== undefined) {
             queryParameters['skip_play_count'] = params.skipPlayCount;
+        }
+
+        if (params.filename !== undefined) {
+            queryParameters['filename'] = params.filename;
+        }
+
+        if (params.premiumContentSignature !== undefined) {
+            queryParameters['premium_content_signature'] = params.premiumContentSignature;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -336,7 +411,7 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
-     * This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+     * Stream an mp3 track This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {

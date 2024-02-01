@@ -42,6 +42,7 @@ models/Supporter.ts
 models/Supporting.ts
 models/TagsResponse.ts
 models/Tip.ts
+models/TopListener.ts
 models/Track.ts
 models/TrackArtwork.ts
 models/TrackElement.ts
@@ -49,7 +50,6 @@ models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
-models/TxSignature.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts
