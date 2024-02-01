@@ -349,7 +349,7 @@ def get_purchase_metadata_from_memo(
                     "splits": splits,
                     "purchaser_user_id": purchaser_user_id,
                 }
-                logger.error(
+                logger.info(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
                 )
                 return purchase_metadata

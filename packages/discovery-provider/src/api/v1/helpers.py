@@ -410,12 +410,14 @@ def stem_from_track(track):
     track_id = encode_int_id(track["track_id"])
     parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
     category = track["stem_of"]["category"]
+    orig_filename = track["orig_filename"]
     return {
         "id": track_id,
         "parent_id": parent_id,
         "category": category,
         "cid": track["download"]["cid"],
         "user_id": encode_int_id(track["owner_id"]),
+        "orig_filename": orig_filename,
         "blocknumber": track["blocknumber"],
     }
 
