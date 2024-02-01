@@ -5,20 +5,23 @@ import type {
   DecodedUserToken,
   AudiusSdk
 } from '@audius/sdk/dist/sdk/index.d.ts'
-import { useQueryClient } from '@tanstack/react-query'
 import cn from 'classnames'
 
 import { Collection } from 'components/Collection/Collection'
 import { Page } from 'pages/Page'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
+import { trpc } from 'utils/trpc'
 
 import styles from './Upload.module.css'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
-const validXmlFile = (file: File) => {
-  if (file.type !== 'text/xml') {
-    alert('Please upload a valid XML file.')
+const validZipFile = (file: File) => {
+  if (
+    file.type !== 'application/zip' &&
+    file.type !== 'application/x-zip-compressed'
+  ) {
+    alert('Please upload a valid ZIP file.')
     return false
   }
 
@@ -29,7 +32,7 @@ const validXmlFile = (file: File) => {
   return true
 }
 
-const XmlImporter = ({
+const ZipImporter = ({
   audiusSdk,
   uploader
 }: {
@@ -41,7 +44,7 @@ const XmlImporter = ({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSucceeded, setUploadSucceeded] = useState(false)
-  const queryClient = useQueryClient()
+  const generateSignedUrl = trpc.upload.generateSignedUrl.useMutation()
 
   const handleDragIn = (e: DragEvent) => {
     e.preventDefault()
@@ -79,12 +82,26 @@ const XmlImporter = ({
   }
 
   const handleFileChange = (file: File) => {
-    if (!validXmlFile(file)) {
+    if (!validZipFile(file)) {
       return
     }
     setSelectedFile(file)
     setUploadError(null)
     setUploadSucceeded(false)
+  }
+
+  const uploadFileToS3 = async (signedUrl: string, file: File) => {
+    const response = await fetch(signedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': 'application/zip'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload file: ${response.statusText}`)
+    }
   }
 
   const handleUpload = async () => {
@@ -93,41 +110,40 @@ const XmlImporter = ({
       return
     }
 
-    if (!validXmlFile(selectedFile)) {
+    if (!validZipFile(selectedFile)) {
       return
     }
 
     setUploadSucceeded(false)
     setIsUploading(true)
 
-    const formData = new FormData()
-    formData.append('file', selectedFile)
-    formData.append('uploadedBy', uploader?.userId || '')
-
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      // Generate a signed URL for the file
+      const fileName = selectedFile.name
+      // eslint-disable-next-line no-console
+      console.log(
+        `Generating signed URL for ${fileName} for user ${uploader?.userId}`
+      )
+      // TODO: Signed URL should authenticate the user
+      const signedUrlResult = await generateSignedUrl.mutateAsync({ fileName })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`)
+      if (!signedUrlResult) {
+        throw new Error('Failed to generate signed URL')
       }
 
-      const result = await response.json()
-      // eslint-disable-next-line no-console
-      console.log(JSON.stringify(result))
+      // Upload the file to S3
+      await uploadFileToS3(signedUrlResult, selectedFile)
       setUploadSucceeded(true)
-      queryClient.invalidateQueries({ queryKey: ['uploads'] })
     } catch (error: any) {
-      setUploadError(error.message)
+      console.error('Upload error:', error)
+      setUploadError(error instanceof Error ? error.message : String(error))
     } finally {
       setIsUploading(false)
     }
   }
 
   if (!audiusSdk) {
-    return <div className='text-red-500'>{'Error loading XML importer'}</div>
+    return <div className='text-red-500'>{'Error loading ZIP importer'}</div>
   } else {
     return (
       <Box borderRadius='s' shadow='near' p='xl' backgroundColor='white'>
@@ -169,7 +185,7 @@ const XmlImporter = ({
             <input
               type='file'
               name='file_upload'
-              accept='text/xml,application/xml'
+              accept='application/zip,application/x-zip-compressed'
               className={styles.fileDropChooseFile}
               onChange={(e) => handleFileChange(e.target.files![0])}
             />
@@ -218,7 +234,7 @@ const Upload = () => {
   return (
     <Page>
       <Flex gap='xl' direction='column'>
-        <XmlImporter audiusSdk={audiusSdk} uploader={currentUser} />
+        <ZipImporter audiusSdk={audiusSdk} uploader={currentUser} />
         <Collection collection='uploads' />
       </Flex>
     </Page>
