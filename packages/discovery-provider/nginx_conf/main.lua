@@ -268,6 +268,10 @@ function _M.validate_nethermind_rpc_request ()
         local body = cjson.decode(data)
         is_ok = utils.starts_with(body.method, "eth_") or utils.starts_with(body.method, "net_")
 
+        if body.method == "eth_sendRawTransaction" or body.method == "eth_sendTransaction" then
+          ngx.log(ngx.WARN, "WOULD_BLOCK: ", data)
+        end
+
         if not is_ok then
             ngx.exit(405)
         end
