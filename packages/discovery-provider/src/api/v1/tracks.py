@@ -465,7 +465,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
-    @ns.expect(stream_parser)
+    @ns.expect(reqparse.RequestParser(argument_class=DescriptiveArgument))
     @cache(ttl_sec=5, transform=tranform_stream_cache)
     def head(self, track_id):
         """
