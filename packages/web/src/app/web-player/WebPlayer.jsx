@@ -79,6 +79,7 @@ import NotificationUsersPage from 'pages/notification-users-page/NotificationUse
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
+import { PrivateKeyExporterPage } from 'pages/private-key-exporter-page/PrivateKeyExporterPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
@@ -131,6 +132,7 @@ import {
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
   SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   HOME_PAGE,
   NOT_FOUND_PAGE,
   SEARCH_CATEGORY_PAGE,
@@ -785,6 +787,11 @@ class WebPlayer extends Component {
                   component={SettingsPage}
                 />
                 <Route exact path={CHECK_PAGE} component={CheckPage} />
+                <Route
+                  exact
+                  path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+                  component={PrivateKeyExporterPage}
+                />
                 <MobileRoute
                   exact
                   path={ACCOUNT_SETTINGS_PAGE}
