@@ -49,7 +49,7 @@ def test_usdc_transfer_notification(app):
         assert notification.specifier == "1"
         assert (
             notification.group_id
-            == "usdc_transfer:1signature:4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt"
+            == "usdc_transfer:1:signature:4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt"
         )
         assert notification.slot == 4
 
@@ -143,7 +143,7 @@ def test_usdc_withdrawal_notification(app):
         assert notification.specifier == "1"
         assert (
             notification.group_id
-            == "usdc_withdrawal:1signature:4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt"
+            == "usdc_withdrawal:1:signature:4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt"
         )
         assert notification.slot == 4
 
