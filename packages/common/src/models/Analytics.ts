@@ -468,7 +468,12 @@ export enum Name {
   // Repair Signups
   SIGN_UP_REPAIR_START = 'Sign Up Repair: Start',
   SIGN_UP_REPAIR_SUCCESS = 'Sign Up Repair: Success',
-  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure'
+  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure',
+
+  // Export Private Key
+  EXPORT_PRIVATE_KEY_LINK_CLICKED = 'Export Private Key: Settings Link Clicked',
+  EXPORT_PRIVATE_KEY_PAGE_OPENED = 'Export Private Key: Page Opened',
+  EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened'
 }
 
 type PageView = {
@@ -2156,6 +2161,21 @@ type JupiterQuoteResponse = {
   outAmount: number
 }
 
+type ExportPrivateKeyLinkClicked = {
+  eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
+  userId: ID
+}
+
+type ExportPrivateKeyPageOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PAGE_OPENED
+  userId: Maybe<ID>
+}
+
+type ExportPrivateKeyModalOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_MODAL_OPENED
+  userId: Maybe<ID>
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -2439,3 +2459,6 @@ export type AllTrackingEvents =
   | ChatWebsocketError
   | JupiterQuoteResponse
   | JupiterQuoteRequest
+  | ExportPrivateKeyLinkClicked
+  | ExportPrivateKeyPageOpened
+  | ExportPrivateKeyModalOpened

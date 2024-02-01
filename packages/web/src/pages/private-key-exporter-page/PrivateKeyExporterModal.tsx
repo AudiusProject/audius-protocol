@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
+import { Name, accountSelectors } from '@audius/common'
 import {
   Text,
   Button,
@@ -18,9 +19,13 @@ import {
 } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { make, useRecord } from 'common/store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
 import styles from './PrivateKeyExporterPage.module.css'
+
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   privateKey: 'PRIVATE KEY',
@@ -115,9 +120,17 @@ const AdditionalResources = () => {
 }
 
 export const PrivateKeyExporterModal = () => {
+  const record = useRecord()
+  const user = useSelector(getAccountUser) ?? undefined
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
-
+  useEffect(() => {
+    if (isVisible) {
+      record(
+        make(Name.EXPORT_PRIVATE_KEY_MODAL_OPENED, { userId: user?.user_id })
+      )
+    }
+  }, [isVisible, record, user])
   return (
     <Modal
       bodyClassName={styles.modal}

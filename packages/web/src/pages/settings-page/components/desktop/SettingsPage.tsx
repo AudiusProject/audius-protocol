@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { OS, Theme, ID, ProfilePictureSizes } from '@audius/common/models'
+import { OS, Theme, ID, ProfilePictureSizes, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   settingsPageSelectors,
@@ -31,6 +31,7 @@ import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
@@ -256,6 +257,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
 
+  const record = useRecord()
+  const recordExportPrivateKeyLinkClicked = useCallback(() => {
+    record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { userId }))
+  }, [userId, record])
+
   const appearanceOptions = useMemo(() => {
     const options = [
       {
@@ -472,6 +478,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         <Link
           className={cn(styles.link, styles.showPrivateKey)}
           to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+          onClick={recordExportPrivateKeyLinkClicked}
         >
           {messages.showPrivateKey}
         </Link>

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { Name, accountSelectors } from '@audius/common'
 import {
   Box,
   Text,
@@ -18,9 +18,11 @@ import {
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useEffectOnce } from 'react-use'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { useModalState } from 'common/hooks/useModalState'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import Switch from 'components/switch/Switch'
 import { useSelector } from 'utils/reducer'
@@ -331,6 +333,11 @@ const AgreeAndContinue = () => {
 }
 
 export const PrivateKeyExporterPage = () => {
+  const record = useRecord()
+  const user = useSelector(getAccountUser) ?? undefined
+  useEffectOnce(() => {
+    record(make(Name.EXPORT_PRIVATE_KEY_PAGE_OPENED, { userId: user?.user_id }))
+  })
   return (
     <Flex direction='column'>
       <Header />
