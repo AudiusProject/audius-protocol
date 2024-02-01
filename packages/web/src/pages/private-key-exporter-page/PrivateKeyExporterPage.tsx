@@ -377,3 +377,5 @@ export const PrivateKeyExporterPage = () => {
     </Flex>
   )
 }
+
+export default PrivateKeyExporterPage

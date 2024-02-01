@@ -73,9 +73,6 @@ const EditTrackModal = lazy(
 const InboxSettingsModal = lazy(
   () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
-const PrivateKeyExporterModal = lazy(
-  () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
-)
 
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
@@ -94,7 +91,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
-  PrivateKeyExporter: PrivateKeyExporterModal,
   LockedContent: LockedContentModal,
   HCaptcha: HCaptchaModal,
   APIRewardsExplainer: TopAPIModal,
