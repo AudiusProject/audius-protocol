@@ -1,4 +1,4 @@
-import { Flex, Text, TextLink } from '@audius/harmony'
+import { Flex, Text, TextLink, useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -57,6 +57,7 @@ export const Dropzone = ({
   disableClick,
   isTruncated
 }: DropzoneProps) => {
+  const { color } = useTheme()
   const getMessage = () => {
     if (subtitle) return subtitle
     let message
@@ -82,9 +83,9 @@ export const Dropzone = ({
           />
         ) : null}
         <Text>
-          {message}
-          <TextLink css={{ color: '#a30cb3' }}>
-            &nbsp;{messages.browse}
+          {message}&nbsp;
+          <TextLink css={{ color: color.primary.p500 }}>
+            {messages.browse}
           </TextLink>
         </Text>
       </Flex>

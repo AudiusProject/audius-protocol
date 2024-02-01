@@ -2,26 +2,26 @@ import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
+  stemCategoryFriendlyNames,
+  isContentFollowGated,
+  isContentUSDCPurchaseGated,
   AccessConditions,
   Download,
   DownloadTrackAvailabilityType,
   FollowGatedConditions,
   StemUpload,
-  USDCPurchaseConditions,
-  isContentFollowGated,
-  isContentUSDCPurchaseGated,
-  stemCategoryFriendlyNames
+  USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { IconReceive } from '@audius/harmony'
 import { IconCart } from '@audius/stems'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconSourceFiles from 'assets/img/iconSourceFiles.svg'
 import {
   ContextualMenu,
   SelectedValue,
@@ -302,7 +302,7 @@ export const StemsAndDownloadsField = ({
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconSourceFiles />}
+      icon={<IconReceive />}
       initialValues={initialValues}
       onSubmit={handleSubmit}
       renderValue={renderValue}
