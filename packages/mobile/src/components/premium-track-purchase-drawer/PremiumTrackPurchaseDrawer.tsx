@@ -7,12 +7,14 @@ import {
   usePurchaseContentFormConfiguration,
   usePurchaseContentErrorMessage,
   usePayExtraPresets,
-  isTrackPurchaseable,
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
-  usePurchaseMethod
+  usePurchaseMethod,
+  isTrackStreamPurchaseable,
+  isTrackDownloadPurchaseable
 } from '@audius/common/hooks'
 import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
+import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
   PurchaseVendor,
