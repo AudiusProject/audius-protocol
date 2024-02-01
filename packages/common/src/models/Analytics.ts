@@ -472,8 +472,10 @@ export enum Name {
 
   // Export Private Key
   EXPORT_PRIVATE_KEY_LINK_CLICKED = 'Export Private Key: Settings Link Clicked',
-  EXPORT_PRIVATE_KEY_PAGE_OPENED = 'Export Private Key: Page Opened',
-  EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened'
+  EXPORT_PRIVATE_KEY_PAGE_VIEWED = 'Export Private Key: Page Viewed',
+  EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened',
+  EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED = 'Export Private Key: Public Address Copied',
+  EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED = 'Export Private Key: Private Key Copied'
 }
 
 type PageView = {
@@ -2163,17 +2165,32 @@ type JupiterQuoteResponse = {
 
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
+  handle: string
   userId: ID
 }
 
 type ExportPrivateKeyPageOpened = {
-  eventName: Name.EXPORT_PRIVATE_KEY_PAGE_OPENED
-  userId: Maybe<ID>
+  eventName: Name.EXPORT_PRIVATE_KEY_PAGE_VIEWED
+  handle: string
+  userId: ID
 }
 
 type ExportPrivateKeyModalOpened = {
   eventName: Name.EXPORT_PRIVATE_KEY_MODAL_OPENED
-  userId: Maybe<ID>
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPublicAddressCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPrivateKeyCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED
+  handle: string
+  userId: ID
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -2462,3 +2479,5 @@ export type AllTrackingEvents =
   | ExportPrivateKeyLinkClicked
   | ExportPrivateKeyPageOpened
   | ExportPrivateKeyModalOpened
+  | ExportPrivateKeyPublicAddressCopied
+  | ExportPrivateKeyPrivateKeyCopied

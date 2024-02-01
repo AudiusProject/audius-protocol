@@ -1,14 +1,20 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Nullable, shortenSPLAddress } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { Nullable, shortenSPLAddress } from '@audius/common/utils'
 import { Flex, Box, Divider, IconCopy, Text, useTheme } from '@audius/harmony'
 import pkg from 'bs58'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import { useSelector } from 'utils/reducer'
 
 import styles from './PrivateKeyExporterPage.module.css'
+
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   advancedWalletDetails: 'Advanced Wallet Details',
@@ -20,16 +26,35 @@ const messages = {
 type KeyProps = {
   label: string
   value: string
-  shorten?: boolean
+  isPrivate?: boolean
 }
 
-const Key = ({ label, value, shorten }: KeyProps) => {
+const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { color } = useTheme()
   const { toast } = useContext(ToastContext)
+  const record = useRecord()
+  const user = useSelector(getAccountUser) ?? undefined
   const handleClick = useCallback(() => {
     copyToClipboard(value)
+    if (user) {
+      if (isPrivate) {
+        record(
+          make(Name.EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED, {
+            handle: user.handle,
+            userId: user.user_id
+          })
+        )
+      } else {
+        record(
+          make(Name.EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED, {
+            handle: user.handle,
+            userId: user.user_id
+          })
+        )
+      }
+    }
     toast(messages.copied)
-  }, [value, toast])
+  }, [value, isPrivate, toast])
   return (
     <Flex
       border='strong'
@@ -44,7 +69,7 @@ const Key = ({ label, value, shorten }: KeyProps) => {
       <Divider orientation='vertical' />
       <Box p='xl' css={{ width: 464 }}>
         <Text variant='body'>
-          {shorten ? shortenSPLAddress(value, 21) : value}
+          {isPrivate ? shortenSPLAddress(value, 21) : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />
@@ -87,7 +112,7 @@ export const AdvancedWalletDetails = () => {
         {messages.advancedWalletDetails}
       </Text>
       <Key label={messages.address} value={publicKey} />
-      <Key label={messages.privateKey} value={encodedPrivateKey} shorten />
+      <Key label={messages.privateKey} value={encodedPrivateKey} isPrivate />
     </Flex>
   )
 }

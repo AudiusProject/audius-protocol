@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Name, accountSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Box,
   Text,
@@ -18,7 +19,6 @@ import {
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { useEffectOnce } from 'react-use'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { useModalState } from 'common/hooks/useModalState'
@@ -75,7 +75,7 @@ const messages = {
 const AUDIUS_SUPPORT_EMAIL = 'support@audius.co'
 
 const Header = () => {
-  const user = useSelector(getAccountUser) ?? undefined
+  const user = useSelector(getAccountUser)
   return (
     <Flex
       alignItems='center'
@@ -335,9 +335,18 @@ const AgreeAndContinue = () => {
 export const PrivateKeyExporterPage = () => {
   const record = useRecord()
   const user = useSelector(getAccountUser) ?? undefined
-  useEffectOnce(() => {
-    record(make(Name.EXPORT_PRIVATE_KEY_PAGE_OPENED, { userId: user?.user_id }))
-  })
+  const [hasViewed, setHasViewed] = useState(false)
+  useEffect(() => {
+    if (user && !hasViewed) {
+      setHasViewed(true)
+      record(
+        make(Name.EXPORT_PRIVATE_KEY_PAGE_VIEWED, {
+          handle: user.handle,
+          userId: user.user_id
+        })
+      )
+    }
+  }, [user, record])
   return (
     <Flex direction='column'>
       <Header />

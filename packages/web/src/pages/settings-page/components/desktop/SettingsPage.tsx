@@ -259,8 +259,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
   const record = useRecord()
   const recordExportPrivateKeyLinkClicked = useCallback(() => {
-    record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { userId }))
-  }, [userId, record])
+    record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { handle, userId }))
+  }, [record, handle, userId])
 
   const appearanceOptions = useMemo(() => {
     const options = [

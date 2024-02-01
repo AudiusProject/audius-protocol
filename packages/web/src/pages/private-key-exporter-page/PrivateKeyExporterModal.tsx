@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import { Name, accountSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   Text,
   Button,
@@ -125,12 +126,15 @@ export const PrivateKeyExporterModal = () => {
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && user) {
       record(
-        make(Name.EXPORT_PRIVATE_KEY_MODAL_OPENED, { userId: user?.user_id })
+        make(Name.EXPORT_PRIVATE_KEY_MODAL_OPENED, {
+          handle: user.handle,
+          userId: user.user_id
+        })
       )
     }
-  }, [isVisible, record, user])
+  }, [isVisible, user, record])
   return (
     <Modal
       bodyClassName={styles.modal}
