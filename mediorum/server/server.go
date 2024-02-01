@@ -95,7 +95,8 @@ type MediorumServer struct {
 	uploadsCount    int64
 	uploadsCountErr string
 
-	isSeeding bool
+	isSeeding        bool
+	isAudiusdManaged bool
 
 	peerHealthsMutex      sync.RWMutex
 	peerHealths           map[string]*PeerHealth
@@ -125,6 +126,11 @@ const PercentSeededThreshold = 50
 func New(config MediorumConfig) (*MediorumServer, error) {
 	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
 		config.Env = env
+	}
+
+	var isAudiusdManaged bool
+	if audiusdGenerated := os.Getenv("AUDIUS_D_GENERATED"); audiusdGenerated != "" {
+		isAudiusdManaged = true
 	}
 
 	if config.VersionJson == (VersionJson{}) {
@@ -249,15 +255,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Use(middleware.Gzip())
 
 	ss := &MediorumServer{
-		echo:            echoServer,
-		bucket:          bucket,
-		crud:            crud,
-		pgPool:          pgPool,
-		reqClient:       reqClient,
-		logger:          logger,
-		quit:            make(chan os.Signal, 1),
-		trustedNotifier: &trustedNotifier,
-		isSeeding:       config.Env == "stage" || config.Env == "prod",
+		echo:             echoServer,
+		bucket:           bucket,
+		crud:             crud,
+		pgPool:           pgPool,
+		reqClient:        reqClient,
+		logger:           logger,
+		quit:             make(chan os.Signal, 1),
+		trustedNotifier:  &trustedNotifier,
+		isSeeding:        config.Env == "stage" || config.Env == "prod",
+		isAudiusdManaged: isAudiusdManaged,
 
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
