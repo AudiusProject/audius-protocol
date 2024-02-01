@@ -170,7 +170,7 @@ function* fetchFollowArtistGenre(
   const genres = followArtistCategoryGenreMappings[followArtistCategory]
   const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
   try {
-    const users = yield* call(apiClient.getTopArtistGenres, {
+    const users = yield* call([apiClient, apiClient.getTopArtistGenres], {
       genres,
       limit: 31,
       offset: 0
