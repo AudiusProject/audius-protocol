@@ -2238,6 +2238,9 @@ export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandle
 export const GetUSDCTransactionCountTypeEnum = {
     PurchaseContent: 'purchase_content',
     Transfer: 'transfer',
+    PrepareWithdrawal: 'prepare_withdrawal',
+    RecoverWithdrawal: 'recover_withdrawal',
+    Withdrawal: 'withdrawal',
     PurchaseStripe: 'purchase_stripe'
 } as const;
 export type GetUSDCTransactionCountTypeEnum = typeof GetUSDCTransactionCountTypeEnum[keyof typeof GetUSDCTransactionCountTypeEnum];
@@ -2271,6 +2274,9 @@ export type GetUSDCTransactionsSortDirectionEnum = typeof GetUSDCTransactionsSor
 export const GetUSDCTransactionsTypeEnum = {
     PurchaseContent: 'purchase_content',
     Transfer: 'transfer',
+    PrepareWithdrawal: 'prepare_withdrawal',
+    RecoverWithdrawal: 'recover_withdrawal',
+    Withdrawal: 'withdrawal',
     PurchaseStripe: 'purchase_stripe'
 } as const;
 export type GetUSDCTransactionsTypeEnum = typeof GetUSDCTransactionsTypeEnum[keyof typeof GetUSDCTransactionsTypeEnum];

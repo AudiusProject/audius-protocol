@@ -18,6 +18,7 @@ from src.api.v1.helpers import (
     current_user_parser,
     decode_ids_array,
     decode_with_abort,
+    extend_blob_info,
     extend_track,
     extend_user,
     format_limit,
@@ -84,6 +85,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
 
+from .models.tracks import blob_info
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
 
@@ -382,6 +384,100 @@ class FullBulkTracks(Resource):
             return marshal(response, full_tracks_response), status
 
 
+def get_stream_url_from_content_node(content_node: str, path: str):
+    # Add additional query parameters
+    joined_url = urljoin(content_node, path)
+    parsed_url = urlparse(joined_url)
+    query_params = parse_qs(parsed_url.query)
+    query_params["skip_play_count"] = ["true"]
+    stream_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
+
+    headers = {"Range": "bytes=0-1"}
+
+    try:
+        response = requests.get(stream_url, headers=headers, timeout=5)
+        if response.status_code == 206 or response.status_code == 204:
+            return parsed_url.geturl()
+    except:
+        pass
+
+
+# Inspect
+inspect_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+inspect_parser.add_argument(
+    "original",
+    description="""Optional - if set to true inspects the original quality file""",
+    type=inputs.boolean,
+    required=False,
+    default=False,
+)
+inspect_result = make_response("track_inspect", ns, fields.Nested(blob_info))
+
+
+@ns.route("/<string:track_id>/inspect")
+class TrackInspect(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Inspect Track""",
+        description="""Inspect a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(inspect_parser)
+    @ns.marshal_with(inspect_result)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        """
+        Inspects the details of the file for a track.
+        """
+        request_args = stream_parser.parse_args()
+        is_original = request_args.get("is_original")
+        decoded_id = decode_with_abort(track_id, ns)
+        info = get_track_access_info(decoded_id)
+        track = info.get("track")
+
+        if not track:
+            logger.error(
+                f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        redis = redis_connection.get_redis()
+
+        cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
+        path = f"internal/blobs/info/{cid}"
+        redis_key = f"track_cid:{cid}"
+
+        cached_content_node = redis.get(redis_key)
+        if cached_content_node:
+            cached_content_node = cached_content_node.decode("utf-8")
+            response = requests.get(urljoin(cached_content_node, path))
+            blob_info = extend_blob_info(response.json())
+            return success_response(blob_info)
+
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
+            logger.error(
+                f"tracks.py | stream | No healthy Content Nodes found when fetching track ID {track_id}. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+        content_nodes = rendezvous.get_n(9999999, cid)
+        for content_node in content_nodes:
+            response = requests.get(urljoin(content_node, path))
+            blob_info = extend_blob_info(response.json())
+            return success_response(blob_info)
+
+        abort_not_found(track_id, ns)
+
+
 # Stream
 
 stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
@@ -430,105 +526,8 @@ stream_parser.add_argument(
 )
 
 
-def tranform_stream_cache(stream_url):
-    return redirect(stream_url)
-
-
-def get_stream_url_from_content_node(content_node: str, path: str):
-    # Add additional query parameters
-    joined_url = urljoin(content_node, path)
-    parsed_url = urlparse(joined_url)
-    query_params = parse_qs(parsed_url.query)
-    query_params["skip_play_count"] = ["true"]
-    stream_url = parsed_url._replace(query=urlencode(query_params, doseq=True)).geturl()
-
-    headers = {"Range": "bytes=0-1"}
-
-    try:
-        response = requests.get(stream_url, headers=headers, timeout=5)
-        if response.status_code == 206 or response.status_code == 204:
-            return parsed_url.geturl()
-    except:
-        pass
-
-
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
-    @record_metrics
-    @ns.doc(
-        id="""Inspect Track""",
-        description="""Inspect an mp3 track""",
-        params={"track_id": "A Track ID"},
-        responses={
-            204: "No Content",
-            400: "Bad request",
-            500: "Server error",
-        },
-    )
-    @ns.expect(reqparse.RequestParser(argument_class=DescriptiveArgument))
-    @cache(ttl_sec=5, transform=tranform_stream_cache)
-    def head(self, track_id):
-        """
-        Gets the availability of a streamable MP3 file of a track,
-        including Content-Length in the response.
-        """
-        decoded_id = decode_with_abort(track_id, ns)
-        info = get_track_access_info(decoded_id)
-        track = info.get("track")
-
-        if not track:
-            logger.error(
-                f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
-            )
-            abort_not_found(track_id, ns)
-
-        redis = redis_connection.get_redis()
-
-        # signature for the track to be included as a query param in the redirect to CN
-        stream_signature = get_track_stream_signature({"track": track})
-        if not stream_signature:
-            abort_not_found(track_id, ns)
-
-        signature = stream_signature["signature"]
-        cid = stream_signature["cid"]
-        params = {"signature": json.dumps(signature)}
-
-        base_path = f"tracks/cidstream/{cid}"
-        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-        path = f"{base_path}?{query_string}"
-
-        # we cache track cid -> content node so we can avoid
-        # checking multiple content nodes for a track
-        # if we already know where to look
-        redis_key = f"track_cid:{cid}"
-        cached_content_node = redis.get(redis_key)
-        stream_url = None
-        if cached_content_node:
-            cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(cached_content_node, path)
-            if stream_url:
-                return stream_url
-
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when fetching track ID {track_id}. Please investigate."
-            )
-            abort_not_found(track_id, ns)
-
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-        )
-
-        content_nodes = rendezvous.get_n(9999999, cid)
-        for content_node in content_nodes:
-            stream_url = get_stream_url_from_content_node(content_node, path)
-            if stream_url:
-                redis.set(redis_key, content_node)
-                redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                return stream_url
-        abort_not_found(track_id, ns)
-
     @record_metrics
     @ns.doc(
         id="""Stream Track""",
@@ -543,7 +542,7 @@ class TrackStream(Resource):
         },
     )
     @ns.expect(stream_parser)
-    @cache(ttl_sec=5, transform=tranform_stream_cache)
+    @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):
         """
         Get the streamable MP3 file of a track
@@ -685,7 +684,7 @@ class TrackDownload(Resource):
         },
     )
     @ns.expect(download_parser)
-    @cache(ttl_sec=5, transform=tranform_stream_cache)
+    @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):
         """
         Download the original or MP3 file of a track.

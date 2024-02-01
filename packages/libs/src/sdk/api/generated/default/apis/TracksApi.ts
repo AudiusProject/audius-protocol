@@ -17,6 +17,7 @@
 import * as runtime from '../runtime';
 import type {
   TopListener,
+  TrackInspect,
   TrackResponse,
   TrackSearch,
   TracksResponse,
@@ -24,6 +25,8 @@ import type {
 import {
     TopListenerFromJSON,
     TopListenerToJSON,
+    TrackInspectFromJSON,
+    TrackInspectToJSON,
     TrackResponseFromJSON,
     TrackResponseToJSON,
     TrackSearchFromJSON,
@@ -69,6 +72,7 @@ export interface GetUndergroundTrendingTracksRequest {
 
 export interface InspectTrackRequest {
     trackId: string;
+    original?: boolean;
 }
 
 export interface SearchTracksRequest {
@@ -325,34 +329,39 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Inspect an mp3 track including Content-Length in the response.
-     * Gets the availability of a streamable MP3 file of a track,
+     * Inspect a track
+     * Inspects the details of the file for a track
      */
-    async inspectTrackRaw(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async inspectTrackRaw(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackInspect>> {
         if (params.trackId === null || params.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling inspectTrack.');
         }
 
         const queryParameters: any = {};
 
+        if (params.original !== undefined) {
+            queryParameters['original'] = params.original;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/stream`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
-            method: 'HEAD',
+            path: `/tracks/{track_id}/inspect`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackInspectFromJSON(jsonValue));
     }
 
     /**
-     * Inspect an mp3 track including Content-Length in the response.
-     * Gets the availability of a streamable MP3 file of a track,
+     * Inspect a track
+     * Inspects the details of the file for a track
      */
-    async inspectTrack(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.inspectTrackRaw(params, initOverrides);
+    async inspectTrack(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackInspect> {
+        const response = await this.inspectTrackRaw(params, initOverrides);
+        return await response.value();
     }
 
     /**

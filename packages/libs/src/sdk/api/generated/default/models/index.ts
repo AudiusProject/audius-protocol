@@ -3,6 +3,7 @@
 export * from './Activity';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';
+export * from './BlobInfo';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';
@@ -39,6 +40,7 @@ export * from './TopListener';
 export * from './Track';
 export * from './TrackArtwork';
 export * from './TrackElement';
+export * from './TrackInspect';
 export * from './TrackResponse';
 export * from './TrackSearch';
 export * from './TracksResponse';

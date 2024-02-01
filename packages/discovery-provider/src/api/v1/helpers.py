@@ -36,6 +36,12 @@ PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
 COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
 
 
+def camel_to_snake(name):
+    """Convert CamelCase to snake_case"""
+    name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
+
+
 def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
@@ -320,6 +326,10 @@ def extend_remix_of(remix_of):
 
     remix_of["tracks"] = list(map(extend_track_element, remix_of["tracks"]))
     return remix_of
+
+
+def extend_blob_info(blob_info):
+    return {camel_to_snake(k): v for k, v in blob_info.items()}
 
 
 def parse_bool_param(param):
