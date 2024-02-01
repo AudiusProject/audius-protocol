@@ -1,4 +1,4 @@
-import { OS } from '@audius/common'
+import { OS } from '@audius/common/models'
 import fetchMock from 'fetch-mock'
 import { describe, it, beforeAll, expect } from 'vitest'
 

@@ -1,11 +1,9 @@
-import type { CommonState, Nullable, Track } from '@audius/common'
-import {
-  DogEarType,
-  SquareSizes,
-  averageColorSelectors,
-  useGatedContentAccess,
-  playerSelectors
-} from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { DogEarType, SquareSizes } from '@audius/common/models'
+import type { Track } from '@audius/common/models'
+import { averageColorSelectors, playerSelectors } from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 

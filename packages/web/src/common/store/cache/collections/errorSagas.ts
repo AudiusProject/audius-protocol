@@ -1,4 +1,4 @@
-import { cacheCollectionsActions } from '@audius/common'
+import { cacheCollectionsActions } from '@audius/common/store'
 
 import { createErrorSagas } from 'utils/errorSagas'
 

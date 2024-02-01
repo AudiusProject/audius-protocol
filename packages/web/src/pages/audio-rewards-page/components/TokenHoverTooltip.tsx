@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
-import { BNWei, formatWei } from '@audius/common'
+import { BNWei } from '@audius/common/models'
+import { formatWei } from '@audius/common/utils'
 
 import Tooltip from 'components/tooltip/Tooltip'
 

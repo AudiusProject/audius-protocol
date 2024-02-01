@@ -1,4 +1,4 @@
-import type { PurchaseVendor } from '@audius/common'
+import type { PurchaseVendor } from '@audius/common/models'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 

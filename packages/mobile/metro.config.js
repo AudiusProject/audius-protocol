@@ -74,6 +74,7 @@ const config = {
       // Alias for 'src' to allow for absolute paths
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
+      '~': path.resolve(__dirname, '../common/src'),
 
       // The following imports are needed for @audius/common
       // and audius-client to compile correctly

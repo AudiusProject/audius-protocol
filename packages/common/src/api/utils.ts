@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { decodeHashId, encodeHashId } from 'utils/hashIds'
+import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 
 export const HashId = z.string().transform<number>((data: string, context) => {
   const id = decodeHashId(data)

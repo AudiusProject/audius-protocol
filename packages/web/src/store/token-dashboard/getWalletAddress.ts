@@ -1,4 +1,4 @@
-import { Chain } from '@audius/common'
+import { Chain } from '@audius/common/models'
 import { call } from 'typed-redux-saga'
 
 import { WalletConnection } from './types'

@@ -1,6 +1,6 @@
 import { ComponentType, Suspense } from 'react'
 
-import { Modals } from '@audius/common'
+import { Modals } from '@audius/common/store'
 
 import { useModalState } from './useModalState'
 

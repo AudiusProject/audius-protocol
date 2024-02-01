@@ -1,4 +1,4 @@
-import type { User, UID } from '@audius/common'
+import type { User, UID } from '@audius/common/models'
 export declare function* adjustUserField(config: {
   user: User
   fieldName: string

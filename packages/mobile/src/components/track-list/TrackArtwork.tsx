@@ -1,5 +1,5 @@
-import type { Track } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import type { Track } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import { View } from 'react-native'
 
 import {

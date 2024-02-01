@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback } from 'react'
 
-import { CommonState, toastActions } from '@audius/common'
+import { toastActions, CommonState } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'

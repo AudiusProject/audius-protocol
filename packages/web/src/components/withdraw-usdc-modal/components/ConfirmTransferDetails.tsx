@@ -1,14 +1,16 @@
 import { useCallback, useState } from 'react'
 
+import { useUSDCBalance } from '@audius/common/hooks'
+import { BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
-  decimalIntegerToHumanReadable,
   useWithdrawUSDCModal,
-  useUSDCBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  BNUSDC,
   WithdrawMethod
-} from '@audius/common'
+} from '@audius/common/store'
+import {
+  decimalIntegerToHumanReadable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { Button, IconQuestionCircle } from '@audius/harmony'
 import { Switch } from '@audius/stems'
 import BN from 'bn.js'

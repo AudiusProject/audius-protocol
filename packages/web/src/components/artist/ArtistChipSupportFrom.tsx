@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import {
-  ID,
-  StringWei,
-  Nullable,
-  formatWei,
-  stringWeiToBN,
-  tippingSelectors
-} from '@audius/common'
+import { ID, StringWei } from '@audius/common/models'
+import { tippingSelectors } from '@audius/common/store'
+import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import IconTip from 'assets/img/iconTip.svg'

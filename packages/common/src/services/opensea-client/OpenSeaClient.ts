@@ -1,4 +1,4 @@
-import { allSettled } from 'utils/allSettled'
+import { allSettled } from '~/utils/allSettled'
 
 import {
   Collectible,

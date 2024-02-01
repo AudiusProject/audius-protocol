@@ -1,10 +1,10 @@
 import { createSelector } from 'reselect'
 
-import { getCollection as getCachedCollection } from 'store/cache/collections/selectors'
-import { getUser as getCachedUser } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
-import { getCollection as getSmartCollection } from 'store/pages/smart-collection/selectors'
-import { Nullable } from 'utils/typeUtils'
+import { getCollection as getCachedCollection } from '~/store/cache/collections/selectors'
+import { getUser as getCachedUser } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
+import { getCollection as getSmartCollection } from '~/store/pages/smart-collection/selectors'
+import { Nullable } from '~/utils/typeUtils'
 
 import { ID, UID, Status } from '../../../models'
 

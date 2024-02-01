@@ -37,6 +37,7 @@
     "@emotion/styled": "11.11.0",
     "@radix-ui/react-slot": "1.0.2",
     "@react-spring/web": "9.7.2",
+    "@rollup/plugin-alias": "5.0.1",
     "@storybook/addon-a11y": "7.4.0",
     "@storybook/addon-actions": "7.4.2",
     "@storybook/addon-essentials": "7.4.2",

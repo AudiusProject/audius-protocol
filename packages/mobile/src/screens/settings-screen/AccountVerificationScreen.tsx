@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status, accountSelectors, BooleanKeys } from '@audius/common'
+import { Status } from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
@@ -10,12 +12,17 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconInstagram, IconNote, IconTwitter } from '@audius/harmony-native'
 import PartyFace from 'app/assets/images/emojis/face-with-party-horn-and-party-hat.png'
-import { Button, Screen, ScreenContent, Text } from 'app/components/core'
+import {
+  Button,
+  Screen,
+  ScreenContent,
+  Text,
+  ProfilePicture
+} from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { SocialButton } from 'app/components/social-button'
 import { StatusMessage } from 'app/components/status-message'
 import { TikTokAuthButton } from 'app/components/tiktok-auth'
-import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
@@ -73,9 +80,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginTop: spacing(12),
     marginBottom: spacing(21),
     alignItems: 'center'
-  },
-  profilePicture: {
-    marginBottom: spacing(2)
   },
   profileName: {
     fontSize: 20
@@ -348,7 +352,7 @@ export const AccountVerificationScreen = () => {
         {messages.verified}
       </Text>
       <View style={styles.profileContainer}>
-        <ProfilePicture profile={accountUser} style={styles.profilePicture} />
+        <ProfilePicture userId={accountUser.user_id} mb='xs' size='large' />
         <Text style={styles.profileName} variant='h1'>
           {accountName}
           <UserBadges user={accountUser} badgeSize={12} hideName />

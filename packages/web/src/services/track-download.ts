@@ -1,9 +1,9 @@
 import {
-  TrackDownload as TrackDownloadBase,
-  type DownloadTrackArgs,
   DownloadFile,
-  tracksSocialActions
-} from '@audius/common'
+  TrackDownload as TrackDownloadBase,
+  type DownloadTrackArgs
+} from '@audius/common/services'
+import { tracksSocialActions } from '@audius/common/store'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'

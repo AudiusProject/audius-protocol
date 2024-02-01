@@ -1,4 +1,4 @@
-import { getErrorMessage } from 'utils'
+import { getErrorMessage } from '~/utils'
 
 import { AudiusBackend, AuthHeaders } from './AudiusBackend'
 

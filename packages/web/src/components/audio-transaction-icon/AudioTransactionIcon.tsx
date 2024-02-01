@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { TransactionMethod, TransactionType } from '@audius/common'
+import { TransactionType, TransactionMethod } from '@audius/common/store'
 import cn from 'classnames'
 
 import AppIcon from 'assets/img/appIcon.png'

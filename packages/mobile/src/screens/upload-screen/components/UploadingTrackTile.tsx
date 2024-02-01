@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { UploadTrack } from '@audius/common'
+import type { UploadTrack } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconImage } from '@audius/harmony-native'

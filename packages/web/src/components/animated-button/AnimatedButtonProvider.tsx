@@ -7,7 +7,7 @@ import {
   MouseEvent
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 

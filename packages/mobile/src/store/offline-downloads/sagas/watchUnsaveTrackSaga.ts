@@ -1,4 +1,4 @@
-import { tracksSocialActions } from '@audius/common'
+import { tracksSocialActions } from '@audius/common/store'
 import { put, takeEvery } from 'typed-redux-saga'
 
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'

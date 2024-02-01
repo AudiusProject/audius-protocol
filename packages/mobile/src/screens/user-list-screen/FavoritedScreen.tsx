@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   favoritesUserListActions,
   favoritesUserListSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { IconHeart } from '@audius/harmony-native'

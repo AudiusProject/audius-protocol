@@ -1,10 +1,9 @@
+import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
   AccessConditions,
-  FeatureFlags,
-  StreamTrackAvailabilityType,
-  useAccessAndRemixSettings,
-  useFeatureFlag
-} from '@audius/common'
+  StreamTrackAvailabilityType
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   IconHidden,
   RadioButtonGroup,

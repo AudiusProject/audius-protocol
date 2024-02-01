@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
-import type { Nullable, Track, User } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { FavoriteSource, SquareSizes } from '@audius/common/models'
+import type { Track, User } from '@audius/common/models'
 import {
-  SquareSizes,
-  FavoriteSource,
   accountSelectors,
   tracksSocialActions,
-  playerSelectors,
-  useGatedContentAccess
-} from '@audius/common'
+  playerSelectors
+} from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,4 +1,5 @@
-import { reachabilitySelectors, useProxySelector } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import { reachabilitySelectors } from '@audius/common/store'
 
 import type { AppState } from 'app/store'
 import {

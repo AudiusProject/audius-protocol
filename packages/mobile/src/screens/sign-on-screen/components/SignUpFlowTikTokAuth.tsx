@@ -1,12 +1,10 @@
 import { useEffect } from 'react'
 
-import {
-  useAudiusQueryContext,
-  type TikTokProfileData,
-  pickHandleSchema,
-  Name,
-  formatTikTokProfile
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { Name } from '@audius/common/models'
+import { pickHandleSchema } from '@audius/common/schemas'
+import { formatTikTokProfile } from '@audius/common/services'
+import type { TikTokProfileData } from '@audius/common/services'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { restrictedHandles } from 'utils/restrictedHandles'

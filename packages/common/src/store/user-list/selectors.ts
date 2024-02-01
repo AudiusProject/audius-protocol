@@ -5,10 +5,10 @@ import {
   getOptimisticSupporting,
   getSupportersOverrides,
   getSupportingOverrides
-} from 'store/tipping/selectors'
-import { getId as getSupportingId } from 'store/user-list/supporting/selectors'
-import { getId as getSupportersId } from 'store/user-list/top-supporters/selectors'
-import { stringWeiToBN } from 'utils/wallet'
+} from '~/store/tipping/selectors'
+import { getId as getSupportingId } from '~/store/user-list/supporting/selectors'
+import { getId as getSupportersId } from '~/store/user-list/top-supporters/selectors'
+import { stringWeiToBN } from '~/utils/wallet'
 
 import { ID } from '../../models'
 

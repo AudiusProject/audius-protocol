@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { confirmEmailMessages } from '@audius/common/messages'
 import {
-  confirmEmailErrorMessages,
   confirmEmailSchema,
   formatOtp,
-  confirmEmailMessages as messages
-} from '@audius/common'
+  confirmEmailErrorMessages
+} from '@audius/common/schemas'
 import { Text, TextLink } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -58,10 +58,13 @@ export const ConfirmEmailPage = () => {
       validationSchema={ConfirmEmailSchema}
     >
       <Page as={Form} transition={isMobile ? undefined : 'horizontal'}>
-        <Heading heading={messages.title} description={messages.description} />
+        <Heading
+          heading={confirmEmailMessages.title}
+          description={confirmEmailMessages.description}
+        />
         <VerificationCodeField />
         <Text variant='body'>
-          {messages.noEmailNotice} <ResendCodeLink />
+          {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
         </Text>
         <PageFooter shadow='flat' buttonProps={{ isLoading: isSubmitting }} />
       </Page>
@@ -86,8 +89,8 @@ const VerificationCodeField = () => {
   return (
     <HarmonyTextField
       name='otp'
-      label={messages.otpLabel}
-      placeholder={messages.otpPlaceholder}
+      label={confirmEmailMessages.otpLabel}
+      placeholder={confirmEmailMessages.otpPlaceholder}
       transformValueOnChange={formatOtp}
     />
   )
@@ -102,13 +105,13 @@ const ResendCodeLink = () => {
 
   const handleClick = useCallback(() => {
     dispatch(signIn(email, password))
-    toast(messages.resentToast)
+    toast(confirmEmailMessages.resentToast)
     setHasResendCode(true)
   }, [dispatch, email, password, toast])
 
   return (
     <TextLink variant='visible' onClick={handleClick} disabled={hasResentCode}>
-      {messages.resendCode}
+      {confirmEmailMessages.resendCode}
     </TextLink>
   )
 }

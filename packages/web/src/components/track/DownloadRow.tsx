@@ -1,9 +1,6 @@
-import {
-  CommonState,
-  ID,
-  cacheTracksSelectors,
-  useDownloadableContentAccess
-} from '@audius/common'
+import { useDownloadableContentAccess } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
+import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 

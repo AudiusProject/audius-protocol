@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
+import { Name, Status } from '@audius/common/models'
 import {
-  Name,
-  Status,
   accountSelectors,
   uploadActions,
   uploadSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import {
   Button,
   ButtonType,

@@ -1,12 +1,12 @@
-import { getAccountUser } from 'store/account/selectors'
+import { getAccountUser } from '~/store/account/selectors'
 import {
   getCollection,
   getCollections
-} from 'store/cache/collections/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
-import { getUser, getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
-import { Nullable } from 'utils'
+} from '~/store/cache/collections/selectors'
+import { getTrack, getTracks } from '~/store/cache/tracks/selectors'
+import { getUser, getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
+import { Nullable } from '~/utils'
 
 import { Collection, ID, Status, Track } from '../../models'
 

@@ -1,4 +1,4 @@
-import { chatActions } from '@audius/common'
+import { chatActions } from '@audius/common/store'
 import { StackActions } from '@react-navigation/native'
 import { takeLatest } from 'redux-saga/effects'
 

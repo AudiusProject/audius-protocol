@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { buyAudioSelectors, BuyAudioStage } from '@audius/common'
+import { buyAudioSelectors, BuyAudioStage } from '@audius/common/store'
 import {
   Modal,
   ModalContentPages,
