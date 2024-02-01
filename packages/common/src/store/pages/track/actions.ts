@@ -152,7 +152,9 @@ export const fetchTrackSucceeded = (
   type: FETCH_TRACK_SUCCEEDED,
   trackId
 })
-export const fetchTrackFailed = (_trackId: ID): FetchTrackFailedAction => ({
+export const fetchTrackFailed = (
+  _trackId: ID | string
+): FetchTrackFailedAction => ({
   type: FETCH_TRACK_FAILED
 })
 
