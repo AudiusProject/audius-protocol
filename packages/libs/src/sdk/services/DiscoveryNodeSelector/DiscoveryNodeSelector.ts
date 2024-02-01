@@ -193,26 +193,30 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           // This will get the client to pick new discovery providers
           // if the selected one falls behind, even if requests are succeeding
           const responseClone = response.clone()
-          const data = (await responseClone.json()) as ApiHealthResponseData
-          const { health, reason } = parseApiHealthStatusReason({
-            data,
-            healthCheckThresholds: this.config.healthCheckThresholds
-          })
-          const blockDiff = isFullFlaskResponse(data)
-            ? (data.latest_chain_block ?? 0) - (data.latest_indexed_block ?? 0)
-            : 0
-          const version = isFullFlaskResponse(data)
-            ? data.version?.version ?? ''
-            : ''
-          await this.reselectIfNecessary({
-            endpoint,
-            health,
-            reason,
-            data: {
-              block_difference: blockDiff,
-              version
-            }
-          })
+          const contentType = responseClone.headers.get('Content-Type') || ''
+          if (contentType.includes('application/json')) {
+            const data = (await responseClone.json()) as ApiHealthResponseData
+            const { health, reason } = parseApiHealthStatusReason({
+              data,
+              healthCheckThresholds: this.config.healthCheckThresholds
+            })
+            const blockDiff = isFullFlaskResponse(data)
+              ? (data.latest_chain_block ?? 0) -
+                (data.latest_indexed_block ?? 0)
+              : 0
+            const version = isFullFlaskResponse(data)
+              ? data.version?.version ?? ''
+              : ''
+            await this.reselectIfNecessary({
+              endpoint,
+              health,
+              reason,
+              data: {
+                block_difference: blockDiff,
+                version
+              }
+            })
+          }
         } else {
           const userError = response !== undefined && response.status < 500
 
