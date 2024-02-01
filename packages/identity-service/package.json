@@ -80,7 +80,6 @@
     "moment-timezone": "0.5.27",
     "multer": "1.4.0",
     "numeral": "2.0.6",
-    "patch-package": "6.5.1",
     "pg": "8.0.3",
     "rate-limit-redis": "1.6.0",
     "react": "16.11.0",

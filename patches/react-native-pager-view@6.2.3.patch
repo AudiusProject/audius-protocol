@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-pager-view/ios/ReactNativePageView.h b/node_modules/react-native-pager-view/ios/ReactNativePageView.h
+diff --git a/ios/ReactNativePageView.h b/ios/ReactNativePageView.h
 index 8887fd2..76edf4e 100644
---- a/node_modules/react-native-pager-view/ios/ReactNativePageView.h
-+++ b/node_modules/react-native-pager-view/ios/ReactNativePageView.h
+--- a/ios/ReactNativePageView.h
++++ b/ios/ReactNativePageView.h
 @@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  @property(nonatomic) BOOL overdrag;
  @property(nonatomic) NSString* layoutDirection;
@@ -10,10 +10,10 @@ index 8887fd2..76edf4e 100644
  
  - (void)goTo:(NSInteger)index animated:(BOOL)animated;
  - (void)shouldScroll:(BOOL)scrollEnabled;
-diff --git a/node_modules/react-native-pager-view/ios/ReactNativePageView.m b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
+diff --git a/ios/ReactNativePageView.m b/ios/ReactNativePageView.m
 index d7b6c3a..c339a67 100644
---- a/node_modules/react-native-pager-view/ios/ReactNativePageView.m
-+++ b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
+--- a/ios/ReactNativePageView.m
++++ b/ios/ReactNativePageView.m
 @@ -3,6 +3,7 @@
  #import "React/RCTLog.h"
  #import <React/RCTViewManager.h>

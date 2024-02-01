@@ -1,7 +1,7 @@
-diff --git a/node_modules/@walletconnect/react-native-dapp/dist/providers/WalletConnectProvider.js b/node_modules/@walletconnect/react-native-dapp/dist/providers/WalletConnectProvider.js
+diff --git a/dist/providers/WalletConnectProvider.js b/dist/providers/WalletConnectProvider.js
 index 9b5b1e2..c124b1d 100644
---- a/node_modules/@walletconnect/react-native-dapp/dist/providers/WalletConnectProvider.js
-+++ b/node_modules/@walletconnect/react-native-dapp/dist/providers/WalletConnectProvider.js
+--- a/dist/providers/WalletConnectProvider.js
++++ b/dist/providers/WalletConnectProvider.js
 @@ -20,14 +20,6 @@ export default function WalletConnectProvider({ children, renderQrcodeModal: may
          ? maybeRenderQrcodeModal
          : defaultRenderQrcodeModal), [maybeRenderQrcodeModal]);

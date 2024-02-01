@@ -1,5 +1,4 @@
 npm run install-hooks
-npm run patch-package
 
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   # Symlink react-native into the mobile package bc npm doesn't

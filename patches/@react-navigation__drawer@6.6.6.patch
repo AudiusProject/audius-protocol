@@ -1,7 +1,7 @@
-diff --git a/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx b/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
+diff --git a/src/views/legacy/Drawer.tsx b/src/views/legacy/Drawer.tsx
 index dd4ae41..f3d86af 100644
---- a/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
-+++ b/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
+--- a/src/views/legacy/Drawer.tsx
++++ b/src/views/legacy/Drawer.tsx
 @@ -528,11 +528,30 @@ export default class DrawerView extends React.Component<DrawerProps> {
  
      const progress = drawerType === 'permanent' ? ANIMATED_ONE : this.progress;
@@ -35,10 +35,10 @@ index dd4ae41..f3d86af 100644
            onGestureEvent={this.handleGestureEvent}
            onHandlerStateChange={this.handleGestureStateChange}
            hitSlop={hitSlop}
-diff --git a/node_modules/@react-navigation/drawer/src/views/modern/Drawer.tsx b/node_modules/@react-navigation/drawer/src/views/modern/Drawer.tsx
+diff --git a/src/views/modern/Drawer.tsx b/src/views/modern/Drawer.tsx
 index 9909e96..c406fb7 100644
---- a/node_modules/@react-navigation/drawer/src/views/modern/Drawer.tsx
-+++ b/node_modules/@react-navigation/drawer/src/views/modern/Drawer.tsx
+--- a/src/views/modern/Drawer.tsx
++++ b/src/views/modern/Drawer.tsx
 @@ -340,11 +340,31 @@ export default function Drawer({
          );
    });

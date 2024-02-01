@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-gesture-handler/ios/RNGestureHandler.h b/node_modules/react-native-gesture-handler/ios/RNGestureHandler.h
+diff --git a/ios/RNGestureHandler.h b/ios/RNGestureHandler.h
 index 698f0d0..77ec682 100644
---- a/node_modules/react-native-gesture-handler/ios/RNGestureHandler.h
-+++ b/node_modules/react-native-gesture-handler/ios/RNGestureHandler.h
+--- a/ios/RNGestureHandler.h
++++ b/ios/RNGestureHandler.h
 @@ -68,6 +68,7 @@
  @property (nonatomic) BOOL shouldCancelWhenOutside;
  @property (nonatomic) BOOL needsPointerData;
@@ -18,10 +18,10 @@ index 698f0d0..77ec682 100644
 +
 +
  @end
-diff --git a/node_modules/react-native-gesture-handler/ios/RNGestureHandler.m b/node_modules/react-native-gesture-handler/ios/RNGestureHandler.m
+diff --git a/ios/RNGestureHandler.m b/ios/RNGestureHandler.m
 index 39a6e42..77f23fd 100644
---- a/node_modules/react-native-gesture-handler/ios/RNGestureHandler.m
-+++ b/node_modules/react-native-gesture-handler/ios/RNGestureHandler.m
+--- a/ios/RNGestureHandler.m
++++ b/ios/RNGestureHandler.m
 @@ -81,6 +81,7 @@ - (instancetype)initWithTag:(NSNumber *)tag
      _hitSlop = RNGHHitSlopEmpty;
      _state = RNGestureHandlerStateBegan;

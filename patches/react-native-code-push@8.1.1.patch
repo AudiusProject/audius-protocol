@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-code-push/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java b/node_modules/react-native-code-push/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
+diff --git a/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java b/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
 index 923dd15..29a4910 100644
---- a/node_modules/react-native-code-push/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
-+++ b/node_modules/react-native-code-push/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
+--- a/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
++++ b/android/app/src/main/java/com/microsoft/codepush/react/CodePush.java
 @@ -10,7 +10,6 @@ import com.facebook.react.ReactPackage;
  import com.facebook.react.bridge.JavaScriptModule;
  import com.facebook.react.bridge.NativeModule;

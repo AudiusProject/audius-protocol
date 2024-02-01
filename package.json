@@ -10,7 +10,8 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "postinstall": "bash ./scripts/postinstall.sh",
+    "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
     "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
@@ -78,13 +79,12 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-standard": "4.1.0",
     "npm-check-updates": "16.4.1",
-    "patch-package": "6.5.1",
     "prettier": "2.8.8",
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "vike": "^0.4.150",
     "typescript": "5.0.4",
+    "vike": "^0.4.150",
     "wait-on": "7.2.0"
   },
   "dependencies": {
@@ -101,5 +101,25 @@
     "redux": "4.1.1",
     "webpack": "5.88.2"
   },
-  "packageManager": "pnpm@8.12.1"
+  "packageManager": "pnpm@8.12.1",
+  "pnpm": {
+    "patchedDependencies": {
+      "@react-spring/web@9.7.2": "patches/@react-spring__web@9.7.2.patch",
+      "@noble/secp256k1@1.7.0": "patches/@noble__secp256k1@1.7.0.patch",
+      "@react-navigation/drawer@6.6.6": "patches/@react-navigation__drawer@6.6.6.patch",
+      "@walletconnect/react-native-dapp@1.8.0": "patches/@walletconnect__react-native-dapp@1.8.0.patch",
+      "lottie-web@5.12.2": "patches/lottie-web@5.12.2.patch",
+      "react-lottie@1.2.3": "patches/react-lottie@1.2.3.patch",
+      "react-native-code-push@8.1.1": "patches/react-native-code-push@8.1.1.patch",
+      "react-native-gesture-handler@2.14.0": "patches/react-native-gesture-handler@2.14.0.patch",
+      "react-native-pager-view@6.2.3": "patches/react-native-pager-view@6.2.3.patch",
+      "react-native-screens@3.29.0": "patches/react-native-screens@3.29.0.patch",
+      "react-native-tiktok@1.1.1": "patches/react-native-tiktok@1.1.1.patch",
+      "react-native@0.73.1": "patches/react-native@0.73.1.patch",
+      "react-virtualized@9.22.3": "patches/react-virtualized@9.22.3.patch",
+      "ts-node-dev@2.0.0": "patches/ts-node-dev@2.0.0.patch",
+      "vike@0.4.150": "patches/vike@0.4.150.patch",
+      "@walletconnect/socket-transport@1.8.0": "patches/@walletconnect__socket-transport@1.8.0.patch"
+    }
+  }
 }

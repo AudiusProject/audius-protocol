@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-screens/ios/RNSScreenStack.mm b/node_modules/react-native-screens/ios/RNSScreenStack.mm
+diff --git a/ios/RNSScreenStack.mm b/ios/RNSScreenStack.mm
 index 6c3afe6..f0e2568 100644
---- a/node_modules/react-native-screens/ios/RNSScreenStack.mm
-+++ b/node_modules/react-native-screens/ios/RNSScreenStack.mm
+--- a/ios/RNSScreenStack.mm
++++ b/ios/RNSScreenStack.mm
 @@ -707,9 +707,15 @@ namespace react = facebook::react;
    // RNSPanGestureRecognizer will receive events iff topScreen.fullScreenSwipeEnabled == YES;
    // Events are filtered in gestureRecognizer:shouldReceivePressOrTouchEvent: method

@@ -1,0 +1,13 @@
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 9a6cc3275e94dd38cbb549fbdb22dfb726fcec32..a69439ef910c0216eea2e883c42dd9fcff57916a 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -89,7 +89,7 @@ class SocketTransport {
+         this._nextSocket.onclose = () => {
+             setTimeout(() => {
+                 this._nextSocket = null;
+-                this._socketCreate();
++                // this._socketCreate();
+             }, 1000);
+         };
+     }

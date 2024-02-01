@@ -1,7 +1,7 @@
-diff --git a/node_modules/@noble/secp256k1/lib/index.js b/node_modules/@noble/secp256k1/lib/index.js
+diff --git a/lib/index.js b/lib/index.js
 index e207e74..eb41a50 100644
---- a/node_modules/@noble/secp256k1/lib/index.js
-+++ b/node_modules/@noble/secp256k1/lib/index.js
+--- a/lib/index.js
++++ b/lib/index.js
 @@ -1056,7 +1056,7 @@ exports.schnorr = {
  Point.BASE._setWindowSize(8);
  const crypto = {
@@ -11,10 +11,10 @@ index e207e74..eb41a50 100644
  };
  const TAGS = {
      challenge: 'BIP0340/challenge',
-diff --git a/node_modules/@noble/secp256k1/package.json b/node_modules/@noble/secp256k1/package.json
+diff --git a/package.json b/package.json
 index 422d3c8..85b4d95 100644
---- a/node_modules/@noble/secp256k1/package.json
-+++ b/node_modules/@noble/secp256k1/package.json
+--- a/package.json
++++ b/package.json
 @@ -27,6 +27,9 @@
    "browser": {
      "crypto": false
