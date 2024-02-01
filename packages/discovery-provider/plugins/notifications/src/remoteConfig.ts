@@ -31,6 +31,7 @@ export enum MappingVariable {
   PushUSDCPurchaseSeller = 'push_usdc_purchase_seller',
   PushAnnouncement = 'push_announcement',
   PushReaction = 'push_reaction',
+  PushUSDCTransfer = 'push_usdc_transfer',
   PushUSDCWithdrawal = 'push_usdc_withdrawal'
 }
 
@@ -72,6 +73,7 @@ const defaultMappingVariable = {
   [MappingVariable.PushTrendingPlaylist]: false,
   [MappingVariable.PushAnnouncement]: false,
   [MappingVariable.PushReaction]: false,
+  [MappingVariable.PushUSDCTransfer]: false,
   [MappingVariable.PushUSDCWithdrawal]: false
 }
 

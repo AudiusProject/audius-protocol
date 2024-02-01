@@ -11,7 +11,7 @@ import {
   CreateUSDCTransaction
 } from '../../utils/populateDB'
 
-describe('USDC Withdrawal', () => {
+describe('USDC Transfer', () => {
   let processor: Processor
 
   const sendTransactionalEmailSpy = jest
@@ -27,7 +27,7 @@ describe('USDC Withdrawal', () => {
     await resetTests(processor)
   })
 
-  test('Process push notification for USDC withdrawal', async () => {
+  test('Process push notification for manual USDC transfer', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }])
     await createUSDCUserBank(processor.discoveryDB, [
       {
@@ -38,7 +38,7 @@ describe('USDC Withdrawal', () => {
     ])
     await CreateUSDCTransaction(processor.discoveryDB, [
       {
-        transaction_type: 'withdrawal',
+        transaction_type: 'transfer',
         method: 'send',
         user_bank: '0x123',
         slot: 5,
@@ -56,7 +56,7 @@ describe('USDC Withdrawal', () => {
     expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
       email: 'user_1@gmail.com',
       html: expect.anything(),
-      subject: 'Your Withdrawal Has Been Started'
+      subject: 'Your Transfer Has Been Started'
     })
   })
 })
