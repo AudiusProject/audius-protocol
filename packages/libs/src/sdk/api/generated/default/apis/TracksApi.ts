@@ -69,13 +69,6 @@ export interface GetUndergroundTrendingTracksRequest {
 
 export interface InspectTrackRequest {
     trackId: string;
-    preview?: boolean;
-    userSignature?: string;
-    userData?: string;
-    nftAccessSignature?: string;
-    skipPlayCount?: boolean;
-    filename?: string;
-    premiumContentSignature?: string;
 }
 
 export interface SearchTracksRequest {
@@ -341,34 +334,6 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
-
-        if (params.preview !== undefined) {
-            queryParameters['preview'] = params.preview;
-        }
-
-        if (params.userSignature !== undefined) {
-            queryParameters['user_signature'] = params.userSignature;
-        }
-
-        if (params.userData !== undefined) {
-            queryParameters['user_data'] = params.userData;
-        }
-
-        if (params.nftAccessSignature !== undefined) {
-            queryParameters['nft_access_signature'] = params.nftAccessSignature;
-        }
-
-        if (params.skipPlayCount !== undefined) {
-            queryParameters['skip_play_count'] = params.skipPlayCount;
-        }
-
-        if (params.filename !== undefined) {
-            queryParameters['filename'] = params.filename;
-        }
-
-        if (params.premiumContentSignature !== undefined) {
-            queryParameters['premium_content_signature'] = params.premiumContentSignature;
-        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
