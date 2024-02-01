@@ -52,8 +52,6 @@ export const useChangeEmailFormConfiguration = () => {
     [audiusQueryContext]
   )
 
-  console.log({ page })
-
   const validationSchema =
     page === ChangeEmailPage.ConfirmPassword
       ? confirmPasswordFormikSchema
@@ -68,7 +66,6 @@ export const useChangeEmailFormConfiguration = () => {
       const { oldEmail, password } = values
       const libs = await audiusBackend.getAudiusLibsTyped()
       try {
-        console.log({ oldEmail, password })
         const confirmed = await libs.Account?.confirmCredentials({
           username: oldEmail,
           password,
