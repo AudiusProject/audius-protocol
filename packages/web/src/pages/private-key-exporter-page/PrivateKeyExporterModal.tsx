@@ -1,56 +1,158 @@
-import { useState, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { Nullable } from '@audius/common'
-import pkg from 'bs58'
+import {
+  Text,
+  Button,
+  Divider,
+  Flex,
+  TextLink,
+  useTheme,
+  IconTriangleExclamation
+} from '@audius/harmony'
+import {
+  Modal,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle
+} from '@audius/stems'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
+import { useModalState } from 'common/hooks/useModalState'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
+import styles from './PrivateKeyExporterPage.module.css'
 
 const messages = {
-  address: 'ADDRESS',
-  privateKey: 'PRIVATE KEY'
+  privateKey: 'PRIVATE KEY',
+  secure: 'Keep This Information Secure',
+  yourPrivateKey:
+    'Your private key should be kept confidential and stored securely.',
+  audiusWillNever: 'Audius will NEVER request your private key. ',
+  phishing:
+    'Avoid phishing attempts and never enter your private key on suspicious websites.',
+  additionalResources: 'Additional Resources',
+  import: 'Import and Manage Multiple Wallets with Phantom.',
+  airdropChecker: 'Solana Airdrop Checker.',
+  close: 'Close'
+}
+
+const PHANTOM_IMPORT_URL =
+  'https://phantom.app/learn/blog/import-and-manage-multiple-wallets-with-phantom'
+const SOLANA_AIRDROP_CHECKER_URL = 'https://solana-airdrop-checker.solworks.dev'
+
+const KeepThisInformationSecure = () => {
+  const { color } = useTheme()
+  const bulletPoints = [
+    messages.yourPrivateKey,
+    messages.audiusWillNever,
+    messages.phishing
+  ]
+  return (
+    <Flex
+      direction='column'
+      alignItems='flex-start'
+      pv='l'
+      ph='2xl'
+      gap='l'
+      borderRadius='m'
+      border='strong'
+      css={{
+        background: 'rgba(208, 2, 27, 0.05)',
+        borderColor: color.special.darkRed
+      }}
+    >
+      <Flex alignItems='center' gap='s'>
+        <IconTriangleExclamation size='m' fill={color.special.darkRed} />
+        <Text variant='title' color='danger' css={{ fontSize: 24 }}>
+          {messages.secure}
+        </Text>
+      </Flex>
+      {bulletPoints.map((bulletPoint, i) => (
+        <Text
+          key={`bullet-point${i}`}
+          variant='body'
+          textAlign='left'
+          color='danger'
+          css={{
+            display: 'list-item',
+            listStyleType: 'disc',
+            listStylePosition: 'inside'
+          }}
+        >
+          {bulletPoint}
+        </Text>
+      ))}
+    </Flex>
+  )
+}
+
+const AdditionalResources = () => {
+  const { color } = useTheme()
+  return (
+    <Flex direction='column'>
+      <Text variant='heading' size='s'>
+        {messages.additionalResources}
+      </Text>
+      <TextLink
+        href={PHANTOM_IMPORT_URL}
+        target='_blank'
+        isExternal
+        css={{ lineHeight: '24px', color: color.primary.p500, fontWeight: 500 }}
+      >
+        {messages.import}
+      </TextLink>
+      <TextLink
+        strength='strong'
+        href={SOLANA_AIRDROP_CHECKER_URL}
+        target='_blank'
+        isExternal
+        css={{ lineHeight: '24px', color: color.primary.p500, fontWeight: 500 }}
+      >
+        {messages.airdropChecker}
+      </TextLink>
+    </Flex>
+  )
 }
 
 export const PrivateKeyExporterModal = () => {
-  const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
-  const [encodedPrivateKey, setEncodedPrivateKey] =
-    useState<Nullable<string>>(null)
-
-  useEffect(() => {
-    const fetchKeypair = async () => {
-      await waitForLibsInit()
-      const libs = window.audiusLibs
-      const privateKey = libs.Account?.hedgehog?.wallet?.getPrivateKey()
-      if (privateKey) {
-        const keypair =
-          libs.solanaWeb3Manager?.solanaWeb3?.Keypair?.fromSeed(privateKey)
-        if (keypair) {
-          setPublicKey(keypair.publicKey.toString())
-          setEncodedPrivateKey(pkg.encode(keypair.secretKey))
-        }
-      }
-    }
-    fetchKeypair()
-  }, [])
-
-  if (!publicKey || !encodedPrivateKey) {
-    return (
-      <div>
-        <h1>No keypair found</h1>
-      </div>
-    )
-  }
+  const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
+  const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
 
   return (
-    <div>
-      <h1>PrivateKeyExporterPage</h1>
-      <AdvancedWalletDetails
-        keys={[
-          { label: messages.address, value: publicKey },
-          { label: messages.privateKey, value: encodedPrivateKey }
-        ]}
-      />
-    </div>
+    <Modal
+      bodyClassName={styles.modal}
+      onClose={handleClose}
+      isOpen={isVisible}
+    >
+      <ModalHeader
+        onClose={handleClose}
+        dismissButtonClassName={styles.modalCloseIcon}
+      >
+        <ModalTitle
+          title={messages.privateKey}
+          titleClassName={styles.modalTitle}
+        />
+      </ModalHeader>
+      <ModalContent>
+        <Flex direction='column' gap='xl'>
+          <KeepThisInformationSecure />
+          <AdvancedWalletDetails />
+          <Divider orientation='horizontal' />
+          <AdditionalResources />
+        </Flex>
+      </ModalContent>
+      <ModalFooter>
+        <Button
+          variant='secondary'
+          onClick={handleClose}
+          css={{ marginLeft: 24, marginRight: 24 }}
+          fullWidth
+        >
+          {messages.close}
+        </Button>
+      </ModalFooter>
+    </Modal>
   )
 }
+
+export default PrivateKeyExporterModal

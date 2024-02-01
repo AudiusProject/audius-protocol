@@ -20,6 +20,7 @@ import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
+import { useModalState } from 'common/hooks/useModalState'
 import { Avatar } from 'components/avatar/Avatar'
 import Switch from 'components/switch/Switch'
 import { useSelector } from 'utils/reducer'
@@ -81,7 +82,9 @@ const Header = () => {
       pv='xl'
       css={{
         paddingLeft: 80,
-        paddingRight: 80
+        paddingRight: 80,
+        boxShadow:
+          '0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)'
       }}
     >
       <Link to={TRENDING_PAGE}>
@@ -119,13 +122,14 @@ const BackToSettings = () => {
 }
 
 const ShowPrivateKey = () => {
+  const { color } = useTheme()
   return (
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='l'>
       <Text variant='heading' css={{ fontSize: 34 }} color='accent'>
         {messages.showPrivateKey}
       </Text>
       <Flex gap='s'>
-        <IconTriangleExclamation />
+        <IconTriangleExclamation fill={color.special.darkRed} />
         <Text variant='body' color='danger' size='l' strength='strong'>
           {messages.yourOwnRisk}
         </Text>
@@ -177,11 +181,11 @@ const UnderstandTheRisks = () => {
         border='strong'
         css={{
           background: 'rgba(208, 2, 27, 0.05)',
-          borderColor: color.special.red
+          borderColor: color.special.darkRed
         }}
       >
         <Flex alignItems='center' gap='s'>
-          <IconTriangleExclamation size='m' />
+          <IconTriangleExclamation size='m' fill={color.special.darkRed} />
           <Text variant='title' color='danger' css={{ fontSize: 24 }}>
             {messages.understandTheRisk}
           </Text>
@@ -272,6 +276,8 @@ const NeedHelp = () => {
 
 const AgreeAndContinue = () => {
   const dispatch = useDispatch()
+  const [, setIsPrivateKeyExporterModalVisible] =
+    useModalState('PrivateKeyExporter')
   const [agreed, setAgreed] = useState(false)
   const bulletPoints = [
     messages.iUnderstand,
@@ -281,7 +287,9 @@ const AgreeAndContinue = () => {
   const handleCancel = useCallback(() => {
     dispatch(pushRoute(SETTINGS_PAGE))
   }, [dispatch])
-  const handleProceed = useCallback(() => {}, [])
+  const handleProceed = useCallback(() => {
+    setIsPrivateKeyExporterModalVisible(true)
+  }, [setIsPrivateKeyExporterModalVisible])
   return (
     <Flex direction='column' alignItems='flex-start' mv='l' pv='xl' gap='xl'>
       <Text variant='title' css={{ fontSize: 24 }}>

@@ -6,17 +6,32 @@
 .backToSettings {
   cursor: pointer;
 }
+
 .backToSettings p {
   transition: all 0.07s ease-in-out;
   transform: scale3d(1, 1, 1);
 }
+
 .backToSettings:hover p {
   transform: scale3d(1.03, 1.03, 1.03);
 }
+
 .backToSettings:active p {
   transform: scale3d(0.97, 0.97, 0.97);
 }
 
 .copyIcon path {
   fill: var(--neutral-light-4);
+}
+
+.modal {
+  max-width: 726px;
+}
+
+.modalCloseIcon {
+  color: var(--neutral-light-4);
+}
+
+.modalTitle {
+  font-weight: var(--font-heavy);
 }
