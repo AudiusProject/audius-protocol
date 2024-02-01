@@ -1,11 +1,8 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { ID } from '@audius/common'
-import {
-  encodeHashId,
-  useGetUserById,
-  useGetUserTracksByHandle
-} from '@audius/common'
+import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
+import type { ID } from '@audius/common/models'
+import { encodeHashId } from '@audius/common/utils'
 import { Formik } from 'formik'
 import TrackPlayer, { RepeatMode, State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'

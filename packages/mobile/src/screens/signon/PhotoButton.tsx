@@ -1,6 +1,6 @@
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native'
 
-import IconCamera from 'app/assets/images/iconCamera.svg'
+import { IconCamera } from '@audius/harmony-native'
 
 const styles = StyleSheet.create({
   cameraBtn: {

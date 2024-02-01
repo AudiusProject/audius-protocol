@@ -1,12 +1,16 @@
 import { ChatPermission, Genre } from '@audius/sdk'
 
-import { FeedFilter } from 'models/FeedFilter'
-import { ID, PlayableType } from 'models/Identifiers'
-import { MonitorPayload, ServiceMonitorType } from 'models/Services'
-import { TimeRange } from 'models/TimeRange'
-import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
-import { MintName } from 'services/index'
-import { Prettify } from 'utils/typeUtils'
+import { FeedFilter } from '~/models/FeedFilter'
+import { ID, PlayableType } from '~/models/Identifiers'
+import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
+import { TimeRange } from '~/models/TimeRange'
+import {
+  SolanaWalletAddress,
+  StringAudio,
+  WalletAddress
+} from '~/models/Wallet'
+import { MintName } from '~/services/index'
+import { Prettify } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -20,6 +24,8 @@ type JsonMap = Record<string, unknown>
 export type AnalyticsEvent = {
   eventName: string
   properties?: JsonMap
+  id?: string
+  source?: string
 }
 
 export enum Name {
@@ -807,7 +813,8 @@ export enum FollowSource {
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
   EMPTY_FEED = 'empty feed',
   HOW_TO_UNLOCK_TRACK_PAGE = 'how to unlock track page',
-  HOW_TO_UNLOCK_MODAL = 'how to unlock modal'
+  HOW_TO_UNLOCK_MODAL = 'how to unlock modal',
+  SIGN_UP = 'sign up'
 }
 
 type Share = {

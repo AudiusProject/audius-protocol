@@ -1,16 +1,16 @@
 import { call, select } from 'typed-redux-saga'
 
-import { createUserBankIfNeeded } from 'services/audius-backend/solana'
-import { IntKeys } from 'services/remote-config'
+import { createUserBankIfNeeded } from '~/services/audius-backend/solana'
+import { IntKeys } from '~/services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
   MAX_USDC_PURCHASE_AMOUNT_CENTS,
   MIN_CONTENT_PRICE_CENTS,
   MIN_USDC_PURCHASE_AMOUNT_CENTS,
   BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
-} from 'services/remote-config/defaults'
-import { getContext } from 'store/effects'
-import { getFeePayer } from 'store/solana/selectors'
+} from '~/services/remote-config/defaults'
+import { getContext } from '~/store/effects'
+import { getFeePayer } from '~/store/solana/selectors'
 
 /**
  * Derives a USDC user bank for a given eth address, creating it if necessary.

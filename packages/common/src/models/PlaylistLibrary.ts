@@ -1,4 +1,4 @@
-import { SmartCollectionVariant } from 'models/SmartCollectionVariant'
+import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
 
 import { ID } from './Identifiers'
 

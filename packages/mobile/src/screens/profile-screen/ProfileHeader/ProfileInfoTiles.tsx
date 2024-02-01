@@ -1,18 +1,20 @@
 import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
   accountSelectors,
   relatedArtistsUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
 import { View, ScrollView } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconFollowing from 'app/assets/images/iconFollowing.svg'
-import IconRobot from 'app/assets/images/iconRobot.svg'
-import IconUserGroup from 'app/assets/images/iconUserGroup.svg'
+import {
+  IconUserFollowing,
+  IconRobot,
+  IconUserGroup
+} from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -98,7 +100,7 @@ const MutualsTile = (props: TileProps) => {
   return (
     <ProfileInfoTile
       screen='Mutuals'
-      icon={IconFollowing}
+      icon={IconUserFollowing}
       text={messages.mutuals}
       {...props}
     />

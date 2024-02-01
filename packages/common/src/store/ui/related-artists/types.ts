@@ -1,6 +1,6 @@
 import { EntityState } from '@reduxjs/toolkit'
 
-import { ID, Status } from 'models'
+import { ID, Status } from '~/models'
 
 export type RelatedArtists = {
   artistId: ID

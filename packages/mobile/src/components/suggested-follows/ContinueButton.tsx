@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button, Text } from 'app/components/core'
 import type { AppState } from 'app/store'
@@ -50,7 +50,7 @@ export const ContinueButton = (props: ContinueButtonProps) => {
         size='large'
         fullWidth
         disabled={!hasFollowedEnoughArtists}
-        icon={IconArrow}
+        icon={IconArrowRight}
       />
       <Text fontSize='small' style={styles.followCounter}>
         {messages.following}{' '}

@@ -1,4 +1,4 @@
-import { FingerprintClient } from '@audius/common'
+import { FingerprintClient } from '@audius/common/services'
 import { FingerprintJsProAgent } from '@fingerprintjs/fingerprintjs-pro-react-native'
 
 import { env } from 'app/env'

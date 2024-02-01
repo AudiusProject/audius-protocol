@@ -8,6 +8,7 @@
     "protocol-dashboard",
     "packages/ddex/webapp/server",
     "packages/ddex/webapp/client",
+    "packages/ddex/publisher",
     "packages/es-indexer"
   ],
   "private": true,

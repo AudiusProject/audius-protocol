@@ -1,4 +1,4 @@
-import { AudiusBackend } from '@audius/common'
+import { AudiusBackend } from '@audius/common/services'
 
 import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'

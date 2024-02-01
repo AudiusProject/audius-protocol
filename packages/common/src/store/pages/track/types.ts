@@ -1,6 +1,6 @@
-import { ID, LineupState } from '../../../models'
+import { ID, LineupState, Track } from '../../../models'
 
-export default interface TrackPageState {
+export type TrackPageState = {
   trackId: ID | null
   trackPermalink: string | null
   rank: {
@@ -13,6 +13,6 @@ export default interface TrackPageState {
     month: ID[] | null
     year: ID[] | null
   }
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
   isInitialFetchAfterSsr: boolean
 }

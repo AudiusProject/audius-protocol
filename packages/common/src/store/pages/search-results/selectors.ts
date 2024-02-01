@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect'
 
-import { getCollections } from 'store/cache/collections/selectors'
-import { getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
-import { createShallowSelector } from 'utils/selectorHelpers'
+import { getCollections } from '~/store/cache/collections/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
+import { createShallowSelector } from '~/utils/selectorHelpers'
 
 // Search Results selectors
 export const getBaseState = (state: CommonState) => state.pages.searchResults

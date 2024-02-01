@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { Name, useCreateUserbankIfNeeded, useUSDCBalance } from '@audius/common'
+import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
 import BN from 'bn.js'
@@ -8,7 +9,7 @@ import { View } from 'react-native'
 import QRCode from 'react-qr-code'
 import { useAsync } from 'react-use'
 
-import IconError from 'app/assets/images/iconError.svg'
+import { IconError } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'

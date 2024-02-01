@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { AccessConditions, Nullable } from '@audius/common'
-import {
-  accountSelectors,
-  isContentFollowGated,
-  isContentTipGated
-} from '@audius/common'
+import { isContentFollowGated, isContentTipGated } from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector, useDispatch } from 'react-redux'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import { IconInfo, IconSpecialAccess } from '@audius/harmony-native'
 import { RadioButton, Text } from 'app/components/core'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { setVisibility } from 'app/store/drawers/slice'

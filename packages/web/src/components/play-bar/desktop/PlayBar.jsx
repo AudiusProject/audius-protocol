@@ -1,25 +1,27 @@
 import { Component } from 'react'
 
 import {
+  Name,
   RepostSource,
   FavoriteSource,
-  Name,
   PlaybackSource,
-  Genre,
+  Kind
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
+  cacheTracksSelectors,
   lineupSelectors,
   queueActions,
+  queueSelectors,
   RepeatMode,
   tracksSocialActions,
   themeSelectors,
   playerActions,
   playerSelectors,
-  queueSelectors,
-  FeatureFlags,
-  playbackRateValueMap,
-  cacheTracksSelectors,
-  Kind
-} from '@audius/common'
+  playbackRateValueMap
+} from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

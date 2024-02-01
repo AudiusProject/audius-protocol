@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
 import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,42 +1,38 @@
 import { useCallback, useMemo } from 'react'
 
-import type {
-  Collection,
-  Track,
-  User,
-  EnhancedCollectionTrack,
-  CommonState
-} from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
 import {
-  SquareSizes,
-  removeNullable,
-  useProxySelector,
-  playerSelectors,
+  ShareSource,
+  RepostSource,
   FavoriteSource,
   PlaybackSource,
-  RepostSource,
-  ShareSource,
   FavoriteType,
+  SquareSizes
+} from '@audius/common/models'
+import type { Collection, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
   RepostType,
-  FeatureFlags
-} from '@audius/common'
+  playerSelectors
+} from '@audius/common/store'
+import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
-
-import type { ImageProps } from '../image/FastImage'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'

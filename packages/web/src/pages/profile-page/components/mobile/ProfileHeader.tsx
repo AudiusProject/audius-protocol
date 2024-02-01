@@ -1,16 +1,18 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
 import {
-  ID,
-  Name,
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  WidthSizes,
-  SquareSizes,
-  formatCount,
   imageCoverPhotoBlank,
   imageProfilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
+import {
+  Name,
+  SquareSizes,
+  WidthSizes,
+  ID,
+  ProfilePictureSizes,
+  CoverPhotoSizes
+} from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Button,
   ButtonType,

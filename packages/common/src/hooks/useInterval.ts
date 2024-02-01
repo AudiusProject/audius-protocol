@@ -4,7 +4,7 @@ import { useIsomorphicLayoutEffect } from 'react-use'
 
 export function useInterval(callback: () => void, delay: number | null) {
   const savedCallback = useRef(callback)
-  const intervalId = useRef<NodeJS.Timer>()
+  const intervalId = useRef<any>()
 
   // Remember the latest callback if it changes.
   useIsomorphicLayoutEffect(() => {

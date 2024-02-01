@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 

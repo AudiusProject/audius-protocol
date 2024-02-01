@@ -36,7 +36,7 @@ export type FilterButtonProps = {
   /**
    * The selected value
    */
-  selection?: string
+  selection?: string | null
 
   /**
    * The button size
@@ -64,6 +64,11 @@ export type FilterButtonProps = {
    * What to do when an option is selected
    */
   onSelect?: (label: string) => void
+
+  /**
+   * Whether interaction is disabled
+   */
+  isDisabled?: boolean
 
   /**
    * Popup anchor origin

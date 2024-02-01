@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
-import { useInboxUnavailableModal } from '@audius/common'
+import type { ID } from '@audius/common/models'
+import { useInboxUnavailableModal } from '@audius/common/store'
 
-import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'
+import { IconMessageLocked } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

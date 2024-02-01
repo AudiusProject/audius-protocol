@@ -1,6 +1,6 @@
 import { useMemo, ReactNode, RefObject } from 'react'
 
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'

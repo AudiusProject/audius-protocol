@@ -1,7 +1,7 @@
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
-import { getContext } from 'store/effects'
-import { UPLOAD_TRACKS_SUCCEEDED } from 'store/upload/actions'
+import { getContext } from '~/store/effects'
+import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
 
 import { getUserId, getUserHandle } from './selectors'
 import { fetchAccountSucceeded, fetchHasTracks, setHasTracks } from './slice'

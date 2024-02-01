@@ -1,4 +1,4 @@
-import { USDCTransactionDetails } from 'models/USDCTransactions'
+import { USDCTransactionDetails } from '~/models/USDCTransactions'
 
 import { createModal } from '../createModal'
 

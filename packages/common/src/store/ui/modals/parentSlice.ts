@@ -60,7 +60,8 @@ export const initialState: BasicModalsState = {
   CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
-  CoinflowWithdraw: { isOpen: false }
+  CoinflowWithdraw: { isOpen: false },
+  WaitForDownloadModal: { isOpen: false }
 }
 
 const slice = createSlice({

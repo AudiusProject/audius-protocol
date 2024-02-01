@@ -1,4 +1,5 @@
-import { SquareSizes, formatCount } from '@audius/common'
+import { SquareSizes } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 

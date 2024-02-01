@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import {
-  makeTwitterShareUrl,
-  useTwitterButtonStatus,
-  cacheUsersActions,
-  cacheUsersSelectors
-} from '@audius/common'
+import { useTwitterButtonStatus } from '@audius/common/hooks'
+import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
+import { makeTwitterShareUrl } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { IconTwitter } from '@audius/harmony-native'
 import type { ButtonProps } from 'app/components/core'
 import { Button, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
@@ -113,7 +110,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     <Button
       title={messages.share}
       style={[styles.root, style]}
-      icon={IconTwitterBird}
+      icon={IconTwitter}
       iconPosition='left'
       url={
         other.type === 'static'

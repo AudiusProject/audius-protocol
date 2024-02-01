@@ -3,18 +3,21 @@ import React from 'react'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { DataObject } from 'components/TrackerChart'
+import { ServiceType } from 'types'
 
 type OwnProps = {
+  nodeType: ServiceType
   node: string
 }
 
 type IndividualNodeUptimeChartProps = OwnProps
 
 const IndividualNodeUptimeChart: React.FC<IndividualNodeUptimeChartProps> = ({
+  nodeType,
   node
 }) => {
   let error, subtitle: string, data: DataObject[]
-  const { uptime } = useIndividualNodeUptime(node, Bucket.DAY)
+  const { uptime } = useIndividualNodeUptime(nodeType, node, Bucket.DAY)
   if (uptime === MetricError.ERROR) {
     error = true
     data = []

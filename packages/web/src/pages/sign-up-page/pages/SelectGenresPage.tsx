@@ -1,12 +1,9 @@
 import { MouseEventHandler, useCallback, useState } from 'react'
 
-import {
-  Genre,
-  Name,
-  selectGenresPageMessages as messages,
-  selectGenresSchema,
-  selectableGenres
-} from '@audius/common'
+import { selectGenresPageMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
+import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
+import { Genre } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -90,8 +87,8 @@ export const SelectGenresPage = () => {
               css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Heading
-                heading={messages.header}
-                description={messages.description}
+                heading={selectGenresPageMessages.header}
+                description={selectGenresPageMessages.description}
                 alignItems={!isMobile ? 'center' : undefined}
               />
               <Flex

@@ -80,6 +80,11 @@ jobs:
       context: [GCP, dockerhub, slack-secrets]
       service: ddex-ingester
       notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-ddex-publisher
+      context: [GCP, dockerhub, slack-secrets]
+      service: ddex-publisher
+      notify_slack_on_failure: true
 
   - push-arm-image:
       name: push-discovery-provider-arm
@@ -166,6 +171,12 @@ jobs:
       service: ddex-ingester
       requires:
         - push-ddex-ingester
+  - push-arm-image:
+      name: push-ddex-publisher-arm
+      context: [Vercel, dockerhub]
+      service: ddex-publisher
+      requires:
+        - push-ddex-publisher
 
   - release-github-draft-trigger:
       type: approval
@@ -208,6 +219,7 @@ jobs:
         - push-uptime
         - push-ddex-web
         - push-ddex-ingester
+        - push-ddex-publisher
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
@@ -223,6 +235,7 @@ jobs:
         # - push-uptime-arm
         # - push-ddex-web-arm
         # - push-ddex-ingester-arm
+        # - push-ddex-publisher-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getErrorMessage } from '@audius/common'
+import { getErrorMessage } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 
 import { HelperText } from 'components/data-entry/HelperText'

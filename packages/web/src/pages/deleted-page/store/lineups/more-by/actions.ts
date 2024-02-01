@@ -1,4 +1,4 @@
-import { LineupBaseActions } from '@audius/common'
+import { LineupBaseActions } from '@audius/common/store'
 
 export const PREFIX = 'DELETED_PAGE_MORE_BY'
 

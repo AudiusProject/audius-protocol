@@ -1,4 +1,4 @@
-import { MonitorPayload } from 'models'
+import { MonitorPayload } from '~/models'
 
 export type ServiceMonitoring = {
   healthCheck: (payload: MonitorPayload) => void

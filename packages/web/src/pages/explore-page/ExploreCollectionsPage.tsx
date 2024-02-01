@@ -1,4 +1,4 @@
-import { ExploreCollectionsVariant } from '@audius/common'
+import { ExploreCollectionsVariant } from '@audius/common/store'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 

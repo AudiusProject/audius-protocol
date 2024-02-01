@@ -1,4 +1,4 @@
-import type { Color } from '@audius/common'
+import type { Color } from '@audius/common/models'
 import Jimp from 'jimp'
 
 const DEFAULT_RGB = '#7e1bcc'

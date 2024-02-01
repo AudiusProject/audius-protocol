@@ -1,4 +1,4 @@
-import { Permission } from 'utils/browserNotifications'
+import { Permission } from '~/utils/browserNotifications'
 
 import {
   BrowserNotificationSetting,

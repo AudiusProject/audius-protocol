@@ -1,4 +1,4 @@
-import { remoteConfigSelectors } from '@audius/common'
+import { remoteConfigSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'

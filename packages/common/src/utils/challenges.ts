@@ -1,4 +1,4 @@
-import { UndisbursedUserChallenge } from 'store/pages'
+import { UndisbursedUserChallenge } from '~/store/pages'
 
 import {
   ChallengeRewardID,

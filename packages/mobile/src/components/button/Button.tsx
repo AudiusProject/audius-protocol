@@ -105,7 +105,7 @@ export type ButtonProps = {
    * Callback accepting the themed color of the button text that returns the resulting icon element.
    * Takes priority over the `icon` prop. Define the callback outside of a render function to prevent rerenders.
    * @example
-   * const renderIconArrow = color => <IconArrow fill={color} />
+   * const renderIconArrow = color => <IconArrowRight fill={color} />
    * export const myComponent = () => <Button renderIcon={renderIconArrow} />
    */
   renderIcon?: (color: ColorValue) => React.ReactElement

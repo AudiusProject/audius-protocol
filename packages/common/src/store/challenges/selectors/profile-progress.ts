@@ -1,5 +1,5 @@
-import { getAccountUser } from 'store/account/selectors'
-import { getProfileUserHandle } from 'store/pages/profile/selectors'
+import { getAccountUser } from '~/store/account/selectors'
+import { getProfileUserHandle } from '~/store/pages/profile/selectors'
 
 import { Status } from '../../../models/Status'
 import { CommonState } from '../../commonStore'

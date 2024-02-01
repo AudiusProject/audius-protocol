@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { playbackRateValueMap, playerSelectors } from '@audius/common'
+import { playerSelectors, playbackRateValueMap } from '@audius/common/store'
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
 import { Easing, View, Animated, PanResponder } from 'react-native'

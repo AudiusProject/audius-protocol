@@ -162,6 +162,7 @@
     "react-native-video": "5.2.1",
     "react-native-view-shot": "3.8.0",
     "react-native-webview": "13.6.3",
+    "react-native-zip-archive": "6.1.0",
     "react-qr-code": "2.0.12",
     "react-redux": "8.0.5",
     "react-use": "17.3.2",
@@ -186,6 +187,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.21.0",
+    "@babel/plugin-transform-export-namespace-from": "7.23.4",
     "@babel/plugin-transform-react-jsx": "7.21.0",
     "@babel/preset-env": "7.20.2",
     "@babel/runtime": "7.21.0",
@@ -213,6 +215,7 @@
     "babel-jest": "29.6.3",
     "babel-loader": "8.3.0",
     "babel-plugin-macros": "3.1.0",
+    "babel-plugin-module-resolver": "5.0.0",
     "babel-plugin-transform-remove-console": "6.9.4",
     "detox": "20.12.1",
     "eslint": "8.56.0",

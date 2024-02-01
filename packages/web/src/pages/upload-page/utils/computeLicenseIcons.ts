@@ -1,6 +1,6 @@
 import type { ComponentType, SVGProps } from 'react'
 
-import type { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 
 import IconAllowAttribution from 'assets/img/creativeCommons/by.svg'
 import IconCreativeCommons from 'assets/img/creativeCommons/cc.svg'

@@ -4,6 +4,7 @@ import svgr from '@svgr/rollup'
 import json from 'rollup-plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
+import alias from '@rollup/plugin-alias'
 
 import pkg from './package.json' assert { type: 'json' }
 
@@ -32,6 +33,10 @@ export default {
   ],
   plugins: [
     json(),
+    alias({
+      // Properly resolve json files from assets folder
+      entries: [{ find: /^assets\/(.*)/, replacement: 'src/assets/$1' }]
+    }),
     postcss({
       minimize: true,
       extract: 'harmony.css',

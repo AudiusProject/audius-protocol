@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { UploadType } from '@audius/common'
+import { UploadType } from '@audius/common/store'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

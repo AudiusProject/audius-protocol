@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import { useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { replace as replaceRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'

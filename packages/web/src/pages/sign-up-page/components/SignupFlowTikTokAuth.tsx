@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 
-import { TikTokProfile } from '@audius/common'
+import { TikTokProfile } from '@audius/common/store'
 
 import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
 

@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Button } from '@audius/harmony'
 import { IconError, IconUpload } from '@audius/stems'
 import cn from 'classnames'

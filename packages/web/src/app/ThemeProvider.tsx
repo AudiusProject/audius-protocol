@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
-import { SystemAppearance, Theme, themeSelectors } from '@audius/common'
+import { Theme, SystemAppearance } from '@audius/common/models'
+import { themeSelectors } from '@audius/common/store'
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 import { AppState } from 'store/types'

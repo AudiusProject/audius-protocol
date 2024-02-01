@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { shallowEqual, useSelector } from 'react-redux'
 
-import dayjs from 'utils/dayjs'
+import dayjs from '~/utils/dayjs'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
