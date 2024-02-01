@@ -30,6 +30,7 @@ import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
@@ -37,7 +38,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import type { TileProps } from '../core'
-import type { ImageProps } from '../image/FastImage'
 
 import { LineupTile } from './LineupTile'
 

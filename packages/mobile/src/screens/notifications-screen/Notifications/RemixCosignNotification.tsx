@@ -22,7 +22,7 @@ import {
   NotificationTitle,
   EntityLink,
   UserNameLink,
-  ProfilePicture,
+  NotificationProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
@@ -89,7 +89,7 @@ export const RemixCosignNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <View style={{ flex: 1 }}>
           <NotificationText>
             <UserNameLink user={user} /> {messages.cosign}{' '}

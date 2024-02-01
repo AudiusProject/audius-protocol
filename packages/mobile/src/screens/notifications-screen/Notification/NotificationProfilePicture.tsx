@@ -1,35 +1,23 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common/models'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import { TouchableOpacity } from 'react-native'
 
-import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'
-import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
+import { ProfilePicture } from 'app/components/core'
+import type { ProfilePictureProps } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles'
 
-import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
-
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  image: {
-    height: spacing(10) - 2,
-    width: spacing(10) - 2,
-    borderRadius: spacing(5),
-    borderColor: palette.white,
-    borderWidth: PROFILE_PICTURE_BORDER_WIDTH,
-    overflow: 'hidden',
-    backgroundColor: palette.neutralLight4,
-    marginRight: spacing(2)
-  }
-}))
-
-type ProfilePictureProps = ProfilePictureBaseProps & {
+type NotificationProfilePictureProps = Partial<ProfilePictureProps> & {
   profile: { user_id: ID; handle: string }
   navigationType?: 'push' | 'navigate'
   interactive?: boolean
 }
 
-export const ProfilePicture = (props: ProfilePictureProps) => {
+export const NotificationProfilePicture = (
+  props: NotificationProfilePictureProps
+) => {
   const {
     profile,
     style,
@@ -37,7 +25,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     interactive = true,
     ...other
   } = props
-  const styles = useStyles()
+  const { spacing } = useTheme()
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
@@ -53,9 +41,10 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   }, [navigation, navigationType, profile])
 
   const profilePictureElement = (
-    <ProfilePictureBase
-      profile={profile}
-      style={[styles.image, style]}
+    <ProfilePicture
+      userId={profile.user_id}
+      size='medium'
+      style={[css({ marginRight: spacing.s }), style]}
       {...other}
     />
   )
