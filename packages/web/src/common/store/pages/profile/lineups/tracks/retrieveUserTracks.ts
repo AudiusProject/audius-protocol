@@ -26,7 +26,7 @@ export function* retrieveUserTracks({
   getUnlisted = false
 }: RetrieveUserTracksArgs): Generator<any, Track[], any> {
   const apiClient = yield* getContext('apiClient')
-  const apiTracks = yield* apiClient.getUserTracksByHandle({
+  const apiTracks = yield* call([apiClient, apiClient.getUserTracksByHandle], {
     handle,
     currentUserId,
     sort,
