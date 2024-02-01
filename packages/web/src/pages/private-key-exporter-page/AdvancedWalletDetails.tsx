@@ -58,6 +58,8 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   return (
     <Flex
       border='strong'
+      borderRadius='m'
+      backgroundColor='surface1'
       css={{ borderWidth: 1, cursor: 'pointer' }}
       onClick={handleClick}
     >

@@ -37,8 +37,11 @@ const messages = {
   phishing:
     'Avoid phishing attempts and never enter your private key on suspicious websites.',
   additionalResources: 'Additional Resources',
-  import: 'Import and Manage Multiple Wallets with Phantom.',
-  airdropChecker: 'Solana Airdrop Checker.',
+  check: 'Check Your Solana Airdrop eligibility',
+  here: 'here.',
+  needMoreHelp: 'Need more help?',
+  guide: 'Read this guide',
+  learnHow: 'to learn how to Import and Manage Multiple Wallets with Phantom.',
   close: 'Close'
 }
 
@@ -77,12 +80,14 @@ const KeepThisInformationSecure = () => {
         <Text
           key={`bullet-point${i}`}
           variant='body'
+          size='l'
           textAlign='left'
           color='danger'
           css={{
+            marginLeft: 24,
             display: 'list-item',
             listStyleType: 'disc',
-            listStylePosition: 'inside'
+            listStylePosition: 'outside'
           }}
         >
           {bulletPoint}
@@ -95,27 +100,60 @@ const KeepThisInformationSecure = () => {
 const AdditionalResources = () => {
   const { color } = useTheme()
   return (
-    <Flex direction='column'>
+    <Flex direction='column' gap='s'>
       <Text variant='heading' size='s'>
         {messages.additionalResources}
       </Text>
-      <TextLink
-        href={PHANTOM_IMPORT_URL}
-        target='_blank'
-        isExternal
-        css={{ lineHeight: '24px', color: color.primary.p500, fontWeight: 500 }}
+      <Text
+        variant='body'
+        size='l'
+        css={{
+          marginLeft: 24,
+          display: 'list-item',
+          listStyleType: 'disc',
+          listStylePosition: 'outside'
+        }}
       >
-        {messages.import}
-      </TextLink>
-      <TextLink
-        strength='strong'
-        href={SOLANA_AIRDROP_CHECKER_URL}
-        target='_blank'
-        isExternal
-        css={{ lineHeight: '24px', color: color.primary.p500, fontWeight: 500 }}
+        {messages.check}&nbsp;
+        <TextLink
+          href={SOLANA_AIRDROP_CHECKER_URL}
+          target='_blank'
+          isExternal
+          css={{
+            lineHeight: '24px',
+            color: color.primary.p500,
+            fontWeight: 500
+          }}
+        >
+          {messages.here}
+        </TextLink>
+      </Text>
+      <Text
+        variant='body'
+        size='l'
+        css={{
+          marginLeft: 24,
+          display: 'list-item',
+          listStyleType: 'disc',
+          listStylePosition: 'outside'
+        }}
       >
-        {messages.airdropChecker}
-      </TextLink>
+        {messages.needMoreHelp}&nbsp;
+        <TextLink
+          strength='strong'
+          href={PHANTOM_IMPORT_URL}
+          target='_blank'
+          isExternal
+          css={{
+            lineHeight: '24px',
+            color: color.primary.p500,
+            fontWeight: 500
+          }}
+        >
+          {messages.guide}
+        </TextLink>
+        &nbsp;{messages.learnHow}
+      </Text>
     </Flex>
   )
 }

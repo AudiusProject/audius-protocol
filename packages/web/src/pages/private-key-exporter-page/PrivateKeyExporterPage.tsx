@@ -14,13 +14,15 @@ import {
   IconVisibilityHidden,
   IconLifeRing,
   TextLink,
-  Button
+  Button,
+  PlainButton,
+  IconAudiusLogoHorizontal,
+  IconAudiusLogoHorizontalColor
 } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
@@ -28,6 +30,7 @@ import Switch from 'components/switch/Switch'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
 import { SETTINGS_PAGE, TRENDING_PAGE } from 'utils/route'
+import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './PrivateKeyExporterPage.module.css'
 
@@ -68,7 +71,7 @@ const messages = {
     'I understand the risks associated with extracting my private key.',
   iAccept: 'I accept full responsibility for its security and use.',
   iAcknowledge:
-    'I acknowledge Audius is not liable for any damages or losses that may arise from the use of this tool.',
+    'I acknowledge I am liable for any damages or losses that may arise from the use of this tool.',
   goBack: 'Go Back',
   proceed: 'I Understand The Risks'
 }
@@ -76,7 +79,9 @@ const messages = {
 const AUDIUS_SUPPORT_EMAIL = 'support@audius.co'
 
 const Header = () => {
+  const { color } = useTheme()
   const user = useSelector(getAccountUser)
+  const darkMode = isDarkMode()
   return (
     <Flex
       alignItems='center'
@@ -91,11 +96,14 @@ const Header = () => {
       }}
     >
       <Link to={TRENDING_PAGE}>
-        <img
-          alt='Audius Logo'
-          src={HorizontalLogo}
-          className={styles.horizontalLogo}
-        />
+        {darkMode ? (
+          <IconAudiusLogoHorizontal
+            className={styles.horizontalLogo}
+            fill={color.neutral.n800}
+          />
+        ) : (
+          <IconAudiusLogoHorizontalColor className={styles.horizontalLogo} />
+        )}
       </Link>
       <Flex direction='row-reverse'>
         <Avatar userId={user?.user_id} css={{ width: 52, height: 52 }} />
@@ -105,22 +113,14 @@ const Header = () => {
 }
 
 const BackToSettings = () => {
-  const { color } = useTheme()
   const dispatch = useDispatch()
   const handleClick = useCallback(() => {
     dispatch(pushRoute(SETTINGS_PAGE))
   }, [dispatch])
   return (
-    <Flex
-      alignItems='center'
-      gap='s'
-      pt='xl'
-      onClick={handleClick}
-      className={styles.backToSettings}
-    >
-      <IconCaretLeft size='m' fill={color.neutral.n800} />
-      <Text variant='title'>{messages.backToSettings}</Text>
-    </Flex>
+    <PlainButton iconLeft={IconCaretLeft} onClick={handleClick}>
+      {messages.backToSettings}
+    </PlainButton>
   )
 }
 
@@ -133,7 +133,7 @@ const ShowPrivateKey = () => {
       </Text>
       <Flex gap='s'>
         <IconTriangleExclamation fill={color.special.darkRed} />
-        <Text variant='body' color='danger' size='l' strength='strong'>
+        <Text variant='body' color='danger' size='l' css={{ fontWeight: 700 }}>
           {messages.yourOwnRisk}
         </Text>
       </Flex>
@@ -203,9 +203,10 @@ const UnderstandTheRisks = () => {
             textAlign='left'
             color='danger'
             css={{
+              marginLeft: 24,
               display: 'list-item',
               listStyleType: 'disc',
-              listStylePosition: 'inside'
+              listStylePosition: 'outside'
             }}
           >
             {bulletPoint}
@@ -237,9 +238,10 @@ const KeepItSecret = () => {
           variant='body'
           textAlign='left'
           css={{
+            marginLeft: 24,
             display: 'list-item',
             listStyleType: 'disc',
-            listStylePosition: 'inside'
+            listStylePosition: 'outside'
           }}
         >
           {bulletPoint}
@@ -307,9 +309,10 @@ const AgreeAndContinue = () => {
               variant='body'
               textAlign='left'
               css={{
+                marginLeft: 24,
                 display: 'list-item',
                 listStyleType: 'disc',
-                listStylePosition: 'inside'
+                listStylePosition: 'outside'
               }}
             >
               {bulletPoint}

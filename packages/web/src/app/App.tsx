@@ -58,11 +58,6 @@ export const AppInner = () => {
           merchantId={MERCHANT_ID || ''}
           coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
         />
-        <AppModal
-          key='PrivateKeyExporter'
-          name='PrivateKeyExporter'
-          modal={PrivateKeyExporterModal}
-        />
         <Switch>
           {SIGN_ON_ALIASES.map((a) => (
             <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
@@ -85,6 +80,11 @@ export const AppInner = () => {
           </Route>
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
+            <AppModal
+              key='PrivateKeyExporter'
+              name='PrivateKeyExporter'
+              modal={PrivateKeyExporterModal}
+            />
           </Route>
           <Route path='/'>
             <AppErrorBoundary>
