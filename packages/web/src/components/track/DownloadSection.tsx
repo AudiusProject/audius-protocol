@@ -31,12 +31,12 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
-import { audiusSdk } from 'services/audius-sdk'
 import {
   useAuthenticatedCallback,
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -263,6 +263,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
                 size={fileSizes[trackId]}
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -278,6 +279,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
             {/* Only display this row if original quality is not available,

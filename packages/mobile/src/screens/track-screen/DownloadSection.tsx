@@ -213,16 +213,15 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         {track?.is_downloadable ? (
           <DownloadRow
             trackId={trackId}
-            quality={quality}
             index={ORIGINAL_TRACK_INDEX}
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
+            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ) : null}
         {stemTracks?.map((s, i) => (
           <DownloadRow
             trackId={s.id}
-            parentTrackId={trackId}
             key={s.id}
             index={
               i +
@@ -230,9 +229,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
                 ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                 : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
             }
-            quality={quality}
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
+            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ))}
         {shouldDisplayDownloadAll ? (
