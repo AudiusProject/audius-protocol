@@ -274,6 +274,7 @@ export interface GetUSDCTransactionCountRequest {
     encodedDataMessage: string;
     encodedDataSignature: string;
     type?: GetUSDCTransactionCountTypeEnum;
+    includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
 }
 
@@ -286,6 +287,7 @@ export interface GetUSDCTransactionsRequest {
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
     sortDirection?: GetUSDCTransactionsSortDirectionEnum;
     type?: GetUSDCTransactionsTypeEnum;
+    includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionsMethodEnum;
 }
 
@@ -1541,6 +1543,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['type'] = params.type;
         }
 
+        if (params.includeSystemTransactions !== undefined) {
+            queryParameters['include_system_transactions'] = params.includeSystemTransactions;
+        }
+
         if (params.method !== undefined) {
             queryParameters['method'] = params.method;
         }
@@ -1610,6 +1616,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.type !== undefined) {
             queryParameters['type'] = params.type;
+        }
+
+        if (params.includeSystemTransactions !== undefined) {
+            queryParameters['include_system_transactions'] = params.includeSystemTransactions;
         }
 
         if (params.method !== undefined) {
