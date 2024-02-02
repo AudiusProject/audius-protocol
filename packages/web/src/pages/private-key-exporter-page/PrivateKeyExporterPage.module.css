@@ -1,0 +1,21 @@
+.horizontalLogo {
+  cursor: pointer;
+  max-width: 132px;
+}
+
+.copyIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.modal {
+  min-width: 726px;
+  max-width: 726px;
+}
+
+.modalCloseIcon {
+  color: var(--neutral-light-4);
+}
+
+.modalTitle {
+  font-weight: var(--font-heavy);
+}

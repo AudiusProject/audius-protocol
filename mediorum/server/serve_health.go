@@ -25,6 +25,7 @@ type healthCheckResponseData struct {
 	Version                 string                     `json:"version"`
 	Service                 string                     `json:"service"` // used by registerWithDelegate()
 	IsSeeding               bool                       `json:"isSeeding"`
+	IsAudiusdManaged        bool                       `json:"isAudiusdManaged"`
 	BuiltAt                 string                     `json:"builtAt"`
 	StartedAt               time.Time                  `json:"startedAt"`
 	SPID                    int                        `json:"spID"`
@@ -85,6 +86,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Version:                 ss.Config.VersionJson.Version,
 		Service:                 ss.Config.VersionJson.Service,
 		IsSeeding:               ss.isSeeding,
+		IsAudiusdManaged:        ss.isAudiusdManaged,
 		BuiltAt:                 vcsBuildTime,
 		StartedAt:               ss.StartedAt,
 		SPID:                    ss.Config.SPID,

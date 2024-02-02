@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
+  useFileSizes,
   useDownloadableContentAccess
 } from '@audius/common/hooks'
 import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
@@ -30,6 +31,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
+import { audiusSdk } from 'services/audius-sdk'
 import {
   useAuthenticatedCallback,
   useAuthenticatedClickCallback
@@ -83,6 +85,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const fileSizes = useFileSizes({ audiusSdk, trackIds: [trackId, ...stemTracks.map(s => s.id)] })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
@@ -248,7 +251,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                   />
                 </Flex>
                 <Flex gap='2xl' alignItems='center'>
-                  <Text>size</Text>
                   {shouldDisplayDownloadAll ? downloadAllButton() : null}
                 </Flex>
               </Flex>
@@ -259,6 +261,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[trackId]}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -267,6 +270,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[s.id]}
                 index={
                   i +
                   (track?.is_downloadable

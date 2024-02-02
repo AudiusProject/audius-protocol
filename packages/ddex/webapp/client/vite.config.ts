@@ -9,8 +9,7 @@ export default defineConfig({
   server: {
     proxy: isDevelopment
       ? {
-          '/api': 'http://localhost:9000', // Assuming port for ../server Express server is unchanged
-          '/trpc': 'http://localhost:9000'
+          '/api': 'http://localhost:9000' // Assuming port for ../server Express server is unchanged
         }
       : {}
   },

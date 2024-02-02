@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -11,6 +11,10 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
+import { usePrevious } from 'react-use'
+import type { AudiusSdk } from '@audius/sdk'
+import { encodeHashId } from '~/utils/hashIds'
+import { isEqual } from 'lodash'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -95,6 +99,37 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
     }))
     .filter((t) => t.downloadURL)
   return { stemTracks, track }
+}
+
+export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<AudiusSdk>, trackIds: ID[] }) => {
+  const previousTrackIds = usePrevious(trackIds)
+  const [sizes, setSizes] = useState<{[trackId: ID]: number}>({})
+  useEffect(() => {
+    if (!isEqual(previousTrackIds, trackIds)) {
+      const asyncFn = async () => {
+        const sdk = await audiusSdk()
+        const sizeResults = await Promise.all(trackIds.map(async trackId => {
+          if (sizes[trackId]) {
+            return ({ trackId, size: sizes[trackId] })
+          }
+          try {
+            const res = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
+            const size = res?.data?.size ?? null
+            return ({ trackId, size })
+          } catch (e) {
+            console.error(e)
+            return ({ trackId, size: null })
+          }
+        }))
+        setSizes(sizes => ({ ...sizes, ...sizeResults.reduce((acc, curr) => {
+          acc[curr.trackId] = curr.size
+          return acc
+        }, {} as { trackId: ID, size: number }) }) )
+      }
+      asyncFn()
+    }
+  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes])
+  return sizes
 }
 
 const useUploadingStems = ({ trackId }: { trackId: ID }) => {
