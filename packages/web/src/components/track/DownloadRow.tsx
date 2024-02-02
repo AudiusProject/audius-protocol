@@ -3,6 +3,7 @@ import { ID } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
+import { formatBytes } from '@audius/common/utils'
 
 import { Icon } from 'components/Icon'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -19,13 +20,15 @@ type DownloadRowProps = {
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   hideDownload?: boolean
   index: number
+  size?: number
 }
 
 export const DownloadRow = ({
   trackId,
   onDownload,
   hideDownload,
-  index
+  index,
+  size
 }: DownloadRowProps) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -70,7 +73,7 @@ export const DownloadRow = ({
       <Flex gap='2xl'>
         {hideDownload ? null : (
           <>
-            <Text>size</Text>
+            {size ? <Text>{formatBytes(size)}</Text> : null}
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}
