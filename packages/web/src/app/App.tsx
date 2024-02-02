@@ -7,8 +7,14 @@ import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
+import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
+import {
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  SIGN_IN_PAGE,
+  SIGN_ON_ALIASES,
+  SIGN_UP_PAGE
+} from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
@@ -21,6 +27,12 @@ const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
+const PrivateKeyExporterPage = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
+)
+const PrivateKeyExporterModal = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
+)
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
@@ -57,6 +69,14 @@ export const AppInner = () => {
           </Route>
           <Route path='/demo/trpc'>
             <DemoTrpcPage />
+          </Route>
+          <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
+            <PrivateKeyExporterPage />
+            <AppModal
+              key='PrivateKeyExporter'
+              name='PrivateKeyExporter'
+              modal={PrivateKeyExporterModal}
+            />
           </Route>
           <Route path='/'>
             <AppErrorBoundary>
