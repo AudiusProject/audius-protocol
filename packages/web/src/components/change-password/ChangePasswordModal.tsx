@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { useChangePasswordFormConfiguration } from '@audius/common/hooks'
+import {
+  ChangePasswordPage,
+  useChangePasswordFormConfiguration
+} from '@audius/common/hooks'
 import { Button, Flex, IconArrowRight, IconLock, Text } from '@audius/harmony'
 import {
   Modal,
@@ -32,13 +35,6 @@ const messages = {
   done: 'Done'
 }
 
-export enum ChangePasswordPage {
-  ConfirmCredentials = 0,
-  VerifyEmail = 1,
-  NewPassword = 2,
-  Success = 3
-}
-
 export const ConfirmCredentialsPage = () => {
   return (
     <Flex direction='column' gap='xl'>
@@ -67,6 +63,13 @@ export const SuccessPage = () => {
   return <Text variant={'body'}>{messages.success}</Text>
 }
 
+const pageIndices = {
+  [ChangePasswordPage.ConfirmCredentials]: 0,
+  [ChangePasswordPage.VerifyEmail]: 1,
+  [ChangePasswordPage.NewPassword]: 2,
+  [ChangePasswordPage.Success]: 3
+}
+
 export const ChangePasswordModalForm = ({
   page,
   onClose
@@ -77,7 +80,7 @@ export const ChangePasswordModalForm = ({
   const { isSubmitting, isValid } = useFormikContext()
   return (
     <ModalForm>
-      <ModalContentPages currentPage={page}>
+      <ModalContentPages currentPage={pageIndices[page]}>
         <ConfirmCredentialsPage />
         <VerifyEmailPage />
         <NewPasswordPage />
