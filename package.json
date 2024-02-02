@@ -48,8 +48,6 @@
     "embed:prod": "npm run start:prod -w embed",
     "embed:stage": "npm run start:stage -w embed",
     "embed:dev": "npm run start:dev -w embed",
-    "COMMON=====================================": "",
-    "common": "turbo run start --filter=@audius/common",
     "STEMS======================================": "",
     "stems": "turbo run start --filter=@audius/stems",
     "HARMONY====================================": "",
