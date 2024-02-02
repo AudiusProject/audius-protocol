@@ -12,7 +12,6 @@ import {
   IconTriangleExclamation
 } from '@audius/harmony'
 import {
-  Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -22,9 +21,11 @@ import {
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
+import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
 import styles from './PrivateKeyExporterPage.module.css'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -160,6 +161,7 @@ const AdditionalResources = () => {
 
 export const PrivateKeyExporterModal = () => {
   const record = useRecord()
+  const isMobile = useIsMobile()
   const user = useSelector(getAccountUser) ?? undefined
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
@@ -174,12 +176,12 @@ export const PrivateKeyExporterModal = () => {
     }
   }, [isVisible, user, record])
   return (
-    <Modal
+    <ModalDrawer
       bodyClassName={styles.modal}
       onClose={handleClose}
       isOpen={isVisible}
     >
-      <ModalHeader
+      {!isMobile ? <ModalHeader
         onClose={handleClose}
         dismissButtonClassName={styles.modalCloseIcon}
       >
@@ -187,7 +189,7 @@ export const PrivateKeyExporterModal = () => {
           title={messages.privateKey}
           titleClassName={styles.modalTitle}
         />
-      </ModalHeader>
+      </ModalHeader>: null }
       <ModalContent>
         <Flex direction='column' gap='xl'>
           <KeepThisInformationSecure />
@@ -196,7 +198,7 @@ export const PrivateKeyExporterModal = () => {
           <AdditionalResources />
         </Flex>
       </ModalContent>
-      <ModalFooter>
+      {!isMobile ? <ModalFooter>
         <Button
           variant='secondary'
           onClick={handleClose}
@@ -205,8 +207,8 @@ export const PrivateKeyExporterModal = () => {
         >
           {messages.close}
         </Button>
-      </ModalFooter>
-    </Modal>
+      </ModalFooter> : null }
+    </ModalDrawer>
   )
 }
 

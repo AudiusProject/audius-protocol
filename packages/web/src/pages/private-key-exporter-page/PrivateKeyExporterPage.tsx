@@ -320,7 +320,7 @@ const AgreeAndContinue = () => {
           ))}
         </Flex>
       </Flex>
-      <Flex gap='xl' mt='s'>
+      <Flex gap='xl' mt='s' wrap='wrap'>
         <Button variant='secondary' onClick={handleCancel}>
           {messages.goBack}
         </Button>
@@ -359,6 +359,7 @@ export const PrivateKeyExporterPage = () => {
         mt='3xl'
         pt='xl'
         ph='4xl'
+        w='100%'
         backgroundColor='white'
         border='strong'
         borderRadius='m'
