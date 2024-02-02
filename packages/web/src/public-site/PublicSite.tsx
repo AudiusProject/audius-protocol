@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
 import { Router, Route } from 'react-router-dom'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
 import {
@@ -15,7 +16,6 @@ import {
 import { AppContextProvider } from '../app/AppContextProvider'
 
 import LandingPage from './pages/landing-page/LandingPage'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
