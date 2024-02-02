@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useScreenOptions } from 'app/app/navigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
 import { ConfirmEmailScreen } from './screens/ConfirmEmailScreen'
@@ -43,7 +44,11 @@ export const SignOnStack = (props: SignOnStackProps) => {
           component={CreateLoginDetailsScreen}
         />
         <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-        <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
+        <Stack.Screen
+          name='SelectGenre'
+          component={SelectGenresScreen}
+          options={{ headerLeft: () => null, gestureEnabled: false }}
+        />
         <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
         <Stack.Screen
           name='AccountLoading'
