@@ -2,12 +2,13 @@ import { useCallback, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import {
-  PurchaseableTrackMetadata,
   useFeatureFlag,
   usePurchaseContentFormConfiguration,
   usePayExtraPresets,
   isTrackStreamPurchaseable,
-  isTrackDownloadPurchaseable
+  isTrackDownloadPurchaseable,
+  PurchaseableTrackDownloadMetadata,
+  PurchaseableTrackStreamMetadata
 } from '@audius/common/hooks'
 import {
   PurchaseVendor,
@@ -82,7 +83,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const dispatch = useDispatch()
@@ -197,15 +198,20 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidStreamGatedTrack = track && isTrackStreamPurchaseable(track)
-  const isValidDownloadGatedTrack = track && isTrackDownloadPurchaseable(track)
-  const isValidTrack = isValidDownloadGatedTrack || isValidStreamGatedTrack
+  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
+  const isValidDownloadGatedTrack =
+    !!track && isTrackDownloadPurchaseable(track)
 
   const purchaseConditions = isValidStreamGatedTrack
     ? track.stream_conditions
     : isValidDownloadGatedTrack
     ? track.download_conditions
-    : ({} as USDCPurchaseConditions)
+    : null
+
+  if (!track || purchaseConditions === null) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return
+  }
 
   const { price } = purchaseConditions.usdc_purchase
 
@@ -237,10 +243,6 @@ export const PremiumContentPurchaseModal = () => {
     dispatch(cleanupUSDCRecovery())
   }, [onClosed, dispatch])
 
-  if (track && !isValidTrack) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
-  }
-
   return (
     <ModalDrawer
       isOpen={isOpen}
@@ -253,7 +255,8 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
-      {isValidTrack && isCoinflowEnabledLoaded ? (
+      {isCoinflowEnabledLoaded &&
+      (isValidStreamGatedTrack || isValidDownloadGatedTrack) ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

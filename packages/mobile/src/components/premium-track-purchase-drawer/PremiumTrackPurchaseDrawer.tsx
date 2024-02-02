@@ -13,7 +13,11 @@ import {
   isTrackStreamPurchaseable,
   isTrackDownloadPurchaseable
 } from '@audius/common/hooks'
-import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
+import type {
+  PurchaseableTrackDownloadMetadata,
+  PurchaseableTrackMetadata,
+  PurchaseableTrackStreamMetadata
+} from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
@@ -233,7 +237,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  track: PurchaseableTrackDownloadMetadata | PurchaseableTrackStreamMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
@@ -434,15 +438,21 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidStreamGatedTrack = track && isTrackStreamPurchaseable(track)
-  const isValidDownloadGatedTrack = track && isTrackDownloadPurchaseable(track)
-  const isValidTrack = isValidDownloadGatedTrack || isValidStreamGatedTrack
+  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
+  const isValidDownloadGatedTrack =
+    !!track && isTrackDownloadPurchaseable(track)
 
   const purchaseConditions = isValidStreamGatedTrack
     ? track.stream_conditions
     : isValidDownloadGatedTrack
     ? track.download_conditions
-    : ({} as USDCPurchaseConditions)
+    : null
+
+  if (!track || !purchaseConditions || !isUSDCEnabled) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return null
+  }
+
   const { price } = purchaseConditions.usdc_purchase
 
   const { initialValues, onSubmit, validationSchema } =
@@ -452,11 +462,6 @@ export const PremiumTrackPurchaseDrawer = () => {
     onClosed()
     dispatch(purchaseContentActions.cleanup())
   }, [onClosed, dispatch])
-
-  if (!track || !isValidTrack || !isUSDCEnabled) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
-    return null
-  }
 
   return (
     <Drawer
@@ -472,7 +477,7 @@ export const PremiumTrackPurchaseDrawer = () => {
         <View style={styles.spinnerContainer}>
           <LoadingSpinner />
         </View>
-      ) : (
+      ) : isValidStreamGatedTrack || isValidDownloadGatedTrack ? (
         <View style={styles.formContainer}>
           <Formik
             initialValues={initialValues}
@@ -486,7 +491,7 @@ export const PremiumTrackPurchaseDrawer = () => {
             />
           </Formik>
         </View>
-      )}
+      ) : null}
     </Drawer>
   )
 }
