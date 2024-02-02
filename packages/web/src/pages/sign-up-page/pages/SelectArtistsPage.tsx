@@ -94,9 +94,16 @@ export const SelectArtistsPage = () => {
     })
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
+
   const isLoading =
     (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
+
+  // Note: this doesn't catch when running `web:prod`
+  const devEnvironment = process.env.NODE_ENV
+  // This a workaround flag for local envs that don't have any artists and get stuck at this screen otherwise
+  const localArtistsWorkaround =
+    artists?.length === 0 && devEnvironment === 'development'
 
   const ArtistsList = isMobile ? Flex : Paper
 
@@ -110,14 +117,17 @@ export const SelectArtistsPage = () => {
       transform: 'translateX(0%)'
     }
   })
+  const formikSchema = toFormikValidationSchema(selectArtistsSchema)
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
+      // If we hit our local workaround, we just remove all validation
+      validationSchema={!localArtistsWorkaround ? formikSchema : undefined}
+      validateOnMount
     >
-      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
+      {({ values, isValid, isSubmitting, isValidating }) => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
@@ -222,7 +232,7 @@ export const SelectArtistsPage = () => {
               centered
               sticky
               buttonProps={{
-                disabled: !dirty || !isValid || isSubmitting,
+                disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
               postfix={
