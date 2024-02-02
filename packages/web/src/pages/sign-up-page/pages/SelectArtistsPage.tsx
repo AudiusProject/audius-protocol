@@ -112,8 +112,8 @@ export const SelectArtistsPage = () => {
 
   // Note: this doesn't catch when running `web:prod`
   const isDevEnvironment = env.ENVIRONMENT === 'development'
-  // This a workaround flag for local envs that don't have any artists and get stuck at this screen otherwise
-  const localArtistsWorkaround = artists?.length === 0 && isDevEnvironment
+  // This a workaround flag for local envs that don't have any artists and get stuck at this screen
+  const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
 
   const ArtistsList = isMobile ? Flex : Paper
 
@@ -134,7 +134,7 @@ export const SelectArtistsPage = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       // If using no artists + local dev workaround we just remove all validation
-      validationSchema={!localArtistsWorkaround ? formikSchema : undefined}
+      validationSchema={!noArtistsSkipValidation ? formikSchema : undefined}
       validateOnMount
     >
       {({ values, isValid, isSubmitting, isValidating, setErrors }) => {
@@ -147,7 +147,9 @@ export const SelectArtistsPage = () => {
                 isMobile ? undefined : selectArtistsPageMessages.backToGenres
               }
             />
-            {isDevEnvironment && !isValid ? <DevModeClearErrors /> : undefined}
+            {noArtistsSkipValidation && !isValid ? (
+              <DevModeClearErrors />
+            ) : undefined}
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
