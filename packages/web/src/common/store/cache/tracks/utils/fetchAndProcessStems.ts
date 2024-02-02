@@ -46,7 +46,8 @@ export function* fetchAndProcessStems(trackId: ID) {
   // Create the update
   const stemsUpdate: Stem[] = stems.map((s) => ({
     track_id: s.track_id,
-    category: StemCategory[s.stem_of.category]
+    category: StemCategory[s.stem_of.category],
+    orig_filename: s.orig_filename ?? ''
   }))
 
   yield put(
