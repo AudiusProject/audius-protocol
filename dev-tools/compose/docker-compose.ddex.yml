@@ -10,6 +10,9 @@ services:
         app_name: ddex-web
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      - DDEX_PORT=9000
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     ports:
       - "9000:9000"
     networks:
@@ -92,7 +95,7 @@ services:
     restart: always
     volumes:
       - ddex-mongo-db:/data/db
-      - ${PROJECT_ROOT}/packages/ddex/ingester/mongo-keyfile:/etc/mongo-keyfile
+      - ${PROJECT_ROOT}/packages/ddex/mongo-keyfile:/etc/mongo-keyfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo

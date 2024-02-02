@@ -8,14 +8,13 @@ Setup:
 2. (only required to upload to S3 from the UI) Follow the instructions below to create a bucket in S3 and add the credentials to your .env file
 
 Run the server:
-1. Make sure you can connect to mongo at `mongodb://mongo:mongo@localhost:27017/ddex` by doing: `docker run --name ddex-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongo -e MONGO_INITDB_ROOT_PASSWORD=mongo -d mongo`
+1. Make sure you can connect to mongo at `mongodb://mongo:mongo@localhost:27017/ddex`. See `packages/ddex/README.md` on how to spin up `ddex-mongo` and the other ddex containers.
 2. At the monorepo root: `npm i`
 3. At packages/ddex/webapp/server: `npm run dev:[stage|prod]`  
 
 Run the client:
 If you want to run the frontend locally, you'll need to:
 1. At packages/ddex/webapp/client: `npm run start:[stage|prod]`
-
 
 Notes:
 * When running on stage or prod, the backend serves the frontend as static assets at the root path
