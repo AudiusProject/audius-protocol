@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useScreenOptions } from 'app/app/navigation'
-import { useNavigation } from 'app/hooks/useNavigation'
 
 import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
 import { ConfirmEmailScreen } from './screens/ConfirmEmailScreen'
