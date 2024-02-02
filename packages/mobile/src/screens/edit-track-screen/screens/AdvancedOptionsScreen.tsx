@@ -1,7 +1,7 @@
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
-import IconIndent from 'app/assets/images/iconIndent.svg'
+import { IconIndent } from '@audius/harmony-native'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import { FormScreen } from '../components'

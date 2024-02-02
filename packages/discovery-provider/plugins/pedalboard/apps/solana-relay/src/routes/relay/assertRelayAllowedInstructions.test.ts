@@ -37,6 +37,9 @@ const REWARD_MANAGER_ACCOUNT = new PublicKey(
 const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
+const MEMO_V2_PROGRAM_ID = new PublicKey(
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+)
 
 const usdcMintKey = new PublicKey(config.usdcMintAddress)
 const audioMintKey = new PublicKey(config.waudioMintAddress)
@@ -975,6 +978,7 @@ describe('Solana Relay', function () {
     it('allows memo and SECP instructions', async function () {
       await assertRelayAllowedInstructions([
         new TransactionInstruction({ programId: MEMO_PROGRAM_ID, keys: [] }),
+        new TransactionInstruction({ programId: MEMO_V2_PROGRAM_ID, keys: [] }),
         Secp256k1Program.createInstructionWithEthAddress({
           // Dummy eth address to make the encoder happy
           ethAddress: '0xe42b199d864489387bf64262874fc6472bcbc151',

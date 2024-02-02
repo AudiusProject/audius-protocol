@@ -1,4 +1,6 @@
-import { Env, ID, encodeUrlName, getHash } from '@audius/common'
+import { ID } from '@audius/common/models'
+import { Env } from '@audius/common/services'
+import { encodeUrlName, getHash } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
@@ -92,6 +94,7 @@ export const PAYMENTS_PAGE = '/payments'
 export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
+export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -206,6 +209,7 @@ export const authenticatedRoutes = [
   HISTORY_PAGE,
   UPLOAD_PAGE,
   SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   DEACTIVATE_PAGE,
   CHATS_PAGE,
   CHAT_PAGE,
@@ -256,6 +260,7 @@ export const orderedRoutes = [
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
@@ -307,6 +312,7 @@ export const staticRoutes = new Set([
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,

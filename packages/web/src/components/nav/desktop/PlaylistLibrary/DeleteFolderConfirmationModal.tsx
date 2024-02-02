@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Name,
   accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
   playlistLibrarySelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { SetRequired } from 'type-fest'
 

@@ -6,14 +6,14 @@ import {
   useLayoutEffect
 } from 'react'
 
+import { statusIsNotFinalized } from '@audius/common/models'
 import {
-  TransactionDetails,
-  TransactionType,
-  audioTransactionsPageActions,
   audioTransactionsPageSelectors,
+  audioTransactionsPageActions,
   transactionDetailsActions,
-  statusIsNotFinalized
-} from '@audius/common'
+  TransactionType,
+  TransactionDetails
+} from '@audius/common/store'
 import { full } from '@audius/sdk'
 import { IconCaretRight } from '@audius/stems'
 import { useDispatch } from 'react-redux'

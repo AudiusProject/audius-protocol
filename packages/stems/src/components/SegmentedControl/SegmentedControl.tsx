@@ -97,6 +97,7 @@ export const SegmentedControl = <T extends string>(
                 [styles.isMobile]: props.isMobile
               })}
             >
+              {option.icon}
               <input
                 type='radio'
                 checked={option.key === selectedOption}

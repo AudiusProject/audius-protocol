@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import { SmartCollectionVariant } from '@audius/common'
+import { SmartCollectionVariant } from '@audius/common/models'
 import type { SvgProps } from 'react-native-svg'
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
@@ -11,12 +11,14 @@ import {
   EXPLORE_REMIXABLES_PAGE
 } from 'utils/route'
 
-import IconExploreFeelingLucky from 'app/assets/images/iconExploreFeelingLucky.svg'
-import IconExploreMostLoved from 'app/assets/images/iconExploreMostLoved.svg'
-import IconExploreNewReleases from 'app/assets/images/iconExploreNewReleases.svg'
-import IconExploreRemixables from 'app/assets/images/iconExploreRemixables.svg'
+import {
+  IconQuestionCircle,
+  IconBoxHeart,
+  IconStars,
+  IconRemix,
+  IconRadar
+} from '@audius/harmony-native'
 import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
-import IconExploreUnderRadar from 'app/assets/images/iconExploreUnderRadar.svg'
 
 export type SmartCollectionScreen =
   | 'UnderTheRadar'
@@ -66,7 +68,7 @@ export const BEST_NEW_RELEASES: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(160,74,141)',
   shadowOpacity: 0.25,
-  icon: IconExploreNewReleases,
+  icon: IconStars,
   link: EXPLORE_BEST_NEW_RELEASES_PAGE
 }
 
@@ -79,7 +81,7 @@ export const UNDER_THE_RADAR: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(255,47,39)',
   shadowOpacity: 0.25,
-  icon: IconExploreUnderRadar,
+  icon: IconRadar,
   link: EXPLORE_UNDER_THE_RADAR_PAGE
 }
 
@@ -92,7 +94,7 @@ export const MOST_LOVED: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(3,96,255)',
   shadowOpacity: 0.25,
-  icon: IconExploreMostLoved,
+  icon: IconBoxHeart,
   link: EXPLORE_MOST_LOVED_PAGE
 }
 
@@ -108,7 +110,7 @@ export const REMIXABLES: SmartCollection = {
   gradientAngle: 137.65,
   shadowColor: 'rgb(87,170,255)',
   shadowOpacity: 0.25,
-  icon: IconExploreRemixables,
+  icon: IconRemix,
   link: EXPLORE_REMIXABLES_PAGE
 }
 
@@ -121,6 +123,6 @@ export const FEELING_LUCKY: SmartCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(95,249,103)',
   shadowOpacity: 0.25,
-  icon: IconExploreFeelingLucky,
+  icon: IconQuestionCircle,
   link: EXPLORE_FEELING_LUCKY_PAGE
 }

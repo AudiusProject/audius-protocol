@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
+import { StringUSDC } from '@audius/common/models'
 import {
-  Entity,
-  formatUSDCWeiToUSDString,
   notificationsSelectors,
-  Nullable,
-  StringUSDC,
-  stringUSDCToBN,
+  Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
+import {
+  stringUSDCToBN,
+  formatUSDCWeiToUSDString,
+  Nullable
+} from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

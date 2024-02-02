@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
@@ -30,10 +30,9 @@ import RadialGradient from 'react-native-radial-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
 
+import { IconArrowRight, IconMultiselectRemove } from '@audius/harmony-native'
 import backgImage from 'app/assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color-Deprecated.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import signupCTA from 'app/assets/images/signUpCTA.png'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -225,8 +224,6 @@ const styles = StyleSheet.create({
   },
   errorIcon: {
     flex: 1,
-    width: 12,
-    height: 12,
     marginRight: 10,
     alignSelf: 'center'
   },
@@ -457,7 +454,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -466,7 +463,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -476,7 +473,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -486,14 +483,17 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <ValidationIconX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
     }
     return (
       <View style={styles.errorContainer}>
-        <ValidationIconX style={[styles.errorIcon, { opacity: 0 }]} />
+        <IconMultiselectRemove
+          style={[styles.errorIcon, { opacity: 0 }]}
+          size='m'
+        />
         <Text />
       </View>
     )
@@ -687,7 +687,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
             isWorking ? (
               <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
             ) : (
-              <IconArrow style={styles.arrowIcon} fill='white' />
+              <IconArrowRight style={styles.arrowIcon} fill='white' />
             )
           }
           ignoreDisabledStyle

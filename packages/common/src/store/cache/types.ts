@@ -1,5 +1,5 @@
-import { ID, UID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
+import { ID, UID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
 
 export type CacheType = 'normal' | 'fast' | 'safe-fast'
 
@@ -21,9 +21,14 @@ export type Metadata = {
 
 export type SubscriberInfo = {
   uid: UID
-  id?: string | number
+  id: string | number
 }
 
 export type SubscriptionInfo = SubscriberInfo & {
   kind: Kind
+}
+
+export type UnsubscribeInfo = {
+  uid: UID
+  id?: string | number
 }

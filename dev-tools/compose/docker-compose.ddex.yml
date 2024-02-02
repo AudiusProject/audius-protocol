@@ -10,6 +10,11 @@ services:
         app_name: ddex-web
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      - DDEX_PORT=9000
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    ports:
+      - "9000:9000"
     networks:
       - ddex-network
     profiles:
@@ -63,13 +68,34 @@ services:
     profiles:
       - ddex
 
+  ddex-publisher:
+    container_name: ddex-publisher
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/publisher/Dockerfile
+      args:
+        app_name: ddex-publisher
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    ports:
+      - "9001:9001"
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
+
   ddex-mongo:
     container_name: ddex-mongo
     image: mongo:latest
     restart: always
     volumes:
       - ddex-mongo-db:/data/db
-      - ${PROJECT_ROOT}/packages/ddex/ingester/mongo-keyfile:/etc/mongo-keyfile
+      - ${PROJECT_ROOT}/packages/ddex/mongo-keyfile:/etc/mongo-keyfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo

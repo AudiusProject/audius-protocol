@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import {
-  FeatureFlags,
-  Name,
-  isContentUSDCPurchaseGated,
-  useFeatureFlag
-} from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconStars from 'app/assets/images/iconStars.svg'
+import { IconCart, IconStars } from '@audius/harmony-native'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'

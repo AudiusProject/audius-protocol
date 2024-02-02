@@ -1,20 +1,17 @@
 import { useCallback } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
+import type { User } from '@audius/common/models'
 import type {
-  User,
-  Nullable,
   EntityType,
   MilestoneNotification as MilestoneNotificationType
-} from '@audius/common'
-import {
-  notificationsSelectors,
-  Achievement,
-  useProxySelector
-} from '@audius/common'
+} from '@audius/common/store'
+import { notificationsSelectors, Achievement } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrophy } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'

@@ -1,4 +1,4 @@
-import { SearchKind } from '@audius/common'
+import { SearchKind } from '@audius/common/store'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 

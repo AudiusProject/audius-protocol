@@ -1,12 +1,6 @@
-import {
-  ID,
-  LineupState,
-  Track,
-  User,
-  trackPageLineupActions,
-  QueueItem,
-  useGatedContentAccess
-} from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { ID, LineupState, Track, User } from '@audius/common/models'
+import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import cn from 'classnames'
 
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -61,6 +55,7 @@ export type OwnProps = {
   onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
+  makePublic: (trackId: ID) => void
   onDownloadTrack: ({
     trackId,
     category,
@@ -70,9 +65,8 @@ export type OwnProps = {
     category?: string
     parentTrackId?: ID
   }) => void
-  makePublic: (trackId: ID) => void
   // Tracks Lineup Props
-  tracks: LineupState<{ id: ID }>
+  tracks: LineupState<Track>
   currentQueueItem: QueueItem
   isPlaying: boolean
   isBuffering: boolean

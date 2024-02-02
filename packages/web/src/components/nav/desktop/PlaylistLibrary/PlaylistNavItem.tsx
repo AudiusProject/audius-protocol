@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'

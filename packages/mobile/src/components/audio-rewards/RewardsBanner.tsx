@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import { audioRewardsPageActions, modalsActions } from '@audius/common'
+import { audioRewardsPageActions, modalsActions } from '@audius/common/store'
 import { Text, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'
 
-import IconCrown from 'app/assets/images/iconCrown.svg'
+import { IconCrown } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

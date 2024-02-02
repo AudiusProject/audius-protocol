@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { MobileOS, OS } from '@audius/common'
+import { OS, MobileOS } from '@audius/common/models'
 import { IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import queryString from 'query-string'

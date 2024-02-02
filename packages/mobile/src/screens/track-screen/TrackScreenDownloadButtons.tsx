@@ -1,20 +1,19 @@
 import { useCallback } from 'react'
 
-import {
-  Name,
-  ButtonState,
-  useDownloadTrackButtons,
-  tracksSocialActions
-} from '@audius/common'
-import type { ID, ButtonType as DownloadButtonType } from '@audius/common'
+import type { ButtonType as DownloadButtonType } from '@audius/common/hooks'
+import { ButtonState, useDownloadTrackButtons } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import { tracksSocialActions } from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconDownload from 'app/assets/images/iconDownload.svg'
+import { IconCloudDownload } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 const { downloadTrack } = tracksSocialActions
 
@@ -74,7 +73,7 @@ const DownloadButton = ({
   return (
     <Button
       variant='common'
-      icon={isProcessing ? LoadingSpinner : IconDownload}
+      icon={isProcessing ? LoadingSpinner : IconCloudDownload}
       iconPosition='left'
       title={messages.addDownloadPrefix(label)}
       styles={{
@@ -114,7 +113,10 @@ export const TrackScreenDownloadButtons = ({
       parentTrackId?: ID
       original?: boolean
     }) => {
-      dispatch(downloadTrack(trackId, category))
+      dispatch(
+        setVisibility({ drawer: 'DownloadTrackProgress', visible: true })
+      )
+      dispatch(downloadTrack({ trackIds: [trackId], stemName: category }))
       track(
         make({
           eventName: Name.TRACK_PAGE_DOWNLOAD,

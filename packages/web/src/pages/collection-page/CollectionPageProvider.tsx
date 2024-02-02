@@ -1,48 +1,48 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
-  ID,
-  UID,
-  PlayableType,
+  Name,
+  ShareSource,
   RepostSource,
   FavoriteSource,
-  Name,
-  PlaybackSource,
-  ShareSource,
   FollowSource,
-  Collection,
-  SmartCollection,
+  PlaybackSource,
   FavoriteType,
+  PlayableType,
   Kind,
   Status,
-  Nullable,
-  Uid,
-  formatUrlName,
+  Collection,
+  SmartCollection,
+  ID,
+  UID
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
-  collectionPageActions as collectionActions,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
-  CollectionPageTrackRecord,
-  CollectionTrack,
-  CollectionsPageType,
-  OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
+  collectionPageActions as collectionActions,
+  queueSelectors,
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  editPlaylistModalActions,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
   playerSelectors,
-  queueSelectors,
   playlistUpdatesActions,
   playlistUpdatesSelectors,
-  editPlaylistModalActions
-} from '@audius/common'
+  CollectionTrack,
+  CollectionsPageType,
+  CollectionPageTrackRecord
+} from '@audius/common/store'
+import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
@@ -243,7 +243,7 @@ class CollectionPage extends Component<
     // Check if the collection has moved in the cache and redirect as needed.
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
-      const collectionId = Uid.fromString(metadata._moved).id
+      const collectionId = Uid.fromString(metadata._moved).id as number
       fetchCollectionSucceeded(
         collectionId,
         metadata._moved,

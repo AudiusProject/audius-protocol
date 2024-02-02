@@ -4,7 +4,7 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 
-import { ID, Status } from 'models'
+import { ID, Status } from '~/models'
 
 import { RelatedArtists } from './types'
 

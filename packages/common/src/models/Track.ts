@@ -1,4 +1,4 @@
-import { License } from 'utils/creativeCommons'
+import { License } from '~/utils/creativeCommons'
 
 import { Nullable } from '../utils/typeUtils'
 

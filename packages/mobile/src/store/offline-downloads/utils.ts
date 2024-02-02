@@ -1,8 +1,8 @@
 import type {
-  ID,
   OfflineCollectionMetadata,
+  ID,
   OfflineTrackMetadata
-} from '@audius/common'
+} from '@audius/common/models'
 
 import type { CollectionId } from './slice'
 

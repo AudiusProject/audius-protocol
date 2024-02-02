@@ -1,8 +1,17 @@
-import { ChallengeName, challengeRewardsConfig } from '@audius/common'
-import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
+import type {
+  ChallengeRewardID,
+  OptimisticUserChallenge
+} from '@audius/common/models'
+import { ChallengeName } from '@audius/common/models'
+import { challengeRewardsConfig } from '@audius/common/utils'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
+import {
+  IconArrowRight,
+  IconCheck,
+  IconCloudUpload
+} from '@audius/harmony-native'
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
 import Cart from 'app/assets/images/emojis/cart.png'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
@@ -17,9 +26,6 @@ import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCheck from 'app/assets/images/iconCheck.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
 
 export const messages = {
   sendFirstTipTitle: 'Send Your First Tip',
@@ -80,7 +86,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'trending'
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     },
@@ -102,7 +108,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     'track-upload': {
       icon: MultipleMusicalNotes,
       buttonInfo: {
-        renderIcon: (color) => <IconUpload fill={color} />,
+        renderIcon: (color) => <IconCloudUpload fill={color} />,
         iconPosition: 'right'
       }
     },
@@ -182,7 +188,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
           screen: 'explore',
           params: { screen: 'PremiumTracks' }
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     },
@@ -192,7 +198,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'Upload'
         },
-        renderIcon: (color) => <IconArrow fill={color} />,
+        renderIcon: (color) => <IconArrowRight fill={color} />,
         iconPosition: 'right'
       }
     }

@@ -21,7 +21,7 @@ import {
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
-import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
+import { IconCloseAlt } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'

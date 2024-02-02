@@ -1,16 +1,18 @@
 import { useMemo } from 'react'
 
+import type { AccessConditions } from '@audius/common/models'
 import {
+  GatedContentType,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated,
-  type AccessConditions,
-  GatedContentType
-} from '@audius/common'
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import { View } from 'react-native'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
+import {
+  IconCart,
+  IconCollectible,
+  IconSpecialAccess
+} from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered } from 'app/styles'

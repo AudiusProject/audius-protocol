@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View } from 'react-native'
 

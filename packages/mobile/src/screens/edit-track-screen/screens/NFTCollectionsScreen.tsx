@@ -1,16 +1,14 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Nullable, AccessConditions } from '@audius/common'
-import {
-  Chain,
-  collectiblesSelectors,
-  isContentCollectibleGated
-} from '@audius/common'
+import { Chain, isContentCollectibleGated } from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { collectiblesSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconImage from 'app/assets/images/iconImage.svg'
+import { IconImage } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'

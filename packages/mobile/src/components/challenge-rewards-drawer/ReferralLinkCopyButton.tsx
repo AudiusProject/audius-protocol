@@ -4,7 +4,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, View, TouchableHighlight } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
+import { IconCopy } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useToast } from 'app/hooks/useToast'
@@ -77,7 +77,12 @@ export const ReferralLinkCopyButton = ({
           locations={[0.0204, 1]}
         >
           <View style={styles.copyTextContainer}>
-            <IconCopy style={styles.iconCopy} width={24} height={24} />
+            <IconCopy
+              style={styles.iconCopy}
+              width={24}
+              height={24}
+              color='staticWhite'
+            />
             <Text weight={'bold'} style={styles.copyText}>
               {messages.copyPrompt}
             </Text>

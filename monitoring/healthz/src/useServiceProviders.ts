@@ -53,15 +53,13 @@ export function apiGatewayFetcher(
 
 export function useServiceProviders(
   env: string,
-  type: 'content' | 'discovery'
+  type: 'content' | 'discovery',
+  excludeUnregistered = false
 ) {
-  const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
+  const { data: sps, error } = useSWR<SP[]>([env, type, excludeUnregistered], async () => {
     const sps = await apiGatewayFetcher(env, type)
     hostSort(sps)
-    if (type === 'discovery') {
-      sps.push(...unregisteredNodes(env === 'prod'))
-    }
-    return sps
+    return excludeUnregistered || type === 'content' ? sps : [...sps, ...unregisteredNodes(env === 'prod')]
   })
   return { data: sps, error }
 }

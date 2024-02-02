@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useContext } from 'react'
 
-import { playerSelectors, useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
+import { playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 

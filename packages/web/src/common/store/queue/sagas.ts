@@ -1,32 +1,33 @@
 import {
   Kind,
   ID,
-  UID,
   Name,
   PlaybackSource,
   LineupState,
   User,
-  Nullable,
-  makeUid,
-  Uid,
+  Collectible,
+  Track,
+  Collection,
+  UserTrackMetadata,
+  LineupEntry
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   cacheActions,
   cacheSelectors,
+  cacheUsersSelectors,
+  lineupRegistry,
   queueActions,
+  queueSelectors,
   RepeatMode,
   QueueSource,
-  waitForAccount,
-  playerActions,
-  playerSelectors,
-  queueSelectors,
   getContext,
-  lineupRegistry,
-  Collectible,
-  UserTrackMetadata
-} from '@audius/common'
+  playerActions,
+  playerSelectors
+} from '@audius/common/store'
+import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -64,7 +65,10 @@ const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
+export function* getToQueue(
+  prefix: string,
+  entry: LineupEntry<Track | Collection>
+) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
     if (!collection) return
@@ -235,17 +239,14 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
-        // @ts-ignore todo
-        const lineup: LineupState<{ id: number }> = yield* select(
+        const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
           yield* put(clear({}))
           const toQueue = yield* all(
-            lineup.entries.map((e: { kind: Kind; uid: UID }) =>
-              call(getToQueue, lineup.prefix, e)
-            )
+            lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
           )
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))

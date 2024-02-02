@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Kind,
-  SquareSizes,
-  getTierForUser,
-  imageProfilePicEmpty
-} from '@audius/common'
+import { imageProfilePicEmpty } from '@audius/common/assets'
+import { SquareSizes, Kind } from '@audius/common/models'
+import { getTierForUser } from '@audius/common/store'
 import { SelectProps } from 'antd'
 import { useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'

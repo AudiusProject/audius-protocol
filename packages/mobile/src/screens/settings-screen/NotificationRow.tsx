@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import {
-  settingsPageActions,
   settingsPageSelectors,
+  settingsPageActions,
   PushNotificationSetting
-} from '@audius/common'
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

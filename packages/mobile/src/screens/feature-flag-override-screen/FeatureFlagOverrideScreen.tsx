@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { OverrideSetting } from '@audius/common'
-import { FEATURE_FLAG_OVERRIDE_KEY, FeatureFlags } from '@audius/common'
+import { FEATURE_FLAG_OVERRIDE_KEY } from '@audius/common/hooks'
+import type { OverrideSetting } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FlatList } from 'react-native-gesture-handler'
 import { useAsync } from 'react-use'
 
-import IconEmbed from 'app/assets/images/iconEmbed.svg'
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import { IconEmbed, IconClose } from '@audius/harmony-native'
 import { ModalScreen, Screen, SegmentedControl } from 'app/components/core'
 import { FilterInput } from 'app/components/filter-input'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -106,7 +106,7 @@ const FeatureFlagScreen = () => {
       title={messages.title}
       icon={IconEmbed}
       topbarLeft={
-        <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
+        <TopBarIconButton icon={IconClose} onPress={navigation.goBack} />
       }
     >
       <FlatList

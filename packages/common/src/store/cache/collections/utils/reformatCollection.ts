@@ -5,8 +5,8 @@ import {
   Variant,
   Collection,
   CollectionMetadata
-} from 'models/Collection'
-import type { AudiusBackend } from 'services/audius-backend/AudiusBackend'
+} from '~/models/Collection'
+import type { AudiusBackend } from '~/services/audius-backend/AudiusBackend'
 
 /**
  * Reformats a collection to be used internally within the client

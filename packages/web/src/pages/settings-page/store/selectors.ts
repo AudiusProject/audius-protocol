@@ -1,4 +1,4 @@
-import { CommonState } from '@audius/common'
+import { CommonState } from '@audius/common/store'
 
 export const getBrowserNotificationSettings = (state: CommonState) => {
   return state.pages.settings.browserNotifications

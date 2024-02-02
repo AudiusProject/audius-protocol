@@ -1,10 +1,8 @@
 import { useState, useEffect, memo, useCallback } from 'react'
 
-import {
-  Kind,
-  imageBlank as placeholderArt,
-  cacheUsersActions
-} from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { Kind } from '@audius/common/models'
+import { cacheUsersActions } from '@audius/common/store'
 import { Tag } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'

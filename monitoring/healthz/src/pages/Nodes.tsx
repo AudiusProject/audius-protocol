@@ -6,6 +6,7 @@ import {
 import { SP, useServiceProviders } from '../useServiceProviders'
 import { RelTime, timeSince, nanosToReadableDuration } from '../misc'
 import './Nodes.css'
+const audiusdSvg = new URL('../images/audius_d.svg', import.meta.url).href
 const autoUpgradeSvg = new URL('../images/auto_upgrade.svg', import.meta.url).href
 const dockerSvg = new URL('../images/docker.svg', import.meta.url).href
 const fileBackendSvg = new URL('../images/file_disk.svg', import.meta.url).href
@@ -173,6 +174,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const isDbLocalhost = health.database_is_localhost || health.isDbLocalhost
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
+  const audiusdManaged = health.audius_d_managed || health.isAudiusdManaged
   const getPeers = (str: string | undefined) => {
     if (str === undefined) return 'chain health undefined'
     const match = str.match(/Peers: (\d+)\./)
@@ -225,7 +227,11 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       <td className="whitespace-nowrap px-3 py-5 text-sm flex flex-col">
         <div className="flex items-center">
           <span className="h-5 w-5 flex-shrink-0">
-            {autoUpgradeEnabled && <img
+            {audiusdManaged && <img
+              className="h-5 w-5"
+              src={audiusdSvg}
+              alt="audius-d"
+            /> || autoUpgradeEnabled && <img
               className="h-5 w-5 dark:filter dark:invert"
               src={autoUpgradeSvg}
               alt="Auto-upgrade"

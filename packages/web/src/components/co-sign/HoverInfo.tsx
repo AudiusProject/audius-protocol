@@ -1,4 +1,4 @@
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 
 import IconHeart from 'assets/img/iconHeart.svg'
 import IconRepost from 'assets/img/iconRepost.svg'

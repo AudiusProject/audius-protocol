@@ -5,11 +5,11 @@ import {
   aiPageLineupActions as tracksActions,
   aiPageActions,
   aiPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconRobot from 'app/assets/images/iconRobot.svg'
+import { IconRobot } from '@audius/harmony-native'
 import { Text, Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'

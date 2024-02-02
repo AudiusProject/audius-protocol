@@ -1,21 +1,24 @@
 import { useCallback, memo, MouseEvent } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
 import {
+  CreatePlaylistSource,
+  Status,
+  Collection,
   ID,
   UID,
-  Collection,
-  CoverPhotoSizes,
   ProfilePictureSizes,
+  CoverPhotoSizes,
   LineupState,
-  Status,
-  profilePageTracksLineupActions as tracksActions,
-  ProfileUser,
-  ProfilePageTabs,
+  Track
+} from '@audius/common/models'
+import {
   profilePageFeedLineupActions as feedActions,
+  profilePageTracksLineupActions as tracksActions,
+  ProfilePageTabs,
   badgeTiers,
-  useSelectTierInfo,
-  CreatePlaylistSource
-} from '@audius/common'
+  ProfileUser
+} from '@audius/common/store'
 import { IconAlbum } from '@audius/harmony'
 
 import IconCollectibles from 'assets/img/iconCollectibles.svg'
@@ -93,11 +96,11 @@ export type ProfilePageProps = {
   playlists: Collection[] | null
   status: Status
   goToRoute: (route: string) => void
-  artistTracks: LineupState<{ id: ID }>
+  artistTracks: LineupState<Track>
   playArtistTrack: (uid: UID) => void
   pauseArtistTrack: () => void
   // Feed
-  userFeed: LineupState<{ id: ID }>
+  userFeed: LineupState<Track | Collection>
   playUserFeedTrack: (uid: UID) => void
   pauseUserFeedTrack: () => void
 

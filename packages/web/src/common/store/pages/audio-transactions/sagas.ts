@@ -1,15 +1,14 @@
+import { StringAudio } from '@audius/common/models'
 import {
   audioTransactionsPageActions,
-  TransactionDetails,
-  TransactionMethod,
-  TransactionType,
-  formatDate,
-  StringAudio,
   transactionDetailsActions,
+  TransactionType,
+  TransactionMethod,
   getContext,
-  Nullable
-} from '@audius/common'
-import type { InAppAudioPurchaseMetadata } from '@audius/common'
+  InAppAudioPurchaseMetadata,
+  TransactionDetails
+} from '@audius/common/store'
+import { formatDate, Nullable, removeNullable } from '@audius/common/utils'
 import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
@@ -138,7 +137,7 @@ function* fetchAudioTransactionsAsync() {
         .filter((tx) => tx !== null)
       yield* call(
         fetchUsers,
-        userIds,
+        userIds.filter(removeNullable).map(parseInt),
         undefined, // requiredFields
         false // forceRetrieveFromSource
       )

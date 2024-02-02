@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
 
-import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common'
-import { cacheTracksSelectors, notificationsSelectors } from '@audius/common'
+import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common/store'
+import {
+  cacheTracksSelectors,
+  notificationsSelectors
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import IconRemix from 'app/assets/images/iconRemix.svg'
+import { IconRemix } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'

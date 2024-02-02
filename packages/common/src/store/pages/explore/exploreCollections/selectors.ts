@@ -1,6 +1,6 @@
-import { getCollections as getCachedCollections } from 'store/cache/collections/selectors'
-import { getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
+import { getCollections as getCachedCollections } from '~/store/cache/collections/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
 
 import { Collection, Status } from '../../../../models'
 import { ExploreCollectionsVariant } from '../types'

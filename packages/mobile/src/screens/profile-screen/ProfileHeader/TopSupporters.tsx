@@ -1,21 +1,20 @@
 import { useCallback, useEffect } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
 import {
   cacheUsersSelectors,
   tippingSelectors,
-  useProxySelector,
-  removeNullable,
   tippingActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconCaretRight, IconTrophy } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
-import { ProfilePictureListSkeleton } from 'app/screens/notifications-screen/Notification/ProfilePictureListSkeleton'
+import { ProfilePictureListSkeleton } from 'app/screens/notifications-screen/Notification/NotificationProfilePictureListSkeleton'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

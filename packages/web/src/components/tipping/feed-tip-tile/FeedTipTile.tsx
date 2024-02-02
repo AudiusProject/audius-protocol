@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+import { Name, User } from '@audius/common/models'
 import {
-  Name,
-  User,
   accountSelectors,
   cacheUsersSelectors,
   tippingSelectors,
   tippingActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconButton, PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'

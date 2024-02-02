@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react'
 
+import { FollowSource, ID, User } from '@audius/common/models'
 import {
-  ID,
-  FollowSource,
-  User,
   accountSelectors,
   cacheUsersSelectors,
   profilePageActions,
+  usersSocialActions as socialActions,
   userListActions,
   userListSelectors,
-  UserListStoreState,
-  usersSocialActions as socialActions
-} from '@audius/common'
+  UserListStoreState
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User as UserType } from '@audius/common'
+import type { User as UserType } from '@audius/common/models'
 
 import type { TextProps } from 'app/components/core'
 import { Text } from 'app/components/core'

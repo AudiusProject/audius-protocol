@@ -1,9 +1,8 @@
+import { getEagerDiscprov, makeEagerRequest } from '@audius/common/services'
 /**
  * Utilities to assist in eager pre-fetching content from the
  * protocol before libs has initialized.
  */
-
-import { getEagerDiscprov, makeEagerRequest } from '@audius/common'
 
 import { env } from 'app/env'
 

@@ -1,4 +1,5 @@
-import { cacheCollectionsActions, toastActions, uuid } from '@audius/common'
+import { cacheCollectionsActions, toastActions } from '@audius/common/store'
+import { uuid } from '@audius/common/utils'
 import { put, takeEvery } from 'typed-redux-saga'
 
 import { navigationRef } from 'app/components/navigation-container/NavigationContainer'

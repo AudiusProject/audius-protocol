@@ -62,6 +62,7 @@ transaction_history_parser.add_argument(
     choices=SortDirection._member_names_,
     default=SortDirection.desc,
 )
+
 add_auth_headers_to_parser(transaction_history_parser)
 
 
@@ -176,6 +177,13 @@ def add_transaction_history_filters(parser: reqparse.RequestParser):
         default=None,
     )
     parser.add_argument(
+        "include_system_transactions",
+        required=False,
+        description="Include intermediate system transactions in the results",
+        type=bool,
+        default=False,
+    )
+    parser.add_argument(
         "method",
         required=False,
         description="Filters the method (sent/received) of transactions to show",
@@ -213,6 +221,9 @@ class GetUSDCTransactionHistory(Resource):
                 "user_id": authed_user_id,
                 "sort_method": sort_method,
                 "sort_direction": sort_direction,
+                "include_system_transactions": args.get(
+                    "include_system_transactions", False
+                ),
                 "transaction_type": args.get("type", None),
                 "transaction_method": args.get("method", None),
             }
@@ -248,6 +259,9 @@ class GetUSDCTransactionHistoryCount(Resource):
             {
                 "user_id": authed_user_id,
                 "transaction_type": args.get("type", None),
+                "include_system_transactions": args.get(
+                    "include_system_transactions", False
+                ),
                 "transaction_method": args.get("method", None),
             }
         )

@@ -1,9 +1,9 @@
-import { formatNumberCommas, tippingSelectors } from '@audius/common'
+import { tippingSelectors } from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconCheck from 'app/assets/images/iconCheck.svg'
-import IconSend from 'app/assets/images/iconSend.svg'
+import { IconCheck, IconSend } from '@audius/harmony-native'
 import { Text, AudioText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

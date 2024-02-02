@@ -31,7 +31,8 @@ import {
   TrendingUndergroundNotification,
   TrendingPlaylistNotification,
   USDCPurchaseBuyerNotification,
-  USDCWithdrawalNotification
+  USDCWithdrawalNotification,
+  USDCTransferNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -59,6 +60,7 @@ import { TrendingPlaylist } from './trendingPlaylist'
 import { USDCPurchaseSeller } from './usdcPurchaseSeller'
 import { USDCPurchaseBuyer } from './usdcPurchaseBuyer'
 import { USDCWithdrawal } from './usdcWithdrawal'
+import { USDCTransfer } from './usdcTransfer'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -170,6 +172,11 @@ const mapNotification = (
       identityDb,
       usdcPurchaseBuyerNotification
     )
+  } else if (notification.type == 'usdc_transfer') {
+    const usdcTransferNotification = notification as NotificationRow & {
+      data: USDCTransferNotification
+    }
+    return new USDCTransfer(dnDb, identityDb, usdcTransferNotification)
   } else if (notification.type == 'usdc_withdrawal') {
     const usdcWithdrawalNotification = notification as NotificationRow & {
       data: USDCWithdrawalNotification

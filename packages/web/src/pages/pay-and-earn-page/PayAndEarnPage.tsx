@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { buyUSDCActions } from '@audius/common'
+import { buyUSDCActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'

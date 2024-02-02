@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import {
-  followersUserListSelectors,
-  followersUserListActions
-} from '@audius/common'
+  followersUserListActions,
+  followersUserListSelectors
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import IconUserFollowers from 'app/assets/images/iconUserFollowers.svg'
+import { IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'

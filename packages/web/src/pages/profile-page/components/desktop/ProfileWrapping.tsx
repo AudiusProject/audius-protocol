@@ -1,4 +1,5 @@
-import { ID, ProfilePictureSizes, Nullable } from '@audius/common'
+import { ID, ProfilePictureSizes } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import BadgeArtist from 'assets/img/badgeArtist.svg'

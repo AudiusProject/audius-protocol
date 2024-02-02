@@ -1,4 +1,4 @@
-import { createApi } from 'audius-query'
+import { createApi } from '~/audius-query'
 
 type ResetPasswordArgs = {
   email: string

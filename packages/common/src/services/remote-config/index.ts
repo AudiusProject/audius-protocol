@@ -1,8 +1,8 @@
 export { IntKeys, StringKeys, DoubleKeys, BooleanKeys } from './types'
-export { AllRemoteConfigKeys } from './types'
+export type { AllRemoteConfigKeys } from './types'
 export { FeatureFlags } from './feature-flags'
 export { remoteConfig } from './remote-config'
-export { RemoteConfigInstance } from './remote-config'
+export type { RemoteConfigInstance } from './remote-config'
 export {
   remoteConfigIntDefaults,
   remoteConfigDoubleDefaults,

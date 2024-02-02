@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import { playerSelectors } from '@audius/common'
-import type { Remix, User } from '@audius/common'
+import type { Remix, User } from '@audius/common/models'
+import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconVolume from 'app/assets/images/iconVolume.svg'
+import { IconVolumeLevel2 } from '@audius/harmony-native'
 import { Text, FadeInView } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -100,7 +100,10 @@ export const LineupTileMetadata = ({
               {title}
             </Text>
             {isPlaying ? (
-              <IconVolume fill={primary} style={styles.playingIndicator} />
+              <IconVolumeLevel2
+                fill={primary}
+                style={styles.playingIndicator}
+              />
             ) : null}
           </>
         </TouchableOpacity>

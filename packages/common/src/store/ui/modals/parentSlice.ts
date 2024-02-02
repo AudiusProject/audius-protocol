@@ -42,6 +42,7 @@ export const initialState: BasicModalsState = {
   VipDiscord: { isOpen: false },
   StripeOnRamp: { isOpen: false },
   InboxSettings: { isOpen: false },
+  PrivateKeyExporter: { isOpen: false },
   LockedContent: { isOpen: false },
   PlaybackRate: { isOpen: false },
   ProfileActions: { isOpen: false },
@@ -60,7 +61,8 @@ export const initialState: BasicModalsState = {
   CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
-  CoinflowWithdraw: { isOpen: false }
+  CoinflowWithdraw: { isOpen: false },
+  WaitForDownloadModal: { isOpen: false }
 }
 
 const slice = createSlice({

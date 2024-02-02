@@ -1,26 +1,23 @@
+import { Status } from '@audius/common/models'
+import type { ID, Kind, Cache } from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
-  Status,
-  makeUids,
-  getIdFromKindId,
   cacheActions,
-  cacheSelectors,
   cacheConfig,
-  FeatureFlags,
+  cacheSelectors,
   confirmerSelectors,
-  IntKeys
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
 import type {
-  CommonStoreContext,
-  ID,
-  Kind,
   Metadata,
-  Cache,
   Entry,
   SubscriberInfo,
   CacheType
-} from '@audius/common'
+} from '@audius/common/store'
+import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
-import { all, call, put, select, takeEvery, getContext } from 'typed-redux-saga'
+import { SelectEffect } from 'redux-saga/effects'
+import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 const { CACHE_PRUNE_MIN } = cacheConfig
 const { getConfirmCalls } = confirmerSelectors
@@ -46,25 +43,29 @@ type AddToCacheHandler = (
   metadatas: Metadata[]
 ) => Generator<never, Metadata[] | void, unknown>
 
-type RetrieveArgs = {
-  ids: ID[]
-  selectFromCache: (ids: ID[]) => Generator<never, Record<ID, Entry>, Entry[]>
-  getEntriesTimestamp: (ids: ID[]) => Generator<
-    never,
+type RetrieveArgs<T> = {
+  ids: (ID | string)[]
+  selectFromCache: (
+    ids: (ID | string)[]
+  ) => Generator<SelectEffect, Record<ID | string, T>, T>
+  getEntriesTimestamp: (ids: (ID | string)[]) => Generator<
+    SelectEffect,
     {
-      [id: ID]: number | null
+      [id: ID | string]: number | null
     },
-    Entry[]
+    any
   >
-  retrieveFromSource: (ids: ID[]) => Metadata[]
+  retrieveFromSource: (
+    ids: (ID | string)[]
+  ) => Promise<T[]> | Generator<any, T[], any>
   kind: Kind
   idField: string
   requiredFields?: Set<string>
-  forceRetrieveFromSource: boolean
-  shouldSetLoading: boolean
-  deleteExistingEntry: boolean
-  onBeforeAddToCache: AddToCacheHandler
-  onAfterAddToCache: AddToCacheHandler
+  forceRetrieveFromSource?: boolean
+  shouldSetLoading?: boolean
+  deleteExistingEntry?: boolean
+  onBeforeAddToCache?: AddToCacheHandler
+  onAfterAddToCache?: AddToCacheHandler
 }
 
 /**
@@ -92,7 +93,7 @@ type RetrieveArgs = {
  * @param {function*} args.onAfterAddToCache callback to invoke with metadatas after they are added to the cache
  *
  */
-export function* retrieve({
+export function* retrieve<T>({
   ids,
   selectFromCache,
   getEntriesTimestamp,
@@ -105,20 +106,25 @@ export function* retrieve({
   deleteExistingEntry = false,
   onBeforeAddToCache = function* (_metadatas) {},
   onAfterAddToCache = function* (_metadatas) {}
-}: RetrieveArgs) {
+}: RetrieveArgs<T>): Generator<
+  any,
+  { entries: Record<ID | string, T>; uids: Record<ID | string, string> }
+> {
   if (!ids.length) {
     return {
-      entries: [],
-      uids: []
+      entries: {},
+      uids: {}
     }
   }
 
   const uniqueIds = [...new Set(ids)]
   // Create uids for each id and collect a mapping.
-  const uids = makeUids([kind], uniqueIds).reduce<string[]>((map, uid, i) => {
+  const uids = makeUids([kind], uniqueIds).reduce<
+    Record<number | string, string>
+  >((map, uid, i) => {
     map[uniqueIds[i]] = uid
     return map
-  }, [])
+  }, {})
 
   // Get cached entries
   const [cachedEntries, timestamps] = yield* all([
@@ -128,7 +134,7 @@ export function* retrieve({
 
   const entryTTL = yield* select(getEntryTTL)
 
-  const idsToFetch: ID[] = []
+  const idsToFetch: (ID | string)[] = []
   uniqueIds.forEach((id) => {
     const shouldFetch =
       !(id in cachedEntries) ||
@@ -164,19 +170,21 @@ export function* retrieve({
   }
 }
 
-type RetrieveFromSourceThenCacheArgs = {
-  idsToFetch: ID[]
+type RetrieveFromSourceThenCacheArgs<T> = {
+  idsToFetch: (ID | string)[]
   kind: Kind
-  retrieveFromSource: (ids: ID[]) => Metadata[]
+  retrieveFromSource: (
+    ids: (ID | string)[]
+  ) => Promise<T[]> | Generator<any, T[], any>
   onBeforeAddToCache: AddToCacheHandler
   onAfterAddToCache: AddToCacheHandler
   shouldSetLoading: boolean
   deleteExistingEntry: boolean
   idField: string
-  uids: string[]
+  uids: Record<number | string, string>
 }
 
-function* retrieveFromSourceThenCache({
+function* retrieveFromSourceThenCache<T>({
   idsToFetch,
   kind,
   retrieveFromSource,
@@ -186,7 +194,7 @@ function* retrieveFromSourceThenCache({
   deleteExistingEntry,
   idField,
   uids
-}: RetrieveFromSourceThenCacheArgs) {
+}: RetrieveFromSourceThenCacheArgs<T>) {
   if (shouldSetLoading) {
     yield* put(
       cacheActions.setStatus(
@@ -195,7 +203,7 @@ function* retrieveFromSourceThenCache({
       )
     )
   }
-  let metadatas = yield* call(retrieveFromSource, idsToFetch)
+  let metadatas = yield* call(retrieveFromSource, idsToFetch) as unknown as T[]
   if (metadatas) {
     if (!Array.isArray(metadatas)) {
       metadatas = [metadatas]
@@ -213,7 +221,7 @@ function* retrieveFromSourceThenCache({
 
     // Either add or update the cache. If we're doing a cache refresh post load, it should
     // be an update.
-    const cacheMetadata = metadatas.map((m) => ({
+    const cacheMetadata = metadatas.map((m: Metadata) => ({
       id: m[idField],
       uid: uids[m[idField]],
       metadata: m
@@ -325,10 +333,11 @@ function* watchUnsubscribe() {
           cache.subscriptions[id].forEach((subscription) => {
             if (!transitiveSubscriptions[subscription.kind]) {
               transitiveSubscriptions[subscription.kind] = [
-                { uid: subscription.uid }
+                { id, uid: subscription.uid }
               ]
             } else {
               transitiveSubscriptions[subscription.kind]!.push({
+                id,
                 uid: subscription.uid
               })
             }
@@ -391,12 +400,8 @@ function* watchRemove() {
 }
 
 function* initializeCacheType() {
-  const remoteConfig = yield* getContext<
-    CommonStoreContext['remoteConfigInstance']
-  >('remoteConfigInstance')
-  const getFeatureEnabled = yield* getContext<
-    CommonStoreContext['getFeatureEnabled']
-  >('getFeatureEnabled')
+  const remoteConfig = yield* getContext('remoteConfigInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
 
   const fastCache = yield* call(getFeatureEnabled, FeatureFlags.FAST_CACHE)
