@@ -43,7 +43,7 @@ export const usePaginatedQuery = <
       result.data?.length === pageSize
   }
 }
-
+// TODO: Add forceRefresh support here
 export const useAllPaginatedQuery = <
   Data,
   ArgsType extends { limit: number; offset: number }
