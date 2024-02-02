@@ -3,6 +3,7 @@ import { ID } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
+import { formatBytes } from '@audius/common/utils'
 
 import { Icon } from 'components/Icon'
 import Tooltip from 'components/tooltip/Tooltip'

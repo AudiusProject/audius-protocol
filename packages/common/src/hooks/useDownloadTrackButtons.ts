@@ -13,7 +13,7 @@ import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
 import { usePrevious } from 'react-use'
 import type { AudiusSdk } from '@audius/sdk'
-import { encodeHashId } from 'utils/hashIds'
+import { encodeHashId } from '~/utils/hashIds'
 import { isEqual } from 'lodash'
 
 export type DownloadButtonConfig = {
@@ -113,7 +113,7 @@ export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<
             return ({ trackId, size: sizes[trackId] })
           }
           try {
-            const { size } = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
+            const { data: { size }} = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
             return ({ trackId, size })
           } catch (e) {
             console.error(e)
