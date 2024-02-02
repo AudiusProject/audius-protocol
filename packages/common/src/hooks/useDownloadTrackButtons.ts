@@ -113,7 +113,8 @@ export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<
             return ({ trackId, size: sizes[trackId] })
           }
           try {
-            const { data: { size }} = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
+            const res = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
+            const size = res?.data?.size ?? null
             return ({ trackId, size })
           } catch (e) {
             console.error(e)
