@@ -7,8 +7,7 @@ import {
   usePayExtraPresets,
   isTrackStreamPurchaseable,
   isTrackDownloadPurchaseable,
-  PurchaseableTrackDownloadMetadata,
-  PurchaseableTrackStreamMetadata
+  PurchaseableTrackMetadata
 } from '@audius/common/hooks'
 import {
   PurchaseVendor,
@@ -83,7 +82,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
+  track: PurchaseableTrackMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const dispatch = useDispatch()
@@ -208,12 +207,7 @@ export const PremiumContentPurchaseModal = () => {
     ? track.download_conditions
     : null
 
-  if (!track || purchaseConditions === null) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
-    return
-  }
-
-  const { price } = purchaseConditions.usdc_purchase
+  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
@@ -243,6 +237,15 @@ export const PremiumContentPurchaseModal = () => {
     dispatch(cleanupUSDCRecovery())
   }, [onClosed, dispatch])
 
+  if (
+    !track ||
+    !purchaseConditions ||
+    !(isValidDownloadGatedTrack || isValidStreamGatedTrack)
+  ) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return null
+  }
+
   return (
     <ModalDrawer
       isOpen={isOpen}
@@ -255,8 +258,7 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
-      {isCoinflowEnabledLoaded &&
-      (isValidStreamGatedTrack || isValidDownloadGatedTrack) ? (
+      {isCoinflowEnabledLoaded ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

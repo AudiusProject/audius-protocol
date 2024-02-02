@@ -23,6 +23,10 @@ export type PurchaseableTrackDownloadMetadata = UserTrackMetadata & {
   download_conditions: USDCPurchaseConditions
 }
 
+export type PurchaseableTrackMetadata =
+  | PurchaseableTrackStreamMetadata
+  | PurchaseableTrackDownloadMetadata
+
 export type USDCPurchaseConfig = {
   minContentPriceCents: number
   maxContentPriceCents: number

@@ -13,11 +13,7 @@ import {
   isTrackStreamPurchaseable,
   isTrackDownloadPurchaseable
 } from '@audius/common/hooks'
-import type {
-  PurchaseableTrackDownloadMetadata,
-  PurchaseableTrackMetadata,
-  PurchaseableTrackStreamMetadata
-} from '@audius/common/hooks'
+import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
@@ -237,7 +233,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackDownloadMetadata | PurchaseableTrackStreamMetadata
+  track: PurchaseableTrackMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
@@ -448,12 +444,7 @@ export const PremiumTrackPurchaseDrawer = () => {
     ? track.download_conditions
     : null
 
-  if (!track || !purchaseConditions || !isUSDCEnabled) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
-    return null
-  }
-
-  const { price } = purchaseConditions.usdc_purchase
+  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({ track, presetValues, price })
@@ -462,6 +453,16 @@ export const PremiumTrackPurchaseDrawer = () => {
     onClosed()
     dispatch(purchaseContentActions.cleanup())
   }, [onClosed, dispatch])
+
+  if (
+    !track ||
+    !purchaseConditions ||
+    !isUSDCEnabled ||
+    !(isValidStreamGatedTrack || isValidDownloadGatedTrack)
+  ) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return null
+  }
 
   return (
     <Drawer
@@ -477,7 +478,7 @@ export const PremiumTrackPurchaseDrawer = () => {
         <View style={styles.spinnerContainer}>
           <LoadingSpinner />
         </View>
-      ) : isValidStreamGatedTrack || isValidDownloadGatedTrack ? (
+      ) : (
         <View style={styles.formContainer}>
           <Formik
             initialValues={initialValues}
@@ -491,7 +492,7 @@ export const PremiumTrackPurchaseDrawer = () => {
             />
           </Formik>
         </View>
-      ) : null}
+      )}
     </Drawer>
   )
 }
