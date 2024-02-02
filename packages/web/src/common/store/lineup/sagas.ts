@@ -709,12 +709,10 @@ export class LineupSagas<T extends Track | Collection> {
       entry: LineupEntry<T>
     ) => LineupEntry<any> = keepUidAndKind,
     removeDeleted: boolean = true,
-    sourceSelector:
-      | ((
-          state: AppState,
-          handle?: string | undefined
-        ) => QueueSource | string | null)
-      | undefined
+    sourceSelector?: (
+      state: AppState,
+      handle?: string | undefined
+    ) => QueueSource | string | null
   ) {
     this.prefix = prefix
     this.actions = actions
