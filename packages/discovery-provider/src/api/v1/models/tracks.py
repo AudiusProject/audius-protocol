@@ -191,6 +191,7 @@ stem_full = ns.model(
         "cid": fields.String(required=True),
         "user_id": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
     },
 )
 
