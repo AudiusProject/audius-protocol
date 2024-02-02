@@ -1,10 +1,12 @@
-import { Kind } from '@audius/common/models'
+import { LineupEntry, Track, UserTrackMetadata } from '@audius/common/models'
 import {
   accountSelectors,
+  getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import { keyBy } from 'lodash'
-import { call, getContext, select } from 'redux-saga/effects'
+import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
@@ -13,26 +15,31 @@ const { getUserId } = accountSelectors
 const { prefix: PREFIX } = tracksActions
 
 function* getHistoryTracks() {
-  yield waitForRead()
+  yield* waitForRead()
 
-  const apiClient = yield getContext('apiClient')
+  const apiClient = yield* getContext('apiClient')
   try {
-    const currentUserId = yield select(getUserId)
-    const activity = yield apiClient.getUserTrackHistory({
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) return []
+
+    const activity = yield* call(apiClient.getUserTrackHistory, {
       currentUserId,
       userId: currentUserId,
       limit: 100
     })
 
-    const processedTracks = yield call(
-      processAndCacheTracks,
-      activity.map((a) => a.track)
-    )
+    const activityTracks: UserTrackMetadata[] = activity
+      .map((a) => a.track)
+      .filter(removeNullable)
+
+    const processedTracks = yield* call(processAndCacheTracks, activityTracks)
     const processedTracksMap = keyBy(processedTracks, 'track_id')
 
-    const lineupTracks = []
-    activity.forEach((activity, i) => {
-      const trackMetadata = processedTracksMap[activity.track.track_id]
+    const lineupTracks: Track[] = []
+    activity.forEach((activity) => {
+      const trackMetadata = activity.track
+        ? processedTracksMap[activity.track.track_id]
+        : null
       // Prevent history for invalid tracks from getting into the lineup.
       if (trackMetadata) {
         lineupTracks.push({
@@ -48,16 +55,16 @@ function* getHistoryTracks() {
   }
 }
 
-const keepTrackIdAndDateListened = (entry) => ({
+const keepTrackIdAndDateListened = (entry: LineupEntry<Track>) => ({
   uid: entry.uid,
-  kind: entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS,
-  id: entry.track_id || entry.playlist_id,
+  kind: entry.kind,
+  id: entry.track_id,
   dateListened: entry.dateListened
 })
 
 const sourceSelector = () => PREFIX
 
-class TracksSagas extends LineupSagas {
+class TracksSagas extends LineupSagas<Track> {
   constructor() {
     super(
       PREFIX,
