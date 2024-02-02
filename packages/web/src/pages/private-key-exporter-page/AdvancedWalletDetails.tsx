@@ -73,7 +73,7 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
       <Divider orientation='vertical' />
       <Box p='xl' css={isMobile ? {} : { width: 464 }}>
         <Text variant='body'>
-          {isPrivate ? shortenSPLAddress(value, isMobile ? 4 : 21) : isMobile ? shortenSPLAddress(value, 4) : value}
+          {isPrivate ? shortenSPLAddress(value, isMobile ? 4 : 18) : isMobile ? shortenSPLAddress(value, 4) : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />
