@@ -8,12 +8,12 @@ import pkg from 'bs58'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './PrivateKeyExporterPage.module.css'
-import { useIsMobile } from 'hooks/useIsMobile'
 
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -73,7 +73,11 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
       <Divider orientation='vertical' />
       <Box p='xl' css={isMobile ? {} : { width: 464 }}>
         <Text variant='body'>
-          {isPrivate ? shortenSPLAddress(value, isMobile ? 4 : 18) : isMobile ? shortenSPLAddress(value, 4) : value}
+          {isPrivate
+            ? shortenSPLAddress(value, isMobile ? 4 : 18)
+            : isMobile
+            ? shortenSPLAddress(value, 4)
+            : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />
