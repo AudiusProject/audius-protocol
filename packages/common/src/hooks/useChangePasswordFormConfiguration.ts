@@ -1,8 +1,10 @@
-import { FormikHelpers } from 'formik'
 import { useState, useCallback } from 'react'
-import { useAppContext } from '~/context'
-import { confirmEmailSchema, passwordSchema, signInSchema } from '~/schemas'
+
+import { FormikHelpers } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
+
+import { useAppContext } from '../context'
+import { confirmEmailSchema, passwordSchema, signInSchema } from '../schemas'
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',
@@ -10,10 +12,10 @@ const messages = {
 }
 
 export enum ChangePasswordPage {
-  ConfirmCredentials = 0,
-  VerifyEmail = 1,
-  NewPassword = 2,
-  Success = 3
+  ConfirmCredentials = 'ConfirmCredentials',
+  VerifyEmail = 'VerifyEmail',
+  NewPassword = 'NewPassword',
+  Success = 'Success'
 }
 
 const OTP_ERROR = 'Missing otp'
@@ -62,8 +64,7 @@ export const useChangePasswordFormConfiguration = () => {
       ? verifyEmailFormikSchema
       : undefined
 
-  const validateOnChange =
-    page === ChangePasswordPage.NewPassword ? true : false
+  const validateOnChange = page === ChangePasswordPage.NewPassword
 
   const confirmCredentials = useCallback(
     async (
@@ -83,13 +84,16 @@ export const useChangePasswordFormConfiguration = () => {
         if (confirmed) {
           // Helper to move "password" to "oldPassword"
           helpers.setFieldValue('oldPassword', values.password)
-          helpers.setFieldValue('password', '')
+          helpers.setFieldValue('password', '', false)
+          helpers.setFieldTouched('password', false)
+          helpers.setFieldTouched('confirmPassword', false)
           setPage(ChangePasswordPage.NewPassword)
         } else {
           helpers.setFieldError('otp', messages.accountMatchError)
         }
       } catch (e) {
         if (isOtpMissingError(e)) {
+          helpers.setFieldTouched('otp', false)
           setPage(ChangePasswordPage.VerifyEmail)
         } else {
           helpers.setFieldError('password', messages.invalidCredentials)

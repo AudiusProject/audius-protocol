@@ -74,7 +74,7 @@ export const ChangePasswordModalForm = ({
   page: ChangePasswordPage
   onClose: () => void
 }) => {
-  const { isSubmitting, isValid, dirty } = useFormikContext()
+  const { isSubmitting, isValid } = useFormikContext()
   return (
     <ModalForm>
       <ModalContentPages currentPage={page}>
@@ -95,7 +95,7 @@ export const ChangePasswordModalForm = ({
             iconRight={IconLock}
             type='submit'
             isLoading={isSubmitting}
-            disabled={!isValid || !dirty}
+            disabled={!isValid}
           >
             {messages.changePassword}
           </Button>
@@ -106,7 +106,6 @@ export const ChangePasswordModalForm = ({
             iconRight={IconArrowRight}
             type={'submit'}
             isLoading={isSubmitting}
-            disabled={!isValid || !dirty}
           >
             {messages.continue}
           </Button>
