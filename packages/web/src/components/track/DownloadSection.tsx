@@ -85,7 +85,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const fileSizes = useFileSizes({ audiusSdk, trackIds: [trackId, ...stemTracks.map(s => s.id)] })
+  const fileSizes = useFileSizes({
+    audiusSdk,
+    trackIds: [trackId, ...stemTracks.map((s) => s.id)]
+  })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
@@ -250,9 +253,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     }
                   />
                 </Flex>
-                <Flex gap='2xl' alignItems='center'>
-                  {shouldDisplayDownloadAll ? downloadAllButton() : null}
-                </Flex>
+                {shouldDisplayDownloadAll ? downloadAllButton() : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (

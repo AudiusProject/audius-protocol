@@ -60,7 +60,9 @@ export const DownloadRow = ({
       justifyContent='space-between'
     >
       <Flex gap='xl' alignItems='center'>
-        <Text>{index}</Text>
+        <Text variant='body' color='subdued'>
+          {index}
+        </Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
             {track?.stem_of?.category ?? messages.fullTrack}
@@ -73,7 +75,11 @@ export const DownloadRow = ({
       <Flex gap='2xl'>
         {hideDownload ? null : (
           <>
-            {size ? <Text>{formatBytes(size)}</Text> : null}
+            {size ? (
+              <Text variant='body' size='s' color='subdued'>
+                {formatBytes(size)}
+              </Text>
+            ) : null}
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}
