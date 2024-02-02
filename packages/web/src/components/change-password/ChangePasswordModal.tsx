@@ -63,13 +63,6 @@ export const SuccessPage = () => {
   return <Text variant={'body'}>{messages.success}</Text>
 }
 
-const pageIndices = {
-  [ChangePasswordPage.ConfirmCredentials]: 0,
-  [ChangePasswordPage.VerifyEmail]: 1,
-  [ChangePasswordPage.NewPassword]: 2,
-  [ChangePasswordPage.Success]: 3
-}
-
 export const ChangePasswordModalForm = ({
   page,
   onClose
@@ -80,7 +73,7 @@ export const ChangePasswordModalForm = ({
   const { isSubmitting, isValid } = useFormikContext()
   return (
     <ModalForm>
-      <ModalContentPages currentPage={pageIndices[page]}>
+      <ModalContentPages currentPage={page}>
         <ConfirmCredentialsPage />
         <VerifyEmailPage />
         <NewPasswordPage />

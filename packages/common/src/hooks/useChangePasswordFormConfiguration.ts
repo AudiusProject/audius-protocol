@@ -12,10 +12,10 @@ const messages = {
 }
 
 export enum ChangePasswordPage {
-  ConfirmCredentials = 'ConfirmCredentials',
-  VerifyEmail = 'VerifyEmail',
-  NewPassword = 'NewPassword',
-  Success = 'Success'
+  ConfirmCredentials = 0,
+  VerifyEmail = 1,
+  NewPassword = 2,
+  Success = 3
 }
 
 const OTP_ERROR = 'Missing otp'
