@@ -1,4 +1,4 @@
-import type { ID, DownloadQuality } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { cacheTracksSelectors } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
