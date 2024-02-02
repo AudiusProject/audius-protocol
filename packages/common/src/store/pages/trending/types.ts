@@ -1,3 +1,5 @@
+import { Genre } from '~/utils'
+
 import { LineupState, TimeRange, Track } from '../../../models'
 
 export type TrendingPageState = {
@@ -5,6 +7,6 @@ export type TrendingPageState = {
   trendingMonth: LineupState<Track>
   trendingAllTime: LineupState<Track>
   trendingTimeRange: TimeRange
-  trendingGenre: string | null
-  lastFetchedTrendingGenre: string | null
+  trendingGenre: Genre | null
+  lastFetchedTrendingGenre: Genre | null
 }

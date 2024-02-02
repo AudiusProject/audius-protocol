@@ -1,10 +1,10 @@
-import { TimeRange } from '@audius/common/models'
+import { TimeRange, Track, Collection } from '@audius/common/models'
 import {
   accountSelectors,
   trendingPageLineupActions,
   trendingPageSelectors
 } from '@audius/common/store'
-import { select } from 'redux-saga/effects'
+import { select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -21,13 +21,13 @@ const {
 } = trendingPageLineupActions
 const getUserId = accountSelectors.getUserId
 
-function getTracks(timeRange) {
-  return function* ({ offset, limit }) {
-    yield waitForRead()
-    const genreAtStart = yield select(getTrendingGenre)
-    const userId = yield select(getUserId)
+function getTracks(timeRange: TimeRange) {
+  return function* ({ offset, limit }: { offset: number; limit: number }) {
+    yield* waitForRead()
+    const genreAtStart = yield* select(getTrendingGenre)
+    const userId = yield* select(getUserId)
     try {
-      const tracks = yield retrieveTrending({
+      const tracks = yield* retrieveTrending({
         timeRange,
         limit,
         offset,
@@ -35,14 +35,14 @@ function getTracks(timeRange) {
         currentUserId: userId
       })
       return tracks
-    } catch (e) {
+    } catch (e: any) {
       console.error(`Trending error: ${e.message}`)
       return []
     }
   }
 }
 
-class TrendingWeekSagas extends LineupSagas {
+class TrendingWeekSagas extends LineupSagas<Track | Collection> {
   constructor() {
     super(
       TRENDING_WEEK_PREFIX,
@@ -53,7 +53,7 @@ class TrendingWeekSagas extends LineupSagas {
   }
 }
 
-class TrendingMonthSagas extends LineupSagas {
+class TrendingMonthSagas extends LineupSagas<Track | Collection> {
   constructor() {
     super(
       TRENDING_MONTH_PREFIX,
@@ -64,7 +64,7 @@ class TrendingMonthSagas extends LineupSagas {
   }
 }
 
-class TrendingAllTimeSagas extends LineupSagas {
+class TrendingAllTimeSagas extends LineupSagas<Track | Collection> {
   constructor() {
     super(
       TRENDING_ALL_TIME_PREFIX,
