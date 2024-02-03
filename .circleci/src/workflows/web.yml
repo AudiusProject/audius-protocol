@@ -31,8 +31,6 @@ jobs:
   - web-build-ssr-staging:
       context:
         - Vercel
-        - Audius Client
-        - slack-secrets
       requires:
         - web-init
 
