@@ -27,11 +27,11 @@ type AssetContract = {
   payout_address: Nullable<string>
 }
 
-type AssetCollection = {
-  slug: string
+export type OpenSeaCollection = {
+  collection: string
   name: string
   description: string
-  external_url: string
+  project_url: string
   image_url: string
 }
 
@@ -43,41 +43,56 @@ type AssetPerson = {
 } | null
 type AssetOwner = AssetPerson
 type AssetCreator = AssetPerson
-export type OpenSeaAsset = {
-  token_id: string
-  name: Nullable<string>
-  description: Nullable<string>
-  external_link: Nullable<string>
-  permalink: Nullable<string>
-  image_url: Nullable<string>
-  image_preview_url: Nullable<string>
-  image_thumbnail_url: Nullable<string>
-  image_original_url: Nullable<string>
-  animation_url: Nullable<string>
-  animation_original_url: Nullable<string>
-  youtube_url: Nullable<string>
-  background_color: Nullable<string>
-  owner: Nullable<AssetOwner>
-  creator: Nullable<AssetCreator>
-  asset_contract: Nullable<AssetContract>
-  collection: Nullable<AssetCollection>
+
+// This metadata object is absurd. It is the combination of
+// some real standards and some just random fields we get back.
+// Use it to try to display whatever we can. Yay NFTs.
+export type OpenSeaNftMetadata = {
+  token_id?: string
+  name?: string
+  description?: string
+  external_url?: string
+  permalink?: string
+  image?: string
+  image_url?: string
+  image_preview_url?: string
+  image_thumbnail_url?: string
+  image_original_url?: string
+  animation_url?: string
+  animation_original_url?: string
+  youtube_url?: string
+  background_color?: string
+  owner?: AssetOwner
+  creator?: AssetCreator
+  asset_contract?: AssetContract
 }
 
-export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }
+export type OpenSeaNft = {
+  identifier: string
+  collection: string
+  contract: string
+  token_standard: string
+  name: string
+  description: string
+  image_url: string
+  metadata_url: string
+  opensea_url: string
+  // Audius added fields
+  wallet: string
+}
+
+export type OpenSeaNftExtended = OpenSeaNft &
+  OpenSeaNftMetadata & { collectionMetadata?: OpenSeaCollection }
 
 export type OpenSeaEvent = {
   id: number
-  created_date: string
-  from_account: {
-    address: string
-  }
-  to_account: {
-    address: string
-  }
-  asset: OpenSeaAsset
+  event_timestamp: number
+  from_address: string
+  to_address: string
+  nft: OpenSeaNft
+  wallet: string
 }
 
-export type OpenSeaEventExtended = Omit<OpenSeaEvent, 'asset'> & {
-  asset: OpenSeaAssetExtended
-  wallet: string
+export type OpenSeaEventExtended = Omit<OpenSeaEvent, 'nft'> & {
+  nft: OpenSeaNftExtended
 }
