@@ -12,6 +12,7 @@ import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
+  IconEmailAddress,
   IconKey,
   IconRecoveryEmail,
   IconSignOut,
@@ -49,6 +50,9 @@ const messages = {
   verifyDescription:
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   verifyButtonTitle: 'Get Verified!',
+  emailTitle: 'Change Email',
+  emailDescription: 'Change the email you use to sign in and receive emails.',
+  emailButtonTitle: 'Change Email',
   passwordTitle: 'Change Password',
   passwordDescription: 'Change the password to your Audius account.',
   passwordButtonTitle: 'Change Password',
@@ -96,6 +100,10 @@ export const AccountSettingsScreen = () => {
 
   const handlePressVerification = useCallback(() => {
     navigation.push('AccountVerificationScreen')
+  }, [navigation])
+
+  const handlePressChangeEmail = useCallback(() => {
+    navigation.push('ChangeEmail')
   }, [navigation])
 
   const handlePressChangePassword = useCallback(() => {
@@ -146,6 +154,13 @@ export const AccountSettingsScreen = () => {
             description={messages.verifyDescription}
             buttonTitle={messages.verifyButtonTitle}
             onPress={handlePressVerification}
+          />
+          <AccountSettingsItem
+            title={messages.emailTitle}
+            titleIcon={IconEmailAddress}
+            description={messages.emailDescription}
+            buttonTitle={messages.emailButtonTitle}
+            onPress={handlePressChangeEmail}
           />
           <AccountSettingsItem
             title={messages.passwordTitle}

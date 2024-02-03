@@ -9,7 +9,9 @@ export const SubScreenHeader = ({
 }) => {
   return (
     <Flex gap='s'>
-      <Text variant='title'>{title}</Text>
+      <Text variant='heading' color='heading'>
+        {title}
+      </Text>
       <Text variant='body'>{description}</Text>
     </Flex>
   )

@@ -99,6 +99,7 @@ export type AppTabScreenParamList = {
   ListeningHistoryScreen: undefined
   AccountSettingsScreen: undefined
   AccountVerificationScreen: undefined
+  ChangeEmail: undefined
   ChangePassword: undefined
   InboxSettingsScreen: undefined
   DownloadSettingsScreen: undefined

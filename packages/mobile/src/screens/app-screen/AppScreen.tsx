@@ -9,6 +9,7 @@ import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
+import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -33,6 +34,7 @@ export const AppScreen = () => {
           name='ChangePassword'
           component={ChangePasswordModalScreen}
         />
+        <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )
