@@ -1,3 +1,4 @@
+import type { Image } from '@audius/common/store'
 import { css } from '@emotion/native'
 import {
   getCoverPhotoField,
@@ -6,8 +7,10 @@ import {
   getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
+import type { ImageFieldValue } from 'audius-client/src/pages/sign-up-page/components/ImageField'
 import { isEmpty } from 'lodash'
-import { Pressable, type ImageURISource, Dimensions } from 'react-native'
+import { Pressable, Dimensions } from 'react-native'
+import type { ImageURISource } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -30,8 +33,8 @@ const messages = {
 type AccountHeaderProps = {
   onSelectCoverPhoto?: () => void
   onSelectProfilePicture?: () => void
-  profilePicture: ImageURISource | undefined
-  coverPhoto: ImageURISource | undefined
+  profilePicture: Image | undefined | null
+  coverPhoto: Image | undefined | null
   displayName: string
   handle: string
   isVerified: boolean
@@ -96,13 +99,9 @@ export const ReadOnlyAccountHeader = () => {
   return (
     <AccountHeader
       handle={handle}
-      coverPhoto={
-        isEmpty(coverPhoto) ? undefined : (coverPhoto as ImageURISource)
-      }
+      coverPhoto={isEmpty(coverPhoto) ? undefined : coverPhoto}
       displayName={displayName}
-      profilePicture={
-        isEmpty(profileImage) ? undefined : (profileImage as ImageURISource)
-      }
+      profilePicture={isEmpty(profileImage) ? undefined : profileImage}
       isVerified={isVerified}
     />
   )
@@ -110,8 +109,8 @@ export const ReadOnlyAccountHeader = () => {
 
 type CoverPhotoProps = {
   onSelectCoverPhoto?: () => void
-  profilePicture?: ImageURISource
-  coverPhoto?: ImageURISource
+  profilePicture?: Image | null | undefined
+  coverPhoto?: Image | null | undefined
 }
 
 const CoverPhoto = (props: CoverPhotoProps) => {
@@ -162,16 +161,12 @@ const CoverPhoto = (props: CoverPhotoProps) => {
 export const ReadOnlyCoverPhotoBanner = () => {
   const coverPhoto = useSelector(getCoverPhotoField)
   const profileImage = useSelector(getProfileImageField)
-  return (
-    <CoverPhoto
-      coverPhoto={coverPhoto as ImageURISource}
-      profilePicture={profileImage as ImageURISource}
-    />
-  )
+
+  return <CoverPhoto coverPhoto={coverPhoto} profilePicture={profileImage} />
 }
 
 type ProfilePictureProps = {
-  profilePicture?: ImageURISource
+  profilePicture?: ImageFieldValue
   onSelectProfilePicture?: () => void
 }
 
@@ -184,7 +179,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
         accessibilityLabel='Profile Picture'
         size='xl'
         variant='strong'
-        source={profilePicture ?? { uri: undefined }}
+        source={(profilePicture?.file as ImageURISource) ?? { uri: undefined }}
       >
         {onSelectProfilePicture && !profilePicture ? (
           <IconButton
@@ -203,7 +198,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
 
 export const ReadOnlyProfilePicture = () => {
   const profileImage = useSelector(getProfileImageField)
-  return <ProfilePicture profilePicture={profileImage as ImageURISource} />
+  return <ProfilePicture profilePicture={profileImage} />
 }
 
 type AccountDetailsProps = {

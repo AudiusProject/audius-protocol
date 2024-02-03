@@ -1,22 +1,18 @@
 import type { ReactNode } from 'react'
 
+import type { Image } from '@audius/common/store'
 import type { CornerRadiusOptions } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { BlurView } from '@react-native-community/blur'
-import type {
-  ImageBackgroundProps,
-  ImageSourcePropType,
-  ImageStyle,
-  StyleProp
-} from 'react-native'
+import type { ImageBackgroundProps, ImageStyle, StyleProp } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { useTheme } from '../../foundations/theme'
 
 export type CoverPhotoProps = {
-  profilePicture?: ImageSourcePropType
-  coverPhoto?: ImageSourcePropType
+  profilePicture?: Image | null | undefined
+  coverPhoto?: Image | null | undefined
   style?: StyleProp<ImageStyle>
   children?: ReactNode
   topCornerRadius?: CornerRadiusOptions
@@ -47,12 +43,22 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
 
   const fullHeightStyle = css({ height: '100%' })
 
+  // Check for using the profile image if the cover photo isnt usable
+  const usingProfilePicture = !coverPhoto?.url
+
+  const getSource = () => {
+    // Having .url means its a useable image source
+    if (coverPhoto?.url) {
+      return coverPhoto
+    }
+    if (profilePicture?.url) {
+      return profilePicture
+    }
+    return { uri: undefined }
+  }
+
   return (
-    <ImageBackground
-      source={coverPhoto ?? profilePicture ?? { uri: undefined }}
-      style={[rootStyle, style]}
-      {...other}
-    >
+    <ImageBackground source={getSource()} style={[rootStyle, style]} {...other}>
       {!profilePicture && !coverPhoto ? (
         <LinearGradient
           colors={['rgba(0, 0, 0, 0.20)', 'rgba(0, 0, 0, 0.00)']}
@@ -61,7 +67,7 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
           style={fullHeightStyle}
         />
       ) : null}
-      {profilePicture && !coverPhoto ? (
+      {profilePicture && usingProfilePicture ? (
         <View style={style}>
           <BlurView blurType='light' blurAmount={20} style={fullHeightStyle} />
         </View>
