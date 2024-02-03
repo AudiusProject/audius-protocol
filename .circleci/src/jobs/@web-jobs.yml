@@ -169,7 +169,6 @@ web-deploy-staging-cloudflare:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
-  resource_class: xlarge
   steps:
     - web-deploy-cloudflare:
         build-type: staging
