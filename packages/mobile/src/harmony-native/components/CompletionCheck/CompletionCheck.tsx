@@ -55,7 +55,7 @@ const CompletionError = ({ value }: CompletionCheckProps) => {
 
   return (
     <CompletionIconBase style={[animationStyle]}>
-      <IconMultiselectRemove />
+      <IconMultiselectRemove size='s' />
     </CompletionIconBase>
   )
 }
@@ -65,7 +65,7 @@ const CompletionSuccess = ({ value }: CompletionCheckProps) => {
 
   return (
     <CompletionIconBase style={[animationStyle]}>
-      <IconValidationCheck />
+      <IconValidationCheck size='s' />
     </CompletionIconBase>
   )
 }
