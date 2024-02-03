@@ -109,19 +109,19 @@ function* fetchProfileCustomizedCollectibles(user) {
   }
 }
 
-export function* fetchOpenSeaAssetsForWallets(wallets) {
+export function* fetchOpenSeaNftsForWallets(wallets) {
   const openSeaClient = yield getContext('openSeaClient')
   return yield call([openSeaClient, openSeaClient.getAllCollectibles], wallets)
 }
 
-export function* fetchOpenSeaAssets(user) {
+export function* fetchOpenSeaNfts(user) {
   const apiClient = yield getContext('apiClient')
   const associatedWallets = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
   if (associatedWallets) {
     const { wallets } = associatedWallets
-    const collectiblesMap = yield call(fetchOpenSeaAssetsForWallets, [
+    const collectiblesMap = yield call(fetchOpenSeaNftsForWallets, [
       user.wallet,
       ...wallets
     ])
@@ -323,7 +323,7 @@ function* fetchProfileAsync(action) {
     }
 
     yield fork(fetchProfileCustomizedCollectibles, user)
-    yield fork(fetchOpenSeaAssets, user)
+    yield fork(fetchOpenSeaNfts, user)
     yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status
