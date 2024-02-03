@@ -25,6 +25,7 @@ export const publishReleases = async () => {
         const publishedDoc = new Published(publishedData)
         await publishedDoc.save({ session })
         await Parsed.deleteOne({ _id: doc._id }).session(session)
+        // TODO update indexed delivery_status to 'published'
         console.log('Published release: ', doc)
       }
 
