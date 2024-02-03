@@ -581,7 +581,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     return <></>
   }
 
-  const otpInputField = ({ show }: { show: boolean }) => {
+  const OtpInputField = ({ show }: { show: boolean }) => {
     const [value, setValue] = useState('')
 
     if (!show) {
@@ -784,7 +784,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               />
               {passwordInputField()}
               {errorView()}
-              {otpInputField({
+              {OtpInputField({
                 show: requiresOtp || (!!otpField.value && isWorking)
               })}
               <MainButton isWorking={isWorking} isSignin={isSignin} />
