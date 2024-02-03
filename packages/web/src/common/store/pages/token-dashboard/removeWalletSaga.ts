@@ -13,7 +13,7 @@ import {
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import {
-  fetchOpenSeaNftMetadatas,
+  fetchOpenSeaNfts,
   fetchSolanaCollectibles
 } from 'common/store/profile/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -121,7 +121,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     }
 
     yield* fork(fetchSolanaCollectibles, updatedMetadata)
-    yield* fork(fetchOpenSeaNftMetadatas, updatedMetadata)
+    yield* fork(fetchOpenSeaNfts, updatedMetadata)
   }
 
   function* onError() {
