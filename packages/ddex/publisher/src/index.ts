@@ -7,6 +7,7 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) })
 
 import createApp from './app'
 import { dialDb } from './services/dbService'
+import { publishReleases } from './services/publisherService'
 
 const port = process.env.DDEX_PORT || 9001
 
@@ -18,6 +19,8 @@ const port = process.env.DDEX_PORT || 9001
     await dialDb(dbUrl)
 
     const app = createApp()
+
+    publishReleases()
 
     app.listen(port, () => {
       console.log(`[server]: Server is running at http://localhost:${port}`)
