@@ -16,13 +16,14 @@ const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
-  const sentry = SENTRY_DSN
-    ? new Toucan({
-        dsn: SENTRY_DSN,
-        context: event,
-        request: event.request
-      })
-    : null
+  const sentry =
+    typeof SENTRY_DSN !== 'undefined'
+      ? new Toucan({
+          dsn: SENTRY_DSN,
+          context: event,
+          request: event.request
+        })
+      : null
   try {
     event.respondWith(handleEvent(event))
   } catch (e) {

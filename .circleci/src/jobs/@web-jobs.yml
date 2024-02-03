@@ -38,6 +38,8 @@ web-init:
           - packages/common/dist
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/trpc-server/node_modules
+          - packages/trpc-server/dist
 
 web-build-demo:
   working_directory: ~/audius-protocol
@@ -86,6 +88,11 @@ web-build-ssr-staging:
         build-type: ssr:stage
         build-directory: packages/web/build-ssr-staging
         build-name: build-ssr-staging
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/web/node_modules
 
 web-test-staging:
   working_directory: ~/audius-protocol
@@ -129,6 +136,11 @@ web-build-ssr-production:
         build-type: ssr:prod
         build-directory: packages/web/build-ssr-production
         build-name: build-ssr-production
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/web/node_modules
 
 web-deploy-demo:
   working_directory: ~/audius-protocol
