@@ -99,7 +99,7 @@ export const AccountSettingsScreen = () => {
   }, [navigation])
 
   const handlePressChangePassword = useCallback(() => {
-    navigation.push('ChangePasswordScreen')
+    navigation.push('ChangePassword')
   }, [navigation])
 
   const openSignOutDrawer = useCallback(() => {
