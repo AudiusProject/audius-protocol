@@ -65,7 +65,10 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       : undefined
 
   const checkPassword = useCallback(
-    async (values: ChangeEmailFormValues, onError: () => void) => {
+    async (
+      values: ChangeEmailFormValues,
+      helpers: FormikHelpers<ChangeEmailFormValues>
+    ) => {
       const { oldEmail, password } = values
       const libs = await audiusBackend.getAudiusLibsTyped()
       try {
@@ -75,19 +78,23 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
           softCheck: true
         })
         if (confirmed) {
+          helpers.setFieldTouched('email', false)
           setPage(ChangeEmailPage.NewEmail)
         } else {
-          onError()
+          helpers.setFieldError('password', messages.invalidCredentials)
         }
       } catch (e) {
-        onError()
+        helpers.setFieldError('password', messages.invalidCredentials)
       }
     },
     [setPage, audiusBackend]
   )
 
   const changeEmail = useCallback(
-    async (values: ChangeEmailFormValues, onError: () => void) => {
+    async (
+      values: ChangeEmailFormValues,
+      helpers: FormikHelpers<ChangeEmailFormValues>
+    ) => {
       const { oldEmail, password, email, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       const libs = await audiusBackend.getAudiusLibsTyped()
@@ -107,9 +114,11 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         onComplete()
       } catch (e) {
         if (isOtpMissingError(e)) {
+          helpers.setFieldTouched('otp', false)
           setPage(ChangeEmailPage.VerifyEmail)
         } else {
-          onError()
+          helpers.setFieldError('otp', messages.invalidCredentials)
+          helpers.setFieldError('email', messages.somethingWrong)
         }
       }
     },
@@ -122,17 +131,11 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
       if (page === ChangeEmailPage.ConfirmPassword) {
-        await checkPassword(values, () => {
-          helpers.setFieldError('password', messages.invalidCredentials)
-        })
+        await checkPassword(values, helpers)
       } else if (page === ChangeEmailPage.VerifyEmail) {
-        await changeEmail(values, () => {
-          helpers.setFieldError('otp', messages.invalidCredentials)
-        })
+        await changeEmail(values, helpers)
       } else {
-        await changeEmail(values, () => {
-          helpers.setFieldError('email', messages.somethingWrong)
-        })
+        await changeEmail(values, helpers)
       }
     },
     [page, changeEmail, checkPassword]
