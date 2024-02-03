@@ -22,11 +22,11 @@ jobs:
           ignore: /^main$/
 
   # Build
-  # - web-build-staging:
-  #     context:
-  #       - Vercel
-  #     requires:
-  #       - web-init
+  - web-build-staging:
+      context:
+        - Vercel
+      requires:
+        - web-init
 
   - web-build-ssr-staging:
       context:
@@ -70,11 +70,11 @@ jobs:
         - Audius Client
         - slack-secrets
       requires:
-        # - web-build-staging
+        - web-build-staging
         - web-build-ssr-staging
-      # filters:
-      #   branches:
-      #     only: /^main$/
+      filters:
+        branches:
+          only: /^main$/
 
   - web-deploy-release-candidate:
       context: Audius Client
