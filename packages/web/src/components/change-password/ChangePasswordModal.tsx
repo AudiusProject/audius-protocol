@@ -19,10 +19,10 @@ import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ModalForm } from 'components/modal-form/ModalForm'
-
-import styles from './ChangePasswordModal.module.css'
 import { ToastContext } from 'components/toast/ToastContext'
 import { PasswordCompletionChecklist } from 'pages/sign-up-page/components/PasswordCompletionChecklist'
+
+import styles from './ChangePasswordModal.module.css'
 
 const messages = {
   continue: 'Continue',

@@ -1,11 +1,14 @@
-import { FormikHelpers } from 'formik'
 import { useState, useCallback, useMemo } from 'react'
+
+import { FormikHelpers } from 'formik'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
+
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
 import { confirmEmailSchema, emailSchema } from '~/schemas'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
-import { useAudiusQueryContext } from '~/audius-query'
+
 import { isOtpMissingError } from './useChangePasswordFormConfiguration'
-import { z } from 'zod'
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',
@@ -110,7 +113,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         }
       }
     },
-    [setPage, audiusBackend]
+    [setPage, onComplete, audiusBackend]
   )
 
   const onSubmit = useCallback(

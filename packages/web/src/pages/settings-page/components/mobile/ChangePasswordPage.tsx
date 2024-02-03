@@ -21,10 +21,10 @@ import {
   NewPasswordPage
 } from 'components/change-password/ChangePasswordModal'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
+import { ToastContext } from 'components/toast/ToastContext'
 
 import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
-import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   changeYourPassword: 'Change Your Password',
@@ -34,9 +34,7 @@ const messages = {
 }
 
 const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
-  const { isSubmitting, isValid, errors } =
-    useFormikContext<ChangePasswordFormValues>()
-  console.log({ errors })
+  const { isSubmitting } = useFormikContext<ChangePasswordFormValues>()
   return (
     <Flex
       as={Form}

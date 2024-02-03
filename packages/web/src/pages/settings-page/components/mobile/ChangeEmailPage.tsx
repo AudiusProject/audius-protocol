@@ -14,10 +14,10 @@ import {
   VerifyEmailPage
 } from 'components/change-email/ChangeEmailModal'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
+import { ToastContext } from 'components/toast/ToastContext'
 
 import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
-import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   changeYourEmail: 'Change Your Email',

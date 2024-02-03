@@ -114,7 +114,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
       })
       onComplete()
     },
-    [setPage, audiusBackend, onComplete]
+    [onComplete, audiusBackend]
   )
 
   const onSubmit = useCallback(
