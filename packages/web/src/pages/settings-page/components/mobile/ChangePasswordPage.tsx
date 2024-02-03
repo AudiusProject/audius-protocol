@@ -18,29 +18,25 @@ import { Form, Formik, useFormikContext } from 'formik'
 import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
 import {
   ConfirmCredentialsPage,
-  NewPasswordPage,
-  SuccessPage
+  NewPasswordPage
 } from 'components/change-password/ChangePasswordModal'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 
 import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
+import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   changeYourPassword: 'Change Your Password',
   changePassword: 'Change Password',
   continue: 'Continue',
-  close: 'Close'
+  success: 'Password updated!'
 }
 
-const ChangePasswordMobileForm = ({
-  page,
-  onClose
-}: {
-  page: ChangePasswordPage
-  onClose: () => void
-}) => {
-  const { isSubmitting, isValid } = useFormikContext<ChangePasswordFormValues>()
+const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
+  const { isSubmitting, isValid, errors } =
+    useFormikContext<ChangePasswordFormValues>()
+  console.log({ errors })
   return (
     <Flex
       as={Form}
@@ -56,36 +52,22 @@ const ChangePasswordMobileForm = ({
           <ConfirmCredentialsPage />
           <VerifyEmailPage />
           <NewPasswordPage />
-          <SuccessPage />
         </SlidingPages>
       </Flex>
       <Paper shadow={'midInverted'} p={'l'}>
-        {page === ChangePasswordPage.Success ? (
-          <Button fullWidth variant='primary' onClick={onClose} type='button'>
-            {messages.close}
-          </Button>
-        ) : page === ChangePasswordPage.NewPassword ? (
-          <Button
-            fullWidth
-            variant='primary'
-            iconRight={IconLock}
-            type='submit'
-            isLoading={isSubmitting}
-            disabled={!isValid}
-          >
-            {messages.changePassword}
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            variant='primary'
-            iconRight={IconArrowRight}
-            type={'submit'}
-            isLoading={isSubmitting}
-          >
-            {messages.continue}
-          </Button>
-        )}
+        <Button
+          fullWidth
+          variant='primary'
+          iconRight={
+            page === ChangePasswordPage.NewPassword ? IconLock : IconArrowRight
+          }
+          type={'submit'}
+          isLoading={isSubmitting}
+        >
+          {page === ChangePasswordPage.NewPassword
+            ? messages.changePassword
+            : messages.continue}
+        </Button>
       </Paper>
     </Flex>
   )
@@ -93,6 +75,7 @@ const ChangePasswordMobileForm = ({
 
 export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
   const navContext = useContext(NavContext)!
+  const { toast } = useContext(ToastContext)
 
   useEffect(() => {
     navContext.setLeft(LeftPreset.CLOSE)
@@ -101,12 +84,13 @@ export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
     }
   }, [navContext])
 
-  // Go back to account settings when done
-  const onComplete = useCallback(() => {
+  const onSuccess = useCallback(() => {
     goBack()
-  }, [goBack])
+    toast(messages.success)
+  }, [goBack, toast])
 
-  const { page, ...formikConfiguration } = useChangePasswordFormConfiguration()
+  const { page, ...formikConfiguration } =
+    useChangePasswordFormConfiguration(onSuccess)
 
   return (
     <Flex
@@ -118,7 +102,7 @@ export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
       }}
     >
       <Formik {...formikConfiguration}>
-        <ChangePasswordMobileForm page={page} onClose={onComplete} />
+        <ChangePasswordMobileForm page={page} />
       </Formik>
     </Flex>
   )

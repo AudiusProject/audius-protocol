@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import {
+  ChangeEmailPage,
   isOtpMissingError,
   useChangeEmailFormConfiguration
 } from '@audius/common/hooks'
@@ -10,7 +11,7 @@ import {
   Button,
   Flex,
   IconArrowRight,
-  IconKey,
+  IconEmailAddress,
   Text,
   TextLink
 } from '@audius/harmony'
@@ -34,30 +35,21 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import styles from './ChangeEmailModal.module.css'
 
 const messages = {
-  title: 'Change Email',
+  changeEmail: 'Change Email',
   confirmPasswordHelp: 'Please enter your current email and password.',
   currentEmail: 'Current Email',
   currentPassword: 'Current Password',
   newEmailHelp: 'Enter the new email you would like to use on Audius.',
   newEmail: 'New email',
   continue: 'Continue',
-  invalidCredentials: 'Invalid credentials.',
   somethingWrong: 'Something went wrong.',
   verifyEmailHelp: 'Enter the verification code sent to your email.',
   resendHelp: 'Didn’t get an email? ',
   resend: 'Resend code.',
   code: 'Code',
   otpPlaceholder: '123 456',
-  success: (email: string) => `Email successfully updated from ${email} to `,
-  done: 'Done',
-  resentToast: 'Verification code resent.'
-}
-
-enum ChangeEmailPage {
-  ConfirmPassword = 0,
-  NewEmail = 1,
-  VerifyEmail = 2,
-  Success = 3
+  resentToast: 'Verification code resent.',
+  success: 'Email updated!'
 }
 
 type ChangeEmailModalProps = {
@@ -169,20 +161,6 @@ export const VerifyEmailPage = () => {
   )
 }
 
-export const SuccessPage = () => {
-  const [{ value: oldEmail }] = useField('oldEmail')
-  const [{ value: email }] = useField('email')
-  return (
-    <Text variant={'body'}>
-      {messages.success(oldEmail)}
-      <Text asChild strength={'strong'}>
-        <span>{email}</span>
-      </Text>
-      !
-    </Text>
-  )
-}
-
 const ChangeEmailModalForm = ({
   onClose,
   page
@@ -191,34 +169,30 @@ const ChangeEmailModalForm = ({
 }) => {
   const { isSubmitting } = useFormikContext()
 
-  const isSuccessPage = page === ChangeEmailPage.Success
-
   return (
     <ModalForm>
       <ModalHeader onClose={onClose}>
-        <ModalTitle title={messages.title} icon={<IconKey />} />
+        <ModalTitle title={messages.changeEmail} icon={<IconEmailAddress />} />
       </ModalHeader>
       <ModalContentPages currentPage={page}>
         <ConfirmPasswordPage />
         <NewEmailPage />
         <VerifyEmailPage />
-        <SuccessPage />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
-        {isSuccessPage ? (
-          <Button type='button' fullWidth onClick={onClose}>
-            {messages.done}
-          </Button>
-        ) : (
-          <Button
-            type={'submit'}
-            isLoading={isSubmitting}
-            fullWidth
-            iconRight={IconArrowRight}
-          >
-            {messages.continue}
-          </Button>
-        )}
+        <Button
+          variant='primary'
+          type={'submit'}
+          isLoading={isSubmitting}
+          fullWidth
+          iconRight={
+            page === ChangeEmailPage.VerifyEmail ? undefined : IconArrowRight
+          }
+        >
+          {page === ChangeEmailPage.VerifyEmail
+            ? messages.changeEmail
+            : messages.continue}
+        </Button>
       </ModalFooter>
     </ModalForm>
   )
@@ -228,7 +202,14 @@ export const ChangeEmailModal = ({
   isOpen,
   onClose
 }: ChangeEmailModalProps) => {
-  const { page, setPage, ...formikConfig } = useChangeEmailFormConfiguration()
+  const { toast } = useContext(ToastContext)
+  const onSuccess = useCallback(() => {
+    onClose()
+    toast(messages.success)
+  }, [onClose, toast])
+
+  const { page, setPage, ...formikConfig } =
+    useChangeEmailFormConfiguration(onSuccess)
 
   const handleClosed = useCallback(() => {
     setPage(ChangeEmailPage.ConfirmPassword)

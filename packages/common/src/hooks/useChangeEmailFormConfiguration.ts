@@ -10,14 +10,14 @@ import { z } from 'zod'
 const messages = {
   invalidCredentials: 'Invalid credentials.',
   somethingWrong: 'Something went wrong.',
-  passwordRequired: 'Please enter a password.'
+  passwordRequired: 'Please enter a password.',
+  emailUpdated: 'Email updated!'
 }
 
 export enum ChangeEmailPage {
   ConfirmPassword = 0,
   NewEmail = 1,
-  VerifyEmail = 2,
-  Success = 3
+  VerifyEmail = 2
 }
 
 export type ChangeEmailFormValues = {
@@ -43,7 +43,7 @@ const confirmPasswordFormikSchema = toFormikValidationSchema(
 )
 const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
-export const useChangeEmailFormConfiguration = () => {
+export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
   const { audiusBackend } = useAppContext()
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const audiusQueryContext = useAudiusQueryContext()
@@ -88,6 +88,7 @@ export const useChangeEmailFormConfiguration = () => {
       const { oldEmail, password, email, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
       const libs = await audiusBackend.getAudiusLibsTyped()
+
       try {
         // Try to change email
         await libs.identityService!.changeEmail({
@@ -100,7 +101,7 @@ export const useChangeEmailFormConfiguration = () => {
           oldUsername: oldEmail,
           oldPassword: password
         })
-        setPage(ChangeEmailPage.Success)
+        onComplete()
       } catch (e) {
         if (isOtpMissingError(e)) {
           setPage(ChangeEmailPage.VerifyEmail)

@@ -5,46 +5,28 @@ import {
   ChangeEmailPage,
   useChangeEmailFormConfiguration
 } from '@audius/common/hooks'
-import {
-  Button,
-  Flex,
-  Hint,
-  IconArrowRight,
-  IconInfo,
-  Paper,
-  Text
-} from '@audius/harmony'
+import { Button, Flex, IconArrowRight, Paper, Text } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
 
 import {
   ConfirmPasswordPage,
   NewEmailPage,
-  VerifyEmailPage,
-  SuccessPage
+  VerifyEmailPage
 } from 'components/change-email/ChangeEmailModal'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 
 import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
+import { ToastContext } from 'components/toast/ToastContext'
 
 const messages = {
   changeYourEmail: 'Change Your Email',
   changeEmail: 'Change Email',
-  emailUpdated: 'Email Updated!',
   continue: 'Continue',
-  close: 'Close',
-  note: 'Note: ',
-  successNote:
-    'Use this email to sign in and receive email notifications from Audius.'
+  success: 'Email updated!'
 }
 
-const ChangeEmailMobileForm = ({
-  page,
-  onClose
-}: {
-  page: ChangeEmailPage
-  onClose: () => void
-}) => {
+const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
   const { isSubmitting } = useFormikContext<ChangeEmailFormValues>()
   return (
     <Flex
@@ -55,41 +37,28 @@ const ChangeEmailMobileForm = ({
     >
       <Flex p='l' gap={'s'} direction='column' mt={'xl'}>
         <Text variant='heading' color='heading'>
-          {page === ChangeEmailPage.Success
-            ? messages.emailUpdated
-            : messages.changeYourEmail}
+          {messages.changeYourEmail}
         </Text>
         <SlidingPages currentPage={page}>
           <ConfirmPasswordPage />
           <NewEmailPage />
           <VerifyEmailPage />
-          <Flex gap={'2xl'} direction='column'>
-            <SuccessPage />
-            <Hint icon={IconInfo}>
-              <Text asChild strength='strong'>
-                <span>{messages.note}</span>
-              </Text>
-              {messages.successNote}
-            </Hint>
-          </Flex>
         </SlidingPages>
       </Flex>
       <Paper shadow={'midInverted'} p={'l'}>
-        {page === ChangeEmailPage.Success ? (
-          <Button fullWidth variant='primary' onClick={onClose} type='button'>
-            {messages.close}
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            variant='primary'
-            iconRight={IconArrowRight}
-            type={'submit'}
-            isLoading={isSubmitting}
-          >
-            {messages.continue}
-          </Button>
-        )}
+        <Button
+          variant='primary'
+          type={'submit'}
+          isLoading={isSubmitting}
+          fullWidth
+          iconRight={
+            page === ChangeEmailPage.VerifyEmail ? undefined : IconArrowRight
+          }
+        >
+          {page === ChangeEmailPage.VerifyEmail
+            ? messages.changeEmail
+            : messages.continue}
+        </Button>
       </Paper>
     </Flex>
   )
@@ -97,6 +66,7 @@ const ChangeEmailMobileForm = ({
 
 export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
   const navContext = useContext(NavContext)!
+  const { toast } = useContext(ToastContext)
 
   useEffect(() => {
     navContext.setLeft(LeftPreset.CLOSE)
@@ -105,12 +75,13 @@ export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
     }
   }, [navContext])
 
-  // Go back to account settings when done
-  const onComplete = useCallback(() => {
+  const onSuccess = useCallback(() => {
     goBack()
-  }, [goBack])
+    toast(messages.success)
+  }, [goBack, toast])
 
-  const { page, ...formikConfiguration } = useChangeEmailFormConfiguration()
+  const { page, ...formikConfiguration } =
+    useChangeEmailFormConfiguration(onSuccess)
 
   return (
     <Flex
@@ -122,7 +93,7 @@ export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
       }}
     >
       <Formik {...formikConfiguration}>
-        <ChangeEmailMobileForm page={page} onClose={onComplete} />
+        <ChangeEmailMobileForm page={page} />
       </Formik>
     </Flex>
   )

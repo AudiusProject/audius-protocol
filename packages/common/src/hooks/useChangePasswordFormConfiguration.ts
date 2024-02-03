@@ -8,14 +8,14 @@ import { confirmEmailSchema, passwordSchema, signInSchema } from '../schemas'
 
 const messages = {
   invalidCredentials: 'Invalid credentials.',
-  accountMatchError: "Account doesn't match the currently signed in user."
+  accountMatchError: "Account doesn't match the currently signed in user.",
+  passwordUpdated: 'Password updated!'
 }
 
 export enum ChangePasswordPage {
   ConfirmCredentials = 0,
   VerifyEmail = 1,
-  NewPassword = 2,
-  Success = 3
+  NewPassword = 2
 }
 
 const OTP_ERROR = 'Missing otp'
@@ -51,7 +51,7 @@ const initialValues: ChangePasswordFormValues = {
   otp: ''
 }
 
-export const useChangePasswordFormConfiguration = () => {
+export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
   const { audiusBackend } = useAppContext()
   const [page, setPage] = useState(ChangePasswordPage.ConfirmCredentials)
 
@@ -63,8 +63,6 @@ export const useChangePasswordFormConfiguration = () => {
       : page === ChangePasswordPage.VerifyEmail
       ? verifyEmailFormikSchema
       : undefined
-
-  const validateOnChange = page === ChangePasswordPage.NewPassword
 
   const confirmCredentials = useCallback(
     async (
@@ -114,9 +112,9 @@ export const useChangePasswordFormConfiguration = () => {
         oldUsername: email,
         oldPassword
       })
-      setPage(ChangePasswordPage.Success)
+      onComplete()
     },
-    [setPage, audiusBackend]
+    [setPage, audiusBackend, onComplete]
   )
 
   const onSubmit = useCallback(
@@ -135,7 +133,7 @@ export const useChangePasswordFormConfiguration = () => {
 
   return {
     initialValues,
-    validateOnChange,
+    validateOnChange: false,
     validationSchema,
     onSubmit,
     page,
