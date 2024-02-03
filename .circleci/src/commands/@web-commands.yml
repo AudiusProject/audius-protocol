@@ -83,8 +83,15 @@ web-build:
         root: ./
         paths:
           - << parameters.build-directory >>
-          - node_modules
-          - packages/web/node_modules
+    - when:
+        condition:
+          matches: { pattern: ':ssr:', value: << parameters.build-type >> }
+        steps:
+          - persist_to_workspace:
+              root: ./
+              paths:
+                - node_modules
+                - packages/web/node_modules
 
 web-distribute:
   parameters:
