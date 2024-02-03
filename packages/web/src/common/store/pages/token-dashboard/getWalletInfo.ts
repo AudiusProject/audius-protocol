@@ -2,7 +2,7 @@ import { Chain, getContext } from '@audius/common'
 import { call } from 'typed-redux-saga'
 
 import {
-  fetchOpenSeaAssetsForWallets,
+  fetchOpenSeaNftsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'common/store/profile/sagas'
 
@@ -19,7 +19,7 @@ export function* getWalletInfo(walletAddress: string, chain: Chain) {
 
   const collectiblesMap = (yield* call(
     chain === Chain.Eth
-      ? fetchOpenSeaAssetsForWallets
+      ? fetchOpenSeaNftsForWallets
       : fetchSolanaCollectiblesForWallets,
     [walletAddress]
   )) as Record<string, string[]>

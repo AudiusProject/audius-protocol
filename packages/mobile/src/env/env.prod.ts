@@ -45,7 +45,7 @@ export const env: Env = {
   INSTAGRAM_APP_ID: '189700309435573',
   INSTAGRAM_REDIRECT_URL: 'https://audius.co/',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
-  OPENSEA_API_URL: 'https://collectibles.audius.co/api/v1',
+  OPENSEA_API_URL: 'https://collectibles.audius.co',
   OPTIMIZELY_KEY: 'DAJbGEJBC21dzFRPv8snxs',
   ORACLE_ETH_ADDRESSES: '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6',
   PAYMENT_ROUTER_PROGRAM_ID: 'paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa',
