@@ -83,6 +83,8 @@ web-build:
         root: ./
         paths:
           - << parameters.build-directory >>
+          - node_modules
+          - packages/web/node_modules
 
 web-distribute:
   parameters:
