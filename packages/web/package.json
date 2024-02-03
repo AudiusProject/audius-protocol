@@ -15,7 +15,7 @@
     "build:ssr:prod": "env-cmd ./env/.env.prod env-cmd ./env/.env.ssr turbo run build && rm -rf build-ssr-production && mv build-ssr build-ssr-production",
     "build:ssr:stage": "env-cmd ./env/.env.stage env-cmd ./env/.env.ssr turbo run build && rm -rf build-ssr-staging && mv build-ssr build-ssr-staging",
     "build:stage": "env-cmd ./env/.env.stage turbo run build && rm -rf build-staging && mv build build-staging",
-    "build": "npm run write-sha && NODE_OPTIONS=--max-old-space-size=8192 env-cmd ./env/.env.git vite build --force",
+    "build": "npm run write-sha && NODE_OPTIONS=--max-old-space-size=8192 env-cmd ./env/.env.git vite build",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
     "prebuild": "npm run publish-scripts",
