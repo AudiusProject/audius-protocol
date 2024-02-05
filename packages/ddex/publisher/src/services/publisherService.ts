@@ -3,6 +3,7 @@ import Parsed from '../models/parsed'
 import Published from '../models/published'
 
 export const publishReleases = async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const currentDate = new Date()
 
@@ -20,7 +21,7 @@ export const publishReleases = async () => {
         // Move document to 'published' collection
         const publishedData = {
           ...doc.toObject(),
-          track_id: "todo",
+          track_id: 'todo',
         }
         const publishedDoc = new Published(publishedData)
         await publishedDoc.save({ session })
