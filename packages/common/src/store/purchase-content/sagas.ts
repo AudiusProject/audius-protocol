@@ -92,20 +92,18 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
-    throw new Error('Content is missing stream conditions')
+  const purchaseConditions =
+    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+    throw new Error('Content is missing purchase conditions')
   }
   const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
   if (!artistInfo) {
     throw new Error('Failed to retrieve content owner')
   }
 
-  const {
-    stream_conditions: {
-      usdc_purchase: { price }
-    },
-    title
-  } = trackInfo
+  const title = trackInfo.title
+  const price = purchaseConditions.usdc_purchase.price
 
   return { price, title, artistInfo, trackInfo }
 }
@@ -202,8 +200,10 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
-    throw new Error('Content is missing stream conditions')
+  const purchaseConditions =
+    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+    throw new Error('Content is missing purchase conditions')
   }
 
   const user = yield* select(getUser, { id: trackInfo.owner_id })
@@ -215,12 +215,8 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
     throw new Error('Unable to resolve destination wallet')
   }
 
-  const {
-    blocknumber,
-    stream_conditions: {
-      usdc_purchase: { splits }
-    }
-  } = trackInfo
+  const { blocknumber } = trackInfo
+  const splits = purchaseConditions.usdc_purchase.splits
 
   return {
     blocknumber,
