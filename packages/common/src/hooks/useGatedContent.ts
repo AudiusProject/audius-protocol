@@ -197,6 +197,10 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
       !isOwner,
+    shouldDisplayOwnerPremiumDownloads:
+      isOnlyDownloadableContentPurchaseGated &&
+      track?.access?.download === true &&
+      isOwner,
     shouldDisplayDownloadFollowGated
   }
 }
