@@ -9,7 +9,7 @@ export type IconButtonProps = {
   icon: IconComponent
   ripple?: boolean
   'aria-label': string
-} & Pick<IconProps, 'color' | 'size' | 'shadow'> &
+} & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
   Pick<BaseButtonProps, 'onClick' | 'disabled' | 'className'>
 
 /**
@@ -23,6 +23,8 @@ export const IconButton = (props: IconButtonProps) => {
     size = 'l',
     shadow,
     ripple,
+    height,
+    width,
     ...other
   } = props
   const { disabled } = other
@@ -56,6 +58,8 @@ export const IconButton = (props: IconButtonProps) => {
         color={disabled ? 'disabled' : iconColor}
         size={size}
         shadow={shadow}
+        height={height}
+        width={width}
       />
     </BaseButton>
   )

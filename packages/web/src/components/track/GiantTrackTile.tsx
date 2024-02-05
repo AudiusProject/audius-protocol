@@ -447,23 +447,18 @@ export const GiantTrackTile = ({
 
   const renderTags = () => {
     const shouldShow = !isUnlisted || fieldVisibility.tags
+    if (!shouldShow || !tags) return null
     return (
-      shouldShow &&
-      tags && (
-        <div className={styles.tagSection}>
-          {tags
-            .split(',')
-            .filter((t) => t)
-            .map((tag) => (
-              <SearchTag
-                className={styles.tagFormatting}
-                tag={tag}
-                key={tag}
-                source='track page'
-              />
-            ))}
-        </div>
-      )
+      <Flex pt='m' wrap='wrap' gap='s'>
+        {tags
+          .split(',')
+          .filter((t) => t)
+          .map((tag) => (
+            <SearchTag key={tag} source='track page'>
+              {tag}
+            </SearchTag>
+          ))}
+      </Flex>
     )
   }
 

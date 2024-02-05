@@ -20,6 +20,8 @@ export type IconProps = {
   size?: IconSize
   sizeW?: IconSize
   sizeH?: IconSize
+  height?: number
+  width?: number
   shadow?: ShadowOptions
 }
 

@@ -20,6 +20,7 @@ import {
   getDogEarType,
   Nullable
 } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -266,22 +267,23 @@ const TrackHeader = ({
   }
 
   const renderTags = () => {
-    if (isUnlisted && !fieldVisibility.tags) return null
+    if ((isUnlisted && !fieldVisibility.tags) || filteredTags.length === 0) {
+      return null
+    }
+
     return (
-      <>
-        {filteredTags.length > 0 ? (
-          <div className={cn(styles.tags, styles.withSectionDivider)}>
-            {filteredTags.map((tag) => (
-              <SearchTag
-                key={tag}
-                tag={tag}
-                className={styles.tag}
-                source='track page'
-              />
-            ))}
-          </div>
-        ) : null}
-      </>
+      <Flex
+        gap='s'
+        wrap='wrap'
+        justifyContent='center'
+        className={styles.withSectionDivider}
+      >
+        {filteredTags.map((tag) => (
+          <SearchTag key={tag} source='track page'>
+            {tag}
+          </SearchTag>
+        ))}
+      </Flex>
     )
   }
 

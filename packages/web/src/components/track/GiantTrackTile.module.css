@@ -350,19 +350,6 @@
   line-height: 26px;
 }
 
-.tagSection {
-  padding-top: 13px;
-  display: flex;
-  flex-direction: row;
-  position: relative;
-  flex-wrap: wrap;
-}
-
-.tagSection .tagFormatting {
-  margin-right: var(--unit-2);
-  margin-bottom: var(--unit-2);
-}
-
 .downloadButtonsContainer {
   width: 100%;
   display: flex;

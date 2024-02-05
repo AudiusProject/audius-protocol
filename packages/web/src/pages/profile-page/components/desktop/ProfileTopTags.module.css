@@ -3,13 +3,6 @@
   align-items: center;
   margin-bottom: 16px;
 }
-.tagsContent {
-  padding: 8px;
-  background: var(--white);
-  border-radius: 4px;
-  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
-    0px 0px 1px var(--tile-shadow-1);
-}
 .topTagsIcon {
   width: 18px;
   height: 18px;
@@ -24,12 +17,4 @@
   background: var(--neutral-light-7);
   width: 106px;
   height: 1px;
-}
-
-.tagsContent {
-  display: flex;
-  flex-wrap: wrap;
-}
-.tag {
-  margin: 4px 8px 4px 0;
 }

@@ -1,11 +1,8 @@
 import { createRef, Component } from 'react'
 
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import Tag from 'antd/lib/tag'
+import { Tag } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconRemove from 'assets/img/iconRemove.svg'
-import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './TagInput.module.css'
 
@@ -161,34 +158,21 @@ class TagInput extends Component {
 
     const tagNodes = [...tags].map((tag, i) => (
       <Tag
-        className={cn(styles.tag, {
-          [styles.flash]: flashExistingTag === tag,
-          [styles.last]: i === tags.size - 1 && tags.size === maxTags
-        })}
+        className={cn({ [styles.flash]: flashExistingTag === tag })}
         key={tag}
-        onClick={(e) => e.stopPropagation()}
+        multiselect
+        variant='default'
+        onClick={(e) => this.deleteTag(tag, e)}
       >
         {trimToAlphaNumeric(tag)}
-        <div className={styles.tagIconWrapper}>
-          <IconRemove
-            onClick={(e) => this.deleteTag(tag, e)}
-            className={styles.iconRemove}
-          />
-        </div>
       </Tag>
     ))
 
     const newTag = (
       <>
         {typingMode ? null : (
-          <Tag
-            className={cn(styles.tag, styles.newTag, styles.last)}
-            onClick={this.setTypingMode}
-          >
+          <Tag variant='composed' multiselect onClick={this.setTypingMode}>
             {placeholder}
-            <div className={styles.tagIconWrapper}>
-              <IconSave className={styles.iconSave} />
-            </div>
           </Tag>
         )}
         <input
