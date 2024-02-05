@@ -17,9 +17,9 @@ import {
   ProfilePictureSizes
 } from '@audius/common/models'
 import { pluralize } from '@audius/common/utils'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'

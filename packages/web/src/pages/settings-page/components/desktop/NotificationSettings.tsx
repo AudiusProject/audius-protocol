@@ -6,11 +6,14 @@ import {
   EmailFrequency,
   Notifications
 } from '@audius/common/store'
-import { Switch, SegmentedControl } from '@audius/harmony'
+import {
+  Switch,
+  SegmentedControl,
+  IconClose as IconRemove
+} from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import cn from 'classnames'
 
-import IconRemove from 'assets/img/iconRemove.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'

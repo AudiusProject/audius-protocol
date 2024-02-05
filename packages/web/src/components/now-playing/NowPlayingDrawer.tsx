@@ -2,12 +2,12 @@ import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
 import { nowPlayingUIActions } from '@audius/common/store'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
 import ConnectedBottomBar from 'components/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 
@@ -381,7 +381,7 @@ const NowPlayingDrawer = ({
         }}
       >
         <animated.div className={styles.header} style={headerFadeProps}>
-          <AudiusLogo />
+          <IconAudiusLogoHorizontal color='subdued' sizeH='l' width='auto' />
         </animated.div>
 
         <animated.div className={styles.playBar} style={playBarFadeProps}>

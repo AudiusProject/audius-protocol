@@ -55,7 +55,9 @@ const messages = {
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
-  followToDownload: 'Must follow artist to download.'
+  followToDownload: 'Must follow artist to download.',
+  purchaseableIsOwner: (price: string) =>
+    `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 type DownloadSectionProps = {
@@ -75,10 +77,18 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     price,
     shouldDisplayPremiumDownloadLocked,
     shouldDisplayPremiumDownloadUnlocked,
-    shouldDisplayDownloadFollowGated
+    shouldDisplayDownloadFollowGated,
+    shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
+  const formattedPrice = price
+    ? USDC(price / 100).toLocaleString('en-us', {
+        roundingMode: 'floor',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : undefined
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
@@ -184,20 +194,15 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             </Text>
           </Flex>
           <Flex gap='l' alignItems='center'>
-            {shouldDisplayPremiumDownloadLocked && price !== undefined ? (
+            {shouldDisplayPremiumDownloadLocked &&
+            formattedPrice !== undefined ? (
               <Button
                 variant='primary'
                 size='small'
                 color='lightGreen'
                 onClick={handlePurchaseClick}
               >
-                {messages.unlockAll(
-                  USDC(price / 100).toLocaleString('en-us', {
-                    roundingMode: 'floor',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })
-                )}
+                {messages.unlockAll(formattedPrice)}
               </Button>
             ) : null}
             {shouldDisplayPremiumDownloadUnlocked ? (
@@ -233,6 +238,13 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             />
           </Flex>
         </Flex>
+        {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
+          <Flex pl='l' pr='l' pb='l'>
+            <Text variant='body' size='m' strength='strong'>
+              {messages.purchaseableIsOwner(formattedPrice)}
+            </Text>
+          </Flex>
+        ) : null}
         <Expandable expanded={expanded}>
           <Box>
             {track?.is_original_available ? (
@@ -263,6 +275,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
                 size={fileSizes[trackId]}
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -278,6 +291,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
             {/* Only display this row if original quality is not available,

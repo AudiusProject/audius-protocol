@@ -1,11 +1,11 @@
-import Logo from 'assets/img/audiusLogoHorizontal.svg'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 
 import styles from './Header.module.css'
 
 export const SignOnHeader = () => {
   return (
     <div className={styles.container}>
-      <Logo className={styles.img} />
+      <IconAudiusLogoHorizontal className={styles.img} />
     </div>
   )
 }

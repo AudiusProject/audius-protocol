@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common/models'
-import { Scrollbar } from '@audius/harmony'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import { Scrollbar, IconWand, IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import IconWand from 'assets/img/iconWand.svg'
 import {
   FollowArtistsCategory,
   artistCategories
@@ -140,7 +139,7 @@ export const FollowPage = (props: FollowPageProps) => {
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrow />}
+        rightIcon={<IconArrowRight />}
         type={
           followedArtists.length >= MINIMUM_FOLLOWER_COUNT
             ? ButtonType.PRIMARY_ALT

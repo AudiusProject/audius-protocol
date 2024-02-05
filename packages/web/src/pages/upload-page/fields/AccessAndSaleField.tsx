@@ -19,11 +19,11 @@ import { formatPrice } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
-  IconHidden,
+  IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
   IconVisibilityPublic
-} from '@audius/stems'
+} from '@audius/harmony'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'

@@ -8,6 +8,7 @@ import {
   TikTokProfile,
   Image
 } from '@audius/common/store'
+import { IconClose as IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
@@ -17,7 +18,6 @@ import { Transition } from 'react-spring/renderprops.cjs'
 import imageSignUp1 from 'assets/img/2-DJ-4-3.jpg'
 import imageSignUp2 from 'assets/img/3-Collection-4-3.jpg'
 import imageSignUp3 from 'assets/img/4-Conductor-4-3.jpg'
-import IconRemove from 'assets/img/iconRemove.svg'
 import imagePhone from 'assets/img/imagePhone.png'
 import CTAImage from 'assets/img/signUpCTA.png'
 import { getStatus } from 'common/store/pages/signon/selectors'

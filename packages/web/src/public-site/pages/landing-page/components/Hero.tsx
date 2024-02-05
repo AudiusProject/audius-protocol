@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { IconCaretRight, IconDownload } from '@audius/stems'
+import { IconCaretRight, IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
@@ -70,7 +70,7 @@ export const Hero = (props: HeroProps) => {
             onClick={handleClickRoute(APP_REDIRECT, props.setRenderPublicSite)}
             className={styles.downloadButton}
           >
-            <IconDownload />
+            <IconCloudDownload />
             <span className={styles.secondaryCtaMessage}>
               {messages.download}
             </span>
@@ -168,7 +168,7 @@ export const Hero = (props: HeroProps) => {
               )}
               className={styles.downloadButton}
             >
-              <IconDownload />
+              <IconCloudDownload />
               <span className={styles.secondaryCtaMessage}>
                 {messages.download}
               </span>

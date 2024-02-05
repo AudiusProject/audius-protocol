@@ -1,11 +1,11 @@
 import { memo } from 'react'
 
 import { playerSelectors } from '@audius/common/store'
+import { IconClose as IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconRemove from 'assets/img/iconRemove.svg'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
 import { AppState } from 'store/types'

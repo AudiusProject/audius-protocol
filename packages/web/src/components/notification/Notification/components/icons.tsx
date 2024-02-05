@@ -1,19 +1,20 @@
 import { ReactNode } from 'react'
 
-import { IconCart as IconCartBase } from '@audius/stems'
-
-import IconAudius from 'assets/img/iconAudius.svg'
-// import IconCartBase from 'assets/img/iconCart.svg'
-import IconHeart from 'assets/img/iconHeart.svg'
-import IconPlaylist from 'assets/img/iconPlaylists.svg'
-import IconRemixBase from 'assets/img/iconRemix.svg'
-import IconRepostBase from 'assets/img/iconRepost.svg'
-import IconStars from 'assets/img/iconStars.svg'
-import Tastemaker from 'assets/img/iconTastemaker.svg'
-import IconTipBase from 'assets/img/iconTip.svg'
-import IconTrendingBase from 'assets/img/iconTrending.svg'
-import IconTrophy from 'assets/img/iconTrophy.svg'
-import IconUser from 'assets/img/iconUser.svg'
+import {
+  IconAudiusLogo,
+  useTheme,
+  IconTipping as IconTipBase,
+  IconHeart,
+  IconPlaylists as IconPlaylist,
+  IconRemix as IconRemixBase,
+  IconRepost as IconRepostBase,
+  IconStars,
+  IconTastemaker as Tastemaker,
+  IconTrending as IconTrendingBase,
+  IconTrophy,
+  IconUser,
+  IconCart as IconCartBase
+} from '@audius/harmony'
 
 import styles from './icons.module.css'
 
@@ -66,7 +67,10 @@ export const IconTip = () => {
 }
 
 export const IconAnnouncement = () => {
-  return <IconAudius className={styles.iconAnnouncement} />
+  const { spacing } = useTheme()
+  return (
+    <IconAudiusLogo size='l' color='accent' css={{ marginRight: spacing.s }} />
+  )
 }
 
 export const IconAddTrackToPlaylist = () => {

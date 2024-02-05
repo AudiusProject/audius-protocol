@@ -1,10 +1,5 @@
-import {
-  Button,
-  ButtonProps,
-  ButtonSize,
-  ButtonType,
-  IconRobot
-} from '@audius/stems'
+import { IconRobot } from '@audius/harmony'
+import { Button, ButtonProps, ButtonSize, ButtonType } from '@audius/stems'
 
 const messages = {
   aiAttribution: 'AI Attribution',

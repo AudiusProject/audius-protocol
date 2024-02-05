@@ -7,12 +7,17 @@ import {
   Download
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Flex, Box, Text as HarmonyText, Switch } from '@audius/harmony'
+import {
+  Flex,
+  Box,
+  Text as HarmonyText,
+  Switch,
+  IconRemove
+} from '@audius/harmony'
 import {
   Button,
   ButtonSize,
   ButtonType,
-  IconRemove,
   Modal,
   IconButton
 } from '@audius/stems'

@@ -6,7 +6,7 @@ import {
   BuyAudioStage
 } from '@audius/common/store'
 import { formatNumberString } from '@audius/common/utils'
-import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
+import { IconCaretDown, IconMultiselectRemove } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { CollapsibleContent } from 'components/collapsible-content'

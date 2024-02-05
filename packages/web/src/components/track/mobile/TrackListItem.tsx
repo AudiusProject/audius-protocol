@@ -1,15 +1,19 @@
 import { memo, MouseEvent } from 'react'
 
 import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
-import { IconKebabHorizontal, IconButton, IconLock } from '@audius/stems'
+import {
+  IconRemove as IconRemoveTrack,
+  IconPlaybackPause as IconPause,
+  IconPlaybackPlay as IconPlay,
+  IconDrag,
+  IconKebabHorizontal,
+  IconLock
+} from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import IconDrag from 'assets/img/iconDrag.svg'
-import IconRemoveTrack from 'assets/img/iconRemoveTrack.svg'
-import IconPause from 'assets/img/pbIconPause.svg'
-import IconPlay from 'assets/img/pbIconPlay.svg'
 import { SeoLink } from 'components/link'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'

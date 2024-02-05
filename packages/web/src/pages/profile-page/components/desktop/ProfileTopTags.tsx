@@ -2,8 +2,7 @@ import { useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { profilePageActions, profilePageSelectors } from '@audius/common/store'
-import { Flex, Paper } from '@audius/harmony'
-import { IconTrending } from '@audius/stems'
+import { Flex, Paper, IconTrending } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SearchTag } from 'components/search/SearchTag'

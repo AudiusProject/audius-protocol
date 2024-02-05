@@ -13,13 +13,12 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
-import { Scrollbar } from '@audius/harmony'
+import { Scrollbar, IconMultiselectAdd } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconMultiselectAdd from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'

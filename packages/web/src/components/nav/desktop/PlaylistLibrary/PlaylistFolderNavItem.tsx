@@ -11,12 +11,8 @@ import {
   modalsActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import {
-  IconFolder,
-  IconFolderOutline,
-  IconCaretRight,
-  PopupMenuItem
-} from '@audius/stems'
+import { IconFolder, IconCaretRight } from '@audius/harmony'
+import { PopupMenuItem, IconFolderOutline } from '@audius/stems'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -170,6 +166,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           <IconCaretRight
             height={11}
             width={11}
+            color='default'
             className={cn(styles.iconCaret, {
               [styles.iconCaretDown]: isExpanded
             })}
