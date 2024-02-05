@@ -56,7 +56,8 @@ const messages = {
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
-  purchaseableIsOwner: (price: string) => `Fans can unlock & download these files for a one time purchase of $${price}`
+  purchaseableIsOwner: (price: string) =>
+    `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 type DownloadSectionProps = {
@@ -81,11 +82,13 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   } = useDownloadableContentAccess({ trackId })
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
-  const formattedPrice = price ? USDC(price / 100).toLocaleString('en-us', {
-    roundingMode: 'floor',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }) : undefined
+  const formattedPrice = price
+    ? USDC(price / 100).toLocaleString('en-us', {
+        roundingMode: 'floor',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : undefined
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
@@ -191,16 +194,15 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             </Text>
           </Flex>
           <Flex gap='l' alignItems='center'>
-            {shouldDisplayPremiumDownloadLocked && formattedPrice !== undefined ? (
+            {shouldDisplayPremiumDownloadLocked &&
+            formattedPrice !== undefined ? (
               <Button
                 variant='primary'
                 size='small'
                 color='lightGreen'
                 onClick={handlePurchaseClick}
               >
-                {messages.unlockAll(
-                  formattedPrice
-                )}
+                {messages.unlockAll(formattedPrice)}
               </Button>
             ) : null}
             {shouldDisplayPremiumDownloadUnlocked ? (
