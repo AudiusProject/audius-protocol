@@ -10,7 +10,7 @@ if [[ "$audius_redis_url" == "" ]]; then
 fi
 
 if [[ "$audius_relay_host" == "" ]]; then
-    export audius_relay_host="http://relay-${replica}:6001/relay"
+    export audius_relay_host="http://audius-protocol-relay-${replica}:6001/relay"
 fi
 
 export audius_enable_rsyslog=false
