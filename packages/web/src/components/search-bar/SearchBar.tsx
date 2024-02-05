@@ -9,6 +9,7 @@ import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SearchBar.module.css'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 
 interface SearchBarProps {
   className?: string
@@ -109,15 +110,17 @@ const SearchBar = ({
         onBlur={onBlur}
         {...(open ? {} : { disabled: true })}
       />
-      <div
-        className={cn(styles.searchWrapper, iconClassname)}
-        onMouseDown={handleClick}
-      >
-        <DetailIcon
-          tooltipText={tooltipText}
-          isLoading={status === Status.LOADING && open}
-        />
-      </div>
+      <ClientOnly>
+        <div
+          className={cn(styles.searchWrapper, iconClassname)}
+          onMouseDown={handleClick}
+        >
+          <DetailIcon
+            tooltipText={tooltipText}
+            isLoading={status === Status.LOADING && open}
+          />
+        </div>
+      </ClientOnly>
     </div>
   )
 }
