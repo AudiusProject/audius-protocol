@@ -1,9 +1,9 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import {
+  Id,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
-  Id,
   userApiFetch,
   userApiUtils
 } from '@audius/common/api'
@@ -13,23 +13,25 @@ import {
 } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
 import {
+  BNUSDC,
   Name,
   Status,
-  statusIsNotFinalized,
-  combineStatuses,
   USDCTransactionDetails,
-  BNUSDC
+  combineStatuses,
+  statusIsNotFinalized
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  withdrawUSDCSelectors,
-  useUSDCTransactionDetailsModal,
   WithdrawUSDCModalPages,
-  useWithdrawUSDCModal
+  accountSelectors,
+  useUSDCTransactionDetailsModal,
+  useWithdrawUSDCModal,
+  withdrawUSDCSelectors
 } from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber, wait } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import BN from 'bn.js'
+import { useDispatch } from 'react-redux'
+import { ThunkDispatch } from 'redux-thunk'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -49,8 +51,6 @@ import {
   WithdrawalsTableSortDirection,
   WithdrawalsTableSortMethod
 } from './WithdrawalsTable'
-import { useDispatch } from 'react-redux'
-import { ThunkDispatch } from 'redux-thunk'
 
 const { getUserId } = accountSelectors
 
@@ -129,13 +129,14 @@ const useWithdrawalTransactionPoller = () => {
       setIsPolling(true)
 
       const pollForTransaction = async () => {
-        let abort = false
+        let timedOut = false
         const timerId = setTimeout(() => {
-          abort = true
+          timedOut = true
         }, 60000)
 
         let foundTransaction = false
-        while (!abort && !foundTransaction) {
+        let aborted = false
+        while (!aborted && !foundTransaction) {
           // We don't yet have a single transaction fetch API, so grab the latest 5 and check
           // for the desired signature in the response. Since this utility is meant to be used
           // for the most recently completed transaction, this is a relatively safe strategy
@@ -153,10 +154,13 @@ const useWithdrawalTransactionPoller = () => {
             )
           if (transactions.some((t) => t.signature === signature)) {
             foundTransaction = true
-          } else if (abort) {
-            throw new Error('Timed Out')
+          } else if (timedOut) {
+            aborted = true
           }
           await wait(1000)
+        }
+        if (timedOut) {
+          throw new Error('Timed Out')
         }
         clearTimeout(timerId)
       }
