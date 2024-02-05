@@ -82,7 +82,7 @@ export const useAllPaginatedQuery = <
       result.forceRefresh()
       setForceLoad(false)
     }
-  }, [result.forceRefresh, forceLoad])
+  }, [result, forceLoad])
 
   useCustomCompareEffect(
     () => {
