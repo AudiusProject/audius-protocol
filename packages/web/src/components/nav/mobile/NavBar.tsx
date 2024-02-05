@@ -1,15 +1,17 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { Status, FeatureFlags, formatCount } from '@audius/common'
-import { IconAudiusLogoHorizontal } from '@audius/harmony'
+import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { formatCount } from '@audius/common/utils'
 import {
-  IconCaretRight,
-  IconRemove,
-  IconNotification,
+  IconAudiusLogoHorizontal,
   IconSettings,
   IconCrown,
-  IconButton
-} from '@audius/stems'
+  IconCaretRight,
+  IconRemove,
+  IconNotificationOn
+} from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
 import { Link } from 'react-router-dom'
@@ -164,7 +166,7 @@ const NavBar = ({
           className={cn(styles.leftIconButton, styles.notificationIcon, {
             [styles.hasUnread]: notificationCount > 0
           })}
-          icon={<IconNotification />}
+          icon={<IconNotificationOn />}
           onClick={goToNotificationPage}
         />
         {notificationCount > 0 && (

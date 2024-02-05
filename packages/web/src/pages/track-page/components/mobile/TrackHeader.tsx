@@ -1,36 +1,36 @@
 import { useCallback } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
-  ID,
   SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  ID,
   CoverArtSizes,
   FieldVisibility,
   Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { OverflowAction } from '@audius/common/store'
+import {
   getCanonicalName,
   formatSeconds,
   formatDate,
-  OverflowAction,
-  imageBlank as placeholderArt,
-  AccessConditions,
-  Nullable,
   getDogEarType,
-  FeatureFlags,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  Nullable
+} from '@audius/common/utils'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCart,
+  IconRobot,
   IconCollectible,
   IconPause,
   IconPlay,
-  IconSpecialAccess
-} from '@audius/stems'
+  IconSpecialAccess,
+  IconCart
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import IconRobot from 'assets/img/robot.svg'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'

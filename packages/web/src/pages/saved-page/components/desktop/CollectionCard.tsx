@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
-  ID,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import Card, { CardProps } from 'components/card/desktop/Card'

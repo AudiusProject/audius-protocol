@@ -1,10 +1,11 @@
+import { Collection } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
-  Collection,
   collectionPageSelectors,
   CommonState
-} from '@audius/common'
-import { ButtonProps, ButtonType, IconRocket } from '@audius/stems'
+} from '@audius/common/store'
+import { IconRocket } from '@audius/harmony'
+import { ButtonProps, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 

@@ -1,12 +1,12 @@
 import type { ComponentProps } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useLeavingAudiusModal } from '@audius/common/store'
 import {
-  getPathFromAudiusUrl,
-  isAllowedExternalLink,
   isInteralAudiusUrl,
-  useLeavingAudiusModal
-} from '@audius/common'
+  getPathFromAudiusUrl,
+  isAllowedExternalLink
+} from '@audius/common/utils'
 import { useLinkTo } from '@react-navigation/native'
 import type { Match } from 'autolinker/dist/es2015'
 import type { LayoutRectangle, TextStyle } from 'react-native'

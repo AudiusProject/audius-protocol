@@ -1,13 +1,13 @@
 import { useSelector } from 'react-redux'
 
-import { ChallengeRewardID } from 'models/AudioRewards'
+import { ChallengeRewardID } from '~/models/AudioRewards'
 import {
   UndisbursedUserChallenge,
   audioRewardsPageSelectors
-} from 'store/pages'
-import { isCooldownChallengeClaimable } from 'utils/challenges'
-import dayjs, { Dayjs } from 'utils/dayjs'
-import { utcToLocalTime } from 'utils/timeUtil'
+} from '~/store/pages'
+import { isCooldownChallengeClaimable } from '~/utils/challenges'
+import dayjs, { Dayjs } from '~/utils/dayjs'
+import { utcToLocalTime } from '~/utils/timeUtil'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 

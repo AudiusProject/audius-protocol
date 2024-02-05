@@ -1,11 +1,11 @@
 import {
   accountSelectors,
-  Notification,
   notificationsActions,
   notificationsSelectors,
   NotificationType,
-  walletActions
-} from '@audius/common'
+  walletActions,
+  Notification
+} from '@audius/common/store'
 import { Dictionary } from '@reduxjs/toolkit'
 import { call, put, select } from 'typed-redux-saga'
 

@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { Modals } from './types'
 

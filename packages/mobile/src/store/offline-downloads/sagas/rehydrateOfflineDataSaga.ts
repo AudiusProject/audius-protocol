@@ -1,11 +1,13 @@
 import type {
   CollectionMetadata,
   ID,
-  TrackMetadata,
   UID,
+  TrackMetadata,
   UserMetadata
-} from '@audius/common'
-import { cacheActions, Kind, makeUid } from '@audius/common'
+} from '@audius/common/models'
+import { Kind } from '@audius/common/models'
+import { cacheActions } from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import { call, select, put } from 'typed-redux-saga'
 
 import {

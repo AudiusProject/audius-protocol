@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
-import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common'
-import { cacheTracksSelectors, notificationsSelectors } from '@audius/common'
+import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common/store'
+import {
+  cacheTracksSelectors,
+  notificationsSelectors
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { IconRemix } from '@audius/harmony-native'

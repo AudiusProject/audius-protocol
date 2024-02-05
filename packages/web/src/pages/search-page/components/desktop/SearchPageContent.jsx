@@ -1,14 +1,14 @@
 import { Component } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
-  Status,
-  formatCount,
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
+import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
-import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'

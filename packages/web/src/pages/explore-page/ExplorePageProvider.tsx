@@ -1,11 +1,11 @@
 import { ComponentType, useEffect } from 'react'
 
 import {
-  formatCount,
   accountSelectors,
-  explorePageActions,
-  explorePageSelectors
-} from '@audius/common'
+  explorePageSelectors,
+  explorePageActions
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'

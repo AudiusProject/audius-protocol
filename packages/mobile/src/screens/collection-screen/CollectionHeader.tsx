@@ -1,13 +1,13 @@
 import { useLayoutEffect, useState } from 'react'
 
-import type { Collection, SmartCollectionVariant } from '@audius/common'
+import { useThrottledCallback } from '@audius/common/hooks'
+import { Variant } from '@audius/common/models'
+import type { SmartCollectionVariant, Collection } from '@audius/common/models'
 import {
-  useThrottledCallback,
   accountSelectors,
-  reachabilitySelectors,
   collectionPageSelectors,
-  Variant
-} from '@audius/common'
+  reachabilitySelectors
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 

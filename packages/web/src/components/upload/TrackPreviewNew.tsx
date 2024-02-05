@@ -1,23 +1,28 @@
 import { useState } from 'react'
 
+import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  StemCategory,
-  stemCategoryFriendlyNames,
-  useFeatureFlag
-} from '@audius/common'
-import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
-import { HarmonyPlainButton, IconTrash } from '@audius/stems'
+  Box,
+  FilterButton,
+  Flex,
+  IconCompose,
+  IconFileAIFF as iconFileAiff,
+  IconFileFLAC as iconFileFlac,
+  IconFileM4A as iconFileM4a,
+  IconFileMP3 as iconFileMp3,
+  IconFileOGG as iconFileOgg,
+  IconFileUnknown as iconFileUnknown,
+  IconFileWAV as iconFileWav,
+  IconTrash
+} from '@audius/harmony'
+import { HarmonyPlainButton } from '@audius/stems'
+import cn from 'classnames'
 import numeral from 'numeral'
 
-import iconFileAiff from 'assets/img/iconFileAiff.svg'
-import iconFileFlac from 'assets/img/iconFileFlac.svg'
-import iconFileM4a from 'assets/img/iconFileM4a.svg'
-import iconFileMp3 from 'assets/img/iconFileMp3.svg'
-import iconFileOgg from 'assets/img/iconFileOgg.svg'
-import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
-import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
 import styles from './TrackPreview.module.css'
@@ -58,10 +63,13 @@ type TrackPreviewProps = {
   isStem?: boolean
   stemCategory?: StemCategory
   onEditStemCategory?: (stemCategory: StemCategory) => void
+  isEdit?: boolean
+  isDisabled?: boolean
+  className?: string
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+  const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 
@@ -76,10 +84,14 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     onEditTitle,
     isStem,
     stemCategory,
-    onEditStemCategory
+    onEditStemCategory,
+    isEdit,
+    isDisabled,
+    className
   } = props
 
-  const Icon = fileTypeIcon(fileType)
+  const Icon = isEdit ? iconFileUnknown : fileTypeIcon(fileType)
+  const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
 
@@ -91,13 +103,13 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
   )
 
   return (
-    <div className={styles.trackPreviewNew}>
+    <div className={cn(styles.trackPreviewNew, className)}>
       {displayIndex ? (
         <Text className={styles.indexText} size='small'>
           {index + 1}
         </Text>
       ) : null}
-      <Icon className={styles.trackPreviewImage} />
+      <Icon className={styles.trackPreviewImage} style={iconStyle} />
       {isLosslessDownloadsEnabled && isTitleEditable && onEditTitle ? (
         <EditableLabel
           isEditing={isEditingTitle}
@@ -122,7 +134,9 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
                 horizontal: 'right'
               }}
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
-              selection={stemCategory?.toString()}
+              selection={stemCategory?.toString() ?? null}
+              popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
+              isDisabled={isDisabled}
             />
           </Box>
         ) : null}
@@ -131,13 +145,13 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           size='small'
           color='neutralLight2'
         >
-          {numeral(fileSize).format('0.0 b')}
+          {isEdit ? '' : numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
             {isTitleEditable ? (
               <HarmonyPlainButton
-                iconRight={IconPenSquare}
+                iconRight={IconCompose}
                 onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
               />

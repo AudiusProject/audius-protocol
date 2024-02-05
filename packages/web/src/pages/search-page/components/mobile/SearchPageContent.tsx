@@ -1,24 +1,26 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
-  UID,
   Name,
-  UserCollection,
-  LineupState,
   Status,
-  User,
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
-} from '@audius/common'
-import { IconAlbum } from '@audius/harmony'
+  UserCollection,
+  UID,
+  LineupState,
+  User
+} from '@audius/common/models'
+import { searchResultsPageTracksLineupActions as tracksActions } from '@audius/common/store'
+import { trimToAlphaNumeric } from '@audius/common/utils'
+import {
+  IconAlbum,
+  IconSearch,
+  IconNote,
+  IconPlaylists,
+  IconUser
+} from '@audius/harmony'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconBigSearch from 'assets/img/iconBigSearch.svg'
-import IconNote from 'assets/img/iconNote.svg'
-import IconPlaylists from 'assets/img/iconPlaylists.svg'
-import IconUser from 'assets/img/iconUser.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
@@ -90,7 +92,7 @@ const NoResults = ({
 }) => (
   <div className={styles.centeringContainer}>
     <div className={styles.noResults}>
-      <IconBigSearch />
+      <IconSearch />
       <div>
         {isTagSearch
           ? TrackSearchPageMessages.title1Tag

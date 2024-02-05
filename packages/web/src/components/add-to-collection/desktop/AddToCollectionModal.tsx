@@ -2,21 +2,23 @@ import { useMemo, useState } from 'react'
 
 import {
   CreatePlaylistSource,
-  Collection,
   SquareSizes,
+  Collection
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { IconMultiselectAdd } from '@audius/harmony'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconMultiselectAdd from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'

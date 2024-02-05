@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { PublicKey } from '@solana/web3.js'
 import type {
   Account as AuthorizedAccount,

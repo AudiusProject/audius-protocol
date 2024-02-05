@@ -1,4 +1,4 @@
-import type { BadgeTier } from '@audius/common'
+import type { BadgeTier } from '@audius/common/models'
 import type { ImageStyle } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'

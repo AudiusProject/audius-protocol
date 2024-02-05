@@ -1,35 +1,34 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
-  fillString,
-  formatNumberCommas,
   accountSelectors,
   challengesSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  ClaimStatus,
   audioRewardsPageSelectors,
-  getAAOErrorEmojis,
+  audioRewardsPageActions,
+  ClaimStatus,
   musicConfettiActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+import {
+  fillString,
+  formatNumberCommas,
+  getAAOErrorEmojis,
   challengeRewardsConfig,
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
-} from '@audius/common'
+} from '@audius/common/utils'
 import {
-  Button,
-  ButtonType,
-  ProgressBar,
+  IconCopy,
+  IconValidationCheck,
   IconCheck,
   IconVerified,
-  IconTwitterBird,
-  ModalContent
-} from '@audius/stems'
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import { Button, ButtonType, ProgressBar, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCopy from 'assets/img/iconCopy.svg'
-import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

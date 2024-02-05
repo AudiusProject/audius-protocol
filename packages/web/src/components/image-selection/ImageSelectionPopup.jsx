@@ -1,19 +1,16 @@
 import { useState, useCallback, useRef, useContext } from 'react'
 
-import {
-  RandomImage,
-  accountSelectors,
-  badgeTiers,
-  useSelectTierInfo,
-  removeNullable
-} from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { RandomImage } from '@audius/common/services'
+import { accountSelectors, badgeTiers } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
+import { IconSearch } from '@audius/harmony'
 import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useWindowSize } from 'react-use'
 
-import IconSearch from 'assets/img/iconSearch.svg'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { MainContentContext } from 'pages/MainContentContext'

@@ -1,45 +1,45 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
 import {
-  ID,
-  UID,
   Name,
-  FollowSource,
   ShareSource,
-  BadgeTier,
+  FollowSource,
+  CreatePlaylistSource,
   Status,
-  formatCount,
-  getErrorMessage,
+  BadgeTier,
+  ID,
+  UID
+} from '@audius/common/models'
+import { newUserMetadata } from '@audius/common/schemas'
+import {
   accountActions,
   accountSelectors,
-  profilePageSelectors,
-  CollectionSortMode,
-  ProfilePageTabs,
-  FollowType,
-  TracksSortMode,
-  getTabForRoute,
-  profilePageActions as profileActions,
-  profilePageTracksLineupActions as tracksActions,
+  cacheCollectionsActions,
   profilePageFeedLineupActions as feedActions,
-  relatedArtistsUISelectors,
-  OverflowSource,
-  OverflowAction,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  followingUserListActions,
-  followersUserListActions,
-  usersSocialActions as socialActions,
-  newUserMetadata,
-  playerSelectors,
-  queueSelectors,
-  Nullable,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageActions as profileActions,
+  profilePageSelectors,
+  FollowType,
+  CollectionSortMode,
+  TracksSortMode,
+  ProfilePageTabs,
+  getTabForRoute,
   chatActions,
   chatSelectors,
   ChatPermissionAction,
+  queueSelectors,
+  usersSocialActions as socialActions,
+  relatedArtistsUISelectors,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
   inboxUnavailableModalActions,
-  cacheCollectionsActions,
-  CreatePlaylistSource
-} from '@audius/common'
+  followingUserListActions,
+  followersUserListActions,
+  playerSelectors
+} from '@audius/common/store'
+import { getErrorMessage, formatCount, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
@@ -1002,6 +1002,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
 
     return (
+      // @ts-ignore wrong lineup type
       <this.props.children
         key={getPathname(this.props.location)}
         {...childProps}

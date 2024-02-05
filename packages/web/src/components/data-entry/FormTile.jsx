@@ -1,14 +1,15 @@
 import { Component, useState, useCallback } from 'react'
 
+import { createRemixOfMetadata } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  GENRES,
-  convertGenreLabelToValue,
-  getCanonicalName,
-  createRemixOfMetadata,
   creativeCommons,
-  FeatureFlags
-} from '@audius/common'
-import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
+  getCanonicalName,
+  GENRES,
+  convertGenreLabelToValue
+} from '@audius/common/utils'
+import { IconCloudDownload, IconIndent } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
@@ -26,7 +27,7 @@ import TextArea from 'components/data-entry/TextArea'
 import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
-import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
+import { StemFilesModal } from 'components/stem-files-modal/StemFilesModal'
 import Switch from 'components/switch/Switch'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
@@ -256,7 +257,11 @@ const BasicForm = (props) => {
 
   const renderSourceFilesModal = () => {
     return (
-      <SourceFilesModal
+      <StemFilesModal
+        isOriginalAvailable={props.defaultFields.is_original_available}
+        onUpdateIsOriginalAvailable={(value) =>
+          props.onChangeField('is_original_available', value)
+        }
         downloadSettings={props.defaultFields.download}
         onUpdateDownloadSettings={(settings) =>
           props.onChangeField('download', settings)
@@ -282,7 +287,7 @@ const BasicForm = (props) => {
           iconClassName={styles.menuButtonIcon}
           name='DownloadAndSource'
           text='Downloads & Source Files'
-          leftIcon={<IconDownload />}
+          leftIcon={<IconCloudDownload />}
           onClick={() => setSourceFilesModalVisible(true)}
         />
       )

@@ -1,4 +1,4 @@
-import { makeTwitterShareUrl } from '@audius/common'
+import { makeTwitterShareUrl } from '@audius/common/utils'
 
 export const openTwitterLink = (url: string | null, text: string) => {
   const twitterShareLink = makeTwitterShareUrl(url, text)

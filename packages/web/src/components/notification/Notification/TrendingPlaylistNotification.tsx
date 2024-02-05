@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Name,
-  Nullable,
   notificationsSelectors,
-  TrendingPlaylistNotification as TrendingPlaylistNotificationType,
-  CollectionEntity
-} from '@audius/common'
+  CollectionEntity,
+  TrendingPlaylistNotification as TrendingPlaylistNotificationType
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

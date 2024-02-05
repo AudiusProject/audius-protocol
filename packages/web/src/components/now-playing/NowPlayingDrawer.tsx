@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react'
 
-import { useInstanceVar, nowPlayingUIActions } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
+import { nowPlayingUIActions } from '@audius/common/store'
 import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

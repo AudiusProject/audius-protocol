@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   cacheCollectionsActions,
   publishPlaylistConfirmationModalUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

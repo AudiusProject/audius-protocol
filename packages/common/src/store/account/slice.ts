@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { User } from 'models'
-import { Nullable } from 'utils/typeUtils'
+import { User } from '~/models'
+import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
 import { Status } from '../../models/Status'

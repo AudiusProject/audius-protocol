@@ -1,12 +1,12 @@
 import { Fragment, useCallback } from 'react'
 
 import {
-  UserCollection,
   Variant as CollectionVariant,
   Status,
-  User,
-  ExploreCollectionsVariant
-} from '@audius/common'
+  UserCollection,
+  User
+} from '@audius/common/models'
+import { ExploreCollectionsVariant } from '@audius/common/store'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'

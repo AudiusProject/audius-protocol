@@ -1,4 +1,4 @@
-import { PlaybackRate } from 'store/player'
+import { PlaybackRate } from '~/store/player'
 
 import { Nullable } from '../utils'
 

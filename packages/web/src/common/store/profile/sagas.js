@@ -1,30 +1,30 @@
+import { DefaultSizes, Kind } from '@audius/common/models'
+import { DoubleKeys, FeatureFlags } from '@audius/common/services'
 import {
-  DefaultSizes,
-  Kind,
-  DoubleKeys,
-  makeUid,
-  makeKindId,
-  squashNewLines,
   accountSelectors,
   cacheActions,
+  processAndCacheUsers,
+  profilePageActions as profileActions,
   profilePageSelectors,
   FollowType,
-  profilePageActions as profileActions,
+  chatActions,
   reachabilitySelectors,
   tippingActions,
   relatedArtistsUIActions as relatedArtistsActions,
-  waitForAccount,
-  dataURLtoFile,
-  SUPPORTING_PAGINATION_SIZE,
-  MAX_PROFILE_SUPPORTING_TILES,
-  MAX_PROFILE_TOP_SUPPORTERS,
   collectiblesActions,
-  processAndCacheUsers,
-  chatActions,
-  FeatureFlags,
   confirmerActions,
   confirmTransaction
-} from '@audius/common'
+} from '@audius/common/store'
+import {
+  squashNewLines,
+  makeUid,
+  makeKindId,
+  waitForAccount,
+  dataURLtoFile,
+  MAX_PROFILE_TOP_SUPPORTERS,
+  MAX_PROFILE_SUPPORTING_TILES,
+  SUPPORTING_PAGINATION_SIZE
+} from '@audius/common/utils'
 import { merge } from 'lodash'
 import {
   all,
@@ -109,19 +109,19 @@ function* fetchProfileCustomizedCollectibles(user) {
   }
 }
 
-export function* fetchOpenSeaAssetsForWallets(wallets) {
+export function* fetchOpenSeaNftsForWallets(wallets) {
   const openSeaClient = yield getContext('openSeaClient')
   return yield call([openSeaClient, openSeaClient.getAllCollectibles], wallets)
 }
 
-export function* fetchOpenSeaAssets(user) {
+export function* fetchOpenSeaNfts(user) {
   const apiClient = yield getContext('apiClient')
   const associatedWallets = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
   if (associatedWallets) {
     const { wallets } = associatedWallets
-    const collectiblesMap = yield call(fetchOpenSeaAssetsForWallets, [
+    const collectiblesMap = yield call(fetchOpenSeaNftsForWallets, [
       user.wallet,
       ...wallets
     ])
@@ -323,7 +323,7 @@ function* fetchProfileAsync(action) {
     }
 
     yield fork(fetchProfileCustomizedCollectibles, user)
-    yield fork(fetchOpenSeaAssets, user)
+    yield fork(fetchOpenSeaNfts, user)
     yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status

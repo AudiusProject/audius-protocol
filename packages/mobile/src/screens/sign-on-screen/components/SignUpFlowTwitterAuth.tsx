@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 
-import {
-  formatTwitterProfile,
-  pickHandleSchema,
-  socialMediaMessages,
-  useAudiusQueryContext
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { socialMediaMessages } from '@audius/common/messages'
+import { pickHandleSchema } from '@audius/common/schemas'
+import { formatTwitterProfile } from '@audius/common/services'
 import { useAsync } from 'react-use'
 
 import { SocialButton } from '@audius/harmony-native'

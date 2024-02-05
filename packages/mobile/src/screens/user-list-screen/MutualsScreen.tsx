@@ -4,7 +4,7 @@ import {
   mutualsUserListActions,
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { IconUserFollowing } from '@audius/harmony-native'

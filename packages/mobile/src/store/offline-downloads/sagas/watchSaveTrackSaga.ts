@@ -1,4 +1,4 @@
-import { tracksSocialActions } from '@audius/common'
+import { tracksSocialActions } from '@audius/common/store'
 import moment from 'moment'
 import { put, takeEvery, select } from 'typed-redux-saga'
 

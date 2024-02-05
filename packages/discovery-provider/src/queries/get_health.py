@@ -368,6 +368,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         },
     }
 
+    if os.getenv("AUDIUS_D_GENERATED"):
+        health_results["audius_d_managed"] = True
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
         health_results["audius-docker-compose"] = os.getenv(
             "AUDIUS_DOCKER_COMPOSE_GIT_SHA"

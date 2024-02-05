@@ -1,8 +1,7 @@
 import { ReactNode } from 'react'
 
+import { IconQuestionCircle } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconQuestionCircle from 'assets/img/iconQuestionCircle.svg'
 
 import styles from './HelpCallout.module.css'
 

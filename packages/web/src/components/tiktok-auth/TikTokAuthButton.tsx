@@ -1,6 +1,6 @@
 import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
-import { TikTokProfile } from '@audius/common'
+import { TikTokProfile } from '@audius/common/store'
 
 import {
   TikTokButton,

@@ -1,14 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons } from '@audius/common'
-import { IconRobot } from '@audius/stems'
+import { creativeCommons } from '@audius/common/utils'
+import { IconCcBy as IconCreativeCommons, IconRobot } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconCreativeCommons from 'assets/img/iconCreativeCommons.svg'
 import { Icon } from 'components/Icon'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
 import {
@@ -106,8 +105,11 @@ const derivativeWorksValues = [
   { key: null, text: messages.derivativeWorks.options.null }
 ]
 
-const isrcRegex = /^[A-Z]{2}-[A-Z\d]{3}-\d{2}-\d{5}$/i
-const iswcRegex = /^T-\d{9}-\d$/i
+// Use standard ISRC and ISWC formats, but allow for optional periods and hyphens
+// ISRC: https://www.wikidata.org/wiki/Property:P1243
+// ISWC: https://www.wikidata.org/wiki/Property:P1827
+const isrcRegex = /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i
+const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 
 const AttributionFormSchema = z
   .object({

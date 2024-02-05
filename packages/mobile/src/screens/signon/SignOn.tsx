@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { formatOtp } from '@audius/common/schemas'
+import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
@@ -224,8 +225,6 @@ const styles = StyleSheet.create({
   },
   errorIcon: {
     flex: 1,
-    width: 12,
-    height: 12,
     marginRight: 10,
     alignSelf: 'center'
   },
@@ -456,7 +455,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.requiresOtp}</Text>
         </Animated.View>
       )
@@ -465,7 +464,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
       )
@@ -475,7 +474,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
       )
@@ -485,14 +484,17 @@ const SignOn = ({ navigation }: SignOnProps) => {
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}
         >
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
       )
     }
     return (
       <View style={styles.errorContainer}>
-        <IconMultiselectRemove style={[styles.errorIcon, { opacity: 0 }]} />
+        <IconMultiselectRemove
+          style={[styles.errorIcon, { opacity: 0 }]}
+          size='m'
+        />
         <Text />
       </View>
     )
@@ -579,7 +581,12 @@ const SignOn = ({ navigation }: SignOnProps) => {
     return <></>
   }
 
-  const otpInputField = () => {
+  const OtpInputField = ({ show }: { show: boolean }) => {
+    const [value, setValue] = useState('')
+
+    if (!show) {
+      return null
+    }
     return (
       <TextInput
         style={[styles.inputPass, { borderColor: otpBorderColor }]}
@@ -590,11 +597,15 @@ const SignOn = ({ navigation }: SignOnProps) => {
         autoCorrect={false}
         autoCapitalize='characters'
         enablesReturnKeyAutomatically={true}
-        maxLength={6}
+        keyboardType='number-pad'
         inputMode='numeric'
         textContentType='oneTimeCode'
-        onChangeText={(newText) => {
-          dispatch(signOnActions.setValueField('otp', newText))
+        value={value}
+        onChangeText={(text) => {
+          const formatted = formatOtp(text)
+          setValue(formatted)
+          const sanitized = formatted.replace(/\s/g, '')
+          dispatch(signOnActions.setValueField('otp', sanitized))
         }}
         onFocus={() => {
           setOtpBorderColor('#7E1BCC')
@@ -773,7 +784,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
               />
               {passwordInputField()}
               {errorView()}
-              {requiresOtp ? otpInputField() : null}
+              {OtpInputField({
+                show: requiresOtp || (!!otpField.value && isWorking)
+              })}
               <MainButton isWorking={isWorking} isSignin={isSignin} />
             </View>
           </Animated.View>

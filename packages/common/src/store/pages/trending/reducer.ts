@@ -1,6 +1,6 @@
 import { History } from 'history'
 
-import { LineupActions, asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
@@ -9,13 +9,13 @@ import {
   SetTrendingTimeRangeAction,
   SetLastFetchedTrendingGenreAction,
   TrendingPageAction
-} from 'store/pages/trending/actions'
+} from '~/store/pages/trending/actions'
 import {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_ALL_TIME_PREFIX
-} from 'store/pages/trending/lineup/actions'
-import { GENRES, Genre } from 'utils/genres'
+} from '~/store/pages/trending/lineup/actions'
+import { GENRES, Genre } from '~/utils/genres'
 
 import { TimeRange, Track } from '../../../models'
 

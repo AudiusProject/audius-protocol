@@ -1,9 +1,7 @@
-import {
-  CommonState,
-  ID,
-  cacheTracksSelectors,
-  useDownloadableContentAccess
-} from '@audius/common'
+import { useDownloadableContentAccess } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
+import { cacheTracksSelectors, CommonState } from '@audius/common/store'
+import { formatBytes } from '@audius/common/utils'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -22,13 +20,15 @@ type DownloadRowProps = {
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   hideDownload?: boolean
   index: number
+  size?: number
 }
 
 export const DownloadRow = ({
   trackId,
   onDownload,
   hideDownload,
-  index
+  index,
+  size
 }: DownloadRowProps) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -60,7 +60,9 @@ export const DownloadRow = ({
       justifyContent='space-between'
     >
       <Flex gap='xl' alignItems='center'>
-        <Text>{index}</Text>
+        <Text variant='body' color='subdued'>
+          {index}
+        </Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
             {track?.stem_of?.category ?? messages.fullTrack}
@@ -73,7 +75,11 @@ export const DownloadRow = ({
       <Flex gap='2xl'>
         {hideDownload ? null : (
           <>
-            <Text>size</Text>
+            {size ? (
+              <Text variant='body' size='s' color='subdued'>
+                {formatBytes(size)}
+              </Text>
+            ) : null}
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}

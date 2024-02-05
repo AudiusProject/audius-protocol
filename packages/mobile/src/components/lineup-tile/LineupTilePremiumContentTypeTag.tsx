@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
+import type { AccessConditions } from '@audius/common/models'
 import {
+  GatedContentType,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated,
-  type AccessConditions,
-  GatedContentType
-} from '@audius/common'
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import { View } from 'react-native'
 
 import {

@@ -1,4 +1,4 @@
-import { getContext } from '@audius/common'
+import { getContext } from '@audius/common/store'
 import { Action } from 'redux'
 import { eventChannel } from 'redux-saga'
 import { select, put, take, delay } from 'redux-saga/effects'

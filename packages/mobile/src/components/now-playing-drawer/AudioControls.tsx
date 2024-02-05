@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  modalsActions,
   queueActions,
   queueSelectors,
-  RepeatMode
-} from '@audius/common'
+  RepeatMode,
+  modalsActions
+} from '@audius/common/store'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

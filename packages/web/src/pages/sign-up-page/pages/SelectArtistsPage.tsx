@@ -2,14 +2,13 @@ import { useCallback, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import {
-  Genre,
-  Status,
-  convertGenreLabelToValue,
-  useGetFeaturedArtists,
   useGetTopArtistsInGenre,
-  selectArtstsPageMessages as messages,
-  selectArtistsSchema
-} from '@audius/common'
+  useGetFeaturedArtists
+} from '@audius/common/api'
+import { selectArtistsPageMessages } from '@audius/common/messages'
+import { Status, UserMetadata } from '@audius/common/models'
+import { selectArtistsSchema } from '@audius/common/schemas'
+import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
@@ -124,7 +123,9 @@ export const SelectArtistsPage = () => {
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
               mode='viewing'
-              backButtonText={isMobile ? undefined : messages.backToGenres}
+              backButtonText={
+                isMobile ? undefined : selectArtistsPageMessages.backToGenres
+              }
             />
             <AnimatedFlex
               direction='column'
@@ -152,8 +153,8 @@ export const SelectArtistsPage = () => {
                 <Heading
                   ref={headerContainerRef}
                   ph={isMobile ? 'l' : undefined}
-                  heading={messages.header}
-                  description={messages.description}
+                  heading={selectArtistsPageMessages.header}
+                  description={selectArtistsPageMessages.description}
                   centered={!isMobile}
                 />
                 <ScrollView
@@ -164,7 +165,7 @@ export const SelectArtistsPage = () => {
                   justifyContent={isMobile ? 'flex-start' : 'center'}
                   role='radiogroup'
                   onChange={handleChangeGenre}
-                  aria-label={messages.genresLabel}
+                  aria-label={selectArtistsPageMessages.genresLabel}
                   disableScroll={!isMobile}
                 >
                   {artistGenres.map((genre) => (
@@ -194,7 +195,7 @@ export const SelectArtistsPage = () => {
                   direction='column'
                 >
                   <HiddenLegend>
-                    {messages.pickArtists(currentGenre)}
+                    {selectArtistsPageMessages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
                   {isLoading || !isMobile ? null : <PreviewArtistHint />}
@@ -208,7 +209,10 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistCard key={user.user_id} user={user} />
+                          <FollowArtistCard
+                            key={user.user_id}
+                            user={user as UserMetadata}
+                          />
                         ))}
                   </Flex>
                 </ArtistsList>
@@ -223,7 +227,8 @@ export const SelectArtistsPage = () => {
               }}
               postfix={
                 <Text variant='body'>
-                  {messages.selected} {selectedArtists.length || 0}/3
+                  {selectArtistsPageMessages.selected}{' '}
+                  {selectedArtists.length || 0}/3
                 </Text>
               }
             />

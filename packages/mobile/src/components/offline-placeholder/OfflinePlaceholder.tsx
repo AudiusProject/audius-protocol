@@ -1,4 +1,4 @@
-import { wait } from '@audius/common'
+import { wait } from '@audius/common/utils'
 import NetInfo from '@react-native-community/netinfo'
 import { View } from 'react-native'
 import { useAsyncFn } from 'react-use'

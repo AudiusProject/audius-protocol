@@ -1,7 +1,7 @@
 import { full } from '@audius/sdk'
 
-import type { Dayjs } from 'utils/dayjs'
-import { ValueOf } from 'utils/typeUtils'
+import type { Dayjs } from '~/utils/dayjs'
+import { ValueOf } from '~/utils/typeUtils'
 
 import {
   UID,

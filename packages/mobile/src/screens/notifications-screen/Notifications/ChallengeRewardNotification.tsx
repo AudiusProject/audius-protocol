@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import type {
-  ChallengeRewardID,
-  ChallengeRewardNotification as ChallengeRewardNotificationType
-} from '@audius/common'
+import type { ChallengeRewardID } from '@audius/common/models'
+import type { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import { Platform } from 'react-native'
 
 import { IconAudiusLogo } from '@audius/harmony-native'

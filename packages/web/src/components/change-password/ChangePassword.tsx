@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
-  Status,
-  ChangePasswordPageStep,
   changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
-import { Button, ButtonType, IconLock } from '@audius/stems'
+  changePasswordActions,
+  ChangePasswordPageStep
+} from '@audius/common/store'
+import { IconLock } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

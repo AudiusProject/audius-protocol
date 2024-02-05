@@ -3,6 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useEffect, useRef, useState } from 'react'
 
+import { IconCalendarMonth } from '@audius/harmony'
 import { Popup } from '@audius/stems'
 import { Origin } from '@audius/stems/dist/components/Popup/types'
 import cn from 'classnames'
@@ -12,8 +13,6 @@ import {
   isInclusivelyBeforeDay,
   DayPickerSingleDateController
 } from 'react-dates'
-
-import IconCalendar from 'assets/img/iconCalendar.svg'
 
 import styles from './DatePickerField.module.css'
 
@@ -45,7 +44,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         className={styles.datePickerField}
         onClick={() => setIsFocused(true)}
       >
-        <IconCalendar className={styles.iconCalendar} />
+        <IconCalendarMonth className={styles.iconCalendar} />
         <div>
           <div className={styles.label}>{label}</div>
           <input

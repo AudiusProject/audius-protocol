@@ -1,27 +1,31 @@
 {
   "name": "@audius/common",
-  "version": "1.5.64",
+  "version": "1.5.65",
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
   "license": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.js",
-  "exports": "./dist/index.js",
-  "files": [
-    "src"
-  ],
+  "exports": {
+    "./api": "./src/api/index.ts",
+    "./assets": "./src/assets/index.ts",
+    "./audius-query": "./src/audius-query/index.ts",
+    "./context": "./src/context/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./messages": "./src/messages/index.ts",
+    "./models": "./src/models/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./services": "./src/services/index.ts",
+    "./store": "./src/store/index.ts",
+    "./utils": "./src/utils/index.ts"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AudiusProject/audius-client.git"
   },
   "scripts": {
-    "build": "rollup -c",
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
-    "start": "rollup -c -w",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "verify": "concurrently \"npm:lint:fix\""
@@ -64,7 +68,6 @@
   },
   "devDependencies": {
     "@reduxjs/toolkit": "1.6.1",
-    "@rollup/plugin-image": "^2.1.1",
     "@types/bn.js": "5.1.0",
     "@types/jest": "29.5.7",
     "@types/lodash": "4.14.149",
@@ -75,9 +78,6 @@
     "eslint": "8.56.0",
     "jest": "29.7.0",
     "react": "18.2.0",
-    "rollup": "2.76.0",
-    "rollup-plugin-dts": "4.2.2",
-    "rollup-plugin-typescript2": "0.32.1",
     "@stripe/crypto": "0.0.4",
     "ts-patch": "3.1.1",
     "typescript-transform-paths": "3.4.4"

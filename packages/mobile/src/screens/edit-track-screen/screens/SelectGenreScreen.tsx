@@ -1,4 +1,4 @@
-import { convertGenreLabelToValue, GENRES } from '@audius/common'
+import { GENRES, convertGenreLabelToValue } from '@audius/common/utils'
 import { useField } from 'formik'
 
 import IconGenre from 'app/assets/images/iconGenre.svg'

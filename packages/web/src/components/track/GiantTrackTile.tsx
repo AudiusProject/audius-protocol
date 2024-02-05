@@ -1,39 +1,43 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
-  FeatureFlags,
-  Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
-  getDogEarType,
   isContentUSDCPurchaseGated,
-  publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
-import { Box, Flex } from '@audius/harmony'
-import { Mood } from '@audius/sdk'
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Button,
-  ButtonType,
-  IconShare,
-  IconRocket,
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions,
+  CommonState
+} from '@audius/common/store'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
+import {
+  Box,
+  Flex,
+  IconRobot,
   IconRepost,
   IconHeart,
-  IconKebabHorizontal
-} from '@audius/stems'
+  IconKebabHorizontal,
+  IconShare,
+  IconRocket
+} from '@audius/harmony'
+import { Mood } from '@audius/sdk'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
-import IconRobot from 'assets/img/robot.svg'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'

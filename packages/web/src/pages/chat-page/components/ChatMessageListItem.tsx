@@ -1,21 +1,22 @@
 import { useCallback, useRef, useState } from 'react'
 
+import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
+import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
   chatActions,
+  ReactionTypes
+} from '@audius/common/store'
+import {
+  formatMessageDate,
   decodeHashId,
   encodeHashId,
-  ReactionTypes,
-  useProxySelector,
-  formatMessageDate,
-  isTrackUrl,
   isCollectionUrl,
-  ChatMessageWithExtras,
-  Status,
-  useCanSendMessage
-} from '@audius/common'
-import { IconError, IconPlus, PopupPosition } from '@audius/stems'
+  isTrackUrl
+} from '@audius/common/utils'
+import { IconError, IconPlus } from '@audius/harmony'
+import { PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'

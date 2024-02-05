@@ -1,4 +1,4 @@
-import { OS } from '@audius/common'
+import { OS } from '@audius/common/models'
 
 import { env } from 'services/env'
 

@@ -1,26 +1,27 @@
+import { Kind } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
-  Kind,
-  encodeHashId,
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
+  reachabilitySelectors,
   tracksSocialActions,
   getContext,
-  actionChannelDispatcher,
   playerActions,
   playerSelectors,
   playbackPositionActions,
   playbackPositionSelectors,
-  reachabilitySelectors,
-  Nullable,
-  FeatureFlags,
-  gatedContentSelectors,
-  QueryParams,
+  gatedContentSelectors
+} from '@audius/common/store'
+import {
   Genre,
+  encodeHashId,
+  actionChannelDispatcher,
   getQueryParams,
-  getTrackPreviewDuration
-} from '@audius/common'
+  getTrackPreviewDuration,
+  Nullable
+} from '@audius/common/utils'
 import { eventChannel } from 'redux-saga'
 import {
   select,

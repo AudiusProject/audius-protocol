@@ -1,8 +1,8 @@
 import {
-  Entity,
   notificationsSelectors,
+  Entity,
   RepostOfRepostNotification as RepostOfRepostNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
 
 import { useSelector } from 'utils/reducer'
 

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useLeavingAudiusModal } from '@audius/common'
+import { useLeavingAudiusModal } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconExternalLink, IconInfo } from '@audius/harmony-native'

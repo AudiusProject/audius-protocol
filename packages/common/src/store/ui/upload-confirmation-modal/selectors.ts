@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 export const getHasPublicTracks = (state: CommonState) =>
   state.ui.uploadConfirmationModal.hasPublicTracks

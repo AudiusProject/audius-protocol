@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useCallback } from 'react'
 
-import type { Theme } from '@audius/common'
+import type { Theme } from '@audius/common/models'
 import { Pressable, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { usePrevious } from 'react-use'

@@ -274,6 +274,7 @@ export interface GetUSDCTransactionCountRequest {
     encodedDataMessage: string;
     encodedDataSignature: string;
     type?: GetUSDCTransactionCountTypeEnum;
+    includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
 }
 
@@ -286,6 +287,7 @@ export interface GetUSDCTransactionsRequest {
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
     sortDirection?: GetUSDCTransactionsSortDirectionEnum;
     type?: GetUSDCTransactionsTypeEnum;
+    includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionsMethodEnum;
 }
 
@@ -1541,6 +1543,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['type'] = params.type;
         }
 
+        if (params.includeSystemTransactions !== undefined) {
+            queryParameters['include_system_transactions'] = params.includeSystemTransactions;
+        }
+
         if (params.method !== undefined) {
             queryParameters['method'] = params.method;
         }
@@ -1610,6 +1616,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.type !== undefined) {
             queryParameters['type'] = params.type;
+        }
+
+        if (params.includeSystemTransactions !== undefined) {
+            queryParameters['include_system_transactions'] = params.includeSystemTransactions;
         }
 
         if (params.method !== undefined) {
@@ -2238,6 +2248,9 @@ export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandle
 export const GetUSDCTransactionCountTypeEnum = {
     PurchaseContent: 'purchase_content',
     Transfer: 'transfer',
+    PrepareWithdrawal: 'prepare_withdrawal',
+    RecoverWithdrawal: 'recover_withdrawal',
+    Withdrawal: 'withdrawal',
     PurchaseStripe: 'purchase_stripe'
 } as const;
 export type GetUSDCTransactionCountTypeEnum = typeof GetUSDCTransactionCountTypeEnum[keyof typeof GetUSDCTransactionCountTypeEnum];
@@ -2271,6 +2284,9 @@ export type GetUSDCTransactionsSortDirectionEnum = typeof GetUSDCTransactionsSor
 export const GetUSDCTransactionsTypeEnum = {
     PurchaseContent: 'purchase_content',
     Transfer: 'transfer',
+    PrepareWithdrawal: 'prepare_withdrawal',
+    RecoverWithdrawal: 'recover_withdrawal',
+    Withdrawal: 'withdrawal',
     PurchaseStripe: 'purchase_stripe'
 } as const;
 export type GetUSDCTransactionsTypeEnum = typeof GetUSDCTransactionsTypeEnum[keyof typeof GetUSDCTransactionsTypeEnum];

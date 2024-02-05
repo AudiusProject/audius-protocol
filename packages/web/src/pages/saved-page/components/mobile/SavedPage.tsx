@@ -8,30 +8,31 @@ import {
 } from 'react'
 
 import {
-  CommonState,
-  ID,
-  LibraryCategory,
-  Lineup,
+  useGatedContentAccessMap,
+  useDebouncedCallback
+} from '@audius/common/hooks'
+import {
   Name,
-  QueueItem,
-  SavedPageTabs,
-  SavedPageTrack,
+  statusIsNotFinalized,
+  ID,
   UID,
+  Lineup
+} from '@audius/common/models'
+import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   savedPageSelectors,
-  statusIsNotFinalized,
-  useDebouncedCallback,
-  useGatedContentAccessMap
-} from '@audius/common'
-import { IconAlbum } from '@audius/harmony'
+  LibraryCategory,
+  SavedPageTabs,
+  SavedPageTrack,
+  QueueItem,
+  CommonState
+} from '@audius/common/store'
+import { IconAlbum, IconFilter, IconNote, IconPlaylists } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconFilter from 'assets/img/iconFilter.svg'
-import IconNote from 'assets/img/iconNote.svg'
-import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'

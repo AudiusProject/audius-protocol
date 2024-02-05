@@ -14,7 +14,7 @@ const port = process.env.DDEX_PORT || 9001
   try {
     const dbUrl =
       process.env.DDEX_MONGODB_URL ||
-      'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin'
+      'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0'
     await dialDb(dbUrl)
 
     const app = createApp()

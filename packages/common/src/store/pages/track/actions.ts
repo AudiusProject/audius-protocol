@@ -1,5 +1,5 @@
-import { ID } from 'models/Identifiers'
-import { TrendingRange } from 'store/notifications'
+import { ID } from '~/models/Identifiers'
+import { TrendingRange } from '~/store/notifications'
 
 export const SET_TRACK_RANK = 'TRACK_PAGE/SET_TRACK_RANK'
 export const GET_TRACK_RANKS = 'TRACK_PAGE/GET_TRACK_RANKS'
@@ -152,7 +152,9 @@ export const fetchTrackSucceeded = (
   type: FETCH_TRACK_SUCCEEDED,
   trackId
 })
-export const fetchTrackFailed = (_trackId: ID): FetchTrackFailedAction => ({
+export const fetchTrackFailed = (
+  _trackId: ID | string
+): FetchTrackFailedAction => ({
   type: FETCH_TRACK_FAILED
 })
 

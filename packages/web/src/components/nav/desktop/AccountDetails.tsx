@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { Link, UserLink } from 'components/link'

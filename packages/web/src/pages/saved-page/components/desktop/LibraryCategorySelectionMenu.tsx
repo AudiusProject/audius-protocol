@@ -1,13 +1,17 @@
 import {
-  CommonState,
-  LibraryCategory,
-  LibraryCategoryType,
   savedPageActions,
   savedPageSelectors,
-  SavedPageTabs
-} from '@audius/common'
-import { SelectablePill } from '@audius/harmony'
-import { IconHeart, IconCart, IconRepost } from '@audius/stems'
+  LibraryCategory,
+  SavedPageTabs,
+  LibraryCategoryType,
+  CommonState
+} from '@audius/common/store'
+import {
+  SelectablePill,
+  IconHeart,
+  IconCart,
+  IconRepost
+} from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'

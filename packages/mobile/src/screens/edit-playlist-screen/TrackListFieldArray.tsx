@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { PlaylistTrackId } from '@audius/common'
+import type { PlaylistTrackId } from '@audius/common/models'
 import { useField } from 'formik'
 import { View } from 'react-native'
 

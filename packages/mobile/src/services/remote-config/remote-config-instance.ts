@@ -1,5 +1,6 @@
-import type { Environment } from '@audius/common'
-import { ErrorLevel, remoteConfig } from '@audius/common'
+import { ErrorLevel } from '@audius/common/models'
+import type { Environment } from '@audius/common/services'
+import { remoteConfig } from '@audius/common/services'
 import * as optimizely from '@optimizely/optimizely-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'

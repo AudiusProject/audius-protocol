@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { UserTrackMetadata } from '@audius/common'
+import type { UserTrackMetadata } from '@audius/common/models'
 import { View } from 'react-native'
 
 import { IconCaretRight, IconVerified } from '@audius/harmony-native'

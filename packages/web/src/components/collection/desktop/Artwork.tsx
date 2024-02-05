@@ -1,13 +1,13 @@
 import { ComponentType, SVGProps, useCallback, useEffect } from 'react'
 
+import { imageBlank } from '@audius/common/assets'
+import { SquareSizes, CoverArtSizes } from '@audius/common/models'
 import {
-  CoverArtSizes,
-  SquareSizes,
   cacheCollectionsSelectors,
-  imageBlank,
   useEditPlaylistModal
-} from '@audius/common'
-import { Button, ButtonType, IconPencil } from '@audius/stems'
+} from '@audius/common/store'
+import { IconPencil } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

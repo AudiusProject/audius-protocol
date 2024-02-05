@@ -1,15 +1,16 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 
 import {
-  ID,
-  Nullable,
-  AccessConditions,
   SquareSizes,
-  Track,
-  User,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  isContentUSDCPurchaseGated,
+  ID,
+  AccessConditions,
+  Track,
+  User
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import { IconRemix } from '@audius/harmony'
 import {
   Modal,
   Button,
@@ -21,7 +22,6 @@ import {
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import IconRemix from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'

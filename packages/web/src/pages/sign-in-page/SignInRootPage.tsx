@@ -1,4 +1,4 @@
-import { signInPageMessages as messages } from '@audius/common'
+import { signInPageMessages } from '@audius/common/messages'
 import { Helmet } from 'react-helmet'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { useFirstMountState } from 'react-use'
@@ -15,8 +15,8 @@ export const SignInRootPage = () => {
   return (
     <>
       <Helmet>
-        <title>{messages.metaTitle}</title>
-        <meta name='description' content={messages.metaDescription} />
+        <title>{signInPageMessages.metaTitle}</title>
+        <meta name='description' content={signInPageMessages.metaDescription} />
       </Helmet>
       <Switch>
         <Route exact path={SIGN_IN_PAGE}>

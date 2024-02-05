@@ -1,40 +1,47 @@
 import {
+  Name,
   Kind,
   ID,
-  Name,
   Supporter,
   Supporting,
+  LastDismissedTip,
   User,
-  BNWei,
   StringWei,
-  parseAudioInputToWei,
-  stringWeiToBN,
-  weiToAudioString,
-  weiToString,
-  decodeHashId,
+  BNWei,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import {
+  createUserBankIfNeeded,
+  LocalStorage,
+  GetSupportingArgs,
+  GetSupportersArgs,
+  GetTipsArgs
+} from '@audius/common/services'
+import {
   accountSelectors,
   cacheActions,
-  RefreshSupportPayloadAction,
+  processAndCacheUsers,
+  chatActions,
+  solanaSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
   walletActions,
   getContext,
+  RefreshSupportPayloadAction
+} from '@audius/common/store'
+import {
+  decodeHashId,
+  isNullOrUndefined,
+  weiToAudioString,
+  stringWeiToBN,
+  weiToString,
+  parseAudioInputToWei,
   waitForValue,
-  GetTipsArgs,
-  GetSupportingArgs,
-  GetSupportersArgs,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
-  LastDismissedTip,
-  LocalStorage,
-  processAndCacheUsers,
-  solanaSelectors,
-  createUserBankIfNeeded,
-  SolanaWalletAddress,
-  chatActions,
-  isNullOrUndefined
-} from '@audius/common'
+  removeNullable
+} from '@audius/common/utils'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
@@ -502,7 +509,7 @@ function* refreshSupportAsync({
     ...(supportersForReceiverList || []).map((supporter) =>
       decodeHashId(supporter.sender.id)
     )
-  ]
+  ].filter(removeNullable)
 
   yield call(fetchUsers, userIds)
 
@@ -562,9 +569,9 @@ function* fetchSupportersForUserAsync(action: FetchSupportingAction) {
     supportersParams
   )
 
-  const userIds = supportersForReceiverList?.map((supporter) =>
-    decodeHashId(supporter.sender.id)
-  )
+  const userIds = supportersForReceiverList
+    ?.map((supporter) => decodeHashId(supporter.sender.id))
+    .filter(removeNullable)
   if (!userIds) return
   yield call(fetchUsers, userIds)
 
@@ -616,8 +623,9 @@ function* fetchSupportingForUserAsync({
     limit
   })
   const userIds =
-    supportingList?.map((supporting) => decodeHashId(supporting.receiver.id)) ??
-    []
+    supportingList
+      ?.map((supporting) => decodeHashId(supporting.receiver.id))
+      .filter(removeNullable) ?? []
 
   yield call(fetchUsers, userIds)
 

@@ -1,11 +1,10 @@
 import {
-  ID,
-  Status,
-  useGetCurrentUserId,
   useGetPlaylistById,
   useGetSuggestedAlbumTracks,
-  useGetSuggestedPlaylistTracks
-} from '@audius/common'
+  useGetSuggestedPlaylistTracks,
+  useGetCurrentUserId
+} from '@audius/common/api'
+import { Status, ID } from '@audius/common/models'
 
 import { SuggestedTracks } from './components/SuggestedTracks'
 

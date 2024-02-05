@@ -1,16 +1,13 @@
 import { useCallback } from 'react'
 
+import type { StringUSDC } from '@audius/common/models'
 import type {
-  Nullable,
-  StringUSDC,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
-} from '@audius/common'
-import {
-  formatUSDCWeiToUSDString,
-  notificationsSelectors,
-  stringUSDCToBN
-} from '@audius/common'
+} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
+import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'

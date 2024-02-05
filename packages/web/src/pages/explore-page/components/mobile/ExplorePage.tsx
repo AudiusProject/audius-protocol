@@ -8,24 +8,28 @@ import React, {
 } from 'react'
 
 import {
-  UserCollection,
-  SmartCollection,
   Variant as CollectionVariant,
   Status,
-  User,
+  UserCollection,
+  SmartCollection,
+  User
+} from '@audius/common/models'
+import {
+  explorePageSelectors,
   explorePageActions,
   ExplorePageTabs as ExploreTabs,
-  ExploreCollectionsVariant,
-  explorePageSelectors,
-  removeNullable
-} from '@audius/common'
+  ExploreCollectionsVariant
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
+import {
+  IconStars as IconForYou,
+  IconMood as IconMoods,
+  IconNote,
+  IconUser
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconForYou from 'assets/img/iconExploreMobileForYou.svg'
-import IconMoods from 'assets/img/iconExploreMobileMoods.svg'
-import IconNote from 'assets/img/iconNote.svg'
-import IconUser from 'assets/img/iconUser.svg'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

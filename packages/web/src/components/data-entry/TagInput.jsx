@@ -1,11 +1,9 @@
 import { createRef, Component } from 'react'
 
-import { trimToAlphaNumeric } from '@audius/common'
+import { trimToAlphaNumeric } from '@audius/common/utils'
+import { IconClose as IconRemove, IconSave } from '@audius/harmony'
 import Tag from 'antd/lib/tag'
 import cn from 'classnames'
-
-import IconRemove from 'assets/img/iconRemove.svg'
-import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './TagInput.module.css'
 

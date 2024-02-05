@@ -1,11 +1,12 @@
+import { ID } from '@audius/common/models'
 import {
-  CommonState,
-  formatLineupTileDuration,
-  ID,
   accountSelectors,
-  playbackPositionSelectors
-} from '@audius/common'
-import { IconCheck, ProgressBar } from '@audius/stems'
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
+import { formatLineupTileDuration } from '@audius/common/utils'
+import { IconCheck } from '@audius/harmony'
+import { ProgressBar } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import styles from './GiantTrackTile.module.css'

@@ -1,8 +1,5 @@
-import {
-  Collection,
-  collectionPageSelectors,
-  CommonState
-} from '@audius/common'
+import { Collection } from '@audius/common/models'
+import { collectionPageSelectors, CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { EditButton } from './EditButton'

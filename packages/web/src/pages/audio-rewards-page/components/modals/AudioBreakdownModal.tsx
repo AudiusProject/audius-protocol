@@ -1,9 +1,9 @@
+import { BNWei } from '@audius/common/models'
 import {
-  BNWei,
   tokenDashboardPageSelectors,
   walletSelectors
-} from '@audius/common'
-import { IconInfo } from '@audius/stems'
+} from '@audius/common/store'
+import { IconInfo } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'

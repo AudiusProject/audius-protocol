@@ -1,38 +1,48 @@
 import { useCallback } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  Genre,
-  SquareSizes,
-  removeNullable,
-  playerSelectors,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
   Name,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
   PlaybackSource,
   FavoriteType,
+  SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type {
+  UID,
+  SearchUser,
+  SearchTrack,
+  Track,
+  User
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  trackPageLineupActions,
+  queueSelectors,
+  reachabilitySelectors,
+  tracksSocialActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
+  playerSelectors,
+  playbackPositionSelectors
+} from '@audius/common/store'
+import {
+  Genre,
   getCanonicalName,
   formatSeconds,
   formatDate,
-  accountSelectors,
-  trackPageLineupActions,
-  tracksSocialActions,
-  OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
-  reachabilitySelectors,
-  useGatedContentAccess,
-  playbackPositionSelectors,
-  FeatureFlags,
-  isContentUSDCPurchaseGated,
-  isContentCollectibleGated,
-  queueSelectors
-} from '@audius/common'
-import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
+  removeNullable
+} from '@audius/common/utils'
 import moment from 'moment'
 import { Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -46,10 +56,10 @@ import {
   IconRobot,
   IconSpecialAccess
 } from '@audius/harmony-native'
+import type { ImageProps } from '@audius/harmony-native'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
-import type { ImageProps } from 'app/components/image/FastImage'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'

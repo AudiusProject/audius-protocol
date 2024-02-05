@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { Theme } from '@audius/common/models'
 import {
   accountSelectors,
-  tokenDashboardPageActions,
-  Theme
-} from '@audius/common'
+  tokenDashboardPageActions
+} from '@audius/common/store'
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

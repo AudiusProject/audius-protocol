@@ -1,25 +1,20 @@
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { chatSelectors } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import {
-  removeNullable,
-  FeatureFlags,
-  chatSelectors,
-  Name,
-  useAccountHasClaimableRewards,
-  StringKeys
-} from '@audius/common'
-import {
+  IconKebabHorizontal,
   IconCrown,
   IconDashboard,
   IconMessage,
   IconSettings,
-  IconDonate,
-  PopupMenu,
-  PopupMenuItem,
-  PopupPosition
-} from '@audius/stems'
+  IconDonate
+} from '@audius/harmony'
+import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
