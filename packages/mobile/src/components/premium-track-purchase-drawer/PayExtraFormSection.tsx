@@ -7,9 +7,9 @@ import type { PayExtraAmountPresetValues } from '@audius/common/hooks'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
+import { SelectablePill } from '@audius/harmony-native'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-import { HarmonySelectablePill } from '../core/HarmonySelectablePill'
 import { Text } from '../core/Text'
 import { PriceField } from '../fields/PriceField'
 
@@ -82,33 +82,41 @@ export const PayExtraFormSection = ({
         {messages.payExtra}
       </Text>
       <View style={styles.presetContainer}>
-        <HarmonySelectablePill
+        <SelectablePill
+          type='button'
           size='large'
           style={styles.pill}
+          fullWidth
           isSelected={preset === PayExtraPreset.LOW}
           label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
           disabled={disabled}
           onPress={() => handleClickPreset(PayExtraPreset.LOW)}
         />
-        <HarmonySelectablePill
+        <SelectablePill
+          type='button'
           size='large'
           style={styles.pill}
+          fullWidth
           isSelected={preset === PayExtraPreset.MEDIUM}
           label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
           disabled={disabled}
           onPress={() => handleClickPreset(PayExtraPreset.MEDIUM)}
         />
-        <HarmonySelectablePill
+        <SelectablePill
+          type='button'
           size='large'
           style={styles.pill}
+          fullWidth
           isSelected={preset === PayExtraPreset.HIGH}
           label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
           disabled={disabled}
           onPress={() => handleClickPreset(PayExtraPreset.HIGH)}
         />
-        <HarmonySelectablePill
+        <SelectablePill
+          type='button'
           size='large'
           style={[styles.pill, styles.customPill]}
+          fullWidth
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.other}
           disabled={disabled}

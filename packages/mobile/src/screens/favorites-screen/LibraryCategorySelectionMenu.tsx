@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type { LibraryCategoryType } from '@audius/common/store'
 import {
   savedPageActions,
@@ -9,7 +11,7 @@ import { useNavigationState } from '@react-navigation/native'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { HarmonySelectablePill } from 'app/components/core/HarmonySelectablePill'
+import { SelectablePill } from '@audius/harmony-native'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles } from 'app/styles'
 
@@ -87,11 +89,17 @@ export const LibraryCategorySelectionMenu = () => {
     })
   )
 
-  const handleClick = (value: LibraryCategoryType) => {
-    if (currentTab) {
-      dispatch(setSelectedCategory({ currentTab, category: value }))
-    }
-  }
+  const handleChange = useCallback(
+    (category: string) => {
+      dispatch(
+        setSelectedCategory({
+          currentTab,
+          category: category as LibraryCategoryType
+        })
+      )
+    },
+    [currentTab, dispatch]
+  )
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
@@ -103,22 +111,23 @@ export const LibraryCategorySelectionMenu = () => {
     <View style={styles.container}>
       <ScrollView
         horizontal
-        role='radiogroup'
         accessibilityRole='radiogroup'
         contentContainerStyle={styles.scrollContainer}
         alwaysBounceHorizontal={false}
       >
-        {categories.map((c) => (
-          <HarmonySelectablePill
-            key={c.value}
-            accessibilityRole='radio'
-            aria-checked={selectedCategory === c.value}
-            onPress={() => handleClick(c.value)}
-            role='radio'
-            label={c.label}
-            isSelected={selectedCategory === c.value}
-          />
-        ))}
+        {categories.map((category) => {
+          const { value, label } = category
+          return (
+            <SelectablePill
+              key={value}
+              type='radio'
+              label={label}
+              value={value}
+              onChange={handleChange}
+              isSelected={selectedCategory === value}
+            />
+          )
+        })}
       </ScrollView>
     </View>
   )

@@ -24,12 +24,17 @@ const AnimatedText = Animated.createAnimatedComponent(Text)
 
 export const SelectablePill = (props: SelectablePillProps) => {
   const {
+    type,
     icon: Icon,
     label,
     size = 'small',
     isSelected: isSelectedProp,
     disabled,
     onPress,
+    onChange,
+    value,
+    style: styleProp,
+    fullWidth,
     ...other
   } = props
   const { color, motion } = useTheme()
@@ -45,10 +50,13 @@ export const SelectablePill = (props: SelectablePillProps) => {
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e)
+      if (value) {
+        onChange?.(value)
+      }
       setIsPressing(false)
       setIsSelected((isSelected) => !isSelected)
     },
-    [onPress]
+    [onChange, onPress, value]
   )
 
   const tap = Gesture.Tap()
@@ -101,12 +109,21 @@ export const SelectablePill = (props: SelectablePillProps) => {
       <Pressable
         onPressIn={handlePressIn}
         onPress={handlePress}
-        style={css({
-          alignSelf: 'flex-start',
-          borderRadius: cornerRadius['2xl']
-        })}
+        style={[
+          css({
+            alignSelf: 'flex-start',
+            borderRadius: cornerRadius['2xl']
+          }),
+          styleProp
+        ]}
       >
         <AnimatedFlex
+          accessibilityRole={type}
+          accessibilityState={{
+            checked: type === 'checkbox' ? isSelected : undefined,
+            selected: type === 'radio' ? isSelected : undefined,
+            disabled: !!disabled
+          }}
           direction='row'
           gap='xs'
           alignItems='center'
@@ -117,7 +134,14 @@ export const SelectablePill = (props: SelectablePillProps) => {
           h={size === 'small' ? 'xl' : '2xl'}
           ph={size === 'small' ? 'm' : 'l'}
           shadow={size === 'large' ? (isSelected ? 'flat' : 'near') : undefined}
-          style={animatedRootStyles}
+          style={[
+            animatedRootStyles,
+            fullWidth
+              ? {
+                  width: '100%'
+                }
+              : undefined
+          ]}
           {...other}
         >
           {Icon ? (

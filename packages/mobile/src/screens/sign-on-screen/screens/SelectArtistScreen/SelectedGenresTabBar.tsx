@@ -48,6 +48,7 @@ export const SelectedGenresTabBar = (props: SelectedGenresTabBarProps) => {
           return (
             <SelectablePill
               key={key}
+              type='radio'
               label={convertGenreLabelToValue(name as Genre)}
               isSelected={isFocused}
               accessibilityRole='tablist'

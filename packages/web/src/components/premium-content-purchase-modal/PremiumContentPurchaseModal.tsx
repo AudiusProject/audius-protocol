@@ -1,5 +1,4 @@
 import { useCallback, useEffect } from 'react'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -40,6 +39,7 @@ import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
