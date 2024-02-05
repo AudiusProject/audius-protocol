@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
-import { Button, ButtonType, Scrollbar } from '@audius/stems'
+import { Scrollbar } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './ErrorBody.module.css'

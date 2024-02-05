@@ -1,5 +1,6 @@
 import { createRef, Fragment, useState, useRef, useEffect } from 'react'
 
+import { ResizeObserver } from '@juggle/resize-observer'
 import { useSpring, animated } from '@react-spring/web'
 import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'

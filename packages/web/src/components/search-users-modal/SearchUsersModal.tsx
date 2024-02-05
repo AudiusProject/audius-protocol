@@ -14,6 +14,7 @@ import {
   searchUsersModalActions,
   searchUsersModalSelectors
 } from '@audius/common/store'
+import { Scrollbar } from '@audius/harmony'
 import {
   IconButton,
   IconRemove,
@@ -22,8 +23,7 @@ import {
   ModalHeader,
   ModalProps,
   ModalTitle,
-  ModalTitleProps,
-  Scrollbar
+  ModalTitleProps
 } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'

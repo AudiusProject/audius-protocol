@@ -24,11 +24,11 @@ import {
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
   UserListStoreState
 } from '@audius/common/store'
+import { Scrollbar } from '@audius/harmony'
 import {
   Modal,
   IconTrophy,
   IconFollowing,
-  Scrollbar,
   IconUser,
   IconUserGroup
 } from '@audius/stems'

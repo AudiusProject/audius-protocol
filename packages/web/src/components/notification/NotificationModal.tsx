@@ -1,5 +1,6 @@
 import { AnnouncementNotification } from '@audius/common/store'
-import { Modal, Scrollbar, MarkdownViewer } from '@audius/stems'
+import { Scrollbar } from '@audius/harmony'
+import { Modal, MarkdownViewer } from '@audius/stems'
 
 import IconRemove from 'assets/img/iconRemove.svg'
 
