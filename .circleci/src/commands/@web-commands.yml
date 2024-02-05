@@ -169,6 +169,12 @@ web-deploy-cloudflare:
     - attach_workspace:
         at: ./
     - run:
+        name: Move sourcemaps
+        command: |
+          cd packages/web
+          mkdir -p sourcemaps/static/js
+          mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
+    - run:
         name: Move build
         command: |
           cd packages/web
