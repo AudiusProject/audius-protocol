@@ -11,7 +11,7 @@ import {
   SavedPageTabs,
   CommonState
 } from '@audius/common/store'
-import { IconPlus } from '@audius/stems'
+import { IconPlus } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'

@@ -16,10 +16,10 @@ import {
   Notifications,
   PushNotifications
 } from '@audius/common/store'
+import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/settingsPageLogo.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -192,9 +192,7 @@ const SettingsPage = (props: SettingsPageProps) => {
     >
       <div className={styles.bodyContainer}>
         <div className={styles.logo}>
-          <img
-            src={horizontalLogo}
-            alt='Audius Logo'
+          <IconAudiusLogoHorizontalColor
             className={cn({
               [styles.whiteTint]: isDarkMode() || theme === Theme.MATRIX
             })}

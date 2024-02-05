@@ -14,18 +14,16 @@ import {
 } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
-  Button,
-  ButtonType,
-  ButtonSize,
-  IconTwitterBird,
+  IconArtistBadge as BadgeArtist,
   IconInstagram,
   IconDonate,
   IconLink,
-  IconTikTok
-} from '@audius/stems'
+  IconTikTok,
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
-import BadgeArtist from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'

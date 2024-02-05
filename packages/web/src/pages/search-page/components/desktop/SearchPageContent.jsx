@@ -6,9 +6,9 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
+import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
-import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'

@@ -5,7 +5,7 @@ import { User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
-import { IconUserGroup } from '@audius/stems'
+import { IconUserGroup } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'

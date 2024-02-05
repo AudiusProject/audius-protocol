@@ -1,7 +1,8 @@
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Button, ButtonType, LogoSol } from '@audius/stems'
+import { IconSolana as LogoSol } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { useLocalStorage } from 'hooks/useLocalStorage'

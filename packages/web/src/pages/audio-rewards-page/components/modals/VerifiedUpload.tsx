@@ -1,12 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  Button,
-  ButtonType,
-  IconInstagram,
-  IconTwitterBird,
-  IconUpload
-} from '@audius/stems'
+import { IconTwitter, IconCloudUpload, IconInstagram } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton, TwitterButton } from 'components/social-button'
@@ -90,7 +85,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <Button
         className={styles.uploadButton}
         text={messages.uploadButton}
-        rightIcon={<IconUpload />}
+        rightIcon={<IconCloudUpload />}
         type={ButtonType.PRIMARY_ALT}
         onClick={onClickUpload}
         textClassName={styles.uploadText}
@@ -100,7 +95,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.subtitle}>{messages.step3Subtitle}</span>
       <div className={styles.findUsCTA}>
         <div className={styles.ctaContainer}>
-          <IconTwitterBird />
+          <IconTwitter />
           <div className={styles.ctaRight}>
             <span>{messages.findUsTwitter}</span>
             <div className={styles.link} onClick={onClickTwitter}>

@@ -22,14 +22,11 @@ import {
   Nullable
 } from '@audius/common/utils'
 import {
-  Button,
-  TokenValueInput,
-  Format,
-  IconValidationX,
-  ButtonType
-} from '@audius/stems'
+  IconTokenGold as IconGoldBadgeSVG,
+  IconValidationX
+} from '@audius/harmony'
+import { Button, TokenValueInput, Format, ButtonType } from '@audius/stems'
 
-import IconGoldBadgeSVG from 'assets/img/IconGoldBadge.svg'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 

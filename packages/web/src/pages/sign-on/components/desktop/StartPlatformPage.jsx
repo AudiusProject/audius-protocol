@@ -1,6 +1,7 @@
 import { Component } from 'react'
 
-import { Button, ButtonType, IconUpload, IconNote } from '@audius/stems'
+import { IconCloudUpload as IconUpload, IconNote } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 

@@ -14,7 +14,7 @@ import {
   followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
-import { IconCompose } from '@audius/stems'
+import { IconCompose } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

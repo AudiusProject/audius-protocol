@@ -3,10 +3,13 @@ import { useEffect, useState } from 'react'
 import { ID, StringWei } from '@audius/common/models'
 import { tippingSelectors } from '@audius/common/store'
 import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
-import { IconTrophy, IconTrending } from '@audius/stems'
+import {
+  IconTipping as IconTip,
+  IconTrophy,
+  IconTrending
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 

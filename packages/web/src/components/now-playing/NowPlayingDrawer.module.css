@@ -43,10 +43,6 @@
   justify-content: center;
 }
 
-.header path {
-  fill: var(--neutral-light-4);
-}
-
 .nowPlaying {
   position: absolute;
   bottom: 10px;
