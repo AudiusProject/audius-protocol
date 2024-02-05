@@ -118,13 +118,17 @@
   transform: scale(0.95);
 }
 
-.iconRepost path,
-.iconShare path,
-.iconKebabHorizontal path,
-.iconListens path {
+.iconRepost,
+.iconShare .iconKebabHorizontal svg {
+  width: 18px;
+}
+.iconRepost g path,
+.iconShare g path,
+.iconKebabHorizontal g path,
+.iconListens g path {
   fill: var(--neutral-light-4);
 }
-.iconRepost.reposted path {
+.iconRepost.reposted g path {
   fill: var(--primary);
 }
 
@@ -144,9 +148,9 @@
   box-shadow: none;
 }
 
-.disabled .iconRepost path,
-.disabled .iconKebabHorizontal path,
-.disabled .iconShare path {
+.disabled .iconRepost g path,
+.disabled .iconKebabHorizontal g path,
+.disabled .iconShare g path {
   fill: var(--neutral-light-8) !important;
 }
 

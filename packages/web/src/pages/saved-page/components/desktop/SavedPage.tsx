@@ -16,16 +16,12 @@ import {
   UID,
   User
 } from '@audius/common'
-import {
-  IconAlbum,
-  IconNote,
-  IconPlaylists,
-  IconPause,
-  IconPlay
-} from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { IconAlbum } from '@audius/harmony'
+import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
+import IconNote from 'assets/img/iconNote.svg'
+import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'

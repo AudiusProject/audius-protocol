@@ -14,10 +14,10 @@ import {
   PushNotifications,
   TikTokProfile
 } from '@audius/common'
-import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
+import horizontalLogo from 'assets/img/settingsPageLogo.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -190,7 +190,9 @@ const SettingsPage = (props: SettingsPageProps) => {
     >
       <div className={styles.bodyContainer}>
         <div className={styles.logo}>
-          <IconAudiusLogoHorizontalColor
+          <img
+            src={horizontalLogo}
+            alt='Audius Logo'
             className={cn({
               [styles.whiteTint]: isDarkMode() || theme === Theme.MATRIX
             })}

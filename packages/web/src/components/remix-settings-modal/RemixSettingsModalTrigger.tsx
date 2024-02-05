@@ -1,5 +1,4 @@
-import { IconRemix } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconRemix } from '@audius/stems'
 
 const messages = {
   remixSettings: 'Remix Settings',

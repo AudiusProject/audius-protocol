@@ -8,10 +8,10 @@ import {
   Remix,
   isContentUSDCPurchaseGated
 } from '@audius/common'
-import { IconRemix } from '@audius/harmony'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import IconRemix from 'assets/img/iconRemixGray.svg'
 import {
   ContextualMenu,
   SelectedValue

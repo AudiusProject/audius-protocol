@@ -1,8 +1,7 @@
 import { useState, useCallback } from 'react'
 
 import { commonPasswordCheck } from '@audius/common'
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
@@ -283,7 +282,7 @@ const PasswordPage = ({
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrowRight />}
+        rightIcon={<IconArrow />}
         type={isValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
         onClick={onClickContinue}
         className={styles.continueButton}

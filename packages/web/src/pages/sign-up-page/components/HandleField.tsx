@@ -7,7 +7,8 @@ import {
   pickHandlePageMessages as messages,
   useIsWaitingForValidation
 } from '@audius/common'
-import { TextLink, IconCheck } from '@audius/harmony'
+import { TextLink } from '@audius/harmony'
+import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'
 
 import {

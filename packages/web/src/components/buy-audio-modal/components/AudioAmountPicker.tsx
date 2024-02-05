@@ -7,7 +7,6 @@ import {
   useState
 } from 'react'
 
-import { IconLogoCircle } from '@audius/harmony'
 import {
   RadioPillButton,
   RadioButtonGroup,
@@ -15,6 +14,8 @@ import {
   TokenAmountInputChangeHandler
 } from '@audius/stems'
 import { debounce, uniqueId } from 'lodash'
+
+import IconAUDIOSrc from 'assets/img/iconAUDIO.png'
 
 import styles from './AudioAmountPicker.module.css'
 
@@ -30,7 +31,9 @@ const messages = {
 const INPUT_DEBOUNCE_MS = 200
 
 const IconAUDIO = () => {
-  return <IconLogoCircle aria-label='AUDIO Token Icon' size='2xl' />
+  return (
+    <img src={IconAUDIOSrc} alt={'AUDIO Token Icon'} width={32} height={32} />
+  )
 }
 
 const AmountPreview = ({ amount }: { amount?: string }) => {

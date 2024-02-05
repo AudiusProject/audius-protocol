@@ -12,11 +12,11 @@ import {
   musicConfettiActions,
   TikTokProfile
 } from '@audius/common'
-import { IconValidationX, IconNote } from '@audius/harmony'
-import { Modal, Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import IconValidationX from 'assets/img/iconValidationX.svg'
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'

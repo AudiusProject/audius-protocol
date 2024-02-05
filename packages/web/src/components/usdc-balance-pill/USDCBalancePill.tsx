@@ -5,7 +5,7 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   useUSDCBalance
 } from '@audius/common'
-import { IconLogoCircleUSDC as LogoUSDC } from '@audius/harmony'
+import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 

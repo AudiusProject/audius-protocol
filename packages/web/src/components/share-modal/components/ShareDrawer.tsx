@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { IconLink, IconShare, IconTwitter } from '@audius/harmony'
+import { IconLink, IconShare, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
@@ -28,7 +28,7 @@ export const ShareDrawer = ({
   const getActions = useCallback(() => {
     const shareToTwitterAction = {
       text: messages.twitter,
-      icon: <IconTwitter {...iconSize} />,
+      icon: <IconTwitterBird {...iconSize} />,
       className: styles.shareToTwitterAction,
       onClick: onShareToTwitter
     }

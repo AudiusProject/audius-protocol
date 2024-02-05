@@ -1,7 +1,6 @@
 import { SVGProps } from 'react'
 
-import { IconComponent } from '@audius/harmony'
-import { ColorValue, toCSSVariableName } from '@audius/stems'
+import { ColorValue, IconComponent, toCSSVariableName } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './Icon.module.css'

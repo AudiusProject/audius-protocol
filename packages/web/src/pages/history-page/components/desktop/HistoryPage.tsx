@@ -1,8 +1,7 @@
 import { ChangeEvent, memo, useMemo } from 'react'
 
 import { ID } from '@audius/common'
-import { IconPause, IconPlay } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'

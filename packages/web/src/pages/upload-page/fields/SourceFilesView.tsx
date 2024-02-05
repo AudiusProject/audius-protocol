@@ -5,8 +5,7 @@ import {
   stemCategoryFriendlyNames,
   StemUpload
 } from '@audius/common'
-import { IconRemove } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconRemove, IconButton } from '@audius/stems'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

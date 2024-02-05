@@ -18,7 +18,6 @@ import {
   useRemoteVar,
   IntKeys
 } from '@audius/common'
-import { IconTransaction } from '@audius/harmony'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
@@ -26,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import IconTransaction from 'assets/img/iconTransaction.svg'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'

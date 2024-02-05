@@ -6,7 +6,7 @@ import {
   cacheUsersSelectors,
   profilePageSelectors
 } from '@audius/common'
-import { IconUserFollowing } from '@audius/harmony'
+import { IconFollowing } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
@@ -72,7 +72,7 @@ export const ProfileMutuals = () => {
     <div>
       <ProfilePageNavSectionTitle
         title={messages.mutuals}
-        titleIcon={<IconUserFollowing className={styles.followingIcon} />}
+        titleIcon={<IconFollowing className={styles.followingIcon} />}
       />
       <ProfilePictureListTile
         onClick={handleClick}

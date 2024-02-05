@@ -16,13 +16,14 @@ import {
   ID,
   Status
 } from '@audius/common'
-import { IconRemove, IconSearch } from '@audius/harmony'
 import {
+  IconButton,
+  IconRemove,
+  IconSearch,
   Modal,
   ModalHeader,
   ModalProps,
   ModalTitle,
-  IconButton,
   ModalTitleProps,
   Scrollbar
 } from '@audius/stems'

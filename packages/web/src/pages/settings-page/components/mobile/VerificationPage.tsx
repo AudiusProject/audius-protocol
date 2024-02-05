@@ -11,8 +11,13 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common'
-import { IconValidationX, IconNote } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import {
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconNote,
+  IconValidationX
+} from '@audius/stems'
 import cn from 'classnames'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'

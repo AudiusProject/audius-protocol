@@ -10,17 +10,15 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   trimToAlphaNumeric
 } from '@audius/common'
-import {
-  IconAlbum,
-  IconSearch,
-  IconNote,
-  IconPlaylists,
-  IconUser
-} from '@audius/harmony'
+import { IconAlbum } from '@audius/harmony'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import IconBigSearch from 'assets/img/iconBigSearch.svg'
+import IconNote from 'assets/img/iconNote.svg'
+import IconPlaylists from 'assets/img/iconPlaylists.svg'
+import IconUser from 'assets/img/iconUser.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
@@ -92,7 +90,7 @@ const NoResults = ({
 }) => (
   <div className={styles.centeringContainer}>
     <div className={styles.noResults}>
-      <IconSearch />
+      <IconBigSearch />
       <div>
         {isTagSearch
           ? TrackSearchPageMessages.title1Tag

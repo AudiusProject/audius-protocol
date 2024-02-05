@@ -12,8 +12,7 @@ import {
   tracksSocialActions,
   usersSocialActions
 } from '@audius/common'
-import { IconLink, IconTwitter as IconTwitterBird } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconLink, IconTwitterBird } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'

@@ -5,8 +5,7 @@ import {
   changePasswordSelectors,
   changePasswordActions
 } from '@audius/common'
-import { IconArrowRight as IconArrow } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

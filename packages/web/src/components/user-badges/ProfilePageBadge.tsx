@@ -4,7 +4,7 @@ import { ID, BadgeTier, modalsActions, useSelectTierInfo } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { audioTierMapSVG } from 'components/user-badges/UserBadges'
+import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
 import styles from './ProfilePageBadge.module.css'
 const { setVisibility } = modalsActions
@@ -81,7 +81,7 @@ const ProfilePageBadge = ({
 
   if (tier === 'none') return null
 
-  const badge = audioTierMapSVG[tier as BadgeTier]
+  const badge = audioTierMapPng[tier as BadgeTier]
 
   return (
     <div

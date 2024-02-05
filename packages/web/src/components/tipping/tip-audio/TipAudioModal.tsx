@@ -9,7 +9,6 @@ import {
   StringKeys,
   accountSelectors
 } from '@audius/common'
-import { IconVerified as IconSuccess, IconTokenGold } from '@audius/harmony'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -17,6 +16,8 @@ import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops.cjs'
 import { usePrevious } from 'react-use'
 
+import IconSuccess from 'assets/img/iconVerified.svg'
+import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
@@ -37,7 +38,13 @@ const messages = {
 }
 
 const GoldBadgeIconImage = () => (
-  <IconTokenGold size='l' aria-label='Gold badge' />
+  <img
+    draggable={false}
+    alt='Gold badge'
+    src={IconGoldBadge}
+    width={24}
+    height={24}
+  />
 )
 
 const titleMessagesMap: { [key in TippingSendStatus]?: string } = {

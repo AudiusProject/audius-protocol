@@ -1,5 +1,4 @@
-import { IconShare, IconKebabHorizontal } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 

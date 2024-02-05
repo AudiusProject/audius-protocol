@@ -1,13 +1,11 @@
 import { createRef, Component } from 'react'
 
-import {
-  IconVolumeLevel0 as IconVolume0,
-  IconVolumeLevel1 as IconVolume1,
-  IconVolumeLevel2 as IconVolume2,
-  IconVolumeLevel3 as IconVolume3
-} from '@audius/harmony'
 import PropTypes from 'prop-types'
 
+import IconVolume0 from 'assets/img/iconVolume0.svg'
+import IconVolume1 from 'assets/img/iconVolume1.svg'
+import IconVolume2 from 'assets/img/iconVolume2.svg'
+import IconVolume3 from 'assets/img/iconVolume3.svg'
 import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 
 import styles from './VolumeBar.module.css'

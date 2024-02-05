@@ -16,17 +16,20 @@ import {
   getClaimableChallengeSpecifiers
 } from '@audius/common'
 import {
-  IconCopy,
-  IconValidationCheck,
+  Button,
+  ButtonType,
+  ProgressBar,
   IconCheck,
   IconVerified,
-  IconTwitter as IconTwitterBird
-} from '@audius/harmony'
-import { Button, ButtonType, ProgressBar, ModalContent } from '@audius/stems'
+  IconTwitterBird,
+  ModalContent
+} from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconCopy from 'assets/img/iconCopy.svg'
+import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

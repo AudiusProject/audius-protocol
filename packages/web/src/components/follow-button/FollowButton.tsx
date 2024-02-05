@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, forwardRef, MouseEvent } from 'react'
 
 import {
-  IconUserFollow as IconFollow,
-  IconUserFollowing as IconFollowing,
-  IconUserUnfollow as IconUnfollow
-} from '@audius/harmony'
-import { Button, ButtonProps, ButtonSize, ButtonType } from '@audius/stems'
+  Button,
+  ButtonProps,
+  ButtonSize,
+  ButtonType,
+  IconFollow,
+  IconFollowing,
+  IconUnfollow
+} from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './FollowButton.module.css'

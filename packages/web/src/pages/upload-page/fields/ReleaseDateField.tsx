@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getLocalTimezone } from '@audius/common'
-import { IconInfo, Flex, IconCalendarMonth } from '@audius/harmony'
-import { RadioButtonGroup, ModalContent } from '@audius/stems'
+import { IconInfo, Flex } from '@audius/harmony'
+import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -137,7 +137,7 @@ export const ReleaseDateField = () => {
     return (
       <SelectedValue
         label={formatCalendarTime(trackReleaseDate, 'Scheduled for ')}
-        icon={IconCalendarMonth}
+        icon={IconCalendar}
       >
         <input
           className={styles.input}
@@ -154,7 +154,7 @@ export const ReleaseDateField = () => {
       <ContextualMenu
         label={messages.title}
         description={messages.description}
-        icon={<IconCalendarMonth className={styles.titleIcon} />}
+        icon={<IconCalendar className={styles.titleIcon} />}
         initialValues={initialValues}
         validationSchema={toFormikValidationSchema(timeValidationSchema)}
         validateOnChange={false}

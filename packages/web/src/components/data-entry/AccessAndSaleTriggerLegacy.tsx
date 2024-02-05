@@ -17,13 +17,15 @@ import {
   AccessConditions
 } from '@audius/common'
 import {
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCart,
   IconCollectible,
-  IconVisibilityHidden,
+  IconHidden,
   IconSpecialAccess,
-  IconVisibilityPublic,
-  IconCart
-} from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+  IconVisibilityPublic
+} from '@audius/stems'
 import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -259,7 +261,7 @@ export const AccessAndSaleTriggerLegacy = (
   let AvailabilityIcon = IconVisibilityPublic
   if (isUnlisted && !isScheduledRelease) {
     availabilityButtonTitle = messages.hidden
-    AvailabilityIcon = IconVisibilityHidden
+    AvailabilityIcon = IconHidden
   } else if (isStreamGated) {
     if (isContentUSDCPurchaseGated(savedStreamConditions)) {
       availabilityButtonTitle = messages.premium
@@ -277,7 +279,7 @@ export const AccessAndSaleTriggerLegacy = (
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconVisibilityHidden />}
+      icon={<IconHidden />}
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(

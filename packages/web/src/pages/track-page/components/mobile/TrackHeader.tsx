@@ -19,16 +19,18 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common'
 import {
-  IconRobot,
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCart,
   IconCollectible,
   IconPause,
   IconPlay,
-  IconSpecialAccess,
-  IconCart
-} from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+  IconSpecialAccess
+} from '@audius/stems'
 import cn from 'classnames'
 
+import IconRobot from 'assets/img/robot.svg'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'

@@ -13,18 +13,16 @@ import {
   useInboxUnavailableModal
 } from '@audius/common'
 import {
-  IconMessageUnblock as IconUnblockMessages,
   IconMessageLocked,
-  IconTipping
-} from '@audius/harmony'
-import {
+  IconTipping,
   ModalTitle,
   Modal,
   ModalHeader,
   Button,
   ModalContent,
   ModalFooter,
-  ButtonType
+  ButtonType,
+  IconUnblockMessages
 } from '@audius/stems'
 import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'

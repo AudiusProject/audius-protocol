@@ -7,13 +7,13 @@ import {
   useSelectTierInfo,
   removeNullable
 } from '@audius/common'
-import { IconSearch } from '@audius/harmony'
 import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useWindowSize } from 'react-use'
 
+import IconSearch from 'assets/img/iconSearch.svg'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { MainContentContext } from 'pages/MainContentContext'

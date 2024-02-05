@@ -4,7 +4,7 @@ import {
   buyAudioSelectors,
   formatNumberString
 } from '@audius/common'
-import { IconCaretDown } from '@audius/harmony'
+import { IconCaretDown } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 

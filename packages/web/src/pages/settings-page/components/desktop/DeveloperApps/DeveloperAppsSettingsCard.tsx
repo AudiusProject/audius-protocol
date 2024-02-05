@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 
-import { IconEmbed } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
+
+import IconEmbed from 'assets/img/iconEmbed.svg'
 
 import SettingsCard from '../SettingsCard'
 import styles from '../SettingsPage.module.css'

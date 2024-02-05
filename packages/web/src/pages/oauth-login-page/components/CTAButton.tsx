@@ -1,5 +1,4 @@
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonProps } from '@audius/stems'
+import { Button, ButtonProps, IconArrow } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
@@ -17,7 +16,7 @@ export const CTAButton = ({
         isSubmitting ? (
           <LoadingSpinner className={styles.buttonLoadingSpinner} />
         ) : (
-          <IconArrowRight />
+          <IconArrow />
         )
       }
       className={styles.ctaButton}

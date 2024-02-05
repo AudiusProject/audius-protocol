@@ -1,8 +1,7 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common'
-import { IconInfo } from '@audius/harmony'
-import { RadioButton, RadioButtonGroup } from '@audius/stems'
+import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'

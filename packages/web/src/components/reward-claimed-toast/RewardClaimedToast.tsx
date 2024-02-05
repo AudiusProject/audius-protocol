@@ -4,9 +4,9 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors
 } from '@audius/common'
-import { IconCaretRight } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { getLocationPathname } from 'store/routing/selectors'

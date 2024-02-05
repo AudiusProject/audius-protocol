@@ -9,8 +9,7 @@ import {
   OverflowAction,
   FeatureFlags
 } from '@audius/common'
-import { IconPause, IconPlay } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 

@@ -18,7 +18,7 @@
   justify-content: center;
 }
 
-.isCompact.container svg {
+.isCompact.container img {
   height: 28px;
   width: 28px;
   margin-right: 11px;
@@ -37,9 +37,8 @@
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
 
-.container svg {
+.container img {
   height: 40px;
-  width: 40px;
 }
 
 .text {

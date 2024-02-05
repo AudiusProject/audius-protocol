@@ -2,11 +2,12 @@ import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 import { Component } from 'react'
 
-import { IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import PropTypes from 'prop-types'
 import { SingleDatePicker, isInclusivelyBeforeDay } from 'react-dates'
+
+import IconCalendar from 'assets/img/iconCalendar.svg'
 
 import styles from './DatePicker.module.css'
 
@@ -65,9 +66,7 @@ class DatePicker extends Component {
             onFocusChange={({ focused }) => this.setState({ focused })}
             numberOfMonths={1}
             hideKeyboardShortcutsPanel
-            customInputIcon={
-              <IconCalendarMonth className={styles.iconCalendar} />
-            }
+            customInputIcon={<IconCalendar className={styles.iconCalendar} />}
             small
           />
         </div>

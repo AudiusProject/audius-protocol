@@ -8,11 +8,13 @@ import {
   formatPrice,
   usePurchaseContentErrorMessage
 } from '@audius/common'
-import { Button, IconCaretRight, IconError } from '@audius/harmony'
+import { Button } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
+  HarmonyPlainButtonType,
+  IconCaretRight,
+  IconError
 } from '@audius/stems'
 
 import { make } from 'common/store/analytics/actions'

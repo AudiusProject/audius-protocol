@@ -1,5 +1,6 @@
-import { IconArrowRight as IconArrow } from '@audius/harmony'
 import cn from 'classnames'
+
+import IconArrow from 'assets/img/iconArrow.svg'
 
 import styles from './SectionButton.module.css'
 

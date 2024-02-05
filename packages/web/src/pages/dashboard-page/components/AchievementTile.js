@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { IconTrophy } from '@audius/harmony'
+import IconTrophy from 'assets/img/iconTrophy.svg'
 
 import styles from './AchievementTile.module.css'
 

@@ -1,5 +1,6 @@
-import { IconCosign as IconCoSign } from '@audius/harmony'
 import cn from 'classnames'
+
+import IconCoSign from 'assets/img/iconCoSign.svg'
 
 import styles from './Check.module.css'
 import { Size } from './types'

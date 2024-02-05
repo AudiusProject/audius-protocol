@@ -16,8 +16,13 @@ import {
   makeOptimisticChallengeSortComparator,
   Name
 } from '@audius/common'
-import { IconArrowRight as IconArrow, IconCheck } from '@audius/harmony'
-import { ProgressBar, ButtonType, Button } from '@audius/stems'
+import {
+  ProgressBar,
+  ButtonType,
+  Button,
+  IconCheck,
+  IconArrow
+} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

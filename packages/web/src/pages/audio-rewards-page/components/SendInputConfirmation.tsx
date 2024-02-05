@@ -8,8 +8,7 @@ import {
   weiToAudio,
   tokenDashboardPageSelectors
 } from '@audius/common'
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
@@ -40,7 +39,7 @@ type SendInputConfirmationProps = {
 export const AddressWithArrow = ({ address }: { address: WalletAddress }) => {
   return (
     <div className={styles.addressWrapper}>
-      <IconArrowRight className={styles.arrow} />
+      <IconArrow className={styles.arrow} />
       {address}
     </div>
   )

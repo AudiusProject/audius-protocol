@@ -1,7 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { IconShare, IconKebabHorizontal } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'

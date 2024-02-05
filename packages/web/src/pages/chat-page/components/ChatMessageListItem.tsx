@@ -15,8 +15,7 @@ import {
   Status,
   useCanSendMessage
 } from '@audius/common'
-import { IconError, IconPlus } from '@audius/harmony'
-import { PopupPosition } from '@audius/stems'
+import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'

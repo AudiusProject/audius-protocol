@@ -19,18 +19,22 @@ import {
   useSelectTierInfo
 } from '@audius/common'
 import {
-  IconVolumeLevel2 as IconVolume,
-  IconVolumeLevel0 as IconMute,
-  IconEmbed,
+  Button,
+  ButtonSize,
+  ButtonType,
   IconImage,
   IconLink,
   IconShare,
-  IconSolana as LogoSol
-} from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, LogoEth, Modal } from '@audius/stems'
+  LogoEth,
+  LogoSol,
+  Modal
+} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconEmbed from 'assets/img/iconEmbed.svg'
+import IconVolume from 'assets/img/iconVolume.svg'
+import IconMute from 'assets/img/iconVolume0.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import Toast from 'components/toast/Toast'

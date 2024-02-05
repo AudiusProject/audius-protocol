@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 
 import { Track, dayjs } from '@audius/common'
-import { Flex, IconCalendarMonth } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Flex } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, IconCalendar } from '@audius/stems'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -106,7 +106,7 @@ export const ReleaseDateTriggerLegacy = (
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconCalendarMonth />}
+      icon={<IconCalendar />}
       initialValues={initialValues}
       validationSchema={toFormikValidationSchema(timeValidationSchema)}
       onSubmit={onSubmit}
@@ -130,7 +130,7 @@ export const ReleaseDateTriggerLegacy = (
           text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
           size={ButtonSize.SMALL}
           onClick={toggleMenu}
-          leftIcon={<IconCalendarMonth />}
+          leftIcon={<IconCalendar />}
         />
       )}
     />

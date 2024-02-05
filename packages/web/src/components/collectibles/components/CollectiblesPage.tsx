@@ -16,11 +16,13 @@ import {
   collectibleDetailsUIActions,
   getHash
 } from '@audius/common'
-import { IconKebabHorizontal, IconPencil, IconShare } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
   ButtonType,
+  IconKebabHorizontal,
+  IconPencil,
+  IconShare,
   Modal,
   PopupMenu,
   PopupMenuItem,

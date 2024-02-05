@@ -12,16 +12,18 @@ import {
   imageProfilePicEmpty
 } from '@audius/common'
 import {
-  IconArtistBadge as BadgeArtist,
+  Button,
+  ButtonType,
+  ButtonSize,
+  IconTwitterBird,
   IconInstagram,
   IconDonate,
   IconLink,
-  IconTikTok,
-  IconTwitter as IconTwitterBird
-} from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+  IconTikTok
+} from '@audius/stems'
 import cn from 'classnames'
 
+import BadgeArtist from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'

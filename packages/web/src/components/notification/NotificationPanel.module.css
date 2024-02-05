@@ -25,9 +25,14 @@
 }
 
 .iconNotification {
+  fill: var(--static-white);
   margin-right: var(--unit-2);
   height: 30px;
   width: 30px;
+}
+
+.iconNotification g {
+  fill: var(--static-white);
 }
 
 .title {

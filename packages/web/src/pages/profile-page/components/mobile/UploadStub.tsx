@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback } from 'react'
 
-import { IconCloudUpload as IconUpload } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import IconUpload from 'assets/img/iconUpload.svg'
 
 import styles from './UploadStub.module.css'
 

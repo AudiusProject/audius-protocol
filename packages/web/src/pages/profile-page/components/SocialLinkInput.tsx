@@ -1,7 +1,12 @@
 import { useState, useRef, ReactNode, useMemo } from 'react'
 
-import { IconLink, IconTikTok } from '@audius/harmony'
-import { IconTwitterBird, IconInstagram, IconDonate } from '@audius/stems'
+import {
+  IconTwitterBird,
+  IconInstagram,
+  IconDonate,
+  IconLink,
+  IconTikTok
+} from '@audius/stems'
 import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'

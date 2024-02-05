@@ -14,7 +14,7 @@ import {
   searchUsersModalActions,
   chatSelectors
 } from '@audius/common'
-import { IconCompose } from '@audius/harmony'
+import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

@@ -1,4 +1,4 @@
-import { IconLock, IconLockUnlocked } from '@audius/harmony'
+import { IconLock, IconLockUnlocked } from '@audius/stems'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'

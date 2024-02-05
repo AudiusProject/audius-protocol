@@ -6,12 +6,13 @@ import {
   cacheUsersSelectors,
   cacheUsersActions
 } from '@audius/common'
-import { IconArrowRight as IconArrow, IconRobot } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import IconArrow from 'assets/img/iconArrow.svg'
+import IconRobot from 'assets/img/robot.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'

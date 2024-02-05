@@ -1,5 +1,4 @@
-import { IconTokenGold as IconGold } from '@audius/harmony'
-
+import IconGold from 'assets/img/IconGoldBadge.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 

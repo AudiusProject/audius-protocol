@@ -8,12 +8,12 @@ import {
   cacheUsersSelectors,
   imageBlank as placeholderArt
 } from '@audius/common'
-import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'

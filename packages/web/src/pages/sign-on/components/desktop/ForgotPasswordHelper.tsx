@@ -1,12 +1,8 @@
-import {
-  Flex,
-  Text,
-  useTheme,
-  IconQuestionCircle as IconQuestionMark
-} from '@audius/harmony'
+import { Flex, Text, useTheme } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import { CSSObject } from '@emotion/styled'
 
+import IconQuestionMark from 'assets/img/iconQuestionMark.svg'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'

@@ -1,15 +1,15 @@
 import { DogEarType } from '@audius/common'
 import {
-  IconVisibilityHidden,
-  IconStar,
-  IconSpecialAccess,
   IconCart,
   IconCollectible,
-  IconLock
-} from '@audius/harmony'
+  IconLock,
+  IconSpecialAccess
+} from '@audius/stems'
 import cn from 'classnames'
 
 import Rectangle from 'assets/img/dogEarRectangle.svg'
+import IconHidden from 'assets/img/iconHidden.svg'
+import IconStar from 'assets/img/iconStar.svg'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'
 
@@ -25,7 +25,7 @@ const getIcon = (type: DogEarType) => {
     case DogEarType.STAR:
       return IconStar
     case DogEarType.HIDDEN:
-      return IconVisibilityHidden
+      return IconHidden
     case DogEarType.LOCKED:
       return IconLock
     case DogEarType.COLLECTIBLE_GATED:

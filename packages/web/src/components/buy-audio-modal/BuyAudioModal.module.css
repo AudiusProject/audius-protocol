@@ -6,7 +6,3 @@
 .modalContent {
   padding-bottom: 0;
 }
-
-.noFill path {
-  fill: revert-layer !important;
-}

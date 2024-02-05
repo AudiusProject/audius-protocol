@@ -74,6 +74,11 @@
   margin-bottom: 24px;
 }
 
+.imageWrapper img {
+  height: 108px;
+  width: 108px;
+}
+
 .tiersContainer {
   display: flex;
   align-items: center;

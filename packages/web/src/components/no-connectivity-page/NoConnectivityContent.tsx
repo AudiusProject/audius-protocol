@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 
-import { IconNoWifi as IconOffline } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import IconOffline from 'assets/img/iconOffline.svg'
 
 import styles from './NoConnectivityContent.module.css'
 

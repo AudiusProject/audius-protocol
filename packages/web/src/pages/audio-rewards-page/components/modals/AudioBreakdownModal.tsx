@@ -3,7 +3,7 @@ import {
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
-import { IconInfo } from '@audius/harmony'
+import { IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'

@@ -1,7 +1,8 @@
 import { ReactNode, memo } from 'react'
 
-import { IconTrophy } from '@audius/harmony'
 import cn from 'classnames'
+
+import IconTrophy from 'assets/img/iconTrophy.svg'
 
 import styles from './Badge.module.css'
 

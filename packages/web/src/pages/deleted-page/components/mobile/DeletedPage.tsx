@@ -7,8 +7,7 @@ import {
   User,
   NestedNonNullable
 } from '@audius/common'
-import { IconUser } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconUser } from '@audius/stems'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

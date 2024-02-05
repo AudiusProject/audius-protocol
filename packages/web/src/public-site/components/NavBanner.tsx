@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import {
-  IconAudiusLogoHorizontalColor,
-  IconKebabHorizontal,
-  IconCloudDownload as IconDownloadQueued,
-  IconCaretDown
-} from '@audius/harmony'
+import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import {
   IconBlog,
+  IconCaretDown2,
+  IconDownloadQueued,
   IconFoundation,
+  IconKebabHorizontal,
   IconMerch,
   IconSupport,
   PopupMenu,
@@ -190,7 +188,7 @@ const NavBanner = (props: NavBannerProps) => {
                   onMouseEnter={() => triggerPopup(true)}
                 >
                   {messages.resources}
-                  <IconCaretDown className={styles.resourcesIcon} />
+                  <IconCaretDown2 className={styles.resourcesIcon} />
                 </div>
               )
             }}

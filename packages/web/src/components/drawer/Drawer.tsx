@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common'
-import { IconRemove } from '@audius/harmony'
+import { IconRemove } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

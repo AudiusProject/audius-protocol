@@ -1,14 +1,12 @@
 import {
+  Button,
+  ButtonProps,
+  ButtonType,
   IconEmbed,
   IconLink,
   IconMessage,
   IconShare,
-  IconTwitter as IconTwitterBird
-} from '@audius/harmony'
-import {
-  Button,
-  ButtonProps,
-  ButtonType,
+  IconTwitterBird,
   Modal,
   ModalContent,
   ModalHeader,

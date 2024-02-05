@@ -6,12 +6,8 @@ import {
   savedPageSelectors,
   SavedPageTabs
 } from '@audius/common'
-import {
-  SelectablePill,
-  IconHeart,
-  IconCart,
-  IconRepost
-} from '@audius/harmony'
+import { SelectablePill } from '@audius/harmony'
+import { IconHeart, IconCart, IconRepost } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'

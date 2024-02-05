@@ -1,19 +1,16 @@
 import React, { ReactNode } from 'react'
 
 import { TransactionMethod, TransactionType } from '@audius/common'
-import {
-  IconTipping as IconTip,
-  IconReceive as IconReceiveMini,
-  IconSend as IconSendMini,
-  IconTransaction,
-  IconTrophy,
-  IconComponent
-} from '@audius/harmony'
 import cn from 'classnames'
 
 import AppIcon from 'assets/img/appIcon.png'
 import IconCoinbaseMini from 'assets/img/iconCoinbaseMini.svg'
+import IconReceiveMini from 'assets/img/iconReceive.svg'
+import IconSendMini from 'assets/img/iconSend.svg'
 import IconStripeMini from 'assets/img/iconStripeMini.svg'
+import IconTip from 'assets/img/iconTip.svg'
+import IconTransaction from 'assets/img/iconTransaction.svg'
+import IconTrophy from 'assets/img/iconTrophy.svg'
 
 import styles from './AudioTransactionIcon.module.css'
 
@@ -27,7 +24,10 @@ type IconProps = {
   method: TransactionMethod
 }
 
-const typeIconSvgMap: Record<TransactionType, IconComponent | null> = {
+const typeIconSvgMap: Record<
+  TransactionType,
+  React.FunctionComponent<React.SVGProps<SVGSVGElement>> | null
+> = {
   [TransactionType.CHALLENGE_REWARD]: IconTrophy,
   [TransactionType.PURCHASE]: null, // Not needed, AppLogo is used for purchases
   [TransactionType.TIP]: IconTip,

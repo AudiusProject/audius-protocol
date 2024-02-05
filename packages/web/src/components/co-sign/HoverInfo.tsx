@@ -1,6 +1,7 @@
 import { ID } from '@audius/common'
-import { IconHeart, IconRepost } from '@audius/harmony'
 
+import IconHeart from 'assets/img/iconHeart.svg'
+import IconRepost from 'assets/img/iconRepost.svg'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './HoverInfo.module.css'

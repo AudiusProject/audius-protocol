@@ -6,12 +6,12 @@ import {
   Flex,
   IconArrowRight,
   IconExternalLink,
-  TextLink,
-  IconCart
+  TextLink
 } from '@audius/harmony'
 import {
   ModalHeader,
   ModalTitle,
+  IconCart,
   ModalContent,
   ModalFooter
 } from '@audius/stems'

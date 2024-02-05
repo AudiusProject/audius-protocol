@@ -51,7 +51,6 @@ import IconFileSPXSVG from '../assets/icons/fileSPX.svg'
 import IconFileTSSVG from '../assets/icons/fileTS.svg'
 import IconFileTSASVG from '../assets/icons/fileTSA.svg'
 import IconFileTSVSVG from '../assets/icons/fileTSV.svg'
-import IconFileUnknownSVG from '../assets/icons/fileUnknown.svg'
 import IconFileWAVSVG from '../assets/icons/fileWAV.svg'
 import IconFileWAVESVG from '../assets/icons/fileWAVE.svg'
 import IconFileWEBMSVG from '../assets/icons/fileWEBM.svg'
@@ -103,7 +102,6 @@ export const IconFileSPX = IconFileSPXSVG as IconComponent
 export const IconFileTS = IconFileTSSVG as IconComponent
 export const IconFileTSA = IconFileTSASVG as IconComponent
 export const IconFileTSV = IconFileTSVSVG as IconComponent
-export const IconFileUnknown = IconFileUnknownSVG as IconComponent
 export const IconFileWAV = IconFileWAVSVG as IconComponent
 export const IconFileWAVE = IconFileWAVESVG as IconComponent
 export const IconFileWEBM = IconFileWEBMSVG as IconComponent

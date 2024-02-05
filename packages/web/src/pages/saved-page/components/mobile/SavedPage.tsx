@@ -24,11 +24,14 @@ import {
   useDebouncedCallback,
   useGatedContentAccessMap
 } from '@audius/common'
-import { IconAlbum, IconFilter, IconNote, IconPlaylists } from '@audius/harmony'
+import { IconAlbum } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
+import IconFilter from 'assets/img/iconFilter.svg'
+import IconNote from 'assets/img/iconNote.svg'
+import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'

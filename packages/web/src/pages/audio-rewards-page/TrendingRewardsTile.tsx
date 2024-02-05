@@ -6,8 +6,7 @@ import {
   audioRewardsPageActions,
   OptimisticUserChallenge
 } from '@audius/common'
-import { IconArrowRight } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
+import { ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -54,7 +53,7 @@ const RewardPanel = ({
         type={ButtonType.COMMON_ALT}
         className={wm(styles.panelButton)}
         text={panelButtonText}
-        rightIcon={<IconArrowRight />}
+        rightIcon={<IconArrow />}
         iconClassName={wm(styles.buttonIcon)}
         onClick={onClickButton}
         textClassName={styles.panelButtonText}

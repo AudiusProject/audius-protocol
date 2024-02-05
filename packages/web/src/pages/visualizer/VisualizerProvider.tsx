@@ -28,7 +28,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import { webglSupported } from './utils'
 import { averageColorSelectors } from '@audius/common'
-import { IconClose as IconRemove } from '@audius/harmony'
+import IconRemove from 'assets/img/iconRemove.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 

@@ -1,7 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { IconPause, IconPlay } from '@audius/harmony'
-import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
+import {
+  HarmonyPlainButton,
+  HarmonyPlainButtonType,
+  IconPause,
+  IconPlay
+} from '@audius/stems'
 import { useField } from 'formik'
 
 import { CollectionTrackForUpload } from '../types'

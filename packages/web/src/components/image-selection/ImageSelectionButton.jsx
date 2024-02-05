@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { IconCamera } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconCamera } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'

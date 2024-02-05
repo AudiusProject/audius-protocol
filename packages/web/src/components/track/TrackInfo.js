@@ -1,9 +1,9 @@
 import { PureComponent } from 'react'
 
-import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
+import IconVolume from 'assets/img/iconVolume.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'

@@ -10,15 +10,13 @@ import {
   makeSolanaTransactionLink,
   isNullOrUndefined
 } from '@audius/common'
-import {
-  IconExternalLink,
-  IconLogoLinkByStripe as LogoStripeLink
-} from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
-import LogoCoinbasePay from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
+import LogoStripeLink from 'assets/img/LogoStripeLink.svg'
+import LogoCoinbase from 'assets/img/coinbase-pay/LogoCoinbase.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { isChangePositive } from 'components/audio-transactions-table/AudioTransactionsTable'
@@ -219,7 +217,7 @@ export const TransactionDetailsContent = ({
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
               {transactionDetails.method === TransactionMethod.COINBASE ? (
-                <LogoCoinbasePay
+                <LogoCoinbase
                   className={styles.coinbaseLogo}
                   width={155}
                   height={20}

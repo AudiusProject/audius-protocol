@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-import { IconCaretRight } from '@audius/harmony'
+import { IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

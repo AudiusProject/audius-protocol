@@ -1,4 +1,4 @@
-import { IconComponent } from '@audius/harmony'
+import { IconComponent } from '@audius/stems'
 
 import { Text } from 'components/typography'
 

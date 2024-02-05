@@ -7,8 +7,7 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common'
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
@@ -211,7 +210,7 @@ export const SignInPage = ({
             loading ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrowRight />
+              <IconArrow />
             )
           }
           type={ButtonType.PRIMARY_ALT}

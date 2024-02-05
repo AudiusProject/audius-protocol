@@ -8,8 +8,7 @@ import {
   collectionsSocialActions,
   RepostSource
 } from '@audius/common'
-import { IconRepost } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, ButtonType, IconRepost } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

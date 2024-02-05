@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { IconUserFollow as IconFollow } from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Button, ButtonType, ButtonSize, IconFollow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 

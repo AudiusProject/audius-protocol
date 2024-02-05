@@ -5,7 +5,7 @@ import {
   profilePageActions,
   profilePageSelectors
 } from '@audius/common'
-import { IconTrending } from '@audius/harmony'
+import { IconTrending } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SearchTag } from 'components/search/SearchTag'

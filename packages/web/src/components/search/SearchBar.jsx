@@ -1,7 +1,6 @@
 import { createRef, Component } from 'react'
 
 import { Kind, Status } from '@audius/common'
-import { IconArrowRight as IconArrow, IconSearch } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import cn from 'classnames'
@@ -12,6 +11,8 @@ import Lottie from 'react-lottie'
 import { Transition } from 'react-spring/renderprops.cjs'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import IconArrow from 'assets/img/iconArrowGrey.svg'
+import IconSearch from 'assets/img/iconSearch.svg'
 import SearchBarResult from 'components/search/SearchBarResult'
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
@@ -392,7 +393,7 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
-            prefix={<IconSearch color='subdued' />}
+            prefix={<IconSearch />}
             onKeyDown={this.onKeyDown}
             spellCheck={false}
           />

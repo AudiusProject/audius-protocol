@@ -7,10 +7,10 @@ import {
   formatCount,
   formatLineupTileDuration
 } from '@audius/common'
-import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
 
+import IconVolume from 'assets/img/iconVolume.svg'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { Link } from 'components/link'

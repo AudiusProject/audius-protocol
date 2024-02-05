@@ -1,4 +1,4 @@
-import { IconInstagram } from '@audius/harmony'
+import { IconInstagram } from '@audius/stems'
 
 import { SocialButton, SocialButtonProps } from '../SocialButton'
 

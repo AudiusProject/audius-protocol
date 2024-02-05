@@ -1,5 +1,4 @@
-import { IconArrowRight } from '@audius/harmony'
-import { ButtonSize, Button, ButtonType } from '@audius/stems'
+import { ButtonSize, IconArrowWhite, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './DeactivatedProfileTombstone.module.css'
@@ -25,7 +24,7 @@ export const DeactivatedProfileTombstone = ({
         type={ButtonType.PRIMARY_ALT}
         size={ButtonSize.MEDIUM}
         text={messages.buttonText}
-        rightIcon={<IconArrowRight color='staticWhite' />}
+        rightIcon={<IconArrowWhite />}
       />
     </div>
   )

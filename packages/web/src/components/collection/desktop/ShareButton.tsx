@@ -6,8 +6,7 @@ import {
   ShareSource,
   SmartCollectionVariant
 } from '@audius/common'
-import { IconShare } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, ButtonType, IconShare } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

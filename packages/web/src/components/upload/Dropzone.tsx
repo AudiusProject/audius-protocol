@@ -1,7 +1,8 @@
-import { TextLink, IconCloudUpload as IconUpload } from '@audius/harmony'
+import { TextLink } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
+import IconUpload from 'assets/img/iconUpload.svg'
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
 import styles from './Dropzone.module.css'

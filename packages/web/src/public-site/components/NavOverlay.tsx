@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import {
-  IconAudiusLogoHorizontal,
-  IconInstagram,
-  IconRemove,
-  IconTwitter as IconTwitterBird,
-  IconDiscord as IconDiscord2,
+  IconBlog,
+  IconDiscord2,
   IconTelegram,
-  IconCloudDownload as IconDownloadQueued
-} from '@audius/harmony'
-import { IconSupport, IconMerch, IconBlog, IconFoundation } from '@audius/stems'
+  IconDownloadQueued,
+  IconFoundation,
+  IconInstagram,
+  IconMerch,
+  IconRemove,
+  IconSupport,
+  IconTwitterBird
+} from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'

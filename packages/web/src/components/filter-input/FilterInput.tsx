@@ -1,5 +1,4 @@
-import { IconFilter } from '@audius/harmony'
-
+import IconFilter from 'assets/img/iconFilter.svg'
 import { Input } from 'components/input'
 
 import styles from './FilterInput.module.css'
@@ -18,7 +17,7 @@ const FilterInput = ({ placeholder, onChange, value }: FilterInputProps) => {
       <Input
         className={styles.filterInput}
         placeholder={placeholder}
-        prefix={<IconFilter color='subdued' />}
+        prefix={<IconFilter />}
         onChange={onChange}
         value={value}
         variant='bordered'

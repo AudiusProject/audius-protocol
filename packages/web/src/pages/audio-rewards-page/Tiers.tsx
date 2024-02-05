@@ -10,18 +10,15 @@ import {
   musicConfettiActions,
   useSelectTierInfo
 } from '@audius/common'
-import {
-  IconArrowRight as IconArrow,
-  IconTokenBronze,
-  IconTokenGold,
-  IconTokenPlatinum,
-  IconTokenSilver,
-  IconDiscord
-} from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import IconArrow from 'assets/img/iconArrowGrey.svg'
+import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
+import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
+import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
+import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -54,16 +51,15 @@ type AudioTiers = Exclude<BadgeTier, 'none'>
 
 // Tiers as they are listed here, in order
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
-const BADGE_SIZE = 108
 
 // Mapping for large icons
-export const audioTierMapSvg: {
+export const audioTierMapPng: {
   [tier in AudioTiers]: Nullable<ReactElement>
 } = {
-  bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
-  silver: <IconTokenSilver width={BADGE_SIZE} height={BADGE_SIZE} />,
-  gold: <IconTokenGold width={BADGE_SIZE} height={BADGE_SIZE} />,
-  platinum: <IconTokenPlatinum width={BADGE_SIZE} height={BADGE_SIZE} />
+  bronze: <img alt='bronze' src={IconBronzeBadge} />,
+  silver: <img alt='silver' src={IconSilverBadge} />,
+  gold: <img alt='gold' src={IconGoldBadge} />,
+  platinum: <img alt='platinum' src={IconPlatinumBadge} />
 }
 
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
@@ -125,7 +121,7 @@ export const Tier = ({
   isCompact = false,
   onClickDiscord = () => {}
 }: TierProps) => {
-  const badgeImage = audioTierMapSvg[tier]
+  const badgeImage = audioTierMapPng[tier]
 
   return (
     <div

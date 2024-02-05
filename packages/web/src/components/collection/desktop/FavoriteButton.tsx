@@ -10,8 +10,7 @@ import {
   collectionsSocialActions,
   FavoriteSource
 } from '@audius/common'
-import { IconHeart } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, ButtonType, IconHeart } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

@@ -5,8 +5,7 @@ import {
   useLockedContent,
   useGatedContentAccess
 } from '@audius/common'
-import { IconLock } from '@audius/harmony'
-import { ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
+import { IconLock, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

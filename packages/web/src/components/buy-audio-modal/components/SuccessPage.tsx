@@ -9,8 +9,7 @@ import {
   formatAudio,
   isNullOrUndefined
 } from '@audius/common'
-import { IconInfo } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconInfo } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

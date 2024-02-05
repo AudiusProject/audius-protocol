@@ -1,9 +1,10 @@
 import { Component } from 'react'
 
-import { IconMetamask as LogoMetaMask } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+
+import LogoMetaMask from 'assets/img/logoMetaMask.svg'
 
 import styles from './MetaMaskOption.module.css'
 

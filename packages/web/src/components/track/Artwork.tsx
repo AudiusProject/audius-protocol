@@ -7,10 +7,10 @@ import {
   useLoadImageWithTimeout
 } from '@audius/common'
 import {
-  IconLock,
-  IconPlaybackPlay as IconPlay,
-  IconPlaybackPause as IconPause
-} from '@audius/harmony'
+  PbIconPlay as IconPlay,
+  PbIconPause as IconPause,
+  IconLock
+} from '@audius/stems'
 import cn from 'classnames'
 
 import CoSign from 'components/co-sign/CoSign'

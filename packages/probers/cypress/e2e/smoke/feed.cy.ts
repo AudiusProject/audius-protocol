@@ -9,9 +9,7 @@ describe('Smoke test -- feed page', () => {
     const base64Entropy = Buffer.from(user.entropy).toString('base64')
     cy.visit(`trending?login=${base64Entropy}`)
 
-    cy.findByText(user.name, {
-      timeout: Cypress.env('initialLoadTimeout')
-    }).should('exist')
+    cy.findByText(user.name, { timeout: Cypress.env('initialLoadTimeout') }).should('exist')
 
     cy.visit('feed')
 

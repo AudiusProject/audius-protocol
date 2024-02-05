@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { IconArrowRight } from '@audius/harmony'
+import { IconArrow } from '@audius/stems'
 
 import {
   UserProfileListProps,
@@ -40,7 +40,7 @@ export const ProfilePictureListTile = ({
       />
       <div className={styles.viewAll}>
         <span>{messages.viewAll}</span>
-        <IconArrowRight className={styles.arrowIcon} />
+        <IconArrow className={styles.arrowIcon} />
       </div>
     </div>
   )

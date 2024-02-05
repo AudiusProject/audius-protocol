@@ -1,7 +1,7 @@
 import { MouseEvent } from 'react'
 
-import { IconKebabHorizontal } from '@audius/harmony'
 import {
+  IconKebabHorizontal,
   IconButton,
   IconButtonButtonProps,
   PopupMenu,

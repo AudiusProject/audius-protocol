@@ -8,10 +8,12 @@ import {
   uploadSelectors
 } from '@audius/common'
 import {
-  IconCloudUpload as IconUpload,
-  IconUserFollow as IconFollow
-} from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+  Button,
+  ButtonType,
+  ButtonSize,
+  IconFollow,
+  IconUpload
+} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'

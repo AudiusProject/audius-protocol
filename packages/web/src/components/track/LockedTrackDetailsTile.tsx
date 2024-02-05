@@ -7,7 +7,7 @@ import {
   Track,
   UserMetadata
 } from '@audius/common'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 
 import { Icon } from 'components/Icon'

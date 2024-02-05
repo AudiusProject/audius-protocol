@@ -1,13 +1,14 @@
 import { useCallback, useMemo } from 'react'
 
 import { creativeCommons } from '@audius/common'
-import { IconCcBy as IconCreativeCommons, IconRobot } from '@audius/harmony'
+import { IconRobot } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import IconCreativeCommons from 'assets/img/iconCreativeCommons.svg'
 import { Icon } from 'components/Icon'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
 import {

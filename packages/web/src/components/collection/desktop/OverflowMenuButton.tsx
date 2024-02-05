@@ -8,8 +8,7 @@ import {
   User,
   usersSocialActions
 } from '@audius/common'
-import { IconKebabHorizontal } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconKebabHorizontal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'

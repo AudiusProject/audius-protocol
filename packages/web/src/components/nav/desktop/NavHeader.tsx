@@ -9,15 +9,12 @@ import {
   Name,
   themeSelectors
 } from '@audius/common'
-import {
-  IconAudiusLogoHorizontal,
-  useTheme,
-  IconNotificationOn as IconNotification
-} from '@audius/harmony'
+import { IconAudiusLogoHorizontal, useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
+import IconNotification from 'assets/img/iconNotification.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
 import { NotificationPanel } from 'components/notification'

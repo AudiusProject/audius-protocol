@@ -14,7 +14,8 @@ import {
   useRemoteVar,
   IntKeys
 } from '@audius/common'
-import { Flex, IconCheck } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
+import { IconCheck } from '@audius/stems'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'

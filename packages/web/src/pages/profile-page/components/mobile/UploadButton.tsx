@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { IconCloudUpload } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconUpload } from '@audius/stems'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 
@@ -26,7 +25,7 @@ const UploadButton = () => {
           onClick={handleClick}
           text='Upload Track'
           type={ButtonType.COMMON_ALT}
-          leftIcon={<IconCloudUpload />}
+          leftIcon={<IconUpload />}
           iconClassName={styles.icon}
         />
       </div>

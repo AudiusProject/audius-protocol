@@ -7,8 +7,7 @@ import {
   TrendingRewardsModalType,
   audioRewardsPageSelectors
 } from '@audius/common'
-import { IconArrowRight as IconArrow } from '@audius/harmony'
-import { SegmentedControl, ButtonType, Button } from '@audius/stems'
+import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'

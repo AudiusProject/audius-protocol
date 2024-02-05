@@ -11,13 +11,14 @@ import {
   User
 } from '@audius/common'
 import {
-  IconMessageBlock,
+  IconBlockMessages,
+  IconButton,
   IconKebabHorizontal,
   IconMessage,
-  IconMessageUnblock as IconUnblockMessages,
-  IconUser
-} from '@audius/harmony'
-import { IconButton, PopupMenu } from '@audius/stems'
+  IconUnblockMessages,
+  IconUser,
+  PopupMenu
+} from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -70,21 +71,21 @@ const renderCustomChip = (callToAction: ChatPermissionAction) => {
     case ChatPermissionAction.TIP:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconBlockMessages className={styles.icon} />
           <span>{messages.sendTipRequired}</span>
         </div>
       )
     case ChatPermissionAction.UNBLOCK:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconBlockMessages className={styles.icon} />
           <span>{messages.unblockRequired}</span>
         </div>
       )
     default:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconBlockMessages className={styles.icon} />
           <span>{messages.notPermitted}</span>
         </div>
       )
@@ -150,7 +151,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
           onClick: handleUnblockClicked
         }
       : {
-          icon: <IconMessageBlock />,
+          icon: <IconBlockMessages />,
           text: messages.block,
           onClick: handleBlockClicked
         }

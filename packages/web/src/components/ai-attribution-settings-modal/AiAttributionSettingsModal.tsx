@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { settingsPageActions, settingsPageSelectors } from '@audius/common'
-import { IconRobot } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -10,6 +9,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalTitle,
+  IconRobot,
   MarkdownViewer
 } from '@audius/stems'
 import { useDispatch } from 'react-redux'

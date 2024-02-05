@@ -4,8 +4,7 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common'
-import { IconRocket } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, ButtonType, IconRocket } from '@audius/stems'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
