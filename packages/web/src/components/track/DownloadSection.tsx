@@ -31,12 +31,12 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
+import { audiusSdk } from 'services/audius-sdk'
 import {
   useAuthenticatedCallback,
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
