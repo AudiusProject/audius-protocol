@@ -234,7 +234,6 @@ export const useWithdrawals = () => {
         onSuccess: () => {
           setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
           setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
-          // TODO: Figure out why types don't work
           dispatch(userApiUtils.reset('getUSDCTransactions'))
           dispatch(userApiUtils.reset('getUSDCTransactionsCount'))
           reset()
