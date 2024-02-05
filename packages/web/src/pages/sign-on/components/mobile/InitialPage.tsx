@@ -1,25 +1,27 @@
 import {
+  KeyboardEvent,
   useCallback,
-  useState,
   useContext,
   useEffect,
   useRef,
-  KeyboardEvent
+  useState
 } from 'react'
 
-import { Flex } from '@audius/harmony'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import {
+  Flex,
+  IconAudiusLogoHorizontalColor,
+  IconArrowRight
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
 
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
-import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
 import signupCtaImage from 'assets/img/signUpCTA.png'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import PreloadImage from 'components/preload-image/PreloadImage'
 import { StatusMessage } from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
@@ -146,10 +148,9 @@ const SignUpEmail = ({
   return (
     <div className={styles.topContainer}>
       <Flex>
-        <PreloadImage
-          src={audiusLogoHorizontal}
-          className={styles.logo}
-          alt='Audius Colored Logo'
+        <IconAudiusLogoHorizontalColor
+          height={51}
+          css={{ width: '100%', maxWidth: 194, margin: '0 auto 32px' }}
         />
       </Flex>
       <h1 className={cn(styles.title)}>{messages.title}</h1>
@@ -200,7 +201,7 @@ const SignUpEmail = ({
             isSubmitting && shouldShowLoadingSpinner ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
@@ -251,11 +252,7 @@ const SignIn = ({
   return (
     <div className={styles.topContainer}>
       <Flex>
-        <PreloadImage
-          src={audiusLogoHorizontal}
-          className={styles.logo}
-          alt='Audius Colored Logo'
-        />
+        <IconAudiusLogoHorizontalColor className={styles.logo} />
       </Flex>
       <select style={{ display: 'none' }} />
       <h1 className={styles.signInDescription}>{messages.signinDescription}</h1>
@@ -317,7 +314,7 @@ const SignIn = ({
             isLoading || (didSucceed && !hasAccount) ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={ButtonType.PRIMARY_ALT}

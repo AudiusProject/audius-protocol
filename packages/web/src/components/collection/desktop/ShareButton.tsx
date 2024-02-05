@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 
 import { ShareSource, SmartCollectionVariant, ID } from '@audius/common/models'
 import { shareModalUIActions } from '@audius/common/store'
-import { ButtonProps, ButtonType, IconShare } from '@audius/stems'
+import { IconShare } from '@audius/harmony'
+import { ButtonProps, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

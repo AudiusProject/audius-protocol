@@ -173,6 +173,7 @@ export type APIStem = {
   category: StemCategory
   cid: CID
   blocknumber: number
+  orig_filename: string
 }
 
 export type APIPlaylistAddedTimestamp = {

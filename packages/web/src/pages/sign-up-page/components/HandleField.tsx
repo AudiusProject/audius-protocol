@@ -7,8 +7,7 @@ import {
 } from '@audius/common/messages'
 import { pickHandleErrorMessages } from '@audius/common/schemas'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
-import { TextLink } from '@audius/harmony'
-import { IconCheck } from '@audius/stems'
+import { TextLink, IconCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
 import {

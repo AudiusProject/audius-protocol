@@ -6,13 +6,8 @@ import {
   ShareSoundToTiktokModalStatus
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import {
-  Button,
-  Modal,
-  ButtonType,
-  IconTikTokInverted,
-  IconTikTok
-} from '@audius/stems'
+import { IconTikTok } from '@audius/harmony'
+import { Button, Modal, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -140,7 +135,7 @@ const ShareSoundToTikTokModal = () => {
           text={
             <div className={styles.button}>
               <span>{messages.shareButton}</span>
-              <IconTikTokInverted />
+              <IconTikTok color='staticWhite' />
             </div>
           }
         />

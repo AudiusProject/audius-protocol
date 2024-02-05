@@ -1,6 +1,7 @@
 import { MouseEventHandler } from 'react'
 
-import { ButtonType, IconPause, IconPlay } from '@audius/stems'
+import { IconPause, IconPlay } from '@audius/harmony'
+import { ButtonType } from '@audius/stems'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
 

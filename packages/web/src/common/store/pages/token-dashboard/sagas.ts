@@ -7,7 +7,7 @@ import {
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import {
-  fetchOpenSeaAssetsForWallets,
+  fetchOpenSeaNftsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'common/store/profile/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -27,7 +27,7 @@ function* fetchEthWalletInfo(wallets: string[]) {
   )
 
   const collectiblesMap = (yield* call(
-    fetchOpenSeaAssetsForWallets,
+    fetchOpenSeaNftsForWallets,
     wallets
   )) as CollectibleState
 

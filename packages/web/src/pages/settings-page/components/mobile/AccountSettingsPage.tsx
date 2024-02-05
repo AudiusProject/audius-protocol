@@ -1,11 +1,11 @@
 import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
-import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
+import { IconVerified, IconRecoveryEmail, IconSignOut } from '@audius/harmony'
+import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import IconVerified from 'assets/img/iconVerified.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -115,7 +115,7 @@ const AccountSettingsPage = ({
                 className={styles.resetButton}
                 type={ButtonType.COMMON_ALT}
                 text='Resend'
-                leftIcon={<IconMail />}
+                leftIcon={<IconRecoveryEmail color='accent' />}
               />
             </Row>
           </Grouping>
@@ -157,7 +157,7 @@ const AccountSettingsPage = ({
                 onClick={goToChangePasswordSettingsPage}
                 type={ButtonType.COMMON_ALT}
                 className={styles.changePasswordButton}
-                leftIcon={<IconMail />}
+                leftIcon={<IconRecoveryEmail color='accent' />}
               />
             </Row>
           </Grouping>

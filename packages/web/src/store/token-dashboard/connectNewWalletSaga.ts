@@ -8,7 +8,7 @@ import { associateNewWallet } from 'common/store/pages/token-dashboard/associate
 import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
 import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
 import {
-  fetchOpenSeaAssets,
+  fetchOpenSeaNfts,
   fetchSolanaCollectibles
 } from 'common/store/profile/sagas'
 
@@ -77,7 +77,7 @@ function* handleConnectNewWallet() {
     yield* addWalletToUser(updatedUserMetadata, disconnect)
 
     yield* fork(fetchSolanaCollectibles, updatedUserMetadata)
-    yield* fork(fetchOpenSeaAssets, updatedUserMetadata)
+    yield* fork(fetchOpenSeaNfts, updatedUserMetadata)
   } catch (e) {
     // Very likely we hit error path here i.e. user closes the web3 popup. Log it and restart
     const err = `Caught error during handleConnectNewWallet:  ${e}, resetting to initial state`

@@ -5,8 +5,8 @@ import {
   notificationsSelectors,
   SupporterRankUpNotification
 } from '@audius/common/store'
+import { IconTrending } from '@audius/harmony'
 
-import IconTrending from 'assets/img/iconTrending.svg'
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 

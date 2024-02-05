@@ -8,11 +8,10 @@ import pkg from 'bs58'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
-
-import styles from './PrivateKeyExporterPage.module.css'
 
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -33,6 +32,7 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { color } = useTheme()
   const { toast } = useContext(ToastContext)
   const record = useRecord()
+  const isMobile = useIsMobile()
   const user = useSelector(getAccountUser) ?? undefined
   const handleClick = useCallback(() => {
     copyToClipboard(value)
@@ -69,14 +69,18 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
         </Text>
       </Flex>
       <Divider orientation='vertical' />
-      <Box p='xl' css={{ width: 464 }}>
+      <Box p='xl' css={isMobile ? {} : { width: 464 }}>
         <Text variant='body'>
-          {isPrivate ? shortenSPLAddress(value, 21) : value}
+          {isPrivate
+            ? shortenSPLAddress(value, isMobile ? 4 : 18)
+            : isMobile
+            ? shortenSPLAddress(value, 4)
+            : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />
       <Box p='xl' css={{ width: 64 }}>
-        <IconCopy width={16} height={16} className={styles.copyIcon} />
+        <IconCopy width={16} height={16} color='default' />
       </Box>
     </Flex>
   )

@@ -5,7 +5,7 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'

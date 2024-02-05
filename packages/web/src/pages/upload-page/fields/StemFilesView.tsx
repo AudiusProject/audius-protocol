@@ -7,8 +7,8 @@ import {
   StemUploadWithFile
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Box, Flex, Text as HarmonyText } from '@audius/harmony'
-import { IconRemove, IconButton } from '@audius/stems'
+import { IconRemove, Box, Flex, Text as HarmonyText } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

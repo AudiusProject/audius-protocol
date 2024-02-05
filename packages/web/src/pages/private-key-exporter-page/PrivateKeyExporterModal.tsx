@@ -12,7 +12,6 @@ import {
   IconTriangleExclamation
 } from '@audius/harmony'
 import {
-  Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -21,6 +20,8 @@ import {
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { useIsMobile } from 'hooks/useIsMobile'
+import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { useSelector } from 'utils/reducer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
@@ -160,6 +161,7 @@ const AdditionalResources = () => {
 
 export const PrivateKeyExporterModal = () => {
   const record = useRecord()
+  const isMobile = useIsMobile()
   const user = useSelector(getAccountUser) ?? undefined
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
@@ -174,20 +176,23 @@ export const PrivateKeyExporterModal = () => {
     }
   }, [isVisible, user, record])
   return (
-    <Modal
+    <ModalDrawer
+      useGradientTitle={false}
       bodyClassName={styles.modal}
       onClose={handleClose}
       isOpen={isVisible}
     >
-      <ModalHeader
-        onClose={handleClose}
-        dismissButtonClassName={styles.modalCloseIcon}
-      >
-        <ModalTitle
-          title={messages.privateKey}
-          titleClassName={styles.modalTitle}
-        />
-      </ModalHeader>
+      {!isMobile ? (
+        <ModalHeader
+          onClose={handleClose}
+          dismissButtonClassName={styles.modalCloseIcon}
+        >
+          <ModalTitle
+            title={messages.privateKey}
+            titleClassName={styles.modalTitle}
+          />
+        </ModalHeader>
+      ) : null}
       <ModalContent>
         <Flex direction='column' gap='xl'>
           <KeepThisInformationSecure />
@@ -196,17 +201,19 @@ export const PrivateKeyExporterModal = () => {
           <AdditionalResources />
         </Flex>
       </ModalContent>
-      <ModalFooter>
-        <Button
-          variant='secondary'
-          onClick={handleClose}
-          css={{ marginLeft: 24, marginRight: 24 }}
-          fullWidth
-        >
-          {messages.close}
-        </Button>
-      </ModalFooter>
-    </Modal>
+      {!isMobile ? (
+        <ModalFooter>
+          <Button
+            variant='secondary'
+            onClick={handleClose}
+            css={{ marginLeft: 24, marginRight: 24 }}
+            fullWidth
+          >
+            {messages.close}
+          </Button>
+        </ModalFooter>
+      ) : null}
+    </ModalDrawer>
   )
 }
 

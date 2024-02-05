@@ -15,12 +15,12 @@ import {
   relatedArtistsUIActions,
   CommonState
 } from '@audius/common/store'
+import { IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconClose from 'assets/img/iconRemove.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

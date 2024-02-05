@@ -144,7 +144,7 @@ export const primitiveTheme = {
       darkRed: '#C43047',
       green: '#6CDF44',
       lightGreen: '#13C65A',
-      gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
+      gradient: 'linear-gradient(323.08deg, #4FF069 36.13%, #09BD51 133.51%)'
     }
   }
 }
