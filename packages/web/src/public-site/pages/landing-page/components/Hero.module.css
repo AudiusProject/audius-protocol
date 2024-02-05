@@ -192,6 +192,10 @@
   margin-right: 48px;
 }
 
+.ctaButton path {
+  fill: #7e1bcc;
+}
+
 .mobileContainer .ctaButton {
   width: 100%;
   display: flex;
@@ -239,6 +243,10 @@
   text-align: center;
   transform: scale3d(1, 1, 1);
   cursor: pointer;
+}
+
+.downloadButton path {
+  fill: #ffffff;
 }
 
 .downloadButton:hover {
