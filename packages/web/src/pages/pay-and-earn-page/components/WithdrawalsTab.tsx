@@ -5,12 +5,11 @@ import {
   useGetUSDCTransactionsCount,
   Id,
   userApiFetch,
-  userApiActions,
   userApiUtils
 } from '@audius/common/api'
 import {
-  AudiusQueryContext,
-  useAllPaginatedQuery
+  useAllPaginatedQuery,
+  useAudiusQueryContext
 } from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
 import {
@@ -51,6 +50,7 @@ import {
   WithdrawalsTableSortMethod
 } from './WithdrawalsTable'
 import { useDispatch } from 'react-redux'
+import { ThunkDispatch } from 'redux-thunk'
 
 const { getUserId } = accountSelectors
 
@@ -113,7 +113,7 @@ const NoWithdrawals = () => {
 }
 
 const useWithdrawalTransactionPoller = () => {
-  const audiusQueryContext = useContext(AudiusQueryContext)
+  const audiusQueryContext = useAudiusQueryContext()
   const [isPolling, setIsPolling] = useState(false)
 
   const beginPolling = useCallback(
@@ -178,7 +178,8 @@ const useWithdrawalTransactionPoller = () => {
 
 export const useWithdrawals = () => {
   const userId = useSelector(getUserId)
-  const dispatch = useDispatch()
+  // Type override required because we're dispatching thunk actions below
+  const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
   const lastCompletedTransaction = useSelector(
     withdrawUSDCSelectors.getLastCompletedTransactionSignature
   )
@@ -230,8 +231,8 @@ export const useWithdrawals = () => {
           setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
           setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
           // TODO: Figure out why types don't work
-          dispatch(userApiUtils.reset('getUSDCTransactions') as any)
-          dispatch(userApiUtils.reset('getUSDCTransactionsCount') as any)
+          dispatch(userApiUtils.reset('getUSDCTransactions'))
+          dispatch(userApiUtils.reset('getUSDCTransactionsCount'))
           reset()
         }
       })
