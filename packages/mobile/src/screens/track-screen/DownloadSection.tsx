@@ -47,7 +47,8 @@ const messages = {
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
-  purchaseableIsOwner: (price: string) => `Fans can unlock & download these files for a one time purchase of $${price}`
+  purchaseableIsOwner: (price: string) =>
+    `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -68,11 +69,13 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
-  const formattedPrice = price ? USDC(price / 100).toLocaleString('en-us', {
-    roundingMode: 'floor',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }) : undefined
+  const formattedPrice = price
+    ? USDC(price / 100).toLocaleString('en-us', {
+        roundingMode: 'floor',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : undefined
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
@@ -122,74 +125,73 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const renderHeader = () => {
     return (
       <>
-      <Flex
-        p='l'
-        direction='row'
-        justifyContent='space-between'
-        alignItems='center'
-      >
-        <Flex gap='m'>
-          <Flex direction='row' alignItems='center' gap='s'>
-            <IconReceive color='default' />
-            <Text variant='label' size='l' strength='strong'>
-              {messages.title}
-            </Text>
-          </Flex>
-          {shouldDisplayPremiumDownloadLocked && formattedPrice !== undefined ? (
-            <Button
-              variant='primary'
-              size='small'
-              color='lightGreen'
-              onPress={handlePurchasePress}
-            >
-              {messages.unlockAll(
-                formattedPrice
-              )}
-            </Button>
-          ) : null}
-          {shouldDisplayPremiumDownloadUnlocked ? (
-            <>
-              <Flex
-                gap='s'
-                direction='row'
-                alignItems='center'
-                style={css({
-                  backgroundColor: color.special.blue
-                })}
+        <Flex
+          p='l'
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+        >
+          <Flex gap='m'>
+            <Flex direction='row' alignItems='center' gap='s'>
+              <IconReceive color='default' />
+              <Text variant='label' size='l' strength='strong'>
+                {messages.title}
+              </Text>
+            </Flex>
+            {shouldDisplayPremiumDownloadLocked &&
+            formattedPrice !== undefined ? (
+              <Button
+                variant='primary'
+                size='small'
+                color='lightGreen'
+                onPress={handlePurchasePress}
               >
+                {messages.unlockAll(formattedPrice)}
+              </Button>
+            ) : null}
+            {shouldDisplayPremiumDownloadUnlocked ? (
+              <>
                 <Flex
-                  borderRadius='3xl'
-                  ph='s'
+                  gap='s'
+                  direction='row'
+                  alignItems='center'
                   style={css({
-                    backgroundColor: color.special.lightGreen,
-                    paddingTop: 1,
-                    paddingBottom: 1
+                    backgroundColor: color.special.blue
                   })}
                 >
-                  <IconLockUnlocked color='staticWhite' size='xs' />
+                  <Flex
+                    borderRadius='3xl'
+                    ph='s'
+                    style={css({
+                      backgroundColor: color.special.lightGreen,
+                      paddingTop: 1,
+                      paddingBottom: 1
+                    })}
+                  >
+                    <IconLockUnlocked color='staticWhite' size='xs' />
+                  </Flex>
+                  <Text
+                    variant='label'
+                    // TODO: size other than m causes misalignment C-3709
+                    size='l'
+                    strength='strong'
+                    color='subdued'
+                  >
+                    {messages.purchased}
+                  </Text>
                 </Flex>
-                <Text
-                  variant='label'
-                  // TODO: size other than m causes misalignment C-3709
-                  size='l'
-                  strength='strong'
-                  color='subdued'
-                >
-                  {messages.purchased}
-                </Text>
-              </Flex>
-            </>
-          ) : null}
+              </>
+            ) : null}
+          </Flex>
+          <ExpandableArrowIcon expanded={isExpanded} />
         </Flex>
-        <ExpandableArrowIcon expanded={isExpanded} />
-      </Flex>
-      {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
-        <Flex pl='l' pr='l' pb='l'>
-          <Text variant='body' size='m' strength='strong'>
-            {messages.purchaseableIsOwner(formattedPrice)}
-          </Text>
-        </Flex>
-      ) : null}
+        {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
+          <Flex pl='l' pr='l' pb='l'>
+            <Text variant='body' size='m' strength='strong'>
+              {messages.purchaseableIsOwner(formattedPrice)}
+            </Text>
+          </Flex>
+        ) : null}
       </>
     )
   }
