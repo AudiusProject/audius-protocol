@@ -1,4 +1,5 @@
 import type { ID } from '@audius/common/models'
+import type { Image } from '@audius/common/store'
 
 import type { CoverPhotoProps } from '@audius/harmony-native'
 import { CoverPhoto } from '@audius/harmony-native'
@@ -16,8 +17,8 @@ export const UserCoverPhoto = (props: UserCoverPhotoProps) => {
 
   return (
     <CoverPhoto
-      coverPhoto={shouldBlur ? undefined : source}
-      profilePicture={shouldBlur ? source : undefined}
+      coverPhoto={shouldBlur ? undefined : (source as Image)}
+      profilePicture={shouldBlur ? (source as Image) : undefined}
       onError={handleError}
       {...other}
     />
