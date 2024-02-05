@@ -1,6 +1,6 @@
 import { Component } from 'react'
 
-import { IconLogoMetaMask as LogoMetaMask } from '@audius/harmony'
+import { IconMetamask as LogoMetaMask } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
