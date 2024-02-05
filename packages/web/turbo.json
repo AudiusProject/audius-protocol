@@ -4,7 +4,8 @@
     "build": {
       "outputs": ["build/**", "build-ssr/**"],
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "env": ["VITE_ENVIRONMENT", "VITE_SSR"]
     },
     "dist": {
       "outputs": ["dist/**"],

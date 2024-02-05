@@ -251,7 +251,7 @@ export function* retrieveCollections(
     deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield* call(retrieve, {
+  const { entries, uids } = yield* call(retrieve<Collection>, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
       const res: {

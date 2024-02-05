@@ -50,6 +50,12 @@ import {
     FullRemixParentFromJSONTyped,
     FullRemixParentToJSON,
 } from './FullRemixParent';
+import type { PremiumContentSignature } from './PremiumContentSignature';
+import {
+    PremiumContentSignatureFromJSON,
+    PremiumContentSignatureFromJSONTyped,
+    PremiumContentSignatureToJSON,
+} from './PremiumContentSignature';
 import type { Repost } from './Repost';
 import {
     RepostFromJSON,
@@ -62,12 +68,6 @@ import {
     StemParentFromJSONTyped,
     StemParentToJSON,
 } from './StemParent';
-import type { StreamSignature } from './StreamSignature';
-import {
-    StreamSignatureFromJSON,
-    StreamSignatureFromJSONTyped,
-    StreamSignatureToJSON,
-} from './StreamSignature';
 import type { TrackArtwork } from './TrackArtwork';
 import {
     TrackArtworkFromJSON,
@@ -143,6 +143,12 @@ export interface TrackFull {
     origFilename?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isOriginalAvailable?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -195,6 +201,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     duration: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isDownloadable?: boolean;
     /**
      * 
      * @type {boolean}
@@ -374,6 +386,24 @@ export interface TrackFull {
      * @type {boolean}
      * @memberof TrackFull
      */
+    isPremium?: boolean;
+    /**
+     * 
+     * @type {object}
+     * @memberof TrackFull
+     */
+    premiumConditions?: object;
+    /**
+     * 
+     * @type {PremiumContentSignature}
+     * @memberof TrackFull
+     */
+    premiumContentSignature?: PremiumContentSignature;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
     isStreamGated?: boolean;
     /**
      * 
@@ -381,12 +411,6 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     streamConditions?: object;
-    /**
-     * 
-     * @type {StreamSignature}
-     * @memberof TrackFull
-     */
-    streamSignature?: StreamSignature;
     /**
      * 
      * @type {boolean}
@@ -467,6 +491,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
         'origFileCid': !exists(json, 'orig_file_cid') ? undefined : json['orig_file_cid'],
         'origFilename': !exists(json, 'orig_filename') ? undefined : json['orig_filename'],
+        'isOriginalAvailable': !exists(json, 'is_original_available') ? undefined : json['is_original_available'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
@@ -476,6 +501,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'title': json['title'],
         'user': UserFullFromJSON(json['user']),
         'duration': json['duration'],
+        'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
         'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
@@ -505,9 +531,11 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isDelete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
+        'isPremium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
+        'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
+        'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
         'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : json['stream_conditions'],
-        'streamSignature': !exists(json, 'stream_signature') ? undefined : StreamSignatureFromJSON(json['stream_signature']),
         'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
         'downloadConditions': !exists(json, 'download_conditions') ? undefined : json['download_conditions'],
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
@@ -534,6 +562,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'preview_cid': value.previewCid,
         'orig_file_cid': value.origFileCid,
         'orig_filename': value.origFilename,
+        'is_original_available': value.isOriginalAvailable,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': FullRemixParentToJSON(value.remixOf),
@@ -543,6 +572,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'title': value.title,
         'user': UserFullToJSON(value.user),
         'duration': value.duration,
+        'is_downloadable': value.isDownloadable,
         'downloadable': value.downloadable,
         'play_count': value.playCount,
         'permalink': value.permalink,
@@ -572,9 +602,11 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_delete': value.isDelete,
         'cover_art': value.coverArt,
         'is_available': value.isAvailable,
+        'is_premium': value.isPremium,
+        'premium_conditions': value.premiumConditions,
+        'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
         'is_stream_gated': value.isStreamGated,
         'stream_conditions': value.streamConditions,
-        'stream_signature': StreamSignatureToJSON(value.streamSignature),
         'is_download_gated': value.isDownloadGated,
         'download_conditions': value.downloadConditions,
         'access': AccessToJSON(value.access),

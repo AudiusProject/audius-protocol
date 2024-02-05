@@ -4,7 +4,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { collectiblesSelectors } from '@audius/common/store'
-import { IconCollectible } from '@audius/stems'
+import { IconCollectible } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useSelector } from 'utils/reducer'

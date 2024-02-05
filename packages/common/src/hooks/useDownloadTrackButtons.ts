@@ -1,8 +1,12 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import type { AudiusSdk } from '@audius/sdk'
+import { isEqual } from 'lodash'
 import { shallowEqual, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import dayjs from '~/utils/dayjs'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
@@ -95,6 +99,50 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
     }))
     .filter((t) => t.downloadURL)
   return { stemTracks, track }
+}
+
+export const useFileSizes = ({
+  audiusSdk,
+  trackIds
+}: {
+  audiusSdk: () => Promise<AudiusSdk>
+  trackIds: ID[]
+}) => {
+  const previousTrackIds = usePrevious(trackIds)
+  const [sizes, setSizes] = useState<{ [trackId: ID]: number }>({})
+  useEffect(() => {
+    if (!isEqual(previousTrackIds, trackIds)) {
+      const asyncFn = async () => {
+        const sdk = await audiusSdk()
+        const sizeResults = await Promise.all(
+          trackIds.map(async (trackId) => {
+            if (sizes[trackId]) {
+              return { trackId, size: sizes[trackId] }
+            }
+            try {
+              const res = await sdk.tracks.inspectTrack({
+                trackId: encodeHashId(trackId)
+              })
+              const size = res?.data?.size ?? null
+              return { trackId, size }
+            } catch (e) {
+              console.error(e)
+              return { trackId, size: null }
+            }
+          })
+        )
+        setSizes((sizes) => ({
+          ...sizes,
+          ...sizeResults.reduce((acc, curr) => {
+            acc[curr.trackId] = curr.size
+            return acc
+          }, {} as { trackId: ID; size: number })
+        }))
+      }
+      asyncFn()
+    }
+  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes])
+  return sizes
 }
 
 const useUploadingStems = ({ trackId }: { trackId: ID }) => {

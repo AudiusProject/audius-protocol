@@ -5,13 +5,13 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import type { LinearGradientProps } from 'react-native-linear-gradient'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { TileProps } from 'app/components/core'
 import { Tile } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-import type { ImageProps } from '../image/FastImage'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads/CollectionDownloadStatusIndicator'
 
 import { CollectionDogEar } from './CollectionDogEar'

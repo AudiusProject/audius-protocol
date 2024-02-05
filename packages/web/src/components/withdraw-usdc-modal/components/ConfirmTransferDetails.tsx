@@ -11,12 +11,11 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import { Button, IconQuestionCircle } from '@audius/harmony'
+import { Button, IconQuestionCircle, IconCaretLeft } from '@audius/harmony'
 import { Switch } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'

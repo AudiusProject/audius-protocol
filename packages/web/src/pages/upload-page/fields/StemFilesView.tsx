@@ -6,10 +6,10 @@ import {
   StemUpload,
   StemUploadWithFile
 } from '@audius/common/models'
-import { Box, Flex, Text as HarmonyText } from '@audius/harmony'
-import { IconRemove, IconButton } from '@audius/stems'
+import { FeatureFlags } from '@audius/common/services'
+import { IconRemove, Box, Flex, Text as HarmonyText } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
-import { FeatureFlags } from '~/services'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'

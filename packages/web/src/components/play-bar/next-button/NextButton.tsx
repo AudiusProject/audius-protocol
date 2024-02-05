@@ -1,6 +1,5 @@
+import { IconSkipNext as IconNext } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconNext from 'assets/img/pbIconNext.svg'
 
 import styles from '../PlayBarButton.module.css'
 

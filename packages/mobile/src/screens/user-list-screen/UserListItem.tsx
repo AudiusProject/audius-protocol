@@ -7,12 +7,8 @@ import { Pressable, View, Animated } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { IconUser } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
-import {
-  FollowButton,
-  FollowsYouChip,
-  ProfilePicture
-} from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
+import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
@@ -37,12 +33,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: spacing(2)
-  },
-  photo: {
-    height: 74,
-    width: 74,
-    borderColor: palette.neutralLight8,
-    borderWidth: 1
   },
   userInfo: {
     marginLeft: spacing(2),
@@ -98,7 +88,7 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressOut={handlePressOut}
       >
         <View style={styles.infoRoot}>
-          <ProfilePicture profile={user} style={styles.photo} />
+          <ProfilePicture userId={user.user_id} size='large' />
           <View style={styles.userInfo}>
             <Text variant='h3' style={styles.displayName}>
               {name}

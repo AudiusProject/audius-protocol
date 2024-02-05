@@ -8,7 +8,8 @@ import {
   GENRES,
   convertGenreLabelToValue
 } from '@audius/common/utils'
-import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
+import { IconCloudDownload, IconIndent } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
@@ -286,7 +287,7 @@ const BasicForm = (props) => {
           iconClassName={styles.menuButtonIcon}
           name='DownloadAndSource'
           text='Downloads & Source Files'
-          leftIcon={<IconDownload />}
+          leftIcon={<IconCloudDownload />}
           onClick={() => setSourceFilesModalVisible(true)}
         />
       )

@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
 import { tippingSelectors } from '@audius/common/store'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -26,6 +27,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ReceiverDetails = () => {
   const receiver = useSelector(getSendUser)
   const styles = useStyles()
+  const { spacing } = useTheme()
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
@@ -40,7 +42,10 @@ export const ReceiverDetails = () => {
 
   return (
     <Pressable style={styles.root} onPress={handlePress}>
-      <ProfilePicture profile={receiver} />
+      <ProfilePicture
+        userId={receiver.user_id}
+        style={css({ width: spacing.unit21, height: spacing.unit21 })}
+      />
       <View style={styles.receiverInfo}>
         <Text variant='h3'>
           {name}

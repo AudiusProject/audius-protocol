@@ -12,9 +12,9 @@ import {
   stringWeiToBN,
   MAX_ARTIST_HOVER_TOP_SUPPORTING
 } from '@audius/common/utils'
+import { IconTipping as IconTip } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {

@@ -46,7 +46,9 @@ const messages = {
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
-  followToDownload: 'Must follow artist to download.'
+  followToDownload: 'Must follow artist to download.',
+  purchaseableIsOwner: (price: string) =>
+    `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -64,8 +66,16 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     price,
     shouldDisplayPremiumDownloadLocked,
     shouldDisplayPremiumDownloadUnlocked,
-    shouldDisplayDownloadFollowGated
+    shouldDisplayDownloadFollowGated,
+    shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+  const formattedPrice = price
+    ? USDC(price / 100).toLocaleString('en-us', {
+        roundingMode: 'floor',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : undefined
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
@@ -114,71 +124,75 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
-      <Flex
-        p='l'
-        direction='row'
-        justifyContent='space-between'
-        alignItems='center'
-      >
-        <Flex gap='m'>
-          <Flex direction='row' alignItems='center' gap='s'>
-            <IconReceive color='default' />
-            <Text variant='label' size='l' strength='strong'>
-              {messages.title}
-            </Text>
-          </Flex>
-          {shouldDisplayPremiumDownloadLocked && price !== undefined ? (
-            <Button
-              variant='primary'
-              size='small'
-              color='lightGreen'
-              onPress={handlePurchasePress}
-            >
-              {messages.unlockAll(
-                USDC(price / 100).toLocaleString('en-us', {
-                  roundingMode: 'floor',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })
-              )}
-            </Button>
-          ) : null}
-          {shouldDisplayPremiumDownloadUnlocked ? (
-            <>
-              <Flex
-                gap='s'
-                direction='row'
-                alignItems='center'
-                style={css({
-                  backgroundColor: color.special.blue
-                })}
+      <>
+        <Flex
+          p='l'
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+        >
+          <Flex gap='m'>
+            <Flex direction='row' alignItems='center' gap='s'>
+              <IconReceive color='default' />
+              <Text variant='label' size='l' strength='strong'>
+                {messages.title}
+              </Text>
+            </Flex>
+            {shouldDisplayPremiumDownloadLocked &&
+            formattedPrice !== undefined ? (
+              <Button
+                variant='primary'
+                size='small'
+                color='lightGreen'
+                onPress={handlePurchasePress}
               >
+                {messages.unlockAll(formattedPrice)}
+              </Button>
+            ) : null}
+            {shouldDisplayPremiumDownloadUnlocked ? (
+              <>
                 <Flex
-                  borderRadius='3xl'
-                  ph='s'
+                  gap='s'
+                  direction='row'
+                  alignItems='center'
                   style={css({
-                    backgroundColor: color.special.lightGreen,
-                    paddingTop: 1,
-                    paddingBottom: 1
+                    backgroundColor: color.special.blue
                   })}
                 >
-                  <IconLockUnlocked color='staticWhite' size='xs' />
+                  <Flex
+                    borderRadius='3xl'
+                    ph='s'
+                    style={css({
+                      backgroundColor: color.special.lightGreen,
+                      paddingTop: 1,
+                      paddingBottom: 1
+                    })}
+                  >
+                    <IconLockUnlocked color='staticWhite' size='xs' />
+                  </Flex>
+                  <Text
+                    variant='label'
+                    // TODO: size other than m causes misalignment C-3709
+                    size='l'
+                    strength='strong'
+                    color='subdued'
+                  >
+                    {messages.purchased}
+                  </Text>
                 </Flex>
-                <Text
-                  variant='label'
-                  // TODO: size other than m causes misalignment C-3709
-                  size='l'
-                  strength='strong'
-                  color='subdued'
-                >
-                  {messages.purchased}
-                </Text>
-              </Flex>
-            </>
-          ) : null}
+              </>
+            ) : null}
+          </Flex>
+          <ExpandableArrowIcon expanded={isExpanded} />
         </Flex>
-        <ExpandableArrowIcon expanded={isExpanded} />
-      </Flex>
+        {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
+          <Flex pl='l' pr='l' pb='l'>
+            <Text variant='body' size='m' strength='strong'>
+              {messages.purchaseableIsOwner(formattedPrice)}
+            </Text>
+          </Flex>
+        ) : null}
+      </>
     )
   }
 
@@ -213,16 +227,15 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         {track?.is_downloadable ? (
           <DownloadRow
             trackId={trackId}
-            quality={quality}
             index={ORIGINAL_TRACK_INDEX}
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
+            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ) : null}
         {stemTracks?.map((s, i) => (
           <DownloadRow
             trackId={s.id}
-            parentTrackId={trackId}
             key={s.id}
             index={
               i +
@@ -230,9 +243,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
                 ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                 : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
             }
-            quality={quality}
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
+            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ))}
         {shouldDisplayDownloadAll ? (

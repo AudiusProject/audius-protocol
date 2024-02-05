@@ -126,10 +126,21 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
 
   tracks.forEach((track) => {
     const streamConditions = track.metadata.stream_conditions
+    const downloadConditions = track.metadata.download_conditions
     if (isContentUSDCPurchaseGated(streamConditions)) {
       const priceCents = streamConditions.usdc_purchase.price
       const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
       streamConditions.usdc_purchase = {
+        price: priceCents,
+        splits: {
+          [ownerUserbank?.toString() ?? '']: priceWei
+        }
+      }
+    }
+    if (isContentUSDCPurchaseGated(downloadConditions)) {
+      const priceCents = downloadConditions.usdc_purchase.price
+      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+      downloadConditions.usdc_purchase = {
         price: priceCents,
         splits: {
           [ownerUserbank?.toString() ?? '']: priceWei

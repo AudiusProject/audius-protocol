@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react'
 
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
+import { useSelector } from 'react-redux'
 
 import { useAppContext } from '~/context'
-import { getRootSolanaAccount } from '~/services/audius-backend'
+import {
+  decorateCoinflowWithdrawalTransaction,
+  relayTransaction,
+  getRootSolanaAccount
+} from '~/services/audius-backend'
+import { getFeePayer } from '~/store/solana/selectors'
 
 type CoinflowAdapter = {
   wallet: {
@@ -14,6 +20,68 @@ type CoinflowAdapter = {
   connection: Connection
 }
 
+/** An adapter for signing and sending Coinflow withdrawal transactions. It will decorate
+ * the incoming transaction to route it through a user bank. The transcation will then be
+ * signed with the current user's Solana root wallet and sent/confirmed via Relay.
+ */
+export const useCoinflowWithdrawalAdapter = () => {
+  const { audiusBackend } = useAppContext()
+  const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
+  const feePayerOverride = useSelector(getFeePayer)
+
+  useEffect(() => {
+    const initWallet = async () => {
+      const libs = await audiusBackend.getAudiusLibsTyped()
+      if (!libs.solanaWeb3Manager) return
+      const { connection } = libs.solanaWeb3Manager
+      const wallet = await getRootSolanaAccount(audiusBackend)
+
+      setAdapter({
+        connection,
+        wallet: {
+          publicKey: wallet.publicKey,
+          sendTransaction: async (transaction: Transaction) => {
+            if (!feePayerOverride) throw new Error('Missing fee payer override')
+            const feePayer = new PublicKey(feePayerOverride)
+            const finalTransaction =
+              await decorateCoinflowWithdrawalTransaction(audiusBackend, {
+                transaction,
+                feePayer
+              })
+            finalTransaction.partialSign(wallet)
+            const { res, error, errorCode } = await relayTransaction(
+              audiusBackend,
+              {
+                transaction: finalTransaction,
+                skipPreflight: true
+              }
+            )
+            if (!res) {
+              console.error('Relaying Coinflow transaction failed.', {
+                error,
+                errorCode,
+                finalTransaction
+              })
+              throw new Error(
+                `Relaying Coinflow transaction failed: ${
+                  error ?? 'Unknown error'
+                }`
+              )
+            }
+            return res
+          }
+        }
+      })
+    }
+    initWallet()
+  }, [audiusBackend, feePayerOverride])
+
+  return adapter
+}
+
+/** An adapter for signing and sending unmodified Coinflow transactions. Will partialSign with the
+ * current user's Solana root wallet and send/confirm locally (no relay).
+ */
 export const useCoinflowAdapter = () => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)

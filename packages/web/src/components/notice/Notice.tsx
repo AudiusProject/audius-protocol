@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { StringKeys } from '@audius/common/services'
-import { IconRemove } from '@audius/stems'
+import { IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useRemoteVar } from 'hooks/useRemoteConfig'

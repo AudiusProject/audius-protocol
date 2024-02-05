@@ -2,10 +2,9 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useEditPlaylistModal } from '@audius/common/store'
 import { formatSecondsAsText, formatDate } from '@audius/common/utils'
-import { IconHidden, IconPencil } from '@audius/stems'
+import { IconFilter, IconVisibilityHidden, IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconFilter from 'assets/img/iconFilter.svg'
 import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -112,7 +111,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         />
         <div className={styles.infoSection}>
           <span className={cn(styles.typeLabel, fadeIn)}>
-            {!isPublished ? <IconHidden className={styles.labelIcon} /> : null}
+            {!isPublished ? (
+              <IconVisibilityHidden className={styles.labelIcon} />
+            ) : null}
             <p className={styles.label}>
               {type === 'playlist' && !isPublished ? 'hidden playlist' : type}
             </p>
@@ -187,7 +188,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <div className={styles.inputWrapper}>
             <Input
               placeholder={messages.filter}
-              prefix={<IconFilter />}
+              prefix={<IconFilter color='subdued' />}
               onChange={handleFilterChange}
               value={filterText}
               size='small'

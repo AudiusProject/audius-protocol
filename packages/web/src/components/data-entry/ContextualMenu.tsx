@@ -1,11 +1,10 @@
 import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
 
 import { Nullable } from '@audius/common/utils'
-import { Box, Text as HarmonyText } from '@audius/harmony'
+import { Box, Text as HarmonyText, IconCaretRight } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconCaretRight,
   IconComponent,
   Modal,
   ModalContent,

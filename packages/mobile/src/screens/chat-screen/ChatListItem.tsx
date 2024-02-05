@@ -2,10 +2,11 @@ import { useCallback, useMemo } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
 import { chatSelectors } from '@audius/common/store'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import { View, TouchableHighlight } from 'react-native'
 
-import { Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -32,12 +33,6 @@ export const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between'
-  },
-  profilePicture: {
-    width: spacing(12),
-    height: spacing(12),
-    borderWidth: 1,
-    borderColor: palette.neutralLight9
   },
   userContainer: {
     display: 'flex',
@@ -104,6 +99,8 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
     navigation.push('Chat', { chatId })
   }, [navigation, chatId])
 
+  const { spacing } = useTheme()
+
   return (
     <TouchableHighlight onPress={handlePress}>
       {otherUser ? (
@@ -111,8 +108,8 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
           <View style={styles.contentRoot}>
             <View style={styles.userContainer}>
               <ProfilePicture
-                profile={otherUser}
-                style={styles.profilePicture}
+                userId={otherUser.user_id}
+                style={css({ width: spacing.unit12, height: spacing.unit12 })}
               />
               <View style={styles.userTextContainer}>
                 <View style={styles.userNameContainer}>

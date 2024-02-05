@@ -1,10 +1,10 @@
-import { Nullable } from '~/utils'
+import { Nullable, dayjs } from '~/utils'
 
 import {
   Chain,
   Collectible,
   CollectibleMediaType,
-  OpenSeaAssetExtended,
+  OpenSeaNftExtended,
   OpenSeaEvent,
   OpenSeaEventExtended
 } from '../../models'
@@ -51,8 +51,9 @@ const NON_IMAGE_EXTENSIONS = [
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-const isAssetImage = (asset: OpenSeaAssetExtended) => {
+const isAssetImage = (asset: OpenSeaNftExtended) => {
   return [
+    asset.image,
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
@@ -63,13 +64,14 @@ const isAssetImage = (asset: OpenSeaAssetExtended) => {
 }
 
 const areUrlExtensionsSupportedForType = (
-  asset: OpenSeaAssetExtended,
+  asset: OpenSeaNftExtended,
   extensions: string[]
 ) => {
   const {
     animation_url,
     animation_original_url,
     image_url,
+    image,
     image_original_url,
     image_preview_url,
     image_thumbnail_url
@@ -78,25 +80,27 @@ const areUrlExtensionsSupportedForType = (
     animation_url || '',
     animation_original_url || '',
     image_url,
+    image,
     image_original_url,
     image_preview_url,
     image_thumbnail_url
   ].some((url) => url && extensions.some((ext) => url.endsWith(ext)))
 }
 
-const isAssetVideo = (asset: OpenSeaAssetExtended) => {
+const isAssetVideo = (asset: OpenSeaNftExtended) => {
   return areUrlExtensionsSupportedForType(asset, SUPPORTED_VIDEO_EXTENSIONS)
 }
 
-const isAssetThreeDAndIncludesImage = (asset: OpenSeaAssetExtended) => {
+const isAssetThreeDAndIncludesImage = (asset: OpenSeaNftExtended) => {
   return (
     areUrlExtensionsSupportedForType(asset, SUPPORTED_3D_EXTENSIONS) &&
     isAssetImage(asset)
   )
 }
 
-const isAssetGif = (asset: OpenSeaAssetExtended) => {
+const isAssetGif = (asset: OpenSeaNftExtended) => {
   return !!(
+    asset.image?.endsWith('.gif') ||
     asset.image_url?.endsWith('.gif') ||
     asset.image_original_url?.endsWith('.gif') ||
     asset.image_preview_url?.endsWith('.gif') ||
@@ -104,7 +108,7 @@ const isAssetGif = (asset: OpenSeaAssetExtended) => {
   )
 }
 
-export const isAssetValid = (asset: OpenSeaAssetExtended) => {
+export const isAssetValid = (asset: OpenSeaNftExtended) => {
   return (
     isAssetGif(asset) ||
     isAssetThreeDAndIncludesImage(asset) ||
@@ -114,10 +118,11 @@ export const isAssetValid = (asset: OpenSeaAssetExtended) => {
 }
 
 const ipfsProtocolPrefix = 'ipfs://'
-const getIpfsProtocolUrl = (asset: OpenSeaAssetExtended) => {
+const getIpfsProtocolUrl = (asset: OpenSeaNftExtended) => {
   return [
     asset.animation_url,
     asset.animation_original_url,
+    asset.image,
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
@@ -127,6 +132,23 @@ const getIpfsProtocolUrl = (asset: OpenSeaAssetExtended) => {
 const getIpfsMetadataUrl = (ipfsProtocolUrl: string) => {
   return `https://ipfs.io/ipfs/${ipfsProtocolUrl.substring(
     ipfsProtocolPrefix.length
+  )}`
+}
+const arweavePrefix = 'ar://'
+const getArweaveProtocolUrl = (asset: OpenSeaNftExtended) => {
+  return [
+    asset.animation_url,
+    asset.animation_original_url,
+    asset.image,
+    asset.image_url,
+    asset.image_original_url,
+    asset.image_preview_url,
+    asset.image_thumbnail_url
+  ].find((url) => url?.startsWith(arweavePrefix))
+}
+const getArweaveMetadataUrl = (arweaveProtocolUrl: string) => {
+  return `https://arweave.net/${arweaveProtocolUrl.substring(
+    arweavePrefix.length
   )}`
 }
 /**
@@ -154,7 +176,7 @@ const getIpfsMetadataUrl = (ipfsProtocolUrl: string) => {
  * @param asset
  */
 export const assetToCollectible = async (
-  asset: OpenSeaAssetExtended
+  asset: OpenSeaNftExtended
 ): Promise<Collectible> => {
   let mediaType: CollectibleMediaType
   let frameUrl: Nullable<string> = null
@@ -169,12 +191,14 @@ export const assetToCollectible = async (
   const {
     animation_url,
     animation_original_url,
+    image,
     image_url,
     image_original_url,
     image_preview_url,
     image_thumbnail_url
   } = asset
   const imageUrls = [
+    image,
     image_url,
     image_original_url,
     image_preview_url,
@@ -182,6 +206,7 @@ export const assetToCollectible = async (
   ]
 
   const ipfsProtocolUrl = getIpfsProtocolUrl(asset)
+  const arweaveProtocolUrl = getArweaveProtocolUrl(asset)
 
   try {
     if (isAssetGif(asset)) {
@@ -270,6 +295,43 @@ export const assetToCollectible = async (
         frameUrl = imageUrls.find((url) => !!url)!
         imageUrl = frameUrl
       }
+    } else if (arweaveProtocolUrl) {
+      try {
+        const metadataUrl = getArweaveMetadataUrl(arweaveProtocolUrl)
+        const res = await fetchWithTimeout(metadataUrl, { method: 'HEAD' })
+        const isGif = res.headers.get('Content-Type')?.includes('gif')
+        const isVideo = res.headers.get('Content-Type')?.includes('video')
+        const isAudio = res.headers.get('Content-Type')?.includes('audio')
+        if (isGif) {
+          mediaType = CollectibleMediaType.GIF
+          frameUrl = null
+          gifUrl = metadataUrl
+        } else if (isVideo) {
+          mediaType = CollectibleMediaType.VIDEO
+          frameUrl = null
+          videoUrl = metadataUrl
+        } else {
+          mediaType = CollectibleMediaType.IMAGE
+          imageUrl = imageUrls.find((url) => !!url)!
+          if (imageUrl.startsWith(arweavePrefix)) {
+            imageUrl = getArweaveMetadataUrl(imageUrl)
+          }
+          frameUrl = imageUrl
+          if (isAudio) {
+            hasAudio = true
+            animationUrlOverride = metadataUrl
+          }
+        }
+      } catch (e) {
+        console.error(
+          `Could not fetch url metadata at ${arweaveProtocolUrl} for asset contract address ${
+            asset.asset_contract?.address ?? '(n/a)'
+          } and asset token id ${asset.token_id}`
+        )
+        mediaType = CollectibleMediaType.IMAGE
+        frameUrl = imageUrls.find((url) => !!url)!
+        imageUrl = frameUrl
+      }
     } else {
       mediaType = CollectibleMediaType.IMAGE
       frameUrl = imageUrls.find((url) => !!url)!
@@ -297,8 +359,8 @@ export const assetToCollectible = async (
   }
 
   return {
-    id: `${asset.token_id}:::${asset.asset_contract?.address ?? ''}`,
-    tokenId: asset.token_id,
+    id: `${asset.identifier}:::${asset.contract ?? ''}`,
+    tokenId: asset.identifier,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
     description: asset.description,
     mediaType,
@@ -307,35 +369,21 @@ export const assetToCollectible = async (
     videoUrl,
     threeDUrl,
     gifUrl,
-    animationUrl: animationUrlOverride || animation_url,
+    animationUrl: animationUrlOverride ?? animation_url ?? null,
     hasAudio,
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,
-    externalLink: asset.external_link,
-    permaLink: asset.permalink,
+    externalLink: asset.external_url ?? null,
+    permaLink: asset.opensea_url,
     assetContractAddress: asset.asset_contract?.address ?? null,
     standard: asset.asset_contract?.schema_name ?? null,
-    collectionSlug: asset.collection?.slug ?? null,
-    collectionName: asset.collection?.name ?? null,
-    collectionImageUrl: asset.collection?.image_url ?? null,
+    collectionSlug: asset.collection ?? null,
+    collectionName: asset.collectionMetadata?.name ?? null,
+    collectionImageUrl: asset.collectionMetadata?.image_url ?? null,
     chain: Chain.Eth,
     wallet: asset.wallet,
     solanaChainMetadata: null
-  }
-}
-
-export const creationEventToCollectible = async (
-  event: OpenSeaEventExtended
-): Promise<Collectible> => {
-  const { asset, created_date } = event
-
-  const collectible = await assetToCollectible(asset)
-
-  return {
-    ...collectible,
-    dateCreated: created_date,
-    isOwned: false
   }
 }
 
@@ -343,17 +391,17 @@ export const transferEventToCollectible = async (
   event: OpenSeaEventExtended,
   isOwned = true
 ): Promise<Collectible> => {
-  const { asset, created_date } = event
+  const { nft, event_timestamp } = event
 
-  const collectible = await assetToCollectible(asset)
+  const collectible = await assetToCollectible(nft)
 
   return {
     ...collectible,
     isOwned,
-    dateLastTransferred: created_date
+    dateLastTransferred: dayjs(event_timestamp).toString()
   }
 }
 
 export const isNotFromNullAddress = (event: OpenSeaEvent) => {
-  return event.from_account.address !== NULL_ADDRESS
+  return event.from_address !== NULL_ADDRESS
 }

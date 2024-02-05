@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { Button, ButtonSize, ButtonType, IconArrow } from '@audius/stems'
+import { IconArrowRight } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
@@ -168,7 +169,7 @@ export const EmailPage = ({
             shouldDisableInputs && shouldShowLoadingSpinner ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={

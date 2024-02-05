@@ -1,4 +1,4 @@
-import { IconHidden } from '@audius/stems'
+import { IconVisibilityHidden } from '@audius/harmony'
 import cn from 'classnames'
 
 import typeStyles from 'components/typography/typography.module.css'
@@ -14,7 +14,7 @@ const messages = {
 const HiddenTrackHeader = () => {
   return (
     <span className={styles.root}>
-      <IconHidden className={styles.icon} />
+      <IconVisibilityHidden className={styles.icon} />
       <div
         className={cn(
           typeStyles.titleSmall,

@@ -3,7 +3,8 @@ import { UserTrackMetadata, isContentUSDCPurchaseGated } from '~/models/Track'
 import {
   PayExtraAmountPresetValues,
   PayExtraPreset,
-  PurchaseableTrackMetadata
+  PurchaseableTrackDownloadMetadata,
+  PurchaseableTrackStreamMetadata
 } from './types'
 
 type GetExtraAmountArgs = {
@@ -33,7 +34,12 @@ export const getExtraAmount = ({
   return extraAmount
 }
 
-export const isTrackPurchaseable = (
+export const isTrackStreamPurchaseable = (
   track: UserTrackMetadata
-): track is PurchaseableTrackMetadata =>
+): track is PurchaseableTrackStreamMetadata =>
   isContentUSDCPurchaseGated(track.stream_conditions)
+
+export const isTrackDownloadPurchaseable = (
+  track: UserTrackMetadata
+): track is PurchaseableTrackDownloadMetadata =>
+  isContentUSDCPurchaseGated(track.download_conditions)
