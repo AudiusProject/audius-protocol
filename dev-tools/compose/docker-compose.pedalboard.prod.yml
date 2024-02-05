@@ -31,7 +31,6 @@ services:
       - pedalboard
 
   relay:
-    container_name: relay
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
@@ -39,7 +38,11 @@ services:
         app_name: relay
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
+    env_file: .env
     restart: always
+    deploy:
+      mode: replicated
+      replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
 
   solana-relay:
     build:
