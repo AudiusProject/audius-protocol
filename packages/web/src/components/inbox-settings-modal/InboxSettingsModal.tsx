@@ -1,8 +1,8 @@
 import { ChangeEvent, useCallback, useEffect } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
-import { IconMessage } from '@audius/harmony'
 import { Status } from '@audius/common/models'
+import { IconMessage } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,

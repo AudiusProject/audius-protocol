@@ -8,7 +8,6 @@ import {
   shareModalUIActions
 } from '@audius/common/store'
 import { IconKebabHorizontal, IconRepost, IconShare } from '@audius/harmony'
-
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'

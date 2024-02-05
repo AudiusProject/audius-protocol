@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
 import { buyAudioSelectors, BuyAudioStage } from '@audius/common/store'
+import { IconTokenGold } from '@audius/harmony'
 import {
   Modal,
   ModalContentPages,
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import { IconTokenGold } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

@@ -1,7 +1,6 @@
 import type { ComponentType, SVGProps } from 'react'
 
 import { Nullable } from '@audius/common/utils'
-
 import {
   IconCcBy as IconAllowAttribution,
   IconCcCC as IconCreativeCommons,

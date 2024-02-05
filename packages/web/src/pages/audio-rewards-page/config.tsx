@@ -8,6 +8,7 @@ import {
   IconCloudUpload,
   IconTokenGold
 } from '@audius/harmony'
+
 import {
   profilePage,
   SETTINGS_PAGE,
