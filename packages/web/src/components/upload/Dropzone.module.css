@@ -40,7 +40,7 @@
   height: 36px;
 }
 
-.iconUpload g path {
+.iconUpload path {
   fill: var(--neutral);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .iconUpload,
-.iconUpload g path {
+.iconUpload path {
   transition: all 0.2s ease-out !important;
 }
 
@@ -66,7 +66,7 @@
   transform: scale3d(1.2, 1.2, 1.2);
 }
 
-.hoverBoundingBox:hover .iconUpload g path {
+.hoverBoundingBox:hover .iconUpload path {
   fill: var(--neutral-light-2);
 }
 

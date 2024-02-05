@@ -6,7 +6,8 @@ import {
   changePasswordActions,
   ChangePasswordPageStep
 } from '@audius/common/store'
-import { Button, ButtonType, IconLock } from '@audius/stems'
+import { IconLock } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -18,12 +18,16 @@ import {
   getDogEarType,
   Nullable
 } from '@audius/common/utils'
-import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
+import {
+  IconVolumeLevel2 as IconVolume,
+  IconStar,
+  IconCrown,
+  IconVisibilityHidden,
+  IconTrending
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconStar from 'assets/img/iconStar.svg'
-import IconVolume from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -323,7 +327,7 @@ const TrackTile = (props: CombinedProps) => {
         >
           {props.isUnlisted ? (
             <div className={styles.topRightIcon}>
-              <IconHidden />
+              <IconVisibilityHidden />
               {messages.hiddenTrack}
             </div>
           ) : null}

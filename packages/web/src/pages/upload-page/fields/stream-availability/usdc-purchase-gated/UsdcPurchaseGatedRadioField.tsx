@@ -7,7 +7,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { IconCart, IconStars } from '@audius/stems'
+import { IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'

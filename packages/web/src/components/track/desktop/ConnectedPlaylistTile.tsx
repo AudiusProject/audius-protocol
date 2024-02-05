@@ -27,13 +27,13 @@ import {
   shareModalUIActions,
   playerSelectors
 } from '@audius/common/store'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'

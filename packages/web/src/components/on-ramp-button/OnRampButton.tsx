@@ -1,9 +1,9 @@
 import { OnRampProvider } from '@audius/common/store'
+import { IconLogoLinkByStripe as LogoStripeLink } from '@audius/harmony'
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import LogoStripeLink from 'assets/img/LogoStripeLink.svg'
-import CoinbaseLogo from 'assets/img/coinbase-pay/LogoCoinbase.svg'
+import CoinbasePayLogo from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
 
 import styles from './OnRampButton.module.css'
 
@@ -43,7 +43,7 @@ export const OnRampButton = (
               height={'1.33em'}
             />
           ) : (
-            <CoinbaseLogo
+            <CoinbasePayLogo
               className={styles.logo}
               width={'5.75em'}
               height={'0.75em'}

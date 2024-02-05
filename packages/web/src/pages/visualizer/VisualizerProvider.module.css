@@ -39,14 +39,6 @@
   justify-content: center;
 }
 
-.logo {
-  display: block;
-  height: 25px;
-  margin-top: 16px;
-  margin-bottom: 16px;
-  opacity: 0.4;
-}
-
 .infoOverlayTileShadow {
   position: absolute;
   bottom: 0px;

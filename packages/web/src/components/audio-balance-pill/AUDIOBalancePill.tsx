@@ -6,13 +6,13 @@ import {
 } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { IconTokenNoTier } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import Skeleton from 'components/skeleton/Skeleton'
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 
 import styles from './AUDIOBalancePill.module.css'
 
@@ -32,7 +32,7 @@ export const AudioBalancePill = ({ className }: AudioPillProps) => {
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
   const { tier } = useSelectTierInfo(account?.user_id ?? 0)
-  const audioBadge = audioTierMapPng[tier]
+  const audioBadge = audioTierMapSVG[tier]
 
   return (
     <div className={cn(styles.container, className)}>
@@ -42,7 +42,7 @@ export const AudioBalancePill = ({ className }: AudioPillProps) => {
           width: 20
         })
       ) : (
-        <img alt='no tier' src={IconNoTierBadge} width='20' height='20' />
+        <IconTokenNoTier size='m' />
       )}
       {isNullOrUndefined(totalBalance) ? (
         <Skeleton className={styles.skeleton} />

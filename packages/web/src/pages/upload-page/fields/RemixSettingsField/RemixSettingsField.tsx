@@ -8,10 +8,10 @@ import {
   Remix
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { IconRemix } from '@audius/harmony'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconRemix from 'assets/img/iconRemixGray.svg'
 import {
   ContextualMenu,
   SelectedValue

@@ -14,8 +14,8 @@ import {
   TransactionType,
   TransactionDetails
 } from '@audius/common/store'
+import { IconCaretRight } from '@audius/harmony'
 import { full } from '@audius/sdk'
-import { IconCaretRight } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'

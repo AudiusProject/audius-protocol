@@ -1,6 +1,5 @@
+import { IconSkipPrevious as IconPrev } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconPrev from 'assets/img/pbIconPrev.svg'
 
 import styles from '../PlayBarButton.module.css'
 

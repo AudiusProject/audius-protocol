@@ -15,13 +15,11 @@ import {
   ProfileUser
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
+import { IconKebabHorizontal, IconPencil, IconShare } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
   ButtonType,
-  IconKebabHorizontal,
-  IconPencil,
-  IconShare,
   Modal,
   PopupMenu,
   PopupMenuItem,

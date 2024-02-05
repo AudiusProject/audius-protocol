@@ -4,20 +4,20 @@ import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { formatCount } from '@audius/common/utils'
 import {
-  IconCaretRight,
-  IconRemove,
-  IconNotification,
+  IconAudiusLogoHorizontal,
   IconSettings,
   IconCrown,
-  IconButton
-} from '@audius/stems'
+  IconCaretRight,
+  IconRemove,
+  IconNotificationOn
+} from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
 import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
-import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
 import {
   RouterContext,
   SlideDirection
@@ -166,7 +166,7 @@ const NavBar = ({
           className={cn(styles.leftIconButton, styles.notificationIcon, {
             [styles.hasUnread]: notificationCount > 0
           })}
-          icon={<IconNotification />}
+          icon={<IconNotificationOn />}
           onClick={goToNotificationPage}
         />
         {notificationCount > 0 && (
@@ -216,7 +216,7 @@ const NavBar = ({
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>
-                <AudiusLogo />
+                <IconAudiusLogoHorizontal sizeH='l' width='auto' />
                 {isEarlyAccess ? (
                   <div className={styles.earlyAccess}>
                     {messages.earlyAccess}

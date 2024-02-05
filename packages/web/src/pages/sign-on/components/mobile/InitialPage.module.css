@@ -53,14 +53,6 @@
   }
 }
 
-/*  */
-.logo {
-  height: 51px;
-  max-width: 194px;
-  width: 100%;
-  margin: 0px auto 32px;
-}
-
 /* Title */
 .title {
   color: var(--secondary);

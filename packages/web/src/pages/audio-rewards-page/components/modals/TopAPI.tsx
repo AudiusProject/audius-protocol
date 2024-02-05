@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { ButtonType, Button, IconArrow } from '@audius/stems'
+import { IconArrowRight as IconArrow } from '@audius/harmony'
+import { ButtonType, Button } from '@audius/stems'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
 import { useModalState } from 'common/hooks/useModalState'

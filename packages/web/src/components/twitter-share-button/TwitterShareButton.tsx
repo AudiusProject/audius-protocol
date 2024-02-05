@@ -7,10 +7,13 @@ import {
   CommonState
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { Button, ButtonProps } from '@audius/harmony'
+import {
+  Button,
+  ButtonProps,
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconTwitterBird from 'assets/img/iconTwitterBird.svg'
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 

@@ -1,22 +1,19 @@
 import { useEffect, useState } from 'react'
 
 import {
-  IconBlog,
-  IconDiscord2,
-  IconTelegram,
-  IconDownloadQueued,
-  IconFoundation,
+  IconAudiusLogoHorizontal,
   IconInstagram,
-  IconMerch,
   IconRemove,
-  IconSupport,
-  IconTwitterBird
-} from '@audius/stems'
+  IconTwitter as IconTwitterBird,
+  IconDiscord as IconDiscord2,
+  IconTelegram,
+  IconCloudDownload as IconDownloadQueued
+} from '@audius/harmony'
+import { IconSupport, IconMerch, IconBlog, IconFoundation } from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'
 
-import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import {
   AUDIUS_BLOG_LINK,
@@ -146,10 +143,12 @@ const NavOverlay = (props: NavOverlayProps) => {
         </div>
         <div className={styles.content}>
           <div className={styles.iconContainer}>
-            <img
-              src={HorizontalLogo}
+            <IconAudiusLogoHorizontal
+              width={132}
               className={styles.horizontalLogo}
-              alt='Audius Logo'
+              css={{
+                margin: 0
+              }}
             />
             <IconRemove
               className={styles.iconClose}

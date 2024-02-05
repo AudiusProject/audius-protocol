@@ -6,7 +6,8 @@ import {
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { Button, ButtonType, IconPencil } from '@audius/stems'
+import { IconPencil } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

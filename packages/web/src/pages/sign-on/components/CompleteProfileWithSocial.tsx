@@ -6,7 +6,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
-import { IconImage, IconUser, IconVerified } from '@audius/stems'
+import { IconImage, IconUser, IconVerified } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition } from 'react-spring/renderprops.cjs'

@@ -6,8 +6,12 @@ import {
   LibraryCategoryType,
   CommonState
 } from '@audius/common/store'
-import { SelectablePill } from '@audius/harmony'
-import { IconHeart, IconCart, IconRepost } from '@audius/stems'
+import {
+  SelectablePill,
+  IconHeart,
+  IconCart,
+  IconRepost
+} from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
