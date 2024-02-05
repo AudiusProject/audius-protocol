@@ -14,7 +14,7 @@ import {
   tracksSocialActions,
   playerSelectors
 } from '@audius/common/store'
-import { IconLock } from '@audius/stems'
+import { IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'

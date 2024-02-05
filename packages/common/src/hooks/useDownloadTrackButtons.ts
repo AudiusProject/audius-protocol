@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import type { AudiusSdk } from '@audius/sdk'
+import { isEqual } from 'lodash'
 import { shallowEqual, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import dayjs from '~/utils/dayjs'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
@@ -11,10 +15,6 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
-import { usePrevious } from 'react-use'
-import type { AudiusSdk } from '@audius/sdk'
-import { encodeHashId } from '~/utils/hashIds'
-import { isEqual } from 'lodash'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -101,30 +101,43 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   return { stemTracks, track }
 }
 
-export const useFileSizes = ({ audiusSdk, trackIds }: {audiusSdk: () => Promise<AudiusSdk>, trackIds: ID[] }) => {
+export const useFileSizes = ({
+  audiusSdk,
+  trackIds
+}: {
+  audiusSdk: () => Promise<AudiusSdk>
+  trackIds: ID[]
+}) => {
   const previousTrackIds = usePrevious(trackIds)
-  const [sizes, setSizes] = useState<{[trackId: ID]: number}>({})
+  const [sizes, setSizes] = useState<{ [trackId: ID]: number }>({})
   useEffect(() => {
     if (!isEqual(previousTrackIds, trackIds)) {
       const asyncFn = async () => {
         const sdk = await audiusSdk()
-        const sizeResults = await Promise.all(trackIds.map(async trackId => {
-          if (sizes[trackId]) {
-            return ({ trackId, size: sizes[trackId] })
-          }
-          try {
-            const res = await sdk.tracks.inspectTrack({ trackId: encodeHashId(trackId) })
-            const size = res?.data?.size ?? null
-            return ({ trackId, size })
-          } catch (e) {
-            console.error(e)
-            return ({ trackId, size: null })
-          }
+        const sizeResults = await Promise.all(
+          trackIds.map(async (trackId) => {
+            if (sizes[trackId]) {
+              return { trackId, size: sizes[trackId] }
+            }
+            try {
+              const res = await sdk.tracks.inspectTrack({
+                trackId: encodeHashId(trackId)
+              })
+              const size = res?.data?.size ?? null
+              return { trackId, size }
+            } catch (e) {
+              console.error(e)
+              return { trackId, size: null }
+            }
+          })
+        )
+        setSizes((sizes) => ({
+          ...sizes,
+          ...sizeResults.reduce((acc, curr) => {
+            acc[curr.trackId] = curr.size
+            return acc
+          }, {} as { trackId: ID; size: number })
         }))
-        setSizes(sizes => ({ ...sizes, ...sizeResults.reduce((acc, curr) => {
-          acc[curr.trackId] = curr.size
-          return acc
-        }, {} as { trackId: ID, size: number }) }) )
       }
       asyncFn()
     }

@@ -1,7 +1,8 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
-import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
+import { IconCaretLeft, IconCaretRight } from '@audius/harmony'
+import { HarmonyPlainButton } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'
@@ -9,7 +10,6 @@ import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'

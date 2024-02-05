@@ -1,12 +1,12 @@
 import { ReactNode } from 'react'
 
 import {
-  IconTwitterBird,
-  IconInstagram,
-  IconDonate,
   IconLink,
-  IconTikTokInverted
-} from '@audius/stems'
+  IconTikTok,
+  IconTwitter as IconTwitterBird,
+  IconInstagram,
+  IconDonate
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import { Icon } from 'components/Icon'
@@ -45,7 +45,7 @@ const singleLinkTypes = [
 const socialIcons = {
   [Type.TWITTER]: IconTwitterBird,
   [Type.INSTAGRAM]: IconInstagram,
-  [Type.TIKTOK]: IconTikTokInverted,
+  [Type.TIKTOK]: IconTikTok,
   [Type.WEBSITE]: IconLink,
   [Type.DONATION]: IconDonate
 }

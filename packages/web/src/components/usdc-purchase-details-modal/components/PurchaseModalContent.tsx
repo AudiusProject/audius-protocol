@@ -7,12 +7,12 @@ import {
   Flex,
   IconArrowRight,
   IconExternalLink,
-  TextLink
+  TextLink,
+  IconCart
 } from '@audius/harmony'
 import {
   ModalHeader,
   ModalTitle,
-  IconCart,
   ModalContent,
   ModalFooter
 } from '@audius/stems'

@@ -6,12 +6,11 @@ import {
   walletSelectors
 } from '@audius/common/store'
 import { isNullOrUndefined, formatWei } from '@audius/common/utils'
-import { Button, ButtonType, IconInfo } from '@audius/stems'
+import { IconReceive, IconSend, IconInfo } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconReceive from 'assets/img/iconReceive.svg'
-import IconSend from 'assets/img/iconSend.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'

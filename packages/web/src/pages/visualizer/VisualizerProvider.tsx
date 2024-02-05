@@ -25,9 +25,11 @@ import { make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import { webglSupported } from './utils'
-
-import IconRemove from 'assets/img/iconRemove.svg'
-import AudiusLogoHorizontal from 'assets/img/audiusLogoHorizontal.svg'
+import {
+  IconAudiusLogoHorizontal,
+  useTheme,
+  IconClose as IconRemove
+} from '@audius/harmony'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 
@@ -70,6 +72,7 @@ const Visualizer = ({
   goToRoute
 }: VisualizerProps) => {
   const [toastText, setToastText] = useState('')
+  const { spacing } = useTheme()
   // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
   const [fadeVisualizer, setFadeVisualizer] = useState<Nullable<Boolean>>(null)
   // Used to show/hide the visualizer (display: block/none) through a css class
@@ -206,7 +209,17 @@ const Visualizer = ({
     >
       <div className='visualizer' />
       <div className={styles.logoWrapper}>
-        <AudiusLogoHorizontal className={styles.logo} />
+        <IconAudiusLogoHorizontal
+          width='auto'
+          sizeH='l'
+          color='default'
+          css={{
+            display: 'block',
+            marginTop: spacing.l,
+            marginBottom: spacing.l,
+            opacity: 0.4
+          }}
+        />
       </div>
       <IconRemove className={styles.closeButtonIcon} onClick={onClose} />
       <div className={styles.infoOverlayTileShadow}></div>

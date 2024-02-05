@@ -1,10 +1,10 @@
 import {
-  IconTwitterBird,
-  IconInstagram,
-  IconDonate,
   IconLink,
-  IconTikTok
-} from '@audius/stems'
+  IconTikTok,
+  IconTwitter as IconTwitterBird,
+  IconInstagram,
+  IconDonate
+} from '@audius/harmony'
 
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'

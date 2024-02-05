@@ -7,7 +7,7 @@ import {
   tippingSelectors
 } from '@audius/common/store'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
-import { IconTrophy } from '@audius/stems'
+import { IconTrophy } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'

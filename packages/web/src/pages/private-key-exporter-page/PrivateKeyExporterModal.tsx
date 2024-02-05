@@ -177,6 +177,7 @@ export const PrivateKeyExporterModal = () => {
   }, [isVisible, user, record])
   return (
     <ModalDrawer
+      useGradientTitle={false}
       bodyClassName={styles.modal}
       onClose={handleClose}
       isOpen={isVisible}

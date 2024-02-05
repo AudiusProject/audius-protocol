@@ -6,7 +6,8 @@ import {
   usersSocialActions,
   CommonState
 } from '@audius/common/store'
-import { Button, ButtonType, IconKebabHorizontal } from '@audius/stems'
+import { IconKebabHorizontal } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'

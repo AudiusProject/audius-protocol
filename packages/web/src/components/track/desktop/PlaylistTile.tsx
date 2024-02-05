@@ -1,6 +1,7 @@
 import { memo, ReactNode, useCallback } from 'react'
 
-import { IconArrow, Scrollbar } from '@audius/stems'
+import { IconArrowRight as IconArrow } from '@audius/harmony'
+import { Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 
 import {

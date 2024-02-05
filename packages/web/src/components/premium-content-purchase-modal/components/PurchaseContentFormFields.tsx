@@ -12,8 +12,7 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
-import { IconCheck } from '@audius/stems'
+import { Flex, IconCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'

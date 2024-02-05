@@ -7,7 +7,8 @@ import {
   User
 } from '@audius/common/models'
 import { NestedNonNullable } from '@audius/common/utils'
-import { Button, ButtonType, IconUser } from '@audius/stems'
+import { IconUser } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'

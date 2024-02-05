@@ -13,8 +13,6 @@ import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
 
-import styles from './PrivateKeyExporterPage.module.css'
-
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
@@ -82,7 +80,7 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
       </Box>
       <Divider orientation='vertical' />
       <Box p='xl' css={{ width: 64 }}>
-        <IconCopy width={16} height={16} className={styles.copyIcon} />
+        <IconCopy width={16} height={16} color='default' />
       </Box>
     </Flex>
   )

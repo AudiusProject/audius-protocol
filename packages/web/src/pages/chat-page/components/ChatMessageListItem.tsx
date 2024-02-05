@@ -15,7 +15,8 @@ import {
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import { IconError, IconPlus, PopupPosition } from '@audius/stems'
+import { IconError, IconPlus } from '@audius/harmony'
+import { PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'

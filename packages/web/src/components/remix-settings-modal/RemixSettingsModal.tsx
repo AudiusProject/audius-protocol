@@ -10,6 +10,7 @@ import {
   User
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { IconRemix } from '@audius/harmony'
 import {
   Modal,
   Button,
@@ -21,7 +22,6 @@ import {
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import IconRemix from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'

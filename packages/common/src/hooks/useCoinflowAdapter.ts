@@ -74,7 +74,7 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [audiusBackend])
+  }, [audiusBackend, feePayerOverride])
 
   return adapter
 }

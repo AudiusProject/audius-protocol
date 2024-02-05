@@ -6,10 +6,10 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
+import { IconRocket } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconRocket,
   Modal,
   ModalContent,
   ModalContentText,
