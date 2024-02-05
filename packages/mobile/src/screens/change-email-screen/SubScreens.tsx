@@ -1,12 +1,15 @@
-import { HarmonyTextField, PasswordField } from 'app/components/fields'
-import { SubScreen } from '../change-password-screen/SubScreen'
-import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { useAsync } from 'react-use'
 import { useEffect } from 'react'
+
+import { useAsync } from 'react-use'
+
 import { Box, Text } from '@audius/harmony-native'
+import { HarmonyTextField, PasswordField } from 'app/components/fields'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useRNField } from 'app/hooks/useRNField'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+
+import { SubScreen } from '../change-password-screen/SubScreen'
+import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
 
 const messages = {
   changeYourEmail: 'Change Your Email',

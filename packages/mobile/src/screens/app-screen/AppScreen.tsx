@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 import { ChangePasswordModalScreen } from '../change-password-screen'
 import { EditPlaylistModalScreen } from '../edit-playlist-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
@@ -9,7 +10,6 @@ import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
-import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 
 const Stack = createNativeStackNavigator()
 
