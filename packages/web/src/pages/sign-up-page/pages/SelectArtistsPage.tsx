@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import {
@@ -11,7 +11,7 @@ import { selectArtistsSchema } from '@audius/common/schemas'
 import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
-import { Form, Formik } from 'formik'
+import { Form, Formik, useFormikContext } from 'formik'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -23,6 +23,7 @@ import {
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
@@ -48,6 +49,16 @@ type SelectArtistsValues = {
 
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
+}
+
+// This is a workaround for local dev environments that don't have any artists
+// This will ensure any errors set on mount get cleared out
+const DevModeClearErrors = () => {
+  const { setErrors } = useFormikContext()
+  useEffect(() => {
+    setErrors({}) // empty all errors
+  }, [setErrors])
+  return null
 }
 
 const ARTISTS_PER_GENRE_LIMIT = 31
@@ -94,9 +105,15 @@ export const SelectArtistsPage = () => {
     })
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
+
   const isLoading =
     (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
+
+  // Note: this doesn't catch when running `web:prod`
+  const isDevEnvironment = env.ENVIRONMENT === 'development'
+  // This a workaround flag for local envs that don't have any artists and get stuck at this screen
+  const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
 
   const ArtistsList = isMobile ? Flex : Paper
 
@@ -110,14 +127,17 @@ export const SelectArtistsPage = () => {
       transform: 'translateX(0%)'
     }
   })
+  const formikSchema = toFormikValidationSchema(selectArtistsSchema)
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
+      // If using no artists + local dev workaround we just remove all validation
+      validationSchema={!noArtistsSkipValidation ? formikSchema : undefined}
+      validateOnMount
     >
-      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
+      {({ values, isValid, isSubmitting, isValidating, setErrors }) => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
@@ -127,6 +147,9 @@ export const SelectArtistsPage = () => {
                 isMobile ? undefined : selectArtistsPageMessages.backToGenres
               }
             />
+            {noArtistsSkipValidation && !isValid ? (
+              <DevModeClearErrors />
+            ) : undefined}
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
@@ -222,7 +245,7 @@ export const SelectArtistsPage = () => {
               centered
               sticky
               buttonProps={{
-                disabled: !dirty || !isValid || isSubmitting,
+                disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
               postfix={
