@@ -120,17 +120,13 @@ export const useAllPaginatedQuery = <
     setPage(page + 1)
   }, [stillLoadingCurrentPage, page])
 
-  const forceRefresh = useCallback(() => {
-    reset()
-  }, [])
-
   return {
     ...result,
     // TODO: add another status for reloading
     status: allData?.length > 0 ? Status.SUCCESS : status,
     data: allData,
     isLoadingMore: stillLoadingCurrentPage,
-    forceRefresh,
+    reset,
     loadMore,
     hasMore
   }

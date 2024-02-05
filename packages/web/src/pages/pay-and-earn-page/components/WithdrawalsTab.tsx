@@ -196,7 +196,7 @@ export const useWithdrawals = () => {
     data: transactions,
     hasMore,
     loadMore,
-    forceRefresh
+    reset
   } = useAllPaginatedQuery(
     useGetUSDCTransactions,
     {
@@ -232,11 +232,11 @@ export const useWithdrawals = () => {
           // TODO: Figure out why types don't work
           dispatch(userApiUtils.reset('getUSDCTransactions') as any)
           dispatch(userApiUtils.reset('getUSDCTransactionsCount') as any)
-          forceRefresh()
+          reset()
         }
       })
     }
-  }, [lastCompletedTransaction, userId, beginPolling, forceRefresh, dispatch])
+  }, [lastCompletedTransaction, userId, beginPolling, reset, dispatch])
 
   const onSort = useCallback(
     (
