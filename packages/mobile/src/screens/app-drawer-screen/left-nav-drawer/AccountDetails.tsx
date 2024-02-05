@@ -5,8 +5,7 @@ import { accountSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
 
@@ -24,9 +23,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   accountImage: {
     height: spacing(12.5),
-    width: spacing(12.5),
-    marginBottom: spacing(3),
-    borderWidth: 1
+    width: spacing(12.5)
   },
   accountName: {
     flexDirection: 'row',
@@ -61,7 +58,11 @@ export const AccountDetails = () => {
   return (
     <View style={styles.root}>
       <TouchableOpacity onPress={handlePressAccount}>
-        <ProfilePicture profile={accountUser} style={styles.accountImage} />
+        <ProfilePicture
+          userId={accountUser.user_id}
+          style={styles.accountImage}
+          mb='l'
+        />
         <View style={styles.accountName}>
           <Text numberOfLines={1} style={styles.name} variant='h1' noGutter>
             {name}

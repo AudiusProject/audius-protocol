@@ -1,6 +1,6 @@
 {
   "name": "@audius/ddex-webapp-server",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Backend server for DDEX ingestion (also serves frontend as static assets)",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,8 @@
   "author": "Audius",
   "dependencies": {
     "@audius/sdk": "*",
+    "@aws-sdk/client-s3": "3.504.0",
+    "@aws-sdk/s3-request-presigner": "3.504.0",
     "@trpc/server": "10.38.4",
     "decompress": "4.2.1",
     "dotenv": "16.3.1",

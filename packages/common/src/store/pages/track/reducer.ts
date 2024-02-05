@@ -30,12 +30,14 @@ const initialState: TrackPageState = {
   rank: {
     week: null,
     month: null,
-    year: null
+    year: null,
+    allTime: null
   },
   trendingTrackRanks: {
     week: null,
     month: null,
-    year: null
+    year: null,
+    allTime: null
   },
   tracks: initialLineupState,
   isInitialFetchAfterSsr: false

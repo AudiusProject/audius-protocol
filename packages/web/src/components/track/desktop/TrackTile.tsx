@@ -14,13 +14,18 @@ import {
   formatLineupTileDuration,
   getDogEarType
 } from '@audius/common/utils'
-import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
+import {
+  IconVolumeLevel2 as IconVolume,
+  IconStar,
+  IconCheck,
+  IconCrown,
+  IconVisibilityHidden
+} from '@audius/harmony'
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
 
-import IconStar from 'assets/img/iconStar.svg'
-import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
@@ -379,7 +384,7 @@ const TrackTile = ({
           >
             {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
-                <IconHidden className={styles.topRightIcon} />
+                <IconVisibilityHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
               </div>
             ) : null}

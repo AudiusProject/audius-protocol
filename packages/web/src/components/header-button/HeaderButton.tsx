@@ -1,6 +1,5 @@
+import { IconCaretDown as Caret } from '@audius/harmony'
 import cn from 'classnames'
-
-import Caret from 'assets/img/iconCaretDown.svg'
 
 import styles from './HeaderButton.module.css'
 

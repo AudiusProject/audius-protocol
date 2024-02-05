@@ -33,8 +33,8 @@ function* getTracks({
   yield* waitForRead()
   const currentUserId = yield* select(getUserId)
 
-  const lineup = []
-  const heroTrack = yield* call(
+  const lineup: Track[] = []
+  const heroTrack: Track = yield* call(
     waitForValue,
     getTrack,
     { permalink: heroTrackPermalink },

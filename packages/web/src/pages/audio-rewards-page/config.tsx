@@ -2,9 +2,13 @@ import { ReactNode } from 'react'
 
 import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
 import { challengeRewardsConfig, Nullable } from '@audius/common/utils'
-import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
+import {
+  IconArrowRight,
+  IconCheck,
+  IconCloudUpload,
+  IconTokenGold
+} from '@audius/harmony'
 
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import {
   profilePage,
   SETTINGS_PAGE,
@@ -33,26 +37,20 @@ type LinkButtonInfo = {
 }
 
 const GoldBadgeIconImage = () => (
-  <img
-    draggable={false}
-    alt='Gold badge'
-    src={IconGoldBadge}
-    width={24}
-    height={24}
-  />
+  <IconTokenGold size='l' aria-label='Gold badge' />
 )
 
 const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   trackUpload: {
     label: 'Upload Tracks',
     leftIcon: null,
-    rightIcon: <IconUpload />,
+    rightIcon: <IconCloudUpload />,
     link: () => UPLOAD_PAGE
   },
   profile: {
     label: 'Your Profile',
     leftIcon: null,
-    rightIcon: <IconArrow />,
+    rightIcon: <IconArrowRight />,
     link: (handle: Nullable<string>) => (handle ? profilePage(handle) : null)
   },
   verifyAccount: {
@@ -64,7 +62,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   trendingTracks: {
     label: 'Trending Tracks',
     leftIcon: null,
-    rightIcon: <IconArrow />,
+    rightIcon: <IconArrowRight />,
     link: () => TRENDING_PAGE
   },
   sendFirstTip: {
@@ -76,19 +74,19 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   firstPlaylist: {
     label: 'Discover Some Tracks',
     leftIcon: null,
-    rightIcon: <IconArrow />,
+    rightIcon: <IconArrowRight />,
     link: () => EXPLORE_PAGE
   },
   [ChallengeName.AudioMatchingSell]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrow />,
+    rightIcon: <IconArrowRight />,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   },
   [ChallengeName.AudioMatchingBuy]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrow />,
+    rightIcon: <IconArrowRight />,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   }
 }

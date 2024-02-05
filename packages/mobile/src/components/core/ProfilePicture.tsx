@@ -9,7 +9,7 @@ import { Avatar } from '@audius/harmony-native'
 import { useProfilePicture } from '../image/UserImage'
 const { getUser } = cacheUsersSelectors
 
-type ProfilePictureProps = Omit<
+export type ProfilePictureProps = Omit<
   AvatarProps,
   'source' | 'accessibilityLabel'
 > & {

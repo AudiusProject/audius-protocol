@@ -9,14 +9,6 @@
   user-select: none;
 }
 
-.endOfLineupLogo {
-  height: 48px;
-}
-
-.endOfLineupLogo g path {
-  fill: var(--neutral-light-4);
-}
-
 .endTitle {
   color: var(--neutral-light-5);
   font-family: var(--font-family);

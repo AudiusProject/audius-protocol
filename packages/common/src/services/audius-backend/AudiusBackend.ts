@@ -1204,7 +1204,7 @@ export const audiusBackend = ({
     return null
   }
 
-  async function updateCreator(metadata: User, _id: ID) {
+  async function updateCreator(metadata: User, _id?: ID) {
     let newMetadata = { ...metadata }
     const associatedWallets = await fetchUserAssociatedWallets(metadata)
     newMetadata.associated_wallets =
@@ -1618,7 +1618,7 @@ export const audiusBackend = ({
       name?: string
       handle?: string
       isVerified?: boolean
-      location?: string
+      location?: string | null
       profilePicture: File | null
       coverPhoto: File | null
     }

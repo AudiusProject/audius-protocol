@@ -9,9 +9,9 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
+import { IconValidationX } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconValidationX from 'assets/img/iconValidationX.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'

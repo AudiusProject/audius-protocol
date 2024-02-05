@@ -1,5 +1,3 @@
-import IconAnnouncement from 'assets/img/iconAnnouncement.svg'
-
 import styles from './EmptyNotifications.module.css'
 
 const messages = {
@@ -9,7 +7,6 @@ const messages = {
 export const EmptyNotifications = () => {
   return (
     <div className={styles.emptyContainer}>
-      <IconAnnouncement className={styles.icon} />
       <div className={styles.emptyMessage}>{messages.empty}</div>
     </div>
   )

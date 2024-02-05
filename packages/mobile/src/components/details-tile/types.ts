@@ -9,9 +9,8 @@ import type {
 } from '@audius/common/models'
 import type { TextStyle } from 'react-native'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
-
-import type { ImageProps } from '../image/FastImage'
 
 export type DetailsTileDetail = {
   icon?: ReactNode

@@ -22,7 +22,7 @@ const AppWithProviders = () => {
   const trpcClient = trpc.createClient({
     links: [
       httpBatchLink({
-        url: '/trpc',
+        url: '/api/trpc',
         async headers() {
           return {
             // TODO: probably pass something from sdk oauth

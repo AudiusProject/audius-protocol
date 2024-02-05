@@ -34,9 +34,9 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
     is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
-    user_data = args["user_data"]
-    user_signature = args["user_signature"]
-    nft_access_signature = args["nft_access_signature"]
+    user_data = args.get("user_data")
+    user_signature = args.get("user_signature")
+    nft_access_signature = args.get("nft_access_signature")
     cid = track.get("preview_cid") if is_preview else track.get("track_cid")
     if not cid:
         return None
@@ -120,9 +120,9 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         filename = (
             orig_filename if is_original else f"{orig_name_without_extension}.mp3"
         )
-    user_data = args["user_data"]
-    user_signature = args["user_signature"]
-    nft_access_signature = args["nft_access_signature"]
+    user_data = args.get("user_data")
+    user_signature = args.get("user_signature")
+    nft_access_signature = args.get("nft_access_signature")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
     if not cid:
         return None

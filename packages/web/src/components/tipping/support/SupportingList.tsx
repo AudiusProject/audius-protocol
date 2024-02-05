@@ -4,10 +4,12 @@ import { useRankedSupportingForUser } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
-import { IconArrow } from '@audius/stems'
+import {
+  IconTipping as IconTip,
+  IconArrowRight as IconArrow
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import {

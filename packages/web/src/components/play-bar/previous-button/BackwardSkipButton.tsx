@@ -1,6 +1,5 @@
+import { IconPodcastBack } from '@audius/harmony'
 import cn from 'classnames'
-
-import IconPodcastBack from 'assets/img/iconPodcastBack.svg'
 
 import styles from '../PlayBarButton.module.css'
 

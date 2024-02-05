@@ -1,8 +1,7 @@
 import { PropsWithChildren, ReactElement, useState } from 'react'
 
-import { Button } from '@audius/harmony'
+import { Button, IconCaretRight } from '@audius/harmony'
 import {
-  IconCaretRight,
   Modal,
   ModalContent,
   ModalFooter,

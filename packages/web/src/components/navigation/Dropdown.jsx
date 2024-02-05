@@ -1,11 +1,10 @@
 import { Component } from 'react'
 
+import { IconCaretDown } from '@audius/harmony'
 import AntDropdown from 'antd/lib/dropdown'
 import AntMenu from 'antd/lib/menu'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-
-import IconCaretDown from 'assets/img/iconCaretDown.svg'
 
 import styles from './Dropdown.module.css'
 

@@ -4,7 +4,7 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './GatedContentLabel.module.css'

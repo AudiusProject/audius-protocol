@@ -1,15 +1,17 @@
 create or replace function handle_usdc_withdrawal() returns trigger as $$
 DECLARE
     users_row users%ROWTYPE;
+    notification_type varchar;
 begin
 
-  if new.transaction_type = 'transfer' and new.method = 'send' then
+  if new.transaction_type in ('transfer', 'withdrawal') and new.method = 'send' then
+    notification_type := 'usdc_' || new.transaction_type;
     -- Fetch the corresponding user based on the wallet
     select into users_row users.*
     from users
     join usdc_user_bank_accounts
       on users.wallet = usdc_user_bank_accounts.ethereum_address
-    where usdc_user_bank_accounts.bank_account = new.user_bank;    
+    where usdc_user_bank_accounts.bank_account = new.user_bank;
 
     -- Insert the new notification
     insert into notification
@@ -19,9 +21,9 @@ begin
         new.slot,
         ARRAY [users_row.user_id],
         new.created_at,
-        'usdc_withdrawal',
+        notification_type,
         users_row.user_id,
-        'usdc_withdrawal:' || users_row.user_id || 'signature:' || new.signature,
+        notification_type || ':' || users_row.user_id || ':' || 'signature:' || new.signature,
         json_build_object(
           'user_id', users_row.user_id,
           'user_bank', new.user_bank,
