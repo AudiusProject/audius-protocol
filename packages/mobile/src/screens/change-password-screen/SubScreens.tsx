@@ -75,13 +75,11 @@ export const NewPasswordSubScreen = () => (
     <PasswordField
       name='password'
       label={messages.password}
-      clearErrorOnChange={false}
       helperText={undefined}
     />
     <PasswordField
       name='confirmPassword'
       label={messages.confirmPassword}
-      clearErrorOnChange={false}
       helperText={undefined}
     />
     <PasswordCompletionChecklist />
