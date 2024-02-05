@@ -1,5 +1,4 @@
 import type { ID } from '@audius/common/models'
-import type { Image } from '@audius/common/store'
 
 import type { CoverPhotoProps } from '@audius/harmony-native'
 import { CoverPhoto } from '@audius/harmony-native'
