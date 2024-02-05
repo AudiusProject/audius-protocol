@@ -46,7 +46,8 @@ const messages = {
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
-  followToDownload: 'Must follow artist to download.'
+  followToDownload: 'Must follow artist to download.',
+  purchaseableIsOwner: (price: string) => `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -64,8 +65,14 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     price,
     shouldDisplayPremiumDownloadLocked,
     shouldDisplayPremiumDownloadUnlocked,
-    shouldDisplayDownloadFollowGated
+    shouldDisplayDownloadFollowGated,
+    shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+  const formattedPrice = price ? USDC(price / 100).toLocaleString('en-us', {
+    roundingMode: 'floor',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }) : undefined
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
@@ -114,6 +121,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const renderHeader = () => {
     return (
+      <>
       <Flex
         p='l'
         direction='row'
@@ -127,7 +135,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               {messages.title}
             </Text>
           </Flex>
-          {shouldDisplayPremiumDownloadLocked && price !== undefined ? (
+          {shouldDisplayPremiumDownloadLocked && formattedPrice !== undefined ? (
             <Button
               variant='primary'
               size='small'
@@ -135,11 +143,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               onPress={handlePurchasePress}
             >
               {messages.unlockAll(
-                USDC(price / 100).toLocaleString('en-us', {
-                  roundingMode: 'floor',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })
+                formattedPrice
               )}
             </Button>
           ) : null}
@@ -179,6 +183,14 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         </Flex>
         <ExpandableArrowIcon expanded={isExpanded} />
       </Flex>
+      {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
+        <Flex pl='l' pr='l' pb='l'>
+          <Text variant='body' size='m' strength='strong'>
+            {messages.purchaseableIsOwner(formattedPrice)}
+          </Text>
+        </Flex>
+      ) : null}
+      </>
     )
   }
 
