@@ -1,9 +1,9 @@
+import { Collection } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
-  Collection,
   collectionPageSelectors,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconRocket } from '@audius/harmony'
 import { ButtonProps, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'

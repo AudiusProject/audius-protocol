@@ -1,10 +1,10 @@
 import {
-  ID,
-  CoverPhotoSizes,
-  ProfilePictureSizes,
   SquareSizes,
-  WidthSizes
-} from '@audius/common'
+  WidthSizes,
+  ID,
+  ProfilePictureSizes,
+  CoverPhotoSizes
+} from '@audius/common/models'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

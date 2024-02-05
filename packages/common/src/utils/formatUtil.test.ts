@@ -1,7 +1,7 @@
 import { AUDIO, FixedDecimal, USDC, wAUDIO } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
-import { BNWei } from 'models/Wallet'
+import { BNWei } from '~/models/Wallet'
 
 import {
   formatCurrencyBalance,

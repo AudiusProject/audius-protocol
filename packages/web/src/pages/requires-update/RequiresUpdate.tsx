@@ -1,4 +1,4 @@
-import { Theme } from '@audius/common'
+import { Theme } from '@audius/common/models'
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'

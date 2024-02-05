@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   audioRewardsPageActions,
   TrendingRewardsModalType
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconArrowRight as IconArrow, IconCrown } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

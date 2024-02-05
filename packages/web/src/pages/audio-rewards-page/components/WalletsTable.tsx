@@ -1,13 +1,11 @@
 import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 
+import { Chain, BNWei } from '@audius/common/models'
 import {
-  Chain,
-  BNWei,
-  shortenEthAddress,
-  shortenSPLAddress,
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+  tokenDashboardPageSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
+import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
 import { IconCopy, IconRemove, IconSolana as LogoSol } from '@audius/harmony'
 import { LogoEth } from '@audius/stems'
 import cn from 'classnames'

@@ -1,10 +1,7 @@
 import { useEffect } from 'react'
 
-import {
-  Status,
-  profilePageActions,
-  profilePageSelectors
-} from '@audius/common'
+import { Status } from '@audius/common/models'
+import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { IconTrending } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 

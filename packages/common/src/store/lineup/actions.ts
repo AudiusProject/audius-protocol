@@ -1,7 +1,7 @@
-import { PlaybackSource } from 'models'
+import { Collection, LineupEntry, PlaybackSource } from '~/models'
 
 import { ID, UID } from '../../models/Identifiers'
-import { TrackMetadata } from '../../models/Track'
+import { Track, TrackMetadata } from '../../models/Track'
 
 export const FETCH_LINEUP_METADATAS = 'FETCH_LINEUP_METADATAS'
 export const FETCH_LINEUP_METADATAS_REQUESTED =
@@ -217,7 +217,12 @@ export class LineupActions {
     }
   }
 
-  add(entry: unknown, id: ID, handle?: string, shouldPrepend?: boolean) {
+  add(
+    entry: LineupEntry<Track | Collection>,
+    id: ID,
+    handle?: string,
+    shouldPrepend?: boolean
+  ) {
     return {
       type: addPrefix(this.prefix, ADD),
       entry,

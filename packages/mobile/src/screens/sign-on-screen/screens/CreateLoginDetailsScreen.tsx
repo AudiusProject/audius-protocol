@@ -1,11 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  createLoginDetailsSchema,
-  useAudiusQueryContext,
-  createLoginDetailsPageMessages as messages,
-  emailSchema
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { createLoginDetailsPageMessages } from '@audius/common/messages'
+import { emailSchema, createLoginDetailsSchema } from '@audius/common/schemas'
 import { css } from '@emotion/native'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
 import {
@@ -56,7 +53,7 @@ const EmailField = ({ onChangeScreen }: { onChangeScreen: () => void }) => {
   return (
     <NewEmailField
       name='email'
-      label={messages.emailLabel}
+      label={createLoginDetailsPageMessages.emailLabel}
       onChangeScreen={onChangeScreen}
     />
   )
@@ -105,13 +102,13 @@ export const CreateLoginDetailsScreen = () => {
       {({ isValid, dirty }) => (
         <Page>
           <Heading
-            heading={messages.title}
-            description={messages.description}
+            heading={createLoginDetailsPageMessages.title}
+            description={createLoginDetailsPageMessages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <Flex direction='column' gap='l'>
               <ReadOnlyField
-                label={messages.handleLabel}
+                label={createLoginDetailsPageMessages.handleLabel}
                 value={
                   <Flex gap='xs'>
                     <Text variant='body' size='m' color='default'>
@@ -129,10 +126,13 @@ export const CreateLoginDetailsScreen = () => {
                 }
               />
               <EmailField onChangeScreen={navigateToLogin} />
-              <PasswordField name='password' label={messages.passwordLabel} />
+              <PasswordField
+                name='password'
+                label={createLoginDetailsPageMessages.passwordLabel}
+              />
               <PasswordField
                 name='confirmPassword'
-                label={messages.confirmPasswordLabel}
+                label={createLoginDetailsPageMessages.confirmPasswordLabel}
               />
               <PasswordCompletionChecklist />
             </Flex>

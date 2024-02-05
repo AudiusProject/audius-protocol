@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import type { Image } from '@audius/common'
+import type { Image } from '@audius/common/store'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
@@ -154,8 +154,6 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   errorIcon: {
     flex: 1,
-    width: 12,
-    height: 12,
     marginRight: 10,
     alignSelf: 'center'
   },
@@ -320,7 +318,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
     if (!handleIsValid && handleError !== '') {
       return (
         <View style={styles.errorContainer}>
-          <IconMultiselectRemove style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>
             &nbsp;
             {messages.errors[messages.errorTypes.indexOf(handleError)]}
@@ -331,7 +329,10 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
     } else {
       return (
         <View style={styles.errorContainer}>
-          <IconMultiselectRemove style={[styles.errorIcon, { opacity: 0 }]} />
+          <IconMultiselectRemove
+            style={[styles.errorIcon, { opacity: 0 }]}
+            size='m'
+          />
           <Text style={styles.errorText}>&nbsp;</Text>
         </View>
       )

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags } from '@audius/common/services'
 import { Image, Platform } from 'react-native'
 
 import {

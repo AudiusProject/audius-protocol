@@ -3,7 +3,7 @@ import type {
   TwitterProfile,
   TikTokProfile,
   Image
-} from '@audius/common'
+} from '@audius/common/store'
 
 import type { Provider } from './reducer'
 import type { Credentials } from './types'

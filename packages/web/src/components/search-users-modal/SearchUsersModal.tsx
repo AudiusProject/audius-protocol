@@ -7,15 +7,13 @@ import {
   useState
 } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
+import { Status, ID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
-  searchUsersModalSelectors,
   searchUsersModalActions,
-  useProxySelector,
-  User,
-  ID,
-  Status
-} from '@audius/common'
+  searchUsersModalSelectors
+} from '@audius/common/store'
 import { IconRemove, IconSearch } from '@audius/harmony'
 import {
   Modal,

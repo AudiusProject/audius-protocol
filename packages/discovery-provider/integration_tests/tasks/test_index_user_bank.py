@@ -7,8 +7,9 @@ from integration_tests.tasks.payment_router_mock_transactions import (
 from integration_tests.tasks.user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
     RECEIVER_ACCOUNT_WAUDIO_ADDRESS,
-    RECIPIENT_ACCOUNT_USDC_ADDRESS,
-    SENDER_ACCOUNT_USDC_ADDRESS,
+    RECIPIENT_USDC_USER_BANK_ADDRESS,
+    SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER,
+    SENDER_USDC_USER_BANK_ADDRESS,
     SENDER_ACCOUNT_WAUDIO_ADDRESS,
     mock_failed_track_purchase_tx,
     mock_invalid_track_purchase_bad_splits_tx,
@@ -22,6 +23,8 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     mock_valid_transfer_without_purchase_tx,
     mock_valid_waudio_transfer_between_user_banks,
     mock_valid_waudio_transfer_from_user_bank_to_external_address,
+    mock_valid_transfer_prepare_withdrawal_tx,
+    mock_valid_transfer_withdrawal_tx,
 )
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
@@ -45,10 +48,10 @@ from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
 track_owner_id = 1
-track_owner_usdc_user_bank = RECIPIENT_ACCOUNT_USDC_ADDRESS
+track_owner_usdc_user_bank = RECIPIENT_USDC_USER_BANK_ADDRESS
 track_owner_eth_address = "0xe66402f9a6714a874a539fb1689b870dd271dfb2"
 track_buyer_id = 2
-track_buyer_user_bank = SENDER_ACCOUNT_USDC_ADDRESS
+track_buyer_user_bank = SENDER_USDC_USER_BANK_ADDRESS
 
 sender_user_id = 3
 sender_eth_address = "0x7d273271690538cf855e5b3002a0dd8c154bb060"
@@ -56,6 +59,9 @@ sender_waudio_user_bank = SENDER_ACCOUNT_WAUDIO_ADDRESS
 receiver_user_id = 4
 receiver_eth_address = "0x627D8D6D0f06C5663809d29905db7A88317C6240"
 receiver_waudio_user_bank = RECEIVER_ACCOUNT_WAUDIO_ADDRESS
+
+# Used as the source wallet for all the mock transactions
+transactionSenderOwnerAccount = SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER
 
 test_entries = {
     "users": [
@@ -111,13 +117,13 @@ test_entries = {
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
-            "splits": {RECIPIENT_ACCOUNT_USDC_ADDRESS: 1000000},
+            "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
             "splits": {
-                RECIPIENT_ACCOUNT_USDC_ADDRESS: 1000000,
+                RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000,
                 EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
@@ -537,7 +543,7 @@ def test_process_user_bank_txs_details_create_usdc_user_bank(app):
         )
 
         assert user_bank is not None
-        assert user_bank.bank_account == RECIPIENT_ACCOUNT_USDC_ADDRESS
+        assert user_bank.bank_account == RECIPIENT_USDC_USER_BANK_ADDRESS
         assert user_bank.ethereum_address == track_owner_eth_address
 
 
@@ -672,6 +678,90 @@ def test_process_user_bank_txs_details_skip_unknown_instructions(app):
             .first()
         )
         assert transaction_record is None
+
+
+def test_process_user_bank_tx_details_prepare_withdrawal(
+    app,
+):
+    tx_response = mock_valid_transfer_prepare_withdrawal_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert (
+            transaction_record.transaction_type
+            == USDCTransactionType.prepare_withdrawal
+        )
+        assert transaction_record.method == USDCTransactionMethod.send
+        assert transaction_record.change == -1000000
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
+
+
+def test_process_user_bank_tx_details_withdrawal(
+    app,
+):
+    tx_response = mock_valid_transfer_withdrawal_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.transaction_type == USDCTransactionType.withdrawal
+        assert transaction_record.method == USDCTransactionMethod.send
+        assert transaction_record.change == -1000000
 
 
 def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):

@@ -1,19 +1,15 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { Client, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
-  BNWei,
+  tokenDashboardPageSelectors,
   tokenDashboardPageActions,
   walletSelectors,
-  tokenDashboardPageSelectors,
-  formatWei,
   buyAudioActions,
-  OnRampProvider,
-  FeatureFlags,
-  StringKeys,
-  Client,
-  Location,
-  isNullOrUndefined
-} from '@audius/common'
+  OnRampProvider
+} from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import {
   IconReceive,
   IconSend,

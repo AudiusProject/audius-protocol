@@ -5,7 +5,7 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   useEditPlaylistModal
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconPlaylists } from '@audius/harmony'
 import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

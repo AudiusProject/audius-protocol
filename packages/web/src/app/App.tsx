@@ -2,15 +2,22 @@
 
 import { useEffect, Suspense, lazy } from 'react'
 
-import { FeatureFlags, useFeatureFlag } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
+import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
 import { initWebVitals } from 'services/webVitals'
-import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
+import {
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  SIGN_IN_PAGE,
+  SIGN_ON_ALIASES,
+  SIGN_UP_PAGE
+} from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
@@ -22,6 +29,12 @@ const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
+const PrivateKeyExporterPage = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
+)
+const PrivateKeyExporterModal = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
+)
 
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
@@ -64,6 +77,14 @@ export const AppInner = () => {
           </Route>
           <Route path='/demo/trpc'>
             <DemoTrpcPage />
+          </Route>
+          <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
+            <PrivateKeyExporterPage />
+            <AppModal
+              key='PrivateKeyExporter'
+              name='PrivateKeyExporter'
+              modal={PrivateKeyExporterModal}
+            />
           </Route>
           <Route path='/'>
             <AppErrorBoundary>

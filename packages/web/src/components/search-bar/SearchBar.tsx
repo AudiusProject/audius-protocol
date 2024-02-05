@@ -1,6 +1,6 @@
 import { ChangeEvent, KeyboardEvent } from 'react'
 
-import { Status } from '@audius/common'
+import { Status } from '@audius/common/models'
 import { IconSearch } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'

@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+import { Name, User } from '@audius/common/models'
 import {
-  Name,
-  User,
   accountSelectors,
   cacheUsersSelectors,
   tippingSelectors,
   tippingActions
-} from '@audius/common'
+} from '@audius/common/store'
 import {
   IconClose as IconRemove,
   IconTipping as IconTip

@@ -2,21 +2,25 @@ import { useCallback, useMemo, useState } from 'react'
 
 import {
   Chain,
-  BNAudio,
-  BNWei,
-  SolanaWalletAddress,
-  StringAudio,
   StringWei,
+  StringAudio,
+  BNWei,
+  BNAudio,
   WalletAddress,
-  Nullable,
-  FeatureFlags,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import {
   IntKeys,
-  parseAudioInputToWei,
-  stringAudioToBN,
-  stringWeiToBN,
-  weiToAudio,
+  FeatureFlags,
   MIN_TRANSFERRABLE_WEI
-} from '@audius/common'
+} from '@audius/common/services'
+import {
+  weiToAudio,
+  stringWeiToBN,
+  stringAudioToBN,
+  parseAudioInputToWei,
+  Nullable
+} from '@audius/common/utils'
 import {
   IconTokenGold as IconGoldBadgeSVG,
   IconValidationX

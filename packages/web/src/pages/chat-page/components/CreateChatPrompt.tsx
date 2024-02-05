@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { chatSelectors, useCreateChatModal } from '@audius/common'
+import { chatSelectors, useCreateChatModal } from '@audius/common/store'
 import { IconCompose } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 

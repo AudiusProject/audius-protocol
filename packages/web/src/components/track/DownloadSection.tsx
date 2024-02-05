@@ -2,18 +2,18 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
-  ID,
-  CommonState,
+  useFileSizes,
+  useDownloadableContentAccess
+} from '@audius/common/hooks'
+import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import {
   cacheTracksSelectors,
-  DownloadQuality,
-  useDownloadableContentAccess,
   usePremiumContentPurchaseModal,
+  CommonState,
   useWaitForDownloadModal,
-  ModalSource,
   tracksSocialActions as socialTracksActions,
-  toastActions,
-  Name
-} from '@audius/common'
+  toastActions
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
@@ -36,6 +36,7 @@ import {
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -84,6 +85,10 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const fileSizes = useFileSizes({
+    audiusSdk,
+    trackIds: [trackId, ...stemTracks.map((s) => s.id)]
+  })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
@@ -248,10 +253,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     }
                   />
                 </Flex>
-                <Flex gap='2xl' alignItems='center'>
-                  <Text>size</Text>
-                  {shouldDisplayDownloadAll ? downloadAllButton() : null}
-                </Flex>
+                {shouldDisplayDownloadAll ? downloadAllButton() : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
@@ -260,6 +262,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[trackId]}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -268,6 +271,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[s.id]}
                 index={
                   i +
                   (track?.is_downloadable

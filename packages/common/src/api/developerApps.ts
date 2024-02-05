@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { createApi } from 'audius-query'
-import { ID } from 'models/Identifiers'
-import { encodeHashId } from 'utils/hashIds'
+import { createApi } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
+import { encodeHashId } from '~/utils/hashIds'
 
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
 export const DEVELOPER_APP_NAME_MAX_LENGTH = 50

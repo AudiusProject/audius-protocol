@@ -2,7 +2,7 @@ import {
   InstagramProfile,
   TikTokProfile,
   TwitterProfile
-} from 'store/account/types'
+} from '~/store/account/types'
 
 export const MAX_HANDLE_LENGTH = 30
 export const MAX_DISPLAY_NAME_LENGTH = 32

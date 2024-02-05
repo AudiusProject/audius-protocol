@@ -1,10 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
-  Status,
   changePasswordSelectors,
   changePasswordActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconArrowRight as IconArrow } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

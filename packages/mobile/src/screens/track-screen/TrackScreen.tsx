@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
 import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  useProxySelector,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -132,6 +132,8 @@ export const TrackScreen = () => {
           count={isReachable ? 6 : 0}
           header={
             <TrackScreenMainContent
+              // @ts-ignore not sure why but it's registering
+              //  as LineupState<{ id: number }> instead of Track
               lineup={lineup}
               remixParentTrack={remixParentTrack}
               track={track}

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ReactionNotification } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
+import type { ReactionNotification } from '@audius/common/store'
 import {
-  useUIAudio,
   notificationsSelectors,
   getReactionFromRawValue
-} from '@audius/common'
+} from '@audius/common/store'
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -22,7 +22,7 @@ import {
   UserNameLink,
   TipText,
   NotificationText,
-  ProfilePicture,
+  NotificationProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
 import { reactionMap } from '../Reaction'
@@ -115,7 +115,10 @@ export const TipReactionNotification = (
       <View style={styles.body}>
         <View>
           <Reaction autoPlay={true} isVisible={isVisible} />
-          <ProfilePicture profile={user} style={styles.profilePicture} />
+          <NotificationProfilePicture
+            profile={user}
+            style={styles.profilePicture}
+          />
         </View>
         <View style={styles.content}>
           <View style={styles.userNameLink}>

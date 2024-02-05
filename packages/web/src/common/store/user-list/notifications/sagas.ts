@@ -4,7 +4,7 @@ import {
   notificationsUserListActions,
   notificationsUserListSelectors,
   NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'

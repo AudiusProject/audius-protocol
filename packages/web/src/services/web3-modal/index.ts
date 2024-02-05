@@ -1,4 +1,4 @@
-import { getErrorMessage } from '@audius/common'
+import { getErrorMessage } from '@audius/common/utils'
 import { IconPhantom as phantomIconPurpleSvg } from '@audius/harmony'
 import type { IProviderOptions } from 'web3modal'
 

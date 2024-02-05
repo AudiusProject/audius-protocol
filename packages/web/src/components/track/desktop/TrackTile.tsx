@@ -1,18 +1,19 @@
 import { memo } from 'react'
 
+import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  usePremiumContentPurchaseModal,
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
 import {
   formatCount,
-  accountSelectors,
-  playbackPositionSelectors,
-  FeatureFlags,
-  formatLineupTileDuration,
   Genre,
-  CommonState,
-  getDogEarType,
-  isContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  formatLineupTileDuration,
+  getDogEarType
+} from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
   IconStar,

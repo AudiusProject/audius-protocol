@@ -8,7 +8,7 @@ import {
   useEffect
 } from 'react'
 
-import { chatActions } from '@audius/common'
+import { chatActions } from '@audius/common/store'
 import { IconSend } from '@audius/harmony'
 import { IconButton } from '@audius/stems'
 import cn from 'classnames'

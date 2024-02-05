@@ -1,7 +1,13 @@
-export enum TrackAvailabilityType {
+export enum StreamTrackAvailabilityType {
   PUBLIC = 'PUBLIC',
   USDC_PURCHASE = 'USDC_PURCHASE',
   SPECIAL_ACCESS = 'SPECIAL_ACCESS',
   COLLECTIBLE_GATED = 'COLLECTIBLE_GATED',
   HIDDEN = 'HIDDEN'
+}
+
+export enum DownloadTrackAvailabilityType {
+  PUBLIC = 'PUBLIC',
+  FOLLOWERS = 'FOLLOWERS',
+  USDC_PURCHASE = 'USDC_PURCHASE'
 }

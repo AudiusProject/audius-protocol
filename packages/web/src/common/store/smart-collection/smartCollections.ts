@@ -1,8 +1,8 @@
 import {
-  SmartCollection,
   Variant,
-  SmartCollectionVariant
-} from '@audius/common'
+  SmartCollectionVariant,
+  SmartCollection
+} from '@audius/common/models'
 import {
   IconQuestionCircle as IconExploreFeelingLucky,
   IconBoxHeart as IconExploreMostLoved,

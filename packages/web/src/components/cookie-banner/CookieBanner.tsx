@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { playerSelectors } from '@audius/common'
+import { playerSelectors } from '@audius/common/store'
 import { IconClose as IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'

@@ -1,16 +1,14 @@
 import { useCallback } from 'react'
 
-import {
-  profilePageSelectors,
-  MAX_PROFILE_SUPPORTING_TILES,
-  useRankedSupportingForUser,
-  User,
-  formatCount
-} from '@audius/common'
+import { useRankedSupportingForUser } from '@audius/common/hooks'
+import { User } from '@audius/common/models'
+import { profilePageSelectors } from '@audius/common/store'
+import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
 import {
   IconTipping as IconTip,
   IconArrowRight as IconArrow
 } from '@audius/harmony'
+import { IconArrow } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

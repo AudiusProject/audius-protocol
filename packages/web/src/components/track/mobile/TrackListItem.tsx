@@ -1,6 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { ID, CoverArtSizes, SquareSizes } from '@audius/common'
+import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
 import {
   IconRemove as IconRemoveTrack,
   IconPlaybackPause as IconPause,

@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { TransactionMethod, TransactionType } from '@audius/common'
+import { TransactionType, TransactionMethod } from '@audius/common/store'
 import {
   IconTipping as IconTip,
   IconReceive as IconReceiveMini,

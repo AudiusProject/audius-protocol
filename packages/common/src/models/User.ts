@@ -1,12 +1,13 @@
-import { Collectible, CollectiblesMetadata } from 'models/Collectible'
-import { Color } from 'models/Color'
-import { CID, ID } from 'models/Identifiers'
-import { CoverPhotoSizes, ProfilePictureSizes } from 'models/ImageSizes'
-import { PlaylistLibrary } from 'models/PlaylistLibrary'
-import { SolanaWalletAddress, StringWei, WalletAddress } from 'models/Wallet'
-import { Nullable } from 'utils/typeUtils'
+import { Collectible, CollectiblesMetadata } from '~/models/Collectible'
+import { Color } from '~/models/Color'
+import { CID, ID } from '~/models/Identifiers'
+import { CoverPhotoSizes, ProfilePictureSizes } from '~/models/ImageSizes'
+import { PlaylistLibrary } from '~/models/PlaylistLibrary'
+import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
+import { Nullable } from '~/utils/typeUtils'
 
 import { Timestamped } from './Timestamped'
+import { UserEvent } from './UserEvent'
 
 export type UserMetadata = {
   album_count: number
@@ -66,6 +67,7 @@ export type UserMetadata = {
   playlist_library?: PlaylistLibrary
   userBank?: SolanaWalletAddress
   local?: boolean
+  events?: UserEvent
 } & Timestamped
 
 export type ComputedUserProperties = {

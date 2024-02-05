@@ -1,19 +1,23 @@
 import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
 import {
-  ID,
-  formatCount,
-  AccessConditions,
-  Nullable,
-  gatedContentSelectors,
-  gatedContentActions,
-  formatLineupTileDuration,
-  Genre,
-  getDogEarType,
+  ModalSource,
   isContentUSDCPurchaseGated,
+  ID,
+  AccessConditions
+} from '@audius/common/models'
+import {
   usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  gatedContentActions,
+  gatedContentSelectors
+} from '@audius/common/store'
+import {
+  formatCount,
+  Genre,
+  formatLineupTileDuration,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
   IconStar,

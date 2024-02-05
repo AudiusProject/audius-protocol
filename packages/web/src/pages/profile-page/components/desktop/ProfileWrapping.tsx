@@ -1,4 +1,5 @@
-import { ID, ProfilePictureSizes, Nullable } from '@audius/common'
+import { ID, ProfilePictureSizes } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
 import cn from 'classnames'
 

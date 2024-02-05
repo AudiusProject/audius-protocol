@@ -1,4 +1,4 @@
-import { OnRampProvider } from '@audius/common'
+import { OnRampProvider } from '@audius/common/store'
 import { IconLogoLinkByStripe as LogoStripeLink } from '@audius/harmony'
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
 import cn from 'classnames'

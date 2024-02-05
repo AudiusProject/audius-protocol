@@ -32,3 +32,5 @@ export const TOKEN_LISTING_MAP: Record<string, JupiterTokenListing> = {
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
   }
 }
+
+export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP

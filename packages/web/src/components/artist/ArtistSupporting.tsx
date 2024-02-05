@@ -1,16 +1,17 @@
 import { useCallback, useEffect } from 'react'
 
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  User,
-  stringWeiToBN,
   cacheUsersSelectors,
   tippingSelectors,
   tippingActions,
   userListActions,
-  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
+  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG
+} from '@audius/common/store'
+import {
+  stringWeiToBN,
   MAX_ARTIST_HOVER_TOP_SUPPORTING
-} from '@audius/common'
+} from '@audius/common/utils'
 import { IconTipping as IconTip } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 

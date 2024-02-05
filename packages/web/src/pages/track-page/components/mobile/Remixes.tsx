@@ -1,4 +1,4 @@
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { IconRemix } from '@audius/harmony'
 import cn from 'classnames'
 

@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { ID, Kind, TrackMetadata } from '@audius/common'
+import { Kind, ID, TrackMetadata } from '@audius/common/models'
 import {
   IconCaretDown,
   IconCaretLeft,

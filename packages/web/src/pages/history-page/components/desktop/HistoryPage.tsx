@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useMemo } from 'react'
 
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { IconPause, IconPlay } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 

@@ -1,11 +1,8 @@
-import {
-  removeNullable,
-  FeatureFlags,
-  chatSelectors,
-  Name,
-  useAccountHasClaimableRewards,
-  StringKeys
-} from '@audius/common'
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { chatSelectors } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import {
   IconKebabHorizontal,
   IconCrown,

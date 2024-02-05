@@ -1,4 +1,4 @@
-import { audiusBackend } from '@audius/common'
+import { audiusBackend } from '@audius/common/services'
 import type { AudiusLibs } from '@audius/sdk'
 
 import { track } from 'services/analytics'

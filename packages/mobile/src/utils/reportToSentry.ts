@@ -1,5 +1,5 @@
-import type { ReportToSentryArgs, ErrorLevel } from '@audius/common'
-import { getErrorMessage } from '@audius/common'
+import type { ErrorLevel, ReportToSentryArgs } from '@audius/common/models'
+import { getErrorMessage } from '@audius/common/utils'
 import { captureException, withScope } from '@sentry/react-native'
 import type { SeverityLevel } from '@sentry/types'
 

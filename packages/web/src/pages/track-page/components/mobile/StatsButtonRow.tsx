@@ -1,4 +1,4 @@
-import { formatCount } from '@audius/common'
+import { formatCount } from '@audius/common/utils'
 import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
 import cn from 'classnames'
 

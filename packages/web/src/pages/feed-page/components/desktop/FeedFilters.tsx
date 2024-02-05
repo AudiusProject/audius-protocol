@@ -1,4 +1,4 @@
-import { FeedFilter } from '@audius/common'
+import { FeedFilter } from '@audius/common/models'
 
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 

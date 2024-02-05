@@ -1,11 +1,7 @@
 import { memo } from 'react'
 
-import {
-  ID,
-  SquareSizes,
-  CoverArtSizes,
-  useLoadImageWithTimeout
-} from '@audius/common'
+import { useLoadImageWithTimeout } from '@audius/common/hooks'
+import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
 import {
   IconLock,
   IconPlaybackPlay as IconPlay,

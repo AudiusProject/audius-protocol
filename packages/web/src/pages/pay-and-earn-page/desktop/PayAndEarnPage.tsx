@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import {
   Button,
   Flex,

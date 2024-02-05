@@ -1,16 +1,18 @@
 import { useCallback, useState } from 'react'
 
 import {
-  ID,
   Name,
-  ProfilePictureSizes,
   SquareSizes,
   Status,
-  BooleanKeys,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
+import {
   InstagramProfile,
   TwitterProfile,
   TikTokProfile
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconValidationX, IconNote } from '@audius/harmony'
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'

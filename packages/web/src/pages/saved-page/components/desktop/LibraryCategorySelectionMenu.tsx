@@ -1,11 +1,11 @@
 import {
-  CommonState,
-  LibraryCategory,
-  LibraryCategoryType,
   savedPageActions,
   savedPageSelectors,
-  SavedPageTabs
-} from '@audius/common'
+  LibraryCategory,
+  SavedPageTabs,
+  LibraryCategoryType,
+  CommonState
+} from '@audius/common/store'
 import {
   SelectablePill,
   IconHeart,

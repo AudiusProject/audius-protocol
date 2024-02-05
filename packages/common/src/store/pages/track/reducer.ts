@@ -1,10 +1,10 @@
-import { SsrPageProps } from 'models/SsrPageProps'
-import { Track } from 'models/Track'
-import { LineupActions, asLineup } from 'store/lineup/reducer'
+import { SsrPageProps } from '~/models/SsrPageProps'
+import { Track } from '~/models/Track'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/track/lineup/reducer'
-import { decodeHashId } from 'utils/hashIds'
+} from '~/store/pages/track/lineup/reducer'
+import { decodeHashId } from '~/utils/hashIds'
 
 import {
   SET_TRACK_ID,
@@ -30,12 +30,14 @@ const initialState: TrackPageState = {
   rank: {
     week: null,
     month: null,
-    year: null
+    year: null,
+    allTime: null
   },
   trendingTrackRanks: {
     week: null,
     month: null,
-    year: null
+    year: null,
+    allTime: null
   },
   tracks: initialLineupState,
   isInitialFetchAfterSsr: false

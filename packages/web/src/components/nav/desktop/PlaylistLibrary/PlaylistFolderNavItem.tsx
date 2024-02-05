@@ -1,14 +1,16 @@
 import { useCallback, useState, MouseEvent, useEffect, useMemo } from 'react'
 
 import {
-  PlaylistLibraryFolder,
   Name,
-  modalsActions,
   PlaylistLibraryID,
-  playlistLibraryActions,
   PlaylistLibraryKind,
+  PlaylistLibraryFolder
+} from '@audius/common/models'
+import {
+  playlistLibraryActions,
+  modalsActions,
   playlistUpdatesSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconFolder, IconCaretRight } from '@audius/harmony'
 import { PopupMenuItem, IconFolderOutline } from '@audius/stems'
 import cn from 'classnames'

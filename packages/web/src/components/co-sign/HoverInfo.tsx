@@ -1,4 +1,4 @@
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { IconHeart, IconRepost } from '@audius/harmony'
 
 import UserBadges from 'components/user-badges/UserBadges'

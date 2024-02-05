@@ -1,4 +1,4 @@
-import { ID, User } from '@audius/common'
+import { ID, User } from '@audius/common/models'
 
 import { ImageFieldValue } from 'pages/sign-up-page/components/ImageField'
 
@@ -68,14 +68,14 @@ export default interface SignOnPageState {
   hidePreviewHint: boolean
   followArtists: FollowArtists
   isMobileSignOnVisible: boolean
-  routeOnCompletion: boolean
+  routeOnCompletion: string
   startedSignUpProcess: boolean
   finishedPhase1: boolean
   /** @deprecated */
   finishedSignUpProcess: boolean
   routeOnExit: boolean
   page: number
-  referrer: string
+  referrer: ID
 }
 
 export type { SignOnPageState }

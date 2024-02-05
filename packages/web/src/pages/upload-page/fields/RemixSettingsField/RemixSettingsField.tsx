@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
-  Nullable,
+  isContentUSDCPurchaseGated,
   ID,
-  useGetTrackById,
   FieldVisibility,
-  Remix,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  Remix
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import { IconRemix } from '@audius/harmony'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -21,7 +21,7 @@ import { fullTrackPage } from 'utils/route'
 
 import { useTrackField } from '../../hooks'
 import { SingleTrackEditValues } from '../../types'
-import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../AccessAndSaleField'
+import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
 import { RemixSettingsMenuFields } from './RemixSettingsMenuFields'

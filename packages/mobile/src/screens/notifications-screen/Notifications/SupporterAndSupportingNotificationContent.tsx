@@ -1,4 +1,4 @@
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import { View } from 'react-native'
 
 import { IconTipping, IconTrending } from '@audius/harmony-native'
@@ -9,7 +9,7 @@ import { useThemeColors } from 'app/utils/theme'
 import {
   NotificationHeader,
   NotificationTitle,
-  ProfilePicture,
+  NotificationProfilePicture,
   UserNameLink,
   NotificationText
 } from '../Notification'
@@ -45,7 +45,7 @@ export const SupporterAndSupportingNotificationContent = ({
         <NotificationTitle>{title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <UserNameLink user={user} />
       </View>
       <View style={styles.textContainer}>

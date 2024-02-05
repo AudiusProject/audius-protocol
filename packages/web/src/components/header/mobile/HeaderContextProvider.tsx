@@ -7,7 +7,7 @@ import {
   useContext
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import { useHistory } from 'react-router-dom'
 
 import { useIsMobile } from 'hooks/useIsMobile'

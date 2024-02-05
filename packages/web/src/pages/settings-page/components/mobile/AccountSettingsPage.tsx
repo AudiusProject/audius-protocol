@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
-import { Name, SquareSizes } from '@audius/common'
+import { Name, SquareSizes } from '@audius/common/models'
 import { IconVerified, IconRecoveryEmail, IconSignOut } from '@audius/harmony'
 import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

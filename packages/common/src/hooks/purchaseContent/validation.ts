@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 
 import {
   AMOUNT_PRESET,

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useEditPlaylistModal } from '@audius/common'
+import { useEditPlaylistModal } from '@audius/common/store'
 import { IconPencil } from '@audius/harmony'
 import { ButtonProps, ButtonType } from '@audius/stems'
 

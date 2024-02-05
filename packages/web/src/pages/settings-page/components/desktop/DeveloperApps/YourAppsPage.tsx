@@ -1,4 +1,6 @@
-import { Status, accountSelectors, useGetDeveloperApps } from '@audius/common'
+import { useGetDeveloperApps } from '@audius/common/api'
+import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { IconPlus } from '@audius/harmony'
 import { Button, ButtonSize, ButtonType, ModalContentText } from '@audius/stems'
 

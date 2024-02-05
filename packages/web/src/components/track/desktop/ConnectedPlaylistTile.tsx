@@ -10,21 +10,23 @@ import {
 } from 'react'
 
 import {
-  UID,
-  ID,
+  Name,
   ShareSource,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  Name,
-  Track,
+  ID,
+  UID,
+  Track
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
   shareModalUIActions,
   playerSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

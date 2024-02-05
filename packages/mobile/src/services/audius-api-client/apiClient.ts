@@ -1,4 +1,4 @@
-import { AudiusAPIClient } from '@audius/common'
+import { AudiusAPIClient } from '@audius/common/services'
 
 import { env } from 'app/env'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'

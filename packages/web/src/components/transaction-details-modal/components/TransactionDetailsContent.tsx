@@ -1,15 +1,16 @@
+import { ChallengeRewardID, User } from '@audius/common/models'
 import {
-  User,
   cacheUsersSelectors,
-  TransactionDetails,
-  TransactionMethod,
-  formatAudio,
   TransactionType,
+  TransactionMethod,
+  TransactionDetails
+} from '@audius/common/store'
+import {
+  formatAudio,
   formatCapitalizeString,
-  ChallengeRewardID,
-  makeSolanaTransactionLink,
-  isNullOrUndefined
-} from '@audius/common'
+  isNullOrUndefined,
+  makeSolanaTransactionLink
+} from '@audius/common/utils'
 import {
   IconExternalLink,
   IconLogoLinkByStripe as LogoStripeLink

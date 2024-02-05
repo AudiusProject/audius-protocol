@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import {
-  Collectible,
-  CollectibleMediaType,
-  formatDateWithTimezoneOffset
-} from '@audius/common'
+import { CollectibleMediaType, Collectible } from '@audius/common/models'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   IconRemove as IconHide,
   IconDrag,

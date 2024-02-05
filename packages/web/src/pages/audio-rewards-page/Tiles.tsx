@@ -1,12 +1,11 @@
 import { useCallback, ReactNode } from 'react'
 
 import {
-  formatWei,
-  tokenDashboardPageActions,
   tokenDashboardPageSelectors,
-  walletSelectors,
-  isNullOrUndefined
-} from '@audius/common'
+  tokenDashboardPageActions,
+  walletSelectors
+} from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { IconReceive, IconSend, IconInfo } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

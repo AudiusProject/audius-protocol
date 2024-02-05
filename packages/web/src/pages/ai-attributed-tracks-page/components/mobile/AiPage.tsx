@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { User } from '@audius/common'
+import { User } from '@audius/common/models'
 import { IconRobot } from '@audius/harmony'
 import cn from 'classnames'
 

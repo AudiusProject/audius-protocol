@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { MobileOS } from '@audius/common'
+import { MobileOS } from '@audius/common/models'
 import {
   IconAudiusLogo,
   IconStars,

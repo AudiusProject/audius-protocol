@@ -1,4 +1,4 @@
-import { dayjs } from '@audius/common'
+import { dayjs } from '@audius/common/utils'
 import { device, expect } from 'detox'
 import { random } from 'lodash'
 

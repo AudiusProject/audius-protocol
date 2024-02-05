@@ -1,10 +1,9 @@
+import { SquareSizes, User } from '@audius/common/models'
 import {
-  SquareSizes,
-  User,
+  getErrorMessage,
   decodeHashId,
-  encodeHashId,
-  getErrorMessage
-} from '@audius/common'
+  encodeHashId
+} from '@audius/common/utils'
 import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 

@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
 import {
-  chatActions,
   accountSelectors,
+  cacheUsersSelectors,
+  chatActions,
   chatSelectors,
   ChatPermissionAction,
-  cacheUsersSelectors,
-  formatCount,
   useInboxUnavailableModal
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -18,8 +18,7 @@ import {
   IconKebabHorizontal,
   IconUser
 } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import { Text, ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
 import { trpc } from 'app/services/trpc-client-mobile'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -42,10 +41,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootContainer: {
     backgroundColor: palette.white,
     flexGrow: 1
-  },
-  profilePicture: {
-    height: spacing(18),
-    width: spacing(18)
   },
   border: {
     borderBottomColor: palette.neutralLight8,
@@ -217,8 +212,9 @@ export const ChatUserListItem = ({
       <View style={styles.border}>
         <View style={styles.userContainer}>
           <ProfilePicture
-            profile={user}
-            style={[styles.profilePicture, !canCreateChat ? styles.dim : null]}
+            userId={user.user_id}
+            size='large'
+            style={!canCreateChat ? styles.dim : null}
           />
           <View style={styles.userDetailsContainer}>
             <View style={styles.topHalfContainer}>

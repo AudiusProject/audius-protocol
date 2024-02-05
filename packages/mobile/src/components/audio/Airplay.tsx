@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import { castActions } from '@audius/common'
+import { castActions } from '@audius/common/store'
 import {
   requireNativeComponent,
   NativeEventEmitter,

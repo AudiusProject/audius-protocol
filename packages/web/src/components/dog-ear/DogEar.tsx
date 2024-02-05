@@ -1,4 +1,4 @@
-import { DogEarType } from '@audius/common'
+import { DogEarType } from '@audius/common/models'
 import {
   IconVisibilityHidden,
   IconStar,

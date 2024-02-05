@@ -1,10 +1,7 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import {
-  formatSecondsAsText,
-  formatDate,
-  useEditPlaylistModal
-} from '@audius/common'
+import { useEditPlaylistModal } from '@audius/common/store'
+import { formatSecondsAsText, formatDate } from '@audius/common/utils'
 import { IconFilter, IconVisibilityHidden, IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 

@@ -1,10 +1,6 @@
-import {
-  accountSelectors,
-  chatSelectors,
-  useAccountHasClaimableRewards,
-  StringKeys,
-  FeatureFlags
-} from '@audius/common'
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -14,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
-import { ProfilePicture } from 'app/components/user'
+import { ProfilePicture } from 'app/components/core'
 import { useRemoteVar, useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
@@ -24,8 +20,7 @@ const { getHasUnreadMessages } = chatSelectors
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     height: spacing(8) + 2,
-    width: spacing(8) + 2,
-    borderWidth: 1
+    width: spacing(8) + 2
   },
   notificationBubbleRoot: {
     height: spacing(4),
@@ -71,7 +66,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
         <ProfilePicture
           userId={accountId}
           style={styles.root}
-          priority='high'
+          imagePriority='high'
         />
         {showNotificationBubble ? (
           <View style={styles.notificationBubbleRoot}>

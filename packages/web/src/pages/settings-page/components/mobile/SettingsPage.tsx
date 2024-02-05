@@ -1,19 +1,21 @@
 import { useContext, useEffect, FC } from 'react'
 
 import {
-  ID,
   SquareSizes,
-  ProfilePictureSizes,
   Theme,
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
-  EmailFrequency,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
+import {
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications,
-  TikTokProfile
-} from '@audius/common'
+  EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
+  TikTokProfile,
+  Notifications,
+  PushNotifications
+} from '@audius/common/store'
 import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import { SegmentedControl } from '@audius/stems'
 import cn from 'classnames'

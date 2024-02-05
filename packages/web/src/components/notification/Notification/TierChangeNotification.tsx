@@ -1,9 +1,9 @@
 import {
   notificationsSelectors,
+  badgeTiers,
   TierChangeNotification as TierChangeNotificationType,
-  BadgeTierInfo,
-  badgeTiers
-} from '@audius/common'
+  BadgeTierInfo
+} from '@audius/common/store'
 
 import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'

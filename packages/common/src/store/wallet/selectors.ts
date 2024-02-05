@@ -1,10 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 
-import { BNUSDC } from 'models/Wallet'
-import { CommonState } from 'store/commonStore'
-import { Nullable, isNullOrUndefined } from 'utils/typeUtils'
-import { stringWeiToBN } from 'utils/wallet'
+import { BNUSDC } from '~/models/Wallet'
+import { CommonState } from '~/store/commonStore'
+import { Nullable, isNullOrUndefined } from '~/utils/typeUtils'
+import { stringWeiToBN } from '~/utils/wallet'
 
 // Previously, the getAccountBalance selector would return different
 // values (although numerically the same) because of the return of a

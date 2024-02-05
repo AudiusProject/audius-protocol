@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 
-import { ID, User } from '@audius/common'
+import { ID, User } from '@audius/common/models'
 import { IconWand, IconArrowRight } from '@audius/harmony'
 import { Button, ButtonType, Scrollbar } from '@audius/stems'
 import cn from 'classnames'

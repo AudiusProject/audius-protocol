@@ -1,15 +1,12 @@
 import { useEffect, useContext } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { ID, LineupState, Track, User } from '@audius/common/models'
 import {
-  ID,
-  LineupState,
-  Track,
-  User,
   trackPageLineupActions,
-  QueueItem,
   OverflowAction,
-  useGatedContentAccess
-} from '@audius/common'
+  QueueItem
+} from '@audius/common/store'
 
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'

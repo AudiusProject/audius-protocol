@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { tippingSelectors, tippingActions } from '@audius/common'
+import { tippingSelectors, tippingActions } from '@audius/common/store'
 import { IconCaretLeft, IconSend, IconCheck } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

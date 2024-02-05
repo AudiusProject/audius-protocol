@@ -1,9 +1,9 @@
+import { BNWei } from '@audius/common/models'
 import {
-  BNWei,
-  isNullOrUndefined,
   tokenDashboardPageActions,
   walletSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { IconReceive, IconSend } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'

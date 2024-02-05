@@ -1,12 +1,12 @@
 import {
-  ID,
   PlayableType,
-  CoverArtSizes,
   SquareSizes,
+  ID,
+  CoverArtSizes,
   Playable,
-  User,
-  NestedNonNullable
-} from '@audius/common'
+  User
+} from '@audius/common/models'
+import { NestedNonNullable } from '@audius/common/utils'
 import { IconUser } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 

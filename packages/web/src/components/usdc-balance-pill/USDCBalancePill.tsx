@@ -1,10 +1,9 @@
+import { useUSDCBalance } from '@audius/common/hooks'
+import { Status, BNUSDC } from '@audius/common/models'
 import {
-  BNUSDC,
-  Status,
   formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  useUSDCBalance
-} from '@audius/common'
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { IconLogoCircleUSDC as LogoUSDC } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { tokenDashboardPageSelectors } from '@audius/common'
+import { tokenDashboardPageSelectors } from '@audius/common/store'
 import type {
   RenderQrcodeModalProps,
   WalletService

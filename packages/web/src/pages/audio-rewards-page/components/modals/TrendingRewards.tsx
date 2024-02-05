@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  Theme,
-  StringKeys,
+  audioRewardsPageSelectors,
   audioRewardsPageActions,
-  TrendingRewardsModalType,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  TrendingRewardsModalType
+} from '@audius/common/store'
 import { IconArrowRight as IconArrow } from '@audius/harmony'
 import { SegmentedControl, ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'

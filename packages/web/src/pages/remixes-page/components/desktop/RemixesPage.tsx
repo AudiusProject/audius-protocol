@@ -1,4 +1,5 @@
-import { Track, User, pluralize } from '@audius/common'
+import { Track, User } from '@audius/common/models'
+import { pluralize } from '@audius/common/utils'
 import { IconRemix as IconRemixes } from '@audius/harmony'
 import cn from 'classnames'
 

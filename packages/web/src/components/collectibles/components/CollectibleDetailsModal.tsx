@@ -7,17 +7,15 @@ import {
   useState
 } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import {
-  Chain,
-  Collectible,
-  CollectibleMediaType,
-  formatDateWithTimezoneOffset,
   accountSelectors,
   badgeTiers,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions,
-  useSelectTierInfo
-} from '@audius/common'
+  collectibleDetailsUIActions
+} from '@audius/common/store'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,

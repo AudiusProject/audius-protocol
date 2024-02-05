@@ -1,16 +1,18 @@
 import { useCallback, useState } from 'react'
 
 import {
-  DownloadQuality,
-  ModalSource,
-  cacheTracksSelectors,
   useCurrentStems,
-  useDownloadableContentAccess,
+  useDownloadableContentAccess
+} from '@audius/common/hooks'
+import { ModalSource, DownloadQuality } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import {
+  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  tracksSocialActions as socialTracksActions,
-  useWaitForDownloadModal
-} from '@audius/common'
-import type { ID, CommonState } from '@audius/common'
+  useWaitForDownloadModal,
+  tracksSocialActions as socialTracksActions
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'

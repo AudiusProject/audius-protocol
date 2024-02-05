@@ -1,4 +1,4 @@
-import { imageBlank } from '@audius/common'
+import { imageBlank } from '@audius/common/assets'
 import {
   Genre,
   HashId,

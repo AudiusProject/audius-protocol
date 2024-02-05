@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { Name, TimeRange, trendingPageLineupActions } from '@audius/common'
+import { Name, TimeRange } from '@audius/common/models'
+import { trendingPageLineupActions } from '@audius/common/store'
 import {
   IconAllTime,
   IconCalendarDay as IconDay,

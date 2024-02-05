@@ -1,6 +1,6 @@
 import { ComponentType, SVGProps } from 'react'
 
-import { ExploreCollectionsVariant } from '@audius/common'
+import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   IconTurntable as IconExploreTopAlbums,
   IconPlaylists as IconExploreTopPlaylists,

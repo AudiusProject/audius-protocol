@@ -3,7 +3,7 @@ import { useEffect, useContext } from 'react'
 import {
   favoritesUserListSelectors,
   FAVORITES_USER_LIST_TAG as USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'

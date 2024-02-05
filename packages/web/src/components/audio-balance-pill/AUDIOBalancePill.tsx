@@ -1,12 +1,11 @@
 import { cloneElement } from 'react'
 
 import {
-  accountSelectors,
-  formatWei,
-  isNullOrUndefined,
   useSelectTierInfo,
   useTotalBalanceWithFallback
-} from '@audius/common'
+} from '@audius/common/hooks'
+import { accountSelectors } from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import { IconTokenNoTier } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'

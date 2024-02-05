@@ -1,20 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { OS, Theme, ID, ProfilePictureSizes, Name } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  ID,
-  ProfilePictureSizes,
-  OS,
-  Theme,
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
+  settingsPageSelectors,
   BrowserNotificationSetting,
   EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
   TikTokProfile,
-  FeatureFlags,
-  removeNullable,
-  settingsPageSelectors
-} from '@audius/common'
+  Notifications
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import {
   IconAppearance,
   IconDesktop,
@@ -31,6 +28,7 @@ import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
@@ -44,7 +42,11 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+import {
+  PRIVACY_POLICY,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  TERMS_OF_SERVICE
+} from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -109,7 +111,8 @@ const messages = {
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
   changePasswordButtonText: 'Change Password',
-  desktopAppButtonText: 'Get The App'
+  desktopAppButtonText: 'Get The App',
+  showPrivateKey: 'Show Private Key (Advanced)'
 }
 
 export type SettingsPageProps = {
@@ -250,6 +253,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const openAiAttributionSettingsModal = useCallback(() => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
+
+  const record = useRecord()
+  const recordExportPrivateKeyLinkClicked = useCallback(() => {
+    record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { handle, userId }))
+  }, [record, handle, userId])
 
   const appearanceOptions = useMemo(() => {
     const options = [
@@ -464,6 +472,13 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.privacy}
           </Link>
         </span>
+        <Link
+          className={cn(styles.link, styles.showPrivateKey)}
+          to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+          onClick={recordExportPrivateKeyLinkClicked}
+        >
+          {messages.showPrivateKey}
+        </Link>
       </div>
       <Modal
         title={

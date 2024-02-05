@@ -1,9 +1,9 @@
 import { useContext, useEffect } from 'react'
 
 import {
-  audioRewardsPageActions,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  audioRewardsPageSelectors,
+  audioRewardsPageActions
+} from '@audius/common/store'
 import { IconCaretRight } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 

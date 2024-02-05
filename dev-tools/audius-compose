@@ -23,7 +23,8 @@ audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
 audius-protocol-poa-ganache-1 \
 audius-protocol-pedalboard \
-audius-protocol-anti-abuse-oracle-1
+audius-protocol-anti-abuse-oracle-1 \
+ddex-mongo
 """
 
 
@@ -447,6 +448,7 @@ def load_env(protocol_dir, service, environment):
     help="Bring up the pedalboard containers",
 )
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
+@click.option("--ddex", is_flag=True, help="Bring up ddex containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -466,6 +468,7 @@ def up(
     notifs,
     pedalboard,
     comms,
+    ddex,
     args,
     prod,
     services,
@@ -498,6 +501,7 @@ def up(
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=pedalboard"] if pedalboard else []),
                 *(["--profile=comms"] if comms else []),
+                *(["--profile=ddex"] if ddex else []),
                 *(["--profile=storage"]),
                 *(["--profile=libs"]),
                 *(["--profile=solana"]),

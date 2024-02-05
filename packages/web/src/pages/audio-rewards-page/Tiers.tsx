@@ -1,15 +1,15 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { BadgeTier } from '@audius/common/models'
 import {
-  BadgeTier,
-  Nullable,
   accountSelectors,
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
-  musicConfettiActions,
-  useSelectTierInfo
-} from '@audius/common'
+  musicConfettiActions
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
   IconTokenBronze,

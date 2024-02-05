@@ -2,10 +2,10 @@ import { ReactNode } from 'react'
 
 import {
   ChallengeRewardID,
-  StringKeys,
-  audioRewardsPageActions,
   OptimisticUserChallenge
-} from '@audius/common'
+} from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
+import { audioRewardsPageActions } from '@audius/common/store'
 import { IconArrowRight } from '@audius/harmony'
 import { ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'

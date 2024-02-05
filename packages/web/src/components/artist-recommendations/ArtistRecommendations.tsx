@@ -1,18 +1,20 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
 import {
-  ID,
-  FollowSource,
   Name,
-  ProfilePictureSizes,
+  FollowSource,
   SquareSizes,
-  User,
+  ID,
+  ProfilePictureSizes,
+  User
+} from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  usersSocialActions as socialActions,
   relatedArtistsUISelectors,
   relatedArtistsUIActions,
-  usersSocialActions as socialActions,
-  cacheUsersSelectors,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
 import { IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'

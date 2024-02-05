@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
-import { FeatureFlags, ID } from '@audius/common'
+import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   IconMessageBlock,
   IconMessageUnblock,

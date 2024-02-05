@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import {
   accountSelectors,
-  Name,
   themeActions,
-  themeSelectors,
-  useSelectTierInfo
-} from '@audius/common'
+  themeSelectors
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconAppearance } from '@audius/harmony-native'

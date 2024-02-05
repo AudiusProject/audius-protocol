@@ -1,22 +1,24 @@
 import { useCallback, memo, MouseEvent } from 'react'
 
+import { useSelectTierInfo } from '@audius/common/hooks'
 import {
+  CreatePlaylistSource,
+  Status,
+  Collection,
   ID,
   UID,
-  Collection,
-  CoverPhotoSizes,
   ProfilePictureSizes,
+  CoverPhotoSizes,
   LineupState,
-  Status,
-  profilePageTracksLineupActions as tracksActions,
-  ProfileUser,
-  ProfilePageTabs,
-  profilePageFeedLineupActions as feedActions,
-  badgeTiers,
-  useSelectTierInfo,
-  CreatePlaylistSource,
   Track
-} from '@audius/common'
+} from '@audius/common/models'
+import {
+  profilePageFeedLineupActions as feedActions,
+  profilePageTracksLineupActions as tracksActions,
+  ProfilePageTabs,
+  badgeTiers,
+  ProfileUser
+} from '@audius/common/store'
 import {
   IconAlbum,
   IconCollectible as IconCollectibles,

@@ -1,4 +1,4 @@
-import { Status } from '@audius/common'
+import { Status } from '@audius/common/models'
 
 import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
 import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'

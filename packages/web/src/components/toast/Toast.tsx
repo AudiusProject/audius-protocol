@@ -1,6 +1,6 @@
 import { PureComponent } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import Tooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
 import { connect } from 'react-redux'

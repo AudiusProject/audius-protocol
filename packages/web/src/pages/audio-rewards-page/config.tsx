@@ -1,18 +1,13 @@
 import { ReactNode } from 'react'
 
-import {
-  ChallengeName,
-  ChallengeRewardID,
-  Nullable,
-  challengeRewardsConfig
-} from '@audius/common'
+import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
+import { challengeRewardsConfig, Nullable } from '@audius/common/utils'
 import {
   IconArrowRight,
   IconCheck,
   IconCloudUpload,
   IconTokenGold
 } from '@audius/harmony'
-
 import {
   profilePage,
   SETTINGS_PAGE,

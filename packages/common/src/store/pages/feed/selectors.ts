@@ -1,6 +1,6 @@
-import { getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
-import { createShallowSelector } from 'utils/selectorHelpers'
+import { getUsers } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
+import { createShallowSelector } from '~/utils/selectorHelpers'
 
 export const getSuggestedFollows = (state: CommonState) =>
   state.pages.feed.suggestedFollows

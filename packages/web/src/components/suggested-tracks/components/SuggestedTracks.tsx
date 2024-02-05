@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { ID, SquareSizes, Track, cacheUsersSelectors } from '@audius/common'
-import type { SuggestedTrack } from '@audius/common'
+import { SuggestedTrack } from '@audius/common/api'
+import { SquareSizes, ID, Track } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { IconCaretDown, IconRefresh } from '@audius/harmony'
 import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'

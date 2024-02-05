@@ -1,4 +1,4 @@
-import { AnnouncementNotification } from '@audius/common'
+import { AnnouncementNotification } from '@audius/common/store'
 import { IconClose as IconRemove } from '@audius/harmony'
 import { Modal, Scrollbar, MarkdownViewer } from '@audius/stems'
 

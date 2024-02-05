@@ -1,23 +1,27 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
-  FeatureFlags,
-  Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
-  getDogEarType,
   isContentUSDCPurchaseGated,
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
+  CommonState
+} from '@audius/common/store'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
 import {
   Box,
   Flex,

@@ -1,12 +1,12 @@
 import { Ref, forwardRef, useCallback, useContext } from 'react'
 
+import { useIsWaitingForValidation } from '@audius/common/hooks'
 import {
-  MAX_HANDLE_LENGTH,
   socialMediaMessages,
-  pickHandleErrorMessages,
-  pickHandlePageMessages as messages,
-  useIsWaitingForValidation
-} from '@audius/common'
+  pickHandlePageMessages as messages
+} from '@audius/common/messages'
+import { pickHandleErrorMessages } from '@audius/common/schemas'
+import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { TextLink, IconCheck } from '@audius/harmony'
 import { useField } from 'formik'
 

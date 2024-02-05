@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Button, IconTrash, IconError, IconCloudUpload } from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'

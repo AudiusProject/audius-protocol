@@ -27,6 +27,7 @@ class GetUSDCTransactionsCountArgs(TypedDict):
     user_id: int
     transaction_type: Optional[USDCTransactionType]
     transaction_method: Optional[USDCTransactionMethod]
+    include_system_transactions: Optional[bool]
 
 
 class GetUSDCTransactionsArgs(TypedDict):
@@ -35,8 +36,15 @@ class GetUSDCTransactionsArgs(TypedDict):
     sort_method: TransactionSortMethod
     transaction_type: Optional[USDCTransactionType]
     transaction_method: Optional[USDCTransactionMethod]
+    include_system_transactions: Optional[bool]
     limit: int
     offset: int
+
+
+USDC_SYSTEM_TRANSACTION_TYPES = [
+    USDCTransactionType.prepare_withdrawal,
+    USDCTransactionType.recover_withdrawal,
+]
 
 
 # SELECT count(*)
@@ -52,6 +60,7 @@ def _get_usdc_transactions_history_count(
     user_id = args.get("user_id")
     transaction_type = args.get("transaction_type", None)
     transaction_method = args.get("transaction_method", None)
+    include_system_transactions = args.get("include_system_transactions", False)
     query: Query = (
         session.query(USDCTransactionsHistory)
         .select_from(User)
@@ -68,6 +77,12 @@ def _get_usdc_transactions_history_count(
     if transaction_type is not None:
         query = query.filter(
             USDCTransactionsHistory.transaction_type == transaction_type
+        )
+    if not include_system_transactions:
+        query = query.filter(
+            USDCTransactionsHistory.transaction_type.notin_(
+                USDC_SYSTEM_TRANSACTION_TYPES
+            )
         )
     if transaction_method is not None:
         query = query.filter(USDCTransactionsHistory.method == transaction_method)
@@ -94,6 +109,7 @@ def _get_usdc_transactions_history(session: Session, args: GetUSDCTransactionsAr
     transaction_type = args.get("transaction_type", None)
     transaction_method = args.get("transaction_method", None)
     sort_method = args.get("sort_method")
+    include_system_transactions = args.get("include_system_transactions", False)
     sort_direction = args.get("sort_direction")
 
     query: Query = (
@@ -109,6 +125,12 @@ def _get_usdc_transactions_history(session: Session, args: GetUSDCTransactionsAr
     if transaction_type is not None:
         query = query.filter(
             USDCTransactionsHistory.transaction_type == transaction_type
+        )
+    if not include_system_transactions:
+        query = query.filter(
+            USDCTransactionsHistory.transaction_type.notin_(
+                USDC_SYSTEM_TRANSACTION_TYPES
+            )
         )
     if transaction_method is not None:
         query = query.filter(USDCTransactionsHistory.method == transaction_method)

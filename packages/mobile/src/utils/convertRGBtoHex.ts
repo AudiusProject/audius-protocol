@@ -1,4 +1,4 @@
-import type { Color } from '@audius/common'
+import type { Color } from '@audius/common/models'
 
 const componentToHex = (value: number) => {
   const hex = value.toString(16)

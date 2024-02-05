@@ -1,4 +1,4 @@
-import { profilePageSelectors, tippingActions } from '@audius/common'
+import { profilePageSelectors, tippingActions } from '@audius/common/store'
 import { IconTokenGold } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

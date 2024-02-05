@@ -7,15 +7,14 @@ import {
   useState
 } from 'react'
 
+import { useInstanceVar } from '@audius/common/hooks'
+import { CollectiblesMetadata, Collectible } from '@audius/common/models'
 import {
-  Collectible,
-  CollectiblesMetadata,
-  useInstanceVar,
-  ProfileUser,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions,
-  getHash
-} from '@audius/common'
+  ProfileUser
+} from '@audius/common/store'
+import { getHash } from '@audius/common/utils'
 import { IconKebabHorizontal, IconPencil, IconShare } from '@audius/harmony'
 import {
   Button,
