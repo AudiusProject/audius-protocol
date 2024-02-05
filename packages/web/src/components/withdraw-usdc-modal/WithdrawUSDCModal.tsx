@@ -82,7 +82,7 @@ const WithdrawUSDCFormSchema = (
       // If user has no balance, don't validate minimum, the form will just be disabled
       [AMOUNT]:
         userBalanceCents !== 0
-          ? amount.gte(0, messages.errors.minCashTransfer)
+          ? amount.gte(minWithdrawBalanceCents, messages.errors.minCashTransfer)
           : amount
     }),
     z.object({
