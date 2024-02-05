@@ -1,4 +1,4 @@
-import { SegmentedControl, SegmentedControlProps } from '@audius/stems'
+import { SegmentedControl, SegmentedControlProps } from '@audius/harmony'
 import { useField } from 'formik'
 import { SetRequired } from 'type-fest'
 

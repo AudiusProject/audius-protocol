@@ -12,7 +12,7 @@ import {
   Notifications
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { IconAppearance } from '@audius/harmony'
+import { IconAppearance, SegmentedControl } from '@audius/harmony'
 import {
   Modal,
   Button,
@@ -23,7 +23,6 @@ import {
   IconVerified,
   IconSettings,
   IconMessage,
-  SegmentedControl,
   IconDesktop,
   IconRobot
 } from '@audius/stems'

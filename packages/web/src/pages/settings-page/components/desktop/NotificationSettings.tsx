@@ -6,8 +6,8 @@ import {
   EmailFrequency,
   Notifications
 } from '@audius/common/store'
-import { Switch } from '@audius/harmony'
-import { Modal, SegmentedControl } from '@audius/stems'
+import { Switch, SegmentedControl } from '@audius/harmony'
+import { Modal } from '@audius/stems'
 import cn from 'classnames'
 
 import IconRemove from 'assets/img/iconRemove.svg'

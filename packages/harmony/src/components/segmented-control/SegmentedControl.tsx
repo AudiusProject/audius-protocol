@@ -1,16 +1,17 @@
 import { createRef, Fragment, useState, useRef, useEffect } from 'react'
 
+import { useSpring, animated } from '@react-spring/web'
 import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { useSpring, animated } from 'react-spring'
-import useMeasure, { RectReadOnly } from 'react-use-measure'
+import useMeasure from 'react-use-measure'
 
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
 /**
- * @deprecated use @audius/harmony SegmentedControl instead
+ * Tags are used to help label music for sorting or searching later. Tags are used in inputs during the upload process and appear later on the artist’s profile page.
+ * Tags leverage our scale tokens on hover and press.
+ * Active tags can only have the `<plus>` icon and inactive tags can only have the `<close>` icon
  */
 export const SegmentedControl = <T extends string>(
   props: SegmentedControlProps<T>
@@ -20,7 +21,6 @@ export const SegmentedControl = <T extends string>(
   )
   const [selected, setSelected] = useState(props.options[0].key)
 
-  const lastBounds = useRef<RectReadOnly>()
   const selectedOption = props.selected || selected
 
   const onSetSelected = (option: T) => {
@@ -29,7 +29,7 @@ export const SegmentedControl = <T extends string>(
     setSelected(option)
   }
 
-  const [animatedProps, setAnimatedProps] = useSpring(() => ({
+  const [tabProps, tabApi] = useSpring(() => ({
     to: { left: '0px', width: '0px' }
   }))
 
@@ -57,20 +57,17 @@ export const SegmentedControl = <T extends string>(
       selectedRefIdx
     ]?.current ?? { clientWidth: 0, offsetLeft: 0 }
 
-    setAnimatedProps({
-      to: { left: `${left}px`, width: `${width}px` },
-      immediate: bounds !== lastBounds.current // Don't animate on moves/resizes
+    tabApi.start({
+      to: { left: `${left}px`, width: `${width}px` }
     })
-    lastBounds.current = bounds
   }, [
     props.options,
     selectedOption,
     props.selected,
-    setAnimatedProps,
+    tabApi,
     selected,
     optionRefs,
     bounds,
-    // Additional deps
     forceRefresh
   ])
 
@@ -85,7 +82,7 @@ export const SegmentedControl = <T extends string>(
       aria-label={props.label}
       aria-labelledby={props['aria-labelledby']}
     >
-      <animated.div className={styles.tabBackground} style={animatedProps} />
+      <animated.div className={styles.tabBackground} style={tabProps} />
       {props.options.map((option, idx) => {
         return (
           <Fragment key={option.key}>

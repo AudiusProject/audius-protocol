@@ -16,7 +16,7 @@ import {
   Notifications,
   PushNotifications
 } from '@audius/common/store'
-import { SegmentedControl } from '@audius/stems'
+import { SegmentedControl } from '@audius/harmony'
 import cn from 'classnames'
 
 import horizontalLogo from 'assets/img/settingsPageLogo.png'

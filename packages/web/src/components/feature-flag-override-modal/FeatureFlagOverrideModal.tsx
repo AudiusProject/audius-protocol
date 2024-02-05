@@ -6,13 +6,8 @@ import {
 } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  SegmentedControl
-} from '@audius/stems'
+import { SegmentedControl } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
