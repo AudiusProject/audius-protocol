@@ -8,7 +8,7 @@ const messages = {
   more: 'More genres'
 }
 
-const initialGenres = [messages.all, 'Electronic', 'Hip-Hop/Rap', 'Alternative']
+const initialGenres = ['Electronic', 'Hip-Hop/Rap', 'Alternative']
 
 type TrendingGenreFiltersProps = {
   currentGenre: string | null
@@ -62,6 +62,13 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
 
   return (
     <Flex gap='s' role='radiogroup' onChange={handleChange}>
+      <SelectablePill
+        type='radio'
+        label={messages.all}
+        value={messages.all}
+        size='large'
+        isSelected={currentGenre === null}
+      />
       {genres.map((genre) => (
         <SelectablePill
           key={genre}
@@ -69,11 +76,7 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
           label={getCanonicalName(genre)}
           value={genre}
           size='large'
-          isSelected={
-            currentGenre === null
-              ? genre === messages.all
-              : genre === currentGenre
-          }
+          isSelected={genre === currentGenre}
         />
       ))}
       <SelectablePill
