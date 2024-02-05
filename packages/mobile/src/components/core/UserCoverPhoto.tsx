@@ -17,8 +17,8 @@ export const UserCoverPhoto = (props: UserCoverPhotoProps) => {
 
   return (
     <CoverPhoto
-      coverPhoto={shouldBlur ? undefined : (source as Image)}
-      profilePicture={shouldBlur ? (source as Image) : undefined}
+      coverPhoto={shouldBlur ? undefined : source}
+      profilePicture={shouldBlur ? source : undefined}
       onError={handleError}
       {...other}
     />

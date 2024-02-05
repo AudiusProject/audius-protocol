@@ -10,7 +10,7 @@ import {
 import type { ImageFieldValue } from 'audius-client/src/pages/sign-up-page/components/ImageField'
 import { isEmpty } from 'lodash'
 import { Pressable, Dimensions } from 'react-native'
-import type { ImageURISource } from 'react-native'
+import type { ImageSourcePropType } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -179,7 +179,9 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
         accessibilityLabel='Profile Picture'
         size='xl'
         variant='strong'
-        source={(profilePicture?.file as ImageURISource) ?? { uri: undefined }}
+        source={
+          (profilePicture?.file as ImageSourcePropType) ?? { uri: undefined }
+        }
       >
         {onSelectProfilePicture && !profilePicture ? (
           <IconButton

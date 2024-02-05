@@ -4,15 +4,21 @@ import type { Image } from '@audius/common/store'
 import type { CornerRadiusOptions } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { BlurView } from '@react-native-community/blur'
-import type { ImageBackgroundProps, ImageStyle, StyleProp } from 'react-native'
+import { isEmpty } from 'lodash'
+import type {
+  ImageBackgroundProps,
+  ImageSourcePropType,
+  ImageStyle,
+  StyleProp
+} from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { useTheme } from '../../foundations/theme'
 
 export type CoverPhotoProps = {
-  profilePicture?: Image | null | undefined
-  coverPhoto?: Image | null | undefined
+  profilePicture?: Image | ImageSourcePropType | null | undefined
+  coverPhoto?: Image | ImageSourcePropType | null | undefined
   style?: StyleProp<ImageStyle>
   children?: ReactNode
   topCornerRadius?: CornerRadiusOptions
@@ -43,22 +49,21 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
 
   const fullHeightStyle = css({ height: '100%' })
 
-  // Check for using the profile image if the cover photo isnt usable
-  const usingProfilePicture = !coverPhoto?.url
-
   const getSource = () => {
     // Having .url means its a useable image source
-    if (coverPhoto?.url) {
-      return coverPhoto
+    if (coverPhoto && !isEmpty(coverPhoto)) {
+      return { source: coverPhoto }
     }
-    if (profilePicture?.url) {
-      return profilePicture
+    if (profilePicture && !isEmpty(profilePicture)) {
+      return { source: profilePicture, usingProfilePicture: true }
     }
-    return { uri: undefined }
+    return { source: { uri: undefined } }
   }
 
+  const { source, usingProfilePicture } = getSource()
+
   return (
-    <ImageBackground source={getSource()} style={[rootStyle, style]} {...other}>
+    <ImageBackground source={source} style={[rootStyle, style]} {...other}>
       {!profilePicture && !coverPhoto ? (
         <LinearGradient
           colors={['rgba(0, 0, 0, 0.20)', 'rgba(0, 0, 0, 0.00)']}
