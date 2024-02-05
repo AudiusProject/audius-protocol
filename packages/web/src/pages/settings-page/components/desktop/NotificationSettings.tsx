@@ -6,11 +6,11 @@ import {
   EmailFrequency,
   Notifications
 } from '@audius/common/store'
+import { Switch } from '@audius/harmony'
 import { Modal, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
 import IconRemove from 'assets/img/iconRemove.svg'
-import Switch from 'components/switch/Switch'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
@@ -49,7 +49,7 @@ const ToggleNotification = ({
     >
       <div>{text}</div>
       <div>
-        <Switch isOn={isOn} handleToggle={handleToggle} />
+        <Switch checked={isOn} onChange={handleToggle} />
       </div>
     </div>
   )

@@ -11,8 +11,7 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import { Button, IconQuestionCircle } from '@audius/harmony'
-import { Switch } from '@audius/stems'
+import { Button, IconQuestionCircle, Switch } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 

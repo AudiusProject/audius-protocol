@@ -17,7 +17,8 @@ import {
   Button,
   PlainButton,
   IconAudiusLogoHorizontal,
-  IconAudiusLogoHorizontalColor
+  IconAudiusLogoHorizontalColor,
+  Switch
 } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -26,7 +27,6 @@ import { Link } from 'react-router-dom'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
-import Switch from 'components/switch/Switch'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
 import { SETTINGS_PAGE, TRENDING_PAGE } from 'utils/route'
@@ -301,7 +301,7 @@ const AgreeAndContinue = () => {
         {messages.agree}
       </Text>
       <Flex alignItems='flex-start' gap='xl'>
-        <Switch isOn={agreed} handleToggle={() => setAgreed(!agreed)} />
+        <Switch checked={agreed} onChange={() => setAgreed(!agreed)} />
         <Flex direction='column' gap='s'>
           {bulletPoints.map((bulletPoint, i) => (
             <Text

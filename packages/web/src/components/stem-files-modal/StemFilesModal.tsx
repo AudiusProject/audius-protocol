@@ -7,7 +7,7 @@ import {
   Download
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Flex, Box, Text as HarmonyText } from '@audius/harmony'
+import { Flex, Box, Text as HarmonyText, Switch } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -20,7 +20,6 @@ import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
-import Switch from 'components/switch/Switch'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
@@ -285,8 +284,8 @@ const DownloadSection = ({
       <div className={styles.downloadSetting}>
         <div className={styles.label}>{messages.allowDownloads}</div>
         <Switch
-          isOn={downloadSettings?.is_downloadable ?? false}
-          handleToggle={toggleIsDownloadable}
+          checked={downloadSettings?.is_downloadable ?? false}
+          onChange={toggleIsDownloadable}
         />
       </div>
       <div className={styles.downloadSetting}>
@@ -294,8 +293,8 @@ const DownloadSection = ({
           <>
             <div className={styles.label}>{messages.provideLosslessFiles}</div>
             <Switch
-              isOn={isOriginalAvailable}
-              handleToggle={toggleIsOriginalAvailable}
+              checked={isOriginalAvailable}
+              onChange={toggleIsOriginalAvailable}
             />
           </>
         ) : (
@@ -304,8 +303,8 @@ const DownloadSection = ({
               {messages.requireFollowToDownload}
             </div>
             <Switch
-              isOn={downloadSettings?.requires_follow ?? false}
-              handleToggle={toggleRequiresFollow}
+              checked={downloadSettings?.requires_follow ?? false}
+              onChange={toggleRequiresFollow}
             />
           </>
         )}

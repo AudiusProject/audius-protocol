@@ -1,22 +1,9 @@
 import { CSSObject, useTheme } from '@emotion/react'
-import styled from '@emotion/styled'
 
+import { HiddenInput } from 'components/common/HiddenInput'
 import { Text } from 'components/text'
 
 import type { SelectablePillProps } from './types'
-
-const InputRoot = styled.input({
-  cursor: 'inherit',
-  position: 'absolute',
-  opacity: 0,
-  width: '100%',
-  height: '100%',
-  top: 0,
-  left: 0,
-  margin: 0,
-  padding: 0,
-  zIndex: 1
-})
 
 export const SelectablePill = (props: SelectablePillProps) => {
   const {
@@ -114,7 +101,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
       return (
         <label css={rootCss}>
           {pillContent}
-          <InputRoot {...rest} checked={checked ?? isSelected} />
+          <HiddenInput {...rest} checked={checked ?? isSelected} />
         </label>
       )
     }

@@ -10,6 +10,7 @@ import {
   User
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { Switch } from '@audius/harmony'
 import {
   Modal,
   Button,
@@ -25,7 +26,6 @@ import IconRemix from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
-import Switch from 'components/switch/Switch'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { fullTrackPage } from 'utils/route'
@@ -206,8 +206,8 @@ const RemixSettingsModal = ({
             {messages.markAsRemix}
           </span>
           <Switch
-            isOn={isRemix}
-            handleToggle={(e) => {
+            checked={isRemix}
+            onChange={() => {
               setIsRemix(!isRemix)
               if (isRemix) {
                 onChangeField('remix_of', null)
@@ -215,7 +215,7 @@ const RemixSettingsModal = ({
                 setUrl(null)
               }
             }}
-            isDisabled={isStreamGated}
+            disabled={isStreamGated}
           />
         </div>
 
@@ -253,10 +253,9 @@ const RemixSettingsModal = ({
             {messages.hideOtherRemixes}
           </span>
           <Switch
-            isOn={!!hideRemixes || isHideRemixesDisabled}
-            handleToggle={() => onToggleHideRemixes?.()}
-            isDisabled={isHideRemixesDisabled}
-            allowCheckedWhileDisabled
+            checked={!!hideRemixes || isHideRemixesDisabled}
+            onChange={() => onToggleHideRemixes?.()}
+            disabled={isHideRemixesDisabled}
           />
         </div>
         <div
