@@ -7,7 +7,6 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from 'models/USDCTransactions'
-import { getRootSolanaAccount } from 'services/audius-backend/solana'
 import { Nullable } from 'utils/typeUtils'
 
 import { Id } from './utils'
@@ -25,27 +24,15 @@ type GetUSDCTransactionListArgs = {
 /**
  * Parser to reformat transactions as they come back from the API.
  * @param transaction the transaction to parse
- * @param rootSolanaAccount? Optionally a root solana account can be passed
- *  to reformat the metadata field to include specific contextual information.
- *  In the case of withdrawals, this is useful in recognizing a "self-send",
- *  which is a cash transfer out.
  */
 const parseTransaction = ({
-  transaction,
-  rootSolanaAccount
+  transaction
 }: {
   transaction: full.TransactionDetails
-  rootSolanaAccount?: string
 }): USDCTransactionDetails => {
-  const { change, balance, transactionType, method, metadata, ...rest } =
-    transaction
+  const { change, balance, transactionType, method, ...rest } = transaction
   return {
     ...rest,
-    metadata: !rootSolanaAccount
-      ? metadata
-      : rootSolanaAccount === metadata.toString()
-      ? 'Cash'
-      : metadata,
     transactionType: transactionType as USDCTransactionType,
     method: method as USDCTransactionMethod,
     change: change as StringUSDC,
@@ -149,18 +136,7 @@ const userApi = createApi({
           encodedDataSignature
         })
 
-        let rootSolanaAccount: string
-        if (
-          type === full.GetUSDCTransactionsTypeEnum.Transfer &&
-          method === full.GetUSDCTransactionCountMethodEnum.Send
-        ) {
-          rootSolanaAccount = (
-            await getRootSolanaAccount(context.audiusBackend)
-          ).publicKey.toString()
-        }
-        return data.map((transaction) =>
-          parseTransaction({ transaction, rootSolanaAccount })
-        )
+        return data.map((transaction) => parseTransaction({ transaction }))
       },
       options: { retry: true }
     },
@@ -201,3 +177,4 @@ export const {
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
 export const userApiActions = userApi.actions
+export const userApiUtils = userApi.util

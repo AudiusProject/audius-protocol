@@ -27,3 +27,7 @@ export const getCoinflowState = (state: CommonState) => {
 export const getWithdrawTransaction = (state: CommonState) => {
   return state.withdrawUSDC.withdrawTransaction
 }
+
+export const getLastCompletedTransactionSignature = (state: CommonState) => {
+  return state.withdrawUSDC.lastCompletedTransactionSignature
+}

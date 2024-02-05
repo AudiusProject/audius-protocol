@@ -1,7 +1,8 @@
 import {
   formatUSDCWeiToUSDString,
   useUSDCTransactionDetailsModal,
-  makeSolanaTransactionLink
+  makeSolanaTransactionLink,
+  USDCTransactionType
 } from '@audius/common'
 import { Button } from '@audius/harmony'
 import {
@@ -77,20 +78,24 @@ export const USDCTransactionDetailsModal = () => {
           label={messages.amountSent}
           value={`$${formatUSDCWeiToUSDString(transactionDetails.change)}`}
         />
-        <DetailSection
-          label={
-            <ExternalLink
-              variant='inherit'
-              to={makeSolanaTransactionLink(transactionDetails.signature)}
-            >
-              <span className={styles.transactionLink}>
-                {messages.destinationWallet}
-                <Icon icon={IconExternalLink} />
-              </span>
-            </ExternalLink>
-          }
-          value={`${transactionDetails.metadata ?? '-'}`}
-        />
+        {/* Skip the destination wallet entry for withdrawals to cash */}
+        {transactionDetails.transactionType !==
+        USDCTransactionType.WITHDRAWAL ? (
+          <DetailSection
+            label={
+              <ExternalLink
+                variant='inherit'
+                to={makeSolanaTransactionLink(transactionDetails.signature)}
+              >
+                <span className={styles.transactionLink}>
+                  {messages.destinationWallet}
+                  <Icon icon={IconExternalLink} />
+                </span>
+              </ExternalLink>
+            }
+            value={`${transactionDetails.metadata ?? '-'}`}
+          />
+        ) : null}
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button className={styles.button} onClick={onClose}>

@@ -47,6 +47,9 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
         >
       ) => void
     ) => ThunkAction<any, any, any, any>
+    reset: <EndpointName extends keyof EndpointDefinitions>(
+      endpointName: EndpointName
+    ) => ThunkAction<any, any, any, any>
   }
   /**
    * Allows for pre-fetching of related data into the cache. Does not return the data.

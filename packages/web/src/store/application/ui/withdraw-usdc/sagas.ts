@@ -368,7 +368,11 @@ function* doWithdrawUSDCCoinflow({
     })
 
     if (result.succeeded) {
-      yield* put(withdrawUSDCSucceeded({}))
+      yield* put(
+        withdrawUSDCSucceeded({
+          transaction: result.succeeded.payload.transaction
+        })
+      )
       yield* put(
         setWithdrawUSDCModalData({
           page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL

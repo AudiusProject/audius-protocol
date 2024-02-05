@@ -111,7 +111,14 @@ export const createApi = <
         if (updateAction) {
           dispatch(updateAction({ fetchArgs, nonNormalizedData: newState }))
         }
+      },
+    reset: (endpointName) => (dispatch: Dispatch) => {
+      const resetAction =
+        slice.actions[`reset${capitalize(endpointName as string)}`]
+      if (resetAction) {
+        dispatch(resetAction())
       }
+    }
   }
 
   return api
