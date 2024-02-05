@@ -71,7 +71,10 @@ export const DownloadRow = ({
         </Flex>
       </Flex>
       {hideDownload ? null : (
-        <PlainButton onPress={() => onDownload({ trackIds: [trackId] })}>
+        <PlainButton
+          hitSlop={{ top: 12, left: 8, right: 8, bottom: 12 }}
+          onPress={() => onDownload({ trackIds: [trackId] })}
+        >
           <Box ph='s' pv='m'>
             <IconReceive color='subdued' size='s' />
           </Box>
