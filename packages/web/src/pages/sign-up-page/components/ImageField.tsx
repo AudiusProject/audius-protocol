@@ -1,6 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 
 import { finishProfilePageMessages as messages } from '@audius/common/messages'
+import { Image } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -16,10 +17,7 @@ import styles from './ImageField.module.css'
 
 const allowedImages = ALLOWED_IMAGE_FILE_TYPES.join(', ')
 
-export type ImageFieldValue = Nullable<{
-  file: File
-  url: string
-}>
+export type ImageFieldValue = Nullable<Image>
 
 type ImageFieldProps = {
   name: string

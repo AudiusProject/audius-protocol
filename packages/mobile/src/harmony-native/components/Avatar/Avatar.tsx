@@ -12,6 +12,7 @@ import type { FastImageProps } from '../FastImage/FastImage'
 import { FastImage } from '../FastImage/FastImage'
 
 type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
+  // Renamed priority prop to imagePriority
   Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
