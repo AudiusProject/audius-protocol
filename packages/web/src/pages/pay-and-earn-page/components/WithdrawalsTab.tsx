@@ -4,7 +4,9 @@ import {
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   Id,
-  userApiFetch
+  userApiFetch,
+  userApiActions,
+  userApiUtils
 } from '@audius/common/api'
 import {
   AudiusQueryContext,
@@ -48,6 +50,7 @@ import {
   WithdrawalsTableSortDirection,
   WithdrawalsTableSortMethod
 } from './WithdrawalsTable'
+import { useDispatch } from 'react-redux'
 
 const { getUserId } = accountSelectors
 
@@ -175,6 +178,7 @@ const useWithdrawalTransactionPoller = () => {
 
 export const useWithdrawals = () => {
   const userId = useSelector(getUserId)
+  const dispatch = useDispatch()
   const lastCompletedTransaction = useSelector(
     withdrawUSDCSelectors.getLastCompletedTransactionSignature
   )
@@ -191,7 +195,8 @@ export const useWithdrawals = () => {
     status: dataStatus,
     data: transactions,
     hasMore,
-    loadMore
+    loadMore,
+    forceRefresh
   } = useAllPaginatedQuery(
     useGetUSDCTransactions,
     {
@@ -224,10 +229,14 @@ export const useWithdrawals = () => {
         onSuccess: () => {
           setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
           setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
+          // TODO: Figure out why types don't work
+          dispatch(userApiUtils.reset('getUSDCTransactions') as any)
+          dispatch(userApiUtils.reset('getUSDCTransactionsCount') as any)
+          forceRefresh()
         }
       })
     }
-  }, [lastCompletedTransaction, userId, beginPolling])
+  }, [lastCompletedTransaction, userId, beginPolling, forceRefresh, dispatch])
 
   const onSort = useCallback(
     (

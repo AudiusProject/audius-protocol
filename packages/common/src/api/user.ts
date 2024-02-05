@@ -201,3 +201,4 @@ export const {
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
 export const userApiActions = userApi.actions
+export const userApiUtils = userApi.util

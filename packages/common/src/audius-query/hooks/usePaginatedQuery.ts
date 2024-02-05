@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { isEqual } from 'lodash'
 import { useCustomCompareEffect } from 'react-use'
@@ -43,7 +43,7 @@ export const usePaginatedQuery = <
       result.data?.length === pageSize
   }
 }
-// TODO: Add forceRefresh support here
+
 export const useAllPaginatedQuery = <
   Data,
   ArgsType extends { limit: number; offset: number }
@@ -57,19 +57,18 @@ export const useAllPaginatedQuery = <
 ) => {
   const [loadingMore, setLoadingMore] = useState(false)
   const { pageSize, ...queryHookOptions } = options
+  const [forceLoad, setForceLoad] = useState(false)
   const [page, setPage] = useState(0)
   const [status, setStatus] = useState<Status>(Status.IDLE)
   const [allData, setAllData] = useState<Data[]>([])
 
-  useCustomCompareEffect(
-    () => {
-      setAllData([])
-      setPage(0)
-      setLoadingMore(false)
-    },
-    [baseArgs],
-    isEqual
-  )
+  const reset = useCallback(() => {
+    setAllData([])
+    setPage(0)
+    setLoadingMore(false)
+  }, [])
+
+  useCustomCompareEffect(reset, [baseArgs], isEqual)
 
   const args = {
     ...baseArgs,
@@ -77,6 +76,13 @@ export const useAllPaginatedQuery = <
     offset: page * pageSize
   } as ArgsType
   const result = useQueryHook(args, queryHookOptions)
+
+  useEffect(() => {
+    if (forceLoad) {
+      result.forceRefresh()
+      setForceLoad(false)
+    }
+  }, [result.forceRefresh, forceLoad])
 
   useCustomCompareEffect(
     () => {
@@ -113,12 +119,18 @@ export const useAllPaginatedQuery = <
     setLoadingMore(true)
     setPage(page + 1)
   }, [stillLoadingCurrentPage, page])
+
+  const forceRefresh = useCallback(() => {
+    reset()
+  }, [])
+
   return {
     ...result,
     // TODO: add another status for reloading
     status: allData?.length > 0 ? Status.SUCCESS : status,
     data: allData,
     isLoadingMore: stillLoadingCurrentPage,
+    forceRefresh,
     loadMore,
     hasMore
   }
