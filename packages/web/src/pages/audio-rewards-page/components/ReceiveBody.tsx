@@ -4,7 +4,8 @@ import {
   FeatureFlags,
   useCreateUserbankIfNeeded
 } from '@audius/common'
-import { Button, ButtonType, LogoSol } from '@audius/stems'
+import { IconSolana as LogoSol } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { useLocalStorage } from 'hooks/useLocalStorage'

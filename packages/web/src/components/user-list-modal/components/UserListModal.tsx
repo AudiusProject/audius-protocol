@@ -25,15 +25,14 @@ import {
   ID
 } from '@audius/common'
 import {
-  Modal,
-  IconTrophy,
-  IconFollowing,
-  Scrollbar,
+  IconTipping as IconTip,
   IconUser,
-  IconUserGroup
-} from '@audius/stems'
+  IconUserGroup,
+  IconTrophy,
+  IconUserFollowing as IconFollowing
+} from '@audius/harmony'
+import { Modal, Scrollbar } from '@audius/stems'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'
 import { UserListType } from 'store/application/ui/userListModal/types'

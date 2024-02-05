@@ -6,11 +6,11 @@ import {
   StemUpload,
   Download
 } from '@audius/common'
+import { IconRemove } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
   ButtonType,
-  IconRemove,
   Modal,
   IconButton
 } from '@audius/stems'

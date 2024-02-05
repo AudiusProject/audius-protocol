@@ -1,12 +1,14 @@
 import { ComponentType, SVGProps } from 'react'
 
 import { ExploreCollectionsVariant } from '@audius/common'
-import { IconCart } from '@audius/stems'
+import {
+  IconTurntable as IconExploreTopAlbums,
+  IconPlaylists as IconExploreTopPlaylists,
+  IconCart
+} from '@audius/harmony'
 
 import IconCassette from 'assets/img/iconCassette.svg'
 import IconExploreDJ from 'assets/img/iconExploreDJ.svg'
-import IconExploreTopAlbums from 'assets/img/iconExploreTopAlbums.svg'
-import IconExploreTopPlaylists from 'assets/img/iconExploreTopPlaylists.svg'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,

@@ -6,7 +6,7 @@ import {
   formatNumberString,
   OnRampProvider
 } from '@audius/common'
-import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
+import { IconCaretDown, IconMultiselectRemove } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { CollapsibleContent } from 'components/collapsible-content'

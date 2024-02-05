@@ -21,19 +21,17 @@ import {
   ModalSource
 } from '@audius/common'
 import {
-  Button,
-  ButtonType,
+  IconExternalLink,
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  LogoEth,
-  LogoSol
-} from '@audius/stems'
+  IconSolana as LogoSol
+} from '@audius/harmony'
+import { Button, ButtonType, LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { FollowButton } from 'components/follow-button/FollowButton'

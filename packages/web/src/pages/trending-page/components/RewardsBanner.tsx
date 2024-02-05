@@ -4,7 +4,7 @@ import {
   audioRewardsPageActions,
   TrendingRewardsModalType
 } from '@audius/common'
-import { IconArrow, IconCrown } from '@audius/stems'
+import { IconArrowRight as IconArrow, IconCrown } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 

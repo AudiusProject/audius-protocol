@@ -30,13 +30,13 @@ import {
   ModalSource,
   FeatureFlags
 } from '@audius/common'
+import { IconCaretRight as IconCaret } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import { DogEar } from 'components/dog-ear'

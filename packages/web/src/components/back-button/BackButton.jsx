@@ -1,7 +1,6 @@
+import { IconCaretLeft as IconArrow } from '@audius/harmony'
 import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
-
-import IconArrow from 'assets/img/iconCaretLeft.svg'
 
 import styles from './BackButton.module.css'
 

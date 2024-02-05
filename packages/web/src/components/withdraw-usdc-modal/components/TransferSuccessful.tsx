@@ -11,18 +11,16 @@ import {
   Name,
   WithdrawMethod
 } from '@audius/common'
-import { Button, Flex } from '@audius/harmony'
+import { Button, Flex, IconExternalLink, IconCheck } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
-  HarmonyPlainButtonType,
-  IconCheck
+  HarmonyPlainButtonType
 } from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'

@@ -23,11 +23,11 @@ import {
   gatedContentActions,
   Genre
 } from '@audius/common'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'

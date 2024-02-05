@@ -15,11 +15,10 @@ import {
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
+import { IconReceive, IconSend } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconReceive from 'assets/img/iconReceive.svg'
-import IconSend from 'assets/img/iconSend.svg'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'

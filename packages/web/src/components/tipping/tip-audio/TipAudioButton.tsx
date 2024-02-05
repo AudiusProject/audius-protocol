@@ -1,9 +1,9 @@
 import { profilePageSelectors, tippingActions } from '@audius/common'
+import { IconTokenGold } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 
@@ -29,13 +29,7 @@ export const TipAudioButton = () => {
       type={ButtonType.PRIMARY}
       text={
         <div className={styles.tipIconTextContainer}>
-          <img
-            draggable={false}
-            alt=''
-            src={IconGoldBadge as string}
-            width={24}
-            height={24}
-          />
+          <IconTokenGold size='l' />
           <span className={styles.tipText}>{messages.tipAudio}</span>
         </div>
       }

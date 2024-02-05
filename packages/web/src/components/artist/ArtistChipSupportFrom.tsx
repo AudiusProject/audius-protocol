@@ -8,9 +8,9 @@ import {
   stringWeiToBN,
   tippingSelectors
 } from '@audius/common'
+import { IconTipping as IconTip } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 
 import styles from './ArtistChip.module.css'

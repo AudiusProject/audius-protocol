@@ -1,10 +1,10 @@
-import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
 import {
+  IconAudiusLogoHorizontalColor,
+  IconTelegram,
   IconInstagram,
-  IconTwitterBird,
-  IconDiscord2,
-  IconTelegram
-} from '@audius/stems'
+  IconTwitter as IconTwitterBird,
+  IconDiscord
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import {
@@ -70,7 +70,7 @@ const socialLinks = [
   },
   {
     text: 'Discord',
-    Icon: IconDiscord2,
+    Icon: IconDiscord,
     link: AUDIUS_DISCORD_LINK
   },
   {

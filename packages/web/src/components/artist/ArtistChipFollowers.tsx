@@ -1,7 +1,7 @@
 import { ID, formatCount } from '@audius/common'
+import { IconUser } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconUser from 'assets/img/iconUser.svg'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import { isDarkMode } from 'utils/theme/theme'
 

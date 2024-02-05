@@ -12,7 +12,8 @@ import {
   IconCloudUpload,
   IconPlaylists,
   IconPlus,
-  Text
+  Text,
+  IconCloudUpload as IconUpload
 } from '@audius/harmony'
 import { PopupMenu, PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
@@ -20,7 +21,6 @@ import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import IconUpload from 'assets/img/iconUpload.svg'
 import { Tile } from 'components/tile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { track, make } from 'services/analytics'

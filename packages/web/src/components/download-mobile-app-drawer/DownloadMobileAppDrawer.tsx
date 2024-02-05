@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 
 import { MobileOS } from '@audius/common'
-import { IconAudiusLogo } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
-  IconListens,
-  IconMessage,
+  IconAudiusLogo,
   IconStars,
-  IconUpload,
-  IconSpeaker
-} from '@audius/stems'
+  IconCloudUpload as IconUpload,
+  IconSpeaker,
+  IconListens,
+  IconMessage
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import Drawer from 'components/drawer/Drawer'
 import { getMobileOS } from 'utils/clientUtil'

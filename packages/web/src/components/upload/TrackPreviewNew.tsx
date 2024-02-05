@@ -6,17 +6,23 @@ import {
   stemCategoryFriendlyNames,
   useFeatureFlag
 } from '@audius/common'
-import { Box, FilterButton, Flex, IconPenSquare } from '@audius/harmony'
-import { HarmonyPlainButton, IconTrash } from '@audius/stems'
+import {
+  Box,
+  FilterButton,
+  Flex,
+  IconPenSquare,
+  IconFileAIFF as iconFileAiff,
+  IconFileFLAC as iconFileFlac,
+  IconFileM4A as iconFileM4a,
+  IconFileMP3 as iconFileMp3,
+  IconFileOGG as iconFileOgg,
+  IconFileUnknown as iconFileUnknown,
+  IconFileWAV as iconFileWav,
+  IconTrash
+} from '@audius/harmony'
+import { HarmonyPlainButton } from '@audius/stems'
 import numeral from 'numeral'
 
-import iconFileAiff from 'assets/img/iconFileAiff.svg'
-import iconFileFlac from 'assets/img/iconFileFlac.svg'
-import iconFileM4a from 'assets/img/iconFileM4a.svg'
-import iconFileMp3 from 'assets/img/iconFileMp3.svg'
-import iconFileOgg from 'assets/img/iconFileOgg.svg'
-import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
-import iconFileWav from 'assets/img/iconFileWav.svg'
 import { Text } from 'components/typography'
 
 import { EditableLabel } from './EditableLabel'

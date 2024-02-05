@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { PopupMenu, PopupMenuProps, IconButton } from '@audius/stems'
+import { IconButton, PopupMenu, PopupMenuProps } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './PopupMenuIconButton.module.css'

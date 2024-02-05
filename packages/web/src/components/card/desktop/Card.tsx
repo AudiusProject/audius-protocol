@@ -17,9 +17,9 @@ import {
   imageBlank as placeholderArt,
   DogEarType
 } from '@audius/common'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'

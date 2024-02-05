@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { ID, Nullable } from '@audius/common'
+import { IconRobot } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
@@ -10,8 +11,7 @@ import {
   ModalHeader,
   ModalProps,
   ModalTitle,
-  Switch,
-  IconRobot
+  Switch
 } from '@audius/stems'
 import { useToggle } from 'react-use'
 

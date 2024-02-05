@@ -1,9 +1,8 @@
 import { Component } from 'react'
 
+import { IconCaretDown } from '@audius/harmony'
 import Select from 'antd/lib/select'
 import cn from 'classnames'
-
-import IconCaretDown from 'assets/img/iconCaretDown.svg'
 
 import styles from './DropdownInput.module.css'
 import { HelperText } from './HelperText'

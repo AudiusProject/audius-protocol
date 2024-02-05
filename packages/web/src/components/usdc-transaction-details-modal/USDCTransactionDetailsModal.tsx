@@ -3,9 +3,8 @@ import {
   useUSDCTransactionDetailsModal,
   makeSolanaTransactionLink
 } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { Button, IconExternalLink } from '@audius/harmony'
 import {
-  IconExternalLink,
   Modal,
   ModalContent,
   ModalFooter,

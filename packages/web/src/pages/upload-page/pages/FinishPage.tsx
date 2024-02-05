@@ -11,13 +11,12 @@ import {
   UploadType
 } from '@audius/common'
 import {
-  HarmonyPlainButton,
-  IconArrow,
+  IconArrowRight as IconArrow,
   IconError,
-  IconUpload,
-  IconValidationCheck,
-  ProgressBar
-} from '@audius/stems'
+  IconCloudUpload as IconUpload,
+  IconValidationCheck
+} from '@audius/harmony'
+import { HarmonyPlainButton, ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

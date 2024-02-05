@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
 import { User, chatActions, Name } from '@audius/common'
+import { IconMessageBlock, IconInfo } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconBlockMessages,
-  IconInfo,
   Modal,
   ModalContent,
   ModalFooter,
@@ -70,7 +69,7 @@ export const BlockUserConfirmationModal = ({
   return (
     <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle title={messages.title} icon={<IconBlockMessages />} />
+        <ModalTitle title={messages.title} icon={<IconMessageBlock />} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div>{messages.content(user, isReportAbuse)}</div>

@@ -1,7 +1,7 @@
 import { getErrorMessage } from '@audius/common'
+import { IconPhantom as phantomIconPurpleSvg } from '@audius/harmony'
 import type { IProviderOptions } from 'web3modal'
 
-import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
 import { env } from 'services/env'
 
@@ -96,7 +96,7 @@ export const createSession = async (config: Config): Promise<any> => {
     if (config.isPhantomEnabled && window?.solana?.isPhantom) {
       providerOptions['custom-phantom'] = {
         display: {
-          logo: phantomIconPurpleSvg,
+          logo: phantomIconPurpleSvg as any,
           name: 'Phantom',
           description: 'Connect Solana account'
         },

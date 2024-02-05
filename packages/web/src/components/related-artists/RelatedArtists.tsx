@@ -7,7 +7,7 @@ import {
   FeatureFlags,
   useGetRelatedArtists
 } from '@audius/common'
-import { IconUserGroup } from '@audius/stems'
+import { IconUserGroup } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'

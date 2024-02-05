@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { buyAudioSelectors, BuyAudioStage } from '@audius/common'
+import { IconTokenGold } from '@audius/harmony'
 import {
   Modal,
   ModalContentPages,
@@ -9,7 +10,6 @@ import {
 } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import IconGoldBadgeSrc from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 
 import styles from './BuyAudioModal.module.css'
@@ -22,16 +22,6 @@ const { getBuyAudioFlowStage, getBuyAudioFlowError } = buyAudioSelectors
 const messages = {
   buyAudio: 'Buy $AUDIO'
 }
-
-const IconGoldBadge = () => (
-  <img
-    draggable={false}
-    src={IconGoldBadgeSrc}
-    alt='Gold Badge Icon'
-    width={24}
-    height={24}
-  />
-)
 
 const stageToPage = (stage: BuyAudioStage) => {
   switch (stage) {
@@ -70,7 +60,10 @@ export const BuyAudioModal = () => {
         onClose={handleClose}
         showDismissButton={!inProgress || error}
       >
-        <ModalTitle title={messages.buyAudio} icon={<IconGoldBadge />} />
+        <ModalTitle
+          title={messages.buyAudio}
+          icon={<IconTokenGold size='l' className={styles.noFill} />}
+        />
       </ModalHeader>
       <ModalContentPages
         contentClassName={styles.modalContent}

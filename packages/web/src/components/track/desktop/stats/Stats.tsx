@@ -8,11 +8,10 @@ import {
   cacheUsersSelectors,
   CommonState
 } from '@audius/common'
+import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconFavorite from 'assets/img/iconHeart.svg'
-import IconRepost from 'assets/img/iconRepost.svg'
 import { Icon } from 'components/Icon'
 
 import ProfileImage from './ProfileImage'

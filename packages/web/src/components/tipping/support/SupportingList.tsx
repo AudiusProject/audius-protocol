@@ -7,10 +7,12 @@ import {
   User,
   formatCount
 } from '@audius/common'
-import { IconArrow } from '@audius/stems'
+import {
+  IconTipping as IconTip,
+  IconArrowRight as IconArrow
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import {

@@ -8,7 +8,7 @@ import {
   useAccessAndRemixSettings,
   useFeatureFlag
 } from '@audius/common'
-import { IconCart, IconStars } from '@audius/stems'
+import { IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'

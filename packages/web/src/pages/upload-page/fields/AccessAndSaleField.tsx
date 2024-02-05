@@ -25,12 +25,12 @@ import {
 import {
   IconCart,
   IconCollectible,
-  IconHidden,
+  IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
-  IconVisibilityPublic,
-  RadioButtonGroup
-} from '@audius/stems'
+  IconVisibilityPublic
+} from '@audius/harmony'
+import { RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'

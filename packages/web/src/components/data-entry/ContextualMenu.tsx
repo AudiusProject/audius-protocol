@@ -1,9 +1,9 @@
 import { ReactNode, ReactElement, useCallback } from 'react'
 
+import { IconCaretRight } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconCaretRight,
   IconComponent,
   Modal,
   ModalContent,

@@ -4,7 +4,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import { useProfileTier } from 'hooks/wallet'
 import {
-  audioTierMapPng,
+  audioTierMapSvg,
   TierLevel,
   TierNumber
 } from 'pages/audio-rewards-page/Tiers'
@@ -26,7 +26,7 @@ const TierExplainerDrawer = () => {
     <Drawer isOpen={isOpen} onClose={onClose}>
       <div className={styles.drawer}>
         <div className={styles.top}>
-          {audioTierMapPng[tier]}
+          {audioTierMapSvg[tier]}
           <div className={styles.topText}>
             <TierNumber tier={tier} />
             <BadgeTierText

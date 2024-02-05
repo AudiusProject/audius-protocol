@@ -7,7 +7,7 @@ import {
   useGatedContentAccessMap,
   UserTrack
 } from '@audius/common'
-import { IconHidden, IconLock } from '@audius/stems'
+import { IconVisibilityHidden, IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -167,7 +167,7 @@ export const TracksTable = ({
             hideDefault={false}
           />
           {isTrackUnlisted ? (
-            <IconHidden
+            <IconVisibilityHidden
               className={cn(styles.hiddenIcon, { [styles.hidden]: active })}
             />
           ) : null}
