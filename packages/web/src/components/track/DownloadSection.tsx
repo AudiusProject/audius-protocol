@@ -273,6 +273,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
                 size={fileSizes[trackId]}
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -288,6 +289,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
             {/* Only display this row if original quality is not available,

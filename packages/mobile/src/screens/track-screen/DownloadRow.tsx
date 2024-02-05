@@ -1,6 +1,7 @@
-import type { ID, DownloadQuality } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { cacheTracksSelectors } from '@audius/common/store'
+import { getDownloadFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useSelector } from 'react-redux'
 
@@ -16,20 +17,18 @@ const messages = {
 
 type DownloadRowProps = {
   trackId: ID
-  parentTrackId?: ID
-  quality: DownloadQuality
   hideDownload?: boolean
   index: number
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
+  isOriginal: boolean
 }
 
 export const DownloadRow = ({
   trackId,
-  parentTrackId,
-  quality,
   hideDownload,
   index,
-  onDownload
+  onDownload,
+  isOriginal = true
 }: DownloadRowProps) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
@@ -64,7 +63,10 @@ export const DownloadRow = ({
             ellipsizeMode='tail'
             numberOfLines={1}
           >
-            {track?.orig_filename}
+            {getDownloadFilename({
+              filename: track?.orig_filename,
+              isOriginal
+            })}
           </Text>
         </Flex>
       </Flex>
