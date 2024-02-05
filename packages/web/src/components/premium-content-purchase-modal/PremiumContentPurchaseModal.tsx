@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -187,6 +188,7 @@ export const PremiumContentPurchaseModal = () => {
   } = usePremiumContentPurchaseModal()
   const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
     useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
+  const isUSDCEnabled = useIsUSDCEnabled()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -258,7 +260,7 @@ export const PremiumContentPurchaseModal = () => {
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
-      {isCoinflowEnabledLoaded ? (
+      {isCoinflowEnabledLoaded && isUSDCEnabled ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}
