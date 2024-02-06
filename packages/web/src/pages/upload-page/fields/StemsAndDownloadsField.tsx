@@ -48,7 +48,9 @@ import {
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
   STEMS,
-  StemsAndDownloadsFormValues
+  StemsAndDownloadsFormValues,
+  LAST_GATE_KEEPER,
+  GateKeeper
 } from './types'
 
 const { getUserId } = accountSelectors
@@ -102,7 +104,8 @@ export const StemsAndDownloadsField = ({
   ] = useTrackField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
-
+  const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
+    useTrackField<GateKeeper>(LAST_GATE_KEEPER)
   /**
    * Stream conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
@@ -131,6 +134,7 @@ export const StemsAndDownloadsField = ({
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper)
 
     let availabilityType = DownloadTrackAvailabilityType.PUBLIC
     const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
@@ -160,7 +164,8 @@ export const StemsAndDownloadsField = ({
     isDownloadGated,
     tempDownloadConditions,
     savedDownloadConditions,
-    streamConditions
+    streamConditions,
+    lastGateKeeper
   ])
 
   const handleSubmit = useCallback(
@@ -175,6 +180,12 @@ export const StemsAndDownloadsField = ({
       setStemsValue(get(values, STEMS))
       setCidValue(null)
 
+      if (isDownloadable) {
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          downloadable: 'stemsAndDownloads'
+        })
+      }
       // Note that there is some redundancy with the download fields
       // this will go away once we remove the download object from track
       // and only keep the top level fields.
@@ -201,6 +212,10 @@ export const StemsAndDownloadsField = ({
                 // @ts-ignore fully formed in saga (validated + added splits)
                 usdc_purchase: { price: Math.round(price) }
               })
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
+              })
               break
             }
             case DownloadTrackAvailabilityType.FOLLOWERS: {
@@ -213,6 +228,10 @@ export const StemsAndDownloadsField = ({
                 is_downloadable: isDownloadable,
                 requires_follow: true,
                 cid: null
+              })
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
               })
               break
             }
@@ -239,6 +258,10 @@ export const StemsAndDownloadsField = ({
             requires_follow: downloadRequiresFollow,
             cid: null
           })
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'stemsAndDownloads'
+          })
         }
       }
     },
@@ -246,6 +269,7 @@ export const StemsAndDownloadsField = ({
       isLosslessDownloadsEnabled,
       accountUserId,
       streamConditions,
+      lastGateKeeper,
       setIsDownloadable,
       setDownloadRequiresFollow,
       setisOriginalAvailable,
@@ -253,7 +277,8 @@ export const StemsAndDownloadsField = ({
       setCidValue,
       setIsDownloadGated,
       setDownloadConditions,
-      setDownloadValue
+      setDownloadValue,
+      setLastGateKeeper
     ]
   )
 
