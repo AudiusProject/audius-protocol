@@ -1,5 +1,5 @@
 import { useDownloadableContentAccess } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
+import { ID, stemCategoryFriendlyNames } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { getDownloadFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
@@ -67,7 +67,9 @@ export const DownloadRow = ({
         </Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
-            {track?.stem_of?.category ?? messages.fullTrack}
+            {track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
           </Text>
           <Text variant='body' color='subdued'>
             {getDownloadFilename({
