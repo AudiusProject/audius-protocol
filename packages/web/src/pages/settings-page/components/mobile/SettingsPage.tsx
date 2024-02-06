@@ -16,8 +16,10 @@ import {
   Notifications,
   PushNotifications
 } from '@audius/common/store'
-import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
+import {
+  SegmentedControl,
+  IconAudiusLogoHorizontalColor
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

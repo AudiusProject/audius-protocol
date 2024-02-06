@@ -25,13 +25,14 @@ import {
   UserListStoreState
 } from '@audius/common/store'
 import {
+  Scrollbar,
   IconTipping as IconTip,
   IconUser,
   IconUserGroup,
   IconTrophy,
   IconUserFollowing as IconFollowing
 } from '@audius/harmony'
-import { Modal, Scrollbar } from '@audius/stems'
+import { Modal } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'

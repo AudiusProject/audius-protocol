@@ -1,10 +1,11 @@
-import { Fragment, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import {
   Variant as CollectionVariant,
   Status,
   UserCollection,
-  User
+  User,
+  Variant
 } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import Lottie from 'react-lottie'
@@ -28,6 +29,7 @@ import PerspectiveCard, {
 } from 'components/perspective-card/PerspectiveCard'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   LET_THEM_DJ,
   TOP_ALBUMS,
@@ -143,7 +145,10 @@ const ExplorePage = ({
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
             i.variant === CollectionVariant.SMART ? i.description : i.subtitle
-          const Icon = i.icon ? i.icon : Fragment
+          const Icon =
+            i.variant === Variant.SMART
+              ? smartCollectionIcons[i.playlist_name]
+              : i.icon
           return (
             <PerspectiveCard
               key={title}
@@ -152,8 +157,9 @@ const ExplorePage = ({
               useOverlayBlendMode={
                 i.variant !== ExploreCollectionsVariant.DIRECT_LINK
               }
-              // @ts-ignore
-              backgroundIcon={<Icon />}
+              backgroundIcon={
+                <Icon height={512} width={512} color='staticWhite' />
+              }
               backgroundIconClassName={
                 title === PREMIUM_TRACKS.title
                   ? styles.premiumTracksBackgroundIcon

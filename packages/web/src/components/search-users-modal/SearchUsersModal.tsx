@@ -14,15 +14,14 @@ import {
   searchUsersModalActions,
   searchUsersModalSelectors
 } from '@audius/common/store'
-import { IconRemove, IconSearch } from '@audius/harmony'
+import { Scrollbar, IconRemove, IconSearch } from '@audius/harmony'
 import {
   Modal,
   ModalHeader,
   ModalProps,
   ModalTitle,
   IconButton,
-  ModalTitleProps,
-  Scrollbar
+  ModalTitleProps
 } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'

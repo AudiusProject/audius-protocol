@@ -9,6 +9,9 @@ import useMeasure, { RectReadOnly } from 'react-use-measure'
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
+/**
+ * @deprecated use @audius/harmony SegmentedControl instead
+ */
 export const SegmentedControl = <T extends string>(
   props: SegmentedControlProps<T>
 ) => {

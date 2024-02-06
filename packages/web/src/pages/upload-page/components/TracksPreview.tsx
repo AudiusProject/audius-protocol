@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common/store'
-import { Button, IconCaretRight } from '@audius/harmony'
-import { Scrollbar, SegmentedControl } from '@audius/stems'
+import {
+  Button,
+  SegmentedControl,
+  Scrollbar,
+  IconCaretRight
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'

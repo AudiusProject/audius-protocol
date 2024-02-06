@@ -14,6 +14,7 @@ import {
 import { removeNullable } from '@audius/common/utils'
 import {
   IconAppearance,
+  SegmentedControl,
   IconDesktop,
   IconRobot,
   IconRecoveryEmail as IconMail,
@@ -23,7 +24,7 @@ import {
   IconSettings,
   IconMessage
 } from '@audius/harmony'
-import { Modal, Button, ButtonType, SegmentedControl } from '@audius/stems'
+import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 

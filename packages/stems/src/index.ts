@@ -29,7 +29,6 @@ export {
   PillButtonProps,
   Variant as PillButtonVariant
 } from './components/PillButton'
-export { Scrollbar, ScrollbarProps } from './components/Scrollbar'
 export {
   Modal,
   ModalContent,
@@ -58,15 +57,6 @@ export {
 } from './components/PopupMenu'
 export { ProgressBar, ProgressBarProps } from './components/ProgressBar'
 export { Scrubber } from './components/Scrubber'
-export {
-  SegmentedControl,
-  SegmentedControl as TabSlider,
-  SegmentedControlProps,
-  SegmentedControlProps as TabSliderProps,
-  Option
-} from './components/SegmentedControl'
-
-export { Switch, SwitchProps } from './components/Switch'
 
 export {
   TokenValueSlider,
@@ -97,8 +87,6 @@ export {
   RadioGroupContext
 } from './components/RadioButtonGroup'
 export { RadioButton, RadioButtonProps } from './components/RadioButton'
-
-export { Tag, TagProps } from './components/Tag'
 
 export {
   MarkdownViewer,

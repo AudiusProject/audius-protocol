@@ -8,7 +8,7 @@ import {
   GENRES,
   convertGenreLabelToValue
 } from '@audius/common/utils'
-import { IconCloudDownload, IconIndent } from '@audius/harmony'
+import { Switch, IconCloudDownload, IconIndent } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -18,7 +18,6 @@ import {
   AiAttributionModal,
   AiAttributionButton
 } from 'components/ai-attribution-modal'
-// import DatePicker from 'components/data-entry/DatePicker'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
@@ -28,7 +27,6 @@ import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
 import { StemFilesModal } from 'components/stem-files-modal/StemFilesModal'
-import Switch from 'components/switch/Switch'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -239,7 +237,7 @@ const BasicForm = (props) => {
       shouldRender && (
         <div className={styles.remixSwitch}>
           <div className={styles.remixText}>{messages.thisIsARemix}</div>
-          <Switch isOn={isRemix} handleToggle={handleRemixToggle} />
+          <Switch checked={isRemix} onChange={handleRemixToggle} />
           {isRemix && (
             <div
               className={styles.remixEdit}

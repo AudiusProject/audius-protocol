@@ -1,5 +1,5 @@
 import { EmailFrequency } from '@audius/common/store'
-import { SegmentedControl } from '@audius/stems'
+import { SegmentedControl } from '@audius/harmony'
 
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'

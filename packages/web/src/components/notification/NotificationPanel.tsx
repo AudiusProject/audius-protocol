@@ -7,8 +7,11 @@ import {
   Notification as Notifications
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconNotificationOn as IconNotification } from '@audius/harmony'
-import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
+import {
+  Scrollbar,
+  IconNotificationOn as IconNotification
+} from '@audius/harmony'
+import { Popup, PopupPosition } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'

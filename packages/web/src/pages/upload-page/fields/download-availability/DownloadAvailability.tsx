@@ -18,9 +18,9 @@ import {
   Text,
   TextLink,
   IconError,
-  useTheme
+  useTheme,
+  SegmentedControl
 } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
 import { useFormikContext } from 'formik'
 
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'

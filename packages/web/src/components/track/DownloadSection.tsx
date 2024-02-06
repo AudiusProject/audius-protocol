@@ -22,9 +22,9 @@ import {
   IconReceive,
   Button,
   IconCaretDown,
-  IconLockUnlocked
+  IconLockUnlocked,
+  SegmentedControl
 } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

@@ -1,6 +1,6 @@
 import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 
-import { Switch } from '@audius/stems'
+import { Switch } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Text } from 'components/typography'
@@ -17,10 +17,8 @@ type ToggleFieldProps = PropsWithChildren & {
 export const SwitchRowField = (props: ToggleFieldProps) => {
   const { name, header, description, inverted, children, ...inputOverrides } =
     props
-  const [field] = useField({
-    name,
-    type: 'checkbox'
-  })
+
+  const [field] = useField({ name, type: 'checkbox' })
 
   const onChange = inverted
     ? (e: ChangeEvent<HTMLInputElement>) => {

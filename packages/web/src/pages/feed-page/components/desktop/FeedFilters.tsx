@@ -39,6 +39,7 @@ export const FeedFilters = (props: FeedFiltersProps) => {
     <Flex gap='s' role='radiogroup' onChange={handleChange}>
       {filters.map((filter) => (
         <SelectablePill
+          name='feed-filter'
           key={filter}
           type='radio'
           value={filter}

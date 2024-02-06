@@ -11,6 +11,7 @@ export type BaseFlexProps = {
   columnGap?: SpacingOptions
   justifyContent?: CSSProperties['justifyContent']
   wrap?: CSSProperties['flexWrap']
+  inline?: boolean
 }
 
 export type FlexProps = BaseFlexProps & BoxProps

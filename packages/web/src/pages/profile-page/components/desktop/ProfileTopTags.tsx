@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { profilePageActions, profilePageSelectors } from '@audius/common/store'
-import { IconTrending } from '@audius/harmony'
+import { Flex, Paper, IconTrending } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SearchTag } from 'components/search/SearchTag'
@@ -50,16 +50,15 @@ export const ProfileTopTags = () => {
           <span className={styles.tagsTitleText}>{messages.topTags}</span>
           <span className={styles.tagsLine} />
         </div>
-        <div className={styles.tagsContent}>
-          {topTags.map((tag) => (
-            <SearchTag
-              key={tag}
-              className={styles.tag}
-              tag={tag}
-              source='profile page'
-            />
-          ))}
-        </div>
+        <Flex direction='column' gap='s'>
+          <Paper p='s' gap='s' wrap='wrap'>
+            {topTags.map((tag) => (
+              <SearchTag key={tag} source='profile page'>
+                {tag}
+              </SearchTag>
+            ))}
+          </Paper>
+        </Flex>
       </div>
     )
   }

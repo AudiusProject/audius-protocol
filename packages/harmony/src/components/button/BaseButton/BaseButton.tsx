@@ -25,7 +25,6 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       minWidth,
       fullWidth,
       styles,
-      style,
       children,
       'aria-label': ariaLabelProp,
       asChild,
@@ -92,7 +91,8 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       }),
       ...(_isPressed && {
         transform: fullWidth ? 'scale(1.00)' : 'scale(0.98)'
-      })
+      }),
+      minWidth: minWidth && !isTextHidden ? `${minWidth}px` : 'unset'
     }
 
     const iconCss = !isStaticIcon && {
@@ -107,10 +107,6 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         disabled={disabled || isLoading}
         ref={ref}
         type={asChild ? undefined : 'button'}
-        style={{
-          minWidth: minWidth && !isTextHidden ? `${minWidth}px` : 'unset',
-          ...style
-        }}
         aria-label={getAriaLabel()}
         {...other}
       >

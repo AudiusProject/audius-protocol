@@ -1,0 +1,41 @@
+import {
+  Canvas,
+  Meta,
+  Title,
+  Description,
+  Primary,
+  Controls
+} from '@storybook/blocks'
+
+import { Heading } from 'storybook/components'
+
+import * as SegmentedControlStories from './SegmentedControl.stories'
+
+<Meta of={SegmentedControlStories} />
+
+<Title />
+
+- [Overview](#overview)
+- [Props](#props)
+- [Configuration Options](#configuration-options)
+
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
+
+<Primary />
+
+## Props
+
+<Controls />
+
+## Configuration Options
+
+### Full Width
+
+<Canvas of={SegmentedControlStories.FullWidth} />
+
+### Mobile
+
+<Canvas of={SegmentedControlStories.IsMobile} />

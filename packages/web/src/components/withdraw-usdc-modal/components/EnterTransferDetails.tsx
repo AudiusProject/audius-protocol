@@ -19,8 +19,7 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import { Button } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
+import { Button, SegmentedControl } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 

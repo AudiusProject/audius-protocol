@@ -1,4 +1,4 @@
-import { Switch } from '@audius/stems'
+import { Switch } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Text } from 'components/typography'
