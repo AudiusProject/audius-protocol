@@ -6,6 +6,7 @@ import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useTrail, animated } from 'react-spring'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
 import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
 import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
@@ -31,6 +32,7 @@ type CTAGetStartedProps = {
 }
 
 const CTAGetStarted = (props: CTAGetStartedProps) => {
+  const { history } = useHistoryContext()
   const isNarrow = useMatchesBreakpoint({
     initialValue: props.isMobile,
     mediaQuery: MOBILE_WIDTH_MEDIA_QUERY
@@ -90,7 +92,11 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
         <div className={styles.textContent}>
           <div className={styles.title}>{messages.title}</div>
           <button
-            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              TRENDING_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.ctaButton}
           >
             {messages.cta}
