@@ -1598,11 +1598,9 @@ export const audiusBackend = ({
   }
 
   /**
-   * @param {string} email
-   * @param {string} password
-   * @param {Object} formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
-   * @param {boolean?} hasWallet the user already has a wallet but didn't complete sign up
-   * @param {ID?} referrer the user_id of the account that referred this one
+   * @param formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
+   * @param hasWallet the user already has a wallet but didn't complete sign up
+   * @param referrer the user_id of the account that referred this one
    */
   async function signUp({
     email,
