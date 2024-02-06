@@ -35,7 +35,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
-from src.models.users.usdc_purchase import USDCPurchase
+from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -234,15 +234,21 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
-            track_price_history = TrackPriceHistory(
-                blocknumber=i + block_offset,
-                track_id=track_price_history_meta.get("track_id", i),
-                splits=track_price_history_meta.get("splits", {}),
-                block_timestamp=track_price_history_meta.get(
-                    "block_timestamp", datetime.now()
+            track_price_history = (
+                TrackPriceHistory(
+                    blocknumber=i + block_offset,
+                    track_id=track_price_history_meta.get("track_id", i),
+                    splits=track_price_history_meta.get("splits", {}),
+                    block_timestamp=track_price_history_meta.get(
+                        "block_timestamp", datetime.now()
+                    ),
+                    total_price_cents=track_price_history_meta.get(
+                        "total_price_cents", 0
+                    ),
+                    access=track_price_history_meta.get(
+                        "access", PurchaseAccessType.stream
+                    ),
                 ),
-                total_price_cents=track_price_history_meta.get("total_price_cents", 0),
-                access=track_price_history_meta.get("access", "stream"),
             )
             session.add(track_price_history)
         for i, playlist_meta in enumerate(playlists):
@@ -690,8 +696,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 content_id=usdc_purchase.get("content_id", 3),
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
-                for_stream_access=usdc_purchase.get("for_stream_access", True),
-                for_download_access=usdc_purchase.get("for_download_access", True),
+                access=usdc_purchase.get("access", PurchaseAccessType.stream),
             )
             session.add(purchase)
         for i, cid_data in enumerate(cid_datas):

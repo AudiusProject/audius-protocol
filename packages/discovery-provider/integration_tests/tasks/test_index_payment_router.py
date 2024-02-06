@@ -20,7 +20,11 @@ from integration_tests.tasks.payment_router_mock_transactions import (
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -83,7 +87,7 @@ test_entries = {
             "track_id": 1,
             "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
             "total_price_cents": 100,
-            "access": "stream",
+            "access": PurchaseAccessType.stream,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -92,7 +96,7 @@ test_entries = {
                 "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
             },
             "total_price_cents": 200,
-            "access": "stream",
+            "access": PurchaseAccessType.stream,
         },
     ],
 }
