@@ -1,20 +1,14 @@
 import pytest
 
 from integration_tests.utils import populate_mock_db
-from src.models.users.usdc_transactions_history import (
-    USDCTransactionMethod,
-)
+from src.models.users.usdc_transactions_history import USDCTransactionMethod
 from src.queries.get_usdc_transactions_history import (
     GetUSDCTransactionsArgs,
     GetUSDCTransactionsCountArgs,
     get_usdc_transactions_history,
     get_usdc_transactions_history_count,
 )
-
-from src.queries.query_helpers import (
-    SortDirection,
-    TransactionSortMethod,
-)
+from src.queries.query_helpers import SortDirection, TransactionSortMethod
 from src.utils.db_session import get_db
 
 user1_id = 10
