@@ -148,7 +148,12 @@ export const NowPlayingArtworkTile = () => {
               className={styles.visualizerIconButton}
               aria-label={messages.showVisualizer}
               onClick={handleShowVisualizer}
-              icon={<IconVisualizer className={styles.visualizerIcon} />}
+              icon={
+                <IconVisualizer
+                  color='default'
+                  className={styles.visualizerIcon}
+                />
+              }
             />
           </DynamicImage>
         </Link>

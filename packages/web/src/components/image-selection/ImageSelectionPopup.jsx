@@ -81,7 +81,7 @@ const RandomPage = ({ onSelect }) => {
   return (
     <div className={styles.random}>
       <div className={styles.query}>
-        <IconSearch className={styles.iconSearch} />
+        <IconSearch color='default' className={styles.iconSearch} />
         <input
           ref={inputRef}
           placeholder='Search Images'

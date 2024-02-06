@@ -245,7 +245,7 @@ export const TracksTableContainer = ({
           <Input
             className={styles.filterInput}
             placeholder={messages.filterInputPlacehoder}
-            prefix={<IconSearch />}
+            prefix={<IconSearch color='subdued' />}
             suffix={
               filterText ? (
                 <IconClose

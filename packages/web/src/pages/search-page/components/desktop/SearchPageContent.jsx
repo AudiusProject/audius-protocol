@@ -483,7 +483,7 @@ class SearchPageContent extends Component {
       content = (
         <>
           <div className={styles.noResults}>
-            <IconBigSearch />
+            <IconBigSearch color='subdued' />
             <div className={styles.queryText}>{errorText}</div>
             <div className={styles.queryText}>&#8220;{searchText}&#8221;</div>
             <div className={styles.helperText}>

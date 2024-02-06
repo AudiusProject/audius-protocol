@@ -221,7 +221,11 @@ const Visualizer = ({
           }}
         />
       </div>
-      <IconRemove className={styles.closeButtonIcon} onClick={onClose} />
+      <IconRemove
+        color='staticWhite'
+        className={styles.closeButtonIcon}
+        onClick={onClose}
+      />
       <div className={styles.infoOverlayTileShadow}></div>
       <div className={styles.infoOverlayTile}>
         <div

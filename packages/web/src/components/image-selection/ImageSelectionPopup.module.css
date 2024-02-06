@@ -83,10 +83,6 @@
   transform: translateY(-50%);
 }
 
-.query > .iconSearch g path {
-  fill: var(--neutral);
-}
-
 .buttonWrapper {
   width: 100%;
   margin: 0 auto var(--unit-6);
