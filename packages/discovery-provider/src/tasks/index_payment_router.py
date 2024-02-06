@@ -19,7 +19,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track import Track
-from src.models.tracks.track_price_history import TrackPriceHistory, 
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.payment_router import PaymentRouterTx
 from src.models.users.usdc_purchase import (
     PurchaseAccessType,
