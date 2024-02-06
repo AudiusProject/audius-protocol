@@ -34,7 +34,11 @@ from src.models.users.audio_transactions_history import (
     TransactionMethod,
     TransactionType,
 )
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -119,7 +123,7 @@ test_entries = {
             "track_id": 1,
             "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
-            "access": "stream",
+            "access": PurchaseAccessType.stream,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -128,7 +132,7 @@ test_entries = {
                 EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
-            "access": "stream",
+            "access": PurchaseAccessType.stream,
         },
     ],
 }
