@@ -64,6 +64,7 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
     <Flex gap='s' role='radiogroup' onChange={handleChange}>
       <SelectablePill
         type='radio'
+        name='trending-genre-filter'
         label={messages.all}
         value={messages.all}
         size='large'
@@ -72,6 +73,7 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
       {genres.map((genre) => (
         <SelectablePill
           key={genre}
+          name='trending-genre-filter'
           type='radio'
           label={getCanonicalName(genre)}
           value={genre}
