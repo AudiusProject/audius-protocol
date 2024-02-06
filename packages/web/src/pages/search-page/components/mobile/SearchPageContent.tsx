@@ -92,7 +92,7 @@ const NoResults = ({
 }) => (
   <div className={styles.centeringContainer}>
     <div className={styles.noResults}>
-      <IconSearch />
+      <IconSearch color='subdued' />
       <div>
         {isTagSearch
           ? TrackSearchPageMessages.title1Tag

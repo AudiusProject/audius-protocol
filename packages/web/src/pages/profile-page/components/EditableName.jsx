@@ -39,7 +39,7 @@ const EditableName = (props) => {
                 className={styles.iconPencil}
                 onClick={() => setEditing(true)}
               >
-                <IconPencil />
+                <IconPencil color='staticWhite' />
               </span>
             }
           </div>

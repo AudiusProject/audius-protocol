@@ -19,27 +19,27 @@ import {
 import styles from './icons.module.css'
 
 export const IconFollow = () => {
-  return <IconUser className={styles.iconFollow} />
+  return <IconUser color='accent' className={styles.iconFollow} />
 }
 
 export const IconCart = () => {
-  return <IconCartBase className={styles.iconCart} />
+  return <IconCartBase color='accent' className={styles.iconCart} />
 }
 
 export const IconRepost = () => {
-  return <IconRepostBase className={styles.iconRepost} />
+  return <IconRepostBase color='accent' className={styles.iconRepost} />
 }
 
 export const IconFavorite = () => {
-  return <IconHeart className={styles.iconFavorite} />
+  return <IconHeart color='accent' className={styles.iconFavorite} />
 }
 
 export const IconMilestone = () => {
-  return <IconTrophy className={styles.iconMilestone} />
+  return <IconTrophy color='accent' className={styles.iconMilestone} />
 }
 
 export const IconRelease = () => {
-  return <IconStars className={styles.iconRelease} />
+  return <IconStars color='accent' className={styles.iconRelease} />
 }
 
 export const IconRewards = ({ children }: { children: ReactNode }) => {
@@ -47,11 +47,11 @@ export const IconRewards = ({ children }: { children: ReactNode }) => {
 }
 
 export const IconTrending = () => {
-  return <IconTrendingBase className={styles.iconTrending} />
+  return <IconTrendingBase color='accent' className={styles.iconTrending} />
 }
 
 export const IconTastemaker = () => {
-  return <Tastemaker className={styles.iconTrending} />
+  return <Tastemaker color='accent' className={styles.iconTrending} />
 }
 
 export const IconTier = ({ children }: { children: ReactNode }) => {
@@ -59,11 +59,11 @@ export const IconTier = ({ children }: { children: ReactNode }) => {
 }
 
 export const IconRemix = () => {
-  return <IconRemixBase className={styles.iconRemix} />
+  return <IconRemixBase color='accent' className={styles.iconRemix} />
 }
 
 export const IconTip = () => {
-  return <IconTipBase className={styles.iconTip} />
+  return <IconTipBase color='accent' className={styles.iconTip} />
 }
 
 export const IconAnnouncement = () => {
@@ -74,5 +74,7 @@ export const IconAnnouncement = () => {
 }
 
 export const IconAddTrackToPlaylist = () => {
-  return <IconPlaylist className={styles.iconAddTrackToPlaylist} />
+  return (
+    <IconPlaylist color='accent' className={styles.iconAddTrackToPlaylist} />
+  )
 }

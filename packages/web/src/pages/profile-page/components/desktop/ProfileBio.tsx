@@ -240,7 +240,7 @@ export const ProfileBio = ({
             onClick={handleToggleCollapse}
           >
             <span>{messages.seeMore}</span>
-            <IconCaretDownLine />
+            <IconCaretDownLine size='m' color='subdued' />
           </div>
         </div>
       ) : (
@@ -252,7 +252,7 @@ export const ProfileBio = ({
               onClick={handleToggleCollapse}
             >
               <span>{messages.seeLess}</span>
-              <IconCaretUpLine />
+              <IconCaretUpLine size='m' color='subdued' />
             </div>
           ) : null}
         </div>

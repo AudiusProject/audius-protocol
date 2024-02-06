@@ -1,6 +1,6 @@
 import { Component } from 'react'
 
-import { IconPlaybackPlay as IconPlay } from '@audius/harmony'
+import { IconPlay } from '@audius/harmony'
 import { IconStop } from '@audius/stems'
 import PropTypes from 'prop-types'
 

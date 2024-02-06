@@ -25,10 +25,6 @@
   transform: scale(1.1);
 }
 
-.closeButtonIcon g path {
-  fill: var(--static-white);
-}
-
 .logoWrapper {
   position: absolute;
   top: 9px; /* Want logo to be 25px from top, it has existing top-margin of 16px */
