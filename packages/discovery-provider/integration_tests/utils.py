@@ -690,8 +690,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 content_id=usdc_purchase.get("content_id", 3),
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
-                is_streamable=usdc_purchase.get("is_streamable", True),
-                is_downloadable=usdc_purchase.get("is_downloadable", True),
+                has_stream_access=usdc_purchase.get("has_stream_access", True),
+                has_download_access=usdc_purchase.get("has_download_access", True),
             )
             session.add(purchase)
         for i, cid_data in enumerate(cid_datas):

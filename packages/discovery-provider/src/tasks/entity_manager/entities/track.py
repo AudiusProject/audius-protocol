@@ -95,6 +95,7 @@ def update_track_price_history(
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
+            new_record.access = "stream"
             if "price" in usdc_purchase:
                 price = usdc_purchase["price"]
                 if isinstance(price, int):
