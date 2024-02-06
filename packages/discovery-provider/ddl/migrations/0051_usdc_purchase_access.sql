@@ -1,9 +1,9 @@
 begin;
   -- add columns to usdc_purchases
   alter table usdc_purchases
-  add column if not exists is_streamable boolean default true;
+  add column if not exists has_stream_access boolean default true;
   alter table usdc_purchases
-  add column if not exists is_downloadable boolean default true;
+  add column if not exists has_download_access boolean default true;
 
   -- add access column to track_price_history
   do $$ begin
