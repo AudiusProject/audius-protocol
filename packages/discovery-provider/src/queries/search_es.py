@@ -126,7 +126,6 @@ def search_es_full(args: dict):
 
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
-    logger.info(f"asdf mfound: {mfound}")
 
     response: Dict = {
         "tracks": [],
@@ -369,7 +368,7 @@ def default_function_score(dsl, ranking_field):
                 "query": {"bool": dsl},
                 "field_value_factor": {
                     "field": ranking_field,
-                    "factor": .1,
+                    "factor": 0.1,
                     "modifier": "sqrt",
                 },
                 "boost_mode": "multiply",
