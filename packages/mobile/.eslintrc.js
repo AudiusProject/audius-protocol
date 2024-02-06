@@ -31,6 +31,7 @@ module.exports = {
       }
     }
   },
+  ignorePatterns: ['**/harmony/**/*'],
   rules: {
     '@typescript-eslint/consistent-type-imports': [
       'error',

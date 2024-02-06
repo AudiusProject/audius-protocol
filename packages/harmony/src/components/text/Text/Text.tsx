@@ -1,9 +1,9 @@
 import { ElementType, ForwardedRef, forwardRef } from 'react'
 
-import { CSSObject, useTheme } from '@emotion/react'
+import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
-import { typography } from 'foundations'
+import { typography } from '../../../foundations/typography'
 
 import { variantStylesMap, variantTagMap } from './constants'
 import type { TextProps } from './types'
@@ -29,7 +29,7 @@ export const Text = forwardRef(
     const theme = useTheme()
 
     const variantConfig = variant && variantStylesMap[variant]
-    const styles: CSSObject = {
+    const styles = {
       fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
     Arial, sans-serif`,
       position: 'relative',
@@ -45,11 +45,11 @@ export const Text = forwardRef(
         }),
       ...(color && color !== 'heading' && { color: theme.color.text[color] }),
       ...(variantConfig && {
-        // @ts-expect-error
+        // @ts-ignore
         fontSize: typography.size[variantConfig.fontSize[size]],
-        // @ts-expect-error
+        // @ts-ignore
         lineHeight: typography.lineHeight[variantConfig.lineHeight[size]],
-        // @ts-expect-error
+        // @ts-ignore
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
         ...('css' in variantConfig && variantConfig.css),
         ...(shadow && {
@@ -59,7 +59,7 @@ export const Text = forwardRef(
       })
     }
 
-    // @ts-expect-error
+    // @ts-ignore
     const variantTag = variant && variantTagMap[variant]?.[size]
 
     const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'p'

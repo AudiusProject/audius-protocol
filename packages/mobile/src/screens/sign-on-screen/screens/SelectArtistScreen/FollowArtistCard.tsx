@@ -13,7 +13,7 @@ import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { Icon } from '@audius/harmony-native'
+import type { IconComponent } from '@audius/harmony-native'
 import {
   Box,
   Flex,
@@ -86,7 +86,7 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
 
   // The play/pause icon over the user avatar
   const renderPreviewElement = () => {
-    let PreviewIcon: Icon | null = null
+    let PreviewIcon: IconComponent | null = null
 
     if (showPreviewHint && !hasPlayed) {
       PreviewIcon = IconPlay

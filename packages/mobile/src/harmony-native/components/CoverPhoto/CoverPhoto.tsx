@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import type { Image } from '@audius/common/store'
-import type { CornerRadiusOptions } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { BlurView } from '@react-native-community/blur'
 import { isEmpty } from 'lodash'
@@ -13,6 +12,8 @@ import type {
 } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+
+import type { CornerRadiusOptions } from '@audius/harmony-native'
 
 import { useTheme } from '../../foundations/theme'
 

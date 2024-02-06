@@ -1,8 +1,7 @@
-import {
-  themes as harmonyThemes,
-  primitiveTheme as harmonyPrimitiveTheme
-} from '@audius/harmony'
+import { primitiveTheme as harmonyPrimitiveTheme } from '@audius/harmony/src/foundations/color/primitive'
+import { themes as harmonyThemes } from '@audius/harmony/src/foundations/theme/theme'
 import { merge } from 'lodash'
+
 // linear-gradient at 315deg
 const baseLinearGradient = {
   start: { x: 0, y: 1 },
@@ -117,3 +116,9 @@ export const primitiveTheme = merge(
   harmonyPrimitiveTheme,
   primitiveOverrides
 )
+
+export type {
+  IconColors,
+  SpecialColors,
+  TextColors
+} from '@audius/harmony/src/foundations/color'

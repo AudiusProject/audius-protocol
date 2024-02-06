@@ -1,5 +1,5 @@
 import type { PickRename } from '@audius/common/utils'
-import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony'
+import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony/src/components/avatar/types'
 import { css } from '@emotion/native'
 import { View } from 'react-native'
 import type { SetRequired } from 'type-fest'

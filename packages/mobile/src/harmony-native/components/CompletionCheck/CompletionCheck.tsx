@@ -1,4 +1,4 @@
-import type { CompletionCheckProps } from '@audius/harmony'
+import type { CompletionCheckProps } from '@audius/harmony/src/components/completion-check/types'
 import styled, { css } from '@emotion/native'
 import Animated, {
   Easing,
@@ -86,3 +86,5 @@ export const CompletionCheck = (props: CompletionCheckProps) => {
     </Flex>
   )
 }
+
+export type { CompletionCheckProps }

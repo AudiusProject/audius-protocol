@@ -1,8 +1,8 @@
-import type { CompletionCheckProps } from '@audius/harmony'
 import type { Meta, StoryObj } from '@storybook/react-native'
 
 import { Flex } from '../layout/Flex/Flex'
 
+import type { CompletionCheckProps } from './CompletionCheck'
 import { CompletionCheck } from './CompletionCheck'
 
 const meta: Meta<CompletionCheckProps> = {
