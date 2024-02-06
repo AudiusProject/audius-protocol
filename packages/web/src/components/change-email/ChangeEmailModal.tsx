@@ -114,7 +114,7 @@ export const ConfirmPasswordPage = () => {
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.confirmPasswordHelp}</Text>
       <Box>
-        <Text variant='label' size={'xs'}>
+        <Text variant='label' size='xs'>
           {messages.currentEmail}
         </Text>
         <CurrentEmail />
@@ -122,7 +122,7 @@ export const ConfirmPasswordPage = () => {
       <HarmonyPasswordField
         name='password'
         label={messages.currentPassword}
-        autoComplete={'password'}
+        autoComplete='password'
       />
     </Flex>
   )
@@ -133,7 +133,7 @@ export const NewEmailPage = () => {
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.newEmailHelp}</Text>
       <Box>
-        <Text variant='label' size={'xs'}>
+        <Text variant='label' size='xs'>
           {messages.currentEmail}
         </Text>
         <CurrentEmail />
@@ -148,7 +148,7 @@ export const VerifyEmailPage = () => {
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.verifyEmailHelp}</Text>
       <HarmonyTextField
-        name={'otp'}
+        name='otp'
         label={messages.code}
         placeholder={messages.otpPlaceholder}
         transformValueOnChange={formatOtp}
@@ -182,7 +182,7 @@ const ChangeEmailModalForm = ({
       <ModalFooter className={styles.footer}>
         <Button
           variant='primary'
-          type={'submit'}
+          type='submit'
           isLoading={isSubmitting}
           fullWidth
           iconRight={

@@ -31,11 +31,11 @@ const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
   return (
     <Flex
       as={Form}
-      direction={'column'}
+      direction='column'
       justifyContent='space-between'
       css={{ flexGrow: 1 }}
     >
-      <Flex p='l' gap={'s'} direction='column' mt={'xl'}>
+      <Flex p='l' gap='s' direction='column' mt='xl'>
         <Text variant='heading' color='heading'>
           {messages.changeYourEmail}
         </Text>
@@ -45,10 +45,10 @@ const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
           <VerifyEmailPage />
         </SlidingPages>
       </Flex>
-      <Paper shadow={'midInverted'} p={'l'}>
+      <Paper shadow={'midInverted'} p='l'>
         <Button
           variant='primary'
-          type={'submit'}
+          type='submit'
           isLoading={isSubmitting}
           fullWidth
           iconRight={
