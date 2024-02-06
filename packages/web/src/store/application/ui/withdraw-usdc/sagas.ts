@@ -256,13 +256,6 @@ function* doWithdrawUSDCCoinflow({
       // If the destination is already a token account, we can transfer directly
       destinationTokenAccountAddress = destinationAddress
     } else {
-      yield* call(
-        track,
-        make({
-          eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
-          ...analyticsFields
-        })
-      )
       // If it's not, derive the associated token account
       const destinationWallet = destinationPubkey
       const destinationTokenAccount = yield* call(
