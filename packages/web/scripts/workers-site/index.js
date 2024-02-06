@@ -49,7 +49,7 @@ function checkIsBot(val) {
     return false
   }
   const botTest =
-    /altavista|baiduspider|bingbot|discordbot|duckduckbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|msnbot|nextgensearchbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yahoo|yandex|yeti|yodaobot|zend|zoominfobot|embedly/i
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
   return botTest.test(val)
 }
 
@@ -57,7 +57,8 @@ function checkIsCrawler(val) {
   if (!val) {
     return false
   }
-  const crawlerTest = /Googlebot|forceSsr/i
+  const crawlerTest =
+    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|msnbot|nextgensearchbot|yahoo|yandex/i
   return crawlerTest.test(val)
 }
 
