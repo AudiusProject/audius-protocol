@@ -26,7 +26,7 @@ func main() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-sigChan
-		fmt.Printf("Received signal: %v, shutting down...\n", sig)
+		log.Printf("Received signal: %v, shutting down...\n", sig)
 		cancel()
 	}()
 
@@ -35,7 +35,7 @@ func main() {
 		if os.IsNotExist(err) {
 			log.Println("No .env file found, proceeding with existing environment variables")
 		} else {
-			log.Printf("Error loading .env file: %v\n", err)
+			log.Println("Error loading .env file:", err)
 		}
 	}
 
@@ -51,5 +51,5 @@ func main() {
 	}
 
 	<-ctx.Done() // Wait until the context is canceled
-	fmt.Println("Service stopped")
+	log.Println("Service stopped")
 }
