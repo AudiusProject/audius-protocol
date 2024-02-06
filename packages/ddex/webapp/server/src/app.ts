@@ -15,6 +15,9 @@ export default function createApp() {
     const envData = {
       data: {
         env: process.env.NODE_ENV,
+        awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        awsBucketRaw: process.env.AWS_BUCKET_RAW,
+        awsBucketIndexed: process.env.AWS_BUCKET_INDEXED,
         ddexKey: process.env.DDEX_KEY,
         optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY,
       },

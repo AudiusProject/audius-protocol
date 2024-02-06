@@ -2,44 +2,36 @@ package parser
 
 import (
 	"context"
+	"ingester/common"
+	"ingester/constants"
+	"log"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"ingester/constants"
-	"log"
-	"os"
-	"time"
 )
 
-func Run() {
-	mongoUrl := os.Getenv("DDEX_MONGODB_URL")
-	if mongoUrl == "" {
-		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0"
-	}
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoUrl))
-	if err != nil {
-		panic(err)
-	}
-	log.Println("Parser: connected to mongo")
-	defer client.Disconnect(context.Background())
+func Run(ctx context.Context) {
+	mongoClient := common.InitMongoClient(ctx)
+	defer mongoClient.Disconnect(ctx)
 
-	indexedColl := client.Database("ddex").Collection("indexed")
+	indexedColl := mongoClient.Database("ddex").Collection("indexed")
 	pipeline := mongo.Pipeline{bson.D{{"$match", bson.D{{"operationType", "insert"}}}}}
-	changeStream, err := indexedColl.Watch(context.Background(), pipeline)
+	changeStream, err := indexedColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Parser: watching collection 'indexed'")
-	defer changeStream.Close(context.Background())
+	log.Println("Watching collection 'indexed'")
+	defer changeStream.Close(ctx)
 
-	for changeStream.Next(context.Background()) {
+	for changeStream.Next(ctx) {
 		var changeDoc bson.M
 		if err := changeStream.Decode(&changeDoc); err != nil {
 			log.Fatal(err)
 		}
 		fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-		parseIndexed(client, fullDocument)
+		parseIndexed(mongoClient, fullDocument, ctx)
 	}
 
 	if err := changeStream.Err(); err != nil {
@@ -47,8 +39,8 @@ func Run() {
 	}
 }
 
-func parseIndexed(client *mongo.Client, fullDocument bson.M) {
-	log.Printf("Parser: Processing new indexed document: %v\n", fullDocument)
+func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context) {
+	log.Printf("Processing new indexed document: %v\n", fullDocument)
 	indexedColl := client.Database("ddex").Collection("indexed")
 	parsedColl := client.Database("ddex").Collection("parsed")
 
@@ -57,25 +49,25 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M) {
 
 	session, err := client.StartSession()
 	if err != nil {
-		failAndUpdateStatus(err, indexedColl, context.Background(), fullDocument["_id"].(primitive.ObjectID))
+		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
 	}
-	err = mongo.WithSession(context.Background(), session, func(sessionContext mongo.SessionContext) error {
+	err = mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
 		if err := session.StartTransaction(); err != nil {
 			return err
 		}
 
 		// 2. Write each release in "delivery_xml" in the indexed doc as a bson doc in the 'parsed' collection
 		parsedDoc := bson.M{
-			"delivery_id":  fullDocument["delivery_id"],
-			"entity":       "track",
-			"publish_date": time.Now(),
+			"delivery_etag": fullDocument["delivery_etag"],
+			"entity":        "track",
+			"publish_date":  time.Now(),
 		}
-		result, err := parsedColl.InsertOne(context.Background(), parsedDoc)
+		result, err := parsedColl.InsertOne(ctx, parsedDoc)
 		if err != nil {
 			session.AbortTransaction(sessionContext)
 			return err
 		}
-		log.Println("Parser: New parsed release doc ID: ", result.InsertedID)
+		log.Println("New parsed release doc ID: ", result.InsertedID)
 
 		// 3. Set delivery status for delivery in 'indexed' collection
 		err = setDeliveryStatus(indexedColl, sessionContext, fullDocument["_id"].(primitive.ObjectID), constants.DeliveryStatusAwaitingPublishing)
@@ -88,19 +80,19 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M) {
 	})
 
 	if err != nil {
-		failAndUpdateStatus(err, indexedColl, context.Background(), fullDocument["_id"].(primitive.ObjectID))
+		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
 	}
 
-	session.EndSession(context.Background())
+	session.EndSession(ctx)
 }
 
-func setDeliveryStatus(collection *mongo.Collection, context context.Context, documentId primitive.ObjectID, status string) error {
+func setDeliveryStatus(collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID, status string) error {
 	update := bson.M{"$set": bson.M{"delivery_status": status}}
-	_, err := collection.UpdateByID(context, documentId, update)
+	_, err := collection.UpdateByID(ctx, documentId, update)
 	return err
 }
 
-func failAndUpdateStatus(err error, collection *mongo.Collection, context context.Context, documentId primitive.ObjectID) {
-	setDeliveryStatus(collection, context, documentId, constants.DeliveryStatusError)
+func failAndUpdateStatus(err error, collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID) {
+	setDeliveryStatus(collection, ctx, documentId, constants.DeliveryStatusError)
 	log.Fatal(err)
 }

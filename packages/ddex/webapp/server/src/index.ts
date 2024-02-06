@@ -2,11 +2,8 @@ import dotenv from 'dotenv'
 import path from 'path'
 import createS3 from './services/s3'
 
-// Load env vars based on NODE_ENV
-if (process.env.NODE_ENV === 'stage') {
-  dotenv.config({ path: path.resolve(process.cwd(), '.env.stage') })
-}
-dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+// Load env vars from ddex package root
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') })
 
 import createApp from './app'
 import { dialDb } from './services/dbService'

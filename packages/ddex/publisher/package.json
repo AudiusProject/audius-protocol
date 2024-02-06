@@ -7,6 +7,7 @@
     "build": "tsc",
     "start:prod": "NODE_ENV=production node dist/index.js",
     "start": "nodemon src/index.ts",
+    "dev:dev": "NODE_ENV=dev turbo run start --filter=@audius/ddex-publisher",
     "dev:stage": "NODE_ENV=stage turbo run start --filter=@audius/ddex-publisher",
     "dev:prod": "NODE_ENV=production turbo run start --filter=@audius/ddex-publisher",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

@@ -2,41 +2,34 @@ package indexer
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"ingester/common"
 	"ingester/constants"
 	"log"
-	"os"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Run() {
-	mongoUrl := os.Getenv("DDEX_MONGODB_URL")
-	if mongoUrl == "" {
-		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0"
-	}
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoUrl))
+func Run(ctx context.Context) {
+	mongoClient := common.InitMongoClient(ctx)
+	defer mongoClient.Disconnect(ctx)
+
+	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
+	pipeline := mongo.Pipeline{bson.D{{"$match", bson.D{{"operationType", "insert"}}}}}
+	changeStream, err := uploadsColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Indexer: connected to mongo")
-	defer client.Disconnect(context.Background())
+	log.Println("Watching collection 'uploads'")
+	defer changeStream.Close(ctx)
 
-	uploadsColl := client.Database("ddex").Collection("uploads")
-	changeStream, err := uploadsColl.Watch(context.Background(), mongo.Pipeline{})
-	if err != nil {
-		panic(err)
-	}
-	log.Println("Indexer: watching collection 'uploads'")
-	defer changeStream.Close(context.Background())
-
-	for changeStream.Next(context.Background()) {
+	for changeStream.Next(ctx) {
 		var changeDoc bson.M
 		if err := changeStream.Decode(&changeDoc); err != nil {
 			log.Fatal(err)
 		}
 		fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-		indexUpload(client, fullDocument)
+		indexUpload(mongoClient, fullDocument, ctx)
 	}
 
 	if err := changeStream.Err(); err != nil {
@@ -44,8 +37,8 @@ func Run() {
 	}
 }
 
-func indexUpload(client *mongo.Client, fullDocument bson.M) {
-	log.Printf("Indexed: Processing new upload: %v\n", fullDocument)
+func indexUpload(client *mongo.Client, fullDocument bson.M, ctx context.Context) {
+	log.Printf("Processing new upload: %v\n", fullDocument)
 	indexedColl := client.Database("ddex").Collection("indexed")
 
 	delete(fullDocument, "_id")
@@ -60,10 +53,10 @@ func indexUpload(client *mongo.Client, fullDocument bson.M) {
 	// TODO download xml from bucket
 	// fullDocument["delivery_xml"] = ...
 
-	result, err := indexedColl.InsertOne(context.Background(), fullDocument)
+	result, err := indexedColl.InsertOne(ctx, fullDocument)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Indexer: New indexed doc ID: ", result.InsertedID)
+	log.Println("New indexed doc ID: ", result.InsertedID)
 }
