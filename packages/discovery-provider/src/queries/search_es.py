@@ -368,11 +368,10 @@ def default_function_score(dsl, ranking_field):
                 "query": {"bool": dsl},
                 "field_value_factor": {
                     "field": ranking_field,
-                    "factor": 0.1,
-                    "modifier": "sqrt",
+                    "factor": 20,
+                    "modifier": "ln2p",
                 },
                 "boost_mode": "multiply",
-                "max_boost": 10,
             }
         }
     }
@@ -427,9 +426,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         "must_not": [],
         "should": [
             *base_match(search_str, operator="and", extra_fields=["handle"]),
-            {"term": {"handle": {"value": search_str, "boost": 1.2}}},
-            {"term": {"name": {"value": search_str, "boost": 1.2}}},
-            {"term": {"is_verified": {"value": True}}},
+            {"term": {"handle": {"value": search_str, "boost": 0.2}}},
+            {"term": {"name": {"value": search_str, "boost": 0.2}}},
+            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
         ],
     }
 
