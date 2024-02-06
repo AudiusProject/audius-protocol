@@ -45,7 +45,7 @@ const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
           <VerifyEmailPage />
         </SlidingPages>
       </Flex>
-      <Paper shadow={'midInverted'} p='l'>
+      <Paper shadow='midInverted' p='l'>
         <Button
           variant='primary'
           type='submit'
