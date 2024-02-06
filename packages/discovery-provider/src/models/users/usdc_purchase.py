@@ -1,15 +1,6 @@
 import enum
 
-from sqlalchemy import (
-    BigInteger,
-    Boolean,
-    Column,
-    DateTime,
-    Enum,
-    Integer,
-    String,
-    text,
-)
+from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, String, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin

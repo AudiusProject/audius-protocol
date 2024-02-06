@@ -1,5 +1,3 @@
-import enum
-
 from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, text
 from sqlalchemy.dialects.postgresql import JSONB
 
