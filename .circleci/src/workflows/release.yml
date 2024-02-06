@@ -178,22 +178,6 @@ jobs:
       requires:
         - push-ddex-publisher
 
-  - release-github-draft-trigger:
-      type: approval
-  - release-github-draft:
-      context: github
-      requires:
-        - release-github-draft-trigger
-
-  - release-github-trigger:
-      requires:
-        - release-github-draft
-      type: approval
-  - release-github:
-      context: github
-      requires:
-        - release-github-trigger
-
   - release-governance-trigger:
       type: approval
   - release-governance:
