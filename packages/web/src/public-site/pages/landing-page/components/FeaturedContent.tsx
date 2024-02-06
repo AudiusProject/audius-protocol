@@ -23,6 +23,7 @@ import { env } from 'services/env'
 import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Featured Content',
@@ -145,6 +146,7 @@ const getImageUrl = (
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
+  const { history } = useHistoryContext()
   const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
@@ -192,7 +194,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <MobilePlaylistTile
                   key={p.link}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -216,7 +222,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}
@@ -245,7 +252,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <DesktopPlaylistTile
                   key={p.title}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -269,7 +280,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}

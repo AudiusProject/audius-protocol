@@ -17,6 +17,7 @@ import { getIOSAppLink } from 'utils/appLinks'
 import { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } from 'utils/route'
 
 import styles from './Hero.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Artists Deserve More',
@@ -35,6 +36,8 @@ const iOSDownloadLink = getIOSAppLink()
 
 export const Hero = (props: HeroProps) => {
   const parallaxController = useParallaxController()
+  const { history } = useHistoryContext()
+  console.log('history', history)
   const { onImageLoad, isMobile } = props
   const onImgSet = useCallback(() => {
     if (!isMobile) parallaxController?.update()
@@ -60,14 +63,22 @@ export const Hero = (props: HeroProps) => {
             <div>{messages.subtitle}</div>
           </div>
           <button
-            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              TRENDING_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.ctaButton}
           >
             <span className={styles.ctaMessage}>{messages.cta}</span>
             <IconCaretRight />
           </button>
           <button
-            onClick={handleClickRoute(APP_REDIRECT, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              APP_REDIRECT,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.downloadButton}
           >
             <IconCloudDownload />
@@ -154,7 +165,8 @@ export const Hero = (props: HeroProps) => {
             <button
               onClick={handleClickRoute(
                 TRENDING_PAGE,
-                props.setRenderPublicSite
+                props.setRenderPublicSite,
+                history
               )}
               className={styles.ctaButton}
             >
@@ -164,7 +176,8 @@ export const Hero = (props: HeroProps) => {
             <button
               onClick={handleClickRoute(
                 DOWNLOAD_START_LINK,
-                props.setRenderPublicSite
+                props.setRenderPublicSite,
+                history
               )}
               className={styles.downloadButton}
             >

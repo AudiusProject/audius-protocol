@@ -30,6 +30,7 @@ import {
 
 import styles from './NavOverlay.module.css'
 import { handleClickRoute } from './handleClickRoute'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   signUp: 'Sign Up',
@@ -123,6 +124,7 @@ const useModalRoot = () => {
 
 const NavOverlay = (props: NavOverlayProps) => {
   const modalRoot = useModalRoot()
+  const { history } = useHistoryContext()
 
   return (
     modalRoot &&
@@ -160,7 +162,11 @@ const NavOverlay = (props: NavOverlayProps) => {
               {dappLinks.map(({ icon, text, link }, idx) => (
                 <a
                   key={idx}
-                  onClick={handleClickRoute(link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                   className={styles.dappLink}
                   href={link}
                   target='_blank'
@@ -177,7 +183,11 @@ const NavOverlay = (props: NavOverlayProps) => {
               <a
                 key={idx}
                 href={link}
-                onClick={handleClickRoute(link, props.setRenderPublicSite)}
+                onClick={handleClickRoute(
+                  link,
+                  props.setRenderPublicSite,
+                  history
+                )}
               >
                 <Icon className={styles.icon} />
               </a>

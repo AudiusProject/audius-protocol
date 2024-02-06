@@ -26,6 +26,7 @@ import {
 
 import styles from './Footer.module.css'
 import { handleClickRoute } from './handleClickRoute'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const bottomLinks = [
   {
@@ -94,6 +95,7 @@ type FooterProps = {
 }
 
 const Footer = (props: FooterProps) => {
+  const { history } = useHistoryContext()
   return (
     <div
       className={cn(styles.container, {
@@ -104,7 +106,11 @@ const Footer = (props: FooterProps) => {
         <div className={styles.logoLinkContainer}>
           <IconAudiusLogoHorizontalColor
             className={styles.logo}
-            onClick={handleClickRoute(HOME_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              HOME_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
           />
           <div className={styles.siteLinksContainer}>
             <div className={styles.siteLinksColumnContainer}>
@@ -112,7 +118,8 @@ const Footer = (props: FooterProps) => {
               <a
                 onClick={handleClickRoute(
                   TRENDING_PAGE,
-                  props.setRenderPublicSite
+                  props.setRenderPublicSite,
+                  history
                 )}
                 className={cn(styles.siteLink, styles.link)}
               >
@@ -180,7 +187,11 @@ const Footer = (props: FooterProps) => {
                   key={text}
                   href={link}
                   className={cn(styles.bottomLink, styles.link)}
-                  onClick={handleClickRoute(link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 >
                   {text}
                 </a>

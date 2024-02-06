@@ -9,6 +9,7 @@ import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { TRENDING_PAGE } from 'utils/route'
 
 import styles from './CTAStartListening.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Artists Deserve More',
@@ -21,6 +22,7 @@ type CTAStartListeningProps = {
 }
 
 const CTAStartListening = (props: CTAStartListeningProps) => {
+  const { history } = useHistoryContext()
   if (props.isMobile) {
     return (
       <div className={styles.mobileContainer}>
@@ -41,7 +43,11 @@ const CTAStartListening = (props: CTAStartListeningProps) => {
         </div>
         <div className={styles.title}>{messages.title}</div>
         <div
-          onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+          onClick={handleClickRoute(
+            TRENDING_PAGE,
+            props.setRenderPublicSite,
+            history
+          )}
           className={styles.ctaButton}
         >
           {messages.cta}
@@ -56,7 +62,11 @@ const CTAStartListening = (props: CTAStartListeningProps) => {
       <div className={styles.content}>
         <div className={styles.title}>{messages.title}</div>
         <button
-          onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+          onClick={handleClickRoute(
+            TRENDING_PAGE,
+            props.setRenderPublicSite,
+            history
+          )}
           className={styles.ctaButton}
         >
           {messages.cta}

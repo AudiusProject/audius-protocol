@@ -13,6 +13,7 @@ import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
 
 import styles from './CaseStudies.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Case Studies',
@@ -102,6 +103,7 @@ type CaseStudiesProps = {
 }
 
 const CaseStudies = (props: CaseStudiesProps) => {
+  const { history } = useHistoryContext()
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -131,7 +133,11 @@ const CaseStudies = (props: CaseStudiesProps) => {
           <div
             key={i}
             className={cn(styles.mobileCard, card.containerClass)}
-            onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              card.link,
+              props.setRenderPublicSite,
+              history
+            )}
             style={{
               backgroundBlendMode: 'multiply',
               background: `url(${card.image}) center/cover, ${card.backgroundGradient}`
@@ -170,7 +176,11 @@ const CaseStudies = (props: CaseStudiesProps) => {
             <Card
               key={card.title}
               {...card}
-              onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
+              onClick={handleClickRoute(
+                card.link,
+                props.setRenderPublicSite,
+                history
+              )}
             />
           ))}
         </div>

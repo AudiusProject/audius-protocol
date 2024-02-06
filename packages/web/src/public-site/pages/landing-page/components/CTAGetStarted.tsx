@@ -15,6 +15,7 @@ import { TRENDING_PAGE } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './CTAGetStarted.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
 
@@ -31,6 +32,7 @@ type CTAGetStartedProps = {
 }
 
 const CTAGetStarted = (props: CTAGetStartedProps) => {
+  const { history } = useHistoryContext()
   const isNarrow = useMatchesBreakpoint({
     initialValue: props.isMobile,
     mediaQuery: MOBILE_WIDTH_MEDIA_QUERY
@@ -90,7 +92,11 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
         <div className={styles.textContent}>
           <div className={styles.title}>{messages.title}</div>
           <button
-            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              TRENDING_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.ctaButton}
           >
             {messages.cta}
