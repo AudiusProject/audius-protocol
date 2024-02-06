@@ -47,7 +47,7 @@ const messages = {
   verifyButtonTitleDisabled: `You're Verified!`,
   emailTitle: 'Change Email',
   emailDescription:
-    'Change the password you use to sign in and receive emails.',
+    'Change the email you use to sign in and receive emails.',
   emailButtonTitle: 'Change Email',
   passwordTitle: 'Change Password',
   passwordDescription: 'Change the password to your Audius account.',
