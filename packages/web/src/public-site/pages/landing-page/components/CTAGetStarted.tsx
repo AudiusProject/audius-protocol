@@ -137,7 +137,11 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             </h3>
           </div>
           <button
-            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              TRENDING_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.ctaButton}
           >
             {messages.cta}
