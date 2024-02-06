@@ -308,7 +308,7 @@ export const AudioPlayer = () => {
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else {
-          const nftAccessSignature = nftAccessSignatureMap[trackId]
+          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
           queryParamsMap[trackId] = await getQueryParams({
             audiusBackendInstance,
             nftAccessSignature
