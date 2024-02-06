@@ -6,10 +6,10 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SearchBar.module.css'
-import { ClientOnly } from 'components/client-only/ClientOnly'
 
 interface SearchBarProps {
   className?: string
