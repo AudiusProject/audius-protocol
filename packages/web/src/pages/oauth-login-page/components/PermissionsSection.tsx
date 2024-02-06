@@ -74,14 +74,11 @@ export const PermissionsSection = ({
             })}
           >
             {scope === 'write' || scope === 'write_once' ? (
-              <IconPencil
-                className={cn(styles.permissionIcon)}
-                width={18}
-                height={18}
-              />
+              <IconPencil color='default' width={18} height={18} />
             ) : (
               <IconVisibilityPublic
-                className={cn(styles.permissionIcon, styles.visibilityIcon)}
+                color='default'
+                className={cn(styles.visibilityIcon)}
                 width={21}
                 height={22}
               />
@@ -120,7 +117,8 @@ export const PermissionsSection = ({
             <IconEmailAddress
               width={15}
               height={15}
-              className={cn(styles.permissionIcon, styles.atSignIcon)}
+              color='default'
+              className={cn(styles.atSignIcon)}
             />
           </div>
           <div className={styles.permissionTextContainer}>
