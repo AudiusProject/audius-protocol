@@ -210,8 +210,14 @@ const CollectionHeader = ({
           >
             {Icon && (
               <Icon
-                className={styles.imageIcon}
-                style={{ background: gradient }}
+                color='staticWhite'
+                height='100%'
+                width='100%'
+                css={{
+                  opacity: 0.3,
+                  background: gradient,
+                  mixBlendMode: 'overlay'
+                }}
               />
             )}
           </DynamicImage>

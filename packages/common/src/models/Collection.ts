@@ -1,5 +1,3 @@
-import type { FunctionComponent, SVGProps } from 'react'
-
 import { CID, ID, UID } from '../models/Identifiers'
 import { CoverArtSizes } from '../models/ImageSizes'
 import { Repost } from '../models/Repost'
@@ -97,7 +95,6 @@ export type SmartCollection = {
   gradient?: string
   imageOverride?: string
   shadow?: string
-  icon?: FunctionComponent<SVGProps<SVGSVGElement> & { title?: string }>
   link: string
   playlist_contents?: PlaylistContents
   has_current_user_saved?: boolean

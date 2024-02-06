@@ -79,7 +79,12 @@ export const Artwork = (props: ArtworkProps) => {
       image={gradient || imageOverride || image}
     >
       {Icon ? (
-        <Icon className={styles.imageIcon} style={{ background: gradient }} />
+        <Icon
+          color='staticWhite'
+          width='100%'
+          height='100%'
+          css={{ background: gradient, opacity: 0.3, mixBlendMode: 'overlay' }}
+        />
       ) : null}
       {isOwner ? (
         <span className={styles.imageEditButtonWrapper}>

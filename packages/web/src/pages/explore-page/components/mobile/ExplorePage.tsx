@@ -1,5 +1,4 @@
 import React, {
-  Fragment,
   useContext,
   useEffect,
   useMemo,
@@ -12,7 +11,8 @@ import {
   Status,
   UserCollection,
   SmartCollection,
-  User
+  User,
+  Variant
 } from '@audius/common/models'
 import {
   explorePageSelectors,
@@ -39,6 +39,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useMainPageHeader } from 'components/nav/store/context'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   CHILL_PLAYLISTS,
   UPBEAT_PLAYLISTS,
@@ -152,7 +153,10 @@ const ExplorePage = ({
       if (!isUSDCPurchasesEnabled && isPremiumTracksTile) {
         return null
       }
-      const Icon = t.icon ? t.icon : Fragment
+      const Icon =
+        t.variant === Variant.SMART
+          ? smartCollectionIcons[t.playlist_name]
+          : t.icon
       if (t.variant === CollectionVariant.SMART) {
         return (
           <ColorTile
@@ -162,8 +166,7 @@ const ExplorePage = ({
             description={t.description}
             gradient={t.gradient}
             shadow={t.shadow}
-            // @ts-ignore
-            icon={<Icon />}
+            icon={<Icon height={512} width={512} color='staticWhite' />}
             goToRoute={goToRoute}
           />
         )

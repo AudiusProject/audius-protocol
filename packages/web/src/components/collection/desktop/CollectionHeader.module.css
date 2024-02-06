@@ -209,11 +209,6 @@
   min-height: 26px;
 }
 
-.imageIcon {
-  opacity: 0.3;
-  mix-blend-mode: overlay;
-}
-
 .imageEditButtonWrapper {
   opacity: 0;
   transition: opacity var(--expressive);
