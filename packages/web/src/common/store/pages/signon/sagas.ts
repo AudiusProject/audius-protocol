@@ -400,8 +400,8 @@ function* signUp() {
   const createUserMetadata = {
     name,
     handle,
-    profilePicture: signOn.profileImage?.file || null,
-    coverPhoto: signOn.coverPhoto?.file || null,
+    profilePicture: (signOn.profileImage?.file as File) || null,
+    coverPhoto: (signOn.coverPhoto?.file as File) || null,
     isVerified: signOn.verified,
     location
   }
