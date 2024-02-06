@@ -6,8 +6,8 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { useHistoryContext } from 'app/HistoryProvider'
+import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   HOME_PAGE,
   AUDIUS_TWITTER_LINK,

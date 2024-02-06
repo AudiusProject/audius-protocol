@@ -1,7 +1,7 @@
 import { Parallax } from 'react-scroll-parallax'
 
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import { useHistoryContext } from 'app/HistoryProvider'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'
 import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'

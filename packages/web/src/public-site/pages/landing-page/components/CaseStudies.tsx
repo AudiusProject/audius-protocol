@@ -4,8 +4,8 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import { useHistoryContext } from 'app/HistoryProvider'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import imgMerch from 'assets/img/publicSite/ImgMerch.jpg'
 import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import useCardWeight from 'hooks/useCardWeight'
