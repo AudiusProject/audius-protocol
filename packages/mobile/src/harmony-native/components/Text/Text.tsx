@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 
-import type { BaseTextProps } from '@audius/harmony'
-import { variantStylesMap } from '@audius/harmony'
+import { variantStylesMap } from '@audius/harmony/src/components/text'
+import type { BaseTextProps } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/native'
 import type { TextProps as NativeTextProps, TextStyle } from 'react-native'
 import { Text as TextBase } from 'react-native'
@@ -60,4 +60,4 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
 })
 
 export { variantStylesMap }
-export type { TextSize, TextColors } from '@audius/harmony'
+export type { TextSize } from '@audius/harmony/src/components/text/Text/types'

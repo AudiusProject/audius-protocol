@@ -41,5 +41,6 @@
     // Update these when no longer dependent on audius-client.
     // Issue is due to absolute paths into audius-client
     "strict": false
-  }
+  },
+    "exclude": ["node_modules", "harmony"],
 }

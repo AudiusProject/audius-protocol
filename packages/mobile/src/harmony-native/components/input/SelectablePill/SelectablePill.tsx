@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { cornerRadius } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { Pressable } from 'react-native'
 import type { GestureResponderEvent } from 'react-native'
@@ -37,7 +36,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     fullWidth,
     ...other
   } = props
-  const { color, motion } = useTheme()
+  const { color, motion, cornerRadius } = useTheme()
   const pressed = useSharedValue(0)
   const selected = useSharedValue(0)
   const [isPressing, setIsPressing] = useState(false)

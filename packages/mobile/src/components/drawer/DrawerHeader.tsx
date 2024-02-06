@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
-import type { IconComponent } from '@audius/harmony'
 import type { ImageSourcePropType } from 'react-native'
 import { TouchableOpacity, View, Image } from 'react-native'
 
+import type { IconComponent } from '@audius/harmony-native'
 import { Flex, IconClose } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'

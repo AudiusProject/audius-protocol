@@ -1,6 +1,7 @@
-import type { SpacingOptions } from '@audius/harmony'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
+
+import type { SpacingOptions } from '../foundations'
 
 export type MarginProps = {
   m?: SpacingOptions
@@ -11,6 +12,7 @@ export type MarginProps = {
   mx?: SpacingOptions
   my?: SpacingOptions
 }
+
 export const useMargin = <T extends MarginProps>(props: T) => {
   const { spacing } = useTheme()
   return css({

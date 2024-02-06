@@ -20,12 +20,13 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
+import type { TextColors } from '@audius/harmony-native'
 import { useTheme } from '@audius/harmony-native'
 
 import { useControlled } from '../../../hooks/useControlled'
 import { useFocusState } from '../../../hooks/useFocusState'
 import { mergeRefs } from '../../../utils/mergeRefs'
-import type { TextColors, TextSize } from '../../Text/Text'
+import type { TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
