@@ -7,7 +7,6 @@ const messages = {
   summary: 'Transaction Summary',
   premiumTrack: 'Premium Track',
   downloadableFiles: 'Downloadable Files',
-  allStemFiles: 'All Stem Files',
   payExtra: 'Pay Extra',
   total: 'Total',
   youPaid: 'You Paid',
@@ -46,30 +45,11 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(basePrice))
     })
   }
-  if (stemsPurchaseCount && downloadPurchaseCount) {
+  const downloadCount = (stemsPurchaseCount || 0) + (downloadPurchaseCount || 0)
+  if (downloadCount > 0) {
     items.push({
       id: 'premiumTrackDownload',
-      label: `${messages.downloadableFiles} (${
-        downloadPurchaseCount + stemsPurchaseCount
-      })`,
-      value: streamPurchaseCount
-        ? messages.included
-        : messages.price(formatPrice(basePrice)),
-      color: streamPurchaseCount ? 'subdued' : 'default'
-    })
-  } else if (downloadPurchaseCount) {
-    items.push({
-      id: 'premiumTrackDownload',
-      label: `${messages.downloadableFiles} (${downloadPurchaseCount})`,
-      value: streamPurchaseCount
-        ? messages.included
-        : messages.price(formatPrice(basePrice)),
-      color: streamPurchaseCount ? 'subdued' : 'default'
-    })
-  } else if (stemsPurchaseCount) {
-    items.push({
-      id: 'premiumTrackStems',
-      label: `${messages.allStemFiles} (${stemsPurchaseCount})`,
+      label: `${messages.downloadableFiles} (${downloadCount})`,
       value: streamPurchaseCount
         ? messages.included
         : messages.price(formatPrice(basePrice)),
