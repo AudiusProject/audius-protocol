@@ -2,7 +2,11 @@
   "extends": ["//"],
   "pipeline": {
     "build": {
-      "outputs": ["build/**", "build-ssr/**"],
+      "outputs": [
+        "build/**",
+        "build-ssr/**",
+        "../../node_modules/@brillout/vite-plugin-import-build/dist/autoImporter.js"
+      ],
       "dependsOn": ["^build"],
       "outputMode": "new-only",
       "env": ["VITE_ENVIRONMENT", "VITE_SSR"]

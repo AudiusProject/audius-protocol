@@ -87,11 +87,11 @@ web-build-ssr-staging:
         build-type: ssr:stage
         build-directory: packages/web/build-ssr-staging
         build-name: build-ssr-staging
+    # Need to persist vike auto importer so the CF worker finds the build
     - persist_to_workspace:
         root: ./
         paths:
-          - node_modules
-          - packages/web/node_modules
+          - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-test-staging:
   working_directory: ~/audius-protocol
@@ -135,11 +135,11 @@ web-build-ssr-production:
         build-type: ssr:prod
         build-directory: packages/web/build-ssr-production
         build-name: build-ssr-production
+    # Need to persist vike auto importer so the CF worker finds the build
     - persist_to_workspace:
         root: ./
         paths:
-          - node_modules
-          - packages/web/node_modules
+          - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-deploy-demo:
   working_directory: ~/audius-protocol
