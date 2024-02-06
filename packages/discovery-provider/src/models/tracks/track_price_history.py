@@ -1,8 +1,15 @@
-from sqlalchemy import BigInteger, Column, DateTime, Integer, text
+import enum
+
+from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
+
+
+class USDCPurchaseAccess(str, enum.Enum):
+    stream = "stream"
+    download = "download"
 
 
 class TrackPriceHistory(Base, RepresentableMixin):
@@ -11,6 +18,7 @@ class TrackPriceHistory(Base, RepresentableMixin):
     track_id = Column(Integer, nullable=False, primary_key=True)
     splits = Column(JSONB(), nullable=False)
     total_price_cents = Column(BigInteger, nullable=False)
+    access = Column(Enum(USDCPurchaseAccess), nullable=False)
     blocknumber = Column(BigInteger, nullable=False)
     block_timestamp = Column(DateTime, nullable=False, primary_key=True)
     created_at = Column(

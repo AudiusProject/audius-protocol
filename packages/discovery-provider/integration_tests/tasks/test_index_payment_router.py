@@ -83,6 +83,7 @@ test_entries = {
             "track_id": 1,
             "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
             "total_price_cents": 100,
+            "access": "stream",
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -91,6 +92,7 @@ test_entries = {
                 "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
             },
             "total_price_cents": 200,
+            "access": "stream",
         },
     ],
 }

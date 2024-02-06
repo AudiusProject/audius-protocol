@@ -337,6 +337,8 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        is_streamable=True,
+        is_downloadable=True,
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"

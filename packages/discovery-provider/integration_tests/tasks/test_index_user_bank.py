@@ -8,9 +8,9 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
     RECEIVER_ACCOUNT_WAUDIO_ADDRESS,
     RECIPIENT_USDC_USER_BANK_ADDRESS,
+    SENDER_ACCOUNT_WAUDIO_ADDRESS,
     SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER,
     SENDER_USDC_USER_BANK_ADDRESS,
-    SENDER_ACCOUNT_WAUDIO_ADDRESS,
     mock_failed_track_purchase_tx,
     mock_invalid_track_purchase_bad_splits_tx,
     mock_invalid_track_purchase_missing_splits_tx,
@@ -20,11 +20,11 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     mock_valid_create_usdc_token_account_tx,
     mock_valid_track_purchase_pay_extra_tx,
     mock_valid_track_purchase_tx,
+    mock_valid_transfer_prepare_withdrawal_tx,
+    mock_valid_transfer_withdrawal_tx,
     mock_valid_transfer_without_purchase_tx,
     mock_valid_waudio_transfer_between_user_banks,
     mock_valid_waudio_transfer_from_user_bank_to_external_address,
-    mock_valid_transfer_prepare_withdrawal_tx,
-    mock_valid_transfer_withdrawal_tx,
 )
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
@@ -119,6 +119,7 @@ test_entries = {
             "track_id": 1,
             "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
+            "access": "stream",
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -127,6 +128,7 @@ test_entries = {
                 EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
+            "access": "stream",
         },
     ],
 }

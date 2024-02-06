@@ -1,6 +1,15 @@
 import enum
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, String, text
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Integer,
+    String,
+    text,
+)
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -23,6 +32,8 @@ class USDCPurchase(Base, RepresentableMixin):
     extra_amount = Column(BigInteger, nullable=False, server_default=text("0"))
     content_type = Column(Enum(PurchaseType), nullable=False, index=True)
     content_id = Column(Integer, nullable=False)
+    is_streamable = Column(Boolean, nullable=False)
+    is_downloadable = Column(Boolean, nullable=False)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")
