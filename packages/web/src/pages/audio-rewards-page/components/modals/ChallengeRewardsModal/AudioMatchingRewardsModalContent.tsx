@@ -164,8 +164,8 @@ export const AudioMatchingRewardsModalContent = ({
               items={cooldownChallenges}
               summaryItem={cooldownChallengesSummary}
               secondaryTitle={messages.audio}
-              summaryLabelColor='secondary'
-              summaryValueColor='neutral'
+              summaryLabelColor='accent'
+              summaryValueColor='default'
             />
           ) : null}
         </>
