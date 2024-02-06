@@ -6,8 +6,13 @@ import {
   Track,
   UserMetadata
 } from '@audius/common/models'
-import { getDogEarType } from '@audius/common/utils'
-import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
+import { getDogEarType, Nullable } from '@audius/common/utils'
+import {
+  IconCart,
+  IconCollectible,
+  IconComponent,
+  IconSpecialAccess
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import { Icon } from 'components/Icon'
@@ -32,15 +37,19 @@ export type LockedTrackDetailsTileProps = {
 
 export const LockedTrackDetailsTile = ({
   track,
-  owner
+  owner,
+  showLabel
 }: {
   track: Track
   owner: UserMetadata
+  showLabel: boolean
 }) => {
   const {
     track_id: trackId,
     title,
-    stream_conditions: streamConditions
+    stream_conditions: streamConditions,
+    download_conditions: downloadConditions,
+    is_download_gated: isDownloadGated
   } = track
   const image = useTrackCoverArt(
     trackId,
@@ -50,14 +59,15 @@ export const LockedTrackDetailsTile = ({
   )
 
   const dogEarType = getDogEarType({
-    streamConditions
+    streamConditions,
+    downloadConditions
   })
   const label = `${title} by ${owner.name}`
   const isCollectibleGated = isContentCollectibleGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
-  let IconComponent = IconSpecialAccess
-  let message = messages.specialAccess
+  let IconComponent: Nullable<IconComponent>
+  let message: Nullable<string>
 
   if (isCollectibleGated) {
     IconComponent = IconCollectible
@@ -65,6 +75,12 @@ export const LockedTrackDetailsTile = ({
   } else if (isUSDCPurchaseGated) {
     IconComponent = IconCart
     message = messages.premiumTrack
+  } else if (isDownloadGated) {
+    IconComponent = null
+    message = null
+  } else {
+    IconComponent = IconSpecialAccess
+    message = messages.specialAccess
   }
 
   return (
@@ -81,14 +97,16 @@ export const LockedTrackDetailsTile = ({
         </div>
       ) : null}
       <div className={styles.trackTextWrapper}>
-        <div
-          className={cn(styles.gatedContentLabel, {
-            [styles.usdcContentLabel]: isUSDCPurchaseGated
-          })}
-        >
-          <Icon size='small' icon={IconComponent} />
-          <span>{message}</span>
-        </div>
+        {showLabel && IconComponent && message ? (
+          <div
+            className={cn(styles.gatedContentLabel, {
+              [styles.usdcContentLabel]: isUSDCPurchaseGated
+            })}
+          >
+            <Icon size='small' icon={IconComponent} />
+            <span>{message}</span>
+          </div>
+        ) : null}
         <p className={styles.trackTitle}>{title}</p>
         <div className={styles.trackOwner}>
           <span className={styles.by}>By</span>

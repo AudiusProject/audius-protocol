@@ -142,6 +142,7 @@ const RenderForm = ({
           <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
               <LockedTrackDetailsTile
+                showLabel={false}
                 track={track as unknown as Track}
                 owner={track.user}
               />
@@ -150,6 +151,7 @@ const RenderForm = ({
                 purchaseSummaryValues={purchaseSummaryValues}
                 isUnlocking={isUnlocking}
                 price={price}
+                track={track}
               />
             </Flex>
           </Flex>
