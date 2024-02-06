@@ -249,12 +249,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       DOWNLOAD_CONDITIONS
     )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
-    useField(IS_DOWNLOADABLE)
+    useTrackField<boolean>(IS_DOWNLOADABLE)
   const [
     { value: downloadRequiresFollow },
     ,
     { setValue: setDownloadRequiresFollow }
-  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
+  ] = useTrackField<boolean>(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: download }, , { setValue: setDownload }] =
     useTrackField<Download>(DOWNLOAD)
   const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
@@ -378,10 +378,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             is_downloadable: true,
             requires_follow: false
           })
+          const downloadableGateKeeper =
+            isDownloadable &&
+            lastGateKeeper.downloadable === 'stemsAndDownloads'
+              ? 'stemsAndDownloads'
+              : 'accessAndSale'
           setLastGateKeeper({
             ...lastGateKeeper,
             access: 'accessAndSale',
-            downloadable: 'accessAndSale'
+            downloadable: downloadableGateKeeper
           })
           break
         }

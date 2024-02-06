@@ -106,6 +106,7 @@ export const StemsAndDownloadsField = ({
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
+
   /**
    * Stream conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
