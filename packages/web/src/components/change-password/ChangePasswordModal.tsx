@@ -94,7 +94,7 @@ export const ChangePasswordModalForm = ({
           iconRight={
             page === ChangePasswordPage.NewPassword ? IconLock : IconArrowRight
           }
-          type={'submit'}
+          type='submit'
           isLoading={isSubmitting}
         >
           {page === ChangePasswordPage.NewPassword
@@ -132,7 +132,7 @@ export const ChangePasswordModal = (props: ChangePasswordModalProps) => {
       isOpen={isOpen}
       onClose={onClose}
       onClosed={handleClosed}
-      size={'small'}
+      size='small'
     >
       <ModalHeader onClose={onClose}>
         <ModalTitle title={messages.changePassword} icon={<IconLock />} />

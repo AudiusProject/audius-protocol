@@ -38,11 +38,11 @@ const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
   return (
     <Flex
       as={Form}
-      direction={'column'}
+      direction='column'
       justifyContent='space-between'
       css={{ flexGrow: 1 }}
     >
-      <Flex p='l' gap={'s'} direction='column' mt={'xl'}>
+      <Flex p='l' gap='s' direction='column' mt='xl'>
         <Text variant='heading' color='heading'>
           {messages.changeYourPassword}
         </Text>
@@ -52,14 +52,14 @@ const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
           <NewPasswordPage />
         </SlidingPages>
       </Flex>
-      <Paper shadow={'midInverted'} p={'l'}>
+      <Paper shadow='midInverted' p='l'>
         <Button
           fullWidth
           variant='primary'
           iconRight={
             page === ChangePasswordPage.NewPassword ? IconLock : IconArrowRight
           }
-          type={'submit'}
+          type='submit'
           isLoading={isSubmitting}
         >
           {page === ChangePasswordPage.NewPassword
