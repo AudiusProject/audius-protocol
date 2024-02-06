@@ -8,7 +8,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { ColorValue } from '@audius/stems'
 
 import { Expandable } from 'components/expandable/Expandable'
 

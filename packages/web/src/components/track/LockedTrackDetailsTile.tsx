@@ -38,11 +38,11 @@ export type LockedTrackDetailsTileProps = {
 export const LockedTrackDetailsTile = ({
   track,
   owner,
-  showLabel
+  showLabel = true
 }: {
   track: Track
   owner: UserMetadata
-  showLabel: boolean
+  showLabel?: boolean
 }) => {
   const {
     track_id: trackId,
