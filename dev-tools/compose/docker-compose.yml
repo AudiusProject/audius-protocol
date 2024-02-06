@@ -184,11 +184,11 @@ services:
 
   # DDEX
 
-  # ddex-web:
-  #   extends:
-  #     file: docker-compose.ddex.yml
-  #     service: ddex-web
-  #   <<: *common
+  ddex-web:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-web
+    <<: *common
 
   ddex-crawler:
     extends:

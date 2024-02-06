@@ -35,7 +35,7 @@ func main() {
 		if os.IsNotExist(err) {
 			log.Println("No .env file found, proceeding with existing environment variables")
 		} else {
-			log.Fatalf("Error loading .env file: %v", err)
+			log.Printf("Error loading .env file: %v\n", err)
 		}
 	}
 

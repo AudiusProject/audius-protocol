@@ -20,8 +20,7 @@ func Run(ctx context.Context) {
 	defer mongoClient.Disconnect(ctx)
 
 	bucketName := common.MustGetenv("AWS_BUCKET_RAW")
-	// ticker := time.NewTicker(3 * time.Minute)
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -31,7 +30,8 @@ func Run(ctx context.Context) {
 		case <-ticker.C:
 			lastPolledTime, err := getLastPolledTime(mongoClient, ctx)
 			if err != nil {
-				panic(err)
+				log.Println("Failed to retrieve s3 raw bucket's last polled time:", err)
+				continue
 			}
 
 			uploads, err := pollS3Bucket(s3Client, bucketName, lastPolledTime)
@@ -44,13 +44,14 @@ func Run(ctx context.Context) {
 				err = persistUploads(mongoClient, bucketName, uploads, ctx)
 				if err != nil {
 					log.Println("Error inserting into mongodb:", err)
+					continue
 				}
 				log.Printf("Processed %d new uploads", len(uploads))
 			}
 
 			err = updateLastPolledTime(mongoClient, time.Now(), ctx)
 			if err != nil {
-				log.Printf("Failed to update s3 raw bucket's last polled time: %v\n", err)
+				log.Println("Failed to update s3 raw bucket's last polled time:", err)
 			}
 
 			if ctx.Err() != nil {

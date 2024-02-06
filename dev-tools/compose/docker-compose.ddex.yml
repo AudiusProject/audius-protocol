@@ -1,26 +1,26 @@
 version: '3.9'
 
 services:
-  # ddex-web:
-  #   container_name: ddex-web
-  #   build:
-  #     context: ${PROJECT_ROOT}
-  #     dockerfile: ${PROJECT_ROOT}/packages/ddex/webapp/Dockerfile
-  #     args:
-  #       app_name: ddex-web
-  #       TURBO_TEAM: '${TURBO_TEAM}'
-  #       TURBO_TOKEN: '${TURBO_TOKEN}'
-  #   environment:
-  #     - DDEX_PORT=9000
-  #     - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-  #   env_file:
-  #     - ${PROJECT_ROOT}/packages/ddex/.env
-  #   ports:
-  #     - "9000:9000"
-  #   networks:
-  #     - ddex-network
-  #   profiles:
-  #     - ddex
+  ddex-web:
+    container_name: ddex-web
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/webapp/Dockerfile
+      args:
+        app_name: ddex-web
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    environment:
+      - DDEX_PORT=9000
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${PROJECT_ROOT}/packages/ddex/.env
+    ports:
+      - "9000:9000"
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
 
   ddex-crawler:
     container_name: ddex-crawler
