@@ -1,11 +1,11 @@
-import type { Icon } from 'app/harmony-native/icons'
+import type { IconComponent } from 'app/harmony-native/icons'
 
 import { Text } from '../Text/Text'
 import type { PaperProps } from '../layout'
 import { Paper } from '../layout'
 
 export type HintProps = {
-  icon: Icon
+  icon: IconComponent
 } & PaperProps
 
 export const Hint = (props: HintProps) => {

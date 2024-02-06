@@ -15,9 +15,17 @@ export enum PayExtraPreset {
   NONE = 'none'
 }
 
-export type PurchaseableTrackMetadata = UserTrackMetadata & {
+export type PurchaseableTrackStreamMetadata = UserTrackMetadata & {
   stream_conditions: USDCPurchaseConditions
 }
+
+export type PurchaseableTrackDownloadMetadata = UserTrackMetadata & {
+  download_conditions: USDCPurchaseConditions
+}
+
+export type PurchaseableTrackMetadata =
+  | PurchaseableTrackStreamMetadata
+  | PurchaseableTrackDownloadMetadata
 
 export type USDCPurchaseConfig = {
   minContentPriceCents: number

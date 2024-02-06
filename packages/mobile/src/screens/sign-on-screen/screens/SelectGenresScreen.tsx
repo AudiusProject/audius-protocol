@@ -57,6 +57,7 @@ const SelectGenresFieldArray = () => {
       <Flex gap='s' direction='row' wrap='wrap'>
         {selectableGenres.map((genre) => (
           <MemoSelectablePill
+            type='checkbox'
             label={genre.label}
             onPress={() => {
               handlePress(genre.value)

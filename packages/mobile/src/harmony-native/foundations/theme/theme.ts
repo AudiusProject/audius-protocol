@@ -1,4 +1,4 @@
-import { themes as harmonyThemes } from '@audius/harmony'
+import { themes as harmonyThemes } from '@audius/harmony/src/foundations/theme/theme'
 import { mapValues } from 'lodash'
 
 import { colorTheme } from '../color/color'

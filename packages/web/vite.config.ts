@@ -12,6 +12,8 @@ import svgr from 'vite-plugin-svgr'
 import { env as APP_ENV } from './src/services/env'
 import path from 'path'
 
+const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
+
 const fixAcceptHeader404 = () => ({
   // Fix issue with vite dev server and `wait-on`
   // https://github.com/vitejs/vite/issues/9520
@@ -42,6 +44,12 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true
+      },
+      rollupOptions: {
+        output: {
+          sourcemapBaseUrl:
+            env.VITE_ENV === 'production' ? SOURCEMAP_URL : undefined
+        }
       }
     },
     define: {

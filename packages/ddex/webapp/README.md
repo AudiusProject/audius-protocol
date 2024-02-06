@@ -22,7 +22,7 @@ Notes:
 ### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-[dev|staging]-<label/distributor>-raw`. Use all the defaults, including "ACLs disabled"
 2. Do the same for a bucket named `ddex-[dev|staging]-<label/distributor>-indexed`. Use all the defaults, including "ACLs disabled"
-3. Create an IAM Policy (here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/policies/create) (or search IAM and click Policies > Create Policy).
+3. Create an IAM Policy (here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/policies/create) (or search IAM and click Policies > Create Policy). Select S3.
     * Under `Read` choose `GetObject` and `GetObjectAttributes`.
     * Under `Write` choose `DeleteObject` and `PutObject`.
     * Under `List` choose `ListBucket`.

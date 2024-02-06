@@ -1,3 +1,5 @@
+import { ChangeEvent, useCallback } from 'react'
+
 import {
   savedPageActions,
   savedPageSelectors,
@@ -50,17 +52,25 @@ type LibraryCategorySelectionMenuProps = {
   variant?: 'desktop' | 'mobile'
 }
 
-export const LibraryCategorySelectionMenu = ({
-  currentTab,
-  variant = 'desktop'
-}: LibraryCategorySelectionMenuProps) => {
+export const LibraryCategorySelectionMenu = (
+  props: LibraryCategorySelectionMenuProps
+) => {
+  const { currentTab, variant = 'desktop' } = props
   const dispatch = useDispatch()
   const selectedCategory = useSelector((state: CommonState) =>
     getCategory(state, { currentTab })
   )
-  const handleClick = (value: LibraryCategoryType) => {
-    dispatch(setSelectedCategory({ currentTab, category: value }))
-  }
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      dispatch(
+        setSelectedCategory({
+          currentTab,
+          category: e.target.value as LibraryCategoryType
+        })
+      )
+    },
+    [currentTab, dispatch]
+  )
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
@@ -69,19 +79,21 @@ export const LibraryCategorySelectionMenu = ({
       : CATEGORIES_WITHOUT_PURCHASED
 
   return (
-    <div role='radiogroup' className={styles.container}>
-      {categories.map((c) => (
-        <SelectablePill
-          role='radio'
-          size={variant === 'mobile' ? 'small' : 'large'}
-          aria-checked={selectedCategory === c.value ? 'true' : 'false'}
-          icon={variant === 'mobile' ? undefined : c.icon}
-          key={c.value}
-          isSelected={selectedCategory === c.value}
-          onClick={() => handleClick(c.value)}
-          label={c.label}
-        />
-      ))}
+    <div role='radiogroup' className={styles.container} onChange={handleChange}>
+      {categories.map((category) => {
+        const { icon, value, label } = category
+        return (
+          <SelectablePill
+            key={value}
+            type='radio'
+            label={label}
+            value={value}
+            size={variant === 'mobile' ? 'small' : 'large'}
+            icon={variant === 'mobile' ? undefined : icon}
+            isSelected={selectedCategory === value}
+          />
+        )
+      })}
     </div>
   )
 }

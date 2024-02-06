@@ -5,7 +5,8 @@ import { StringUSDC } from './Wallet'
 export enum USDCTransactionType {
   PURCHASE_STRIPE = 'purchase_stripe',
   PURCHASE_CONTENT = 'purchase_content',
-  TRANSFER = 'transfer'
+  TRANSFER = 'transfer',
+  WITHDRAWAL = 'withdrawal'
 }
 
 export enum USDCTransactionMethod {

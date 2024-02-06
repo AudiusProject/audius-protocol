@@ -60,9 +60,6 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   const envVars = useEnvVars()
   const { didInit, getFeatureEnabled } = useRemoteConfig()
 
-  // @ts-expect-error ts(2741). This is only here for debugging and should eventually be removed
-  window.audiusSdk = audiusSdk
-
   /**
    * Decodes a string id into an int. Returns null if an invalid ID. */
   const decodeHashId = (id: string): number | null => {
@@ -99,75 +96,73 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const initSdk = () => {
-    if (!window.Web3 || !didInit) {
+    if (audiusSdk || !window.Web3 || !didInit) {
       return
     }
 
-    if (!audiusSdk) {
-      const logger = new Logger({ logLevel: 'info' })
+    const logger = new Logger({ logLevel: 'info' })
 
-      // Determine config to use
-      let config = developmentConfig as ServicesConfig
-      let initialSelectedNode = 'http://audius-protocol-discovery-provider-1'
-      if (envVars.env === 'prod') {
-        config = productionConfig as ServicesConfig
-        initialSelectedNode = 'https://discoveryprovider.audius.co'
-      } else if (envVars.env === 'stage') {
-        config = stagingConfig as ServicesConfig
-        initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
-      }
-
-      // Get keys
-      if (!envVars.ddexKey) {
-        setIsLoading(false)
-        console.error(`Skipping sdk initialization: ddexKey missing from env`)
-        return
-      }
-
-      // Init SDK
-      const discoveryNodeSelector = new DiscoveryNodeSelector({
-        initialSelectedNode
-      })
-      const storageNodeSelector = new StorageNodeSelector({
-        auth: new AppAuth(envVars.ddexKey),
-        discoveryNodeSelector,
-        bootstrapNodes: config.storageNodes,
-        logger
-      })
-      const sdkInst = sdk({
-        services: {
-          discoveryNodeSelector,
-          entityManager: new EntityManager({
-            discoveryNodeSelector,
-            web3ProviderUrl: config.web3ProviderUrl,
-            contractAddress: config.entityManagerContractAddress,
-            identityServiceUrl: config.identityServiceUrl,
-            useDiscoveryRelay: true,
-            logger
-          }),
-          storageNodeSelector,
-          logger
-        },
-        apiKey: envVars.ddexKey,
-        appName: 'DDEX Demo'
-      })
-
-      let env: OAuthEnv = 'production'
-      if (envVars.env === 'stage') {
-        env = 'staging'
-      }
-      sdkInst.oauth!.init({
-        env,
-        successCallback: (user: DecodedUserToken) => {
-          setOauthError('')
-          checkUserAllowlisted(user)
-        },
-        errorCallback: (error) => {
-          setOauthError(error)
-        }
-      })
-      setAudiusSdk(sdkInst as AudiusSdkType)
+    // Determine config to use
+    let config = developmentConfig as ServicesConfig
+    let initialSelectedNode = 'http://audius-protocol-discovery-provider-1'
+    if (envVars.env === 'prod') {
+      config = productionConfig as ServicesConfig
+      initialSelectedNode = 'https://discoveryprovider.audius.co'
+    } else if (envVars.env === 'stage') {
+      config = stagingConfig as ServicesConfig
+      initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
     }
+
+    // Get keys
+    if (!envVars.ddexKey) {
+      setIsLoading(false)
+      console.error(`Skipping sdk initialization: ddexKey missing from env`)
+      return
+    }
+
+    // Init SDK
+    const discoveryNodeSelector = new DiscoveryNodeSelector({
+      initialSelectedNode
+    })
+    const storageNodeSelector = new StorageNodeSelector({
+      auth: new AppAuth(envVars.ddexKey),
+      discoveryNodeSelector,
+      bootstrapNodes: config.storageNodes,
+      logger
+    })
+    const sdkInst = sdk({
+      services: {
+        discoveryNodeSelector,
+        entityManager: new EntityManager({
+          discoveryNodeSelector,
+          web3ProviderUrl: config.web3ProviderUrl,
+          contractAddress: config.entityManagerContractAddress,
+          identityServiceUrl: config.identityServiceUrl,
+          useDiscoveryRelay: true,
+          logger
+        }),
+        storageNodeSelector,
+        logger
+      },
+      apiKey: envVars.ddexKey,
+      appName: 'DDEX Demo'
+    })
+
+    let env: OAuthEnv = 'production'
+    if (envVars.env === 'stage') {
+      env = 'staging'
+    }
+    sdkInst.oauth!.init({
+      env,
+      successCallback: (user: DecodedUserToken) => {
+        setOauthError('')
+        checkUserAllowlisted(user)
+      },
+      errorCallback: (error) => {
+        setOauthError(error)
+      }
+    })
+    setAudiusSdk(sdkInst as AudiusSdkType)
 
     setIsLoading(false)
   }
@@ -175,7 +170,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     initSdk()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [didInit])
+  }, [didInit, envVars])
 
   const contextValue = {
     audiusSdk,

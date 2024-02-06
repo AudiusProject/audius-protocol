@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { TextInputProps as RNTextInputProps } from 'react-native'
 
-import type { Icon, IconProps } from '../../../icons'
+import type { IconComponent, IconProps } from '../../../icons'
 
 export enum TextInputSize {
   SMALL = 'small',
@@ -72,11 +72,11 @@ export type TextInputProps = RNTextInputProps & {
   /**
    * Floating icon on the lefthand side of the input. Note: will float to the left of the label & content
    */
-  startIcon?: Icon
+  startIcon?: IconComponent
   /**
    * Floating icon on the righthand side of the input
    */
-  endIcon?: Icon
+  endIcon?: IconComponent
   /**
    * Override props to supply the start or end Icon
    */

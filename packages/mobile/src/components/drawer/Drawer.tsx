@@ -1,7 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
-import type { IconComponent } from '@audius/harmony'
 import type {
   GestureResponderEvent,
   ImageSourcePropType,
@@ -19,6 +18,7 @@ import {
 import type { Edge } from 'react-native-safe-area-context'
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 
+import type { IconComponent } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { attachToDy } from 'app/utils/animation'
 

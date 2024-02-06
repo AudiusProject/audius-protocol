@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 
-import type { IconColors } from '@audius/harmony'
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle, ViewStyle } from 'react-native'
@@ -10,6 +9,7 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
+import type { IconColors } from '@audius/harmony-native'
 import type { IconProps } from 'app/harmony-native/icons'
 
 import { useTheme } from '../../../foundations/theme'

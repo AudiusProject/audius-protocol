@@ -1,5 +1,5 @@
 import type { PickRename } from '@audius/common/utils'
-import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony'
+import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony/src/components/avatar/types'
 import { css } from '@emotion/native'
 import { View } from 'react-native'
 import type { SetRequired } from 'type-fest'
@@ -12,6 +12,7 @@ import type { FastImageProps } from '../FastImage/FastImage'
 import { FastImage } from '../FastImage/FastImage'
 
 type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
+  // Renamed priority prop to imagePriority
   Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
