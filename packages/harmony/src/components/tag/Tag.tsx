@@ -30,6 +30,7 @@ export const Tag = (props: TagProps) => {
     display: 'inline-flex',
     alignItems: 'center',
     height: 23,
+    boxSizing: 'border-box',
     padding: '5.5px 8px',
     // gap: spacing.xs,
     borderRadius: cornerRadius.xs,

@@ -95,7 +95,10 @@ export const SelectablePill = (props: SelectablePillProps) => {
       return (
         <label css={rootCss}>
           {pillContent}
-          <HiddenInput {...rest} checked={checked ?? isSelected} />
+          <HiddenInput
+            {...rest}
+            checked={type === 'checkbox' ? checked ?? isSelected : undefined}
+          />
         </label>
       )
     }
