@@ -13,7 +13,7 @@ export default function createS3() {
     },
     region: process.env.AWS_REGION,
   }
-  const bucket = process.env.AWS_BUCKET
+  const bucket = process.env.AWS_BUCKET_RAW
   const client = new S3Client(config)
 
   async function getSignedFileUrl(

@@ -8,107 +8,23 @@ import styles from './Collection.module.css'
 
 type CollectionT = 'uploads' | 'indexed' | 'parsed' | 'published'
 
-const Table = ({
-  collection,
-  data
-}: {
-  collection: CollectionT
-  data: any
-}) => {
-  switch (collection) {
-    case 'uploads':
-      return (
-        <table className={styles.styledTable}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Uploaded By</th>
-              <th>Uploaded At</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item: any) => (
-              <tr key={item.id}>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
-    case 'indexed':
-      return (
-        <table className={styles.styledTable}>
-          <thead>
-            <tr>
-              <th>Upload ID</th>
-              <th>TODO</th>
-              <th>TODO</th>
-              <th>TODO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item: any) => (
-              <tr key={item.id}>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
-    case 'parsed':
-      return (
-        <table className={styles.styledTable}>
-          <thead>
-            <tr>
-              <th>Upload ID</th>
-              <th>TODO</th>
-              <th>TODO</th>
-              <th>TODO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item: any) => (
-              <tr key={item.id}>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
-    case 'published':
-      return (
-        <table className={styles.styledTable}>
-          <thead>
-            <tr>
-              <th>Upload ID</th>
-              <th>TODO</th>
-              <th>TODO</th>
-              <th>TODO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item: any) => (
-              <tr key={item.id}>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-                <td>TODO</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
-  }
+const Table = ({ data }: { data: any }) => {
+  return (
+    <table className={styles.styledTable}>
+      <thead>
+        <tr>
+          <th>Items</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.items.map((item: any) => (
+          <tr key={item._id}>
+            <td>{JSON.stringify(item)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
 }
 
 export const Collection = ({ collection }: { collection: CollectionT }) => {
@@ -167,7 +83,7 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
-          {data && <Table collection={collection} data={data} />}
+          {data && <Table data={data} />}
 
           <Flex justifyContent='space-between'>
             <Button
