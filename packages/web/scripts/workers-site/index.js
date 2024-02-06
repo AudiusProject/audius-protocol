@@ -5,7 +5,7 @@ import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 
 const assetManifest = JSON.parse(manifestJSON)
 
-const SSR = false
+const SSR = true
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
