@@ -10,7 +10,8 @@ import {
   IconSignOut,
   Flex,
   Text,
-  IconComponent
+  IconComponent,
+  useTheme
 } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import { debounce } from 'lodash'
@@ -83,6 +84,7 @@ const AccountSettingsItem = ({
   disabled,
   onClick
 }: AccountSettingsItemProps) => {
+  const { color } = useTheme()
   return (
     <Flex
       direction='column'
@@ -92,9 +94,9 @@ const AccountSettingsItem = ({
       backgroundColor='white'
       w='100%'
       css={{
-        borderTop: '1px solid var(--harmony-border-default)',
+        borderTop: `1px solid ${color.border.default}`,
         '&:last-child': {
-          borderBottom: '1px solid var(--harmony-border-default)'
+          borderBottom: `1px solid ${color.border.default}`
         }
       }}
     >
