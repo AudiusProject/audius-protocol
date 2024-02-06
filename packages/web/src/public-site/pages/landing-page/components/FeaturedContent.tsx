@@ -12,6 +12,7 @@ import { StorageNodeSelectorService } from '@audius/sdk'
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
 import audiusWeeklyPlaylistImg from 'assets/img/publicSite/AudiusWeeklyPlaylistArt.png'
 import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpeg'
@@ -149,6 +150,7 @@ const getImageUrl = (
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
+  const { history } = useHistoryContext()
   const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
@@ -196,7 +198,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <MobilePlaylistTile
                   key={p.link}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -220,7 +226,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}
@@ -249,7 +256,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <DesktopPlaylistTile
                   key={p.title}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -273,7 +284,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}
