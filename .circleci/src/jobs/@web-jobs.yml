@@ -184,7 +184,7 @@ web-deploy-staging-cloudflare:
         build-type: staging
         environment: staging
         copy-robots: false
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-release-candidate:
   working_directory: ~/audius-protocol
@@ -195,7 +195,7 @@ web-deploy-release-candidate:
         build-type: production
         environment: release
         copy-robots: true
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-staging-release-candidate:
   working_directory: ~/audius-protocol
@@ -206,7 +206,7 @@ web-deploy-staging-release-candidate:
         build-type: staging
         environment: staging-release
         copy-robots: true
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-production-s3:
   working_directory: ~/audius-protocol
