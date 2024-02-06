@@ -8,6 +8,7 @@ import { StorageNodeSelectorService } from '@audius/sdk'
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
 import audiusWeeklyPlaylistImg from 'assets/img/publicSite/AudiusWeeklyPlaylistArt.png'
 import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpeg'
@@ -23,7 +24,6 @@ import { env } from 'services/env'
 import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Featured Content',

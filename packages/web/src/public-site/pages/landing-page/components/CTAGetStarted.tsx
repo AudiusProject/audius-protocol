@@ -6,6 +6,7 @@ import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useTrail, animated } from 'react-spring'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
 import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
 import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
@@ -15,7 +16,6 @@ import { TRENDING_PAGE } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './CTAGetStarted.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
 

@@ -1,5 +1,6 @@
-import { History } from 'history'
 import { MouseEvent } from 'react'
+
+import { History } from 'history'
 
 import {
   AUDIUS_PRESS_LINK,

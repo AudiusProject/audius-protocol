@@ -7,6 +7,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import {
   HOME_PAGE,
   AUDIUS_TWITTER_LINK,
@@ -26,7 +27,6 @@ import {
 
 import styles from './Footer.module.css'
 import { handleClickRoute } from './handleClickRoute'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const bottomLinks = [
   {

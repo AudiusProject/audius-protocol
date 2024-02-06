@@ -4,6 +4,7 @@ import { IconCaretRight, IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import HeroBackgroundMobile from 'assets/img/publicSite/HeroBG.webp'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import HeroBackgroundXL from 'assets/img/publicSite/HeroBG@3x.webp'
@@ -17,7 +18,6 @@ import { getIOSAppLink } from 'utils/appLinks'
 import { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } from 'utils/route'
 
 import styles from './Hero.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Artists Deserve More',
@@ -37,7 +37,6 @@ const iOSDownloadLink = getIOSAppLink()
 export const Hero = (props: HeroProps) => {
   const parallaxController = useParallaxController()
   const { history } = useHistoryContext()
-  console.log('history', history)
   const { onImageLoad, isMobile } = props
   const onImgSet = useCallback(() => {
     if (!isMobile) parallaxController?.update()

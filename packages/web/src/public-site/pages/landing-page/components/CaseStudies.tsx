@@ -5,6 +5,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import imgMerch from 'assets/img/publicSite/ImgMerch.jpg'
 import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import useCardWeight from 'hooks/useCardWeight'
@@ -13,7 +14,6 @@ import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
 
 import styles from './CaseStudies.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Case Studies',

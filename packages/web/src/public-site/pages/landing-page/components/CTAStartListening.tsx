@@ -1,6 +1,7 @@
 import { IconCaretRight } from '@audius/harmony'
 import { Parallax } from 'react-scroll-parallax'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'
 import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
@@ -9,7 +10,6 @@ import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { TRENDING_PAGE } from 'utils/route'
 
 import styles from './CTAStartListening.module.css'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   title: 'Artists Deserve More',

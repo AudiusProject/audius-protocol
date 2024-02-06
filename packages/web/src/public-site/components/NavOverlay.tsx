@@ -14,6 +14,7 @@ import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import {
   AUDIUS_BLOG_LINK,
@@ -30,7 +31,6 @@ import {
 
 import styles from './NavOverlay.module.css'
 import { handleClickRoute } from './handleClickRoute'
-import { useHistoryContext } from 'app/HistoryProvider'
 
 const messages = {
   signUp: 'Sign Up',
