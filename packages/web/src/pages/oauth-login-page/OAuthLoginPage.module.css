@@ -84,10 +84,6 @@
   display: flex;
 }
 
-.permissionIcon {
-  color: var(--neutral);
-}
-
 .visibilityIconWrapper {
   width: 15px;
 }
