@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
 import IconCaretRight from 'assets/img/iconCaretRight.svg'
+import { useHistoryContext } from 'app/HistoryProvider'
 import imgMerch from 'assets/img/publicSite/ImgMerch.jpg'
 import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import useCardWeight from 'hooks/useCardWeight'
@@ -102,6 +103,7 @@ type CaseStudiesProps = {
 }
 
 const CaseStudies = (props: CaseStudiesProps) => {
+  const { history } = useHistoryContext()
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -131,7 +133,11 @@ const CaseStudies = (props: CaseStudiesProps) => {
           <div
             key={i}
             className={cn(styles.mobileCard, card.containerClass)}
-            onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              card.link,
+              props.setRenderPublicSite,
+              history
+            )}
             style={{
               backgroundBlendMode: 'multiply',
               background: `url(${card.image}) center/cover, ${card.backgroundGradient}`
@@ -170,7 +176,11 @@ const CaseStudies = (props: CaseStudiesProps) => {
             <Card
               key={card.title}
               {...card}
-              onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
+              onClick={handleClickRoute(
+                card.link,
+                props.setRenderPublicSite,
+                history
+              )}
             />
           ))}
         </div>

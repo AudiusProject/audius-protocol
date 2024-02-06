@@ -4,6 +4,7 @@ import { IconCaretRight, IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import HeroBackgroundMobile from 'assets/img/publicSite/HeroBG.webp'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import HeroBackgroundXL from 'assets/img/publicSite/HeroBG@3x.webp'
@@ -35,6 +36,7 @@ const iOSDownloadLink = getIOSAppLink()
 
 export const Hero = (props: HeroProps) => {
   const parallaxController = useParallaxController()
+  const { history } = useHistoryContext()
   const { onImageLoad, isMobile } = props
   const onImgSet = useCallback(() => {
     if (!isMobile) parallaxController?.update()
@@ -60,14 +62,22 @@ export const Hero = (props: HeroProps) => {
             <div>{messages.subtitle}</div>
           </div>
           <button
-            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              TRENDING_PAGE,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.ctaButton}
           >
             <span className={styles.ctaMessage}>{messages.cta}</span>
             <IconCaretRight />
           </button>
           <button
-            onClick={handleClickRoute(APP_REDIRECT, props.setRenderPublicSite)}
+            onClick={handleClickRoute(
+              APP_REDIRECT,
+              props.setRenderPublicSite,
+              history
+            )}
             className={styles.downloadButton}
           >
             <IconDownload />
@@ -154,7 +164,8 @@ export const Hero = (props: HeroProps) => {
             <button
               onClick={handleClickRoute(
                 TRENDING_PAGE,
-                props.setRenderPublicSite
+                props.setRenderPublicSite,
+                history
               )}
               className={styles.ctaButton}
             >
@@ -164,7 +175,8 @@ export const Hero = (props: HeroProps) => {
             <button
               onClick={handleClickRoute(
                 DOWNLOAD_START_LINK,
-                props.setRenderPublicSite
+                props.setRenderPublicSite,
+                history
               )}
               className={styles.downloadButton}
             >
