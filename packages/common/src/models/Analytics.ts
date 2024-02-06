@@ -404,6 +404,14 @@ export enum Name {
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
   WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START = 'Withdraw USDC: Create Destination Token Account Started',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS = 'Withdraw USDC: Create Destination Token Account Success',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED = 'Withdraw USDC: Create Destination Token Account Failed',
+  WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET = 'Withdraw USDC: Transfer to Root Wallet',
+  WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY = 'Withdraw USDC: Coinflow Withdrawal Ready',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION = 'Withdraw USDC: Coinflow Send Transaction',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED = 'Withdraw USDC: Coinflow Send Transaction Failed',
+  WITHDRAW_USDC_CANCELLED = 'Withdraw USDC: Cancelled',
   WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
   WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
   WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
@@ -1918,6 +1926,45 @@ export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
 export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
   eventName: Name.WITHDRAW_USDC_FAILURE
 }
+export type WithdrawUSDCCancelled = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_CANCELLED
+}
+
+export type WithdrawUSDCCreateDestAccountStarted =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START
+  }
+
+export type WithdrawUSDCCreateDestAccountSuccess =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS
+  }
+
+export type WithdrawUSDCCreateDestAccountFailure =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED
+  }
+
+export type WithdrawUSDCTransferToRootWallet =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET
+  }
+
+export type WithdrawUSDCCoinflowWithdrawalReady =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY
+  }
+
+export type WithdrawUSDCCoinflowSendTransaction = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION
+  signature: string
+}
+
+export type WithdrawUSDCCoinflowSendTransactionFailed = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED
+  error?: string
+  errorCode?: string | number
+}
 
 export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
   eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
@@ -2424,6 +2471,14 @@ export type AllTrackingEvents =
   | WithdrawUSDCRequested
   | WithdrawUSDCSuccess
   | WithdrawUSDCFailure
+  | WithdrawUSDCCancelled
+  | WithdrawUSDCCreateDestAccountStarted
+  | WithdrawUSDCCreateDestAccountSuccess
+  | WithdrawUSDCCreateDestAccountFailure
+  | WithdrawUSDCTransferToRootWallet
+  | WithdrawUSDCCoinflowWithdrawalReady
+  | WithdrawUSDCCoinflowSendTransaction
+  | WithdrawUSDCCoinflowSendTransactionFailed
   | WithdrawUSDCHelpLinkClicked
   | WithdrawUSDCTxLinkClicked
   | StripeSessionCreationError

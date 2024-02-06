@@ -5,6 +5,7 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
 import { useAppContext } from '~/context'
+import { Name } from '~/models/Analytics'
 import {
   decorateCoinflowWithdrawalTransaction,
   relayTransaction,
@@ -25,7 +26,10 @@ type CoinflowAdapter = {
  * signed with the current user's Solana root wallet and sent/confirmed via Relay.
  */
 export const useCoinflowWithdrawalAdapter = () => {
-  const { audiusBackend } = useAppContext()
+  const {
+    audiusBackend,
+    analytics: { make, track }
+  } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const feePayerOverride = useSelector(getFeePayer)
 
@@ -62,19 +66,33 @@ export const useCoinflowWithdrawalAdapter = () => {
                 errorCode,
                 finalTransaction
               })
+              track(
+                make({
+                  eventName:
+                    Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED,
+                  error: error ?? undefined,
+                  errorCode: errorCode ?? undefined
+                })
+              )
               throw new Error(
                 `Relaying Coinflow transaction failed: ${
                   error ?? 'Unknown error'
                 }`
               )
             }
+            track(
+              make({
+                eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION,
+                signature: res
+              })
+            )
             return res
           }
         }
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride])
+  }, [audiusBackend, feePayerOverride, make, track])
 
   return adapter
 }
