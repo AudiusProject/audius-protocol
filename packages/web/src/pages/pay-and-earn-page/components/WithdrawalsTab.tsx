@@ -217,7 +217,7 @@ export const useWithdrawals = () => {
       userId,
       method: full.GetUSDCTransactionsMethodEnum.Send
     },
-    { force: true }
+    { disabled: !userId, force: true }
   )
 
   const status = combineStatuses([dataStatus, countStatus])
