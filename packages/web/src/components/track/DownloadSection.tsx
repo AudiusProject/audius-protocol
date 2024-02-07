@@ -73,7 +73,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shallowEqual
   )
   const { stemTracks } = useCurrentStems({ trackId })
-  const { hasStreamAccess } = useGatedContentAccess(track)
+  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(track)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -84,7 +84,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   // Hide the download all button if there aren't multiple downloads and if the user
   // happens to not have stream access to the track
-  const shouldDisplayDownloadAll = stemTracks.length > 1 && hasStreamAccess
+  const shouldDisplayDownloadAll =
+    stemTracks.length > 1 && hasStreamAccess && hasDownloadAccess
 
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
