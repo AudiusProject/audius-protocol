@@ -58,7 +58,9 @@ const messages = {
     `Price must be at least $${formatPrice(minPrice)}.`,
   priceTooHigh: (maxPrice: number) =>
     `Price must be less than $${formatPrice(maxPrice)}.`,
-  noDownloadableAssets:
+  losslessNoDownloadableAssets:
+    'You must enable full track download or upload a stem file to provide lossless files.',
+  gatedNoDownloadableAssets:
     'You must enable the full track download or upload a stem file before setting download availability.'
 }
 
@@ -114,6 +116,22 @@ export const stemsAndDownloadsSchema = ({
       }
     )
     .refine(
+      // cannot provide lossless files if no downloadable assets
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const isOriginalAvailable = formValues[IS_ORIGINAL_AVAILABLE]
+        const isDownloadable = formValues[IS_DOWNLOADABLE]
+        const stems = formValues[STEMS]
+        const hasStems = stems.length > 0
+        const hasDownloadableAssets = isDownloadable || hasStems
+        return !isOriginalAvailable || hasDownloadableAssets
+      },
+      {
+        message: messages.losslessNoDownloadableAssets,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
+    .refine(
       // cannot be download gated if no downloadable assets
       (values) => {
         const formValues = values as StemsAndDownloadsFormValues
@@ -130,7 +148,7 @@ export const stemsAndDownloadsSchema = ({
         return streamConditions || !isDownloadGated || hasDownloadableAssets
       },
       {
-        message: messages.noDownloadableAssets,
+        message: messages.gatedNoDownloadableAssets,
         path: [IS_DOWNLOAD_GATED]
       }
     )
