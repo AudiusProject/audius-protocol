@@ -1985,8 +1985,7 @@ export class AudiusAPIClient {
   _encodeOrThrow(id: ID): OpaqueID {
     const encoded = encodeHashId(id)
     if (!encoded) {
-      return 'abc'
-      // throw new Error(`Unable to encode id: ${id}`)
+      throw new Error(`Unable to encode id: ${id}`)
     }
     return encoded
   }
