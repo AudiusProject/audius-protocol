@@ -82,9 +82,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
 
-  // Hide the download all button if there aren't multiple downloads and if the user
-  // happens to not have stream access to the track
-  const shouldDisplayDownloadAll = stemTracks.length > 1 && hasDownloadAccess
+  const shouldDisplayDownloadAll =
+    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
+    hasDownloadAccess
 
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
