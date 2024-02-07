@@ -43,8 +43,8 @@ func RunNewIndexer(ctx context.Context) {
 		s3Downloader:  s3manager.NewDownloader(s3Session),
 		s3Uploader:    s3manager.NewUploader(s3Session),
 		mongoClient:   mongoClient,
-		rawBucket:     os.Getenv("AWS_BUCKET_RAW"),
-		indexedBucket: os.Getenv("AWS_BUCKET_INDEXED"),
+		rawBucket:     common.MustGetenv("AWS_BUCKET_RAW"),
+		indexedBucket: common.MustGetenv("AWS_BUCKET_INDEXED"),
 		indexedColl:   indexedColl,
 		ctx:           ctx,
 		logger:        slog.With("service", "indexer"),
@@ -79,6 +79,7 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
 
 	// Download ZIP file from S3
+	uploadETag := fullDocument["upload_etag"].(string)
 	remotePath := fullDocument["path"].(string)
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
@@ -100,13 +101,13 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 		return
 	}
 
-	i.processZIPContents(extractDir)
+	i.processZIPContents(extractDir, uploadETag)
 }
 
 // processZIPContents finds deliveries in rootDir (and its subdirectories), uploads their contents to S3, and inserts them into the MongoDB "indexed" collection.
-func (i *Indexer) processZIPContents(rootDir string) error {
+func (i *Indexer) processZIPContents(rootDir, uploadETag string) error {
 	// The root directory could be the single delivery
-	i.processDelivery(rootDir, rootDir)
+	i.processDelivery(rootDir, rootDir, uploadETag)
 
 	// Or it could contain multiple deliveries
 	return filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
@@ -120,14 +121,14 @@ func (i *Indexer) processZIPContents(rootDir string) error {
 			if path == rootDir {
 				return nil
 			}
-			return i.processDelivery(rootDir, path)
+			return i.processDelivery(rootDir, path, uploadETag)
 		}
 		return nil
 	})
 }
 
 // processDelivery parses a "delivery" from dir if dir contains an XML file.
-func (i *Indexer) processDelivery(rootDir, dir string) error {
+func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 	var deliveryID, xmlRelativePath string
 	var xmlBytes []byte
 	files, err := os.ReadDir(dir)
@@ -168,9 +169,10 @@ func (i *Indexer) processDelivery(rootDir, dir string) error {
 
 	// Insert the delivery into the Mongo "indexed" collection
 	deliveryDoc := bson.M{
-		"deliveryID":  deliveryID,
-		"xmlFilePath": xmlRelativePath,
-		"xmlContent":  primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"delivery_id":   deliveryID,
+		"upload_etag":   uploadETag,
+		"xml_file_path": xmlRelativePath,
+		"xml_content":   primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
 	}
 	if _, err := i.indexedColl.InsertOne(i.ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)
