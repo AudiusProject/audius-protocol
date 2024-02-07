@@ -5,4 +5,5 @@ const (
 	DeliveryStatusRejected           = "rejected"
 	DeliveryStatusValidating         = "validating"
 	DeliveryStatusAwaitingPublishing = "awaiting_publishing"
+	DeliveryStatusPublished          = "published"
 )

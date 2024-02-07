@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"ingester/common"
+	"ingester/constants"
 	"io"
 	"log"
 	"log/slog"
@@ -170,10 +171,11 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 
 	// Insert the delivery into the Mongo "indexed" collection
 	deliveryDoc := bson.M{
-		"delivery_id":   deliveryID,
-		"upload_etag":   uploadETag,
-		"xml_file_path": xmlRelativePath,
-		"xml_content":   primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"upload_etag":     uploadETag,
+		"delivery_id":     deliveryID,
+		"delivery_status": constants.DeliveryStatusValidating,
+		"xml_file_path":   xmlRelativePath,
+		"xml_content":     primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
 	}
 	if _, err := i.indexedColl.InsertOne(i.ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)
