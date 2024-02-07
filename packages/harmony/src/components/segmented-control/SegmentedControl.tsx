@@ -21,6 +21,7 @@ export const SegmentedControl = <T extends string>(
     props.options.map((_) => createRef<HTMLLabelElement>())
   )
   const [selected, setSelected] = useState(props.options[0].key)
+  const [maxOptionWidth, setMaxOptionWidth] = useState(0)
 
   const selectedOption = props.selected || selected
 
@@ -33,6 +34,15 @@ export const SegmentedControl = <T extends string>(
   const [tabProps, tabApi] = useSpring(() => ({
     to: { left: '0px', width: '0px' }
   }))
+
+  useEffect(() => {
+    setMaxOptionWidth(
+      optionRefs.current.reduce((currentMax, ref) => {
+        const rect = ref.current?.getBoundingClientRect()
+        return Math.max(rect?.width ?? 0, currentMax)
+      }, 0)
+    )
+  }, [])
 
   // Watch for resizes and repositions so that we move and resize the slider appropriately
   const [selectedRef, bounds] = useMeasure({
@@ -63,6 +73,7 @@ export const SegmentedControl = <T extends string>(
     })
   }, [
     props.options,
+    props.equalWidth,
     selectedOption,
     props.selected,
     tabApi,
@@ -97,6 +108,11 @@ export const SegmentedControl = <T extends string>(
                 [styles.tabFullWidth]: !!props.fullWidth,
                 [styles.isMobile]: props.isMobile
               })}
+              style={
+                props.equalWidth && maxOptionWidth
+                  ? { width: `${maxOptionWidth}px` }
+                  : undefined
+              }
             >
               {option.icon}
               <input
