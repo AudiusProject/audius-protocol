@@ -28,6 +28,9 @@ export type SegmentedControlProps<Value> = {
   // Callback fired when new option is selected
   onSelectOption: (key: Value) => void
 
+  // If true, all tabs will have the same width
+  equalWidth?: boolean
+
   fullWidth?: boolean
 } & StylesProps<{
   root: ViewStyle
@@ -108,11 +111,13 @@ export const SegmentedControl = <Value,>(
     defaultSelected = options[0].key,
     onSelectOption,
     fullWidth,
+    equalWidth,
     style,
     styles: stylesProp
   } = props
   const styles = useStyles()
   const [optionWidths, setOptionWidths] = useState(options.map(() => 0))
+  const [maxOptionWidth, setMaxOptionWidth] = useState(0)
   const [initLeft, setInitLeft] = useState(false)
   const leftAnim = useRef(new Animated.Value(0)).current
   const widthAnim = useRef(new Animated.Value(0)).current
@@ -149,6 +154,7 @@ export const SegmentedControl = <Value,>(
   useEffect(() => {
     if (!initLeft && optionWidths.every((val) => val !== 0)) {
       leftAnim.setValue(getLeftValue())
+      setMaxOptionWidth(optionWidths.reduce((a, b) => Math.max(a, b), 0))
       setInitLeft(true)
     }
   }, [optionWidths, initLeft, options, leftAnim, selectedOption, getLeftValue])
@@ -203,7 +209,8 @@ export const SegmentedControl = <Value,>(
               style={[
                 styles.tab,
                 stylesProp?.tab,
-                fullWidth && styles.tabFullWidth
+                fullWidth && styles.tabFullWidth,
+                equalWidth && maxOptionWidth > 0 && { width: maxOptionWidth }
               ]}
               onPress={() => handleSelectOption(option.key)}
             >
