@@ -107,7 +107,7 @@ export const usePurchases = () => {
     {
       userId
     },
-    { force: true }
+    { disabled: !userId, force: true }
   )
 
   const status = combineStatuses([dataStatus, countStatus])
