@@ -1,6 +1,7 @@
+import { useField } from 'formik'
+
 import type { PasswordInputProps } from '@audius/harmony-native'
 import { PasswordInput } from '@audius/harmony-native'
-import { useRNField } from 'app/hooks/useRNField'
 
 export type PasswordFieldProps = PasswordInputProps & {
   name: string
@@ -13,7 +14,7 @@ export type PasswordFieldProps = PasswordInputProps & {
 
 export const PasswordField = (props: PasswordFieldProps) => {
   const { name, clearErrorOnChange = true, ...other } = props
-  const [field, { touched, error }, { setError }] = useRNField(name)
+  const [field, { touched, error }, { setError }] = useField(name)
 
   const hasError = Boolean(touched && error)
 
@@ -26,8 +27,9 @@ export const PasswordField = (props: PasswordFieldProps) => {
         if (clearErrorOnChange) {
           setError(undefined)
         }
-        field.onChange(e)
+        field.onChange(name)(e)
       }}
+      onBlur={field.onBlur(name)}
       {...other}
     />
   )

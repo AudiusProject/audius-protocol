@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 
+import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
 import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField, PasswordField } from 'app/components/fields'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useRNField } from 'app/hooks/useRNField'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 import { SubScreen } from '../change-password-screen/SubScreen'
@@ -22,7 +22,7 @@ const messages = {
 
 export const CurrentEmail = () => {
   const [{ value: oldEmail }, , { setValue: setOldEmail }] =
-    useRNField('oldEmail')
+    useField('oldEmail')
   // Load the email for the user
   const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
   useEffect(() => {
