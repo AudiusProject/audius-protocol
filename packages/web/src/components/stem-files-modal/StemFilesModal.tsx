@@ -23,6 +23,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
+import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
@@ -31,16 +32,22 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
+import { Nullable } from '@audius/common/utils'
 
 const MAX_ROWS = 10
 
 const messages = {
   title: 'STEMS & DOWNLOADS',
-  subtitle: 'Allow Users to download MP3 copies of your track',
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
-  allowDownloads: 'Allow Downloads',
+  description:
+    'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
+  allowDownloads: 'Allow Full Track Download',
+  allowDownloadsDescription:
+    'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
   provideLosslessFiles: 'Provide Lossless Files',
+  provideLosslessFilesDescription:
+    'Provide your fans with the Lossless files you upload in addition to an mp3.',
   done: 'DONE',
   maxCapacity: 'Reached upload limit of 10 files.',
   stemTypeHeader: 'Select Stem Type',
@@ -236,7 +243,7 @@ type DownloadSectionProps = {
   onUpdateDownloadSettings: (downloadSettings: Download) => void
 }
 
-const DownloadSection = ({
+const SwitchSection = ({
   isOriginalAvailable,
   onUpdateIsOriginalAvailable,
   downloadSettings,
@@ -285,28 +292,43 @@ const DownloadSection = ({
   }, [onUpdateDownloadSettings, downloadSettings])
 
   return (
-    <div className={styles.downloadSettings}>
-      <div className={styles.downloadSetting}>
-        <div className={styles.label}>{messages.allowDownloads}</div>
-        <Switch
-          checked={downloadSettings?.is_downloadable ?? false}
-          onChange={toggleIsDownloadable}
-        />
-      </div>
+    <Flex direction='column' ph='xl' pt='xl' gap='l'>
+      <Flex direction='column' gap='l' w='100%'>
+        <Flex justifyContent='space-between'>
+          <HarmonyText variant='title' size='l'>
+            {messages.allowDownloads}
+          </HarmonyText>
+          <Switch
+            checked={downloadSettings?.is_downloadable ?? false}
+            onChange={toggleIsDownloadable}
+          />
+        </Flex>
+        <HarmonyText variant='body'>
+          {messages.allowDownloadsDescription}
+        </HarmonyText>
+      </Flex>
+      <Divider />
       <div className={styles.downloadSetting}>
         {isLosslessDownloadsEnabled ? (
-          <>
-            <div className={styles.label}>{messages.provideLosslessFiles}</div>
-            <Switch
-              checked={isOriginalAvailable}
-              onChange={toggleIsOriginalAvailable}
-            />
-          </>
+          <Flex direction='column' gap='l' w='100%'>
+            <Flex justifyContent='space-between'>
+              <HarmonyText variant='title' size='l'>
+                {messages.provideLosslessFiles}
+              </HarmonyText>
+              <Switch
+                checked={isOriginalAvailable}
+                onChange={toggleIsOriginalAvailable}
+              />
+            </Flex>
+            <HarmonyText variant='body'>
+              {messages.allowDownloadsDescription}
+            </HarmonyText>
+          </Flex>
         ) : (
           <>
-            <div className={styles.label}>
+            <HarmonyText variant='title' size='l'>
               {messages.requireFollowToDownload}
-            </div>
+            </HarmonyText>
             <Switch
               checked={downloadSettings?.requires_follow ?? false}
               onChange={toggleRequiresFollow}
@@ -349,7 +371,6 @@ export const StemFilesModal = ({
       onClose={onClose}
       showTitleHeader
       title={messages.title}
-      subtitle={messages.subtitle}
       dismissOnClickOutside
       showDismissButton
       // Since this can be nested in the edit track modal
