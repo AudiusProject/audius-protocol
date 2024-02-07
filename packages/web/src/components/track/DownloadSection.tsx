@@ -184,6 +184,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
       <Flex direction='column'>
         <Flex
+          gap='m'
           direction='row'
           justifyContent='space-between'
           alignItems='center'
@@ -193,56 +194,63 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             cursor: 'pointer'
           }}
         >
-          <Flex direction='row' alignItems='center' gap='s'>
-            <Icon icon={IconReceive} size='large' />
-            <Text variant='label' size='l' strength='strong'>
-              {messages.title}
-            </Text>
-          </Flex>
-          <Flex gap='l' alignItems='center'>
-            {shouldDisplayPremiumDownloadLocked &&
-            formattedPrice !== undefined ? (
-              <Button
-                variant='primary'
-                size='small'
-                color='lightGreen'
-                onClick={handlePurchaseClick}
-              >
-                {messages.unlockAll(formattedPrice)}
-              </Button>
-            ) : null}
-            {shouldDisplayPremiumDownloadUnlocked ? (
-              <Flex gap='s'>
-                <Flex
-                  borderRadius='3xl'
-                  ph='s'
-                  css={{
-                    backgroundColor: 'var(--special-light-green)',
-                    paddingTop: '1px',
-                    paddingBottom: '1px'
-                  }}
+          <Flex
+            justifyContent='space-between'
+            wrap='wrap'
+            gap='m'
+            css={{ flexGrow: 1 }}
+          >
+            <Flex direction='row' alignItems='center' gap='s'>
+              <Icon icon={IconReceive} size='large' />
+              <Text variant='label' size='l' strength='strong'>
+                {messages.title}
+              </Text>
+            </Flex>
+            <Flex gap='l' alignItems='center'>
+              {shouldDisplayPremiumDownloadLocked &&
+              formattedPrice !== undefined ? (
+                <Button
+                  variant='primary'
+                  size='small'
+                  color='lightGreen'
+                  onClick={handlePurchaseClick}
                 >
-                  <IconLockUnlocked color='staticWhite' size='xs' />
+                  {messages.unlockAll(formattedPrice)}
+                </Button>
+              ) : null}
+              {shouldDisplayPremiumDownloadUnlocked ? (
+                <Flex gap='s'>
+                  <Flex
+                    borderRadius='3xl'
+                    ph='s'
+                    css={{
+                      backgroundColor: 'var(--special-light-green)',
+                      paddingTop: '1px',
+                      paddingBottom: '1px'
+                    }}
+                  >
+                    <IconLockUnlocked color='staticWhite' size='xs' />
+                  </Flex>
+                  <Text
+                    variant='label'
+                    size='l'
+                    strength='strong'
+                    color='subdued'
+                  >
+                    {messages.purchased}
+                  </Text>
                 </Flex>
-                <Text
-                  variant='label'
-                  size='l'
-                  strength='strong'
-                  color='subdued'
-                >
-                  {messages.purchased}
-                </Text>
-              </Flex>
-            ) : null}
-            <IconCaretDown
-              css={{
-                transition: 'transform var(--harmony-expressive)',
-                transform: expanded ? 'rotate(-180deg)' : undefined
-              }}
-              size='m'
-              color='default'
-            />
+              ) : null}
+            </Flex>
           </Flex>
+          <IconCaretDown
+            css={{
+              transition: 'transform var(--harmony-expressive)',
+              transform: expanded ? 'rotate(-180deg)' : undefined
+            }}
+            size='m'
+            color='default'
+          />
         </Flex>
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
           <Flex pl='l' pr='l' pb='l'>

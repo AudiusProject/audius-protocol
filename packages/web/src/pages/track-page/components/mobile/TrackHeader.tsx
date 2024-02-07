@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
@@ -12,7 +12,11 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { OverflowAction } from '@audius/common/store'
+import {
+  CommonState,
+  OverflowAction,
+  cacheTracksSelectors
+} from '@audius/common/store'
 import {
   getCanonicalName,
   formatSeconds,
@@ -27,10 +31,12 @@ import {
   IconPause,
   IconPlay,
   IconSpecialAccess,
-  IconCart
+  IconCart,
+  Box
 } from '@audius/harmony'
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -42,6 +48,7 @@ import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
+import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedTrackSection } from 'components/track/GatedTrackSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -194,7 +201,17 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
+  const isLosslessDownloadsEnabled = useFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { getTrack } = cacheTracksSelectors
+  const track = useSelector(
+    (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
+  const hasDownloadableAssets =
+    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
 
   const showSocials = !isUnlisted && hasStreamAccess
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -486,8 +503,15 @@ const TrackHeader = ({
       <div className={cn(styles.infoSection, styles.withSectionDivider)}>
         {renderTrackLabels()}
       </div>
-      {renderDownloadButtons()}
       {renderTags()}
+      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
+      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+        <Box pt='l' w='100%'>
+          <Suspense>
+            <DownloadSection trackId={trackId} />
+          </Suspense>
+        </Box>
+      ) : null}
     </div>
   )
 }
