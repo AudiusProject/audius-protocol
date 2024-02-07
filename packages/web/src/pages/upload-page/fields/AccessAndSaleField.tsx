@@ -286,7 +286,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
-    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper)
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -339,6 +339,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
+      const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
@@ -348,7 +349,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
-
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
@@ -458,7 +458,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setDownloadRequiresFollow,
       setPreviewValue,
       setLastGateKeeper,
-      lastGateKeeper,
       isDownloadable,
       isUnlisted
     ]

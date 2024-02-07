@@ -133,7 +133,7 @@ export const StemsAndDownloadsField = ({
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
-    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper)
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = DownloadTrackAvailabilityType.PUBLIC
     const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
@@ -174,6 +174,8 @@ export const StemsAndDownloadsField = ({
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
       const stems = get(values, STEMS)
+      const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+
       setIsDownloadable(isDownloadable)
       setisOriginalAvailable(get(values, IS_ORIGINAL_AVAILABLE))
       setStemsValue(
@@ -258,7 +260,6 @@ export const StemsAndDownloadsField = ({
       isLosslessDownloadsEnabled,
       accountUserId,
       streamConditions,
-      lastGateKeeper,
       setIsDownloadable,
       setDownloadRequiresFollow,
       setisOriginalAvailable,
