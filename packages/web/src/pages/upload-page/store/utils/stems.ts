@@ -17,7 +17,7 @@ export const updateAndFlattenStems = (
       const metadata = createStemMetadata({
         parentTrackId,
         track: stem.metadata,
-        stemCategory: stem.category
+        stemCategory: stem.category ?? StemCategory.OTHER
       })
       return {
         metadata,
