@@ -43,7 +43,7 @@ func main() {
 	case "crawler":
 		go crawler.Run(ctx)
 	case "indexer":
-		go indexer.Run(ctx)
+		go indexer.RunNewIndexer(ctx)
 	case "parser":
 		go parser.Run(ctx)
 	default:

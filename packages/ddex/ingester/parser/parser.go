@@ -17,7 +17,7 @@ func Run(ctx context.Context) {
 	defer mongoClient.Disconnect(ctx)
 
 	indexedColl := mongoClient.Database("ddex").Collection("indexed")
-	pipeline := mongo.Pipeline{bson.D{{"$match", bson.D{{"operationType", "insert"}}}}}
+	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
 	changeStream, err := indexedColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)

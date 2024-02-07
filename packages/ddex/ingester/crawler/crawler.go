@@ -15,7 +15,7 @@ import (
 )
 
 func Run(ctx context.Context) {
-	s3Client := common.InitS3Client()
+	s3Client, _ := common.InitS3Client()
 	mongoClient := common.InitMongoClient(ctx)
 	defer mongoClient.Disconnect(ctx)
 
