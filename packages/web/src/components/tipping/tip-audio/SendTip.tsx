@@ -28,14 +28,11 @@ import {
   IconQuestionCircle,
   IconTokenNoTier,
   IconArrowRight as IconArrow,
-  IconTrophy
-} from '@audius/harmony'
-import {
+  IconTrophy,
   TokenAmountInput,
-  TokenAmountInputChangeHandler,
-  ButtonType,
-  Button
-} from '@audius/stems'
+  TokenAmountInputChangeHandler
+} from '@audius/harmony'
+import { ButtonType, Button } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -66,7 +63,7 @@ const messages = {
   becomeTopSupporterPrefix: 'Send ',
   becomeTopSupporterSuffix: ' $AUDIO To Become Top Supporter',
   becomeFirstSupporter: 'Send A Tip To Become Their First Supporter',
-  inputLabel: 'Amount of audio to tip',
+  inputLabel: 'Amount to tip',
   inputPlaceholder: 'Enter an amount',
   inputTokenLabel: '$AUDIO',
   buyAudioPrefix: 'Buy $AUDIO using '
@@ -239,11 +236,11 @@ export const SendTip = () => {
       <ProfileInfo user={receiver} />
       <div className={styles.amountToSend}>
         <TokenAmountInput
-          aria-label={messages.inputLabel}
+          label={messages.inputLabel}
           placeholder={messages.inputPlaceholder}
           tokenLabel={messages.inputTokenLabel}
           value={tipAmount}
-          isWhole={true}
+          isWhole
           onChange={handleTipAmountChange}
         />
       </div>
