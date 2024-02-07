@@ -7,6 +7,7 @@ import (
 	"ingester/common"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,7 @@ type Indexer struct {
 	indexedBucket string
 	indexedColl   *mongo.Collection
 	ctx           context.Context
+	logger        *slog.Logger
 }
 
 // RunNewIndexer starts the indexer service, which listens for new uploads in the Mongo "uploads" collection and processes them.
@@ -45,6 +47,7 @@ func RunNewIndexer(ctx context.Context) {
 		indexedBucket: os.Getenv("AWS_BUCKET_INDEXED"),
 		indexedColl:   indexedColl,
 		ctx:           ctx,
+		logger:        slog.With("[Indexer] "),
 	}
 
 	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
@@ -53,7 +56,7 @@ func RunNewIndexer(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Indexer: Watching collection 'uploads'")
+	i.logger.Info("Indexer: Watching collection 'uploads'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
@@ -73,27 +76,27 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 		log.Fatal(err)
 	}
 	fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-	log.Printf("Indexer: Processing new upload: %v\n", fullDocument)
+	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
 
 	// Download ZIP file from S3
 	remotePath := fullDocument["path"].(string)
-	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath) // TODO: fileKey is actually a full s3 path like s3://bucket/key, so validate that it starts with s3 and split it
+	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
-		fmt.Println("Failed to download ZIP file from S3 bucket")
+		i.logger.Error("Failed to download ZIP file from S3 bucket", "path", remotePath)
 		return
 	}
 
 	// Unzip the file and process its contents
 	extractDir, err := os.MkdirTemp("", "extracted")
 	if err != nil {
-		fmt.Printf("Error creating temp directory: %v\n", err)
+		i.logger.Error("Error creating temp directory", "error", err)
 		return
 	}
 	defer os.RemoveAll(extractDir)
 
 	if err := unzip(zipFilePath, extractDir); err != nil {
-		fmt.Printf("Error unzipping file: %v\n", err)
+		i.logger.Error("Error unzipping file", "error", err)
 		return
 	}
 
@@ -151,7 +154,7 @@ func (i *Indexer) processDelivery(rootDir, dir string) error {
 	}
 
 	if deliveryID == "" {
-		log.Printf("No XML file found in directory %s, skipping", dir)
+		i.logger.Info("No XML file found in directory. Skipping", "dir", dir)
 		return nil
 	}
 
@@ -179,13 +182,13 @@ func (i *Indexer) processDelivery(rootDir, dir string) error {
 // downloadFromRaw downloads a file from the S3 "raw" bucket to a temporary file.
 func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
 	if !strings.HasPrefix(remotePath, "s3://"+i.rawBucket+"/") {
-		fmt.Printf("Invalid S3 path: %s\n", remotePath)
+		i.logger.Error("Invalid S3 path", "path", remotePath)
 		return "", func() {}
 	}
 	s3Key := strings.TrimPrefix(remotePath, "s3://"+i.rawBucket+"/")
 	file, err := os.CreateTemp("", "*.zip")
 	if err != nil {
-		fmt.Printf("Error creating temp file: %v\n", err)
+		i.logger.Error("Error creating temp file", "error", err)
 		return "", func() {}
 	}
 
@@ -194,7 +197,7 @@ func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
 		Key:    aws.String(s3Key),
 	})
 	if err != nil {
-		fmt.Printf("Error downloading file from S3: %v\n", err)
+		i.logger.Error("Error downloading file from S3", "error", err)
 		file.Close()
 		os.Remove(file.Name())
 		return "", func() {}
@@ -207,7 +210,7 @@ func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
 func (i *Indexer) uploadToS3Indexed(filePath, fileKey string) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Printf("Error opening file: %v\n", err)
+		i.logger.Error("Error opening file", "error", err)
 		return
 	}
 	defer file.Close()
@@ -218,9 +221,9 @@ func (i *Indexer) uploadToS3Indexed(filePath, fileKey string) {
 		Body:   file,
 	})
 	if err != nil {
-		fmt.Printf("Error uploading file to S3: %v\n", err)
+		i.logger.Error("Error uploading file to S3", "error", err)
 	} else {
-		fmt.Printf("Uploaded %s to %s/%s\n", filePath, i.indexedBucket, fileKey)
+		i.logger.Info("Uploaded file to S3", "file", filePath, "key", fileKey)
 	}
 }
 
