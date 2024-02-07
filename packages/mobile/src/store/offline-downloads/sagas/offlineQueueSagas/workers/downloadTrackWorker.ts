@@ -172,7 +172,7 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-  const nftAccessSignature = nftAccessSignatureMap[track_id]
+  const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
   let queryParams: QueryParams = {}
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,

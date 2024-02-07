@@ -1,4 +1,5 @@
 import type { ID } from '@audius/common/models'
+import { stemCategoryFriendlyNames } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { cacheTracksSelectors } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
@@ -55,7 +56,9 @@ export const DownloadRow = ({
         </Text>
         <Flex gap='xs' style={css({ flexShrink: 1 })}>
           <Text variant='body'>
-            {track?.stem_of?.category ?? messages.fullTrack}
+            {track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
           </Text>
           <Text
             variant='body'

@@ -146,6 +146,11 @@ export type AccessSignature = {
   signature: string
 }
 
+export type NFTAccessSignature = {
+  mp3: AccessSignature
+  original: AccessSignature
+}
+
 export type EthCollectionMap = {
   [slug: string]: {
     name: string

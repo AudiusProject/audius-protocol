@@ -1,3 +1,12 @@
+---
+id: tracks
+title: Tracks
+pagination_label: Tracks
+sidebar_label: Tracks
+description: Audius Protocol Documentation
+
+---
+
 ### getTrack
 
 #### getTrack(`params`)
@@ -332,14 +341,14 @@ Create an object with the following fields and pass it as the first argument, as
 | Name           | Type                                                     | Description                                                             | Required?    |
 | :------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
 | `coverArtFile` | `File`                                                   | A file that will be used as the cover art for the track                 | _Optional_   |
-| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | An object containing the details of the track                           | **Required** |
+| `metadata`     | [`UploadTrackMetadata`](/developers/upload-track-metadata) | An object containing the details of the track                           | **Required** |
 | `onProgress`   | `(progress: number) => void`                             | A function that will be called with progress events as the files upload | _Optional_   |
 | `trackFile`    | `File`                                                   | The audio file of the track                                             | **Required** |
 | `userId`       | `string`                                                 | The ID of the user                                                      | **Required** |
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -395,12 +404,12 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId`      | `string`                                                              | The ID of the track                                                           | **Required** |
 | `userId`       | `string`                                                              | The ID of the user                                                            | **Required** |
 | `coverArtFile` | `File`                                                                | A file that will be used as the cover art for the track                       | _Optional_   |
-| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | An object containing the details of the track                                 | **Required** |
+| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/upload-track-metadata)`>` | An object containing the details of the track                                 | **Required** |
 | `onProgress`   | `(progress: number) => void`                                          | A function that will be called with progress events as the image file uploads | _Optional_   |
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -441,7 +450,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -489,7 +498,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -530,7 +539,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -578,7 +587,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -621,7 +630,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 

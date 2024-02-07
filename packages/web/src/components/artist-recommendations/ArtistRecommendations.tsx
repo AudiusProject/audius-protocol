@@ -259,7 +259,10 @@ export const ArtistRecommendations = forwardRef<
           className={styles.closeButton}
           onClick={onClose}
         >
-          <IconClose className={cn(styles.icon, styles.remove)} />
+          <IconClose
+            color='subdued'
+            className={cn(styles.icon, styles.remove)}
+          />
         </div>
         {renderHeader()}
       </div>

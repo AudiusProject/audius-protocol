@@ -364,13 +364,16 @@ def personalize_dsl(dsl, current_user_id, must_saved):
 def default_function_score(dsl, ranking_field):
     return {
         "query": {
-            "script_score": {
+            "function_score": {
                 "query": {"bool": dsl},
-                "script": {
-                    "source": f"_score * Math.log(Math.max(doc['{ranking_field}'].value, 0) + 2)"
+                "field_value_factor": {
+                    "field": ranking_field,
+                    "factor": 20,
+                    "modifier": "ln2p",
                 },
+                "boost_mode": "multiply",
             }
-        },
+        }
     }
 
 
@@ -423,7 +426,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         "must_not": [],
         "should": [
             *base_match(search_str, operator="and", extra_fields=["handle"]),
-            {"term": {"is_verified": {"value": True}}},
+            {"term": {"handle": {"value": search_str, "boost": 0.2}}},
+            {"term": {"name": {"value": search_str, "boost": 0.2}}},
+            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
         ],
     }
 

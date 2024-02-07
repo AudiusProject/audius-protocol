@@ -519,6 +519,7 @@ workflows:
             .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow true
+            .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             packages/common/.* run-common-workflow true

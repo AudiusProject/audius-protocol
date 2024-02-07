@@ -13,7 +13,6 @@ import {
   getContext
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
@@ -107,7 +106,6 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
-  const { ENVIRONMENT } = yield* getContext('env')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
@@ -117,12 +115,7 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-
-  // TODO: Figure out how to support USDC properly in dev.
-  let ownerUserbank: PublicKey
-  if (ENVIRONMENT !== 'development') {
-    ownerUserbank = yield* getUSDCUserBank(wallet)
-  }
+  const ownerUserbank = yield* getUSDCUserBank(wallet)
 
   tracks.forEach((track) => {
     const streamConditions = track.metadata.stream_conditions
@@ -143,7 +136,7 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
       downloadConditions.usdc_purchase = {
         price: priceCents,
         splits: {
-          [ownerUserbank?.toString() ?? '']: priceWei
+          [ownerUserbank.toString()]: priceWei
         }
       }
     }

@@ -1,3 +1,13 @@
+---
+id: albums
+title: Albums
+pagination_label: Albums
+sidebar_label: Albums
+description: Audius Protocol Documentation
+
+---
+
+
 ### getAlbum
 
 #### getAlbum(`params`)
@@ -111,7 +121,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
+The return type is the same as [`getBulkTracks`](tracks#getbulktracks)
 
 ---
 
@@ -184,7 +194,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`       | _see code block below_                                       | An object containing the details of the album                                 | **Required** |
 | `onProgress`     | `(progress: number) => void`                                 | A function that will be called with progress events as the image file uploads | _Optional_   |
 | `trackFiles`     | `Array<File>`                                                | An array of track audio files                                                 | **Required** |
-| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]` | An array of track files                                                       | _Optional_   |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/upload-track-metadata)`[]` | An array of track files                                                       | _Optional_   |
 | `userId`         | `string`                                                     | The ID of the user                                                            | **Required** |
 
 ```json title="uploadAlbum metadata payload"
@@ -202,7 +212,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -274,7 +284,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -315,7 +325,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -363,7 +373,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -404,7 +414,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -452,7 +462,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 
@@ -493,7 +503,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
 
 #### Returns
 

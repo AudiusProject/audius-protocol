@@ -76,10 +76,12 @@ const purchasesApi = createApi({
             ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
           )
           .map(({ contentId }) => contentId)
-        await trackApiFetch.getTracksByIds(
-          { ids: trackIdsToFetch, currentUserId: userId },
-          context
-        )
+        if (trackIdsToFetch.length > 0) {
+          await trackApiFetch.getTracksByIds(
+            { ids: trackIdsToFetch, currentUserId: userId },
+            context
+          )
+        }
         return purchases
       },
       options: { retry: true }
@@ -135,10 +137,12 @@ const purchasesApi = createApi({
             ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
           )
           .map(({ contentId }) => contentId)
-        await trackApiFetch.getTracksByIds(
-          { ids: trackIdsToFetch, currentUserId: userId },
-          context
-        )
+        if (trackIdsToFetch.length > 0) {
+          await trackApiFetch.getTracksByIds(
+            { ids: trackIdsToFetch, currentUserId: userId },
+            context
+          )
+        }
         return purchases
       },
       options: { retry: true }

@@ -1,4 +1,4 @@
-import { Name, Track, User } from '@audius/common/models'
+import { Name, StemCategory, Track, User } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -23,7 +23,7 @@ function* watchUploadStems() {
         const metadata = createStemMetadata({
           parentTrackId: parentId,
           track: u.metadata,
-          stemCategory: u.category
+          stemCategory: u.category ?? StemCategory.OTHER
         })
         return {
           metadata,

@@ -299,6 +299,7 @@ export const Button = (props: ButtonProps) => {
     <BaseButton
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      onLongPress={handlePressOut}
       disabled={isDisabled}
       style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}

@@ -10,9 +10,8 @@ import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
 /**
- * Tags are used to help label music for sorting or searching later. Tags are used in inputs during the upload process and appear later on the artist’s profile page.
- * Tags leverage our scale tokens on hover and press.
- * Active tags can only have the `<plus>` icon and inactive tags can only have the `<close>` icon
+ * A hybrid somewhere between a button group, radio buttons, and tabs;
+ * segmented controls are used to switch between different options or views.
  */
 export const SegmentedControl = <T extends string>(
   props: SegmentedControlProps<T>

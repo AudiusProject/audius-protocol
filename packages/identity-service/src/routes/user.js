@@ -4,11 +4,13 @@ const models = require('../models')
 const {
   handleResponse,
   successResponse,
-  errorResponseBadRequest
+  errorResponseBadRequest,
+  errorResponseForbidden
 } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
 const config = require('../config')
+const { validateOtp, sendOtp } = require('../utils/otp')
 
 const BOUNCER_BASE_URL = 'https://api.usebouncer.com/v1.1/email/verify'
 
@@ -149,6 +151,45 @@ module.exports = function (app) {
         }
       }
       return errorResponseBadRequest('Invalid route parameters')
+    })
+  )
+
+  /**
+   * Change authenticated user's email address
+   */
+  app.put(
+    '/user/email',
+    authMiddleware,
+    handleResponse(async (req, _res, _next) => {
+      const { email, otp } = req.body ?? {}
+      if (!email) {
+        return errorResponseBadRequest('Missing email')
+      }
+
+      // Check OTP
+      const redis = req.app.get('redis')
+      const sendgrid = req.app.get('sendgrid')
+      if (!sendgrid) {
+        req.logger.error('Missing sendgrid api key')
+      }
+
+      if (!otp) {
+        await sendOtp({ email, redis, sendgrid })
+        return errorResponseForbidden('Missing otp')
+      }
+
+      const isOtpValid = await validateOtp({ email, otp, redis })
+      if (!isOtpValid) {
+        return errorResponseBadRequest('Invalid credentials')
+      }
+
+      // Update email
+      const { blockchainUserId } = req.user
+      await models.User.update(
+        { email: req.body.email },
+        { where: { blockchainUserId } }
+      )
+      return successResponse()
     })
   )
 

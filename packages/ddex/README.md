@@ -22,7 +22,7 @@ chmod 400 packages/ddex/mongo-keyfile
 ```
 2. `audius-compose connect` to update your /etc/hosts
 3. `audius-compose up --ddex`
-4. Once the `ddex-mongo` container is running: manually intiate the mongodb replica set with `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin --eval 'rs.initiate({_id:"rs0", members:[{_id:0, host:"ddex-mongo:27017"}]})`. The other ddex containers will be blocked from starting until this command succeeds.
+4. Once the `ddex-mongo` container is running: manually intiate the mongodb replica set with `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin --eval 'rs.initiate({_id:"rs0", members:[{_id:0, host:"ddex-mongo:27017"}]})'`. The other ddex containers will be blocked from starting until this command succeeds.
 
 ### Bring up the ddex stack subsequently
 `audius-compose up --ddex`
@@ -32,7 +32,7 @@ Note: `audius-compose down` removes the `ddex-mongo-db` volume, so if you run th
 To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin` then `use ddex`
 
 ### Develop with hot reloading
-Each service can be run independently as long as `ddex-mongo` is up. See the respective subdirectories' READMEs.
+Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex`` or `docker compose --project-directory=dev-tools/compose --file=dev-tools/compose/docker-compose.yml --profile=ddex up ddex-mongo -d`). See the respective subdirectories' READMEs.
 
 ### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-[dev|staging]-<label/distributor>-raw`. Use all the defaults, including "ACLs disabled"

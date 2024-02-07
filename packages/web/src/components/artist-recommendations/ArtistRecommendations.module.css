@@ -11,9 +11,7 @@
   position: relative;
   transition: all 0.17s ease-in-out !important;
 }
-.icon.remove g path {
-  fill: var(--neutral-light-4);
-}
+
 .closeButton {
   width: 16px;
   margin-right: 16px;
