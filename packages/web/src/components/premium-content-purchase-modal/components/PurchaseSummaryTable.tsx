@@ -12,7 +12,7 @@ const messages = {
   youPaid: 'You Paid',
   zero: '$0.00',
   price: (val: string) => `$${val}`,
-  included: 'Included'
+  included: 'included'
 }
 
 type PurchaseSummaryTableProps = {

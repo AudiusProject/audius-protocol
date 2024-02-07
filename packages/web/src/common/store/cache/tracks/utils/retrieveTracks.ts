@@ -34,7 +34,14 @@ const getUserId = accountSelectors.getUserId
 const { getIsInitialFetchAfterSsr } = trackPageSelectors
 const { setIsInitialFetchAfterSsr } = trackPageActions
 
-type UnlistedTrackRequest = { id: ID; url_title: string; handle: string }
+type UnlistedTrackRequest = {
+  id: ID
+  // TODO: These are no longer required for unlisted track fetching
+  // They are only optional for a request for an unlisted track and can be
+  // traced through and deleted.
+  url_title?: string
+  handle?: string
+}
 type RetrieveTracksArgs = {
   trackIds: ID[] | UnlistedTrackRequest[]
   canBeUnlisted?: boolean
@@ -196,13 +203,17 @@ export function* retrieveTracks({
         if (ids.length > 1) {
           throw new Error('Can only query for single unlisted track')
         } else {
+          const { id, url_title, handle } = ids[0]
           fetched = yield* call([apiClient, 'getTrack'], {
-            id: ids[0].id,
+            id,
             currentUserId,
-            unlistedArgs: {
-              urlTitle: ids[0].url_title,
-              handle: ids[0].handle
-            }
+            unlistedArgs:
+              url_title && handle
+                ? {
+                    urlTitle: url_title,
+                    handle
+                  }
+                : undefined
           })
         }
       } else {
