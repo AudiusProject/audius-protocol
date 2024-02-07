@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
-import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import {
+  isContentFollowGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import type { UploadTrack } from '@audius/common/store'
 import { creativeCommons, formatPrice } from '@audius/common/utils'
 import { Formik } from 'formik'
@@ -235,26 +238,64 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         }
       }
 
+      let streamConditions = metadata.stream_conditions
+      let previewStartSeconds = metadata.preview_start_seconds
+      let isDownloadable = metadata.is_downloadable
+      let isOriginalAvailable = metadata.is_original_available
+
       // If track is usdc gated, then price and preview need to be parsed into numbers before submitting
-      if (isContentUSDCPurchaseGated(metadata.stream_conditions)) {
-        metadata.stream_conditions = {
+      if (isContentUSDCPurchaseGated(streamConditions)) {
+        streamConditions = {
           usdc_purchase: {
-            ...metadata.stream_conditions.usdc_purchase,
+            ...streamConditions.usdc_purchase,
             // Convert dollar price to cents
             // @ts-ignore the price input field stored it as a string that needs to be parsed into a number
             price:
-              Number(metadata.stream_conditions.usdc_purchase.price) *
-              10 ** PRECISION
+              Number(streamConditions.usdc_purchase.price) * 10 ** PRECISION
           }
         }
         // If user did not set usdc gated track preview, default it to 0
-        metadata.preview_start_seconds = Number(
-          metadata.preview_start_seconds ?? 0
+        previewStartSeconds = Number(previewStartSeconds ?? 0)
+
+        // track is downloadable and lossless files are provided by default if track is usdc purchase gated
+        // unless it was already usdc purchase gated
+        const { download_conditions: initialDownloadConditions } =
+          initialValuesProp
+        isDownloadable = !isContentUSDCPurchaseGated(initialDownloadConditions)
+          ? true
+          : isDownloadable
+        isOriginalAvailable = !isContentUSDCPurchaseGated(
+          initialDownloadConditions
         )
+          ? true
+          : isOriginalAvailable
       }
+
+      // set the fields back into the metadata
+      metadata.stream_conditions = streamConditions
+      metadata.preview_start_seconds = previewStartSeconds
+      metadata.is_downloadable = isDownloadable
+      metadata.is_original_available = isOriginalAvailable
+
+      // download conditions should inherit from stream conditions if track is stream gated
+      // this will be updated once the UI for download gated tracks is implemented
+      if (streamConditions) {
+        metadata.download_conditions = streamConditions
+        metadata.is_download_gated = true
+      }
+
+      // set the redundant download json field for consistent
+      // this will be cleaned up soon
+      metadata.download = {
+        is_downloadable: isDownloadable,
+        requires_follow: isContentFollowGated(metadata.download_conditions),
+        cid: null
+      }
+
+      // submit the metadata
       onSubmit(metadata)
     },
-    [onSubmit]
+    [initialValuesProp, onSubmit]
   )
 
   return (
