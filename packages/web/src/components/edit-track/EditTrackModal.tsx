@@ -14,7 +14,7 @@ import {
   editTrackModalSelectors,
   useEditTrackModal
 } from '@audius/common/store'
-import { removeNullable, uuid } from '@audius/common/utils'
+import { Nullable, removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -86,7 +86,13 @@ const EditTrackModal = ({
       }
       onEdit(metadata.track_id, formFieldsToUpdate)
       if (pendingUploads.length) {
-        uploadStems(metadata.track_id, pendingUploads)
+        uploadStems(
+          metadata.track_id,
+          pendingUploads.map((stem) => ({
+            ...stem,
+            category: stem.category ?? StemCategory.OTHER
+          }))
+        )
         setPendingUploads([])
       }
       if (pendingDeletes.length) {
@@ -155,16 +161,28 @@ const EditTrackModal = ({
   }
 
   const onAddStems = async (selectedStems: File[]) => {
-    const processed = (await Promise.all(processFiles(selectedStems, () => {})))
+    const detectCategory = (filename: string): Nullable<StemCategory> => {
+      const lowerCaseFilename = filename.toLowerCase()
+      return (
+        stemDropdownRows.find((category) =>
+          lowerCaseFilename.includes(category.toString().toLowerCase())
+        ) ?? null
+      )
+    }
+    const processedFiles = processFiles(selectedStems, () => {})
+    const newStems = (await Promise.all(processedFiles))
       .filter(removeNullable)
-      .map((p) => ({
-        ...p,
-        allowDelete: true,
-        allowCategorySwitch: true,
-        category: stemDropdownRows[0]
-      }))
+      .map((processedFile) => {
+        const category = detectCategory(processedFile.file.name)
+        return {
+          ...processedFile,
+          category,
+          allowDelete: true,
+          allowCategorySwitch: true
+        }
+      })
 
-    setPendingUploads((s) => [...s, ...processed])
+    setPendingUploads((s) => [...s, ...newStems])
   }
 
   const { combinedStems, onDeleteStem } = (() => {
