@@ -79,14 +79,22 @@ class ConnectedSearchBar extends Component {
 
   onSubmit = (value) => {
     // Encode everything besides tag searches
-    if (!value.startsWith('#')) {
+    const pathname = '/search'
+    if (value.startsWith('#')) {
+      // perform tag search
+      const pathname = `/search`
+      this.props.history.push({
+        hash: value.split('#')[1].replace(/\s+/g, ''),
+        pathname,
+        state: {}
+      })
+    } else {
       value = encodeURIComponent(value)
+      this.props.history.push({
+        pathname: pathname + value,
+        state: {}
+      })
     }
-    const pathname = `/search/${value}`
-    this.props.history.push({
-      pathname,
-      state: {}
-    })
   }
 
   onSelect = (value) => {
