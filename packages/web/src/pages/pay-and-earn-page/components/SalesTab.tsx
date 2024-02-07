@@ -105,7 +105,7 @@ export const useSales = () => {
 
   const { status: countStatus, data: count } = useGetSalesCount(
     { userId },
-    { force: true }
+    { disabled: !userId, force: true }
   )
 
   const status = combineStatuses([dataStatus, countStatus])
