@@ -47,7 +47,7 @@ func RunNewIndexer(ctx context.Context) {
 		indexedBucket: os.Getenv("AWS_BUCKET_INDEXED"),
 		indexedColl:   indexedColl,
 		ctx:           ctx,
-		logger:        slog.With("[Indexer] "),
+		logger:        slog.With("service", "indexer"),
 	}
 
 	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
