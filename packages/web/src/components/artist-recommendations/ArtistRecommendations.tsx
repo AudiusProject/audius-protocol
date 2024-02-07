@@ -69,14 +69,17 @@ const ArtistProfilePictureWrapper = ({
   const isMobile = useIsMobile()
   if (isMobile) {
     return (
-      <DynamicImage className={styles.profilePicture} image={profilePicture} />
+      <DynamicImage
+        wrapperClassName={styles.profilePicture}
+        image={profilePicture}
+      />
     )
   }
   return (
     <ArtistPopover mount={MountPlacement.PARENT} handle={handle}>
       <div>
         <DynamicImage
-          className={styles.profilePicture}
+          wrapperClassName={styles.profilePicture}
           image={profilePicture}
         />
       </div>
