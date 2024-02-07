@@ -234,20 +234,16 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
-            track_price_history = (
-                TrackPriceHistory(
-                    blocknumber=i + block_offset,
-                    track_id=track_price_history_meta.get("track_id", i),
-                    splits=track_price_history_meta.get("splits", {}),
-                    block_timestamp=track_price_history_meta.get(
-                        "block_timestamp", datetime.now()
-                    ),
-                    total_price_cents=track_price_history_meta.get(
-                        "total_price_cents", 0
-                    ),
-                    access=track_price_history_meta.get(
-                        "access", PurchaseAccessType.stream
-                    ),
+            track_price_history = TrackPriceHistory(
+                blocknumber=i + block_offset,
+                track_id=track_price_history_meta.get("track_id", i),
+                splits=track_price_history_meta.get("splits", {}),
+                block_timestamp=track_price_history_meta.get(
+                    "block_timestamp", datetime.now()
+                ),
+                total_price_cents=track_price_history_meta.get("total_price_cents", 0),
+                access=track_price_history_meta.get(
+                    "access", PurchaseAccessType.stream
                 ),
             )
             session.add(track_price_history)
