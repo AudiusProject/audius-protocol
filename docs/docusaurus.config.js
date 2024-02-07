@@ -68,28 +68,23 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
           },
           items: [
             {
-              label: "Welcome",
-              to: "welcome",
-              position: "left",
-            },
-            {
               label: "Protocol",
-              to: "/category/protocol",
+              to: "/protocol",
               position: "left",
             },
             {
               label: "Token",
-              to: "/category/token",
+              to: "/token",
               position: "left",
             },
             {
               label: "Developers",
-              to: "/category/developers",
+              to: "/developers/sdk",
               position: "left",
             },
             {
               href: "https://discord.com/invite/audius",
-              label: "Chat",
+              label: "Discord",
               position: "right",
             },
             {
@@ -114,15 +109,15 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
               items: [
                 {
                   label: "Welcome",
-                  to: "welcome",
+                  to: "/",
                 },
                 {
                   label: "Protocol Overview",
-                  to: "protocol/overview",
+                  to: "/protocol",
                 },
                 {
                   label: "Developers",
-                  to: "/category/developers",
+                  to: "/developers/sdk",
                 },
               ],
             },

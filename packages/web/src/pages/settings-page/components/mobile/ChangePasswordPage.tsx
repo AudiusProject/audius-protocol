@@ -1,61 +1,107 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { Name } from '@audius/common/models'
 import {
-  changePasswordSelectors,
-  changePasswordActions,
-  ChangePasswordPageStep
-} from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+  ChangePasswordFormValues,
+  ChangePasswordPage,
+  useChangePasswordFormConfiguration
+} from '@audius/common/hooks'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  IconLock,
+  Paper,
+  Text
+} from '@audius/harmony'
+import { Form, Formik, useFormikContext } from 'formik'
 
-import { make, TrackEvent } from 'common/store/analytics/actions'
-import { ChangePassword } from 'components/change-password/ChangePassword'
-import NavContext, {
-  CenterPreset,
-  LeftPreset
-} from 'components/nav/store/context'
+import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
+import {
+  ConfirmCredentialsPage,
+  NewPasswordPage
+} from 'components/change-password/ChangePasswordModal'
+import NavContext, { LeftPreset } from 'components/nav/store/context'
+import { ToastContext } from 'components/toast/ToastContext'
 
-import styles from './ChangePasswordPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
-const { changePage } = changePasswordActions
-const { getCurrentPage } = changePasswordSelectors
+import { SlidingPages } from './SlidingPages'
 
-export const ChangePasswordPage = ({ goBack }: SettingsPageProps) => {
-  const dispatch = useDispatch()
+const messages = {
+  changeYourPassword: 'Change Your Password',
+  changePassword: 'Change Password',
+  continue: 'Continue',
+  success: 'Password updated!'
+}
+
+const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
+  const { isSubmitting } = useFormikContext<ChangePasswordFormValues>()
+  return (
+    <Flex
+      as={Form}
+      direction='column'
+      justifyContent='space-between'
+      css={{ flexGrow: 1 }}
+    >
+      <Flex p='l' gap='s' direction='column' mt='xl'>
+        <Text variant='heading' color='heading'>
+          {messages.changeYourPassword}
+        </Text>
+        <SlidingPages currentPage={page}>
+          <ConfirmCredentialsPage />
+          <VerifyEmailPage />
+          <NewPasswordPage />
+        </SlidingPages>
+      </Flex>
+      <Paper shadow='midInverted' p='l'>
+        <Button
+          fullWidth
+          variant='primary'
+          iconRight={
+            page === ChangePasswordPage.NewPassword ? IconLock : IconArrowRight
+          }
+          type='submit'
+          isLoading={isSubmitting}
+        >
+          {page === ChangePasswordPage.NewPassword
+            ? messages.changePassword
+            : messages.continue}
+        </Button>
+      </Paper>
+    </Flex>
+  )
+}
+
+export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
   const navContext = useContext(NavContext)!
-  navContext.setCenter(CenterPreset.LOGO)
+  const { toast } = useContext(ToastContext)
 
-  const currentPage = useSelector(getCurrentPage)
-
-  // Remove back arrow on new password and loading pages
   useEffect(() => {
-    if (
-      [
-        ChangePasswordPageStep.NEW_PASSWORD,
-        ChangePasswordPageStep.LOADING
-      ].includes(currentPage)
-    ) {
-      navContext.setLeft(null)
-    } else {
+    navContext.setLeft(LeftPreset.CLOSE)
+    return () => {
       navContext.setLeft(LeftPreset.BACK)
     }
-  }, [navContext, currentPage])
+  }, [navContext])
 
-  // Go back to account settings when done
-  const onComplete = useCallback(() => {
+  const onSuccess = useCallback(() => {
     goBack()
-  }, [goBack])
+    toast(messages.success)
+  }, [goBack, toast])
 
-  // On initial render, set the page to confirm credentials
-  useEffect(() => {
-    dispatch(changePage(ChangePasswordPageStep.CONFIRM_CREDENTIALS))
-    const trackEvent: TrackEvent = make(Name.SETTINGS_START_CHANGE_PASSWORD, {})
-    dispatch(trackEvent)
-  }, [dispatch])
+  const { page, ...formikConfiguration } =
+    useChangePasswordFormConfiguration(onSuccess)
 
   return (
-    <div className={styles.container}>
-      <ChangePassword isMobile={true} onComplete={onComplete} />
-    </div>
+    <Flex
+      direction='column'
+      css={{
+        textAlign: 'start',
+        backgroundColor: 'white',
+        height: 'calc(100% - 50px)' // account for the header
+      }}
+    >
+      <Formik {...formikConfiguration}>
+        <ChangePasswordMobileForm page={page} />
+      </Formik>
+    </Flex>
   )
 }

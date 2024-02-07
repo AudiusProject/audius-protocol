@@ -6,11 +6,11 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated,
   AccessConditions,
-  Download,
   DownloadTrackAvailabilityType,
   FollowGatedConditions,
   StemUpload,
-  USDCPurchaseConditions
+  USDCPurchaseConditions,
+  StemCategory
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
@@ -41,14 +41,15 @@ import {
   DOWNLOAD_CONDITIONS,
   STREAM_CONDITIONS,
   CID,
-  DOWNLOAD,
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_PRICE_HUMANIZED,
   DOWNLOAD_REQUIRES_FOLLOW,
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
   STEMS,
-  StemsAndDownloadsFormValues
+  StemsAndDownloadsFormValues,
+  LAST_GATE_KEEPER,
+  GateKeeper
 } from './types'
 
 const { getUserId } = accountSelectors
@@ -90,7 +91,6 @@ export const StemsAndDownloadsField = ({
   )
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useTrackField<StemUpload[]>(STEMS)
-  const [, , { setValue: setDownloadValue }] = useTrackField<Download>(DOWNLOAD)
   const [{ value: cid }, , { setValue: setCidValue }] =
     useTrackField<Nullable<string>>(CID)
   const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
@@ -102,6 +102,8 @@ export const StemsAndDownloadsField = ({
   ] = useTrackField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
+  const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
+    useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
   /**
    * Stream conditions from inside the modal.
@@ -131,6 +133,7 @@ export const StemsAndDownloadsField = ({
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = DownloadTrackAvailabilityType.PUBLIC
     const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
@@ -160,7 +163,8 @@ export const StemsAndDownloadsField = ({
     isDownloadGated,
     tempDownloadConditions,
     savedDownloadConditions,
-    streamConditions
+    streamConditions,
+    lastGateKeeper
   ])
 
   const handleSubmit = useCallback(
@@ -169,12 +173,25 @@ export const StemsAndDownloadsField = ({
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
+      const stems = get(values, STEMS)
+      const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       setIsDownloadable(isDownloadable)
       setisOriginalAvailable(get(values, IS_ORIGINAL_AVAILABLE))
-      setStemsValue(get(values, STEMS))
+      setStemsValue(
+        stems.map((stem) => ({
+          ...stem,
+          category: stem.category ?? StemCategory.OTHER
+        }))
+      )
       setCidValue(null)
 
+      if (isDownloadable) {
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          downloadable: 'stemsAndDownloads'
+        })
+      }
       // Note that there is some redundancy with the download fields
       // this will go away once we remove the download object from track
       // and only keep the top level fields.
@@ -186,11 +203,6 @@ export const StemsAndDownloadsField = ({
           setIsDownloadGated(false)
           setDownloadConditions(null)
           setDownloadRequiresFollow(false)
-          setDownloadValue({
-            is_downloadable: isDownloadable,
-            requires_follow: false,
-            cid: null
-          })
           switch (availabilityType) {
             case DownloadTrackAvailabilityType.USDC_PURCHASE: {
               setIsDownloadGated(true)
@@ -201,6 +213,10 @@ export const StemsAndDownloadsField = ({
                 // @ts-ignore fully formed in saga (validated + added splits)
                 usdc_purchase: { price: Math.round(price) }
               })
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
+              })
               break
             }
             case DownloadTrackAvailabilityType.FOLLOWERS: {
@@ -209,10 +225,9 @@ export const StemsAndDownloadsField = ({
                 downloadConditions as FollowGatedConditions
               setDownloadConditions({ follow_user_id })
               setDownloadRequiresFollow(true)
-              setDownloadValue({
-                is_downloadable: isDownloadable,
-                requires_follow: true,
-                cid: null
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
               })
               break
             }
@@ -234,10 +249,9 @@ export const StemsAndDownloadsField = ({
               : null
           )
           setDownloadRequiresFollow(downloadRequiresFollow)
-          setDownloadValue({
-            is_downloadable: isDownloadable,
-            requires_follow: downloadRequiresFollow,
-            cid: null
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'stemsAndDownloads'
           })
         }
       }
@@ -253,7 +267,7 @@ export const StemsAndDownloadsField = ({
       setCidValue,
       setIsDownloadGated,
       setDownloadConditions,
-      setDownloadValue
+      setLastGateKeeper
     ]
   )
 
@@ -282,7 +296,11 @@ export const StemsAndDownloadsField = ({
       values.push(messages.values.allowOriginal)
     }
     const stemsCategories =
-      stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
+      stemsValue?.map((stem) =>
+        stem.category
+          ? stemCategoryFriendlyNames[stem.category]
+          : StemCategory.OTHER
+      ) ?? []
     values = [...values, ...stemsCategories]
 
     if (values.length === 0) return null

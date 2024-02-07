@@ -5,11 +5,11 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  IconHidden,
-  RadioButtonGroup,
+  IconVisibilityHidden,
+  RadioGroup,
   IconSpecialAccess,
   IconVisibilityPublic
-} from '@audius/stems'
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
@@ -92,7 +92,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
       <Text>{messages.modalDescription}</Text>
-      <RadioButtonGroup {...availabilityField} aria-label={messages.title}>
+      <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}
@@ -129,7 +129,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           />
         ) : null}
         <ModalRadioItem
-          icon={<IconHidden />}
+          icon={<IconVisibilityHidden />}
           label={messages.hidden}
           value={StreamTrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
@@ -143,7 +143,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           }
           checkedContent={<HiddenAvailabilityFields />}
         />
-      </RadioButtonGroup>
+      </RadioGroup>
     </div>
   )
 }

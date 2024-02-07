@@ -62,12 +62,16 @@ const getStreamConditions = async ({
 
 const getDownloadConditions = async ({
   streamConditions,
+  parsedStreamConditions,
   downloadConditions,
   downloadPrice: downloadPriceString,
   audiusLibs
 }) => {
   if (streamConditions) {
     return JSON.parse(streamConditions)
+  }
+  if (parsedStreamConditions) {
+    return parsedStreamConditions
   }
   if (downloadConditions) {
     return JSON.parse(downloadConditions)
@@ -132,7 +136,10 @@ program
     'Manually set a stream conditions object. Cannot be used with -u',
     ''
   )
-  .option('-o, --is-downloadable <is downloadable>', 'Whether track is downloadable')
+  .option(
+    '-o, --is-downloadable <is downloadable>',
+    'Whether track is downloadable'
+  )
   .option(
     '-dp, --download-price <download price>',
     'Generate a download conditions object with the given price in cents. Cannot be used with -dc'
@@ -194,6 +201,7 @@ program
         })
         const parsedDownloadConditions = await getDownloadConditions({
           streamConditions,
+          parsedStreamConditions,
           downloadConditions,
           downloadPrice,
           audiusLibs
@@ -212,7 +220,7 @@ program
             genre:
               genre ||
               Genre[
-              Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
+                Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
               ],
             mood: mood || `mood ${rand}`,
             credits_splits: '',

@@ -25,6 +25,7 @@
   display: inline-flex;
   flex-shrink: 1;
   gap: var(--unit-2);
+  flex-wrap: wrap;
 }
 
 .nftOwner {

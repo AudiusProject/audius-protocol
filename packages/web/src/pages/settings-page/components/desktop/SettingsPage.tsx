@@ -21,7 +21,8 @@ import {
   IconNotificationOn as IconNotification,
   IconSignOut,
   IconVerified,
-  IconSettings,
+  IconEmailAddress,
+  IconKey,
   IconMessage
 } from '@audius/harmony'
 import { Modal, Button, ButtonType } from '@audius/stems'
@@ -30,6 +31,7 @@ import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
@@ -79,7 +81,6 @@ const messages = {
   darkModeOff: 'Light',
   darkModeAuto: 'Auto',
   matrixMode: '🕳 🐇 Matrix',
-  changePassword: 'Change Password',
   signOut: 'Sign Out',
 
   aiGeneratedCardTitle: 'AI Generated music',
@@ -87,6 +88,7 @@ const messages = {
   inboxSettingsCardTitle: 'Inbox Settings',
   notificationsCardTitle: 'Configure Notifications',
   accountRecoveryCardTitle: 'Resend Recovery Email',
+  changeEmailCardTitle: 'Change Email',
   changePasswordCardTitle: 'Change Password',
   verificationCardTitle: 'Verification',
   desktopAppCardTitle: 'Download the Desktop App',
@@ -100,6 +102,8 @@ const messages = {
   notificationsCardDescription: 'Review your notification preferences.',
   accountRecoveryCardDescription:
     'Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.',
+  changeEmailCardDescription:
+    'Change the email you use to sign in and receive emails.',
   changePasswordCardDescription: 'Change the password to your Audius account.',
   verificationCardDescription:
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
@@ -111,6 +115,7 @@ const messages = {
   inboxSettingsButtonText: 'Inbox Settings',
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
+  changeEmailButtonText: 'Change Email',
   changePasswordButtonText: 'Change Password',
   desktopAppButtonText: 'Get The App',
   showPrivateKey: 'Show Private Key (Advanced)'
@@ -185,6 +190,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const [isEmailToastVisible, setIsEmailToastVisible] = useState(false)
   const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] =
     useState(false)
+  const [isChangeEmailModalVisible, setIsChangeEmailModalVisible] =
+    useState(false)
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
@@ -246,6 +253,14 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const closeChangePasswordModal = useCallback(() => {
     setIsChangePasswordModalVisible(false)
   }, [setIsChangePasswordModalVisible])
+
+  const openChangeEmailModal = useCallback(() => {
+    setIsChangeEmailModalVisible(true)
+  }, [setIsChangeEmailModalVisible])
+
+  const closeChangeEmailModal = useCallback(() => {
+    setIsChangeEmailModalVisible(false)
+  }, [setIsChangeEmailModalVisible])
 
   const openInboxSettingsModal = useCallback(() => {
     setIsInboxSettingsModalVisible(true)
@@ -375,8 +390,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </Toast>
         </SettingsCard>
         <SettingsCard
-          icon={<IconSettings />}
-          title={messages.changePassword}
+          icon={<IconEmailAddress />}
+          title={messages.changeEmailCardTitle}
+          description={messages.changeEmailCardDescription}
+        >
+          <Button
+            onClick={openChangeEmailModal}
+            className={cn(styles.cardButton, styles.changePasswordButton)}
+            textClassName={styles.settingButtonText}
+            type={ButtonType.COMMON_ALT}
+            text={messages.changeEmailButtonText}
+          />
+        </SettingsCard>
+        <SettingsCard
+          icon={<IconKey />}
+          title={messages.changePasswordCardTitle}
           description={messages.changePasswordCardDescription}
         >
           <Button
@@ -505,8 +533,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
         />
       </Modal>
       <ChangePasswordModal
-        showModal={isChangePasswordModalVisible}
+        isOpen={isChangePasswordModalVisible}
         onClose={closeChangePasswordModal}
+      />
+      <ChangeEmailModal
+        isOpen={isChangeEmailModalVisible}
+        onClose={closeChangeEmailModal}
       />
       <NotificationSettings
         isOpen={isNotificationSettingsModalVisible}

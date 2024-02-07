@@ -35,7 +35,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
-from src.models.users.usdc_purchase import USDCPurchase
+from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -218,9 +218,11 @@ def populate_mock_db(db, entities, block_offset=None):
                 remix_of=track_meta.get("remix_of", None),
                 updated_at=track_meta.get("updated_at", track_created_at),
                 created_at=track_meta.get("created_at", track_created_at),
-                release_date=str(track_meta.get("release_date"))
-                if track_meta.get("release_date")
-                else None,
+                release_date=(
+                    str(track_meta.get("release_date"))
+                    if track_meta.get("release_date")
+                    else None
+                ),
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_stream_gated=track_meta.get("is_stream_gated", False),
                 stream_conditions=track_meta.get("stream_conditions", None),
@@ -240,6 +242,9 @@ def populate_mock_db(db, entities, block_offset=None):
                     "block_timestamp", datetime.now()
                 ),
                 total_price_cents=track_price_history_meta.get("total_price_cents", 0),
+                access=track_price_history_meta.get(
+                    "access", PurchaseAccessType.stream
+                ),
             )
             session.add(track_price_history)
         for i, playlist_meta in enumerate(playlists):
@@ -687,6 +692,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 content_id=usdc_purchase.get("content_id", 3),
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
+                access=usdc_purchase.get("access", PurchaseAccessType.stream),
             )
             session.add(purchase)
         for i, cid_data in enumerate(cid_datas):

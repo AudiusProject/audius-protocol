@@ -58,8 +58,10 @@ const messages = {
     `Price must be at least $${formatPrice(minPrice)}.`,
   priceTooHigh: (maxPrice: number) =>
     `Price must be less than $${formatPrice(maxPrice)}.`,
-  noDownloadableAssets:
-    'You must enable the full track download or upload a stem file before setting download availability.'
+  losslessNoDownloadableAssets:
+    'You must enable full track download or upload a stem file to provide lossless files.',
+  gatedNoDownloadableAssets:
+    'You must enable full track download or upload a stem file before setting download availability.'
 }
 
 export const stemsAndDownloadsSchema = ({
@@ -114,6 +116,22 @@ export const stemsAndDownloadsSchema = ({
       }
     )
     .refine(
+      // cannot provide lossless files if no downloadable assets
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const isOriginalAvailable = formValues[IS_ORIGINAL_AVAILABLE]
+        const isDownloadable = formValues[IS_DOWNLOADABLE]
+        const stems = formValues[STEMS]
+        const hasStems = stems.length > 0
+        const hasDownloadableAssets = isDownloadable || hasStems
+        return !isOriginalAvailable || hasDownloadableAssets
+      },
+      {
+        message: messages.losslessNoDownloadableAssets,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
+    .refine(
       // cannot be download gated if no downloadable assets
       (values) => {
         const formValues = values as StemsAndDownloadsFormValues
@@ -130,7 +148,7 @@ export const stemsAndDownloadsSchema = ({
         return streamConditions || !isDownloadGated || hasDownloadableAssets
       },
       {
-        message: messages.noDownloadableAssets,
+        message: messages.gatedNoDownloadableAssets,
         path: [IS_DOWNLOAD_GATED]
       }
     )
@@ -139,7 +157,7 @@ export const StemsAndDownloadsMenuFields = () => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
-  const [{ value: isDownloadable }, , { setValue: isDownloadableSetValue }] =
+  const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
     useField(IS_DOWNLOADABLE)
   const [, , { setValue: setIsOriginalAvailable }] = useField(
     IS_ORIGINAL_AVAILABLE
@@ -147,7 +165,7 @@ export const StemsAndDownloadsMenuFields = () => {
   const [
     { value: downloadRequiresFollow },
     ,
-    { setValue: followerGatedSetValue }
+    { setValue: setDownloadRequiresFollow }
   ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: stemsValue }, , { setValue: setStems }] =
     useField<StemUploadWithFile[]>(STEMS)
@@ -168,7 +186,7 @@ export const StemsAndDownloadsMenuFields = () => {
         DownloadTrackAvailabilityType.USDC_PURCHASE
       ].includes(availabilityType) && !isAvailabilityTouched
     if (firstTimeDownloadGated) {
-      isDownloadableSetValue(true)
+      setIsDownloadable(true)
       setIsAvailabilityTouched(true)
       if (isLosslessDownloadsEnabled) {
         setIsOriginalAvailable(true)
@@ -177,7 +195,7 @@ export const StemsAndDownloadsMenuFields = () => {
   }, [
     availabilityType,
     isAvailabilityTouched,
-    isDownloadableSetValue,
+    setIsDownloadable,
     isLosslessDownloadsEnabled,
     setIsOriginalAvailable
   ])
@@ -192,11 +210,11 @@ export const StemsAndDownloadsMenuFields = () => {
       setIsOriginalAvailable(true)
     }
     if (!isDownloadable && stemsValue.length === 0) {
-      followerGatedSetValue(false)
+      setDownloadRequiresFollow(false)
     }
   }, [
     isLosslessDownloadsEnabled,
-    followerGatedSetValue,
+    setDownloadRequiresFollow,
     isDownloadable,
     setIsOriginalAvailable,
     stemsValue.length
@@ -205,9 +223,9 @@ export const StemsAndDownloadsMenuFields = () => {
   // If download requires follow is enabled, set the track to be downloadable.
   useEffect(() => {
     if (downloadRequiresFollow) {
-      isDownloadableSetValue(true)
+      setIsDownloadable(true)
     }
-  }, [downloadRequiresFollow, isDownloadableSetValue])
+  }, [downloadRequiresFollow, setIsDownloadable])
 
   const invalidAudioFile = (
     name: string,
@@ -219,12 +237,12 @@ export const StemsAndDownloadsMenuFields = () => {
 
   const onAddStemsToTrack = useCallback(
     async (selectedStems: File[]) => {
-      const detectCategory = (filename: string): StemCategory => {
+      const detectCategory = (filename: string): Nullable<StemCategory> => {
         const lowerCaseFilename = filename.toLowerCase()
         return (
           stemDropdownRows.find((category) =>
             lowerCaseFilename.includes(category.toString().toLowerCase())
-          ) ?? StemCategory.OTHER
+          ) ?? null
         )
       }
       const processedFiles = processFiles(selectedStems, invalidAudioFile)
