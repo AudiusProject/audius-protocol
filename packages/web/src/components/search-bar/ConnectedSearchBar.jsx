@@ -82,7 +82,6 @@ class ConnectedSearchBar extends Component {
     const pathname = '/search'
     if (value.startsWith('#')) {
       // perform tag search
-      const pathname = `/search`
       this.props.history.push({
         hash: value.split('#')[1].replace(/\s+/g, ''),
         pathname,
@@ -91,7 +90,7 @@ class ConnectedSearchBar extends Component {
     } else {
       value = encodeURIComponent(value)
       this.props.history.push({
-        pathname: pathname + value,
+        pathname: pathname + '/' + value,
         state: {}
       })
     }
