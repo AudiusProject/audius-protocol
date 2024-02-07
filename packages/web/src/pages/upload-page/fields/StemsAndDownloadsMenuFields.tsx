@@ -157,7 +157,7 @@ export const StemsAndDownloadsMenuFields = () => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
-  const [{ value: isDownloadable }, , { setValue: isDownloadableSetValue }] =
+  const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
     useField(IS_DOWNLOADABLE)
   const [, , { setValue: setIsOriginalAvailable }] = useField(
     IS_ORIGINAL_AVAILABLE
@@ -165,7 +165,7 @@ export const StemsAndDownloadsMenuFields = () => {
   const [
     { value: downloadRequiresFollow },
     ,
-    { setValue: followerGatedSetValue }
+    { setValue: setDownloadRequiresFollow }
   ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: stemsValue }, , { setValue: setStems }] =
     useField<StemUploadWithFile[]>(STEMS)
@@ -186,7 +186,7 @@ export const StemsAndDownloadsMenuFields = () => {
         DownloadTrackAvailabilityType.USDC_PURCHASE
       ].includes(availabilityType) && !isAvailabilityTouched
     if (firstTimeDownloadGated) {
-      isDownloadableSetValue(true)
+      setIsDownloadable(true)
       setIsAvailabilityTouched(true)
       if (isLosslessDownloadsEnabled) {
         setIsOriginalAvailable(true)
@@ -195,7 +195,7 @@ export const StemsAndDownloadsMenuFields = () => {
   }, [
     availabilityType,
     isAvailabilityTouched,
-    isDownloadableSetValue,
+    setIsDownloadable,
     isLosslessDownloadsEnabled,
     setIsOriginalAvailable
   ])
@@ -210,11 +210,11 @@ export const StemsAndDownloadsMenuFields = () => {
       setIsOriginalAvailable(true)
     }
     if (!isDownloadable && stemsValue.length === 0) {
-      followerGatedSetValue(false)
+      setDownloadRequiresFollow(false)
     }
   }, [
     isLosslessDownloadsEnabled,
-    followerGatedSetValue,
+    setDownloadRequiresFollow,
     isDownloadable,
     setIsOriginalAvailable,
     stemsValue.length
@@ -223,9 +223,9 @@ export const StemsAndDownloadsMenuFields = () => {
   // If download requires follow is enabled, set the track to be downloadable.
   useEffect(() => {
     if (downloadRequiresFollow) {
-      isDownloadableSetValue(true)
+      setIsDownloadable(true)
     }
-  }, [downloadRequiresFollow, isDownloadableSetValue])
+  }, [downloadRequiresFollow, setIsDownloadable])
 
   const invalidAudioFile = (
     name: string,

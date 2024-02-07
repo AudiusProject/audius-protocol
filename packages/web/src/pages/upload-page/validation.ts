@@ -68,16 +68,6 @@ const createSdkSchema = () =>
   z.object({
     ai_attribution_user_id: z.optional(z.number()).nullable(),
     description: z.optional(z.string().max(1000)),
-    download: z.optional(
-      z
-        .object({
-          cid: z.string().nullable(),
-          is_downloadable: z.boolean(),
-          requires_follow: z.boolean()
-        })
-        .strict()
-        .nullable()
-    ),
     field_visibility: z.optional(
       z.object({
         mood: z.optional(z.boolean()),

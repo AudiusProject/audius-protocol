@@ -6,7 +6,6 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated,
   AccessConditions,
-  Download,
   DownloadTrackAvailabilityType,
   FollowGatedConditions,
   StemUpload,
@@ -42,7 +41,6 @@ import {
   DOWNLOAD_CONDITIONS,
   STREAM_CONDITIONS,
   CID,
-  DOWNLOAD,
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_PRICE_HUMANIZED,
   DOWNLOAD_REQUIRES_FOLLOW,
@@ -93,7 +91,6 @@ export const StemsAndDownloadsField = ({
   )
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useTrackField<StemUpload[]>(STEMS)
-  const [, , { setValue: setDownloadValue }] = useTrackField<Download>(DOWNLOAD)
   const [{ value: cid }, , { setValue: setCidValue }] =
     useTrackField<Nullable<string>>(CID)
   const [{ value: isDownloadGated }, , { setValue: setIsDownloadGated }] =
@@ -204,11 +201,6 @@ export const StemsAndDownloadsField = ({
           setIsDownloadGated(false)
           setDownloadConditions(null)
           setDownloadRequiresFollow(false)
-          setDownloadValue({
-            is_downloadable: isDownloadable,
-            requires_follow: false,
-            cid: null
-          })
           switch (availabilityType) {
             case DownloadTrackAvailabilityType.USDC_PURCHASE: {
               setIsDownloadGated(true)
@@ -231,11 +223,6 @@ export const StemsAndDownloadsField = ({
                 downloadConditions as FollowGatedConditions
               setDownloadConditions({ follow_user_id })
               setDownloadRequiresFollow(true)
-              setDownloadValue({
-                is_downloadable: isDownloadable,
-                requires_follow: true,
-                cid: null
-              })
               setLastGateKeeper({
                 ...lastGateKeeper,
                 access: 'stemsAndDownloads'
@@ -260,11 +247,6 @@ export const StemsAndDownloadsField = ({
               : null
           )
           setDownloadRequiresFollow(downloadRequiresFollow)
-          setDownloadValue({
-            is_downloadable: isDownloadable,
-            requires_follow: downloadRequiresFollow,
-            cid: null
-          })
           setLastGateKeeper({
             ...lastGateKeeper,
             access: 'stemsAndDownloads'
@@ -284,7 +266,6 @@ export const StemsAndDownloadsField = ({
       setCidValue,
       setIsDownloadGated,
       setDownloadConditions,
-      setDownloadValue,
       setLastGateKeeper
     ]
   )
