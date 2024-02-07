@@ -31,5 +31,5 @@ export const useRadioGroup = (props: RadioGroupProps) => {
     [onChange, radioGroup]
   )
 
-  return { name, checked, handleChange }
+  return { name, checked, onChange: handleChange }
 }

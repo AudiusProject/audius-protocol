@@ -9,15 +9,10 @@ import { Text } from 'components/text'
 import type { SelectablePillProps } from './types'
 
 const RadioInput = (props: ComponentProps<'input'>) => {
-  const { name, checked, handleChange } = useRadioGroup(props)
+  const { name, checked, onChange } = useRadioGroup(props)
 
   return (
-    <HiddenInput
-      {...props}
-      name={name}
-      checked={checked}
-      onChange={handleChange}
-    />
+    <HiddenInput {...props} name={name} checked={checked} onChange={onChange} />
   )
 }
 

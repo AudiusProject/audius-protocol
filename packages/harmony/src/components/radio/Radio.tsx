@@ -16,7 +16,7 @@ export const Radio = (props: RadioProps) => {
   const {
     className,
     inputClassName,
-    onChange,
+    onChange: onChangeProp,
     name: nameProp,
     checked: checkedProp,
     disabled,
@@ -24,11 +24,11 @@ export const Radio = (props: RadioProps) => {
   } = props
   const { spacing, color } = useTheme()
 
-  const { name, checked, handleChange } = useRadioGroup({
+  const { name, checked, onChange } = useRadioGroup({
     name: nameProp,
     checked: checkedProp,
     value: other.value,
-    onChange
+    onChange: onChangeProp
   })
 
   const rootCss: CSSObject = {
@@ -70,7 +70,7 @@ export const Radio = (props: RadioProps) => {
         name={name}
         checked={checked}
         type='radio'
-        onChange={handleChange}
+        onChange={onChange}
         disabled={disabled}
         {...other}
       />
