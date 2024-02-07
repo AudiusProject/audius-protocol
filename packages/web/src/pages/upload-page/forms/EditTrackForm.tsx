@@ -100,6 +100,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         } = metadata
         // Update the download json field based on the isDownloadable flag and the download conditions.
         // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
+        // TODO: Remove this once the backend is updated to remove the download fields redundancy.
         const download = {
           is_downloadable: isDownloadable,
           requires_follow: isContentFollowGated(downloadConditions),

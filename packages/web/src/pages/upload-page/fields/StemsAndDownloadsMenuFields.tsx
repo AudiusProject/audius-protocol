@@ -61,7 +61,7 @@ const messages = {
   losslessNoDownloadableAssets:
     'You must enable full track download or upload a stem file to provide lossless files.',
   gatedNoDownloadableAssets:
-    'You must enable the full track download or upload a stem file before setting download availability.'
+    'You must enable full track download or upload a stem file before setting download availability.'
 }
 
 export const stemsAndDownloadsSchema = ({
