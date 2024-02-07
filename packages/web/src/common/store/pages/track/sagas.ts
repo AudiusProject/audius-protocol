@@ -163,18 +163,10 @@ function* watchFetchTrack() {
             forceRetrieveFromSource
           })
         } else {
-          const ids =
-            canBeUnlisted && slug && handle
-              ? [{ id: trackId, url_title: slug, handle }]
-              : [trackId]
+          const ids = canBeUnlisted
+            ? [{ id: trackId, url_title: slug, handle }]
+            : [trackId]
 
-          retrieveTracks({
-            trackIds: ids,
-            canBeUnlisted,
-            withStems: true,
-            withRemixes,
-            withRemixParents: true
-          })
           const tracks: Track[] = yield* call(retrieveTracks, {
             trackIds: ids,
             canBeUnlisted,

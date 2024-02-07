@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
-  useDownloadableContentAccess
+  useDownloadableContentAccess,
+  useGatedContentAccess
 } from '@audius/common/hooks'
 import { ModalSource, DownloadQuality } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
@@ -60,8 +61,12 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [isExpanded, setIsExpanded] = useState(false)
+  const track = useSelector((state: CommonState) =>
+    getTrack(state, { id: trackId })
+  )
   const { stemTracks } = useCurrentStems({ trackId })
-  const shouldDisplayDownloadAll = stemTracks.length > 1
+  const { hasDownloadAccess } = useGatedContentAccess(track)
+  const shouldDisplayDownloadAll = stemTracks.length > 1 && hasDownloadAccess
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -76,9 +81,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         maximumFractionDigits: 2
       })
     : undefined
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
 
