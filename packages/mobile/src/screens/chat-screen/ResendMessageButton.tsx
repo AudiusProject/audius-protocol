@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { chatActions, chatSelectors } from '@audius/common'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconError from 'app/assets/images/iconError.svg'
+import { IconError } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

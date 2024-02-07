@@ -1,5 +1,5 @@
-import { Name, AnalyticsEvent } from 'models/Analytics'
-import { ErrorLevel, ReportToSentryArgs } from 'models/ErrorReporting'
+import { Name, AnalyticsEvent } from '~/models/Analytics'
+import { ErrorLevel, ReportToSentryArgs } from '~/models/ErrorReporting'
 
 /**
  * Reports Rewards claim outcome to Identity, Amplitude, Sentry

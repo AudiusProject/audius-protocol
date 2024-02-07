@@ -1,5 +1,5 @@
-import type { CommonStoreContext } from '@audius/common'
-import { OpenSeaClient, SolanaClient } from '@audius/common'
+import { OpenSeaClient, SolanaClient } from '@audius/common/services'
+import type { CommonStoreContext } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 
@@ -54,5 +54,6 @@ export const storeContext: CommonStoreContext = {
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork
-  }
+  },
+  isMobile: true
 }

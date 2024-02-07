@@ -19,12 +19,13 @@ export const Flex = styled(Box, {
     justifyContent,
     gap,
     rowGap,
-    columnGap
+    columnGap,
+    inline
   } = props
   const { spacing } = theme
 
   return {
-    display: 'flex',
+    display: inline ? 'inline-flex' : 'flex',
     alignItems,
     justifyContent,
     flexDirection: direction,

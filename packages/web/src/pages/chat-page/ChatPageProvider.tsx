@@ -1,6 +1,6 @@
 import { RouteComponentProps } from 'react-router-dom'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ChatPage as DesktopChatPage } from './ChatPage'
 import { SkeletonChatPage as MobileChatPage } from './components/mobile/SkeletonChatPage'

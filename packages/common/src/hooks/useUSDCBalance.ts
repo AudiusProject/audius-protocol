@@ -3,13 +3,13 @@ import { useCallback, useEffect, useState } from 'react'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Status } from 'models/Status'
-import { BNUSDC, StringUSDC } from 'models/Wallet'
-import { getUserbankAccountInfo } from 'services/index'
-import { useAppContext } from 'src/context/appContext'
-import { getRecoveryStatus } from 'store/buy-usdc/selectors'
-import { getUSDCBalance } from 'store/wallet/selectors'
-import { setUSDCBalance } from 'store/wallet/slice'
+import { useAppContext } from '~/context/appContext'
+import { Status } from '~/models/Status'
+import { BNUSDC, StringUSDC } from '~/models/Wallet'
+import { getUserbankAccountInfo } from '~/services/index'
+import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
+import { getUSDCBalance } from '~/store/wallet/selectors'
+import { setUSDCBalance } from '~/store/wallet/slice'
 
 import { useInterval } from './useInterval'
 
@@ -55,6 +55,7 @@ export const useUSDCBalance = ({
     }
   }, [audiusBackend, setData])
 
+  // Refresh balance on mount
   useEffect(() => {
     refresh()
   }, [refresh])
@@ -69,5 +70,13 @@ export const useUSDCBalance = ({
     clearInterval(id)
   }, [id])
 
-  return { balanceStatus, recoveryStatus, data, refresh, cancelPolling }
+  // If we haven't loaded the balance yet for the first time or we're
+  // actively recovering, then we will be in loading state.
+  const status =
+    balanceStatus === Status.IDLE ||
+    (balanceStatus === Status.LOADING && data === null) ||
+    recoveryStatus === Status.LOADING
+      ? Status.LOADING
+      : balanceStatus
+  return { status, data, refresh, cancelPolling }
 }

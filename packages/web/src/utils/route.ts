@@ -1,6 +1,8 @@
-import { Env, ID, encodeUrlName, getHash } from '@audius/common'
+import { ID } from '@audius/common/models'
+import { Env } from '@audius/common/services'
+import { encodeUrlName, getHash } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
-import { Location as HistoryLocation } from 'history'
+import { Location } from 'history'
 import { matchPath } from 'react-router'
 
 // TODO: Move routing to @audius/common with an injected env
@@ -92,6 +94,7 @@ export const PAYMENTS_PAGE = '/payments'
 export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
+export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -206,6 +209,7 @@ export const authenticatedRoutes = [
   HISTORY_PAGE,
   UPLOAD_PAGE,
   SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   DEACTIVATE_PAGE,
   CHATS_PAGE,
   CHAT_PAGE,
@@ -256,6 +260,7 @@ export const orderedRoutes = [
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
@@ -307,6 +312,7 @@ export const staticRoutes = new Set([
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
@@ -429,8 +435,12 @@ export const chatPage = (id: string) => {
   return `/messages/${id}`
 }
 
-export const doesMatchRoute = (route: string, exact = true) => {
-  return matchPath(getPathname(), {
+export const doesMatchRoute = (
+  location: Location,
+  route: string,
+  exact = true
+) => {
+  return matchPath(getPathname(location), {
     path: route,
     exact
   })
@@ -443,35 +453,8 @@ export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
  * if using hash routing
  * @param {Location} location
  */
-export const getPathname = (
-  location: Location | HistoryLocation = window.location
-) => {
-  // If this is a Location, pathname will have a host. If it's a HistoryLocation,
-  // the hashrouter will automatically understand the pathname to be the hash route
-  if (USE_HASH_ROUTING && 'host' in location) {
-    return location.hash.replace('#', '')
-  }
+export const getPathname = (location: Location) => {
   return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
-}
-
-/**
- * For a given route, checks if any of the previous routes in the `orderedRoutes` array matches the window's pathname
- * Returns true if none of the previous routes mach and it does, otherwise false.
- */
-export const doesRenderPage = (pageRoute: string) => {
-  const pgIndex = orderedRoutes.findIndex((route) => route === pageRoute)
-  if (pgIndex === -1) return false
-  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every((route) => {
-    return !matchPath(getPathname(), {
-      path: route,
-      exact: true
-    })
-  })
-  if (!noPreviousMatches) return false
-  return matchPath(getPathname(), {
-    path: pageRoute,
-    exact: true
-  })
 }
 
 export const recordGoToSignup = (callback: () => void) => {
@@ -510,8 +493,8 @@ export const pushWindowRoute = (route: string) => {
 /**
  * Only calls push route if unique (not current route)
  */
-export const pushUniqueRoute = (route: string) => {
-  const pathname = getPathname()
+export const pushUniqueRoute = (location: Location, route: string) => {
+  const pathname = getPathname(location)
   if (route !== pathname) {
     return pushRoute(route)
   }

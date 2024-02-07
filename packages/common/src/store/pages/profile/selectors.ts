@@ -1,7 +1,9 @@
-import { getCollections } from 'store/cache/collections/selectors'
-import { getUser, getUsers } from 'store/cache/users/selectors'
-import type { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector, dayjs } from 'utils'
+import { uniq } from 'lodash'
+
+import { getCollections } from '~/store/cache/collections/selectors'
+import { getUser, getUsers } from '~/store/cache/users/selectors'
+import type { CommonState } from '~/store/commonStore'
+import { removeNullable, createDeepEqualSelector, dayjs } from '~/utils'
 
 import { Status } from '../../../models'
 import type { Collection, ID, User, UserCollection } from '../../../models'
@@ -104,12 +106,12 @@ export const getProfileCollections = createDeepEqualSelector(
 
 export const getProfileAlbums = createDeepEqualSelector(
   [getProfileCollections],
-  (collections) => collections?.filter(({ is_album }) => is_album)
+  (collections) => uniq(collections?.filter(({ is_album }) => is_album))
 )
 
 export const getProfilePlaylists = createDeepEqualSelector(
   [getProfileCollections],
-  (collections) => collections?.filter(({ is_album }) => !is_album)
+  (collections) => uniq(collections?.filter(({ is_album }) => !is_album))
 )
 
 const sortByDateDesc = (a: Collection, b: Collection) =>

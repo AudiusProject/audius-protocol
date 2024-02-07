@@ -1,23 +1,27 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 
-import type { CommonState, ID, User } from '@audius/common'
+import { FollowSource } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import {
-  FollowSource,
+  cacheUsersSelectors,
   usersSocialActions,
   relatedArtistsUISelectors,
-  relatedArtistsUIActions,
-  cacheUsersSelectors
-} from '@audius/common'
+  relatedArtistsUIActions
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
+import { css } from '@emotion/native'
 import { isEmpty } from 'lodash'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconFollow from 'app/assets/images/iconFollow.svg'
-import IconFollowing from 'app/assets/images/iconFollowing.svg'
-import IconClose from 'app/assets/images/iconRemove.svg'
-import { Button, IconButton, Text } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import {
+  IconUserFollow,
+  IconUserFollowing,
+  IconClose,
+  useTheme
+} from '@audius/harmony-native'
+import { Button, IconButton, Text, ProfilePicture } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -66,12 +70,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     justifyContent: 'center',
     marginVertical: spacing(2)
   },
-  suggestedArtistPhoto: {
-    height: 52,
-    width: 52,
-    marginRight: -7,
-    borderWidth: 1
-  },
   suggestedArtistsText: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -90,6 +88,7 @@ type ArtistRecommendationsProps = {
 export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { onClose } = props
   const styles = useStyles()
+  const { spacing } = useTheme()
   const navigation = useNavigation()
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
 
@@ -175,8 +174,12 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
             key={artist.user_id}
           >
             <ProfilePicture
-              profile={artist}
-              style={styles.suggestedArtistPhoto}
+              userId={artist.user_id}
+              style={css({
+                height: spacing.unit13,
+                width: spacing.unit13,
+                mr: -spacing.s
+              })}
             />
           </TouchableOpacity>
         ))}
@@ -202,7 +205,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         title={
           isFollowingAllArtists ? messages.followingAll : messages.followAll
         }
-        icon={isFollowingAllArtists ? IconFollowing : IconFollow}
+        icon={isFollowingAllArtists ? IconUserFollowing : IconUserFollow}
         iconPosition='left'
         fullWidth
         onPress={handlePressFollow}

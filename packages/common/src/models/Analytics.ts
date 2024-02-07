@@ -1,12 +1,16 @@
-import { ChatPermission } from '@audius/sdk'
+import { ChatPermission, Genre } from '@audius/sdk'
 
-import { FeedFilter } from 'models/FeedFilter'
-import { ID, PlayableType } from 'models/Identifiers'
-import { MonitorPayload, ServiceMonitorType } from 'models/Services'
-import { TimeRange } from 'models/TimeRange'
-import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
-import { MintName } from 'services/index'
-import { Prettify } from 'utils/typeUtils'
+import { FeedFilter } from '~/models/FeedFilter'
+import { ID, PlayableType } from '~/models/Identifiers'
+import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
+import { TimeRange } from '~/models/TimeRange'
+import {
+  SolanaWalletAddress,
+  StringAudio,
+  WalletAddress
+} from '~/models/Wallet'
+import { MintName } from '~/services/index'
+import { Prettify } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -20,6 +24,8 @@ type JsonMap = Record<string, unknown>
 export type AnalyticsEvent = {
   eventName: string
   properties?: JsonMap
+  id?: string
+  source?: string
 }
 
 export enum Name {
@@ -33,18 +39,44 @@ export enum Name {
   CREATE_ACCOUNT_COMPLETE_PASSWORD = 'Create Account: Complete Password',
   // When the user starts integrating with twitter
   CREATE_ACCOUNT_START_TWITTER = 'Create Account: Start Twitter',
-  // When the user continues past the "twitter connection page"
+  // When the user successfully continues past the "twitter connection page"
   CREATE_ACCOUNT_COMPLETE_TWITTER = 'Create Account: Complete Twitter',
+  // When the user closed the twitter oauth modal
+  CREATE_ACCOUNT_CLOSED_TWITTER = 'Create Account: Closed Twitter',
+  // When the user encounters an error during twitter oauth
+  CREATE_ACCOUNT_TWITTER_ERROR = 'Create Account: Twitter Error',
   // When the user starts integrating with instagram
   CREATE_ACCOUNT_START_INSTAGRAM = 'Create Account: Start Instagram',
   // When the user continues past the "instagram connection page"
   CREATE_ACCOUNT_COMPLETE_INSTAGRAM = 'Create Account: Complete Instagram',
+  // When the user closed the instagram oauth modal
+  CREATE_ACCOUNT_CLOSED_INSTAGRAM = 'Create Account: Closed Instagram',
+  // When the user encounters an error during instagram oauth
+  CREATE_ACCOUNT_INSTAGRAM_ERROR = 'Create Account: Error Instagram',
   // When the user starts integrating with tiktok
   CREATE_ACCOUNT_START_TIKTOK = 'Create Account: Start TikTok',
   // When the user continues past the "tiktok connection page"
   CREATE_ACCOUNT_COMPLETE_TIKTOK = 'Create Account: Complete TikTok',
+  // When the user closes the tiktok oauth modal
+  CREATE_ACCOUNT_CLOSED_TIKTOK = 'Create Account: Closed TikTok',
+  // Errors encountered during tiktok oauth
+  CREATE_ACCOUNT_TIKTOK_ERROR = 'Create Account: TikTok Error',
   // When the user continues past the "profile info page"
   CREATE_ACCOUNT_COMPLETE_PROFILE = 'Create Account: Complete Profile',
+  // When the user uploads a profile photo in signup
+  CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO = 'Create Account: Upload Profile Photo',
+  // When the user has an error uploading their profile photo
+  CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR = 'Create Account: Upload Profile Photo Error',
+  // When the user uploads a cover photo in signup
+  CREATE_ACCOUNT_UPLOAD_COVER_PHOTO = 'Create Account: Upload Cover Photo',
+  // When the user has an error uploading their cover photo
+  CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR = 'Create Account: Upload Cover Photo Error',
+  // When the user selects a genre
+  CREATE_ACCOUNT_SELECT_GENRE = 'Create Account: Select Genre',
+  // When the user clicks follow on a specific user on the follow artists page
+  CREATE_ACCOUNT_FOLLOW_ARTIST = 'Create Account: Follow Artist',
+  // When the user clicks to preview a song from an artist on the follow artists page
+  CREATE_ACCOUNT_ARTIST_PREVIEWED = 'Create Account: Artist Previewed',
   // When the user continues past the follow page
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
   // When the user continues past the loading page
@@ -55,6 +87,10 @@ export enum Name {
   CREATE_ACCOUNT_RATE_LIMIT = 'Create Account: Rate Limit',
   // When the user gets blocked by AAO during the signup path
   CREATE_ACCOUNT_BLOCKED = 'Create Account: Blocked',
+  // When the welcome modal gets shown to the user
+  CREATE_ACCOUNT_WELCOME_MODAL = 'Create Account: Welcome Modal',
+  // When the user clicks the "Upload Track" CTA in the welcome modal
+  CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
 
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
@@ -75,6 +111,7 @@ export enum Name {
   SETTINGS_LOG_OUT = 'Settings: Log Out',
 
   // TikTok
+  // TODO: deprecate the following 3 metrics in favor of the duped CREATE_ACCOUNT ones
   TIKTOK_START_OAUTH = 'TikTok: Start TikTok OAuth',
   TIKTOK_COMPLETE_OAUTH = 'TikTok: Complete TikTok OAuth',
   TIKTOK_OAUTH_ERROR = 'TikTok: TikTok OAuth Error',
@@ -367,6 +404,14 @@ export enum Name {
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
   WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START = 'Withdraw USDC: Create Destination Token Account Started',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS = 'Withdraw USDC: Create Destination Token Account Success',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED = 'Withdraw USDC: Create Destination Token Account Failed',
+  WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET = 'Withdraw USDC: Transfer to Root Wallet',
+  WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY = 'Withdraw USDC: Coinflow Withdrawal Ready',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION = 'Withdraw USDC: Coinflow Send Transaction',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED = 'Withdraw USDC: Coinflow Send Transaction Failed',
+  WITHDRAW_USDC_CANCELLED = 'Withdraw USDC: Cancelled',
   WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
   WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
   WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
@@ -431,7 +476,14 @@ export enum Name {
   // Repair Signups
   SIGN_UP_REPAIR_START = 'Sign Up Repair: Start',
   SIGN_UP_REPAIR_SUCCESS = 'Sign Up Repair: Success',
-  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure'
+  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure',
+
+  // Export Private Key
+  EXPORT_PRIVATE_KEY_LINK_CLICKED = 'Export Private Key: Settings Link Clicked',
+  EXPORT_PRIVATE_KEY_PAGE_VIEWED = 'Export Private Key: Page Viewed',
+  EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened',
+  EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED = 'Export Private Key: Public Address Copied',
+  EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED = 'Export Private Key: Private Key Copied'
 }
 
 type PageView = {
@@ -459,45 +511,117 @@ type CreateAccountCompletePassword = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PASSWORD
   emailAddress: string
 }
+// Twitter Account Creation
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
   emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
   emailAddress?: string
   handle: string
+  page?: 'create-email' | 'pick-handle'
 }
+type CreateAccountClosedTwitter = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_TWITTER
+  emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
+}
+type CreateAccountTwitterError = {
+  eventName: Name.CREATE_ACCOUNT_TWITTER_ERROR
+  emailAddress?: string
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
+// Instagram Account Creation
 type CreateAccountStartInstagram = {
   eventName: Name.CREATE_ACCOUNT_START_INSTAGRAM
   emailAddress?: string
+  page?: string
 }
 type CreateAccountCompleteInstagram = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
   isVerified: boolean
   emailAddress?: string
   handle: string
+  page?: string
 }
+type CreateAccountClosedInstagram = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_INSTAGRAM
+  emailAddress?: string
+  page?: 'create-email' | 'pick-handle'
+}
+type CreateAccountInstagramError = {
+  eventName: Name.CREATE_ACCOUNT_INSTAGRAM_ERROR
+  emailAddress?: string
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
 type CreateAccountStartTikTok = {
   eventName: Name.CREATE_ACCOUNT_START_TIKTOK
   emailAddress?: string
+  page?: string
 }
 type CreateAccountCompleteTikTok =
   | {
       eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
       emailAddress: string
+      page?: string
     }
   | {
       eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
       isVerified: boolean
       handle: string
+      page?: string
     }
+type CreateAccountUploadProfilePhoto = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
+  emailAddress: string
+  handle: string
+}
+type CreateAccountUploadProfilePhotoError = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR
+  error: string
+}
+type CreateAccountUploadProfileCover = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
+  emailAddress: string
+  handle: string
+}
+type CreateAccountUploadProfileCoverError = {
+  eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR
+  error: string
+}
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
   emailAddress: string
   handle: string
 }
+type CreateAccountSelectGenre = {
+  eventName: Name.CREATE_ACCOUNT_SELECT_GENRE
+  emailAddress: string
+  handle: string
+  genre: Genre
+  selectedGenres: Genre[]
+}
+type CreateAccountFollowArtist = {
+  eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST
+  emailAddress: string
+  handle: string
+  artistID: number
+  artistName: string
+}
+
+type CreateAccountPreviewArtist = {
+  eventName: Name.CREATE_ACCOUNT_ARTIST_PREVIEWED
+  artistID: number
+  artistName: string
+}
+
 type CreateAccountCompleteFollow = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_FOLLOW
   emailAddress: string
@@ -507,6 +631,16 @@ type CreateAccountCompleteFollow = {
 }
 type CreateAccountCompleteCreating = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_CREATING
+  emailAddress: string
+  handle: string
+}
+type CreateAccountWelcomeModal = {
+  eventName: Name.CREATE_ACCOUNT_WELCOME_MODAL
+  emailAddress: string
+  handle: string
+}
+type CreateAccountWelcomeModalUploadTrack = {
+  eventName: Name.CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK
   emailAddress: string
   handle: string
 }
@@ -694,7 +828,8 @@ export enum FollowSource {
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
   EMPTY_FEED = 'empty feed',
   HOW_TO_UNLOCK_TRACK_PAGE = 'how to unlock track page',
-  HOW_TO_UNLOCK_MODAL = 'how to unlock modal'
+  HOW_TO_UNLOCK_MODAL = 'how to unlock modal',
+  SIGN_UP = 'sign up'
 }
 
 type Share = {
@@ -1791,6 +1926,45 @@ export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
 export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
   eventName: Name.WITHDRAW_USDC_FAILURE
 }
+export type WithdrawUSDCCancelled = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_CANCELLED
+}
+
+export type WithdrawUSDCCreateDestAccountStarted =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START
+  }
+
+export type WithdrawUSDCCreateDestAccountSuccess =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS
+  }
+
+export type WithdrawUSDCCreateDestAccountFailure =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED
+  }
+
+export type WithdrawUSDCTransferToRootWallet =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET
+  }
+
+export type WithdrawUSDCCoinflowWithdrawalReady =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY
+  }
+
+export type WithdrawUSDCCoinflowSendTransaction = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION
+  signature: string
+}
+
+export type WithdrawUSDCCoinflowSendTransactionFailed = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED
+  error?: string
+  errorCode?: string | number
+}
 
 export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
   eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
@@ -2036,6 +2210,36 @@ type JupiterQuoteResponse = {
   outAmount: number
 }
 
+type ExportPrivateKeyLinkClicked = {
+  eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPageOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PAGE_VIEWED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyModalOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_MODAL_OPENED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPublicAddressCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPrivateKeyCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED
+  handle: string
+  userId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -2052,6 +2256,19 @@ export type AllTrackingEvents =
   | CreateAccountCompleteFollow
   | CreateAccountCompleteCreating
   | CreateAccountOpenFinish
+  | CreateAccountClosedTwitter
+  | CreateAccountTwitterError
+  | CreateAccountClosedInstagram
+  | CreateAccountInstagramError
+  | CreateAccountUploadProfilePhoto
+  | CreateAccountUploadProfilePhotoError
+  | CreateAccountUploadProfileCover
+  | CreateAccountUploadProfileCoverError
+  | CreateAccountSelectGenre
+  | CreateAccountFollowArtist
+  | CreateAccountPreviewArtist
+  | CreateAccountWelcomeModal
+  | CreateAccountWelcomeModalUploadTrack
   | SignInOpen
   | SignInFinish
   | SignInWithIncompleteAccount
@@ -2254,6 +2471,14 @@ export type AllTrackingEvents =
   | WithdrawUSDCRequested
   | WithdrawUSDCSuccess
   | WithdrawUSDCFailure
+  | WithdrawUSDCCancelled
+  | WithdrawUSDCCreateDestAccountStarted
+  | WithdrawUSDCCreateDestAccountSuccess
+  | WithdrawUSDCCreateDestAccountFailure
+  | WithdrawUSDCTransferToRootWallet
+  | WithdrawUSDCCoinflowWithdrawalReady
+  | WithdrawUSDCCoinflowSendTransaction
+  | WithdrawUSDCCoinflowSendTransactionFailed
   | WithdrawUSDCHelpLinkClicked
   | WithdrawUSDCTxLinkClicked
   | StripeSessionCreationError
@@ -2306,3 +2531,8 @@ export type AllTrackingEvents =
   | ChatWebsocketError
   | JupiterQuoteResponse
   | JupiterQuoteRequest
+  | ExportPrivateKeyLinkClicked
+  | ExportPrivateKeyPageOpened
+  | ExportPrivateKeyModalOpened
+  | ExportPrivateKeyPublicAddressCopied
+  | ExportPrivateKeyPrivateKeyCopied

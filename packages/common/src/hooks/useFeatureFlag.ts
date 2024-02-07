@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useEffectOnce } from 'react-use'
 
-import { useAppContext } from 'src/context/appContext'
-import { Maybe } from 'utils/typeUtils'
+import { useAppContext } from '~/context/appContext'
+import { Maybe } from '~/utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 

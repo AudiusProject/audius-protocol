@@ -1,4 +1,4 @@
-import { DiscoveryNodeSelectorService } from '@audius/common'
+import { DiscoveryNodeSelectorService } from '@audius/common/services'
 
 import { env } from '../env'
 import { remoteConfigInstance } from '../remote-config/remote-config-instance'
@@ -15,7 +15,10 @@ type CachedDiscoveryNodeTimestamp =
   | undefined
 
 const getCachedDiscoveryNode = () => {
-  const cached = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
+  const cached =
+    typeof localStorage !== 'undefined'
+      ? localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
+      : null
   if (cached) {
     try {
       const cachedDiscoveryNodeTimestamp = JSON.parse(

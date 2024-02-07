@@ -1,10 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import {
-  emailSchema,
-  createLoginDetailsPageMessages as messages,
-  useAudiusQueryContext
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { createLoginDetailsPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/schemas'
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -55,11 +53,10 @@ const EmailField = () => {
   return <NewEmailField />
 }
 
-const loginDetailsFormikSchema = toFormikValidationSchema(loginDetailsSchema)
-
 export const CreateLoginDetailsPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const audiusQueryContext = useAudiusQueryContext()
   const handleField = useSelector(getHandleField)
 
   const { spacing } = useTheme()
@@ -71,6 +68,11 @@ export const CreateLoginDetailsPage = () => {
     password: '',
     confirmPassword: ''
   }
+
+  const loginDetailsFormikSchema = useMemo(
+    () => toFormikValidationSchema(loginDetailsSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   const handleSubmit = useCallback(
     (values: CreateLoginDetailsValues) => {
@@ -89,15 +91,15 @@ export const CreateLoginDetailsPage = () => {
       validationSchema={loginDetailsFormikSchema}
     >
       {({ isValid, dirty }) => (
-        <Page as={Form} transition='horizontal'>
+        <Page as={Form} transition='horizontal' centered>
           <Heading
-            heading={messages.title}
-            description={messages.description}
+            heading={createLoginDetailsPageMessages.title}
+            description={createLoginDetailsPageMessages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <Flex direction='column' gap='l'>
               <ReadOnlyField
-                label={messages.handleLabel}
+                label={createLoginDetailsPageMessages.handleLabel}
                 value={
                   <Flex alignItems='center' gap='xs'>
                     @{handleField.value}
@@ -110,10 +112,13 @@ export const CreateLoginDetailsPage = () => {
                 }
               />
               <EmailField />
-              <PasswordField name='password' label={messages.passwordLabel} />
+              <PasswordField
+                name='password'
+                label={createLoginDetailsPageMessages.passwordLabel}
+              />
               <PasswordField
                 name='confirmPassword'
-                label={messages.confirmPasswordLabel}
+                label={createLoginDetailsPageMessages.confirmPasswordLabel}
               />
               <PasswordCompletionChecklist />
             </Flex>

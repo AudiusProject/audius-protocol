@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
-import {
-  Name,
-  formatNumberCommas,
-  accountSelectors,
-  tippingSelectors,
-  deriveUserBankAddress
-} from '@audius/common'
-import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
+import { Name } from '@audius/common/models'
+import { deriveUserBankAddress } from '@audius/common/services'
+import { accountSelectors, tippingSelectors } from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
+import { IconTwitter, IconCheck } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -101,7 +99,7 @@ export const TipSent = () => {
           type={ButtonType.PRIMARY}
           text={messages.shareToTwitter}
           onClick={handleShareClick}
-          leftIcon={<IconTwitterBird width={24} height={24} />}
+          leftIcon={<IconTwitter width={24} height={24} />}
         />
       </div>
     </div>

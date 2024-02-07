@@ -1,23 +1,21 @@
 import { useCallback, ReactNode } from 'react'
 
 import {
-  formatWei,
-  tokenDashboardPageActions,
   tokenDashboardPageSelectors,
-  walletSelectors,
-  isNullOrUndefined
-} from '@audius/common'
-import { Button, ButtonType, IconInfo } from '@audius/stems'
+  tokenDashboardPageActions,
+  walletSelectors
+} from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { IconReceive, IconSend, IconInfo } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconReceive from 'assets/img/iconReceive.svg'
-import IconSend from 'assets/img/iconSend.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiles.module.css'
@@ -95,31 +93,31 @@ export const WalletTile = ({ className }: { className?: string }) => {
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const onClickReceive = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressReceive())
     }
-  }, [dispatch, mobile, openTransferDrawer])
+  }, [dispatch, isMobile, openTransferDrawer])
 
   const onClickSend = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressSend())
     }
-  }, [mobile, dispatch, openTransferDrawer])
+  }, [isMobile, dispatch, openTransferDrawer])
   const [, setOpen] = useModalState('MobileConnectWalletsDrawer')
 
   const onClickConnectWallets = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       setOpen(true)
     } else {
       dispatch(pressConnectWallets())
     }
-  }, [mobile, setOpen, dispatch])
+  }, [isMobile, setOpen, dispatch])
 
   const onCloseConnectWalletsDrawer = useCallback(() => {
     setOpen(false)
@@ -157,7 +155,7 @@ export const WalletTile = ({ className }: { className?: string }) => {
             onClick={onClickConnectWallets}
             type={ButtonType.GLASS}
           />
-          {mobile && (
+          {isMobile && (
             <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
           )}
         </div>

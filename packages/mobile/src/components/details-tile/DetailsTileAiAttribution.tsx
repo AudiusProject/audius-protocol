@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
-import type { ID } from '@audius/common'
-import { aiPageActions, aiPageSelectors } from '@audius/common'
+import type { ID } from '@audius/common/models'
+import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconRobot from 'app/assets/images/iconRobot.svg'
+import { IconRobot } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'

@@ -50,11 +50,9 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
       email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
         name: user.name,
-        amount: this.amount,
-        wallet: this.receiverAccount,
-        signature: this.signature
+        amount: this.amount
       }),
-      subject: 'Your Transfer Has Been Started'
+      subject: 'Your Withdrawal Has Been Started'
     })
   }
 }

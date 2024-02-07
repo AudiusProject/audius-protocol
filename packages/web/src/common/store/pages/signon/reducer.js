@@ -1,4 +1,3 @@
-import { isMobile } from 'utils/clientUtil'
 import { FEED_PAGE } from 'utils/route'
 
 import {
@@ -39,7 +38,8 @@ import {
   REMOVE_FOLLOW_ARTISTS,
   SET_REFERRER,
   SET_LINKED_SOCIAL_ON_FIRST_PAGE,
-  SET_FINISHED_PHASE_1
+  SET_FINISHED_PHASE_1,
+  HIDE_PREVIEW_HINT
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -80,6 +80,7 @@ const initialState = {
   finishedSignUpProcess: false,
   /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
   finishedPhase1: false,
+  hidePreviewHint: false,
   followArtists: {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
@@ -103,8 +104,7 @@ const actionsMap = {
       // even if toggling b/w sign up and sign in redirects to the right place
       routeOnCompletion: state.routeOnCompletion,
       routeOnExit: state.routeOnExit,
-      isMobileSignOnVisible: state.isMobileSignOnVisible,
-      followArtists: state.followArtists
+      isMobileSignOnVisible: state.isMobileSignOnVisible
     }
   },
   [OPEN_SIGN_ON](state, action) {
@@ -114,7 +114,7 @@ const actionsMap = {
       page: action.page || state.page
     }
   },
-  [NEXT_PAGE](state) {
+  [NEXT_PAGE](state, action) {
     let newPage
     switch (state.page) {
       case Pages.EMAIL:
@@ -127,7 +127,7 @@ const actionsMap = {
         newPage = Pages.FOLLOW
         break
       case Pages.FOLLOW: {
-        if (!isMobile()) {
+        if (!action.isMobile) {
           newPage = Pages.APP_CTA
         } else {
           newPage = Pages.LOADING
@@ -472,6 +472,12 @@ const actionsMap = {
     return {
       ...state,
       referrer: action.userId
+    }
+  },
+  [HIDE_PREVIEW_HINT](state) {
+    return {
+      ...state,
+      hidePreviewHint: true
     }
   }
 }

@@ -24,24 +24,12 @@ fi
 
 audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 
-if [[ "$audius_openresty_enable" == true ]]; then
-  openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
-  tail -f /usr/local/openresty/logs/error.log | python3 scripts/openresty_log_convertor.py ERROR &
-  tail -f /usr/local/openresty/logs/access.log &
 
-  # If a worker class is specified, use that. Otherwise, use sync workers.
-  if [[ -z "${audius_gunicorn_worker_class}" ]]; then
-    exec gunicorn -b :3000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
-  else
-    WORKER_CLASS="${audius_gunicorn_worker_class}"
-    exec gunicorn -b :3000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
-  fi
+# If a worker class is specified, use that. Otherwise, use sync workers.
+if [[ -z "${audius_gunicorn_worker_class}" ]]; then
+  exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
 else
-  # If a worker class is specified, use that. Otherwise, use sync workers.
-  if [[ -z "${audius_gunicorn_worker_class}" ]]; then
-    exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
-  else
-    WORKER_CLASS="${audius_gunicorn_worker_class}"
-    exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
-  fi
+  WORKER_CLASS="${audius_gunicorn_worker_class}"
+  exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
 fi
+

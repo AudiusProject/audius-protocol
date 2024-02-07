@@ -1,4 +1,4 @@
-import { getAAOErrorEmojis } from '@audius/common'
+import { getAAOErrorEmojis } from '@audius/common/utils'
 
 import { Text } from 'app/components/core'
 

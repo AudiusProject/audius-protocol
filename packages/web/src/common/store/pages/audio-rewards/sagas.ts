@@ -1,27 +1,30 @@
 import {
   FailureReason,
   UserChallenge,
-  StringAudio,
+  StringAudio
+} from '@audius/common/models'
+import {
   IntKeys,
   StringKeys,
-  RemoteConfigInstance,
-  getContext,
-  stringAudioToStringWei,
-  accountSelectors,
+  createUserBankIfNeeded,
+  Env,
+  RemoteConfigInstance
+} from '@audius/common/services'
+import {
   accountActions,
-  audioRewardsPageActions,
-  ClaimStatus,
-  HCaptchaStatus,
-  UndisbursedUserChallenge,
+  accountSelectors,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  HCaptchaStatus,
+  ClaimStatus,
   solanaSelectors,
   walletActions,
   modalsActions,
-  waitForValue,
-  Env,
+  getContext,
   musicConfettiActions,
-  createUserBankIfNeeded
-} from '@audius/common'
+  UndisbursedUserChallenge
+} from '@audius/common/store'
+import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
   call,
   fork,
@@ -34,6 +37,7 @@ import {
   delay
 } from 'typed-redux-saga'
 
+import { isElectron } from 'utils/clientUtil'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
@@ -264,6 +268,7 @@ function* claimChallengeRewardAsync(
       }))
       .filter(({ amount }) => amount > 0) // We shouldn't have any 0 amount challenges, but just in case.
 
+    const isMobile = yield* getContext('isMobile')
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
       {
@@ -277,7 +282,8 @@ function* claimChallengeRewardAsync(
         AAOEndpoint,
         parallelization,
         feePayerOverride,
-        isFinalAttempt: !retryOnFailure
+        isFinalAttempt: !retryOnFailure,
+        source: isMobile ? 'mobile' : isElectron() ? 'electron' : 'web'
       }
     )
     if (response.error) {

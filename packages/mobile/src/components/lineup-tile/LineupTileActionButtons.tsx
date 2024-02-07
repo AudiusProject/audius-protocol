@@ -1,15 +1,11 @@
 import type { ReactElement } from 'react'
 
-import {
-  isContentUSDCPurchaseGated,
-  type ID,
-  type Nullable,
-  type AccessConditions
-} from '@audius/common'
+import type { ID, AccessConditions } from '@audius/common/models'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconKebabHorizontal, IconShare } from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'

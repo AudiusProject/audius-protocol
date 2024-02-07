@@ -25,7 +25,7 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 from src.utils import (
     db_session,
-    get_all_other_nodes,
+    get_all_nodes,
     helpers,
     redis_connection,
     web3_provider,
@@ -51,7 +51,6 @@ from src.utils.redis_constants import (
 from src.utils.web3_provider import get_web3
 
 LOCAL_RPC = "http://chain:8545"
-RELAY_PLUGIN = "http://relay:6001/relay"
 
 
 logger = logging.getLogger(__name__)
@@ -116,7 +115,11 @@ def _get_query_insights():
 
 
 def _get_relay_health():
-    relay_health = requests.get(RELAY_PLUGIN + "/health")
+    relay_plugin = os.getenv(
+        "audius_relay_host",
+        "http://relay:6001/relay",
+    )
+    relay_health = requests.get(relay_plugin + "/health")
     relay_res = relay_health.json()
     return relay_res
 
@@ -322,8 +325,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
         "audius_db_url", ""
     )
-    discovery_nodes = get_all_other_nodes.get_all_other_discovery_nodes_cached(redis)
-    content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
+    discovery_nodes = get_all_nodes.get_all_discovery_nodes_cached(redis)
+    content_nodes = get_all_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     health_results = {
         "web": {
@@ -359,9 +362,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
+        "network": {
+            "discovery_nodes_with_owner": discovery_nodes,
+            "discovery_nodes": (
+                [d["endpoint"] for d in discovery_nodes] if discovery_nodes else None
+            ),
+            "content_nodes": content_nodes,
+        },
     }
 
+    if os.getenv("AUDIUS_D_GENERATED"):
+        health_results["audius_d_managed"] = True
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
         health_results["audius-docker-compose"] = os.getenv(
             "AUDIUS_DOCKER_COMPOSE_GIT_SHA"

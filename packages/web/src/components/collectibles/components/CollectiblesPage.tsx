@@ -7,22 +7,19 @@ import {
   useState
 } from 'react'
 
+import { useInstanceVar } from '@audius/common/hooks'
+import { CollectiblesMetadata, Collectible } from '@audius/common/models'
 import {
-  Collectible,
-  CollectiblesMetadata,
-  useInstanceVar,
-  ProfileUser,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions,
-  getHash
-} from '@audius/common'
+  ProfileUser
+} from '@audius/common/store'
+import { getHash } from '@audius/common/utils'
+import { IconKebabHorizontal, IconPencil, IconShare } from '@audius/harmony'
 import {
   Button,
   ButtonSize,
   ButtonType,
-  IconKebabHorizontal,
-  IconPencil,
-  IconShare,
   Modal,
   PopupMenu,
   PopupMenuItem,
@@ -37,6 +34,7 @@ import {
 } from 'react-beautiful-dnd'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import IconGradientCollectibles from 'assets/img/iconGradientCollectibles.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import CollectibleDetails from 'components/collectibles/components/CollectibleDetails'
@@ -132,6 +130,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const solanaCollectibleList = useMemo(() => {
     return profile?.solanaCollectibleList ?? null
   }, [profile])
+  const { history } = useHistoryContext()
 
   const collectibleList = useMemo(() => {
     return ethCollectibleList || solanaCollectibleList
@@ -489,7 +488,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   // Handle rendering details modal based on route
   useEffect(() => {
-    const match = doesMatchRoute(PROFILE_PAGE_COLLECTIBLE_DETAILS)
+    const match = doesMatchRoute(
+      history.location,
+      PROFILE_PAGE_COLLECTIBLE_DETAILS
+    )
     if (match) {
       // Ignore needed bc typescript doesn't think that match.params has collectibleId property
       // @ts-ignore
@@ -533,7 +535,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     isUserOnTheirProfile,
     updateProfilePicture,
     onSave,
-    setIsEmbedModalOpen
+    setIsEmbedModalOpen,
+    history.location
   ])
 
   const overflowMenuItems: PopupMenuItem[] = [

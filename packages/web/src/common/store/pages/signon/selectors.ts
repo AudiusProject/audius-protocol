@@ -1,4 +1,4 @@
-import { accountSelectors, cacheUsersSelectors } from '@audius/common'
+import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
@@ -50,6 +50,8 @@ export const getFinishedSignUpProcess = (state: AppState) =>
   state.signOn.finishedSignUpProcess
 export const getReferrer = (state: AppState) => state.signOn.referrer
 
+export const getHidePreviewHint = (state: AppState) =>
+  state.signOn.hidePreviewHint
 export const getFollowArtists = (state: AppState) => state.signOn.followArtists
 export const getFollowIds = (state: AppState) =>
   state.signOn.followArtists.selectedUserIds

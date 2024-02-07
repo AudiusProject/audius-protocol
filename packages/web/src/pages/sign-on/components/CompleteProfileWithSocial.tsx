@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
+import { BooleanKeys } from '@audius/common/services'
 import {
-  BooleanKeys,
   InstagramProfile,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
-import { IconImage, IconUser, IconVerified } from '@audius/stems'
+  TwitterProfile,
+  TikTokProfile
+} from '@audius/common/store'
+import { IconImage, IconUser, IconVerified } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

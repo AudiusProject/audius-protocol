@@ -1,43 +1,46 @@
 import { useCallback, useEffect } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
-  PurchaseableTrackMetadata,
-  PurchaseContentStage,
-  Track,
-  isTrackPurchaseable,
-  useGetTrackById,
-  usePremiumContentPurchaseModal,
+  useFeatureFlag,
   usePurchaseContentFormConfiguration,
+  usePayExtraPresets,
+  isTrackStreamPurchaseable,
+  isTrackDownloadPurchaseable,
+  PurchaseableTrackMetadata
+} from '@audius/common/hooks'
+import {
+  PurchaseVendor,
+  Track,
+  USDCPurchaseConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   buyUSDCActions,
+  usePremiumContentPurchaseModal,
   purchaseContentActions,
   purchaseContentSelectors,
-  isContentPurchaseInProgress,
-  usePayExtraPresets,
+  PurchaseContentStage,
   PurchaseContentPage,
-  useFeatureFlag,
-  FeatureFlags,
-  PurchaseVendor
-} from '@audius/common'
+  isContentPurchaseInProgress
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex } from '@audius/harmony'
-import {
-  IconCart,
-  ModalContentPages,
-  ModalFooter,
-  ModalHeader
-} from '@audius/stems'
+import { Flex, IconCart } from '@audius/harmony'
+import { ModalContentPages, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
@@ -71,23 +74,25 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track
+  track,
+  purchaseConditions
 }: {
   onClose: () => void
   track: PurchaseableTrackMetadata
+  purchaseConditions: USDCPurchaseConditions
 }) => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
+  const { permalink } = track
   const {
-    permalink,
-    stream_conditions: {
-      usdc_purchase: { price }
-    }
-  } = track
+    usdc_purchase: { price }
+  } = purchaseConditions
   const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
   const currentPageIndex = pageToPageIndex(page)
 
   const { resetForm } = useFormikContext()
+  const { history } = useHistoryContext()
 
   // Reset form on track change
   useEffect(() => resetForm, [track.track_id, resetForm])
@@ -95,22 +100,20 @@ const RenderForm = ({
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
     if (stage === PurchaseContentStage.FINISH && permalink) {
-      dispatch(pushUniqueRoute(permalink))
+      dispatch(pushUniqueRoute(history.location, permalink))
     }
-  }, [stage, permalink, dispatch])
+  }, [stage, permalink, dispatch, history])
 
   const handleClose = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
 
-  const mobile = isMobile()
-
   return (
-    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: mobile })}>
+    <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
         onClose={onClose}
-        showDismissButton={!mobile}
+        showDismissButton={!isMobile}
       >
         <Text
           variant='label'
@@ -136,9 +139,10 @@ const RenderForm = ({
                 .toShorthand()}
             />
           ) : null}
-          <Flex p={mobile ? 'l' : 'xl'}>
+          <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
               <LockedTrackDetailsTile
+                showLabel={false}
                 track={track as unknown as Track}
                 owner={track.user}
               />
@@ -147,6 +151,7 @@ const RenderForm = ({
                 purchaseSummaryValues={purchaseSummaryValues}
                 isUnlocking={isUnlocking}
                 price={price}
+                track={track}
               />
             </Flex>
           </Flex>
@@ -171,6 +176,7 @@ const RenderForm = ({
 
 export const PremiumContentPurchaseModal = () => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const {
     isOpen,
     onClose,
@@ -179,6 +185,7 @@ export const PremiumContentPurchaseModal = () => {
   } = usePremiumContentPurchaseModal()
   const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
     useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
+  const isUSDCEnabled = useIsUSDCEnabled()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -189,10 +196,18 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const isValidTrack = track && isTrackPurchaseable(track)
-  const price = isValidTrack
-    ? track?.stream_conditions?.usdc_purchase?.price
-    : 0
+  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
+  const isValidDownloadGatedTrack =
+    !!track && isTrackDownloadPurchaseable(track)
+
+  const purchaseConditions = isValidStreamGatedTrack
+    ? track.stream_conditions
+    : isValidDownloadGatedTrack
+    ? track.download_conditions
+    : null
+
+  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
       track,
@@ -221,10 +236,14 @@ export const PremiumContentPurchaseModal = () => {
     dispatch(cleanupUSDCRecovery())
   }, [onClosed, dispatch])
 
-  if (track && !isValidTrack) {
+  if (
+    !track ||
+    !purchaseConditions ||
+    !(isValidDownloadGatedTrack || isValidStreamGatedTrack)
+  ) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return null
   }
-  const mobile = isMobile()
 
   return (
     <ModalDrawer
@@ -236,15 +255,19 @@ export const PremiumContentPurchaseModal = () => {
       useGradientTitle={false}
       dismissOnClickOutside
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
-      wrapperClassName={mobile ? styles.mobileWrapper : undefined}
+      wrapperClassName={isMobile ? styles.mobileWrapper : undefined}
     >
-      {isValidTrack && isCoinflowEnabledLoaded ? (
+      {isCoinflowEnabledLoaded && isUSDCEnabled ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm track={track} onClose={handleClose} />
+          <RenderForm
+            track={track}
+            onClose={handleClose}
+            purchaseConditions={purchaseConditions}
+          />
         </Formik>
       ) : null}
     </ModalDrawer>

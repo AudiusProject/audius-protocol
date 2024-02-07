@@ -2,30 +2,31 @@ import { useCallback, useMemo, useState } from 'react'
 
 import {
   Chain,
-  BNAudio,
-  BNWei,
-  SolanaWalletAddress,
-  StringAudio,
   StringWei,
+  StringAudio,
+  BNWei,
+  BNAudio,
   WalletAddress,
-  Nullable,
-  FeatureFlags,
-  IntKeys,
-  parseAudioInputToWei,
-  stringAudioToBN,
-  stringWeiToBN,
-  weiToAudio,
-  MIN_TRANSFERRABLE_WEI
-} from '@audius/common'
+  SolanaWalletAddress
+} from '@audius/common/models'
 import {
-  Button,
-  TokenValueInput,
-  Format,
-  IconValidationX,
-  ButtonType
-} from '@audius/stems'
+  IntKeys,
+  FeatureFlags,
+  MIN_TRANSFERRABLE_WEI
+} from '@audius/common/services'
+import {
+  weiToAudio,
+  stringWeiToBN,
+  stringAudioToBN,
+  parseAudioInputToWei,
+  Nullable
+} from '@audius/common/utils'
+import {
+  IconTokenGold as IconGoldBadgeSVG,
+  IconValidationX
+} from '@audius/harmony'
+import { Button, TokenValueInput, Format, ButtonType } from '@audius/stems'
 
-import IconGoldBadgeSVG from 'assets/img/IconGoldBadge.svg'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 

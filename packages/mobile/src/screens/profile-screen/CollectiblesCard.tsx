@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
-import type { ID, Collectible } from '@audius/common'
+import type { Collectible, ID } from '@audius/common/models'
 import {
   accountSelectors,
   collectibleDetailsUIActions,
   modalsActions
-} from '@audius/common'
+} from '@audius/common/store'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
 import { SvgUri } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPlay from 'app/assets/images/pbIconPlay.svg'
+import { IconPlay } from '@audius/harmony-native'
 import { ChainLogo, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

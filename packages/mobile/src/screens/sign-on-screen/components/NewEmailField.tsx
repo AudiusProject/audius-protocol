@@ -1,4 +1,4 @@
-import { emailSchemaMessages } from '@audius/common'
+import { emailSchemaMessages } from '@audius/common/schemas'
 import { useField, useFormikContext } from 'formik'
 import { usePrevious } from 'react-use'
 
@@ -24,7 +24,6 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
         {...props}
         error={emailInUse ? false : undefined}
         helperText={emailInUse ? false : undefined}
-        debouncedValidationMs={500}
       />
       {emailInUse || (hadError && isValidating) ? (
         <EmailInUseHint onChangeScreen={onChangeScreen} />

@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import numeral from 'numeral'
 
-import { BNWei } from 'models/Wallet'
+import { BNWei } from '~/models/Wallet'
 
 import dayjs from './dayjs'
 
@@ -114,7 +114,7 @@ export const formatShareText = (title: string, creator: string) => {
  * Reduces multiple sequential newlines (> 3) into max `\n\n` and
  * trims both leading and trailing newlines
  */
-export const squashNewLines = (str: string) => {
+export const squashNewLines = (str: string | null) => {
   return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
 }
 

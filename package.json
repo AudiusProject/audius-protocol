@@ -1,12 +1,14 @@
 {
   "name": "root",
-  "version": "1.5.63",
+  "version": "1.5.65",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "packages/ddex/server",
-    "packages/ddex/client",
+    "protocol-dashboard",
+    "packages/ddex/webapp/server",
+    "packages/ddex/webapp/client",
+    "packages/ddex/publisher",
     "packages/es-indexer"
   ],
   "private": true,
@@ -47,8 +49,6 @@
     "embed:prod": "npm run start:prod -w embed",
     "embed:stage": "npm run start:stage -w embed",
     "embed:dev": "npm run start:dev -w embed",
-    "COMMON=====================================": "",
-    "common": "turbo run start --filter=@audius/common",
     "STEMS======================================": "",
     "stems": "turbo run start --filter=@audius/stems",
     "HARMONY====================================": "",
@@ -94,6 +94,7 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
+    "vike": "^0.4.150",
     "typescript": "5.0.4",
     "wait-on": "7.2.0"
   },

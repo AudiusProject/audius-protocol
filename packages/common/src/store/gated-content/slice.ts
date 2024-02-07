@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, AccessSignature, GatedTrackStatus } from 'models'
-import { Nullable } from 'utils'
+import { ID, GatedTrackStatus, NFTAccessSignature } from '~/models'
+import { Nullable } from '~/utils'
 
 type GatedContentState = {
-  nftAccessSignatureMap: { [id: ID]: Nullable<AccessSignature> }
+  nftAccessSignatureMap: { [id: ID]: Nullable<NFTAccessSignature> }
   statusMap: { [id: ID]: GatedTrackStatus }
   lockedContentId: Nullable<ID>
   followeeIds: ID[]
@@ -20,11 +20,11 @@ const initialState: GatedContentState = {
 }
 
 type UpdateNftAccessSignaturesPayload = {
-  [id: ID]: Nullable<AccessSignature>
+  [id: ID]: Nullable<NFTAccessSignature>
 }
 
 type RevokeAccessPayload = {
-  trackIds: ID[]
+  revokeAccessMap: { [id: ID]: 'stream' | 'download' }
 }
 
 type UpdateGatedTrackStatusPayload = {

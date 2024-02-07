@@ -1,13 +1,13 @@
 import {
-  trackPageSelectors,
   trendingPageSelectors,
+  trackPageSelectors,
   searchResultsPageSelectors,
   savedPageSelectors,
   profilePageSelectors,
   historyPageSelectors,
   feedPageSelectors,
   collectionPageSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { matchPath } from 'react-router'
 
 import {
@@ -37,9 +37,9 @@ const { getSearchTracksLineup } = searchResultsPageSelectors
 const { getLineup } = trackPageSelectors
 const { getCurrentDiscoverTrendingLineup } = trendingPageSelectors
 
-export const getLineupSelectorForRoute = () => {
+export const getLineupSelectorForRoute = (location) => {
   const matchPage = (path) => {
-    const match = matchPath(getPathname(), {
+    const match = matchPath(getPathname(location), {
       path,
       exact: true
     })

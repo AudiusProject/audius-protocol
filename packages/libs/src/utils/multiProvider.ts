@@ -1,10 +1,11 @@
-import { callbackify, promisify } from 'util'
+import * as util from 'util'
 
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'
 import type { JsonRpcPayload } from 'web3-core-helpers'
 
 import Web3 from '../LibsWeb3'
+const { callbackify, promisify } = util
 
 const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
   if ('sendAsync' in provider) {

@@ -1,13 +1,12 @@
 import { ReactNode, useCallback } from 'react'
 
+import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
+import { challengesSelectors } from '@audius/common/store'
 import {
-  ChallengeName,
-  OptimisticUserChallenge,
-  challengeRewardsConfig,
   formatNumberCommas,
-  useAudioMatchingChallengeCooldownSchedule,
-  challengesSelectors
-} from '@audius/common'
+  challengeRewardsConfig
+} from '@audius/common/utils'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
   HarmonyButton,
@@ -19,9 +18,9 @@ import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import { ProgressDescription } from './ProgressDescription'
@@ -90,6 +89,7 @@ export const AudioMatchingRewardsModalContent = ({
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
@@ -141,7 +141,7 @@ export const AudioMatchingRewardsModalContent = ({
 
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
-      {isMobile() ? (
+      {isMobile ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>
@@ -164,8 +164,8 @@ export const AudioMatchingRewardsModalContent = ({
               items={cooldownChallenges}
               summaryItem={cooldownChallengesSummary}
               secondaryTitle={messages.audio}
-              summaryLabelColor='secondary'
-              summaryValueColor='neutral'
+              summaryLabelColor='accent'
+              summaryValueColor='default'
             />
           ) : null}
         </>

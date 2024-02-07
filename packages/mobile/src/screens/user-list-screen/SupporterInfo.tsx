@@ -1,13 +1,12 @@
-import type { User } from '@audius/common'
+import type { User } from '@audius/common/models'
 import {
   tippingSelectors,
   topSupportersUserListSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconTrending from 'app/assets/images/iconTrending.svg'
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrending, IconTrophy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

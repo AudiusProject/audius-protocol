@@ -1,10 +1,10 @@
 import { MutableRefObject, useCallback } from 'react'
 
+import { FavoriteSource } from '@audius/common/models'
 import {
-  FavoriteSource,
   accountSelectors,
   collectionsSocialActions
-} from '@audius/common'
+} from '@audius/common/store'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'

@@ -3,10 +3,11 @@ import { useCallback } from 'react'
 import {
   notificationsSelectors,
   FollowNotification as FollowNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -15,7 +16,6 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
@@ -49,6 +49,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   const handleClick = useCallback(() => {
     if (isMultiUser) {
@@ -59,7 +60,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
           id: id as unknown as number
         })
       )
-      if (isMobile()) {
+      if (isMobile) {
         dispatch(push(`notification/${id}/users`))
       } else {
         dispatch(openUserListModal(true))
@@ -69,7 +70,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         dispatch(push(profilePage(firstUser.handle)))
       }
     }
-  }, [isMultiUser, dispatch, id, firstUser])
+  }, [isMultiUser, dispatch, id, firstUser, isMobile])
 
   if (!users || !firstUser) return null
 

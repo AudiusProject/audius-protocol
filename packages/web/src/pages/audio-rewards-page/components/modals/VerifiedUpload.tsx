@@ -1,18 +1,13 @@
 import { useCallback } from 'react'
 
-import {
-  Button,
-  ButtonType,
-  IconInstagram,
-  IconTwitterBird,
-  IconUpload
-} from '@audius/stems'
+import { IconTwitter, IconCloudUpload, IconInstagram } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton, TwitterButton } from 'components/social-button'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import ModalDrawer from './ModalDrawer'
@@ -50,6 +45,7 @@ const Divider = () => <div className={styles.divider} />
 
 const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
   const navigate = useNavigateToPage()
+  const isMobile = useIsMobile()
 
   const onClickUpload = useCallback(() => {
     navigate(UPLOAD_PAGE)
@@ -57,10 +53,10 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
   }, [navigate, dismissModal])
 
   const onClickVerify = useCallback(() => {
-    const destination = isMobile() ? ACCOUNT_SETTINGS_PAGE : SETTINGS_PAGE
+    const destination = isMobile ? ACCOUNT_SETTINGS_PAGE : SETTINGS_PAGE
     navigate(destination)
     dismissModal()
-  }, [navigate, dismissModal])
+  }, [navigate, dismissModal, isMobile])
 
   const wm = useWithMobileStyle(styles.mobile)
   return (
@@ -82,14 +78,14 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>
       <span className={styles.subtitle}>
-        {isMobile()
+        {isMobile
           ? messages.step2SubtitleMobile
           : messages.step2SubtitleDesktop}
       </span>
       <Button
         className={styles.uploadButton}
         text={messages.uploadButton}
-        rightIcon={<IconUpload />}
+        rightIcon={<IconCloudUpload />}
         type={ButtonType.PRIMARY_ALT}
         onClick={onClickUpload}
         textClassName={styles.uploadText}
@@ -99,7 +95,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.subtitle}>{messages.step3Subtitle}</span>
       <div className={styles.findUsCTA}>
         <div className={styles.ctaContainer}>
-          <IconTwitterBird />
+          <IconTwitter />
           <div className={styles.ctaRight}>
             <span>{messages.findUsTwitter}</span>
             <div className={styles.link} onClick={onClickTwitter}>

@@ -1,4 +1,4 @@
-import { audiusBackend } from '@audius/common'
+import { audiusBackend } from '@audius/common/services'
 import * as nativeLibs from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'react-native'
@@ -58,7 +58,6 @@ export const audiusBackendInstance = audiusBackend({
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: false,
-  isMobile: true,
   localStorage: AsyncStorage,
   monitoringCallbacks,
   nativeMobile: true,

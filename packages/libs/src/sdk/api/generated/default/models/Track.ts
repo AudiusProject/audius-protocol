@@ -89,6 +89,12 @@ export interface Track {
     origFilename?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof Track
+     */
+    isOriginalAvailable?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof Track
      */
@@ -141,6 +147,12 @@ export interface Track {
      * @memberof Track
      */
     duration: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Track
+     */
+    isDownloadable?: boolean;
     /**
      * 
      * @type {boolean}
@@ -201,6 +213,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
         'origFileCid': !exists(json, 'orig_file_cid') ? undefined : json['orig_file_cid'],
         'origFilename': !exists(json, 'orig_filename') ? undefined : json['orig_filename'],
+        'isOriginalAvailable': !exists(json, 'is_original_available') ? undefined : json['is_original_available'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
@@ -210,6 +223,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'title': json['title'],
         'user': UserFromJSON(json['user']),
         'duration': json['duration'],
+        'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
         'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
@@ -234,6 +248,7 @@ export function TrackToJSON(value?: Track | null): any {
         'preview_cid': value.previewCid,
         'orig_file_cid': value.origFileCid,
         'orig_filename': value.origFilename,
+        'is_original_available': value.isOriginalAvailable,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': RemixParentToJSON(value.remixOf),
@@ -243,6 +258,7 @@ export function TrackToJSON(value?: Track | null): any {
         'title': value.title,
         'user': UserToJSON(value.user),
         'duration': value.duration,
+        'is_downloadable': value.isDownloadable,
         'downloadable': value.downloadable,
         'play_count': value.playCount,
         'permalink': value.permalink,

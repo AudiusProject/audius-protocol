@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { Modals } from '@audius/common/store'
 
 import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
@@ -42,6 +42,7 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
+import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
@@ -126,7 +127,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   StripeOnRamp: StripeOnrampDrawer,
   CoinflowOnramp: CoinflowOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
-  LeavingAudiusModal: LeavingAudiusDrawer
+  LeavingAudiusModal: LeavingAudiusDrawer,
+  WaitForDownloadModal: WaitForDownloadDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

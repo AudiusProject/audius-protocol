@@ -3,16 +3,18 @@ import type { ComponentType } from 'react'
 import type { ImageSourcePropType } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
+import {
+  IconCart,
+  IconListens,
+  IconTurntable,
+  IconPlaylists
+} from '@audius/harmony-native'
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
 import EmojiFire from 'app/assets/images/emojis/fire.png'
 import EmojiHeartWithArrow from 'app/assets/images/emojis/heart-with-arrow.png'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import EmojiThinkingFace from 'app/assets/images/emojis/thinking-face.png'
-import IconCart from 'app/assets/images/iconCart.svg'
 import IconCassette from 'app/assets/images/iconCassette.svg'
-import IconExploreDJ from 'app/assets/images/iconExploreDJ.svg'
-import IconExploreTopAlbums from 'app/assets/images/iconExploreTopAlbums.svg'
-import IconExploreTopPlaylists from 'app/assets/images/iconExploreTopPlaylists.svg'
 
 import type { ExploreCollectionsVariant } from './types'
 
@@ -70,7 +72,7 @@ export const LET_THEM_DJ: ExploreCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(9,175,233)',
   shadowOpacity: 0.25,
-  icon: IconExploreDJ
+  icon: IconListens
 }
 
 export const TOP_ALBUMS: ExploreCollection = {
@@ -82,7 +84,7 @@ export const TOP_ALBUMS: ExploreCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(177,0,253)',
   shadowOpacity: 0.25,
-  icon: IconExploreTopAlbums
+  icon: IconTurntable
 }
 
 export const TRENDING_PLAYLISTS: ExploreCollection = {
@@ -94,7 +96,7 @@ export const TRENDING_PLAYLISTS: ExploreCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(87,170,255)',
   shadowOpacity: 0.25,
-  icon: IconExploreTopPlaylists,
+  icon: IconPlaylists,
   incentivized: true
 }
 

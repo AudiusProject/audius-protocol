@@ -9,6 +9,10 @@ if [[ "$audius_redis_url" == "" ]]; then
     export audius_redis_url="redis://audius-protocol-discovery-provider-redis-${replica}:6379/00"
 fi
 
+if [[ "$audius_relay_host" == "" ]]; then
+    export audius_relay_host="http://audius-protocol-relay-${replica}:6001/relay"
+fi
+
 export audius_enable_rsyslog=false
 
 export audius_discprov_url="http://audius-protocol-discovery-provider-${replica}"

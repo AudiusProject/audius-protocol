@@ -1,4 +1,5 @@
-import { SquareSizes, WidthSizes, accountSelectors } from '@audius/common'
+import { SquareSizes, WidthSizes } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
 
 import {
@@ -19,13 +20,16 @@ type CoverPhotoBannerProps = {
   coverPhotoUrl?: string
   profileImageUrl?: string
   isEditing?: boolean
+  // If true, the banner will be rendered as a paper header
+  isPaperHeader?: boolean
 }
 
 export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const {
     coverPhotoUrl: propsCoverPhotoUrl,
     profileImageUrl: propsProfileImageUrl,
-    isEditing
+    isEditing,
+    isPaperHeader
   } = props
   const coverPhotoField = useSelector(getCoverPhotoField)
   const profileImageField = useSelector(getProfileImageField)
@@ -40,7 +44,11 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     WidthSizes.SIZE_640
   )
   const accountCoverPhoto =
-    accountCoverPhotoObj.source === '' ? undefined : accountCoverPhotoObj.source
+    accountCoverPhotoObj.source === ''
+      ? undefined
+      : accountCoverPhotoObj.shouldBlur
+      ? undefined
+      : accountCoverPhotoObj.source
 
   const { color, spacing, cornerRadius } = useTheme()
   const coverPhoto =
@@ -48,14 +56,14 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const profileImage =
     propsProfileImageUrl ?? profileImageField?.url ?? accountProfilePic
   const hasImage = coverPhoto || profileImage
+
+  const hasCurvedBorder = isEditing || isPaperHeader
+
   return (
     <Box
       h='100%'
       w='100%'
-      borderRadius={isEditing ? 'm' : undefined}
       css={{
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
         '&:before': {
           content: '""',
           position: 'absolute',
@@ -72,7 +80,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
                 backdropFilter: 'blur(25px)'
               }
             : undefined),
-          ...(isEditing && {
+          ...(hasCurvedBorder && {
             overflow: 'hidden',
             cursor: 'pointer',
             borderTopLeftRadius: cornerRadius.m,

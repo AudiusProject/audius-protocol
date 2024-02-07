@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 
-import { MobileOS } from '@audius/common'
+import { MobileOS } from '@audius/common/models'
 import {
-  AudiusLogoGlyph,
-  Button,
-  ButtonType,
-  IconListens,
-  IconMessage,
+  IconAudiusLogo,
   IconStars,
-  IconUpload,
-  IconSpeaker
-} from '@audius/stems'
+  IconCloudUpload as IconUpload,
+  IconSpeaker,
+  IconListens,
+  IconMessage
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import Drawer from 'components/drawer/Drawer'
 import { getMobileOS } from 'utils/clientUtil'
@@ -60,7 +59,7 @@ export const DownloadMobileAppDrawer = (
     <Drawer isOpen={isOpen} onClose={onClose}>
       <div className={styles.root}>
         <h4 className={styles.header}>
-          <AudiusLogoGlyph className={styles.logoIcon} />
+          <IconAudiusLogo color='subdued' size='l' />
           {messages.header}
         </h4>
         <div className={styles.subheader}>{messages.subheader}</div>

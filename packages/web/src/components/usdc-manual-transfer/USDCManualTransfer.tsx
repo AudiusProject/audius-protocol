@@ -1,15 +1,13 @@
 import { useCallback, useContext } from 'react'
 
+import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import {
-  Name,
-  isContentPurchaseInProgress,
   purchaseContentSelectors,
-  useCreateUserbankIfNeeded,
-  useUSDCBalance
-} from '@audius/common'
+  isContentPurchaseInProgress
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, IconLogoCircleUSDC } from '@audius/harmony'
-import { IconError } from '@audius/stems'
+import { Button, Flex, IconLogoCircleUSDC, IconError } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
@@ -21,10 +19,10 @@ import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
-import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './USDCManualTransfer.module.css'
@@ -67,7 +65,7 @@ export const USDCManualTransfer = ({
     mint: 'usdc'
   })
   const { toast } = useContext(ToastContext)
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
@@ -87,13 +85,13 @@ export const USDCManualTransfer = ({
 
   return (
     <Flex direction='column' gap='xl' p='xl'>
-      <Flex gap='l' alignItems='center' direction={mobile ? 'column' : 'row'}>
-        {mobile ? <Text>{messages.explainer}</Text> : null}
+      <Flex gap='l' alignItems='center' direction={isMobile ? 'column' : 'row'}>
+        {isMobile ? <Text>{messages.explainer}</Text> : null}
         <div className={styles.qr}>
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
         </div>
         <Flex direction='column' gap='xl'>
-          {!mobile ? <Text>{messages.explainer}</Text> : null}
+          {!isMobile ? <Text>{messages.explainer}</Text> : null}
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
@@ -105,7 +103,7 @@ export const USDCManualTransfer = ({
       <AddressTile address={USDCUserBank ?? ''} iconLeft={IconLogoCircleUSDC} />
       <div
         className={cn(styles.buttonContainer, {
-          [styles.mobile]: mobile
+          [styles.mobile]: isMobile
         })}
       >
         {amountInCents === undefined ? (
@@ -113,7 +111,7 @@ export const USDCManualTransfer = ({
             <Button variant='primary' fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            {mobile ? null : (
+            {isMobile ? null : (
               <Button variant='tertiary' fullWidth onClick={onClose}>
                 {messages.goBack}
               </Button>
@@ -121,7 +119,7 @@ export const USDCManualTransfer = ({
           </>
         ) : (
           <>
-            {mobile ? null : (
+            {isMobile ? null : (
               <Button variant='secondary' fullWidth onClick={onClose}>
                 {messages.goBack}
               </Button>

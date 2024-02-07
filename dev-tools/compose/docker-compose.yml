@@ -41,7 +41,7 @@ services:
   db:
     image: postgres:11.4
     shm_size: 2g
-    command: postgres -c shared_buffers=2GB
+    command: postgres -c shared_buffers=2GB -c max_connections=300
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -184,10 +184,46 @@ services:
 
   # DDEX
 
-  ddex:
+  ddex-web:
     extends:
       file: docker-compose.ddex.yml
-      service: ddex
+      service: ddex-web
+    <<: *common
+
+  ddex-crawler:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-crawler
+    <<: *common
+
+  ddex-indexer:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-indexer
+    <<: *common
+
+  ddex-parser:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-parser
+    <<: *common
+
+  ddex-publisher:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    <<: *common
+
+  ddex-mongo:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-mongo
+    <<: *common
+  
+  ddex-ingester:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-ingester
     <<: *common
 
   # Storage (content node)
@@ -249,6 +285,9 @@ services:
       service: solana-test-validator-build
     <<: *common
 
+networks:
+  ddex-network:
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -257,3 +296,4 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
+  ddex-mongo-db:

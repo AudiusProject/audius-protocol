@@ -1,18 +1,20 @@
 import { ChangeEvent, useMemo } from 'react'
 
 import {
-  ID,
+  Variant,
+  DogEarType,
+  Status,
   Collection,
   SmartCollection,
-  Variant,
-  Status,
-  User,
+  ID,
+  User
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   CollectionTrack,
-  CollectionPageTrackRecord,
   CollectionsPageType,
-  DogEarType,
-  FeatureFlags
-} from '@audius/common'
+  CollectionPageTrackRecord
+} from '@audius/common/store'
 
 import {
   CollectiblesPlaylistTableColumn,
@@ -25,6 +27,7 @@ import { SuggestedCollectionTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -150,7 +153,10 @@ const CollectionPage = ({
   const variant = metadata?.variant ?? null
   const gradient =
     (metadata?.variant === Variant.SMART && metadata.gradient) ?? ''
-  const icon = (metadata?.variant === Variant.SMART && metadata.icon) ?? null
+  const icon =
+    metadata?.variant === Variant.SMART
+      ? smartCollectionIcons[metadata.playlist_name]
+      : null
   const imageOverride =
     (metadata?.variant === Variant.SMART && metadata.imageOverride) ?? ''
   const typeTitle =

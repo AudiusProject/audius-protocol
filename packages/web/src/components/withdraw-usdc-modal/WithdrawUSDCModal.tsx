@@ -1,23 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  SolanaWalletAddress,
-  useUSDCBalance,
-  useWithdrawUSDCModal,
-  WithdrawUSDCModalPages,
-  withdrawUSDCActions,
-  BNUSDC,
-  formatUSDCWeiToFloorCentsNumber,
-  Nullable,
-  withdrawUSDCSelectors,
-  Status,
-  Name,
-  WithdrawMethod,
   useFeatureFlag,
-  FeatureFlags,
   useRemoteVar,
-  IntKeys
-} from '@audius/common'
+  useUSDCBalance
+} from '@audius/common/hooks'
+import {
+  Name,
+  Status,
+  BNUSDC,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
+import {
+  withdrawUSDCActions,
+  withdrawUSDCSelectors,
+  WithdrawUSDCModalPages,
+  useWithdrawUSDCModal,
+  WithdrawMethod
+} from '@audius/common/store'
+import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
+import { IconTransaction } from '@audius/harmony'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
@@ -25,7 +28,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconTransaction from 'assets/img/iconTransaction.svg'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
@@ -58,6 +60,13 @@ const messages = {
 }
 
 const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
+
+const DISABLE_MODAL_CLOSE_PAGES = new Set([
+  WithdrawUSDCModalPages.PREPARE_TRANSFER,
+  WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
+  WithdrawUSDCModalPages.COINFLOW_TRANSFER,
+  WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
+])
 
 const WithdrawUSDCFormSchema = (
   userBalanceCents: number,
@@ -228,9 +237,13 @@ export const WithdrawUSDCModal = () => {
       isOpen={isOpen}
       onClose={onClose}
       onClosed={handleOnClosed}
+      dismissOnClickOutside={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
       bodyClassName={styles.modal}
     >
-      <ModalHeader onClose={onClose}>
+      <ModalHeader
+        onClose={onClose}
+        showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
+      >
         <Text
           variant='label'
           color='neutralLight2'

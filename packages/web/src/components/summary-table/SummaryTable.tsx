@@ -1,13 +1,15 @@
 import { ReactNode, useCallback, useState } from 'react'
 
-import { Flex, IconCaretDown, IconComponent, useTheme } from '@audius/harmony'
-import { ColorValue } from '@audius/stems'
-import cn from 'classnames'
+import {
+  Flex,
+  IconCaretDown,
+  IconComponent,
+  TextColors,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
 import { Expandable } from 'components/expandable/Expandable'
-import { Text } from 'components/typography'
-
-import styles from './SummaryTable.module.css'
 
 export type SummaryTableItem = {
   id: string
@@ -15,6 +17,7 @@ export type SummaryTableItem = {
   icon?: IconComponent
   value?: ReactNode
   disabled?: boolean
+  color?: TextColors
 }
 
 export type SummaryTableProps = {
@@ -24,8 +27,8 @@ export type SummaryTableProps = {
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
-  summaryLabelColor?: ColorValue
-  summaryValueColor?: ColorValue
+  summaryLabelColor?: TextColors
+  summaryValueColor?: TextColors
   renderBody?: (items: SummaryTableItem[]) => ReactNode
 }
 
@@ -36,7 +39,7 @@ export const SummaryTable = ({
   title,
   secondaryTitle,
   summaryLabelColor,
-  summaryValueColor = 'secondary',
+  summaryValueColor = 'accent',
   renderBody: renderBodyProp
 }: SummaryTableProps) => {
   const { color } = useTheme()
@@ -52,13 +55,16 @@ export const SummaryTable = ({
         justifyContent='space-between'
         pv='m'
         ph='xl'
-        css={{ backgroundColor: color.background.surface1 }}
+        css={{ backgroundColor: color.background.surface1, cursor: 'pointer' }}
+        onClick={onToggleExpand}
       >
         <Flex gap='s'>
           {collapsible ? (
             <IconCaretDown
-              onClick={onToggleExpand}
-              className={cn(styles.expander, { [styles.expanded]: expanded })}
+              css={{
+                transition: 'transform var(--harmony-expressive)',
+                transform: `rotate(${expanded ? -180 : 0}deg)`
+              }}
               size='m'
               color='default'
             />
@@ -82,10 +88,10 @@ export const SummaryTable = ({
         ph='xl'
         borderTop='default'
       >
-        <Text variant='title' size='medium' color={summaryLabelColor}>
+        <Text variant='title' size='m' color={summaryLabelColor}>
           {summaryItem.label}
         </Text>
-        <Text variant='title' size='medium' color={summaryValueColor}>
+        <Text variant='title' size='m' color={summaryValueColor}>
           {summaryItem.value}
         </Text>
       </Flex>
@@ -97,7 +103,7 @@ export const SummaryTable = ({
       <>
         {renderBodyProp
           ? renderBodyProp(items)
-          : items.map(({ id, label, icon: Icon, value, disabled }) => (
+          : items.map(({ id, label, icon: Icon, value, disabled, color }) => (
               <Flex
                 key={id}
                 alignItems='center'
@@ -119,9 +125,13 @@ export const SummaryTable = ({
                       <Icon color='default' />
                     </Flex>
                   ) : null}
-                  <Text>{label}</Text>
+                  <Text variant='body' size='m'>
+                    {label}
+                  </Text>
                 </Flex>
-                <Text>{value}</Text>
+                <Text variant='body' size='m' color={color}>
+                  {value}
+                </Text>
               </Flex>
             ))}
         {renderSummaryItem()}
@@ -137,7 +147,7 @@ export const SummaryTable = ({
       direction='column'
       border='default'
       borderRadius='xs'
-      className={styles.container}
+      css={{ overflow: 'hidden' }}
     >
       {renderHeader()}
       {collapsible ? (

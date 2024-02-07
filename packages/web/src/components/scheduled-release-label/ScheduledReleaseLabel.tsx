@@ -1,4 +1,4 @@
-import { getLocalTimezone } from '@audius/common'
+import { getLocalTimezone } from '@audius/common/utils'
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'

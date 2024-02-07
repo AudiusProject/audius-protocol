@@ -24,7 +24,7 @@ from src.tasks.index_oracles import (
     oracle_addresses_key,
 )
 from src.utils.config import shared_config
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_wallets_cached
+from src.utils.get_all_nodes import get_all_discovery_nodes_cached
 from src.utils.redis_connection import get_redis
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
@@ -203,7 +203,10 @@ def get_attestation(
     signed_attestation: str = sign_attestation(
         attestation_bytes, shared_config["delegate"]["private_key"]
     )
-    return (shared_config["delegate"]["owner_wallet"], signed_attestation)
+    return (
+        shared_config["delegate"]["owner_wallet"],
+        signed_attestation,
+    )
 
 
 ADD_SENDER_MESSAGE_PREFIX = "add"
@@ -211,8 +214,9 @@ ADD_SENDER_MESSAGE_PREFIX = "add"
 
 def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
     redis = get_redis()
-    other_nodes_addresses = set(get_all_other_discovery_nodes_wallets_cached(redis))
-    return new_sender_address in other_nodes_addresses
+    nodes = get_all_discovery_nodes_cached(redis)
+    wallets = set([d["delegateOwnerWallet"] for d in nodes] if nodes else [])
+    return new_sender_address in wallets
 
 
 def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:

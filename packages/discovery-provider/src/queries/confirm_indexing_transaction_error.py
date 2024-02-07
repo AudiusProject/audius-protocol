@@ -3,7 +3,8 @@ import logging
 import requests
 
 from src.queries.get_skipped_transactions import set_indexing_error
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
+from src.utils.config import shared_config
+from src.utils.get_all_nodes import get_all_discovery_nodes_cached
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +20,18 @@ def confirm_indexing_transaction_error(
     Gets all other discovery nodes and makes an api call to check the status of a transaction
     given a blocknumber, blockhash, and transactionhash
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
-    if not all_other_nodes:
+    all_nodes = get_all_discovery_nodes_cached(redis) or []
+    if not all_nodes:
         return False
 
-    num_other_nodes = len(all_other_nodes)
+    num_other_nodes = len(all_nodes) - 1
     num_transaction_failures = 0
-    for node in all_other_nodes:
+    for node in all_nodes:
+        # Skip self
+        if node["delegateOwnerWallet"] == shared_config["delegate"]["owner_wallet"]:
+            continue
         try:
-            endpoint = f"{node}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
+            endpoint = f"{node['endpoint']}/indexing/transaction_status?blocknumber={blocknumber}&blockhash={blockhash}&transactionhash={transactionhash}"
             response = requests.get(endpoint, timeout=10)
             if response.status_code != 200:
                 raise Exception(

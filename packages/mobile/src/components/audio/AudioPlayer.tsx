@@ -1,39 +1,37 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type {
-  CommonState,
-  ID,
-  Nullable,
-  QueryParams,
-  Queueable,
-  Track
-} from '@audius/common'
+import { useAppContext } from '@audius/common/context'
+import { SquareSizes } from '@audius/common/models'
+import type { ID, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import type { QueryParams } from '@audius/common/services'
 import {
-  getQueryParams,
-  removeNullable,
-  playbackRateValueMap,
   accountSelectors,
-  cacheUsersSelectors,
   cacheTracksSelectors,
-  playerSelectors,
-  playerActions,
-  playbackPositionActions,
-  playbackPositionSelectors,
+  cacheUsersSelectors,
+  savedPageTracksLineupActions,
   queueActions,
   queueSelectors,
-  reachabilitySelectors,
-  gatedContentSelectors,
   RepeatMode,
-  FeatureFlags,
-  encodeHashId,
-  Genre,
+  reachabilitySelectors,
   tracksSocialActions,
-  SquareSizes,
+  playerActions,
+  playerSelectors,
+  playbackRateValueMap,
+  playbackPositionActions,
+  playbackPositionSelectors,
+  gatedContentSelectors
+} from '@audius/common/store'
+import type { Queueable, CommonState } from '@audius/common/store'
+import {
+  Genre,
+  encodeHashId,
   shallowCompare,
-  savedPageTracksLineupActions,
-  useAppContext,
+  removeNullable,
+  getQueryParams,
   getTrackPreviewDuration
-} from '@audius/common'
+} from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -310,7 +308,7 @@ export const AudioPlayer = () => {
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else {
-          const nftAccessSignature = nftAccessSignatureMap[trackId]
+          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
           queryParamsMap[trackId] = await getQueryParams({
             audiusBackendInstance,
             nftAccessSignature

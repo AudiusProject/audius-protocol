@@ -1,4 +1,5 @@
-import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
+import { IconShare, IconKebabHorizontal } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -6,6 +7,7 @@ import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import AnimatedIconButton, {
   AnimatedIconType
 } from 'components/animated-button/AnimatedIconButton'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 
 import styles from './ActionButtonRow.module.css'
 
@@ -119,10 +121,12 @@ const ActionButtonRow = ({
 
   return (
     <div className={styles.buttonsRow}>
-      {showRepost && renderRepostButton()}
-      {showFavorite && renderFavoriteButton()}
-      {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
-      {showOverflow && renderOverflowMenu()}
+      <ClientOnly>
+        {showRepost && renderRepostButton()}
+        {showFavorite && renderFavoriteButton()}
+        {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
+        {showOverflow && renderOverflowMenu()}
+      </ClientOnly>
     </div>
   )
 }

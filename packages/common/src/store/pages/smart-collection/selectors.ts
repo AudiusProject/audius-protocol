@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { SmartCollectionVariant } from '../../../models/SmartCollectionVariant'
 

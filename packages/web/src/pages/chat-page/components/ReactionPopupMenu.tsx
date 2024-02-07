@@ -1,6 +1,6 @@
 import { ComponentType, MutableRefObject } from 'react'
 
-import { reactionOrder, ReactionTypes } from '@audius/common'
+import { reactionOrder, ReactionTypes } from '@audius/common/store'
 import { Popup, PopupPosition } from '@audius/stems'
 
 import {

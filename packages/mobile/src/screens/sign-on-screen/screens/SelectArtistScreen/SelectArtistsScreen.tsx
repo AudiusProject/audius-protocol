@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import { selectArtstsPageMessages as messages } from '@audius/common'
-import {
-  finishSignUp,
-  signUpSucceeded
-} from 'audius-client/src/common/store/pages/signon/actions'
+import { selectArtistsPageMessages } from '@audius/common/messages'
+import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {
   getFollowIds,
@@ -45,8 +42,8 @@ export const SelectArtistsScreen = () => {
       <Flex pointerEvents='none' backgroundColor='white'>
         <ReadOnlyAccountHeader />
         <Heading
-          heading={messages.header}
-          description={messages.description}
+          heading={selectArtistsPageMessages.header}
+          description={selectArtistsPageMessages.description}
           gap='s'
           ph='l'
           pv='unit10'
@@ -58,13 +55,10 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
+    // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
+    dispatch(finishSignUp())
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
-    } else {
-      // This call is what triggers the RootScreen to redirect to the home page (via conditional rendering)
-      dispatch(finishSignUp())
-      // This call is just for analytics event tracking purposes
-      dispatch(signUpSucceeded())
     }
   }, [accountCreationStatus, dispatch, navigation])
 
@@ -94,7 +88,8 @@ export const SelectArtistsScreen = () => {
           }}
           postfix={
             <Text variant='body'>
-              {messages.selected} {selectedArtists.length || 0}/3
+              {selectArtistsPageMessages.selected} {selectedArtists.length || 0}
+              /3
             </Text>
           }
         />

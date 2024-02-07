@@ -1,5 +1,12 @@
 import { AudiusLibs } from '@audius/sdk'
-import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
+import { u8 } from '@solana/buffer-layout'
+import {
+  Account,
+  TOKEN_PROGRAM_ID,
+  TokenInstruction,
+  createTransferCheckedInstruction,
+  decodeTransferCheckedInstruction
+} from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
   Keypair,
@@ -11,7 +18,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
@@ -19,8 +26,10 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
-
-const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
+const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
+export const RECOVERY_MEMO_STRING = 'Recover Withdrawal'
+export const WITHDRAWAL_MEMO_STRING = 'Withdrawal'
+export const PREPARE_WITHDRAWAL_MEMO_STRING = 'Prepare Withdrawal'
 
 /**
  * Memo program V1
@@ -119,6 +128,16 @@ export const deriveUserBankAddress = async (
     mint
   })
   return pubkey.toString() as SolanaWalletAddress
+}
+
+export const isTransferCheckedInstruction = (
+  instruction: TransactionInstruction
+) => {
+  return (
+    instruction.programId.equals(TOKEN_PROGRAM_ID) &&
+    instruction.data.length &&
+    u8().decode(instruction.data) === TokenInstruction.TransferChecked
+  )
 }
 
 type CreateUserBankIfNeededConfig = UserBankConfig & {
@@ -416,6 +435,151 @@ export const findAssociatedTokenAddress = async (
   ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
 }
 
+export const createRootWalletRecoveryTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    userBank,
+    wallet,
+    amount,
+    feePayer
+  }: {
+    userBank: PublicKey
+    wallet: Keypair
+    amount: bigint
+    feePayer?: PublicKey
+    usePaymentRouter?: boolean
+  }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const solanaWeb3Manager = libs.solanaWeb3Manager!
+
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(RECOVERY_MEMO_STRING)
+  })
+
+  const [transferInstruction, routeInstruction] =
+    // All the memo related parameters are ignored
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+      id: 0, // ignored
+      type: 'track', // ignored
+      blocknumber: 0, // ignored
+      splits: { [userBank.toString()]: new BN(amount.toString()) },
+      purchaserUserId: 0, // ignored
+      senderAccount: wallet.publicKey
+    })
+
+  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+
+  const tx = new Transaction({ recentBlockhash, feePayer })
+  tx.add(memoInstruction, transferInstruction, routeInstruction)
+  return tx
+}
+
+/** Converts a Coinflow transaction which transfers directly from root wallet USDC
+ * account into a transaction that routes through the current user's USDC user bank, to
+ * better facilitate indexing. The original transaction *must* use a TransferChecked instruction
+ * and must have the current user's Solana root wallet USDC token account as the source.
+ * @returns a new transaction that routes the USDC transfer through the user bank. This must be signed
+ * by the current user's Solana root wallet and the provided fee payer (likely via relay).
+ */
+export const decorateCoinflowWithdrawalTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const solanaWeb3Manager = libs.solanaWeb3Manager!
+
+  const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
+    mint: 'usdc'
+  })
+  const wallet = await getRootSolanaAccount(audiusBackendInstance)
+  const walletUSDCTokenAccount =
+    await solanaWeb3Manager.findAssociatedTokenAddress(
+      wallet.publicKey.toBase58(),
+      'usdc'
+    )
+
+  // Find original transfer instruction and index
+  const transferInstructionIndex = transaction.instructions.findIndex(
+    isTransferCheckedInstruction
+  )
+  const transferInstruction = transaction.instructions[transferInstructionIndex]
+  if (!transferInstruction) {
+    throw new Error('No transfer instruction found')
+  }
+
+  const { keys, data } = decodeTransferCheckedInstruction(
+    transferInstruction,
+    TOKEN_PROGRAM_ID
+  )
+  if (!walletUSDCTokenAccount.equals(keys.source.pubkey)) {
+    throw new Error(
+      `Original sender ${keys.source.pubkey} does not match wallet ${walletUSDCTokenAccount}`
+    )
+  }
+
+  const transferToUserBankInstruction = createTransferCheckedInstruction(
+    walletUSDCTokenAccount,
+    keys.mint.pubkey,
+    userBank,
+    wallet.publicKey,
+    data.amount,
+    data.decimals
+  )
+
+  const transferFromUserBankInstructions =
+    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
+      amount: new BN(data.amount.toString()),
+      mint: 'usdc',
+      senderSolanaAddress: userBank,
+      recipientSolanaAddress: keys.destination.pubkey.toBase58(),
+      instructionIndex: transferInstructionIndex + 1,
+      feePayerKey: feePayer
+    })
+
+  const withdrawalMemoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(WITHDRAWAL_MEMO_STRING)
+  })
+
+  // Remove original transfer instruction and replace with our set of transfer steps
+  const instructions = [...transaction.instructions]
+  instructions.splice(
+    transferInstructionIndex,
+    1,
+    transferToUserBankInstruction,
+    ...transferFromUserBankInstructions,
+    withdrawalMemoInstruction
+  )
+
+  const { blockhash, lastValidBlockHeight } =
+    await solanaWeb3Manager.connection.getLatestBlockhash()
+  const modifiedTransaction = new Transaction({
+    blockhash,
+    feePayer,
+    lastValidBlockHeight
+  })
+  modifiedTransaction.add(...instructions)
+
+  return modifiedTransaction
+}
+
 export const createTransferToUserBankTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
@@ -548,6 +712,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
+  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const decompiledMessage = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
@@ -558,7 +723,7 @@ export const relayVersionedTransaction = async (
       publicKey: publicKey.toBase58(),
       signature: Buffer.from(transaction.signatures[index])
     }))
-    .filter((meta) => !meta.signature.equals(PLACEHOLDER_SIGNATURE))
+    .filter((meta) => !meta.signature.equals(placeholderSignature))
   return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
     instructions: decompiledMessage.instructions,
     recentBlockhash: decompiledMessage.recentBlockhash,

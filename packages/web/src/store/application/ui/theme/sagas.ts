@@ -1,4 +1,6 @@
-import { Theme, themeActions, actionChannelDispatcher } from '@audius/common'
+import { Theme } from '@audius/common/models'
+import { themeActions } from '@audius/common/store'
+import { actionChannelDispatcher } from '@audius/common/utils'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { eventChannel } from 'redux-saga'
 import { spawn, takeEvery } from 'redux-saga/effects'
@@ -7,9 +9,10 @@ import { setTheme, PREFERS_DARK_MEDIA_QUERY } from 'utils/theme/theme'
 const { setTheme: setThemeAction } = themeActions
 
 // `window.matchMedia` can be undefined in some environments (testing and outdated browsers).
-const mql = window.matchMedia
-  ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY)
-  : null
+const mql =
+  typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY)
+    : null
 let mqlListener: EventListener
 
 function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {

@@ -17,8 +17,12 @@
   line-height: 24px;
 }
 
+.dropzone.truncated {
+  min-height: unset;
+}
+
 .hoverBoundingBox {
-  width: 55%;
+  width: 70%;
   height: 35%;
 
   display: flex;
@@ -36,8 +40,13 @@
   height: 36px;
 }
 
-.iconUpload g path {
+.iconUpload path {
   fill: var(--neutral);
+}
+
+.text {
+  display: flex;
+  align-items: center;
 }
 
 .text > span {
@@ -49,7 +58,7 @@
 }
 
 .iconUpload,
-.iconUpload g path {
+.iconUpload path {
   transition: all 0.2s ease-out !important;
 }
 
@@ -57,12 +66,18 @@
   transform: scale3d(1.2, 1.2, 1.2);
 }
 
-.hoverBoundingBox:hover .iconUpload g path {
+.hoverBoundingBox:hover .iconUpload path {
   fill: var(--neutral-light-2);
 }
 
 .hoverBoundingBox:active .iconUpload {
   transform: scale(0.95);
+}
+
+.iconUpload.truncated {
+  margin: 0 12px;
+  width: 20px;
+  height: 20px;
 }
 
 .dropzoneButton {

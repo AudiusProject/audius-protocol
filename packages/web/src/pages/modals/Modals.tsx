@@ -1,7 +1,6 @@
 import { ComponentType, lazy } from 'react'
 
-import { Client } from '@audius/common'
-import type { Modals as ModalTypes } from '@audius/common'
+import { Modals as ModalTypes } from '@audius/common/store'
 
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
@@ -37,14 +36,16 @@ import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import { WaitForDownloadModal } from 'components/wait-for-download-modal/WaitForDownloadModal'
 import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
+import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
@@ -109,7 +110,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  AddFundsModal
+  AddFundsModal,
+  CoinflowWithdraw: CoinflowWithdrawModal,
+  WaitForDownloadModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
@@ -118,8 +121,7 @@ const commonModals = Object.entries(commonModalsMap) as [
 ][]
 
 const Modals = () => {
-  const client = getClient()
-  const isMobileClient = client === Client.MOBILE
+  const isMobile = useIsMobile()
 
   return (
     <>
@@ -131,7 +133,7 @@ const Modals = () => {
       <UnloadDialog />
       <CollectibleDetailsModal />
 
-      {!isMobileClient && (
+      {!isMobile && (
         <>
           <EmbedModal />
           <ConnectedUserListModal />
@@ -143,7 +145,7 @@ const Modals = () => {
         </>
       )}
 
-      {isMobileClient && (
+      {isMobile && (
         <>
           <ConnectedMobileOverflowModal />
           <UnfollowConfirmationModal />

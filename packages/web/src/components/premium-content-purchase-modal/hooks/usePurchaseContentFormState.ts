@@ -1,11 +1,8 @@
-import { useEffect } from 'react'
-
+import { useUSDCBalance } from '@audius/common/hooks'
 import {
   purchaseContentSelectors,
-  isContentPurchaseInProgress,
-  useUSDCBalance,
-  Status
-} from '@audius/common'
+  isContentPurchaseInProgress
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { usePurchaseSummaryValues } from './usePurchaseSummaryValues'
@@ -22,14 +19,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const { data: currentBalance, recoveryStatus, refresh } = useUSDCBalance()
-
-  // Refresh balance on successful recovery
-  useEffect(() => {
-    if (recoveryStatus === Status.SUCCESS) {
-      refresh()
-    }
-  }, [recoveryStatus, refresh])
+  const { data: currentBalance } = useUSDCBalance()
 
   const purchaseSummaryValues = usePurchaseSummaryValues({
     price,

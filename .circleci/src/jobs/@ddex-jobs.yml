@@ -1,4 +1,4 @@
-ddex-init:
+ddex-webapp-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
@@ -18,10 +18,40 @@ ddex-init:
     - run:
         name: lint & typecheck
         command: |
-          npx turbo run verify --filter=@audius/ddex-server --filter=@audius/ddex-client
+          npx turbo run verify --filter=@audius/ddex-webapp-server --filter=@audius/ddex-webapp-client
 
     - persist_to_workspace:
         root: ./
         paths:
           - node_modules
           - packages/ddex/node_modules
+          - packages/ddex/webapp/node_modules
+
+ddex-publisher-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+
+    # Download and cache dependencies
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+    - run:
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=@audius/ddex-publisher
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/ddex/node_modules
+          - packages/ddex/publisher/node_modules

@@ -1280,6 +1280,13 @@ PODS:
     - React-Core
   - RNSVG (13.14.0):
     - React-Core
+  - RNZipArchive (6.1.0):
+    - React-Core
+    - RNZipArchive/Core (= 6.1.0)
+    - SSZipArchive (~> 2.2)
+  - RNZipArchive/Core (6.1.0):
+    - React-Core
+    - SSZipArchive (~> 2.2)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -1430,6 +1437,7 @@ DEPENDENCIES:
   - "RNSentry (from `../../../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../../../node_modules/react-native-svg`)
+  - RNZipArchive (from `../../../node_modules/react-native-zip-archive`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
   - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1662,6 +1670,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../../../node_modules/react-native-svg"
+  RNZipArchive:
+    :path: "../../../node_modules/react-native-zip-archive"
   snap-kit-react-native:
     :path: "../../../node_modules/@snapchat/snap-kit-react-native"
   SRSRadialGradient:
@@ -1788,6 +1798,7 @@ SPEC CHECKSUMS:
   RNSentry: b7f4f53bb7076f119558f8898fca901b48213f12
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
   RNSVG: d00c8f91c3cbf6d476451313a18f04d220d4f396
+  RNZipArchive: ef9451b849c45a29509bf44e65b788829ab07801
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: d9f99f9cc13777c5d938650c1e1c85047bb4f0d1

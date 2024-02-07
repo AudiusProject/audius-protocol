@@ -1,4 +1,4 @@
-import { CommonState } from 'store/reducers'
+import { CommonState } from '~/store/reducers'
 
 export const getBuyAudioProvider = (state: CommonState) =>
   state.ui.buyAudio.provider

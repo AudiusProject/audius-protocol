@@ -1,16 +1,20 @@
+import { useContext } from 'react'
+
+import { AudiusQueryContext } from '@audius/common/audius-query'
+import { Name } from '@audius/common/models'
+import { pickHandleSchema } from '@audius/common/schemas'
 import {
-  formatInstagramProfile,
-  formatTikTokProfile,
   formatTwitterProfile,
+  formatInstagramProfile,
+  formatTikTokProfile
+} from '@audius/common/services'
+import {
   InstagramProfile,
-  Name,
-  pickHandleSchema,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
+  TwitterProfile,
+  TikTokProfile
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import { make } from 'common/store/analytics/actions'
 import {
   setInstagramProfile,
@@ -25,6 +29,7 @@ const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,
@@ -36,6 +41,7 @@ export const useSetProfileFromTwitter = () => {
     const profileData = await formatTwitterProfile(twitterProfile, resizeImage)
 
     const { profile, profileImage, profileBanner, handleTooLong } = profileData
+
     const handleSchema = pickHandleSchema({
       audiusQueryContext: audiusQueryContext!,
       skipReservedHandleCheck: profile.verified,
@@ -60,6 +66,7 @@ export const useSetProfileFromTwitter = () => {
 
 export const useSetProfileFromInstagram = () => {
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,
@@ -100,6 +107,7 @@ export const useSetProfileFromInstagram = () => {
 
 export const useSetProfileFromTikTok = () => {
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
 
   return async ({
     uuid,

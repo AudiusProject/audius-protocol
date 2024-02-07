@@ -2,7 +2,7 @@ import React from 'react'
 
 import { View } from 'react-native'
 
-import IconError from 'app/assets/images/iconError.svg'
+import { IconError } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'

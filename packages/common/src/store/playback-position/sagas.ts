@@ -1,12 +1,12 @@
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
-import { AudioPlayer } from 'services/audio-player'
-import { FeatureFlags } from 'services/remote-config'
-import { getUserId } from 'store/account/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getContext } from 'store/effects'
-import { getPlaying, getTrackId } from 'store/player/selectors'
-import { Genre } from 'utils/genres'
+import { AudioPlayer } from '~/services/audio-player'
+import { FeatureFlags } from '~/services/remote-config'
+import { getUserId } from '~/store/account/selectors'
+import { getTrack } from '~/store/cache/tracks/selectors'
+import { getContext } from '~/store/effects'
+import { getPlaying, getTrackId } from '~/store/player/selectors'
+import { Genre } from '~/utils/genres'
 
 import { getPlaybackPositions } from './selectors'
 import {

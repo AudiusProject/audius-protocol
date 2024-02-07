@@ -1,4 +1,4 @@
-import { modalsSelectors, useEditPlaylistModal } from '@audius/common'
+import { modalsSelectors, useEditPlaylistModal } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -14,7 +14,8 @@ const { getModalVisibility } = modalsSelectors
 type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const rootElement = document.querySelector('#root')
+const rootElement =
+  typeof document !== 'undefined' ? document.querySelector('#root') : null
 
 const TopLevelPage = ({ showAddToCollection }: TopLevelPageProps) => {
   const { isOpen } = useEditPlaylistModal()

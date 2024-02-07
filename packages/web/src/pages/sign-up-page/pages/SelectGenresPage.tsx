@@ -1,16 +1,15 @@
-import { useCallback } from 'react'
+import { MouseEventHandler, useCallback, useState } from 'react'
 
-import {
-  Genre,
-  selectGenresPageMessages as messages,
-  selectGenresSchema,
-  selectableGenres
-} from '@audius/common'
+import { selectGenresPageMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
+import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
+import { Genre } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { make } from 'common/store/analytics/actions'
 import { setField } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
@@ -27,6 +26,7 @@ export const SelectGenresPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
+  const [currentGenres, setCurrentGenres] = useState<Genre[]>([])
   const savedGenres = useSelector(getGenres)
 
   const initialValues: SelectGenresValue = {
@@ -40,6 +40,28 @@ export const SelectGenresPage = () => {
     },
     [dispatch, navigate]
   )
+
+  const handleOnClick =
+    (label: string): MouseEventHandler<HTMLInputElement> =>
+    (e) => {
+      if ((e.target as HTMLInputElement).checked) {
+        // add to genres list
+        const newGenres = [...currentGenres, label as Genre]
+        dispatch(
+          make(Name.CREATE_ACCOUNT_SELECT_GENRE, {
+            genre: label,
+            selectedGenres: newGenres
+          })
+        )
+        setCurrentGenres(newGenres)
+      } else {
+        // remove from genres list
+        const newGenres = [...currentGenres]
+        const genreIndex = currentGenres.indexOf(label as Genre)
+        newGenres.splice(genreIndex, 1)
+        setCurrentGenres(newGenres)
+      }
+    }
 
   const { isMobile } = useMedia()
 
@@ -65,8 +87,8 @@ export const SelectGenresPage = () => {
               css={!isMobile ? { maxWidth: '641px' } : undefined}
             >
               <Heading
-                heading={messages.header}
-                description={messages.description}
+                heading={selectGenresPageMessages.header}
+                description={selectGenresPageMessages.description}
                 alignItems={!isMobile ? 'center' : undefined}
               />
               <Flex
@@ -85,6 +107,7 @@ export const SelectGenresPage = () => {
                       value={value}
                       size='large'
                       type='checkbox'
+                      onClick={handleOnClick(label)}
                     />
                   )
                 })}

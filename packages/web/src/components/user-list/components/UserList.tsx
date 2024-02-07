@@ -1,9 +1,8 @@
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  SUPPORTING_USER_LIST_TAG,
   TOP_SUPPORTERS_USER_LIST_TAG,
-  User
-} from '@audius/common'
+  SUPPORTING_USER_LIST_TAG
+} from '@audius/common/store'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'

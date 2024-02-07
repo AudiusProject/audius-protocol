@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 
-import type { SpacingOptions } from 'foundations/spacing'
+import type { SpacingOptions } from '../../../foundations/spacing'
 
 import type { BoxProps } from './types'
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext, pickHandleSchema } from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { pickHandleSchema } from '@audius/common/schemas'
 import { Paper, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -86,7 +87,7 @@ export const ReviewHandlePage = () => {
           />
           {hasImages ? (
             <Paper gap='xl' direction='column'>
-              <AccountHeader mode='viewing' size='small' />
+              <AccountHeader mode='viewing' size='small' isPaperHeader />
               <HandleField autoFocus css={{ padding: spacing.l }} />
             </Paper>
           ) : (

@@ -1,4 +1,4 @@
-import { getContext } from '@audius/common'
+import { getContext } from '@audius/common/store'
 import { omit } from 'lodash'
 import { takeEvery, call } from 'redux-saga/effects'
 
@@ -37,7 +37,9 @@ function* watchIdentifyEvent() {
 
 function* initProviders() {
   const analytics = yield* getContext('analytics')
-  yield call(analytics.init)
+  const isMobile = yield* getContext('isMobile')
+
+  yield call(analytics.init, isMobile)
 }
 
 export default function sagas() {

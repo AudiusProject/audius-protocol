@@ -1,4 +1,4 @@
-import { audiusBackend } from '@audius/common'
+import { audiusBackend } from '@audius/common/services'
 import type { AudiusLibs } from '@audius/sdk'
 
 import { track } from 'services/analytics'
@@ -13,7 +13,7 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { isElectron, isMobile } from 'utils/clientUtil'
+import { isElectron } from 'utils/clientUtil'
 
 import { env } from '../env'
 
@@ -88,7 +88,6 @@ export const audiusBackendInstance = audiusBackend({
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: isElectron(),
-  isMobile: isMobile(),
   monitoringCallbacks,
   nativeMobile: false,
   onLibsInit: (libs: AudiusLibs) => {

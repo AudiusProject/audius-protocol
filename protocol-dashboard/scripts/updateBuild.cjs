@@ -1,5 +1,4 @@
 const fs = require('fs')
-const fetch = require('node-fetch')
 const pinataSDK = require('@pinata/sdk')
 
 const pinata = pinataSDK(process.env.PINATA_KEY_NAME, process.env.PINATA_KEY_SECRET)
@@ -19,46 +18,10 @@ if (env !== 'dev' && env !== 'stage' && env !== 'prod') {
   process.exit(1)
 }
 
-const config = {
-  dev: {
-    gaEndpoint: 'http://localhost:9001'
-  },
-  stage: {
-    gaEndpoint: 'https://general-admission.staging.audius.co'
-  },
-  prod: {
-    gaEndpoint: 'https://general-admission.audius.co'
-  }
-}
-
-const endpoint = config[env].gaEndpoint
-
-const updateGABuild = async () => {
-  const res = await fetch(`${endpoint}/ipfs/update_build?site=protocol-dashboard`)
-  const response = await res.json()
-  if (!response.success) {
-    console.error('unable to update GA build')
-    process.exit(1)
-  }
-  console.log('Updated build folder in GA')
-}
-
-const pinGABuild = async () => {
-  const res = await fetch(`${endpoint}/ipfs/pin_build?site=protocol-dashboard`)
-  if (!res.ok) {
-    console.error('unable to pin GA build')
-    process.exit(1)
-  }
-  const response = await res.json()
-  const cid = response.cid
-  console.log(`IPFS Pin Added CID: ${cid}`)
-  return cid
-}
-
-const pinFromFs = async (cid) => {
+const pinFromFs = async () => {
   const options = {
     pinataMetadata: {
-      name: `Dashboard build ${env} ${cid} - ${new Date().toISOString()}`
+      name: `Dashboard build ${env} - ${new Date().toISOString()}`
     }
   }
   const sourcePath = '/home/circleci/audius-protocol/protocol-dashboard/dist'
@@ -73,9 +36,7 @@ const pinFromFs = async (cid) => {
 
 const run = async () => {
   try {
-    await updateGABuild()
-    const cid = await pinGABuild()
-    const { IpfsHash } = await pinFromFs(cid)
+    const { IpfsHash } = await pinFromFs()
     fs.writeFileSync(`./build_cid.txt`, IpfsHash)
     process.exit()
   } catch (err) {

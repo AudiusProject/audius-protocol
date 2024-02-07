@@ -1,12 +1,11 @@
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  User,
   cacheUsersSelectors,
-  followersUserListSelectors,
   UserListSagaFactory,
   followersUserListActions,
+  followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG as USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { put, select } from 'typed-redux-saga'
 
 import { watchFollowersError } from 'common/store/user-list/followers/errorSagas'

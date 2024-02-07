@@ -1,7 +1,7 @@
 import { App } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { SharedData } from './config'
-import { intoResult } from './utils'
+import { discoveryDb, identityDb, intoResult } from './utils'
 import { WebClient } from '@slack/web-api'
 import moment from 'moment'
 import { Table, TrendingResults } from '@pedalboard/storage'
@@ -21,13 +21,6 @@ export const announceTopFiveTrending = async (
   app: App<SharedData>,
   maybeWeek?: string
 ) => {
-  const identityDbRes = await intoResult(async () => app.getIdDb())
-  if (identityDbRes.err) {
-    console.error('Identity connection error: ', identityDbRes)
-    return
-  }
-  const identityDb = identityDbRes.unwrap()
-  const discoveryDb = app.getDnDb()
 
   const week = maybeWeek || moment().format('YYYY-MM-DD')
 

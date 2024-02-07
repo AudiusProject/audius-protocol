@@ -1,25 +1,31 @@
 import { memo } from 'react'
 
+import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  usePremiumContentPurchaseModal,
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
 import {
   formatCount,
-  accountSelectors,
-  playbackPositionSelectors,
-  FeatureFlags,
-  formatLineupTileDuration,
   Genre,
-  CommonState,
-  getDogEarType,
-  isContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
-import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
+  formatLineupTileDuration,
+  getDogEarType
+} from '@audius/common/utils'
+import {
+  IconVolumeLevel2 as IconVolume,
+  IconStar,
+  IconCheck,
+  IconCrown,
+  IconVisibilityHidden
+} from '@audius/harmony'
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
 
-import IconStar from 'assets/img/iconStar.svg'
-import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
@@ -378,7 +384,7 @@ const TrackTile = ({
           >
             {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
-                <IconHidden className={styles.topRightIcon} />
+                <IconVisibilityHidden className={styles.topRightIcon} />
                 {messages.hiddenTrack}
               </div>
             ) : null}

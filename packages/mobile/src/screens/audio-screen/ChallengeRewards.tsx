@@ -1,22 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Name, ChallengeName } from '@audius/common/models'
+import type { ChallengeRewardID } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import {
+  challengesSelectors,
+  audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  modalsActions
+} from '@audius/common/store'
 import type {
-  ChallengeRewardID,
   ChallengeRewardsModalType,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
 import {
   removeNullable,
-  StringKeys,
-  challengesSelectors,
-  audioRewardsPageActions,
-  audioRewardsPageSelectors,
-  modalsActions,
-  makeOptimisticChallengeSortComparator,
-  FeatureFlags,
-  ChallengeName,
-  Name
-} from '@audius/common'
+  makeOptimisticChallengeSortComparator
+} from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

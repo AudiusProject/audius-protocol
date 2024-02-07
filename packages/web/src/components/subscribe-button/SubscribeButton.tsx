@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react'
 
+import {
+  IconNotificationOn as IconNotification,
+  IconNotificationOff
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconNotification from 'assets/img/iconNotification.svg'
-import IconNotificationOff from 'assets/img/iconNotificationOff.svg'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './SubscribeButton.module.css'
@@ -24,6 +26,7 @@ const SubscribeButton = ({
 }: SubscribeButtonProps) => {
   const [isHovering, setIsHovering] = useState(false)
   const [isHoveringClicked, setIsHoveringClicked] = useState(false)
+  const isMobile = useIsMobile()
   const onClick = useCallback(() => {
     onToggleSubscribe()
     setIsHoveringClicked(true)
@@ -39,7 +42,7 @@ const SubscribeButton = ({
         [className as string]: !!className,
         [styles.notFollowing]: !isFollowing,
         [styles.isSubscribed]: isSubscribed,
-        [styles.isMobile]: isMobile(),
+        [styles.isMobile]: isMobile,
         [styles.isMatrix]: isMatrix()
       })}
       onMouseEnter={() => setIsHovering(true)}

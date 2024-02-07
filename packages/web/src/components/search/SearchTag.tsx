@@ -1,8 +1,7 @@
 import { useCallback, MouseEvent } from 'react'
 
-import { AllTrackingEvents, Name } from '@audius/common'
-import { Tag } from '@audius/stems'
-import type { TagProps } from '@audius/stems'
+import { Name, AllTrackingEvents } from '@audius/common/models'
+import { Tag, TagProps } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -13,31 +12,26 @@ type TagClickingEvent = Extract<
   { eventName: Name.TAG_CLICKING }
 >
 
-type TagPropsBase = Omit<TagProps<Link>, 'to'>
-
-type SearchTagProps = TagPropsBase & {
+type SearchTagProps = Extract<TagProps, { children: string }> & {
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
   source: TagClickingEvent['source']
 }
 
 export const SearchTag = (props: SearchTagProps) => {
-  const { onClick, source, ...other } = props
-  const { tag } = other
+  const { onClick, source, children, ...other } = props
   const record = useRecord()
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
       onClick?.(e)
-      record(make(Name.TAG_CLICKING, { tag, source }))
+      record(make(Name.TAG_CLICKING, { tag: children, source }))
     },
-    [onClick, record, tag, source]
+    [onClick, record, children, source]
   )
 
   return (
-    <Tag
-      {...props}
-      as={Link}
-      to={searchResultsPage(`#${tag}`)}
-      onClick={handleClick}
-    />
+    <Link to={searchResultsPage(`#${children}`)} onClick={handleClick}>
+      <Tag {...other}>{children}</Tag>
+    </Link>
   )
 }

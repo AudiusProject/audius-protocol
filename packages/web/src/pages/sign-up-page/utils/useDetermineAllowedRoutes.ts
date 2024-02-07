@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

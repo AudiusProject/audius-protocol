@@ -1,31 +1,31 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { Client, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
-  BNWei,
+  tokenDashboardPageSelectors,
   tokenDashboardPageActions,
   walletSelectors,
-  tokenDashboardPageSelectors,
-  formatWei,
   buyAudioActions,
-  OnRampProvider,
-  FeatureFlags,
-  StringKeys,
-  Client,
-  Location,
-  isNullOrUndefined
-} from '@audius/common'
-import { Button, ButtonType, IconInfo } from '@audius/stems'
+  OnRampProvider
+} from '@audius/common/store'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import {
+  IconReceive,
+  IconSend,
+  IconSettings,
+  IconTokenGold,
+  IconTransaction,
+  IconInfo
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import IconReceive from 'assets/img/iconReceive.svg'
-import IconSend from 'assets/img/iconSend.svg'
-import IconSettings from 'assets/img/iconSettings.svg'
-import IconTransaction from 'assets/img/iconTransaction.svg'
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
+import { useHistoryContext } from 'app/HistoryProvider'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { CollapsibleContent } from 'components/collapsible-content'
@@ -34,9 +34,10 @@ import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer
 import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
-import { isMobile, getClient } from 'utils/clientUtil'
+import { getClient } from 'utils/clientUtil'
 import {
   AUDIO_TRANSACTIONS_PAGE,
   pushUniqueRoute,
@@ -86,25 +87,25 @@ const AdvancedWalletActions = () => {
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const { isEnabled: isTransactionsEnabled } = useFlag(
     FeatureFlags.AUDIO_TRANSACTIONS_HISTORY
   )
   const onClickReceive = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressReceive())
     }
-  }, [dispatch, mobile, openTransferDrawer])
+  }, [dispatch, isMobile, openTransferDrawer])
 
   const onClickSend = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressSend())
     }
-  }, [mobile, dispatch, openTransferDrawer])
+  }, [isMobile, dispatch, openTransferDrawer])
   const [, setOpen] = useModalState('MobileConnectWalletsDrawer')
 
   const onClickTransactions = useCallback(() => {
@@ -112,12 +113,12 @@ const AdvancedWalletActions = () => {
   }, [dispatch])
 
   const onClickConnectWallets = useCallback(() => {
-    if (mobile) {
+    if (isMobile) {
       setOpen(true)
     } else {
       dispatch(pressConnectWallets())
     }
-  }, [mobile, setOpen, dispatch])
+  }, [isMobile, setOpen, dispatch])
 
   const onCloseConnectWalletsDrawer = useCallback(() => {
     setOpen(false)
@@ -149,7 +150,7 @@ const AdvancedWalletActions = () => {
           type={ButtonType.GLASS}
           minWidth={200}
         />
-        {!mobile && isTransactionsEnabled && (
+        {!isMobile && isTransactionsEnabled && (
           <Button
             className={cn(styles.advancedButton)}
             text={messages.transactionsLabel}
@@ -170,7 +171,7 @@ const AdvancedWalletActions = () => {
           leftIcon={<IconSettings className={styles.iconStyle} />}
           minWidth={200}
         />
-        {mobile && (
+        {isMobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
       </div>
@@ -190,17 +191,19 @@ const OnRampTooltipButton = ({
   bannedState
 }: OnRampTooltipButtonProps) => {
   const dispatch = useDispatch()
+  const { history } = useHistoryContext()
+
   const onClick = useCallback(() => {
     dispatch(
       startBuyAudioFlow({
         provider,
         onSuccess: {
-          action: pushUniqueRoute(TRENDING_PAGE),
+          action: pushUniqueRoute(history.location, TRENDING_PAGE),
           message: messages.findArtists
         }
       })
     )
-  }, [dispatch, provider])
+  }, [dispatch, provider, history])
   const bannedRegionText =
     provider === OnRampProvider.COINBASE
       ? messages.coinbasePayRegionNotSupported
@@ -325,6 +328,9 @@ export const WalletManagementTile = () => {
     primaryProvider === OnRampProvider.COINBASE
       ? OnRampProvider.STRIPE
       : OnRampProvider.COINBASE
+  const isAnyProviderAllowed =
+    onRampProviders[primaryProvider].isAllowed ||
+    onRampProviders[secondaryProvider].isAllowed
 
   const onClickOpen = useCallback(() => {
     setOpen(true)
@@ -363,13 +369,12 @@ export const WalletManagementTile = () => {
         </div>
       </div>
       <div className={styles.container}>
-        {!isMobileWeb() ? (
+        {!isMobileWeb() && isAnyProviderAllowed ? (
           <>
             <div className={styles.header}>
-              <img
+              <IconTokenGold
                 className={styles.headerIcon}
-                src={IconGoldBadge}
-                alt={messages.goldAudioToken}
+                aria-label={messages.goldAudioToken}
               />
               <div className={styles.headerText}>
                 <div className={styles.title}>{messages.buyAudio}</div>
@@ -397,7 +402,8 @@ export const WalletManagementTile = () => {
           hideText={messages.hideAdvanced}
         >
           <div className={styles.moreOptions}>
-            {onRampProviders[secondaryProvider].isEnabled ? (
+            {onRampProviders[secondaryProvider].isEnabled &&
+            isAnyProviderAllowed ? (
               <div className={styles.moreOptionsSection}>
                 <div className={styles.subtitle}>
                   {messages.additionalPaymentMethods}

@@ -1,10 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  pickHandleSchema,
-  useAudiusQueryContext,
-  reviewHandlePageMessages as messages
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { reviewHandlePageMessages } from '@audius/common/messages'
+import { pickHandleSchema } from '@audius/common/schemas'
 import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -72,8 +70,8 @@ export const ReviewHandleScreen = () => {
       {({ isValid }) => (
         <Page>
           <Heading
-            heading={messages.heading}
-            description={messages.description}
+            heading={reviewHandlePageMessages.heading}
+            description={reviewHandlePageMessages.description}
           />
           {hasImages ? (
             <Paper gap='xl' direction='column'>

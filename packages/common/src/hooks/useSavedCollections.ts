@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ID } from 'models/Identifiers'
-import { Status } from 'models/Status'
+import { ID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
 
 import { CommonState } from '../store'
 import {

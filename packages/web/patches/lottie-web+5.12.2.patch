@@ -1,0 +1,44 @@
+diff --git a/node_modules/lottie-web/build/player/lottie.js b/node_modules/lottie-web/build/player/lottie.js
+index cddf7ca..c9ad885 100644
+--- a/node_modules/lottie-web/build/player/lottie.js
++++ b/node_modules/lottie-web/build/player/lottie.js
+@@ -1313,6 +1313,10 @@
+ 
+   var ImagePreloader = function () {
+     var proxyImage = function () {
++      if (typeof document === 'undefined') {
++        return undefined
++      }
++
+       var canvas = createTag('canvas');
+       canvas.width = 1;
+       canvas.height = 1;
+@@ -5276,7 +5280,7 @@
+   lottie.version = '5.12.2';
+ 
+   function checkReady() {
+-    if (document.readyState === 'complete') {
++    if (typeof document !== 'undefined' && document.readyState === 'complete') {
+       clearInterval(readyStateCheckInterval);
+       searchAnimations();
+     }
+@@ -5299,7 +5303,7 @@
+ 
+   var queryString = '';
+ 
+-  if (standalone) {
++  if (standalone && typeof document !== 'undefined') {
+     var scripts = document.getElementsByTagName('script');
+     var index = scripts.length - 1;
+     var myScript = scripts[index] || {
+@@ -13885,7 +13889,9 @@
+   }
+ 
+   extendPrototype([BaseElement, TransformElement, CVBaseElement, HierarchyElement, FrameElement, RenderableElement, ITextElement], CVTextElement);
+-  CVTextElement.prototype.tHelper = createTag('canvas').getContext('2d');
++  if (typeof document !== 'undefined') {
++    CVTextElement.prototype.tHelper = createTag('canvas').getContext('2d');
++  }
+ 
+   CVTextElement.prototype.buildNewText = function () {
+     var documentData = this.textProperty.currentData;

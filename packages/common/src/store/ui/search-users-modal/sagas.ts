@@ -1,12 +1,12 @@
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
-import { User } from 'models/User'
-import { accountSelectors } from 'store/account'
-import { processAndCacheUsers } from 'store/cache/users/utils'
-import { getContext } from 'store/effects'
-import { SearchKind } from 'store/pages/search-results/types'
-import * as searchUsersModalSelectors from 'store/ui/search-users-modal/selectors'
-import { actions as searchUsersModalActions } from 'store/ui/search-users-modal/slice'
+import { User } from '~/models/User'
+import { accountSelectors } from '~/store/account'
+import { processAndCacheUsers } from '~/store/cache/users/utils'
+import { getContext } from '~/store/effects'
+import { SearchKind } from '~/store/pages/search-results/types'
+import * as searchUsersModalSelectors from '~/store/ui/search-users-modal/selectors'
+import { actions as searchUsersModalActions } from '~/store/ui/search-users-modal/slice'
 
 const { getUserId } = accountSelectors
 const { searchUsers, searchUsersSucceeded } = searchUsersModalActions

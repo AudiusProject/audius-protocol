@@ -1,16 +1,16 @@
-import { useCallback, useContext, useRef } from 'react'
+import { useCallback, useContext, useMemo, useRef } from 'react'
 
+import { AudiusQueryContext } from '@audius/common/audius-query'
 import {
-  socialMediaMessages,
-  pickHandlePageMessages as messages,
-  pickHandleSchema
-} from '@audius/common'
+  pickHandlePageMessages,
+  socialMediaMessages
+} from '@audius/common/messages'
+import { pickHandleSchema } from '@audius/common/schemas'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import {
   setValueField,
   unsetSocialProfile
@@ -33,7 +33,10 @@ import {
 import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
-import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import {
+  SocialMediaLoginOptions,
+  SocialPlatform
+} from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
@@ -47,14 +50,9 @@ type SocialMediaSectionProps = {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
-  onStart: () => void
-  onError: () => void
+  onStart: (platform: SocialPlatform) => void
+  onError: (error: Error, platform: SocialPlatform) => void
 }
-
-const PickHandleValidationSchema = toFormikValidationSchema(
-  pickHandleSchema({ audiusQueryContext, restrictedHandles })
-)
-
 const SocialMediaSection = (props: SocialMediaSectionProps) => {
   const { onCompleteSocialMediaLogin, onStart, onError } = props
   const { isMobile } = useMedia()
@@ -66,9 +64,9 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
           variant={isMobile ? 'title' : 'heading'}
           size={isMobile ? 'm' : 's'}
         >
-          {messages.claimHandleHeaderPrefix}{' '}
+          {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
           <Text color='accent' tag='span'>
-            @{messages.handle}
+            @{pickHandlePageMessages.handle}
           </Text>{' '}
           <IconVerified
             size={isMobile ? 's' : 'm'}
@@ -76,7 +74,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
           />
         </Text>
         <Text variant='body' size={isMobile ? 'm' : 'l'}>
-          {messages.claimHandleDescription}
+          {pickHandlePageMessages.claimHandleDescription}
         </Text>
       </Flex>
       <SocialMediaLoginOptions
@@ -85,7 +83,7 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size={isMobile ? 'm' : 'l'}>
-        {messages.claimHandleHeadsUp}
+        {pickHandlePageMessages.claimHandleHeadsUp}
       </Text>
     </Paper>
   )
@@ -94,6 +92,15 @@ const SocialMediaSection = (props: SocialMediaSectionProps) => {
 export const PickHandlePage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
+  const audiusQueryContext = useContext(AudiusQueryContext)
+
+  const PickHandleValidationSchema = useMemo(
+    () =>
+      toFormikValidationSchema(
+        pickHandleSchema({ audiusQueryContext, restrictedHandles })
+      ),
+    [audiusQueryContext]
+  )
 
   const alreadyLinkedSocial = useSelector(getIsSocialConnected)
   const {
@@ -102,7 +109,8 @@ export const PickHandlePage = () => {
     handleErrorSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
-    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial,
+    page: 'pick-handle'
   })
 
   const navigate = useNavigateToPage()
@@ -170,8 +178,8 @@ export const PickHandlePage = () => {
             prefix={
               isMobile ? null : <OutOfText numerator={1} denominator={2} />
             }
-            heading={messages.title}
-            description={messages.description}
+            heading={pickHandlePageMessages.title}
+            description={pickHandlePageMessages.description}
             centered={!isMobile}
           />
           <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
@@ -188,7 +196,7 @@ export const PickHandlePage = () => {
                 size='s'
                 css={{ textTransform: 'uppercase' }}
               >
-                {messages.or}
+                {pickHandlePageMessages.or}
               </Text>
             </Divider>
             <SocialMediaSection

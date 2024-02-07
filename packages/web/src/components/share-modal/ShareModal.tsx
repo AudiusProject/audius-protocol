@@ -1,8 +1,8 @@
 import { useCallback, useContext } from 'react'
 
+import { Name, PlayableType } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Name,
-  FeatureFlags,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
@@ -10,17 +10,16 @@ import {
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
   modalsActions,
-  PlayableType,
   useCreateChatModal
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
-import { isMobile } from 'utils/clientUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 import { openTwitterLink } from 'utils/tweet'
@@ -42,6 +41,7 @@ export const ShareModal = () => {
 
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
   const record = useRecord()
   const { content, source } = useSelector(getShareState)
   const account = useSelector(getAccountUser)
@@ -158,6 +158,6 @@ export const ShareModal = () => {
       content?.type === 'playlist' ? content.playlist.is_private : false
   }
 
-  if (isMobile()) return <ShareDrawer {...shareProps} />
+  if (isMobile) return <ShareDrawer {...shareProps} />
   return <ShareDialog {...shareProps} />
 }

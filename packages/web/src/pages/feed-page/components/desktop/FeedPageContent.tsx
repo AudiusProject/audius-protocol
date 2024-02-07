@@ -1,10 +1,7 @@
-import {
-  Name,
-  FeedFilter,
-  feedPageLineupActions as feedActions,
-  FeatureFlags,
-  useFeatureFlag
-} from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name, FeedFilter } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { feedPageLineupActions as feedActions } from '@audius/common/store'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/desktop/Header'
@@ -19,9 +16,7 @@ import Page from 'components/page/Page'
 import EmptyFeed from 'pages/feed-page/components/EmptyFeed'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 
-import FeedFilters from './FeedFilters'
-
-const initialFilters = [FeedFilter.ALL, FeedFilter.ORIGINAL, FeedFilter.REPOST]
+import { FeedFilters } from './FeedFilters'
 
 const messages = {
   feedHeaderTitle: 'Your Feed'
@@ -84,11 +79,10 @@ const FeedPageContent = ({
   const header = (
     <Header
       primary={messages.feedHeaderTitle}
-      variant={'main'}
+      variant='main'
       rightDecorator={
         <FeedFilters
-          initialFilters={initialFilters}
-          filter={feedFilter}
+          currentFilter={feedFilter}
           didSelectFilter={didSelectFilter}
         />
       }

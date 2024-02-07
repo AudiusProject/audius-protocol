@@ -11,6 +11,7 @@ import fetch from 'node-fetch'
 import axios from 'axios'
 import { WebClient } from '@slack/web-api'
 import { formatDisbursementTable } from './slack'
+import { discoveryDb } from './utils'
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const disburseTrendingRewards = async (
@@ -26,7 +27,7 @@ export const onDisburse = async (
   app: App<SharedData>,
   dryRun: boolean
 ): Promise<Result<undefined, string>> => {
-  const db = app.getDnDb()
+  const db = discoveryDb
   const libs = app.viewAppData().libs
   const token = process.env.SLACK_BOT_TOKEN
   if (token === undefined) return new Err('SLACK_BOT_TOKEN undefined')

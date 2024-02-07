@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { playerActions, playerSelectors } from '@audius/common'
+import { playerActions, playerSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'

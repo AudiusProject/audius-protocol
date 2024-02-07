@@ -1,21 +1,21 @@
 import { useCallback } from 'react'
 
+import { FavoriteSource } from '@audius/common/models'
 import {
-  FavoriteSource,
   accountSelectors,
   smartCollectionPageSelectors,
-  collectionsSocialActions,
   smartCollectionPageActions,
+  collectionPageActions,
   playlistLibraryHelpers,
-  collectionPageActions
-} from '@audius/common'
+  collectionsSocialActions
+} from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { FastImageProps } from '@audius/harmony-native'
 import { VirtualizedScrollView } from 'app/components/core'
-import type { FastImageProps } from 'app/components/image/FastImage'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
 import type { SmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'

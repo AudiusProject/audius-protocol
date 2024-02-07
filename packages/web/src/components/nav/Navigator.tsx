@@ -1,7 +1,8 @@
-import { Client } from '@audius/common'
+import { Client } from '@audius/common/models'
 import cn from 'classnames'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
@@ -18,8 +19,8 @@ type NavigatorProps = OwnProps & RouteComponentProps
 // and LeftNav for desktop
 const Navigator = ({ className }: NavigatorProps) => {
   const client = getClient()
+  const isMobile = useIsMobile()
 
-  const isMobile = client === Client.MOBILE
   const isElectron = client === Client.ELECTRON
 
   return (

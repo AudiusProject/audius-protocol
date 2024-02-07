@@ -1,16 +1,23 @@
 import { useCallback } from 'react'
 
+import { useUSDCBalance } from '@audius/common/hooks'
+import { Name, Status, BNUSDC } from '@audius/common/models'
 import {
-  BNUSDC,
-  Name,
   WithdrawUSDCModalPages,
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
   useWithdrawUSDCModal,
   useAddFundsModal
-} from '@audius/common'
-import { Button, PlainButton, IconQuestionCircle, Flex } from '@audius/harmony'
-import { LogoUSDC } from '@audius/stems'
+} from '@audius/common/store'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
+import {
+  Button,
+  PlainButton,
+  IconQuestionCircle,
+  Flex,
+  IconLogoCircleUSDC as LogoUSDC
+} from '@audius/harmony'
 import BN from 'bn.js'
 
 import { Icon } from 'components/Icon'
@@ -34,15 +41,10 @@ const messages = {
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCCard = ({
-  balance,
-  refreshing = false
-}: {
-  balance: BNUSDC
-  refreshing?: boolean
-}) => {
+export const USDCCard = () => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { data: balance, status: balanceStatus } = useUSDCBalance()
 
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -93,15 +95,18 @@ export const USDCCard = ({
           </div>
 
           <Flex gap='m'>
-            {refreshing && <LoadingSpinner className={styles.spinner} />}
-            <Text
-              variant='heading'
-              color='staticWhite'
-              strength='strong'
-              size='xxLarge'
-            >
-              ${balanceFormatted}
-            </Text>
+            {balanceStatus === Status.LOADING ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <Text
+                variant='heading'
+                color='staticWhite'
+                strength='strong'
+                size='xxLarge'
+              >
+                ${balanceFormatted}
+              </Text>
+            )}
           </Flex>
         </div>
         <div className={styles.usdcInfo}>
@@ -117,12 +122,22 @@ export const USDCCard = ({
       </div>
       <div className={styles.withdrawContainer}>
         <div className={styles.addFundsButton}>
-          <Button variant='secondary' fullWidth onClick={handleAddFunds}>
+          <Button
+            variant='secondary'
+            fullWidth
+            onClick={handleAddFunds}
+            disabled={balanceStatus === Status.LOADING}
+          >
             {messages.addFunds}
           </Button>
         </div>
         <div className={styles.withdrawButton}>
-          <Button variant='secondary' fullWidth onClick={handleWithdraw}>
+          <Button
+            variant='secondary'
+            fullWidth
+            onClick={handleWithdraw}
+            disabled={balanceStatus === Status.LOADING}
+          >
             {messages.withdraw}
           </Button>
         </div>

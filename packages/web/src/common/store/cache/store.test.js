@@ -1,12 +1,11 @@
-/* eslint-disable no-import-assign */
+import { Kind, Status } from '@audius/common/models'
 import {
   cacheActions as actions,
-  cacheReducer,
-  Kind,
-  makeKindId,
-  Status,
-  cacheConfig as config
-} from '@audius/common'
+  cacheConfig as config,
+  cacheReducer
+} from '@audius/common/store'
+import { makeKindId } from '@audius/common/utils'
+/* eslint-disable no-import-assign */
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { describe, it, expect, vitest } from 'vitest'

@@ -1,5 +1,5 @@
 export {
   default as averageColorReducer,
-  actions as averageColorActions,
-  selectors as averageColorSelectors
+  actions as averageColorActions
 } from './slice'
+export { selectors as averageColorSelectors } from './selectors'

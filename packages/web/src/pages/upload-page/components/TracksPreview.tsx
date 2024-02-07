@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
-import { UploadType } from '@audius/common'
-import { Button } from '@audius/harmony'
-import { IconCaretRight, Scrollbar, SegmentedControl } from '@audius/stems'
+import { UploadType } from '@audius/common/store'
+import {
+  Button,
+  SegmentedControl,
+  Scrollbar,
+  IconCaretRight
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'
@@ -31,7 +35,7 @@ const uploadDescriptions = {
   [UploadType.PLAYLIST]:
     'Create a playlist from your tracks. You can easily modify this playlist later, even adding tracks from other artists.',
   [UploadType.ALBUM]:
-    'Group your tracks into an album. Once created, albums cannot be changed.',
+    'Upload your songs into an album. Albums can only include your own tracks.',
   [UploadType.INDIVIDUAL_TRACKS]:
     'Upload single tracks. Each appears separately.',
   [UploadType.INDIVIDUAL_TRACK]:

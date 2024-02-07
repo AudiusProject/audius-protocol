@@ -1,12 +1,13 @@
 import {
-  FeatureFlags,
-  FEATURE_FLAG_OVERRIDE_KEY,
-  OverrideSetting
-} from '@audius/common'
+  OverrideSetting,
+  FEATURE_FLAG_OVERRIDE_KEY
+} from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 
 import { remoteConfigInstance } from './remote-config-instance'
 
-const getLocalStorageItem = (key: string) => window.localStorage.getItem(key)
+const getLocalStorageItem = (key: string) =>
+  typeof window !== 'undefined' ? window.localStorage.getItem(key) : null
 
 const getFlagEnabled = (flag: FeatureFlags) => {
   const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`

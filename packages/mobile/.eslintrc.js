@@ -31,6 +31,7 @@ module.exports = {
       }
     }
   },
+  ignorePatterns: ['**/harmony/**/*'],
   rules: {
     '@typescript-eslint/consistent-type-imports': [
       'error',
@@ -45,6 +46,18 @@ module.exports = {
         property: 'allSettled',
         message:
           'Do NOT use `Promise.allSettled` as it will be undefined. Use `allSettled` from `@audius/common` instead.'
+      }
+    ],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@audius/harmony',
+            message:
+              'Use @audius/harmony-native instead. If needing to access an @audius/harmony export, reference it directly with @audius/harmony/src/..'
+          }
+        ]
       }
     ]
   }

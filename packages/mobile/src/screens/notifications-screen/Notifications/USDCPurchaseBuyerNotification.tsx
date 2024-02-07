@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import type {
-  Nullable,
-  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
-  TrackEntity
-} from '@audius/common'
-import { notificationsSelectors, Name } from '@audius/common'
+  TrackEntity,
+  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
+} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { make } from 'audius-client/src/common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 
-import IconCart from 'app/assets/images/iconCart.svg'
+import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

@@ -1,13 +1,13 @@
-import type { full } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
-import { createApi } from 'audius-query'
-import { ID, Kind, StringUSDC } from 'models'
+import { createApi } from '~/audius-query'
+import { ID, Kind, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
   USDCTransactionType
-} from 'models/USDCTransactions'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models/USDCTransactions'
+import { Nullable } from '~/utils/typeUtils'
 
 import { Id } from './utils'
 
@@ -21,9 +21,15 @@ type GetUSDCTransactionListArgs = {
   method?: full.GetUSDCTransactionsMethodEnum
 }
 
-const parseTransaction = (
+/**
+ * Parser to reformat transactions as they come back from the API.
+ * @param transaction the transaction to parse
+ */
+const parseTransaction = ({
+  transaction
+}: {
   transaction: full.TransactionDetails
-): USDCTransactionDetails => {
+}): USDCTransactionDetails => {
   const { change, balance, transactionType, method, ...rest } = transaction
   return {
     ...rest,
@@ -130,7 +136,7 @@ const userApi = createApi({
           encodedDataSignature
         })
 
-        return data.map(parseTransaction)
+        return data.map((transaction) => parseTransaction({ transaction }))
       },
       options: { retry: true }
     },
@@ -171,3 +177,4 @@ export const {
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
 export const userApiActions = userApi.actions
+export const userApiUtils = userApi.util

@@ -1,4 +1,5 @@
-import type { Nullable, PlaybackRate } from '@audius/common'
+import type { PlaybackRate } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import TrackPlayer from 'react-native-track-player'
 
 // Shim definition for audio-player needed for player sagas to not break.

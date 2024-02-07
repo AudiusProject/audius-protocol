@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common/models'
 import {
-  ID,
   cacheCollectionsActions,
   cacheCollectionsSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { SetRequired } from 'type-fest'
 

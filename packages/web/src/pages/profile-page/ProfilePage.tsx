@@ -1,6 +1,6 @@
 import { RefObject, memo } from 'react'
 
-import { useIsMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ProfilePageProvider from './ProfilePageProvider'
 import DesktopProfilePage from './components/desktop/ProfilePage'

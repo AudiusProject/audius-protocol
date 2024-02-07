@@ -1,18 +1,14 @@
 import { MutableRefObject, useCallback, useMemo } from 'react'
 
+import { CreatePlaylistSource } from '@audius/common/models'
 import {
-  CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
   playlistLibraryActions,
   playlistLibraryHelpers
-} from '@audius/common'
-import {
-  PopupMenu,
-  IconFolder,
-  IconPlaylists,
-  PopupMenuItem
-} from '@audius/stems'
+} from '@audius/common/store'
+import { IconFolder, IconPlaylists } from '@audius/harmony'
+import { PopupMenu, PopupMenuItem } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'

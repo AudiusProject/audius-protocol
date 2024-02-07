@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID, ShareSource, Nullable, shareModalUIActions } from '@audius/common'
-import { IconShare, IconButton } from '@audius/stems'
+import { ShareSource, ID } from '@audius/common/models'
+import { shareModalUIActions } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { IconShare } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import styles from './ShareUserButton.module.css'

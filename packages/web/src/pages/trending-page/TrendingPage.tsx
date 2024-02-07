@@ -1,21 +1,17 @@
 import { RefObject } from 'react'
 
-import { connect } from 'react-redux'
-
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import TrendingPageProvider from './TrendingPageProvider'
 import TrendingPageContent from './components/desktop/TrendingPageContent'
 import TrendingPageMobileContent from './components/mobile/TrendingPageContent'
 
-interface OwnProps {
+interface TrendingPageContentProps {
   containerRef: RefObject<HTMLDivElement>
 }
 
-type TrendingPageContentProps = ReturnType<typeof mapStateToProps> & OwnProps
-
-const TrendingPage = ({ containerRef, isMobile }: TrendingPageContentProps) => {
+const TrendingPage = ({ containerRef }: TrendingPageContentProps) => {
+  const isMobile = useIsMobile()
   const content = isMobile ? TrendingPageMobileContent : TrendingPageContent
 
   return (
@@ -25,10 +21,4 @@ const TrendingPage = ({ containerRef, isMobile }: TrendingPageContentProps) => {
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(TrendingPage)
+export default TrendingPage

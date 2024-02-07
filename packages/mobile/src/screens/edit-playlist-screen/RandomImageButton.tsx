@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import { RandomImage } from '@audius/common'
+import { RandomImage } from '@audius/common/services'
 import { useField } from 'formik'
 
-import IconSearch from 'app/assets/images/iconSearch.svg'
+import { IconSearch } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 

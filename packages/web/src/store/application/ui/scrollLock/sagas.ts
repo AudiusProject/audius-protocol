@@ -1,6 +1,4 @@
-import { takeEvery, select } from 'typed-redux-saga'
-
-import { isMobile } from 'utils/clientUtil'
+import { takeEvery, select, getContext } from 'typed-redux-saga'
 
 import * as scrollLockActions from './actions'
 import { getScrollLockCount } from './selectors'
@@ -11,12 +9,13 @@ const MOBILE_CLASS = 'isMobile'
 
 export function* incrementScrollCount() {
   const lockCount = yield* select(getScrollLockCount)
+  const isMobile = yield* getContext('isMobile')
   if (lockCount === 1) {
     const el = document.getElementById(ROOT_ID)
     if (!el) return
     el.style.top = `-${window.pageYOffset}px`
     el.classList.add(SCROLL_LOCK_CLASS)
-    if (isMobile()) {
+    if (isMobile) {
       el.classList.add(MOBILE_CLASS)
     }
   }
@@ -24,11 +23,12 @@ export function* incrementScrollCount() {
 
 export function* decrementScrollCount() {
   const lockCount = yield* select(getScrollLockCount)
+  const isMobile = yield* getContext('isMobile')
   if (lockCount === 0) {
     const el = document.getElementById(ROOT_ID)
     if (!el) return
     el.classList.remove(SCROLL_LOCK_CLASS)
-    if (isMobile()) {
+    if (isMobile) {
       el.classList.remove(MOBILE_CLASS)
     }
     const scrollTop = parseInt(el.style.top!, 10) || 0

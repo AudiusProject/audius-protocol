@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
-  accountSelectors,
-  CommonState,
-  encodeHashId,
-  ErrorLevel,
   Name,
+  ErrorLevel,
   statusIsNotFinalized,
   User
-} from '@audius/common'
+} from '@audius/common/models'
+import { accountSelectors, CommonState } from '@audius/common/store'
+import { encodeHashId } from '@audius/common/utils'
 import * as queryString from 'query-string'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -149,7 +148,9 @@ export const useParsedQueryParams = () => {
 }
 
 export const useOAuthSetup = ({
-  onError
+  onError,
+  onPendingTransactionApproval,
+  onReceiveTransactionApproval
 }: {
   onError: ({
     isUserError,
@@ -160,10 +161,13 @@ export const useOAuthSetup = ({
     errorMessage: string
     error?: Error
   }) => void
+  onPendingTransactionApproval: () => void
+  onReceiveTransactionApproval: () => void
 }) => {
   const record = useRecord()
   const history = useHistory()
   const dispatch = useDispatch()
+
   const {
     appName: queryParamAppName,
     apiKey,
@@ -474,6 +478,8 @@ export const useOAuthSetup = ({
           state,
           originUrl: parsedOrigin,
           onError,
+          onWaitForWalletSignature: onPendingTransactionApproval,
+          onReceivedWalletSignature: onReceiveTransactionApproval,
           account,
           txParams: txParams!
         })

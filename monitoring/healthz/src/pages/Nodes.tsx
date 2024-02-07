@@ -6,6 +6,7 @@ import {
 import { SP, useServiceProviders } from '../useServiceProviders'
 import { RelTime, timeSince, nanosToReadableDuration } from '../misc'
 import './Nodes.css'
+const audiusdSvg = new URL('../images/audius_d.svg', import.meta.url).href
 const autoUpgradeSvg = new URL('../images/auto_upgrade.svg', import.meta.url).href
 const dockerSvg = new URL('../images/docker.svg', import.meta.url).href
 const fileBackendSvg = new URL('../images/file_disk.svg', import.meta.url).href
@@ -79,34 +80,49 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const health = data?.data
   const yourIp = ipCheck?.data
 
-  if (!health || !yourIp)
+  // API response doesn't include isRegistered
+  if (sp.isRegistered !== false) {
+    sp.isRegistered = true
+  }
+
+  if (!health || !yourIp) {
+    let healthStatus = 'loading'
+    let healthStatusClass = ''
+    if (!sp.isRegistered) {
+      healthStatus = 'Unregistered'
+      healthStatusClass = 'is-unregistered'
+    } else if (dataError || ipCheckError) {
+      healthStatus = 'error'
+      healthStatusClass = 'is-unhealthy'
+    }
     return (
-      <tr className={dataError || ipCheckError ? 'is-unhealthy' : ''}>
+      <tr className={healthStatusClass}>
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
           <a href={sp.endpoint + path} target="_blank">
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Is Signer */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Peers */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Producing */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block Hash */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Started */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Uploads */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{healthStatus}</td>} {/* Node Health */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
+        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Is Signer */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Peers */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Producing */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block Hash */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Started */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Uploads */}
+        {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
       </tr>
     )
+  }
 
   // calculate healthy peers counts
   const now = new Date()
@@ -152,12 +168,13 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const MAX_STORAGE_SIZE = isStaging ? 400 : 4000
   const totalMediorumSize = mediorumDiskSize && health.blobStorePrefix === 'file' ? mediorumDiskSize : MAX_STORAGE_SIZE
 
-  const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
+  const isBehind = 'whitespace-nowrap px-3 py-5 text-sm' + (health.block_difference > 5 ? ' is-unhealthy' : '')
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const isDbLocalhost = health.database_is_localhost || health.isDbLocalhost
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
+  const audiusdManaged = health.audius_d_managed || health.isAudiusdManaged
   const getPeers = (str: string | undefined) => {
     if (str === undefined) return 'chain health undefined'
     const match = str.match(/Peers: (\d+)\./)
@@ -188,19 +205,33 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
     )
   }
 
+  let healthStatus = 'Healthy'
+  let healthStatusClass = ''
+  if (!sp.isRegistered) {
+    healthStatus = 'Unregistered'
+    healthStatusClass = 'is-unregistered'
+  } else if (!isHealthy) {
+    healthStatus = 'Unhealthy'
+    healthStatusClass = 'is-unhealthy'
+  }
+
   return (
-    <tr className={isHealthy ? '' : 'is-unhealthy'}>
+    <tr className={healthStatusClass}>
       <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
         <a href={sp.endpoint + path} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
-      {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{`${isHealthy ? 'Healthy' : 'Unhealthy: ' + health.errors}`}</td>)}
+      {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{`${healthStatus}${healthStatus === 'Unhealthy' ? ': ' + health.errors : ''}`}</td>)}
       {!isContent && <td className={isBehind}>{health.block_difference}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm flex flex-col">
         <div className="flex items-center">
           <span className="h-5 w-5 flex-shrink-0">
-            {autoUpgradeEnabled && <img
+            {audiusdManaged && <img
+              className="h-5 w-5"
+              src={audiusdSvg}
+              alt="audius-d"
+            /> || autoUpgradeEnabled && <img
               className="h-5 w-5 dark:filter dark:invert"
               src={autoUpgradeSvg}
               alt="Auto-upgrade"

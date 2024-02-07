@@ -1,41 +1,43 @@
-import React, { useCallback } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
-import styles from './ManageService.module.css'
 import DisplayAudio from 'components/DisplayAudio'
-import Paper from 'components/Paper'
-import UpdateStakeModal from 'components/UpdateStakeModal'
-import RegisterServiceModal from 'components/RegisterServiceModal'
-import OperatorCutModal from 'components/OperatorCutModal'
 import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
+import OperatorCutModal from 'components/OperatorCutModal'
+import Paper from 'components/Paper'
+import RegisterServiceModal from 'components/RegisterServiceModal'
 import TransactionStatus from 'components/TransactionStatus'
+import UpdateStakeModal from 'components/UpdateStakeModal'
+import React, { useCallback } from 'react'
 import {
   useAccount,
   useAccountUser,
   useHasPendingDecreaseStakeTx
 } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
-import { Address, Status, Operator } from 'types'
+import { Address, Operator, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
+import styles from './ManageService.module.css'
 
-import Button, { ButtonType } from 'components/Button'
 import {
   IconArrowWhite,
-  IconValidationCheck,
-  IconUser,
+  IconDeployerCut,
   IconMinimum,
-  IconDeployerCut
+  IconUser,
+  IconValidationCheck
 } from '@audius/stems'
-import { usePushRoute } from 'utils/effects'
-import { TICKER } from 'utils/consts'
-import { useMakeClaim } from 'store/actions/makeClaim'
+import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
+import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import DelegatesModal from 'components/DelegatesModal'
 import DelegatorsModal from 'components/DelegatorsModal'
 import Loading from 'components/Loading'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import { useMakeClaim } from 'store/actions/makeClaim'
+import { TICKER } from 'utils/consts'
+import { usePushRoute } from 'utils/effects'
 
 const messages = {
   title: 'Manage Your Account & Services',
@@ -48,7 +50,11 @@ const messages = {
   change: 'Change',
   manage: 'Manage',
   view: 'View',
-  claim: 'Make Claim'
+  claim: 'Make Claim',
+  connectAudiusProfile: 'Connect Audius Profile',
+  connectAudiusProfileDescription:
+    'Help other users identify you by connecting your Audius account.',
+  unlinkAudiusProfile: 'Unlink Audius Profile'
 }
 
 interface ManageServiceProps {
@@ -69,6 +75,55 @@ const RegisterNewServiceBtn = () => {
         textClassName={styles.registerBtnText}
       />
       <RegisterServiceModal isOpen={isOpen} onClose={onClose} />
+    </>
+  )
+}
+
+type ConnectAudiusProtileBtnProps = {
+  wallet: string
+}
+const ConnectAudiusProfileButton = ({
+  wallet
+}: ConnectAudiusProtileBtnProps) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+  return (
+    <>
+      <Button
+        onClick={onClick}
+        type={ButtonType.PRIMARY}
+        text={messages.connectAudiusProfile}
+        className={styles.registerBtn}
+        textClassName={styles.registerBtnText}
+      />
+      <ConnectAudiusProfileModal
+        wallet={wallet}
+        isOpen={isOpen}
+        onClose={onClose}
+        action="connect"
+      />
+    </>
+  )
+}
+
+type DisconnectAudiusProfileButton = {
+  wallet: string
+}
+const DisconnectAudiusProfileButton = ({
+  wallet
+}: DisconnectAudiusProfileButton) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+
+  return (
+    <>
+      <span className={styles.actionText} onClick={onClick}>
+        {messages.unlinkAudiusProfile}
+      </span>
+      <ConnectAudiusProfileModal
+        wallet={wallet}
+        isOpen={isOpen}
+        onClose={onClose}
+        action="disconnect"
+      />
     </>
   )
 }
@@ -258,6 +313,12 @@ const ManageService: React.FC<ManageServiceProps> = (
   props: ManageServiceProps
 ) => {
   const { status: userStatus, user: accountUser } = useAccountUser()
+  const {
+    data: audiusProfileData,
+    status: audiusProfileDataStatus
+  } = useDashboardWalletUser(accountUser?.wallet)
+  const hasConnectedAudiusAccount = audiusProfileData != null
+
   const isServiceProvider =
     userStatus === Status.Success && 'serviceProvider' in accountUser
   const isDelegator =
@@ -294,90 +355,113 @@ const ManageService: React.FC<ManageServiceProps> = (
       })}
     >
       <h3 className={styles.title}>{messages.title}</h3>
-      {accountUser ? (
-        <>
-          <div className={styles.manageBtns}>
-            {pendingClaim.status !==
-            Status.Success ? null : pendingClaim.hasClaim ? (
-              <div>
-                <Button
-                  className={styles.btn}
-                  onClick={onClick}
-                  textClassName={styles.btnText}
-                  iconClassName={styles.btnIcon}
-                  text={messages.claim}
-                  type={ButtonType.GREEN}
+      <div className={styles.manageAccountContainer}>
+        {accountUser ? (
+          <>
+            <div className={styles.manageBtns}>
+              {pendingClaim.status !==
+              Status.Success ? null : pendingClaim.hasClaim ? (
+                <div>
+                  <Button
+                    className={styles.btn}
+                    onClick={onClick}
+                    textClassName={styles.btnText}
+                    iconClassName={styles.btnIcon}
+                    text={messages.claim}
+                    type={ButtonType.GREEN}
+                  />
+                  <ConfirmTransactionModal
+                    isOpen={isOpen}
+                    onClose={onClose}
+                    withArrow={false}
+                    topBox={makeClaimBox}
+                    onConfirm={onConfirm}
+                    status={status}
+                    error={error}
+                  />
+                </div>
+              ) : (
+                <div className={styles.btnContainer}>
+                  <RegisterNewServiceBtn />
+                  {isServiceProvider && (
+                    <div>
+                      <IncreaseStake isDisabled={increaseStakeDisabled} />
+                      <DecreaseStake isDisabled={decreaseStakeDisabled} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {isServiceProvider && (
+              <div className={styles.actionsContainer}>
+                <ActiveServices
+                  className={styles.accountAction}
+                  showView={props.showViewActiveServices}
+                  numberServices={
+                    (accountUser as Operator).serviceProvider.numberOfEndpoints
+                  }
                 />
-                <ConfirmTransactionModal
-                  isOpen={isOpen}
-                  onClose={onClose}
-                  withArrow={false}
-                  topBox={makeClaimBox}
-                  onConfirm={onConfirm}
-                  status={status}
-                  error={error}
+                <DeployerCut
+                  className={styles.accountAction}
+                  cut={(accountUser as Operator).serviceProvider.deployerCut}
                 />
-              </div>
-            ) : (
-              <div className={styles.btnContainer}>
-                <RegisterNewServiceBtn />
-                {isServiceProvider && (
-                  <div>
-                    <IncreaseStake isDisabled={increaseStakeDisabled} />
-                    <DecreaseStake isDisabled={decreaseStakeDisabled} />
-                  </div>
+                <MinimumDelegationAmount
+                  className={styles.accountAction}
+                  minimumDelegationAmount={
+                    (accountUser as Operator).minDelegationAmount
+                  }
+                />
+                {(accountUser as Operator).delegators.length > 0 && (
+                  <Delegators
+                    className={styles.accountAction}
+                    wallet={accountUser.wallet}
+                    moreText={messages.view}
+                    numberDelegators={
+                      (accountUser as Operator).delegators.length
+                    }
+                  />
                 )}
               </div>
             )}
-          </div>
-          {isServiceProvider && (
-            <div className={styles.actionsContainer}>
-              <ActiveServices
-                className={styles.accountAction}
-                showView={props.showViewActiveServices}
-                numberServices={
-                  (accountUser as Operator).serviceProvider.numberOfEndpoints
-                }
-              />
-              <DeployerCut
-                className={styles.accountAction}
-                cut={(accountUser as Operator).serviceProvider.deployerCut}
-              />
-              <MinimumDelegationAmount
-                className={styles.accountAction}
-                minimumDelegationAmount={
-                  (accountUser as Operator).minDelegationAmount
-                }
-              />
-              {(accountUser as Operator).delegators.length > 0 && (
-                <Delegators
+            {isDelegator && accountUser.delegates.length > 0 && (
+              <div
+                className={clsx(styles.actionsContainer, {
+                  [styles.isSPDelegate]: isServiceProvider
+                })}
+              >
+                <Delegates
                   className={styles.accountAction}
+                  numberDelegates={accountUser.delegates.length}
                   wallet={accountUser.wallet}
                   moreText={messages.view}
-                  numberDelegators={(accountUser as Operator).delegators.length}
                 />
-              )}
-            </div>
+              </div>
+            )}
+            <TransactionStatus />
+          </>
+        ) : (
+          <div className={styles.loading}>
+            <Loading />
+          </div>
+        )}
+      </div>
+      {!accountUser?.wallet || audiusProfileDataStatus !== 'success' ? null : (
+        <div className={styles.connectProfileContainer}>
+          {!hasConnectedAudiusAccount ? (
+            <>
+              <div className={styles.connectProfileTextContainer}>
+                <h3 className={styles.title}>
+                  {messages.connectAudiusProfile}
+                </h3>
+                <span>{messages.connectAudiusProfileDescription}</span>
+              </div>
+              <div>
+                <ConnectAudiusProfileButton wallet={accountUser.wallet} />
+              </div>
+            </>
+          ) : (
+            <DisconnectAudiusProfileButton wallet={accountUser.wallet} />
           )}
-          {isDelegator && accountUser.delegates.length > 0 && (
-            <div
-              className={clsx(styles.actionsContainer, {
-                [styles.isSPDelegate]: isServiceProvider
-              })}
-            >
-              <Delegates
-                className={styles.accountAction}
-                numberDelegates={accountUser.delegates.length}
-                wallet={accountUser.wallet}
-                moreText={messages.view}
-              />
-            </div>
-          )}
-          <TransactionStatus />
-        </>
-      ) : (
-        <div className={styles.loading}>
-          <Loading />
         </div>
       )}
     </Paper>

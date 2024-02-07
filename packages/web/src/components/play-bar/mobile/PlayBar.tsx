@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  ID,
-  FavoriteSource,
   Name,
+  FavoriteSource,
   PlaybackSource,
   SquareSizes,
+  ID
+} from '@audius/common/models'
+import {
   queueActions,
-  tracksSocialActions,
-  playerSelectors,
   queueSelectors,
-  useGatedContentAccess
-} from '@audius/common'
-import { IconLock } from '@audius/stems'
+  tracksSocialActions,
+  playerSelectors
+} from '@audius/common/store'
+import { IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -66,6 +68,9 @@ const PlayBar = ({
 
   useEffect(() => {
     const seekInterval = setInterval(async () => {
+      if (!audioPlayer) {
+        return
+      }
       const duration = await audioPlayer.getDuration()
       const pos = await audioPlayer.getPosition()
       if (duration === undefined || pos === undefined) return

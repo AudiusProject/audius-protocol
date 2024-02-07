@@ -1,4 +1,4 @@
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 export const LEGACY_PLAYBACK_POSITION_LS_KEY = 'playbackPosition'
 export const PLAYBACK_POSITION_LS_KEY = 'userPlaybackPositions'

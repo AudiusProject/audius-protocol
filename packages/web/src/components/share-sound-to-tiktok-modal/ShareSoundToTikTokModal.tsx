@@ -1,26 +1,21 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  Nullable,
-  ShareSoundToTiktokModalStatus,
   shareSoundToTiktokModalActions,
-  shareSoundToTiktokModalSelectors
-} from '@audius/common'
-import {
-  Button,
-  Modal,
-  ButtonType,
-  IconTikTokInverted,
-  IconTikTok
-} from '@audius/stems'
+  shareSoundToTiktokModalSelectors,
+  ShareSoundToTiktokModalStatus
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { IconTikTok } from '@audius/harmony'
+import { Button, Modal, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './ShareSoundToTikTokModal.module.css'
 const { getStatus, getTrack } = shareSoundToTiktokModalSelectors
@@ -49,7 +44,7 @@ const fileRequirementErrorMessages = {
 }
 
 const ShareSoundToTikTokModal = () => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const [isOpen, setIsOpen] = useModalState('ShareSoundToTikTok')
   const dispatch = useDispatch()
@@ -140,7 +135,7 @@ const ShareSoundToTikTokModal = () => {
           text={
             <div className={styles.button}>
               <span>{messages.shareButton}</span>
-              <IconTikTokInverted />
+              <IconTikTok color='staticWhite' />
             </div>
           }
         />
@@ -148,7 +143,7 @@ const ShareSoundToTikTokModal = () => {
     }
   }
 
-  return mobile ? (
+  return isMobile ? (
     <Drawer onClose={handleClose} isOpen={isOpen}>
       <div className={cn(styles.modalContent, styles.mobile)}>
         <div className={cn(styles.modalHeader, styles.mobile)}>

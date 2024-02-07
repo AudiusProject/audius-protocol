@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
-import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
-import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
+import { IconPlaylists } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -14,7 +15,7 @@ import {
   NotificationTitle,
   EntityLink,
   UserNameLink,
-  ProfilePicture
+  NotificationProfilePicture
 } from '../Notification'
 const { getNotificationEntities } = notificationsSelectors
 
@@ -53,7 +54,7 @@ export const AddTrackToPlaylistNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={playlistOwner} />
+        <NotificationProfilePicture profile={playlistOwner} />
         <View style={{ flex: 1 }}>
           <NotificationText>
             <UserNameLink user={playlistOwner} />

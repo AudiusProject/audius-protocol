@@ -1,9 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import {
-  emailSchema,
-  createEmailPageMessages as messages
-} from '@audius/common'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { createEmailPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/schemas'
 import {
   Box,
   Button,
@@ -19,7 +18,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   resetSignOn,
@@ -48,8 +46,6 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
-const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
-
 export type SignUpEmailValues = {
   email: string
 }
@@ -60,6 +56,11 @@ export const CreateEmailPage = () => {
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
+  const audiusQueryContext = useAudiusQueryContext()
+  const EmailSchema = useMemo(
+    () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -71,7 +72,8 @@ export const CreateEmailPage = () => {
     handleErrorSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: resetSignOn,
-    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial,
+    page: 'create-email'
   })
 
   const handleCompleteSocialMediaLogin = useCallback(
@@ -100,7 +102,7 @@ export const CreateEmailPage = () => {
 
   const signInLink = (
     <TextLink variant='visible' asChild>
-      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+      <Link to={SIGN_IN_PAGE}>{createEmailPageMessages.signIn}</Link>
     </TextLink>
   )
 
@@ -131,11 +133,11 @@ export const CreateEmailPage = () => {
             )}
           </Box>
           <Heading
-            heading={messages.title}
+            heading={createEmailPageMessages.title}
             description={
               <>
-                {messages.subHeader.line1}
-                <br /> {messages.subHeader.line2}
+                {createEmailPageMessages.subHeader.line1}
+                <br /> {createEmailPageMessages.subHeader.line2}
               </>
             }
             tag='h1'
@@ -145,7 +147,7 @@ export const CreateEmailPage = () => {
             <NewEmailField />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
-                {messages.socialsDividerText}
+                {createEmailPageMessages.socialsDividerText}
               </Text>
             </Divider>
             <SocialMediaLoginOptions
@@ -162,7 +164,7 @@ export const CreateEmailPage = () => {
               iconRight={IconArrowRight}
               isLoading={isSubmitting}
             >
-              {messages.signUp}
+              {createEmailPageMessages.signUp}
             </Button>
 
             <Text
@@ -170,15 +172,17 @@ export const CreateEmailPage = () => {
               size={isMobile ? 'm' : 'l'}
               textAlign={isMobile ? 'center' : undefined}
             >
-              {messages.haveAccount} {signInLink}
+              {createEmailPageMessages.haveAccount} {signInLink}
             </Text>
           </Flex>
           {!isMobile && window.ethereum ? (
             <Flex direction='column' gap='s'>
               <SignUpWithMetaMaskButton />
               <Text size='s' variant='body'>
-                {messages.metaMaskNotRecommended}{' '}
-                <TextLink variant='visible'>{messages.learnMore}</TextLink>
+                {createEmailPageMessages.metaMaskNotRecommended}{' '}
+                <TextLink variant='visible'>
+                  {createEmailPageMessages.learnMore}
+                </TextLink>
               </Text>
             </Flex>
           ) : null}

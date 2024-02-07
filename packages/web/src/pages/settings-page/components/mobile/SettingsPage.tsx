@@ -1,23 +1,27 @@
 import { useContext, useEffect, FC } from 'react'
 
 import {
-  ID,
   SquareSizes,
-  ProfilePictureSizes,
   Theme,
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
-  EmailFrequency,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
+import {
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications,
-  TikTokProfile
-} from '@audius/common'
-import { SegmentedControl } from '@audius/stems'
+  EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
+  TikTokProfile,
+  Notifications,
+  PushNotifications
+} from '@audius/common/store'
+import {
+  SegmentedControl,
+  IconAudiusLogoHorizontalColor
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/settingsPageLogo.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -190,9 +194,7 @@ const SettingsPage = (props: SettingsPageProps) => {
     >
       <div className={styles.bodyContainer}>
         <div className={styles.logo}>
-          <img
-            src={horizontalLogo}
-            alt='Audius Logo'
+          <IconAudiusLogoHorizontalColor
             className={cn({
               [styles.whiteTint]: isDarkMode() || theme === Theme.MATRIX
             })}

@@ -1,15 +1,16 @@
 import { KeyboardEventHandler, useState } from 'react'
 
+import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common/assets'
 import {
-  imageProfilePicEmpty as profilePicEmpty,
-  MAX_DISPLAY_NAME_LENGTH,
   MAX_HANDLE_LENGTH,
-  getErrorMessage
-} from '@audius/common'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+  MAX_DISPLAY_NAME_LENGTH
+} from '@audius/common/services'
+import { getErrorMessage } from '@audius/common/utils'
+import { IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops'
+import { Spring } from 'react-spring/renderprops.cjs'
 import TwitterLogin from 'react-twitter-auth'
 
 import Input from 'components/data-entry/Input'
@@ -268,7 +269,7 @@ const ProfileForm = (props: ProfileFormProps) => {
           shouldShowLoadingSpinner ? (
             <LoadingSpinner className={styles.spinner} />
           ) : (
-            <IconArrow />
+            <IconArrowRight />
           )
         }
         type={profileValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}

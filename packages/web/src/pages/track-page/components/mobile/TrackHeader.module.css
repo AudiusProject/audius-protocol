@@ -160,18 +160,6 @@
   align-items: center;
 }
 
-/* Tags */
-.tags {
-  width: 100%;
-  display: inline-flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.tag {
-  margin: 4px;
-}
-
 /* Loading */
 
 .loadingSkeleton,
