@@ -106,7 +106,6 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
-  const { ENVIRONMENT } = yield* getContext('env')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
