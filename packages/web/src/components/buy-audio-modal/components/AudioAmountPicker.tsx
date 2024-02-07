@@ -7,8 +7,13 @@ import {
   useState
 } from 'react'
 
-import { IconLogoCircle, RadioGroup, SelectablePill } from '@audius/harmony'
-import { TokenAmountInput, TokenAmountInputChangeHandler } from '@audius/stems'
+import {
+  IconLogoCircle,
+  TokenAmountInput,
+  TokenAmountInputChangeHandler,
+  RadioGroup,
+  SelectablePill
+} from '@audius/harmony'
 import { debounce } from 'lodash'
 
 import styles from './AudioAmountPicker.module.css'
@@ -144,8 +149,8 @@ export const AudioAmountPicker = ({
       </RadioGroup>
       {isCustomAmountInputVisible ? (
         <TokenAmountInput
-          inputRef={customAmountRef}
-          aria-label={messages.customAmount}
+          ref={customAmountRef}
+          label={messages.customAmount}
           placeholder={messages.placeholder}
           tokenLabel={messages.tokenLabel}
           value={customAmount}
