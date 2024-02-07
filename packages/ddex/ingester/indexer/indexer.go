@@ -71,16 +71,17 @@ func RunNewIndexer(ctx context.Context) {
 // processZIP unzips an "upload" into a "delivery" (or multiple deliveries if the ZIP file contains multiple folders with XML files).
 func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	// Decode the "upload" from Mongo
-	var changeDoc bson.M
+	var changeDoc struct {
+		FullDocument common.Upload `bson:"fullDocument"`
+	}
 	if err := changeStream.Decode(&changeDoc); err != nil {
 		log.Fatal(err)
 	}
-	fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
+	i.logger.Info("Indexer: Processing new upload", "upload", changeDoc.FullDocument)
 
 	// Download ZIP file from S3
-	uploadETag := fullDocument["upload_etag"].(string)
-	remotePath := fullDocument["path"].(string)
+	uploadETag := changeDoc.FullDocument.UploadETag
+	remotePath := changeDoc.FullDocument.Path
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
