@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { IconMessage } from '@audius/harmony'
+import { IconMessage, RadioGroup } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,
@@ -10,8 +10,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalTitle,
-  RadioButtonGroup
+  ModalTitle
 } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -106,7 +105,7 @@ export const InboxSettingsModal = () => {
         <ModalTitle title={messages.title} icon={<IconMessage />} />
       </ModalHeader>
       <ModalContent className={styles.modalContent}>
-        <RadioButtonGroup
+        <RadioGroup
           name={'inbox-settings'}
           value={localPermission}
           onChange={handleChange}
@@ -119,7 +118,7 @@ export const InboxSettingsModal = () => {
               value={opt.value}
             />
           ))}
-        </RadioButtonGroup>
+        </RadioGroup>
       </ModalContent>
       <ModalFooter>
         <Button

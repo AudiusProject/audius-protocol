@@ -1,12 +1,30 @@
+import { ComponentProps } from 'react'
+
 import { CSSObject, useTheme } from '@emotion/react'
 
 import { HiddenInput } from 'components/common/HiddenInput'
+import { useRadioGroup } from 'components/radio-group/useRadioGroup'
 import { Text } from 'components/text'
 
 import type { SelectablePillProps } from './types'
 
+const RadioInput = (props: ComponentProps<'input'>) => {
+  const { name, checked, onChange } = useRadioGroup(props)
+
+  return (
+    <HiddenInput {...props} name={name} checked={checked} onChange={onChange} />
+  )
+}
+
 export const SelectablePill = (props: SelectablePillProps) => {
-  const { isSelected, size = 'small', _isHovered, icon: Icon, ...other } = props
+  const {
+    isSelected,
+    size = 'small',
+    _isHovered,
+    icon: Icon,
+    className,
+    ...other
+  } = props
 
   const { disabled, type } = other
 
@@ -57,6 +75,11 @@ export const SelectablePill = (props: SelectablePillProps) => {
       paddingInline: theme.spacing.l,
       boxShadow: theme.shadows.near
     }),
+    ...(size === 'oversized' && {
+      height: spacing.unit12,
+      padding: spacing.m,
+      borderWidth: 2
+    }),
     ...(disabled && { opacity: 0.45 }),
     ...(_isHovered && hoverCss),
     ...(isSelected && activeCss),
@@ -76,11 +99,20 @@ export const SelectablePill = (props: SelectablePillProps) => {
     }
   }
 
+  const rootProps = {
+    css: rootCss,
+    className
+  }
+
   const pillContent = (
     <>
       {Icon ? <Icon css={iconCss} /> : null}
       {'label' in other ? (
-        <Text variant='body' tag='span'>
+        <Text
+          variant={size === 'oversized' ? 'heading' : 'body'}
+          tag='span'
+          css={size === 'oversized' && { textTransform: 'uppercase' }}
+        >
           {other.label}
         </Text>
       ) : null}
@@ -88,17 +120,21 @@ export const SelectablePill = (props: SelectablePillProps) => {
   )
 
   switch (type) {
-    case 'checkbox':
-    case 'radio': {
+    case 'checkbox': {
       const { checked, ...rest } = other
 
       return (
-        <label css={rootCss}>
+        <label {...rootProps}>
           {pillContent}
-          <HiddenInput
-            {...rest}
-            checked={type === 'checkbox' ? checked ?? isSelected : undefined}
-          />
+          <HiddenInput {...rest} checked={checked ?? isSelected} />
+        </label>
+      )
+    }
+    case 'radio': {
+      return (
+        <label {...rootProps}>
+          {pillContent}
+          <RadioInput {...other} />
         </label>
       )
     }
@@ -107,7 +143,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     case 'submit':
     default: {
       return (
-        <button css={rootCss} {...other}>
+        <button {...rootProps} {...other}>
           {pillContent}
         </button>
       )
