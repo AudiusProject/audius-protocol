@@ -282,6 +282,7 @@ class PurchaseMetadataDict(TypedDict):
     type: PurchaseType
     id: int
     purchaser_user_id: Optional[int]
+    access: PurchaseAccessType
 
 
 def get_purchase_metadata_from_memo(
@@ -294,12 +295,22 @@ def get_purchase_metadata_from_memo(
             if len(content_metadata) == 3:
                 type_str, id_str, blocknumber_str = content_metadata
                 purchaser_user_id_str = None
+                access_str = "stream"  # default to stream access
             elif len(content_metadata) == 4:
                 (
                     type_str,
                     id_str,
                     blocknumber_str,
                     purchaser_user_id_str,
+                ) = content_metadata
+                access_str = "stream"  # default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
                 ) = content_metadata
             else:
                 logger.debug(
@@ -313,10 +324,11 @@ def get_purchase_metadata_from_memo(
             purchaser_user_id = (
                 int(purchaser_user_id_str) if purchaser_user_id_str else None
             )
+            access = PurchaseAccessType[access_str.lower()]
 
             # TODO: Wait for blocknumber to be indexed by ACDC
             logger.debug(
-                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}"
+                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}, access={access}"
             )
 
             price = None
@@ -334,6 +346,7 @@ def get_purchase_metadata_from_memo(
                 result = (
                     query.filter(
                         TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
                     )
                     .order_by(desc(TrackPriceHistory.block_timestamp))
                     .first()
@@ -352,6 +365,7 @@ def get_purchase_metadata_from_memo(
                     "price": price * USDC_PER_USD_CENT,
                     "splits": splits,
                     "purchaser_user_id": purchaser_user_id,
+                    "access": access,
                 }
                 logger.info(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
@@ -416,7 +430,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
-        access=PurchaseAccessType.stream,
+        access=purchase_metadata["access"],
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"

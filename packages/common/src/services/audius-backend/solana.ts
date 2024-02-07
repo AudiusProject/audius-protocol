@@ -23,6 +23,7 @@ import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
+import { PurchaseAccess } from '~/store'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
@@ -378,6 +379,7 @@ export type PurchaseContentArgs = {
   type: 'track'
   splits: Record<string, number | BN>
   purchaserUserId: ID
+  purchaseAccess: PurchaseAccess
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
@@ -397,6 +399,7 @@ export type PurchaseContentWithPaymentRouterArgs = {
   recentBlockhash?: string
   purchaserUserId: ID
   wallet: Keypair
+  purchaseAccess: PurchaseAccess
 }
 
 export const purchaseContentWithPaymentRouter = async (
@@ -408,7 +411,8 @@ export const purchaseContentWithPaymentRouter = async (
     extraAmount = 0,
     purchaserUserId,
     splits,
-    wallet
+    wallet,
+    purchaseAccess
   }: PurchaseContentWithPaymentRouterArgs
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
@@ -421,7 +425,8 @@ export const purchaseContentWithPaymentRouter = async (
     splits,
     purchaserUserId,
     senderKeypair: wallet,
-    skipSendAndReturnTransaction: true
+    skipSendAndReturnTransaction: true,
+    purchaseAccess
   })
   return tx
 }

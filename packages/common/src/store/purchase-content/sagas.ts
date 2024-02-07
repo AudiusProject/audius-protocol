@@ -64,7 +64,12 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
+import {
+  ContentType,
+  PurchaseAccess,
+  PurchaseContentError,
+  PurchaseErrorCode
+} from './types'
 import { getBalanceNeeded } from './utils'
 
 const { getUserId, getAccountUser } = accountSelectors
@@ -94,6 +99,10 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const trackInfo = yield* select(getTrack, { id: contentId })
   const purchaseConditions =
     trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  const purchaseAccess =
+    trackInfo?.is_download_gated && !trackInfo?.is_stream_gated
+      ? PurchaseAccess.DOWNLOAD
+      : PurchaseAccess.STREAM
   if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
     throw new Error('Content is missing purchase conditions')
   }
@@ -105,7 +114,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const title = trackInfo.title
   const price = purchaseConditions.usdc_purchase.price
 
-  return { price, title, artistInfo, trackInfo }
+  return { price, title, artistInfo, purchaseAccess, trackInfo }
 }
 
 const getUserPurchaseMetadata = ({
@@ -261,6 +270,7 @@ type PurchaseWithCoinflowArgs = {
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
+  purchaseAccess: PurchaseAccess
 }
 
 function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
@@ -270,7 +280,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
     splits,
     contentId,
     purchaserUserId,
-    price
+    price,
+    purchaseAccess
   } = args
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayerAddress = yield* select(getFeePayer)
@@ -292,7 +303,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
       blocknumber,
       recentBlockhash,
       purchaserUserId,
-      wallet: rootAccount
+      wallet: rootAccount,
+      purchaseAccess
     }
   )
 
@@ -399,10 +411,13 @@ function* doStartPurchaseContentFlow({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
-  const { price, title, artistInfo } = yield* call(getContentInfo, {
-    contentId,
-    contentType
-  })
+  const { price, title, artistInfo, purchaseAccess } = yield* call(
+    getContentInfo,
+    {
+      contentId,
+      contentType
+    }
+  )
 
   const analyticsInfo = {
     price: price / 100,
@@ -471,7 +486,8 @@ function* doStartPurchaseContentFlow({
         extraAmount: extraAmountBN,
         splits,
         type: 'track',
-        purchaserUserId
+        purchaserUserId,
+        purchaseAccess
       })
     } else {
       // We need to acquire USDC before the purchase can continue
@@ -494,7 +510,8 @@ function* doStartPurchaseContentFlow({
             contentId,
             contentType,
             purchaserUserId,
-            price: purchaseAmount
+            price: purchaseAmount,
+            purchaseAccess
           })
           break
         case PurchaseVendor.STRIPE:
@@ -506,7 +523,8 @@ function* doStartPurchaseContentFlow({
             extraAmount: extraAmountBN,
             splits,
             type: 'track',
-            purchaserUserId
+            purchaserUserId,
+            purchaseAccess
           })
           break
       }

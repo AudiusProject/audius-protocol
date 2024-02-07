@@ -21,6 +21,11 @@ export enum PurchaseContentPage {
   TRANSFER = 'crypto-transfer'
 }
 
+export enum PurchaseAccess {
+  STREAM = 'stream',
+  DOWNLOAD = 'download'
+}
+
 export enum PurchaseErrorCode {
   Canceled = 'Canceled',
   InsufficientBalance = 'InsufficientBalance',
