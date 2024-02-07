@@ -49,7 +49,7 @@ export const PurchaseSummaryTable = ({
     })
   }
 
-  const downloadCount = (stemsPurchaseCount || 0) + (downloadPurchaseCount || 0)
+  const downloadCount = (stemsPurchaseCount ?? 0) + (downloadPurchaseCount ?? 0)
   if (downloadCount > 0) {
     items.push({
       id: 'premiumTrackDownload',
