@@ -1,26 +1,26 @@
 when: << pipeline.parameters.run-ddex-stage-workflow >>
 jobs:
   - push-docker-image:
-    name: push-ddex-web
-    context: [Vercel, dockerhub]
-    service: ddex-web
-    filters:
-      branches:
-        only: main
+      name: push-ddex-web
+      context: [Vercel, dockerhub]
+      service: ddex-web
+      filters:
+        branches:
+          only: main
   - push-docker-image:
-    name: push-ddex-ingester
-    context: [Vercel, dockerhub]
-    service: ddex-ingester
-    filters:
-      branches:
-        only: main
+      name: push-ddex-ingester
+      context: [Vercel, dockerhub]
+      service: ddex-ingester
+      filters:
+        branches:
+          only: main
   - push-docker-image:
-    name: push-ddex-publisher
-    context: [Vercel, dockerhub]
-    service: ddex-publisher
-    filters:
-      branches:
-        only: main
+      name: push-ddex-publisher
+      context: [Vercel, dockerhub]
+      service: ddex-publisher
+      filters:
+        branches:
+          only: main
   - deploy-stage-nodes:
       name: deploy-stage-ddex
       requires:
