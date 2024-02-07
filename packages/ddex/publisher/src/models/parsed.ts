@@ -7,6 +7,7 @@ const parsedSchema = new mongoose.Schema({
   delivery_id: String,
   entity: String,
   publish_date: Date,
+  created_at: Date,
 })
 
 const Parsed = mongoose.model('Parsed', parsedSchema, 'parsed')

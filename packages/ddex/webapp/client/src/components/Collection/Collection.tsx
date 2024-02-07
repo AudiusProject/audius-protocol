@@ -8,23 +8,136 @@ import styles from './Collection.module.css'
 
 type CollectionT = 'uploads' | 'indexed' | 'parsed' | 'published'
 
-const Table = ({ data }: { data: any }) => {
-  return (
-    <table className={styles.styledTable}>
-      <thead>
-        <tr>
-          <th>Items</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.items.map((item: any) => (
-          <tr key={item._id}>
-            <td>{JSON.stringify(item)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
+const Table = ({
+  collection,
+  data
+}: {
+  collection: CollectionT
+  data: any
+}) => {
+  const statusStyle = (deliveryStatus: string) => {
+    if (deliveryStatus === 'published') {
+      return styles.statusSuccess
+    } else if (
+      deliveryStatus === 'validating' ||
+      deliveryStatus === 'awaiting_publishing'
+    ) {
+      return styles.statusPending
+    } else if (deliveryStatus === 'error' || deliveryStatus === 'rejected') {
+      return styles.statusFailed
+    }
+  }
+
+  switch (collection) {
+    case 'uploads':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Path</th>
+              <th>E-tag</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.path}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'indexed':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery ID</th>
+              <th>Delivery Status</th>
+              <th>XML Filepath</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.delivery_id}</td>
+                <td className={statusStyle(item.delivery_status)}>
+                  {item.delivery_status}
+                </td>
+                <td>{item.xml_file_path}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'parsed':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery ID</th>
+              <th>Entity</th>
+              <th>Publish Date</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.delivery_id}</td>
+                <td>{item.entity}</td>
+                <td>{item.publish_date}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'published':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery ID</th>
+              <th>Entity</th>
+              <th>Publish Date</th>
+              <th>Entity ID</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.delivery_id}</td>
+                <td>{item.entity}</td>
+                <td>{item.publish_date}</td>
+                <td>{item.entity_id}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+  }
 }
 
 export const Collection = ({ collection }: { collection: CollectionT }) => {
@@ -80,14 +193,14 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
-      setNextId(data.items[0].id)
+      setNextId(data.items[data.items.length - 1]._id)
       setPrevId(undefined)
     }
   }
 
   const handlePrev = () => {
     if (data?.hasMorePrev) {
-      setPrevId(data.items[data.items.length - 1].id)
+      setPrevId(data.items[0]._id)
       setNextId(undefined)
     }
   }
@@ -103,7 +216,7 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
-          {data && <Table data={data} />}
+          {data && <Table collection={collection} data={data} />}
 
           <Flex justifyContent='space-between'>
             <Button

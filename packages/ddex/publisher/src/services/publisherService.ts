@@ -24,6 +24,7 @@ export const publishReleases = async () => {
         const publishedData = {
           ...doc.toObject(),
           entity_id: 'todo',
+          created_at: new Date(),
         }
         const publishedDoc = new Published(publishedData)
         await publishedDoc.save({ session })

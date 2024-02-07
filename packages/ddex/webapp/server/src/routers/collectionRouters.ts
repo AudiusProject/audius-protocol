@@ -6,8 +6,8 @@ import mongoose from 'mongoose'
 import { Sort } from 'mongodb'
 
 const getCollectionInput = z.object({
-  nextId: z.number().optional(),
-  prevId: z.number().optional(),
+  nextId: z.string().optional(),
+  prevId: z.string().optional(),
   limit: z.string().default('10'),
 })
 
@@ -28,11 +28,11 @@ const createCollectionRouter = (collection: string) => {
         let flipResults = false
 
         if (nextId) {
-          query = { _id: { $gt: new mongoose.Types.ObjectId(nextId) } } // IDs greater than nextId
+          query = { _id: { $lt: new mongoose.Types.ObjectId(nextId) } } // IDs less than nextId
+        } else if (prevId) {
+          query = { _id: { $gt: new mongoose.Types.ObjectId(prevId) } } // IDs greater than prevId
           sort = { _id: 1 } // Ascending
           flipResults = true
-        } else if (prevId) {
-          query = { _id: { $lt: new mongoose.Types.ObjectId(prevId) } } // IDs less than prevId
         }
 
         const items = await mongoose.connection.db
@@ -55,30 +55,27 @@ const createCollectionRouter = (collection: string) => {
         }
 
         if (flipResults) {
-          items.reverse() // Reverse items to desc order when nextId is used
+          items.reverse() // Reverse items to desc order when prevId is used
         }
 
         const firstItemId = items.length > 0 ? items[0]._id : null
         const lastItemId = items.length > 0 ? items[items.length - 1]._id : null
 
-        if (prevId) {
-          // Check for next ids
-          if (lastItemId) {
-            const countAfter = await mongoose.connection.db
-              .collection(collection)
-              .find({ _id: { $gt: lastItemId } })
-              .count()
-            hasMoreNext = countAfter > 0
-          }
-        } else {
-          // Check for prev ids
-          if (firstItemId) {
-            const countBefore = await mongoose.connection.db
-              .collection(collection)
-              .find({ _id: { $lt: firstItemId } })
-              .count()
-            hasMorePrev = countBefore > 0
-          }
+        // Check for next ids
+        if (lastItemId) {
+          const countAfter = await mongoose.connection.db
+            .collection(collection)
+            .find({ _id: { $lt: lastItemId } })
+            .count()
+          hasMoreNext = countAfter > 0
+        }
+        // Check for prev ids
+        if (firstItemId) {
+          const countBefore = await mongoose.connection.db
+            .collection(collection)
+            .find({ _id: { $gt: firstItemId } })
+            .count()
+          hasMorePrev = countBefore > 0
         }
 
         return { items, hasMoreNext, hasMorePrev }

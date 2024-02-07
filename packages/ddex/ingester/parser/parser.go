@@ -63,6 +63,7 @@ func parseIndexed(client *mongo.Client, indexed common.Indexed, ctx context.Cont
 			"delivery_id":  indexed.DeliveryID,
 			"entity":       "track",
 			"publish_date": time.Now(),
+			"created_at":   time.Now(),
 		}
 		result, err := parsedColl.InsertOne(ctx, parsedDoc)
 		if err != nil {

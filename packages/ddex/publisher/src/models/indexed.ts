@@ -8,8 +8,9 @@ const indexedSchema = new mongoose.Schema({
   delivery_status: String,
   xml_file_path: String,
   xml_content: Buffer,
+  created_at: Date,
 })
 
-const Indexed = mongoose.model('Indexed', indexedSchema, 'Indexed')
+const Indexed = mongoose.model('Indexed', indexedSchema, 'indexed')
 
 export default Indexed

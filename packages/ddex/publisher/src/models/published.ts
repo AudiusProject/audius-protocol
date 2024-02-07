@@ -8,6 +8,7 @@ const publishedSchema = new mongoose.Schema({
   entity: String,
   publish_date: Date,
   entity_id: String,
+  created_at: Date,
 })
 
 const Published = mongoose.model('Published', publishedSchema, 'published')

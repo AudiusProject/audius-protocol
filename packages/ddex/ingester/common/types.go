@@ -10,6 +10,7 @@ type Upload struct {
 	ID         primitive.ObjectID `bson:"_id"`
 	UploadETag string             `bson:"upload_etag"`
 	Path       string             `bson:"path"`
+	CreatedAt  time.Time          `bson:"created_at"`
 }
 
 type Indexed struct {
@@ -19,6 +20,7 @@ type Indexed struct {
 	DeliveryStatus string             `bson:"delivery_status"`
 	XmlFilePath    string             `bson:"xml_file_path"`
 	XmlContent     primitive.Binary   `bson:"xml_content"`
+	CreatedAt      time.Time          `bson:"created_at"`
 }
 
 type Parsed struct {
@@ -27,6 +29,7 @@ type Parsed struct {
 	DeliveryID  string             `bson:"delivery_id"`
 	Entity      string             `bson:"entity"`
 	PublishDate time.Time          `bson:"publish_date"`
+	CreatedAt   time.Time          `bson:"created_at"`
 }
 
 type Published struct {
@@ -36,4 +39,5 @@ type Published struct {
 	Entity      string             `bson:"entity"`
 	PublishDate time.Time          `bson:"publish_date"`
 	EntityID    string             `bson:"entity_id"`
+	CreatedAt   time.Time          `bson:"created_at"`
 }

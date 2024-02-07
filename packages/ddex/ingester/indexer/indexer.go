@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -176,6 +177,7 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 		"delivery_status": constants.DeliveryStatusValidating,
 		"xml_file_path":   xmlRelativePath,
 		"xml_content":     primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"created_at":      time.Now(),
 	}
 	if _, err := i.indexedColl.InsertOne(i.ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)

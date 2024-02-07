@@ -22,11 +22,11 @@ export const getCollection = (collection: string) => {
       let flipResults = false
 
       if (nextId) {
-        query = { _id: { $gt: new mongoose.Types.ObjectId(nextId as string) } } // IDs greater than nextId
+        query = { _id: { $lt: new mongoose.Types.ObjectId(nextId as string) } } // IDs less than nextId
+      } else if (prevId) {
+        query = { _id: { $gt: new mongoose.Types.ObjectId(prevId as string) } } // IDs greater than prevId
         sort = { _id: 1 } // Ascending
         flipResults = true
-      } else if (prevId) {
-        query = { _id: { $lt: new mongoose.Types.ObjectId(prevId as string) } } // IDs less than prevId
       }
 
       const items = await mongoose.connection.db
@@ -37,7 +37,7 @@ export const getCollection = (collection: string) => {
         .toArray()
 
       if (flipResults) {
-        items.reverse() // Reverse items to desc order when nextId is used
+        items.reverse() // Reverse items to desc order when prevId is used
       }
 
       res.json(items)
