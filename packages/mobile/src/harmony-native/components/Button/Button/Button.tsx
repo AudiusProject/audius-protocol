@@ -271,7 +271,6 @@ export const Button = (props: ButtonProps) => {
   const loaderSize = size === 'small' ? 16 : size === 'large' ? 24 : 20
 
   const [isPressing, setIsPressing] = useState(false)
-  console.log({isPressing})
 
   const handlePressIn = () => {
     setIsPressing(true)
