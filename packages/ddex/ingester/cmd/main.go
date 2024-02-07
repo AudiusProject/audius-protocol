@@ -8,6 +8,7 @@ import (
 	"ingester/indexer"
 	"ingester/parser"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,6 +31,9 @@ func main() {
 		cancel()
 	}()
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+	slog.SetDefault(logger)
+
 	err := godotenv.Load("../.env")
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -43,7 +47,7 @@ func main() {
 	case "crawler":
 		go crawler.Run(ctx)
 	case "indexer":
-		go indexer.Run(ctx)
+		go indexer.RunNewIndexer(ctx)
 	case "parser":
 		go parser.Run(ctx)
 	default:

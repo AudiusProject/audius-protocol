@@ -14,7 +14,7 @@ import { trpc } from 'utils/trpc'
 
 import styles from './Upload.module.css'
 
-const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
+const MAX_SIZE = 500 * 1024 * 1024 // 500 MB
 
 const validZipFile = (file: File) => {
   if (

@@ -17,7 +17,7 @@ func Run(ctx context.Context) {
 	defer mongoClient.Disconnect(ctx)
 
 	indexedColl := mongoClient.Database("ddex").Collection("indexed")
-	pipeline := mongo.Pipeline{bson.D{{"$match", bson.D{{"operationType", "insert"}}}}}
+	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
 	changeStream, err := indexedColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
@@ -58,9 +58,10 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context
 
 		// 2. Write each release in "delivery_xml" in the indexed doc as a bson doc in the 'parsed' collection
 		parsedDoc := bson.M{
-			"delivery_etag": fullDocument["delivery_etag"],
-			"entity":        "track",
-			"publish_date":  time.Now(),
+			"upload_etag":  fullDocument["upload_etag"],
+			"delivery_id":  fullDocument["delivery_id"],
+			"entity":       "track",
+			"publish_date": time.Now(),
 		}
 		result, err := parsedColl.InsertOne(ctx, parsedDoc)
 		if err != nil {

@@ -46,7 +46,7 @@ export const EnvVarsProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Stage and prod nodes fetch env vars exposed in audius-docker-compose
-    if (!envVars.env) {
+    if (!envVars?.ddexKey) {
       fetchEnvVars()
     }
   })

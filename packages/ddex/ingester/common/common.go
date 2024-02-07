@@ -27,7 +27,7 @@ func InitMongoClient(ctx context.Context) *mongo.Client {
 	return client
 }
 
-func InitS3Client() *s3.S3 {
+func InitS3Client() (*s3.S3, *session.Session) {
 	awsRegion := MustGetenv("AWS_REGION")
 	awsKey := MustGetenv("AWS_ACCESS_KEY_ID")
 	awsSecret := MustGetenv("AWS_SECRET_ACCESS_KEY")
@@ -39,7 +39,7 @@ func InitS3Client() *s3.S3 {
 		panic(err)
 	}
 	log.Println("Connected to s3")
-	return s3.New(sess)
+	return s3.New(sess), sess
 }
 
 func MustGetenv(key string) string {
