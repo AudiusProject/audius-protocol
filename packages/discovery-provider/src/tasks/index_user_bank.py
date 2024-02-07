@@ -25,7 +25,11 @@ from src.models.users.audio_transactions_history import (
     TransactionMethod,
     TransactionType,
 )
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -412,6 +416,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=PurchaseAccessType.stream,
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"

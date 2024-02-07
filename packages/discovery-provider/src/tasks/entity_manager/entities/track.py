@@ -18,6 +18,7 @@ from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.usdc_purchase import PurchaseAccessType
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
@@ -95,6 +96,7 @@ def update_track_price_history(
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
+            new_record.access = PurchaseAccessType.stream
             if "price" in usdc_purchase:
                 price = usdc_purchase["price"]
                 if isinstance(price, int):
