@@ -58,8 +58,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     backgroundColor: palette.neutralLight7,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: offset,
-    paddingRight: 0
+    padding: offset
   },
   tab: {
     paddingVertical: spacing(2),
@@ -224,12 +223,14 @@ export const SegmentedControl = <Value,>(
                 {option.text}
               </Text>
             </Pressable>
-            <View
-              style={[
-                styles.separator,
-                shouldHideSeparator && styles.hideSeparator
-              ]}
-            />
+            {index !== options.length - 1 ? (
+              <View
+                style={[
+                  styles.separator,
+                  shouldHideSeparator && styles.hideSeparator
+                ]}
+              />
+            ) : null}
           </Fragment>
         )
       })}

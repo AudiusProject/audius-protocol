@@ -125,17 +125,19 @@ export const SegmentedControl = <T extends string>(
               />
               {option.text}
             </label>
-            <div
-              className={cn(styles.separator, {
-                [styles.invisible]:
-                  // Hide separator right of the selected option
-                  selectedOption === option.key ||
-                  // Hide separator right of the last option
-                  idx === props.options.length - 1 ||
-                  // Hide separator right of an option if the next one is selected
-                  selectedOption === props.options[idx + 1].key
-              })}
-            />
+            {idx !== props.options.length - 1 ? (
+              <div
+                className={cn(styles.separator, {
+                  [styles.invisible]:
+                    // Hide separator right of the selected option
+                    selectedOption === option.key ||
+                    // Hide separator right of the last option
+                    idx === props.options.length - 1 ||
+                    // Hide separator right of an option if the next one is selected
+                    selectedOption === props.options[idx + 1].key
+                })}
+              />
+            ) : null}
           </Fragment>
         )
       })}
