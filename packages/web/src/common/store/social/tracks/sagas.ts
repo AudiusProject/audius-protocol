@@ -658,7 +658,9 @@ function* downloadTrackV1Helper({
 
     const trackId = track.track_id
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+    const nftAccessSignature = original
+      ? nftAccessSignatureMap[trackId]?.original ?? null
+      : nftAccessSignatureMap[trackId]?.mp3 ?? null
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
       nftAccessSignature
@@ -769,7 +771,9 @@ function* downloadTracks({
     let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
+    const nftAccessSignature = original
+      ? nftAccessSignatureMap[parentTrackId]?.original ?? null
+      : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
       nftAccessSignature
