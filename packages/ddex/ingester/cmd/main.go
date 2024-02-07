@@ -8,6 +8,7 @@ import (
 	"ingester/indexer"
 	"ingester/parser"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,6 +30,9 @@ func main() {
 		log.Printf("Received signal: %v, shutting down...\n", sig)
 		cancel()
 	}()
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+	slog.SetDefault(logger)
 
 	err := godotenv.Load("../.env")
 	if err != nil {
