@@ -21,8 +21,8 @@ export enum SpecialAccessType {
 
 export type GateKeeperField = 'accessAndSale' | 'stemsAndDownloads'
 export type GateKeeper = {
-  access: GateKeeperField
-  downloadable: GateKeeperField
+  access: GateKeeperField // who last changed the access gates
+  downloadable: GateKeeperField // who last changed the downloadability
 }
 
 export const STREAM_AVAILABILITY_TYPE = 'stream_availability_type'
