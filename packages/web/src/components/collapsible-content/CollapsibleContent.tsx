@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react'
 
 import {
+  PlainButton,
   IconCaretDown as IconCaretDownLine,
-  IconCaretUp as IconCaretUpLine
+  IconCaretUp as IconCaretUpLine,
+  useTheme
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
@@ -33,6 +34,7 @@ export const CollapsibleContent = ({
   children
 }: CollapsibleContentProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!showByDefault)
+  const { spacing } = useTheme()
 
   const handleToggle = useCallback(() => {
     setIsCollapsed((isCollapsed) => !isCollapsed)
@@ -52,17 +54,21 @@ export const CollapsibleContent = ({
       >
         <div ref={ref}>{children}</div>
       </div>
-      <Button
+      <PlainButton
         className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
-        iconClassName={styles.toggleCollapsedButtonIcon}
+        css={{
+          paddingTop: spacing.l,
+          paddingBottom: spacing.l,
+          margin: '0 auto'
+        }}
         aria-controls={id}
         aria-expanded={!isCollapsed}
-        type={ButtonType.TEXT}
-        size={ButtonSize.SMALL}
-        text={isCollapsed ? showText : hideText}
-        rightIcon={isCollapsed ? <IconCaretDownLine /> : <IconCaretUpLine />}
+        iconRight={isCollapsed ? IconCaretDownLine : IconCaretUpLine}
         onClick={handleToggle}
-      />
+        variant='subdued'
+      >
+        {isCollapsed ? showText : hideText}
+      </PlainButton>
     </div>
   )
 }
