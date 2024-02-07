@@ -81,7 +81,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
       boxShadow: theme.shadows.near
     }),
     ...(size === 'oversized' && {
-      height: 49,
+      height: spacing.unit12,
       padding: spacing.m,
       borderWidth: 2
     }),

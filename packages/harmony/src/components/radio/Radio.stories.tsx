@@ -8,7 +8,7 @@ import { Radio } from './Radio'
 
 const meta: Meta<typeof Radio> = {
   component: Radio,
-  title: 'Components/Radio'
+  title: 'Components/Radio [beta]'
 }
 
 export default meta

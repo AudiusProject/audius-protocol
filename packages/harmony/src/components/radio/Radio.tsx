@@ -10,6 +10,7 @@ export type RadioProps = ComponentPropsWithoutRef<'input'> & {
 
 /**
  * Radio buttons allow a user to select a single option from a list of predefined options.
+ * TODO: Add label + icon support
  */
 export const Radio = (props: RadioProps) => {
   const {

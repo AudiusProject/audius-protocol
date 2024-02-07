@@ -95,7 +95,3 @@ export const PillAsInput: Story = {
     </Flex>
   )
 }
-
-export const Oversized: Story = {
-  render: (props) => <SelectablePill {...props} size='oversized' />
-}

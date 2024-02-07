@@ -10,6 +10,7 @@ type InternalProps = {
 }
 
 type BaseProps = {
+  // Note: oversized should only be used in specific circumstances. Use with caution.
   size?: 'small' | 'large' | 'oversized'
   isSelected?: boolean
   disabled?: boolean
