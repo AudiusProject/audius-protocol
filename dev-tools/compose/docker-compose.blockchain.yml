@@ -2,13 +2,7 @@ version: '3.9'
 
 services:
   poa-ganache:
-    build:
-      context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    image: audius/acdc-ganache:latest
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
@@ -57,12 +51,7 @@ services:
   # eth-contracts
 
   eth-ganache:
-    build:
-      context: ${PROJECT_ROOT}/eth-contracts
-      args:
-        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
-        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-        antiAbuseOracleAddresses: '${AAO_WALLET_ADDRESSES}'
+    image: audius/eth-ganache:latest
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
