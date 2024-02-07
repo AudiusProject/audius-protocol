@@ -1,16 +1,23 @@
 import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
-import { IconVerified, IconRecoveryEmail, IconSignOut } from '@audius/harmony'
-import { Modal, Button, ButtonType } from '@audius/stems'
-import cn from 'classnames'
+import {
+  Button,
+  IconVerified,
+  IconRecoveryEmail,
+  IconEmailAddress,
+  IconKey,
+  IconSignOut,
+  Flex,
+  Text,
+  IconComponent,
+  useTheme
+} from '@audius/harmony'
+import { Modal } from '@audius/stems'
 import { debounce } from 'lodash'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import GroupableList from 'components/groupable-list/GroupableList'
-import Grouping from 'components/groupable-list/Grouping'
-import Row from 'components/groupable-list/Row'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import SignOutPage from 'components/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -18,6 +25,7 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  CHANGE_EMAIL_SETTINGS_PAGE,
   CHANGE_PASSWORD_SETTINGS_PAGE
 } from 'utils/route'
 
@@ -26,19 +34,96 @@ import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
 
 const messages = {
-  recovery: `Store your recovery email safely.
-This email is the only way to recover your account if you forget your password.`,
-  verified: 'Get verified by linking a verified social account to Audius',
+  title: 'Account',
+  recoveryTitle: 'Resend Recovery Email',
+  recoveryDescription:
+    'Store your recovery email safely. This email is the only way to recover your account if you forget your password.',
+  recoveryButtonTitle: 'Resend Recovery Email',
+  recoveryEmailSent: 'Recovery Email Sent!',
+  recoveryEmailNotSent: 'Unable to send recovery email. Please try again!',
+  verifyTitle: 'Verify Your Account',
+  verifyDescription:
+    'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
+  verifyButtonTitle: 'Get Verified!',
+  verifyButtonTitleDisabled: `You're Verified!`,
+  emailTitle: 'Change Email',
+  emailDescription: 'Change the email you use to sign in and receive emails.',
+  emailButtonTitle: 'Change Email',
+  passwordTitle: 'Change Password',
+  passwordDescription: 'Change the password to your Audius account.',
+  passwordButtonTitle: 'Change Password',
+  signOutTitle: 'Sign Out',
+  signOutDescription: 'Sign out of your Audius Account.',
+  signOutButtonTitle: 'Sign Out',
+  deleteAccountTitle: 'Delete Account',
+  deleteAccountDescription: 'Delete your account. This cannot be undone',
+  deleteAccountButtonTitle: 'Delete Account',
+
   signOut:
     'Make sure you have your account recovery email stored somewhere safe before signing out!',
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
-  holdUp: 'HOLD UP!',
-  verify: 'Verification',
-  isVerified: 'You’re Verified!',
-  changePassword: 'Change Password',
-  changePasswordPrompt: 'Change your password',
-  changePasswordButton: 'Change'
+  holdUp: 'HOLD UP!'
+}
+
+type AccountSettingsItemProps = {
+  title: string
+  description: string
+  icon: IconComponent
+  buttonTitle: string
+  disabled?: boolean
+  onClick: () => void
+}
+
+const AccountSettingsItem = ({
+  title,
+  description,
+  icon: Icon,
+  buttonTitle,
+  disabled,
+  onClick
+}: AccountSettingsItemProps) => {
+  const { color } = useTheme()
+  return (
+    <Flex
+      direction='column'
+      ph='l'
+      pv='m'
+      gap='s'
+      backgroundColor='white'
+      w='100%'
+      css={{
+        borderTop: `1px solid ${color.border.default}`,
+        '&:last-child': {
+          borderBottom: `1px solid ${color.border.default}`
+        }
+      }}
+    >
+      <Flex alignItems='center' gap='s'>
+        <Icon color='default' width={16} height={16} />
+        <Text variant='title' strength='weak' size='s'>
+          {title}
+        </Text>
+      </Flex>
+      <Text
+        variant='body'
+        size='xs'
+        textAlign='start'
+        css={{ lineHeight: '166%' }}
+      >
+        {description}
+      </Text>
+      <Button
+        variant='secondary'
+        size='small'
+        fullWidth
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {buttonTitle}
+      </Button>
+    </Flex>
+  )
 }
 
 const AccountSettingsPage = ({
@@ -86,6 +171,10 @@ const AccountSettingsPage = ({
     goToRoute(CHANGE_PASSWORD_SETTINGS_PAGE)
   }, [goToRoute])
 
+  const goToChangeEmailSettingsPage = useCallback(() => {
+    goToRoute(CHANGE_EMAIL_SETTINGS_PAGE)
+  }, [goToRoute])
+
   return (
     <MobilePageContainer
       title={title}
@@ -103,80 +192,46 @@ const AccountSettingsPage = ({
             <div className={styles.handle}>{`@${handle}`}</div>
           </div>
         </div>
-        <GroupableList>
-          <Grouping>
-            <Row
-              prefix={<i className='emoji small key' />}
-              title='Recovery Email'
-              body={messages.recovery}
-            >
-              <Button
-                onClick={onClickRecover}
-                className={styles.resetButton}
-                type={ButtonType.COMMON_ALT}
-                text='Resend'
-                leftIcon={<IconRecoveryEmail color='accent' />}
-              />
-            </Row>
-          </Grouping>
-          <Grouping>
-            <Row
-              prefix={<i className='emoji small white-heavy-check-mark' />}
-              title='Get Verified'
-              body={messages.verified}
-            >
-              {isVerified ? (
-                <Button
-                  text={messages.isVerified}
-                  onClick={goToVerificationPage}
-                  type={ButtonType.COMMON_ALT}
-                  isDisabled={true}
-                  className={cn(styles.verificationBtn, styles.isVerified)}
-                  textClassName={styles.verifiedText}
-                  leftIcon={<IconVerified className={styles.verifiedIcon} />}
-                />
-              ) : (
-                <Button
-                  text={messages.verify}
-                  onClick={goToVerificationPage}
-                  type={ButtonType.COMMON_ALT}
-                  className={styles.verificationBtn}
-                  leftIcon={<IconVerified className={styles.verifiedIcon} />}
-                />
-              )}
-            </Row>
-          </Grouping>
-          <Grouping>
-            <Row
-              prefix={<i className='emoji small lock' />}
-              title={messages.changePassword}
-              body={messages.changePasswordPrompt}
-            >
-              <Button
-                text={messages.changePasswordButton}
-                onClick={goToChangePasswordSettingsPage}
-                type={ButtonType.COMMON_ALT}
-                className={styles.changePasswordButton}
-                leftIcon={<IconRecoveryEmail color='accent' />}
-              />
-            </Row>
-          </Grouping>
-          <Grouping>
-            <Row
-              prefix={<i className='emoji small octagonal-sign' />}
-              title='Sign Out'
-              body={messages.signOut}
-            >
-              <Button
-                className={styles.signOutButton}
-                type={ButtonType.COMMON_ALT}
-                text='Sign Out'
-                leftIcon={<IconSignOut />}
-                onClick={() => setShowModalSignOut(true)}
-              />
-            </Row>
-          </Grouping>
-        </GroupableList>
+        <AccountSettingsItem
+          icon={IconRecoveryEmail}
+          title={messages.recoveryTitle}
+          description={messages.recoveryDescription}
+          buttonTitle={messages.recoveryButtonTitle}
+          onClick={onClickRecover}
+        />
+        <AccountSettingsItem
+          icon={IconVerified}
+          title={messages.verifyTitle}
+          description={messages.verifyDescription}
+          buttonTitle={
+            !isVerified
+              ? messages.verifyButtonTitle
+              : messages.verifyButtonTitleDisabled
+          }
+          disabled={isVerified}
+          onClick={goToVerificationPage}
+        />
+        <AccountSettingsItem
+          icon={IconEmailAddress}
+          title={messages.emailTitle}
+          description={messages.emailDescription}
+          buttonTitle={messages.emailButtonTitle}
+          onClick={goToChangeEmailSettingsPage}
+        />
+        <AccountSettingsItem
+          icon={IconKey}
+          title={messages.passwordTitle}
+          description={messages.passwordDescription}
+          buttonTitle={messages.passwordButtonTitle}
+          onClick={goToChangePasswordSettingsPage}
+        />
+        <AccountSettingsItem
+          icon={IconSignOut}
+          title={messages.signOutTitle}
+          description={messages.signOutDescription}
+          buttonTitle={messages.signOutButtonTitle}
+          onClick={() => setShowModalSignOut(true)}
+        />
         <Modal
           showTitleHeader
           showDismissButton

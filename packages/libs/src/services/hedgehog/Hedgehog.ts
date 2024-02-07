@@ -58,41 +58,6 @@ export class Hedgehog {
       createKey
     )
 
-    // we override the login function here because getFn needs lookupKey, email, and otp
-    // for identity service.
-    hedgehog.login = async (email: string, password: string, otp?: string) => {
-      const lookupKey = await WalletManager.createAuthLookupKey(
-        email,
-        password,
-        createKey
-      )
-
-      // hedgehog property is called username so being consistent instead of calling it email
-      const data = await this.getFn({ lookupKey, username: email, otp })
-
-      if (data?.iv && data.cipherText) {
-        const { walletObj, entropy } =
-          await WalletManager.decryptCipherTextAndRetrieveWallet(
-            password,
-            data.iv,
-            data.cipherText,
-            createKey
-          )
-
-        // set wallet property on the class
-        hedgehog.wallet = walletObj
-
-        // set entropy in localStorage
-        await WalletManager.setEntropyInLocalStorage(
-          entropy,
-          hedgehog.localStorage
-        )
-        return walletObj
-      } else {
-        throw new Error('No account record for user')
-      }
-    }
-
     /**
      * Generate secure credentials to allow login
      */
@@ -115,6 +80,21 @@ export class Hedgehog {
       }
       const recoveryInfo = { login: btoa(entropy), host: currentHost }
       return recoveryInfo
+    }
+
+    // @ts-expect-error -- adding our own custom method to hedgehog
+    hedgehog.getLookupKey = async ({
+      username,
+      password
+    }: {
+      username: string
+      password: string
+    }) => {
+      return await WalletManager.createAuthLookupKey(
+        username,
+        password,
+        hedgehog.createKey
+      )
     }
 
     this.instance = hedgehog
