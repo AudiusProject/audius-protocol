@@ -83,7 +83,7 @@ class ConnectedSearchBar extends Component {
     if (value.startsWith('#')) {
       // perform tag search
       this.props.history.push({
-        hash: value.split('#')[1].replace(/\s+/g, ''),
+        hash: value.split('#')[1],
         pathname,
         state: {}
       })
