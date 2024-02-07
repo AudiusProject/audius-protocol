@@ -33,28 +33,48 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
   let data: any, error, isLoading
   switch (collection) {
     case 'uploads':
-      ;({ data, error, isLoading } = trpc.uploads.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
+      ;({ data, error, isLoading } = trpc.uploads.listCollection.useQuery(
+        {
+          nextId,
+          prevId
+        },
+        {
+          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
+        }
+      ))
       break
     case 'indexed':
-      ;({ data, error, isLoading } = trpc.indexed.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
+      ;({ data, error, isLoading } = trpc.indexed.listCollection.useQuery(
+        {
+          nextId,
+          prevId
+        },
+        {
+          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
+        }
+      ))
       break
     case 'parsed':
-      ;({ data, error, isLoading } = trpc.parsed.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
+      ;({ data, error, isLoading } = trpc.parsed.listCollection.useQuery(
+        {
+          nextId,
+          prevId
+        },
+        {
+          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
+        }
+      ))
       break
     case 'published':
-      ;({ data, error, isLoading } = trpc.published.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
+      ;({ data, error, isLoading } = trpc.published.listCollection.useQuery(
+        {
+          nextId,
+          prevId
+        },
+        {
+          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
+        }
+      ))
       break
   }
 

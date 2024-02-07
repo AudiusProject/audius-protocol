@@ -18,15 +18,15 @@ export const getCollection = (collection: string) => {
       }
 
       let query: Record<string, any> = {} // No pagination, fetch the first `limit` items
-      let sort: Sort = { _id: 1 } // Ascending
+      let sort: Sort = { _id: -1 } // Descending
       let flipResults = false
 
       if (nextId) {
         query = { _id: { $gt: new mongoose.Types.ObjectId(nextId as string) } } // IDs greater than nextId
+        sort = { _id: 1 } // Ascending
+        flipResults = true
       } else if (prevId) {
         query = { _id: { $lt: new mongoose.Types.ObjectId(prevId as string) } } // IDs less than prevId
-        sort = { _id: -1 } // Descending
-        flipResults = true
       }
 
       const items = await mongoose.connection.db
@@ -37,7 +37,7 @@ export const getCollection = (collection: string) => {
         .toArray()
 
       if (flipResults) {
-        items.reverse() // Reverse items to main correct asc order when prevId is used
+        items.reverse() // Reverse items to desc order when nextId is used
       }
 
       res.json(items)

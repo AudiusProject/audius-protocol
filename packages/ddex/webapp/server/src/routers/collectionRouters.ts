@@ -24,15 +24,15 @@ const createCollectionRouter = (collection: string) => {
         }
 
         let query: Record<string, any> = {} // No pagination, fetch the first `limit` items
-        let sort: Sort = { _id: 1 } // Ascending
+        let sort: Sort = { _id: -1 } // Descending
         let flipResults = false
 
         if (nextId) {
           query = { _id: { $gt: new mongoose.Types.ObjectId(nextId) } } // IDs greater than nextId
+          sort = { _id: 1 } // Ascending
+          flipResults = true
         } else if (prevId) {
           query = { _id: { $lt: new mongoose.Types.ObjectId(prevId) } } // IDs less than prevId
-          sort = { _id: -1 } // Descending
-          flipResults = true
         }
 
         const items = await mongoose.connection.db
@@ -55,7 +55,7 @@ const createCollectionRouter = (collection: string) => {
         }
 
         if (flipResults) {
-          items.reverse() // Reverse items to main correct asc order when prevId is used
+          items.reverse() // Reverse items to desc order when nextId is used
         }
 
         const firstItemId = items.length > 0 ? items[0]._id : null

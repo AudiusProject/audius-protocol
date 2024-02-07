@@ -217,7 +217,8 @@ const ZipImporter = ({
               )}
               {uploadSucceeded && (
                 <Text variant='body' className={styles.successText}>
-                  Upload success!
+                  Your files have been uploaded to S3 and will be processed
+                  soon.
                 </Text>
               )}
             </>
