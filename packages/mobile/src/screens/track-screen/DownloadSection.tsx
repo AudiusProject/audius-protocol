@@ -66,7 +66,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   )
   const { stemTracks } = useCurrentStems({ trackId })
   const { hasDownloadAccess } = useGatedContentAccess(track)
-  const shouldDisplayDownloadAll = stemTracks.length > 1 && hasDownloadAccess
+  const shouldDisplayDownloadAll =
+    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
+    hasDownloadAccess
   const {
     price,
     shouldDisplayPremiumDownloadLocked,

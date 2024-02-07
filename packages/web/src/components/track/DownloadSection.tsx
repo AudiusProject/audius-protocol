@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react'
 import {
   useCurrentStems,
   useFileSizes,
-  useDownloadableContentAccess
+  useDownloadableContentAccess,
+  useGatedContentAccess
 } from '@audius/common/hooks'
 import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
 import {
@@ -72,7 +73,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shallowEqual
   )
   const { stemTracks } = useCurrentStems({ trackId })
-  const shouldDisplayDownloadAll = stemTracks.length > 1
+  const { hasDownloadAccess } = useGatedContentAccess(track)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -80,6 +81,11 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+
+  const shouldDisplayDownloadAll =
+    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
+    hasDownloadAccess
+
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
   const formattedPrice = price
