@@ -32,6 +32,12 @@ audius-compose test discovery-provider src/api/v1/api_unit_test.py
 # Run the testing container to attach your own tester
 audius-compose test up discovery-provider
 docker exec -it audius-protocol-test-test-discovery-provider-1 pytest
+
+# To run a single test in the testing container
+audius-compose test up discovery-provider
+docker exec -it audius-protocol-test-test-discovery-provider-1 /bin/sh
+pytest integration_tests/tasks/test_index_user_bank.py::test_process_user_bank_tx_details_valid_purchase
+
 # To use the vscode tester, open the command palette
 # and select Dev Containers: Attach to Running Container.
 # Navigate to the test you want to run and run it!
