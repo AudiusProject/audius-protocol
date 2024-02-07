@@ -237,12 +237,12 @@ export const StemsAndDownloadsMenuFields = () => {
 
   const onAddStemsToTrack = useCallback(
     async (selectedStems: File[]) => {
-      const detectCategory = (filename: string): StemCategory => {
+      const detectCategory = (filename: string): Nullable<StemCategory> => {
         const lowerCaseFilename = filename.toLowerCase()
         return (
           stemDropdownRows.find((category) =>
             lowerCaseFilename.includes(category.toString().toLowerCase())
-          ) ?? StemCategory.OTHER
+          ) ?? null
         )
       }
       const processedFiles = processFiles(selectedStems, invalidAudioFile)

@@ -10,7 +10,8 @@ import {
   DownloadTrackAvailabilityType,
   FollowGatedConditions,
   StemUpload,
-  USDCPurchaseConditions
+  USDCPurchaseConditions,
+  StemCategory
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
@@ -175,10 +176,15 @@ export const StemsAndDownloadsField = ({
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
-
+      const stems = get(values, STEMS)
       setIsDownloadable(isDownloadable)
       setisOriginalAvailable(get(values, IS_ORIGINAL_AVAILABLE))
-      setStemsValue(get(values, STEMS))
+      setStemsValue(
+        stems.map((stem) => ({
+          ...stem,
+          category: stem.category ?? StemCategory.OTHER
+        }))
+      )
       setCidValue(null)
 
       if (isDownloadable) {
@@ -308,7 +314,11 @@ export const StemsAndDownloadsField = ({
       values.push(messages.values.allowOriginal)
     }
     const stemsCategories =
-      stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
+      stemsValue?.map((stem) =>
+        stem.category
+          ? stemCategoryFriendlyNames[stem.category]
+          : StemCategory.OTHER
+      ) ?? []
     values = [...values, ...stemsCategories]
 
     if (values.length === 0) return null
