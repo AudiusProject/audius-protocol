@@ -20,8 +20,7 @@ func Run(ctx context.Context) {
 	defer mongoClient.Disconnect(ctx)
 
 	bucketName := common.MustGetenv("AWS_BUCKET_RAW")
-	// ticker := time.NewTicker(3 * time.Minute)
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
 	for {
