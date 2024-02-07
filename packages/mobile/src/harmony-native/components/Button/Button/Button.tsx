@@ -271,6 +271,7 @@ export const Button = (props: ButtonProps) => {
   const loaderSize = size === 'small' ? 16 : size === 'large' ? 24 : 20
 
   const [isPressing, setIsPressing] = useState(false)
+  console.log({isPressing})
 
   const handlePressIn = () => {
     setIsPressing(true)
@@ -299,6 +300,7 @@ export const Button = (props: ButtonProps) => {
     <BaseButton
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      onLongPress={handlePressOut}
       disabled={isDisabled}
       style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}
