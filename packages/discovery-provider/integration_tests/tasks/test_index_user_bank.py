@@ -20,6 +20,8 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     mock_valid_create_usdc_token_account_tx,
     mock_valid_track_purchase_pay_extra_tx,
     mock_valid_track_purchase_tx,
+    mock_valid_track_purchase_tx_download_access,
+    mock_valid_track_purchase_tx_stream_access,
     mock_valid_transfer_prepare_withdrawal_tx,
     mock_valid_transfer_withdrawal_tx,
     mock_valid_transfer_without_purchase_tx,
@@ -123,7 +125,6 @@ test_entries = {
             "track_id": 1,
             "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
-            "access": PurchaseAccessType.stream,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -132,7 +133,12 @@ test_entries = {
                 EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
-            "access": PurchaseAccessType.stream,
+        },
+        {  # download access type
+            "track_id": 3,
+            "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
+            "total_price_cents": 100,
+            "access": PurchaseAccessType.download,
         },
     ],
 }
@@ -177,6 +183,7 @@ def test_process_user_bank_tx_details_valid_purchase(app):
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
         assert purchase.content_id == 1
+        assert purchase.access == PurchaseAccessType.stream
 
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
@@ -997,3 +1004,69 @@ def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
 
         calls = [call(ChallengeEvent.send_tip, tx_response.value.slot, sender_user_id)]
         challenge_event_bus.dispatch.assert_has_calls(calls)
+
+
+# Index tx with stream access in memo correctly
+def test_process_user_bank_txs_details_stream_access(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
+
+    tx_response = mock_valid_track_purchase_tx_stream_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.stream
+
+
+# Index tx with download access in memo correctly
+def test_process_user_bank_txs_details_download_access(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
+
+    tx_response = mock_valid_track_purchase_tx_download_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.download
