@@ -3,10 +3,11 @@ import { useCallback } from 'react'
 import { useCoinflowWithdrawalAdapter } from '@audius/common/hooks'
 import {
   useCoinflowWithdrawModal,
-  withdrawUSDCActions
+  withdrawUSDCActions,
+  withdrawUSDCSelectors
 } from '@audius/common/store'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { env } from 'services/env'
@@ -14,6 +15,7 @@ import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowWithdrawModal.module.css'
 
+const { getWithdrawAmount } = withdrawUSDCSelectors
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
   withdrawUSDCActions
 
@@ -33,12 +35,8 @@ const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowWithdrawModal = () => {
-  const {
-    data: { amount },
-    isOpen,
-    onClose,
-    onClosed
-  } = useCoinflowWithdrawModal()
+  const { isOpen, onClose, onClosed } = useCoinflowWithdrawModal()
+  const amount = useSelector(getWithdrawAmount)
 
   const adapter = useCoinflowWithdrawalAdapter()
   const dispatch = useDispatch()
