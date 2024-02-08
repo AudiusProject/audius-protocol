@@ -103,7 +103,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     usePremiumContentPurchaseModal()
   const fileSizes = useFileSizes({
     audiusSdk,
-    trackIds: [trackId, ...stemTracks.map((s) => s.id)]
+    trackIds: [trackId, ...stemTracks.map((s) => s.id)],
+    downloadQuality: quality
   })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
@@ -293,7 +294,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[trackId]}
+                size={fileSizes[trackId]?.[quality]}
                 isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
@@ -303,7 +304,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[s.id]}
+                size={fileSizes[s.id]?.[quality]}
                 index={
                   i +
                   (track?.is_downloadable
