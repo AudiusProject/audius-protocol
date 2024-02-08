@@ -226,7 +226,7 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
           Text div after harmony fixes font styling */}
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
-          {error && <div>Error: {(error as Error).message}</div>}
+          {error && <div>Error: {error.message}</div>}
           {data && <Table collection={collection} data={data} />}
 
           <Flex justifyContent='space-between'>
