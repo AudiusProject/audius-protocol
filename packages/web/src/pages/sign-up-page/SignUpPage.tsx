@@ -3,6 +3,7 @@ import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { useDetermineAllowedRoute } from 'pages/sign-up-page/utils/useDetermineAllowedRoutes'
 import {
+  FEED_PAGE,
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_COMPLETED_REDIRECT,
@@ -14,8 +15,7 @@ import {
   SIGN_UP_LOADING_PAGE,
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
-  SIGN_UP_REVIEW_HANDLE_PAGE,
-  TRENDING_PAGE
+  SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
 import { CreateEmailPage } from './pages/CreateEmailPage'
@@ -100,7 +100,7 @@ export const SignUpPage = () => {
           <LoadingAccountPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_COMPLETED_REDIRECT}>
-          <Redirect to={TRENDING_PAGE} />
+          <Redirect to={FEED_PAGE} />
         </SignUpRoute>
       </Switch>
     </RouteContextProvider>

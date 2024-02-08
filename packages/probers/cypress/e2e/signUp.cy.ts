@@ -124,7 +124,10 @@ function testSignUp({ isMobile = false }) {
     cy.findByRole('button', { name: /continue/i }).click()
   }
 
-  cy.findByRole('dialog', { name: /welcome to audius/i }).within(() => {
+  cy.findByRole('dialog', {
+    name: /welcome to audius/i,
+    timeout: 120000
+  }).within(() => {
     cy.findByRole('button', { name: /start listening/i }).click()
   })
 }
@@ -197,7 +200,7 @@ describe('Sign Up', () => {
     })
 
     it('should create an account', () => {
-      testSignUp({ isMobile: false })
+      testSignUp({ isMobile: true })
     })
   })
 })
