@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func InitMongoClient(ctx context.Context) *mongo.Client {
+func InitMongoClient(ctx context.Context, logger *slog.Logger) *mongo.Client {
 	mongoUrl := os.Getenv("DDEX_MONGODB_URL")
 	if mongoUrl == "" {
 		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0"
@@ -23,11 +24,11 @@ func InitMongoClient(ctx context.Context) *mongo.Client {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Connected to mongo")
+	logger.Info("Connected to mongo")
 	return client
 }
 
-func InitS3Client() (*s3.S3, *session.Session) {
+func InitS3Client(logger *slog.Logger) (*s3.S3, *session.Session) {
 	awsRegion := MustGetenv("AWS_REGION")
 	awsKey := MustGetenv("AWS_ACCESS_KEY_ID")
 	awsSecret := MustGetenv("AWS_SECRET_ACCESS_KEY")
@@ -38,7 +39,7 @@ func InitS3Client() (*s3.S3, *session.Session) {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Connected to s3")
+	logger.Info("Connected to s3")
 	return s3.New(sess), sess
 }
 

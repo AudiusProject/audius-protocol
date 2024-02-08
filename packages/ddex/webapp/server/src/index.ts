@@ -32,9 +32,9 @@ const port = process.env.DDEX_PORT || 9000
     const appRouter = router({
       upload: makeUploadRouter(s3),
       uploads: collectionRouters['uploads'],
-      indexed: collectionRouters['indexed'],
-      parsed: collectionRouters['parsed'],
-      published: collectionRouters['published'],
+      deliveries: collectionRouters['deliveries'],
+      pendingReleases: collectionRouters['pending_releases'],
+      publishedReleases: collectionRouters['published_releases'],
     })
 
     app.use(

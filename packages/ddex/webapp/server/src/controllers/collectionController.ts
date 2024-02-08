@@ -2,7 +2,12 @@ import { Request, Response } from 'express'
 import mongoose from 'mongoose'
 import { Sort } from 'mongodb'
 
-export const collections = ['uploads', 'indexed', 'parsed', 'published']
+export const collections = [
+  'uploads',
+  'deliveries',
+  'pending_releases',
+  'published_releases',
+]
 
 export const getCollection = (collection: string) => {
   return async (req: Request, res: Response) => {
