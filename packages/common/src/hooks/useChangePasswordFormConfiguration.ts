@@ -93,13 +93,14 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
         if (isOtpMissingError(e)) {
           helpers.setFieldTouched('otp', false)
           setPage(ChangePasswordPage.VerifyEmail)
-        } else {
+        } else if (page === ChangePasswordPage.ConfirmCredentials) {
           helpers.setFieldError('password', messages.invalidCredentials)
+        } else if (page === ChangePasswordPage.VerifyEmail) {
           helpers.setFieldError('otp', messages.invalidCredentials)
         }
       }
     },
-    [setPage, audiusBackend]
+    [setPage, page, audiusBackend]
   )
 
   const changeCredentials = useCallback(
@@ -133,7 +134,6 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
 
   return {
     initialValues,
-    validateOnChange: false,
     validationSchema,
     onSubmit,
     page,
