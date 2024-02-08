@@ -9,6 +9,7 @@ export const MAX_USDC_PURCHASE_AMOUNT_CENTS = 150000
 export const MIN_CONTENT_PRICE_CENTS = 100
 export const MAX_CONTENT_PRICE_CENTS = 150000
 export const BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS = 50
+export const BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS = 50
 
 export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS]: 5000,
@@ -49,7 +50,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.HANDLE_VERIFICATION_TIMEOUT_MILLIS]:
     DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS,
   [IntKeys.COINFLOW_MAXIMUM_CENTS]: 1000,
-  [IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS]: 500
+  [IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS]: 500,
+  [IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS]: BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
 }
 
 export const remoteConfigStringDefaults: {

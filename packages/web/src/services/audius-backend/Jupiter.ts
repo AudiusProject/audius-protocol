@@ -80,6 +80,10 @@ const getQuote = async ({
       BigInt(quote.outAmount),
       outputToken.decimals
     ),
+    otherAmountThreshold: convertBigIntToAmountObject(
+      BigInt(quote.otherAmountThreshold),
+      swapMode === 'ExactIn' ? outputToken.decimals : inputToken.decimals
+    ),
     quote,
     inputTokenSymbol,
     outputTokenSymbol
