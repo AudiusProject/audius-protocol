@@ -70,7 +70,7 @@
   border-color: var(--neutral-light-7);
   background: var(--neutral-light-8);
 }
-.show.actionsSection .actionButton:active g path {
+.show.actionsSection .actionButton:active path {
   fill: var(--neutral);
 }
 

@@ -70,7 +70,8 @@
   height: 65%;
 }
 
-.artworkIcon g path {
+.artworkIcon g path,
+.artworkIcon path {
   fill: rgba(255, 255, 255, 0.75);
 }
 

@@ -31,15 +31,15 @@
   margin-left: 6px;
   width: 9px;
 }
-.more.light .iconArrow g path {
+.more.light .iconArrow path {
   fill: var(--neutral-light-4);
 }
-.more.dark .iconArrow g path {
+.more.dark .iconArrow path {
   fill: var(--neutral);
 }
-.more.light:hover .iconArrow g path {
+.more.light:hover .iconArrow path {
   fill: var(--neutral-light-2);
 }
-.more.dark:hover .iconArrow g path {
+.more.dark:hover .iconArrow path {
   fill: var(--neutral-light-1);
 }
