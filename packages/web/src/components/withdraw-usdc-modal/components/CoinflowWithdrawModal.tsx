@@ -55,7 +55,7 @@ export const CoinflowWithdrawModal = () => {
     [dispatch, onClose]
   )
 
-  const showContent = isOpen && adapter
+  const showContent = isOpen && adapter && amount !== undefined
 
   return (
     <ModalDrawer
@@ -69,7 +69,7 @@ export const CoinflowWithdrawModal = () => {
     >
       {showContent ? (
         <CoinflowWithdraw
-          amount={amount}
+          amount={amount / 100}
           lockAmount={true}
           wallet={adapter.wallet}
           connection={adapter.connection}

@@ -24,10 +24,7 @@ import {
   getContext,
   buyUSDCActions
 } from '@audius/common/store'
-import {
-  formatUSDCWeiToCeilingCentsNumber,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync
@@ -263,6 +260,13 @@ function* doWithdrawUSDCCoinflow({
       mint: 'usdc'
     })
 
+    const accountInfo = yield* call(
+      getUserbankAccountInfo,
+      audiusBackendInstance,
+      { mint: 'usdc' }
+    )
+    const latestBalance = accountInfo?.amount ?? BigInt('0')
+
     if (isTokenAccountAddress) {
       // If the destination is already a token account, we can transfer directly
       destinationTokenAccountAddress = destinationAddress
@@ -304,26 +308,15 @@ function* doWithdrawUSDCCoinflow({
             }
           )
 
-          // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
-          // to still withdraw the amount we specified, and if not, withdraw as much as we can.
-          const audiusBackendInstance = yield* getContext(
-            'audiusBackendInstance'
-          )
-          const accountInfo = yield* call(
-            getUserbankAccountInfo,
-            audiusBackendInstance,
-            { mint: 'usdc' }
-          )
-          const latestBalance = accountInfo?.amount ?? BigInt('0')
           withdrawalAmount = Math.min(
-            withdrawalAmount -
-              formatUSDCWeiToCeilingCentsNumber(
-                new BN(usdcNeededAmount.toString()) as BNUSDC
-              ),
+            withdrawalAmount,
             formatUSDCWeiToFloorCentsNumber(
-              new BN(latestBalance.toString()) as BNUSDC
+              new BN(
+                (latestBalance - BigInt(usdcNeededAmount)).toString()
+              ) as BNUSDC
             )
           )
+
           yield* call(
             track,
             make({
@@ -557,6 +550,13 @@ function* doWithdrawUSDCManualTransfer({
       mint: 'usdc'
     })
 
+    const accountInfo = yield* call(
+      getUserbankAccountInfo,
+      audiusBackendInstance,
+      { mint: 'usdc' }
+    )
+    const latestBalance = accountInfo?.amount ?? BigInt('0')
+
     if (isTokenAccountAddress) {
       // If the destination is already a token account, we can transfer directly
       destinationTokenAccountAddress = destinationAddress
@@ -598,26 +598,15 @@ function* doWithdrawUSDCManualTransfer({
             }
           )
 
-          // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
-          // to still withdraw the amount we specified, and if not, withdraw as much as we can.
-          const audiusBackendInstance = yield* getContext(
-            'audiusBackendInstance'
-          )
-          const accountInfo = yield* call(
-            getUserbankAccountInfo,
-            audiusBackendInstance,
-            { mint: 'usdc' }
-          )
-          const latestBalance = accountInfo?.amount ?? BigInt('0')
           withdrawalAmount = Math.min(
-            withdrawalAmount -
-              formatUSDCWeiToCeilingCentsNumber(
-                new BN(usdcNeededAmount.toString()) as BNUSDC
-              ),
+            withdrawalAmount,
             formatUSDCWeiToFloorCentsNumber(
-              new BN(latestBalance.toString()) as BNUSDC
+              new BN(
+                (latestBalance - BigInt(usdcNeededAmount)).toString()
+              ) as BNUSDC
             )
           )
+
           yield* call(
             track,
             make({
