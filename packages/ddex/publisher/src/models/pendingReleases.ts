@@ -10,6 +10,10 @@ const pendingReleasesSchema = new mongoose.Schema({
   created_at: Date,
 })
 
-const PendingReleases = mongoose.model('PendingReleases', pendingReleasesSchema, 'pending_releases')
+const PendingReleases = mongoose.model(
+  'PendingReleases',
+  pendingReleasesSchema,
+  'pending_releases'
+)
 
 export default PendingReleases

@@ -7,7 +7,11 @@ import { trpc } from 'utils/trpc'
 
 import styles from './Collection.module.css'
 
-type CollectionT = 'uploads' | 'deliveries' | 'pending_releases' | 'published_releases'
+type CollectionT =
+  | 'uploads'
+  | 'deliveries'
+  | 'pending_releases'
+  | 'published_releases'
 
 const Table = ({
   collection,
@@ -219,10 +223,9 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
       <Flex direction='column' gap='l'>
         <Text variant='heading' color='heading'>
           {collection
-              .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')
-          }
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')}
         </Text>
         {/* TODO resolve "div cannot appear as a descendent of p" error by removing this
           Text div after harmony fixes font styling */}

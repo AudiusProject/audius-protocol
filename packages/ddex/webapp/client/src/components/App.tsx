@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
-import { Home } from 'pages/Home/Home'
 import { Deliveries } from 'pages/Deliveries'
+import { Home } from 'pages/Home/Home'
 import { PendingReleases } from 'pages/PendingReleases'
 import { PublishedReleases } from 'pages/PublishedReleases'
 

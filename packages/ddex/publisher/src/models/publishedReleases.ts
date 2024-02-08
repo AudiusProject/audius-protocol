@@ -11,6 +11,10 @@ const publishedReleasesSchema = new mongoose.Schema({
   created_at: Date,
 })
 
-const PublishedReleases = mongoose.model('PublishedReleases', publishedReleasesSchema, 'published_releases')
+const PublishedReleases = mongoose.model(
+  'PublishedReleases',
+  publishedReleasesSchema,
+  'published_releases'
+)
 
 export default PublishedReleases
