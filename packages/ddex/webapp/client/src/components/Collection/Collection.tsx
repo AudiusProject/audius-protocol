@@ -7,7 +7,7 @@ import { trpc } from 'utils/trpc'
 
 import styles from './Collection.module.css'
 
-type CollectionT = 'uploads' | 'indexed' | 'parsed' | 'published'
+type CollectionT = 'uploads' | 'deliveries' | 'pending_releases' | 'published_releases'
 
 const Table = ({
   collection,
@@ -53,14 +53,13 @@ const Table = ({
           </tbody>
         </table>
       )
-    case 'indexed':
+    case 'deliveries':
       return (
         <table className={styles.styledTable}>
           <thead>
             <tr>
               <th>ID</th>
               <th>Upload E-tag</th>
-              <th>Delivery ID</th>
               <th>Delivery Status</th>
               <th>XML Filepath</th>
               <th>Created At</th>
@@ -71,7 +70,6 @@ const Table = ({
               <tr key={item._id}>
                 <td>{item._id}</td>
                 <td>{item.upload_etag}</td>
-                <td>{item.delivery_id}</td>
                 <td className={statusStyle(item.delivery_status)}>
                   {item.delivery_status}
                 </td>
@@ -82,7 +80,7 @@ const Table = ({
           </tbody>
         </table>
       )
-    case 'parsed':
+    case 'pending_releases':
       return (
         <table className={styles.styledTable}>
           <thead>
@@ -109,7 +107,7 @@ const Table = ({
           </tbody>
         </table>
       )
-    case 'published':
+    case 'published_releases':
       return (
         <table className={styles.styledTable}>
           <thead>
@@ -172,14 +170,14 @@ const useCollectionQuery = ({
     case 'uploads':
       queryFunction = trpc.uploads.listCollection.useQuery
       break
-    case 'indexed':
-      queryFunction = trpc.indexed.listCollection.useQuery
+    case 'deliveries':
+      queryFunction = trpc.deliveries.listCollection.useQuery
       break
-    case 'parsed':
-      queryFunction = trpc.parsed.listCollection.useQuery
+    case 'pending_releases':
+      queryFunction = trpc.pendingReleases.listCollection.useQuery
       break
-    case 'published':
-      queryFunction = trpc.published.listCollection.useQuery
+    case 'published_releases':
+      queryFunction = trpc.publishedReleases.listCollection.useQuery
       break
     default:
       throw new Error('Invalid collection')
@@ -220,7 +218,11 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
     <Box borderRadius='s' shadow='near' p='xl' backgroundColor='white'>
       <Flex direction='column' gap='l'>
         <Text variant='heading' color='heading'>
-          {collection.charAt(0).toUpperCase() + collection.slice(1)}
+          {collection
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')
+          }
         </Text>
         {/* TODO resolve "div cannot appear as a descendent of p" error by removing this
           Text div after harmony fixes font styling */}

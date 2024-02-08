@@ -13,29 +13,28 @@ type Upload struct {
 	CreatedAt  time.Time          `bson:"created_at"`
 }
 
-type Indexed struct {
+type Delivery struct {
 	ID             primitive.ObjectID `bson:"_id"`
 	UploadETag     string             `bson:"upload_etag"`
-	DeliveryID     string             `bson:"delivery_id"`
 	DeliveryStatus string             `bson:"delivery_status"`
 	XmlFilePath    string             `bson:"xml_file_path"`
 	XmlContent     primitive.Binary   `bson:"xml_content"`
 	CreatedAt      time.Time          `bson:"created_at"`
 }
 
-type Parsed struct {
+type PendingRelease struct {
 	ID          primitive.ObjectID `bson:"_id"`
 	UploadETag  string             `bson:"upload_etag"`
-	DeliveryID  string             `bson:"delivery_id"`
+	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
 	Entity      string             `bson:"entity"`
 	PublishDate time.Time          `bson:"publish_date"`
 	CreatedAt   time.Time          `bson:"created_at"`
 }
 
-type Published struct {
+type PublishedRelease struct {
 	ID          primitive.ObjectID `bson:"_id"`
 	UploadETag  string             `bson:"upload_etag"`
-	DeliveryID  string             `bson:"delivery_id"`
+	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
 	Entity      string             `bson:"entity"`
 	PublishDate time.Time          `bson:"publish_date"`
 	EntityID    string             `bson:"entity_id"`

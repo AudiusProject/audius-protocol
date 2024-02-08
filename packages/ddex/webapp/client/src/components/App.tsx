@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { Home } from 'pages/Home/Home'
-import { Indexed } from 'pages/Indexed'
-import { Parsed } from 'pages/Parsed'
-import { Published } from 'pages/Published'
+import { Deliveries } from 'pages/Deliveries'
+import { PendingReleases } from 'pages/PendingReleases'
+import { PublishedReleases } from 'pages/PublishedReleases'
 
 import Layout from './Layout'
 
@@ -13,9 +13,9 @@ const App = () => {
       <Layout>
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/indexed' element={<Indexed />} />
-          <Route path='/parsed' element={<Parsed />} />
-          <Route path='/published' element={<Published />} />
+          <Route path='/deliveries' element={<Deliveries />} />
+          <Route path='/pending-releases' element={<PendingReleases />} />
+          <Route path='/published-releases' element={<PublishedReleases />} />
         </Routes>
       </Layout>
     </Router>
