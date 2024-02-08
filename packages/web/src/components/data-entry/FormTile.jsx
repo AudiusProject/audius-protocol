@@ -36,6 +36,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
 import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
+import { StemsAndDownloadsTriggerLegacy } from './StemsAndDownloadsTriggerLegacy'
 
 const {
   ALL_RIGHTS_RESERVED_TYPE,
@@ -70,6 +71,9 @@ const Divider = (props) => {
 }
 
 const BasicForm = (props) => {
+  const isLosslessDownloadsEnabled = useFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
@@ -274,6 +278,21 @@ const BasicForm = (props) => {
     )
   }
 
+  const renderStemsAndDownloadsTriggerLegacy = () => {
+    return (
+      <StemsAndDownloadsTriggerLegacy
+        onAddStems={props.onAddStems}
+        stems={props.stems}
+        onSelectCategory={props.onSelectStemCategory}
+        onDeleteStem={props.onDeleteStem}
+        fields={props.defaultFields}
+        onChangeField={props.onChangeField}
+        isUpload={props.isUpload}
+        initialForm={props.initialForm}
+      />
+    )
+  }
+
   const renderDownloadButton = () => {
     const shouldRender = props.type === 'track'
     return (
@@ -321,7 +340,9 @@ const BasicForm = (props) => {
           })}
         >
           {renderRemixSwitch()}
-          {renderDownloadButton()}
+          {isLosslessDownloadsEnabled
+            ? renderStemsAndDownloadsTriggerLegacy()
+            : renderDownloadButton()}
           {renderAdvancedButton()}
         </div>
       </div>
@@ -332,7 +353,7 @@ const BasicForm = (props) => {
     <div className={styles.basicContainer}>
       {renderBasicForm()}
       {renderBottomMenu()}
-      {renderSourceFilesModal()}
+      {!isLosslessDownloadsEnabled ? renderSourceFilesModal() : null}
       {!isGatedContentEnabled && renderRemixSettingsModal()}
       {renderAiAttributionModal()}
     </div>

@@ -153,7 +153,20 @@ export const stemsAndDownloadsSchema = ({
       }
     )
 
-export const StemsAndDownloadsMenuFields = () => {
+// Because the upload and edit forms share the same menu fields,
+// we pass in the stems handlers in the edit flow to properly handle
+// the selection, addition, and deletion of stems.
+// May do another pass later to refactor.
+type StemsAndDownloadsMenuFieldsProps = {
+  stems?: StemUploadWithFile[]
+  onAddStems?: (stems: any) => void
+  onSelectCategory?: (category: StemCategory, index: number) => void
+  onDeleteStem?: (index: number) => void
+}
+
+export const StemsAndDownloadsMenuFields = (
+  props: StemsAndDownloadsMenuFieldsProps
+) => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
@@ -247,7 +260,7 @@ export const StemsAndDownloadsMenuFields = () => {
     []
   )
 
-  const onAddStemsToTrack = useCallback(
+  const handleAddStems = useCallback(
     async (selectedStems: File[]) => {
       const processedFiles = processFiles(selectedStems, invalidAudioFile)
       const newStems = (await Promise.all(processedFiles))
@@ -264,6 +277,22 @@ export const StemsAndDownloadsMenuFields = () => {
       setStems([...stemsValue, ...newStems])
     },
     [detectCategory, setStems, stemsValue]
+  )
+
+  const handleSelectCategory = useCallback(
+    (category: StemCategory, index: number) => {
+      stemsValue[index].category = category
+      setStems(stemsValue)
+    },
+    [setStems, stemsValue]
+  )
+
+  const handleDeleteStem = useCallback(
+    (index: number) => {
+      stemsValue.splice(index, 1)
+      setStems(stemsValue)
+    },
+    [setStems, stemsValue]
   )
 
   return (
@@ -298,16 +327,10 @@ export const StemsAndDownloadsMenuFields = () => {
       )}
       <Divider />
       <StemFilesView
-        onAddStems={onAddStemsToTrack}
         stems={stemsValue}
-        onSelectCategory={(category: StemCategory, index: number) => {
-          stemsValue[index].category = category
-          setStems(stemsValue)
-        }}
-        onDeleteStem={(index) => {
-          stemsValue.splice(index, 1)
-          setStems(stemsValue)
-        }}
+        onAddStems={props.onAddStems ?? handleAddStems}
+        onSelectCategory={props.onSelectCategory ?? handleSelectCategory}
+        onDeleteStem={props.onDeleteStem ?? handleDeleteStem}
       />
     </div>
   )

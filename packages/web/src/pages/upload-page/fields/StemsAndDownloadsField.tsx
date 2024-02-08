@@ -106,9 +106,9 @@ export const StemsAndDownloadsField = ({
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
   /**
-   * Stream conditions from inside the modal.
+   * Download conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
-   * determine the final stream conditions that get saved to the track.
+   * determine the final download conditions that get saved to the track.
    */
   const accountUserId = useSelector(getUserId)
   const tempDownloadConditions = useMemo(

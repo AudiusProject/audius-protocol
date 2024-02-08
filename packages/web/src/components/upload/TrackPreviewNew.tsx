@@ -65,7 +65,8 @@ type TrackPreviewProps = {
   stemCategory?: Nullable<StemCategory>
   onEditStemCategory?: (stemCategory: StemCategory) => void
   isEdit?: boolean
-  isDisabled?: boolean
+  allowCategorySwitch?: boolean
+  allowDelete?: boolean
   className?: string
 }
 
@@ -87,7 +88,8 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     stemCategory,
     onEditStemCategory,
     isEdit,
-    isDisabled,
+    allowCategorySwitch = true,
+    allowDelete = true,
     className
   } = props
 
@@ -137,7 +139,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
-              isDisabled={isDisabled}
+              isDisabled={!allowCategorySwitch}
             />
           </Box>
         ) : null}
@@ -160,6 +162,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             <HarmonyPlainButton
               iconRight={IconTrash}
               onClick={onRemove}
+              disabled={!allowDelete}
               className={styles.removeButton}
             />
           </Flex>

@@ -73,13 +73,16 @@ export const StemFilesView = ({
               index={i}
               displayIndex={stems.length > 1}
               key={`stem-${i}`}
-              trackTitle={stem.file.name}
-              fileType={stem.file.type}
-              fileSize={stem.file.size}
+              trackTitle={stem.file?.name ?? stem.metadata.orig_filename ?? ''}
+              fileType={stem.file?.type ?? 'audio/mp3'} // TODO: Get correct file type for pre-existing stems
+              fileSize={stem.file?.size ?? 0} // TODO: Get correct file size for pre-existing stems
               onRemove={() => onDeleteStem(i)}
               stemCategory={stem.category}
               onEditStemCategory={(category) => onSelectCategory(category, i)}
+              allowCategorySwitch={stem.allowCategorySwitch}
+              allowDelete={stem.allowDelete}
               isStem
+              isEdit
             />
           ))}
         </Flex>
