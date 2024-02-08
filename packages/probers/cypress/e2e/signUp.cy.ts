@@ -110,8 +110,8 @@ function testSignUp({ isMobile = false }) {
 
   selectArtist(/pick featured artists/i)
 
-  cy.findByRole('radio', { name: /pop/i }).click()
-  selectArtist(/pick pop artists/i)
+  cy.findByRole('radio', { name: /acoustic/i }).click()
+  selectArtist(/pick acoustic artists/i)
 
   cy.findByRole('radio', { name: /electronic/i }).click()
   selectArtist(/pick electronic artists/i)
@@ -196,7 +196,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it.only('should create an account', () => {
+    it('should create an account', () => {
       testSignUp({ isMobile: false })
     })
   })
