@@ -1,6 +1,8 @@
 import {
   getRecentBlockhash,
-  getLookupTableAccounts
+  getLookupTableAccounts,
+  IntKeys,
+  BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
 } from '@audius/common/services'
 import { MintName } from '@audius/sdk'
 import {
@@ -24,14 +26,11 @@ import {
 } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getLibs } from 'services/audius-libs'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   getAssociatedTokenAccountRent,
   getTransferTransactionFee
 } from 'services/solana/solana'
-
-// TODO: Grab from remote config
-// Allowable slippage amount for USDC jupiter swaps in %.
-const USDC_SLIPPAGE = 3
 
 export const getFundDestinationTokenAccountFees = async (
   account: PublicKey
@@ -57,6 +56,10 @@ export const createSwapUserbankToSolInstructions = async ({
   wallet: PublicKey
 }) => {
   const libs = await getLibs()
+  const slippageBps =
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS
+    ) ?? BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
 
   const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
     mint
@@ -86,7 +89,7 @@ export const createSwapUserbankToSolInstructions = async ({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: outSolAmount,
-    slippage: USDC_SLIPPAGE,
+    slippage: slippageBps,
     swapMode: 'ExactOut',
     onlyDirectRoutes: true
   })
@@ -116,7 +119,7 @@ export const createSwapUserbankToSolInstructions = async ({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: usdcNeededAmount / 10 ** 6,
-    slippage: USDC_SLIPPAGE,
+    slippage: slippageBps,
     swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })
