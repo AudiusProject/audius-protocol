@@ -7,12 +7,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 3px;
+  /* This gives us a gap of --harmony-spacing-s (8px) between tabs, accounting
+  for the separators being siblings of the tabs and occupying 1px of width */
+  gap: 3.5px;
 }
 
 .tab {
   z-index: 3;
   flex: 1 1 auto;
-  padding: var(--harmony-unit-2);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
   border-radius: 4px;
   cursor: pointer;
   user-select: none;

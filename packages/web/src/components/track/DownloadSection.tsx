@@ -281,6 +281,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     onSelectOption={(quality: DownloadQuality) =>
                       setQuality(quality)
                     }
+                    equalWidth
                   />
                 </Flex>
                 {shouldDisplayDownloadAll ? downloadAllButton() : null}

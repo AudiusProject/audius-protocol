@@ -229,6 +229,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               options={options}
               selected={quality}
               onSelectOption={(quality) => setQuality(quality)}
+              equalWidth
             />
           </Flex>
         ) : null}
