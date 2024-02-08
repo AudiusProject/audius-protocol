@@ -5,6 +5,7 @@ import (
 	"ingester/common"
 	"ingester/constants"
 	"log"
+	"log/slog"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,27 +13,39 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Run(ctx context.Context) {
-	mongoClient := common.InitMongoClient(ctx)
+type Parser struct {
+	mongoClient         *mongo.Client
+	rawBucket           string
+	deliveriesColl      *mongo.Collection
+	pendingReleasesColl *mongo.Collection
+	ctx                 context.Context
+	logger              *slog.Logger
+}
+
+func RunNewParser(ctx context.Context) {
+	logger := slog.With("service", "parser")
+	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
 
-	deliveriesColl := mongoClient.Database("ddex").Collection("deliveries")
+	p := &Parser{
+		mongoClient:         mongoClient,
+		rawBucket:           common.MustGetenv("AWS_BUCKET_RAW"),
+		deliveriesColl:      mongoClient.Database("ddex").Collection("deliveries"),
+		pendingReleasesColl: mongoClient.Database("ddex").Collection("pending_releases"),
+		ctx:                 ctx,
+		logger:              logger,
+	}
+
 	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
-	changeStream, err := deliveriesColl.Watch(ctx, pipeline)
+	changeStream, err := p.deliveriesColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Watching collection 'deliveries'")
+	p.logger.Info("Watching collection 'deliveries'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
-		var changeDoc struct {
-			FullDocument common.Delivery `bson:"fullDocument"`
-		}
-		if err := changeStream.Decode(&changeDoc); err != nil {
-			log.Fatal(err)
-		}
-		parseDelivery(mongoClient, changeDoc.FullDocument, ctx)
+		p.processDelivery(changeStream)
 	}
 
 	if err := changeStream.Err(); err != nil {
@@ -40,19 +53,25 @@ func Run(ctx context.Context) {
 	}
 }
 
-func parseDelivery(client *mongo.Client, delivery common.Delivery, ctx context.Context) {
-	log.Printf("Processing new delivery: %v\n", delivery)
-	deliveriesColl := client.Database("ddex").Collection("deliveries")
-	pendingReleasesColl := client.Database("ddex").Collection("pending_releases")
+func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
+	// Decode the "delivery" from Mongo
+	var changeDoc struct {
+		FullDocument common.Delivery `bson:"fullDocument"`
+	}
+	if err := changeStream.Decode(&changeDoc); err != nil {
+		log.Fatal(err)
+	}
+	delivery := changeDoc.FullDocument
+	p.logger.Info("Processing new delivery", "_id", delivery.ID)
 
 	// TODO process the delivery xml
 	// 1. Validate all referenced audio/image files exist within the delivery
 
-	session, err := client.StartSession()
+	session, err := p.mongoClient.StartSession()
 	if err != nil {
-		failAndUpdateStatus(err, deliveriesColl, ctx, delivery.ID)
+		p.failAndUpdateStatus(err, delivery.ID)
 	}
-	err = mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
+	err = mongo.WithSession(p.ctx, session, func(sessionContext mongo.SessionContext) error {
 		if err := session.StartTransaction(); err != nil {
 			return err
 		}
@@ -65,15 +84,15 @@ func parseDelivery(client *mongo.Client, delivery common.Delivery, ctx context.C
 			"publish_date": time.Now(),
 			"created_at":   time.Now(),
 		}
-		result, err := pendingReleasesColl.InsertOne(ctx, pendingRelease)
+		result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
 		if err != nil {
 			session.AbortTransaction(sessionContext)
 			return err
 		}
-		log.Println("New pending release: ", result.InsertedID)
+		p.logger.Info("New pending release", "_id", result.InsertedID)
 
 		// 3. Set delivery status for delivery in 'deliveries' collection
-		err = setDeliveryStatus(deliveriesColl, sessionContext, delivery.ID, constants.DeliveryStatusAwaitingPublishing)
+		err = p.setDeliveryStatus(sessionContext, delivery.ID, constants.DeliveryStatusAwaitingPublishing)
 		if err != nil {
 			session.AbortTransaction(sessionContext)
 			return err
@@ -83,19 +102,19 @@ func parseDelivery(client *mongo.Client, delivery common.Delivery, ctx context.C
 	})
 
 	if err != nil {
-		failAndUpdateStatus(err, deliveriesColl, ctx, delivery.ID)
+		p.failAndUpdateStatus(err, delivery.ID)
 	}
 
-	session.EndSession(ctx)
+	session.EndSession(p.ctx)
 }
 
-func setDeliveryStatus(collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID, status string) error {
+func (p *Parser) setDeliveryStatus(ctx context.Context, documentId primitive.ObjectID, status string) error {
 	update := bson.M{"$set": bson.M{"delivery_status": status}}
-	_, err := collection.UpdateByID(ctx, documentId, update)
+	_, err := p.deliveriesColl.UpdateByID(ctx, documentId, update)
 	return err
 }
 
-func failAndUpdateStatus(err error, collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID) {
-	setDeliveryStatus(collection, ctx, documentId, constants.DeliveryStatusError)
+func (p *Parser) failAndUpdateStatus(err error, documentId primitive.ObjectID) {
+	p.setDeliveryStatus(p.ctx, documentId, constants.DeliveryStatusError)
 	log.Fatal(err)
 }

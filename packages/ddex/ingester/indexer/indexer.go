@@ -35,8 +35,9 @@ type Indexer struct {
 
 // RunNewIndexer starts the indexer service, which listens for new uploads in the Mongo "uploads" collection and processes them.
 func RunNewIndexer(ctx context.Context) {
-	_, s3Session := common.InitS3Client()
-	mongoClient := common.InitMongoClient(ctx)
+	logger := slog.With("service", "indexer")
+	_, s3Session := common.InitS3Client(logger)
+	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
 	deliveriesColl := mongoClient.Database("ddex").Collection("deliveries")
 
@@ -48,7 +49,7 @@ func RunNewIndexer(ctx context.Context) {
 		indexedBucket:  common.MustGetenv("AWS_BUCKET_INDEXED"),
 		deliveriesColl: deliveriesColl,
 		ctx:            ctx,
-		logger:         slog.With("service", "indexer"),
+		logger:         logger,
 	}
 
 	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
@@ -57,7 +58,7 @@ func RunNewIndexer(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	i.logger.Info("Indexer: Watching collection 'uploads'")
+	i.logger.Info("Watching collection 'uploads'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
@@ -78,11 +79,12 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	if err := changeStream.Decode(&changeDoc); err != nil {
 		log.Fatal(err)
 	}
-	i.logger.Info("Indexer: Processing new upload", "upload", changeDoc.FullDocument)
+	upload := changeDoc.FullDocument
+	i.logger.Info("Processing new upload", "_id", upload.ID)
 
 	// Download ZIP file from S3
-	uploadETag := changeDoc.FullDocument.UploadETag
-	remotePath := changeDoc.FullDocument.Path
+	uploadETag := upload.UploadETag
+	remotePath := upload.Path
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
