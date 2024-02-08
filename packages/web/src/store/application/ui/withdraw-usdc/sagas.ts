@@ -19,7 +19,8 @@ import {
   WithdrawMethod,
   getContext,
   buyUSDCActions,
-  Status
+  Status,
+  formatUSDCWeiToCeilingCentsNumber
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -57,6 +58,7 @@ const {
   coinflowWithdrawalSucceeded,
   withdrawUSDCFailed,
   withdrawUSDCSucceeded,
+  updateAmount,
   cleanup: cleanupWithdrawUSDC
 } = withdrawUSDCActions
 const { set: setWithdrawUSDCModalData, close: closeWithdrawUSDCModal } =
@@ -75,7 +77,7 @@ function* swapUSDCToSol({
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const rootSolanaAccount = yield* call(getRootSolanaAccount)
-  const { instructions, lookupTableAddresses } = yield* call(
+  const { instructions, lookupTableAddresses, usdcNeededAmount } = yield* call(
     createSwapUserbankToSolInstructions,
     {
       mint: 'usdc',
@@ -108,6 +110,7 @@ function* swapUSDCToSol({
   console.debug('Withdraw USDC - root wallet funded via swap.', {
     transactionSignature
   })
+  return { usdcNeededAmount }
 }
 
 /**
@@ -149,13 +152,18 @@ function* createDestinationTokenAccount({
     )) / LAMPORTS_PER_SOL
 
   const solRequired = feeAmount + rootSolanaAccountRent - existingBalance
+  let usdcNeededAmount = 0
   if (solRequired > 0) {
     // Swap USDC for SOL to fund the destination associated token account
     console.debug(
       'Withdraw USDC - not enough SOL to fund destination account, attempting to swap USDC for SOL...',
       { solRequired, feeAmount, existingBalance, rootSolanaAccountRent }
     )
-    yield* call(swapUSDCToSol, { amount: solRequired, feePayer })
+    const swapResponse = yield* call(swapUSDCToSol, {
+      amount: solRequired,
+      feePayer
+    })
+    usdcNeededAmount = swapResponse.usdcNeededAmount
   }
 
   // Then create and fund the destination associated token account
@@ -190,6 +198,7 @@ function* createDestinationTokenAccount({
     'Withdraw USDC - Successfully created destination associated token account.',
     { transactionSignature }
   )
+  return { usdcNeededAmount }
 }
 
 function* doWithdrawUSDCCoinflow({
@@ -272,11 +281,14 @@ function* doWithdrawUSDCCoinflow({
         console.debug(
           'Withdraw USDC - destination associated token account does not exist. Creating...'
         )
-        yield* call(createDestinationTokenAccount, {
-          destinationWallet,
-          destinationTokenAccount,
-          feePayer: feePayerPubkey
-        })
+        const { usdcNeededAmount } = yield* call(
+          createDestinationTokenAccount,
+          {
+            destinationWallet,
+            destinationTokenAccount,
+            feePayer: feePayerPubkey
+          }
+        )
 
         // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
         // to still withdraw the amount we specified, and if not, withdraw as much as we can.
@@ -288,7 +300,10 @@ function* doWithdrawUSDCCoinflow({
         )
         const latestBalance = accountInfo?.amount ?? BigInt('0')
         withdrawalAmount = Math.min(
-          withdrawalAmount,
+          withdrawalAmount -
+            formatUSDCWeiToCeilingCentsNumber(
+              new BN(usdcNeededAmount.toString()) as BNUSDC
+            ),
           formatUSDCWeiToFloorCentsNumber(
             new BN(latestBalance.toString()) as BNUSDC
           )
@@ -296,6 +311,7 @@ function* doWithdrawUSDCCoinflow({
       }
     }
 
+    yield* put(updateAmount({ amount: withdrawalAmount }))
     // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
     const withdrawalAmountWei = new BN(withdrawalAmount)
       .mul(new BN(10 ** TOKEN_LISTING_MAP.USDC.decimals))
@@ -502,11 +518,14 @@ function* doWithdrawUSDCManualTransfer({
         console.debug(
           'Withdraw USDC - destination associated token account does not exist. Creating...'
         )
-        yield* call(createDestinationTokenAccount, {
-          destinationWallet,
-          destinationTokenAccount,
-          feePayer: feePayerPubkey
-        })
+        const { usdcNeededAmount } = yield* call(
+          createDestinationTokenAccount,
+          {
+            destinationWallet,
+            destinationTokenAccount,
+            feePayer: feePayerPubkey
+          }
+        )
 
         // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
         // to still withdraw the amount we specified, and if not, withdraw as much as we can.
@@ -518,13 +537,18 @@ function* doWithdrawUSDCManualTransfer({
         )
         const latestBalance = accountInfo?.amount ?? BigInt('0')
         withdrawalAmount = Math.min(
-          withdrawalAmount,
+          withdrawalAmount -
+            formatUSDCWeiToCeilingCentsNumber(
+              new BN(usdcNeededAmount.toString()) as BNUSDC
+            ),
           formatUSDCWeiToFloorCentsNumber(
             new BN(latestBalance.toString()) as BNUSDC
           )
         )
       }
     }
+
+    yield* put(updateAmount({ amount: withdrawalAmount }))
 
     // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
     const withdrawalAmountWei = new BN(withdrawalAmount)

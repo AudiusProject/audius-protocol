@@ -1,4 +1,9 @@
-import { getLookupTableAccounts, getRecentBlockhash } from '@audius/common'
+import {
+  getLookupTableAccounts,
+  getRecentBlockhash,
+  IntKeys,
+  BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
+} from '@audius/common'
 import { MintName } from '@audius/sdk'
 import {
   createCloseAccountInstruction,
@@ -21,14 +26,11 @@ import {
 } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getLibs } from 'services/audius-libs'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   getAssociatedTokenAccountRent,
   getTransferTransactionFee
 } from 'services/solana/solana'
-
-// TODO: Grab from remote config
-// Allowable slippage amount for USDC jupiter swaps in %.
-const USDC_SLIPPAGE = 3
 
 export const getFundDestinationTokenAccountFees = async (
   account: PublicKey
@@ -54,6 +56,10 @@ export const createSwapUserbankToSolInstructions = async ({
   wallet: PublicKey
 }) => {
   const libs = await getLibs()
+  const slippageBps =
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS
+    ) ?? BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
 
   const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
     mint
@@ -83,11 +89,13 @@ export const createSwapUserbankToSolInstructions = async ({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: outSolAmount,
-    slippage: USDC_SLIPPAGE,
+    slippage: slippageBps,
     swapMode: 'ExactOut',
     onlyDirectRoutes: true
   })
-  const usdcNeededAmount = quoteRoute.inputAmount.amount
+  // Use the otherAmountThreshold which will account for max slippage.
+  // We will end up with potentially extra SOL in the root account.
+  const usdcNeededAmount = quoteRoute.otherAmountThreshold.amount
   const transferToTemporaryTokenAccountInstructions =
     await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
       amount: new BN(usdcNeededAmount),
@@ -108,12 +116,14 @@ export const createSwapUserbankToSolInstructions = async ({
     )
 
   // 5. Swap the tokens for wSOL
-  // Use ExactIn to ensure all the tokens get used in the swap
+  // Use ExactIn to ensure all the USDC tokens get used in the swap.
+  // We need to make sure to clear out all of the USDC tokens so that
+  // the relayer is happy that the account cannot be drained elsewhere.
   const swapQuote = await JupiterSingleton.getQuote({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: usdcNeededAmount / 10 ** 6,
-    slippage: USDC_SLIPPAGE,
+    slippage: slippageBps,
     swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })
@@ -170,7 +180,8 @@ export const createSwapUserbankToSolInstructions = async ({
       closeWSOLInstructionAgain,
       closeTemporaryTokenAccountInstruction
     ],
-    lookupTableAddresses
+    lookupTableAddresses,
+    usdcNeededAmount
   }
 }
 

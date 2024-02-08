@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
 import { Status } from 'models/Status'
 
 import { CoinflowWithdrawState, WithdrawMethod } from './types'
@@ -32,8 +31,8 @@ const slice = createSlice({
       _action: PayloadAction<{
         /** Balance in cents. Used for analytics */
         currentBalance: number
-        /** Transfer amount in cents */
         method: WithdrawMethod
+        /** Transfer amount in cents */
         amount: number
         destinationAddress: string
       }>
@@ -68,6 +67,9 @@ const slice = createSlice({
       state.withdrawStatus = Status.ERROR
       state.withdrawError = action.payload.error
     },
+    updateAmount: (state, action: PayloadAction<{ amount: number }>) => {
+      state.amount = action.payload.amount
+    },
     cleanup: () => initialState
   }
 })
@@ -80,6 +82,7 @@ export const {
   coinflowWithdrawalCanceled,
   withdrawUSDCSucceeded,
   withdrawUSDCFailed,
+  updateAmount,
   cleanup
 } = slice.actions
 
