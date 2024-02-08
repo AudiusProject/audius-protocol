@@ -47,6 +47,7 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
+    JUPITER_PROGRAM_ID,
     SPL_TOKEN_ID_PK,
     get_address_pair,
     get_base_address,
@@ -95,6 +96,8 @@ USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 PAYMENT_ROUTER_PUBKEY = (
     Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
 )
+
+JUPITER_PROGRAM_ID_PUBKEY = Pubkey.from_string(JUPITER_PROGRAM_ID)
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
@@ -665,6 +668,8 @@ def process_transfer_instruction(
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
         transaction_type = get_transfer_type_from_memo(memos=memos)
+        if JUPITER_PROGRAM_ID_PUBKEY in account_keys:
+            transaction_type = USDCTransactionType.prepare_withdrawal
 
         # Attempt to look up account owner, fallback to recipient address
         receiver_account_owner = (

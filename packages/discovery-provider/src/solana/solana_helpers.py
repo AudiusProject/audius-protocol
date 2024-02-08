@@ -38,3 +38,6 @@ METADATA_PROGRAM_ID_PK = Pubkey.from_string(METADATA_PROGRAM_ID)
 
 # Static Memo Program ID
 MEMO_PROGRAM_ID = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+
+# Static Jupiter Swap Program ID
+JUPITER_PROGRAM_ID = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
