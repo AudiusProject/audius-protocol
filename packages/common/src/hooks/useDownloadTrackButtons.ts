@@ -150,12 +150,14 @@ export const useFileSizes = ({
   return sizes
 }
 
-const useUploadingStems = ({ trackId }: { trackId: ID }) => {
+export const useUploadingStems = ({ trackId }: { trackId: ID }) => {
   const currentUploads = useSelector(
     (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
   )
   const uploadingTracks = currentUploads.map((u) => ({
+    name: u.file.name,
+    size: u.file.size,
     category: u.category,
     downloadable: false
   }))

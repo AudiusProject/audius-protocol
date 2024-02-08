@@ -11,7 +11,7 @@
 }
 
 .modalContainer {
-  max-width: 536px;
+  width: 720px;
   /* Need to account for the dropdown outside modal */
   overflow-y: visible !important;
   overflow-x: visible !important;
