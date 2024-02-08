@@ -22,7 +22,7 @@ const { getBalance } = walletActions
 const getAccountUser = accountSelectors.getAccountUser
 
 const formatMonth = (date: moment.Moment | string) =>
-  moment(date).format('MMM').toUpperCase()
+  moment.utc(date).format('MMM').toUpperCase()
 
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
