@@ -38,7 +38,6 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(variantStyles && {
       fontSize: t.size[variantStyles.fontSize[size]],
       lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
-      fontWeight: t.weight[variantStyles.fontWeight[strength]],
       fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
       ...('css' in variantStyles ? variantStyles.css : {})
     }),
