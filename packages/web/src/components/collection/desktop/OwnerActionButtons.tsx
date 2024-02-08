@@ -18,9 +18,9 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  const { track_count, is_private } = collection ?? {}
+  const { track_count, is_private, is_album } = collection ?? {}
 
-  const isDisabled = track_count === 0
+  const isDisabled = !track_count || track_count === 0
 
   return collection ? (
     <>
@@ -32,7 +32,9 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
         collectionId={collectionId}
         disabled={isDisabled}
         tooltipText={
-          isDisabled ? 'You can’t share an empty playlist.' : undefined
+          isDisabled
+            ? `You can’t share an empty ${is_album ? 'album' : 'playlist'}.`
+            : undefined
         }
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
