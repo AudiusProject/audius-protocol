@@ -48,7 +48,7 @@ from (
   on (t.stem_of->>'parent_track_id')::int = title_tracks.track_id
   where t.is_current is true
   and (t.stem_of->>'category')::text != ''
-  and t.orig_filename is null;
+  and t.orig_filename is null
 ) as sub
 where tr.is_current is true
 and tr.track_id = sub.track_id;
