@@ -133,7 +133,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
 
   return {
     initialValues,
-    validateOnChange: true,
+    validateOnChange: false,
     validationSchema,
     onSubmit,
     page,
