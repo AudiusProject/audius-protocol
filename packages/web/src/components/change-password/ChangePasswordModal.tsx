@@ -113,7 +113,6 @@ export const ChangePasswordModalForm = ({
           }
           type='submit'
           isLoading={isSubmitting}
-          disabled={isSubmitting}
         >
           {page === ChangePasswordPage.NewPassword
             ? messages.changePassword
