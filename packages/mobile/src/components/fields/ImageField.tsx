@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
 import type { Options } from 'react-native-image-crop-picker'
 
-import IconUpload from 'app/assets/images/iconUpload.svg'
+import { IconCloudUpload } from '@audius/harmony-native'
 import { DynamicImage } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
@@ -123,7 +123,11 @@ export const ImageField = (props: ImageFieldProps) => {
           {isLoading || isProcessing ? (
             <LoadingSpinner />
           ) : (
-            <IconUpload fill={styles.centerIcon.fill} height={32} width={32} />
+            <IconCloudUpload
+              fill={styles.centerIcon.fill}
+              height={32}
+              width={32}
+            />
           )}
         </Animated.View>
       </DynamicImage>

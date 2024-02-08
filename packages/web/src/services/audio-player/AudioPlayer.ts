@@ -1,4 +1,4 @@
-import { PlaybackRate, playbackRateValueMap } from '@audius/common'
+import { playbackRateValueMap, PlaybackRate } from '@audius/common/store'
 
 declare global {
   interface Window {

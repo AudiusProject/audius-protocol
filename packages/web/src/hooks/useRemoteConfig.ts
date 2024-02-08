@@ -1,9 +1,8 @@
 import {
   createUseFeatureFlagHook,
-  createUseRemoteVarHook,
-  accountSelectors,
-  remoteConfigSelectors
-} from '@audius/common'
+  createUseRemoteVarHook
+} from '@audius/common/hooks'
+import { accountSelectors, remoteConfigSelectors } from '@audius/common/store'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { useSelector } from 'utils/reducer'

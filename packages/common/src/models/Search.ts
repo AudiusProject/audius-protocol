@@ -1,4 +1,4 @@
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 import { CollectionImage } from './Collection'
 import { Repost } from './Repost'

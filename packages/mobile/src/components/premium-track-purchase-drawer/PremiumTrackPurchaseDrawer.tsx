@@ -1,33 +1,36 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import type {
-  PurchaseableTrackMetadata,
-  PurchaseContentError
-} from '@audius/common'
+import { useGetTrackById } from '@audius/common/api'
 import {
-  PurchaseContentPage,
-  FeatureFlags,
-  Name,
+  useRemoteVar,
+  useUSDCBalance,
+  usePurchaseContentFormConfiguration,
+  usePurchaseContentErrorMessage,
+  usePayExtraPresets,
   PURCHASE_METHOD,
-  PurchaseContentStage,
-  formatPrice,
-  isContentPurchaseInProgress,
-  isTrackPurchaseable,
+  PURCHASE_VENDOR,
+  usePurchaseMethod,
+  isTrackStreamPurchaseable,
+  isTrackDownloadPurchaseable
+} from '@audius/common/hooks'
+import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
+import type { USDCPurchaseConditions } from '@audius/common/models'
+import {
+  Name,
+  PurchaseVendor,
+  statusIsNotFinalized
+} from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
+import {
+  usePremiumContentPurchaseModal,
   purchaseContentActions,
   purchaseContentSelectors,
-  statusIsNotFinalized,
-  useGetTrackById,
-  usePayExtraPresets,
-  usePremiumContentPurchaseModal,
-  usePurchaseContentErrorMessage,
-  usePurchaseContentFormConfiguration,
-  usePurchaseMethod,
-  useUSDCBalance,
-  PURCHASE_VENDOR,
-  useRemoteVar,
-  IntKeys,
-  PurchaseVendor
-} from '@audius/common'
+  PurchaseContentStage,
+  PurchaseContentPage,
+  isContentPurchaseInProgress
+} from '@audius/common/store'
+import type { PurchaseContentError } from '@audius/common/store'
+import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,
@@ -39,9 +42,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import IconCart from 'app/assets/images/iconCart.svg'
-import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
-import IconError from 'app/assets/images/iconError.svg'
+import { IconCart, IconCloseAlt, IconError } from '@audius/harmony-native'
 import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
@@ -228,10 +229,12 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track
+  track,
+  purchaseConditions
 }: {
   onClose: () => void
   track: PurchaseableTrackMetadata
+  purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -249,10 +252,8 @@ const RenderForm = ({
   useEffect(() => resetForm, [track.track_id, resetForm])
 
   const {
-    stream_conditions: {
-      usdc_purchase: { price }
-    }
-  } = track
+    usdc_purchase: { price }
+  } = purchaseConditions
 
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
@@ -314,6 +315,13 @@ const RenderForm = ({
     }
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
+  const stemsPurchaseCount = track.is_download_gated
+    ? track._stems?.length ?? 0
+    : 0
+  const downloadPurchaseCount =
+    track.is_download_gated && track.download?.is_downloadable ? 1 : 0
+  const streamPurchaseCount = track.is_stream_gated ? 1 : 0
+
   return (
     <View style={styles.root}>
       {page === PurchaseContentPage.PURCHASE ? (
@@ -323,7 +331,7 @@ const RenderForm = ({
               <AudioMatchSection amount={Math.round(price / 100)} />
             ) : null}
             <View style={styles.formContentSection}>
-              <TrackDetailsTile trackId={track.track_id} />
+              <TrackDetailsTile trackId={track.track_id} showLabel={false} />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
                   amountPresets={presetValues}
@@ -333,6 +341,9 @@ const RenderForm = ({
               <View style={styles.bottomSection}>
                 <PurchaseSummaryTable
                   {...purchaseSummaryValues}
+                  stemsPurchaseCount={stemsPurchaseCount}
+                  downloadPurchaseCount={downloadPurchaseCount}
+                  streamPurchaseCount={streamPurchaseCount}
                   totalPriceInCents={totalPriceInCents}
                 />
                 {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
@@ -433,10 +444,18 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidTrack = track && isTrackPurchaseable(track)
-  const price = isValidTrack
-    ? track?.stream_conditions?.usdc_purchase?.price
-    : 0
+  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
+  const isValidDownloadGatedTrack =
+    !!track && isTrackDownloadPurchaseable(track)
+
+  const purchaseConditions = isValidStreamGatedTrack
+    ? track.stream_conditions
+    : isValidDownloadGatedTrack
+    ? track.download_conditions
+    : null
+
+  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({ track, presetValues, price })
 
@@ -445,7 +464,15 @@ export const PremiumTrackPurchaseDrawer = () => {
     dispatch(purchaseContentActions.cleanup())
   }, [onClosed, dispatch])
 
-  if (!track || !isTrackPurchaseable(track) || !isUSDCEnabled) return null
+  if (
+    !track ||
+    !purchaseConditions ||
+    !isUSDCEnabled ||
+    !(isValidStreamGatedTrack || isValidDownloadGatedTrack)
+  ) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    return null
+  }
 
   return (
     <Drawer
@@ -468,7 +495,11 @@ export const PremiumTrackPurchaseDrawer = () => {
             validationSchema={toFormikValidationSchema(validationSchema)}
             onSubmit={onSubmit}
           >
-            <RenderForm onClose={onClose} track={track} />
+            <RenderForm
+              onClose={onClose}
+              track={track}
+              purchaseConditions={purchaseConditions}
+            />
           </Formik>
         </View>
       )}

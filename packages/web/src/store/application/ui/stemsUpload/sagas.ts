@@ -1,11 +1,9 @@
+import { Name, StemCategory, Track, User } from '@audius/common/models'
 import {
-  Name,
-  Track,
-  User,
   cacheTracksSelectors,
   cacheUsersSelectors,
   stemsUploadActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -25,7 +23,7 @@ function* watchUploadStems() {
         const metadata = createStemMetadata({
           parentTrackId: parentId,
           track: u.metadata,
-          stemCategory: u.category
+          stemCategory: u.category ?? StemCategory.OTHER
         })
         return {
           metadata,

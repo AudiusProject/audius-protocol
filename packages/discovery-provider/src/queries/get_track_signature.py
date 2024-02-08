@@ -34,9 +34,9 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
     is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
-    user_data = args["user_data"]
-    user_signature = args["user_signature"]
-    nft_access_signature = args["nft_access_signature"]
+    user_data = args.get("user_data")
+    user_signature = args.get("user_signature")
+    nft_access_signature = args.get("nft_access_signature")
     cid = track.get("preview_cid") if is_preview else track.get("track_cid")
     if not cid:
         return None
@@ -120,9 +120,9 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         filename = (
             orig_filename if is_original else f"{orig_name_without_extension}.mp3"
         )
-    user_data = args["user_data"]
-    user_signature = args["user_signature"]
-    nft_access_signature = args["nft_access_signature"]
+    user_data = args.get("user_data")
+    user_signature = args.get("user_signature")
+    nft_access_signature = args.get("nft_access_signature")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
     if not cid:
         return None
@@ -159,19 +159,10 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         authed_user_wallet = authed_user["user_wallet"].lower()
         if signature_user_wallet != authed_user_wallet:
             return None
-        # todo: use commented line below once logic is added to pass in correct signature
-        # for nft gated tracks i.e. for original cid or for mp3 cid.
-        # for now, we are returning the signature for mp3 cid
-        # ==============
-        # return {"signature": signature_obj, "cid": cid, "filename": filename}
-        # ==============
-        if not track.get("track_cid"):
-            return None
-        return {
-            "signature": signature_obj,
-            "cid": track.get("track_cid"),
-            "filename": filename,
-        }
+        # client must pass the correct nft access signature, i.e.
+        # the one with original cid if the user wants to download the original file, or
+        # the one with track cid if the user wants to download the transcoded file
+        return {"signature": signature_obj, "cid": cid, "filename": filename}
 
     # build a track instance from the track dict
     track_entity = Track(

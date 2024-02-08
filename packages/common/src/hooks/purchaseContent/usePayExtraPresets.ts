@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import { StringKeys } from 'services/remote-config'
-import { parseIntList } from 'utils/stringUtils'
+import { StringKeys } from '~/services/remote-config'
+import { parseIntList } from '~/utils/stringUtils'
 
 import { useRemoteVar } from '../useRemoteVar'
 

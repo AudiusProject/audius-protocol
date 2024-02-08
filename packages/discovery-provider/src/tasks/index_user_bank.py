@@ -25,7 +25,11 @@ from src.models.users.audio_transactions_history import (
     TransactionMethod,
     TransactionType,
 )
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -62,6 +66,7 @@ from src.utils.helpers import (
     BalanceChange,
     decode_all_solana_memos,
     get_account_index,
+    get_account_owner_from_balance_change,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -113,6 +118,9 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 INITIAL_FETCH_SIZE = 10
+
+PREPARE_WITHDRAWAL_MEMO_STRING = "Prepare Withdrawal"
+WITHDRAWAL_MEMO_STRING = "Withdrawal"
 
 # Used to find the correct accounts for sender/receiver in the transaction and the ClaimableTokensPDA
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
@@ -258,6 +266,16 @@ def process_create_userbank_instruction(
         logger.error(e)
 
 
+def get_transfer_type_from_memo(memos: List[str]) -> USDCTransactionType:
+    """Checks the list of memos for one matching containing a transaction type and returns it if found. Defaults to USDCTransactionType.transfer if no matching memo is found"""
+    for memo in memos:
+        if memo == PREPARE_WITHDRAWAL_MEMO_STRING:
+            return USDCTransactionType.prepare_withdrawal
+        elif memo == WITHDRAWAL_MEMO_STRING:
+            return USDCTransactionType.withdrawal
+    return USDCTransactionType.transfer
+
+
 class PurchaseMetadataDict(TypedDict):
     price: int
     splits: dict[str, int]
@@ -335,7 +353,7 @@ def get_purchase_metadata_from_memo(
                     "splits": splits,
                     "purchaser_user_id": purchaser_user_id,
                 }
-                logger.error(
+                logger.info(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
                 )
                 return purchase_metadata
@@ -398,6 +416,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=PurchaseAccessType.stream,
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -551,7 +570,6 @@ def index_user_tip(
 
 
 def process_transfer_instruction(
-    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     instruction: CompiledInstruction,
@@ -646,29 +664,38 @@ def process_transfer_instruction(
     # Cannot index receive external transfers this way as those use the spl-token program,
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
-        receiver_account_pubkey = Pubkey.from_string(receiver_account)
-        receiver_account_info = solana_client_manager.get_account_info_json_parsed(
-            receiver_account_pubkey
+        transaction_type = get_transfer_type_from_memo(memos=memos)
+
+        # Attempt to look up account owner, fallback to recipient address
+        receiver_account_owner = (
+            get_account_owner_from_balance_change(
+                account=receiver_account, balance_changes=balance_changes
+            )
+            or receiver_account
         )
-        if receiver_account_info:
-            receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
-        else:
-            receiver_account_owner = receiver_account
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
+        change_amount = Decimal(balance_changes[sender_account]["change"])
+        # For withdrawals, the user bank balance change will be zero, since the
+        # user bank is only used as an intermediate step. So we will index the change
+        # amount as how much was actually sent to the destination
+        if transaction_type == USDCTransactionType.withdrawal:
+            change_amount = -Decimal(balance_changes[receiver_account]["change"])
         transfer_sent = TransactionHistoryModel(
             user_bank=sender_account,
             slot=slot,
             signature=tx_sig,
-            transaction_type=TransactionType.transfer,
+            transaction_type=transaction_type,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=Decimal(balance_changes[sender_account]["change"]),
+            change=change_amount,
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
             tx_metadata=str(receiver_account_owner),
         )
-        logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
+        logger.debug(
+            f"index_user_bank.py | Creating {transaction_type} sent {transfer_sent}"
+        )
         session.add(transfer_sent)
     # If there are two userbanks to update, it was a transfer from user to user
     else:
@@ -801,7 +828,6 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         process_transfer_instruction(
-            solana_client_manager=solana_client_manager,
             session=session,
             redis=redis,
             instruction=instruction,

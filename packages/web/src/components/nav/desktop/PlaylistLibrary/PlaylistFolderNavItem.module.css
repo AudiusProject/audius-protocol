@@ -9,8 +9,12 @@
   margin-right: 8px;
 }
 
-.iconFolderUpdated {
-  color: var(--secondary);
+.iconFolder path {
+  fill: var(--harmony-n-950);
+}
+
+.iconFolderUpdated path {
+  fill: var(--harmony-secondary);
 }
 
 .folderName {

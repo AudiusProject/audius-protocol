@@ -1,4 +1,4 @@
-import type { Maybe } from '@audius/common'
+import type { Maybe } from '@audius/common/utils'
 import type { NavigationProp, NavigationState } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 

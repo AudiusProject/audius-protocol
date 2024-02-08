@@ -1,4 +1,4 @@
-import { UserListStoreState } from 'store/user-list/types'
+import { UserListStoreState } from '~/store/user-list/types'
 
 export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'
 

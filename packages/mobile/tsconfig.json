@@ -1,10 +1,27 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
-    // Remove "dom" when no longer dependent on audius-client
-    "lib": ["dom", "es2019"],
+    // Use react-native's builtin lib when no longer dependent on audius-client
+    "lib": [
+      "dom",
+      "es2019",
+      "es2020.bigint",
+      "es2020.date",
+      "es2020.number",
+      "es2020.promise",
+      "es2020.string",
+      "es2020.symbol.wellknown",
+      "es2021.promise",
+      "es2021.string",
+      "es2021.weakref",
+      "es2022.array",
+      "es2022.object",
+      "es2022.string"
+    ],
+    "module": "esnext",
     "paths": {
       "@audius/harmony-native": ["./src/harmony-native/index.ts"],
+      "~/*": ["../common/src/*"],
       "app/*": ["./src/*"],
       // Remove these when no longer dependent on audius-client
       "audio/*": ["../../node_modules/audius-client/src/audio/*"],
@@ -24,5 +41,6 @@
     // Update these when no longer dependent on audius-client.
     // Issue is due to absolute paths into audius-client
     "strict": false
-  }
+  },
+    "exclude": ["node_modules", "harmony"],
 }

@@ -1,12 +1,11 @@
 import { Component } from 'react'
 
 import {
-  Name,
-  SquareSizes,
-  getTierForUser,
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
+import { Name, SquareSizes } from '@audius/common/models'
+import { getTierForUser } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
@@ -80,14 +79,21 @@ class ConnectedSearchBar extends Component {
 
   onSubmit = (value) => {
     // Encode everything besides tag searches
-    if (!value.startsWith('#')) {
+    const pathname = '/search'
+    if (value.startsWith('#')) {
+      // perform tag search
+      this.props.history.push({
+        hash: value.split('#')[1],
+        pathname,
+        state: {}
+      })
+    } else {
       value = encodeURIComponent(value)
+      this.props.history.push({
+        pathname: pathname + '/' + value,
+        state: {}
+      })
     }
-    const pathname = `/search/${value}`
-    this.props.history.push({
-      pathname,
-      state: {}
-    })
   }
 
   onSelect = (value) => {

@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.30",
+  "version": "3.0.31",
   "audius": {
     "releaseSHA": "949a60db4b019706777d4bdbf679e29f06ef2b40"
   },
@@ -31,13 +31,13 @@
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",
     "test:integration": "ts-mocha tests/index.js",
     "setup": "./scripts/migrate_contracts.sh",
-    "build": "rollup -c --configPlugin typescript",
-    "build:sdk": "rollup -c rollup.sdk.config.ts --configPlugin typescript",
-    "build:sdk:browser": "rollup -c rollup.sdk.browser.config.ts --configPlugin typescript",
-    "build:sdk:browser:dist": "rollup -c rollup.sdk.browser.dist.config.ts --configPlugin typescript",
-    "build:sdk:native": "rollup -c rollup.sdk.native.config.ts --configPlugin typescript",
-    "build:legacy:browser": "rollup -c rollup.legacy.browser.config.ts --configPlugin typescript",
-    "build:legacy:native": "rollup -c rollup.legacy.native.config.ts --configPlugin typescript",
+    "build": "rm -rf ./dist && rollup -c --configPlugin typescript",
+    "build:sdk": "rm -rf ./dist && rollup -c rollup.sdk.config.ts --configPlugin typescript",
+    "build:sdk:browser": "rm -rf ./dist && rollup -c rollup.sdk.browser.config.ts --configPlugin typescript",
+    "build:sdk:browser:dist": "rm -rf ./dist && rollup -c rollup.sdk.browser.dist.config.ts --configPlugin typescript",
+    "build:sdk:native": "rm -rf ./dist && rollup -c rollup.sdk.native.config.ts --configPlugin typescript",
+    "build:legacy:browser": "rm -rf ./dist && rollup -c rollup.legacy.browser.config.ts --configPlugin typescript",
+    "build:legacy:native": "rm -rf ./dist && rollup -c rollup.legacy.native.config.ts --configPlugin typescript",
     "start": "rollup -c -w --configPlugin typescript",
     "start:sdk": "rollup -c rollup.sdk.config.ts -w --configPlugin typescript",
     "start:sdk:browser": "rollup -c rollup.sdk.browser.config.ts -w --configPlugin typescript",
@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@audius/fixed-decimal": "*",
-    "@audius/hedgehog": "2.1.0",
+    "@audius/hedgehog": "3.0.0-alpha.0",
     "@audius/spl": "*",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",

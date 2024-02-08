@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 
-import { DogEarType } from 'models/DogEar'
-import { AccessConditions } from 'models/Track'
+import { DogEarType } from '~/models/DogEar'
+import { AccessConditions } from '~/models/Track'
 
 import { Nullable } from './typeUtils'
 
@@ -11,6 +11,7 @@ type GetDogEarTypeArgs = {
   isOwner?: boolean
   isUnlisted?: boolean
   streamConditions?: Nullable<AccessConditions>
+  downloadConditions?: Nullable<AccessConditions>
 }
 
 /** Determines appropriate DogEar type based on conditions provided. Note: all conditions
@@ -27,7 +28,8 @@ export const getDogEarType = ({
   isArtistPick,
   isOwner,
   isUnlisted,
-  streamConditions
+  streamConditions,
+  downloadConditions
 }: GetDogEarTypeArgs) => {
   // Show gated variants for track owners or if user does not yet have access
   if (
@@ -44,6 +46,12 @@ export const getDogEarType = ({
       'tip_user_id' in streamConditions
     ) {
       return DogEarType.SPECIAL_ACCESS
+    }
+  }
+
+  if (downloadConditions != null && !isEmpty(downloadConditions)) {
+    if ('usdc_purchase' in downloadConditions) {
+      return DogEarType.USDC_PURCHASE
     }
   }
 

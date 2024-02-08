@@ -83,6 +83,7 @@ jobs:
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
             - ./packages/ddex/webapp/node_modules
+            - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
 
   generate-release-branch:
@@ -445,6 +446,7 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/publisher/.* run-ddex-publisher-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
@@ -455,6 +457,7 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-webapp-workflow true
+            .circleci/.* run-ddex-publisher-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
@@ -487,6 +490,7 @@ workflows:
             packages/libs/.* run-identity-workflow true
             packages/libs/.* run-protocol-dashboard-workflow true
             packages/libs/.* run-ddex-webapp-workflow true
+            packages/libs/.* run-ddex-publisher-workflow true
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
@@ -515,6 +519,7 @@ workflows:
             .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow true
+            .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             packages/common/.* run-common-workflow true
@@ -530,6 +535,7 @@ workflows:
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/publisher/.* run-ddex-publisher-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:

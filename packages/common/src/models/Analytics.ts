@@ -1,12 +1,16 @@
 import { ChatPermission, Genre } from '@audius/sdk'
 
-import { FeedFilter } from 'models/FeedFilter'
-import { ID, PlayableType } from 'models/Identifiers'
-import { MonitorPayload, ServiceMonitorType } from 'models/Services'
-import { TimeRange } from 'models/TimeRange'
-import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
-import { MintName } from 'services/index'
-import { Prettify } from 'utils/typeUtils'
+import { FeedFilter } from '~/models/FeedFilter'
+import { ID, PlayableType } from '~/models/Identifiers'
+import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
+import { TimeRange } from '~/models/TimeRange'
+import {
+  SolanaWalletAddress,
+  StringAudio,
+  WalletAddress
+} from '~/models/Wallet'
+import { MintName } from '~/services/index'
+import { Prettify } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -20,6 +24,8 @@ type JsonMap = Record<string, unknown>
 export type AnalyticsEvent = {
   eventName: string
   properties?: JsonMap
+  id?: string
+  source?: string
 }
 
 export enum Name {
@@ -398,6 +404,14 @@ export enum Name {
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
   WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START = 'Withdraw USDC: Create Destination Token Account Started',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS = 'Withdraw USDC: Create Destination Token Account Success',
+  WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED = 'Withdraw USDC: Create Destination Token Account Failed',
+  WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET = 'Withdraw USDC: Transfer to Root Wallet',
+  WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY = 'Withdraw USDC: Coinflow Withdrawal Ready',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION = 'Withdraw USDC: Coinflow Send Transaction',
+  WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED = 'Withdraw USDC: Coinflow Send Transaction Failed',
+  WITHDRAW_USDC_CANCELLED = 'Withdraw USDC: Cancelled',
   WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
   WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
   WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
@@ -462,7 +476,14 @@ export enum Name {
   // Repair Signups
   SIGN_UP_REPAIR_START = 'Sign Up Repair: Start',
   SIGN_UP_REPAIR_SUCCESS = 'Sign Up Repair: Success',
-  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure'
+  SIGN_UP_REPAIR_FAILURE = 'Sign Up Repair: Failure',
+
+  // Export Private Key
+  EXPORT_PRIVATE_KEY_LINK_CLICKED = 'Export Private Key: Settings Link Clicked',
+  EXPORT_PRIVATE_KEY_PAGE_VIEWED = 'Export Private Key: Page Viewed',
+  EXPORT_PRIVATE_KEY_MODAL_OPENED = 'Export Private Key: Modal Opened',
+  EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED = 'Export Private Key: Public Address Copied',
+  EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED = 'Export Private Key: Private Key Copied'
 }
 
 type PageView = {
@@ -807,7 +828,8 @@ export enum FollowSource {
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
   EMPTY_FEED = 'empty feed',
   HOW_TO_UNLOCK_TRACK_PAGE = 'how to unlock track page',
-  HOW_TO_UNLOCK_MODAL = 'how to unlock modal'
+  HOW_TO_UNLOCK_MODAL = 'how to unlock modal',
+  SIGN_UP = 'sign up'
 }
 
 type Share = {
@@ -1904,6 +1926,45 @@ export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
 export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
   eventName: Name.WITHDRAW_USDC_FAILURE
 }
+export type WithdrawUSDCCancelled = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_CANCELLED
+}
+
+export type WithdrawUSDCCreateDestAccountStarted =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START
+  }
+
+export type WithdrawUSDCCreateDestAccountSuccess =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS
+  }
+
+export type WithdrawUSDCCreateDestAccountFailure =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED
+  }
+
+export type WithdrawUSDCTransferToRootWallet =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET
+  }
+
+export type WithdrawUSDCCoinflowWithdrawalReady =
+  WithdrawUSDCTransferEventFields & {
+    eventName: Name.WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY
+  }
+
+export type WithdrawUSDCCoinflowSendTransaction = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION
+  signature: string
+}
+
+export type WithdrawUSDCCoinflowSendTransactionFailed = {
+  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED
+  error?: string
+  errorCode?: string | number
+}
 
 export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
   eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
@@ -2149,6 +2210,36 @@ type JupiterQuoteResponse = {
   outAmount: number
 }
 
+type ExportPrivateKeyLinkClicked = {
+  eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPageOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PAGE_VIEWED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyModalOpened = {
+  eventName: Name.EXPORT_PRIVATE_KEY_MODAL_OPENED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPublicAddressCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PUBLIC_ADDRESS_COPIED
+  handle: string
+  userId: ID
+}
+
+type ExportPrivateKeyPrivateKeyCopied = {
+  eventName: Name.EXPORT_PRIVATE_KEY_PRIVATE_KEY_COPIED
+  handle: string
+  userId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -2380,6 +2471,14 @@ export type AllTrackingEvents =
   | WithdrawUSDCRequested
   | WithdrawUSDCSuccess
   | WithdrawUSDCFailure
+  | WithdrawUSDCCancelled
+  | WithdrawUSDCCreateDestAccountStarted
+  | WithdrawUSDCCreateDestAccountSuccess
+  | WithdrawUSDCCreateDestAccountFailure
+  | WithdrawUSDCTransferToRootWallet
+  | WithdrawUSDCCoinflowWithdrawalReady
+  | WithdrawUSDCCoinflowSendTransaction
+  | WithdrawUSDCCoinflowSendTransactionFailed
   | WithdrawUSDCHelpLinkClicked
   | WithdrawUSDCTxLinkClicked
   | StripeSessionCreationError
@@ -2432,3 +2531,8 @@ export type AllTrackingEvents =
   | ChatWebsocketError
   | JupiterQuoteResponse
   | JupiterQuoteRequest
+  | ExportPrivateKeyLinkClicked
+  | ExportPrivateKeyPageOpened
+  | ExportPrivateKeyModalOpened
+  | ExportPrivateKeyPublicAddressCopied
+  | ExportPrivateKeyPrivateKeyCopied

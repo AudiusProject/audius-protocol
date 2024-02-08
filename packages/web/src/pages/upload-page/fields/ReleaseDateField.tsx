@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { getLocalTimezone } from '@audius/common'
-import { IconInfo, Flex } from '@audius/harmony'
-import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
+import { getLocalTimezone } from '@audius/common/utils'
+import { IconInfo, Flex, IconCalendarMonth, RadioGroup } from '@audius/harmony'
+import { ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -24,9 +24,9 @@ import { formatCalendarTime } from 'utils/dateUtils'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
-import { IS_UNLISTED } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
+import { IS_UNLISTED } from './types'
 
 const messages = {
   title: 'Release Date',
@@ -137,7 +137,7 @@ export const ReleaseDateField = () => {
     return (
       <SelectedValue
         label={formatCalendarTime(trackReleaseDate, 'Scheduled for ')}
-        icon={IconCalendar}
+        icon={IconCalendarMonth}
       >
         <input
           className={styles.input}
@@ -154,7 +154,7 @@ export const ReleaseDateField = () => {
       <ContextualMenu
         label={messages.title}
         description={messages.description}
-        icon={<IconCalendar className={styles.titleIcon} />}
+        icon={<IconCalendarMonth className={styles.titleIcon} />}
         initialValues={initialValues}
         validationSchema={toFormikValidationSchema(timeValidationSchema)}
         validateOnChange={false}
@@ -202,9 +202,8 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
 
   return (
     <>
-      <RadioButtonGroup
+      <RadioGroup
         {...releaseDateTypeField}
-        className={styles.radioGroup}
         defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
       >
         <ModalRadioItem
@@ -216,7 +215,7 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
           value={ReleaseDateType.SCHEDULED_RELEASE}
           label='Select a Release Date'
         />
-      </RadioButtonGroup>
+      </RadioGroup>
       <SelectReleaseDate {...props} />
     </>
   )

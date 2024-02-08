@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { CommonState } from 'store/index'
-import { chatActions, chatSelectors } from 'store/pages/chat'
+import { CommonState } from '~/store/index'
+import { chatActions, chatSelectors } from '~/store/pages/chat'
 const { getUnfurlMetadata } = chatSelectors
 const { fetchLinkUnfurl } = chatActions
 

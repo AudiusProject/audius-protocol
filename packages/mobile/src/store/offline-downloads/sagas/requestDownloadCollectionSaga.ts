@@ -1,9 +1,9 @@
+import { FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
-  FavoriteSource,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'

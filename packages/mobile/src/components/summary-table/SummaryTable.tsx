@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 import React, { useCallback, useState } from 'react'
 
-import { removeNullable } from '@audius/common'
+import { removeNullable } from '@audius/common/utils'
 import { LayoutAnimation, View } from 'react-native'
 
-import { Text } from 'app/components/core'
+import type { TextColors } from '@audius/harmony-native'
+import { Text } from '@audius/harmony-native'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { type ThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
@@ -42,6 +42,7 @@ export type SummaryTableItem = {
   icon?: React.FC
   content?: ReactNode // expandable content
   disabled?: boolean
+  color?: TextColors
 }
 
 export type SummaryTableProps = {
@@ -49,8 +50,8 @@ export type SummaryTableProps = {
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
-  summaryLabelColor?: keyof ThemeColors
-  summaryValueColor?: keyof ThemeColors
+  summaryLabelColor?: TextColors
+  summaryValueColor?: TextColors
   renderBody?: (items: SummaryTableItem[]) => ReactNode
   /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
@@ -62,7 +63,7 @@ export const SummaryTable = ({
   title,
   secondaryTitle,
   summaryLabelColor,
-  summaryValueColor = 'secondary',
+  summaryValueColor = 'accent',
   renderBody: renderBodyProp,
   collapsible = false
 }: SummaryTableProps) => {
@@ -82,16 +83,20 @@ export const SummaryTable = ({
       <View style={[styles.row, styles.grayRow]}>
         <View style={styles.collapsibleTitle}>
           <ExpandableArrowIcon expanded={isExpanded} iconSize='s' />
-          <Text weight='bold'>{title}</Text>
+          <Text variant='title' strength='default'>
+            {title}
+          </Text>
         </View>
-        <Text variant='body' fontSize='large' weight='bold'>
+        <Text variant='title' strength='default'>
           {secondaryTitle}
         </Text>
       </View>
     ) : (
       <View style={[styles.row, styles.grayRow]}>
-        <Text weight='bold'>{title}</Text>
-        <Text variant='body' fontSize='large' weight='bold'>
+        <Text variant='title' strength='default'>
+          {title}
+        </Text>
+        <Text variant='title' strength='default'>
           {secondaryTitle}
         </Text>
       </View>
@@ -104,16 +109,16 @@ export const SummaryTable = ({
       <View style={[styles.row, styles.lastRow, styles.grayRow]}>
         <Text
           variant='body'
-          fontSize='medium'
-          weight='bold'
+          size='m'
+          strength='strong'
           color={summaryLabelColor}
         >
           {summaryItem.label}
         </Text>
         <Text
           variant='body'
-          fontSize='medium'
-          weight='bold'
+          size='m'
+          strength='strong'
           color={summaryValueColor}
         >
           {summaryItem.value}
@@ -127,7 +132,7 @@ export const SummaryTable = ({
       <>
         {renderBodyProp
           ? renderBodyProp(items)
-          : nonNullItems.map(({ id, label, value }, index) => (
+          : nonNullItems.map(({ id, label, value, color }, index) => (
               <View
                 key={id}
                 style={[
@@ -137,8 +142,10 @@ export const SummaryTable = ({
                     : null
                 ]}
               >
-                <Text>{label}</Text>
-                <Text>{value}</Text>
+                <Text variant='body'>{label}</Text>
+                <Text variant='body' color={color}>
+                  {value}
+                </Text>
               </View>
             ))}
         {renderSummaryItem()}

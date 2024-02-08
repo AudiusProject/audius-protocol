@@ -28,7 +28,7 @@
   margin-right: 8px !important;
 }
 
-.upload > .navButtonIcon g path {
+.upload > .navButtonIcon path {
   fill: var(--neutral-light-4);
 }
 

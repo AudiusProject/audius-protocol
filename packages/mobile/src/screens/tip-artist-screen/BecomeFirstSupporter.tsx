@@ -1,7 +1,7 @@
 import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { IconTrophy } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

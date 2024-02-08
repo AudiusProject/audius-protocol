@@ -2,34 +2,98 @@ package parser
 
 import (
 	"context"
-	"fmt"
+	"ingester/common"
+	"ingester/constants"
+	"log"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
 )
 
-func Run() {
-	mongoUrl := os.Getenv("DDEX_MONGODB_URL")
-	if mongoUrl == "" {
-		mongoUrl = "mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0"
-	}
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoUrl))
+func Run(ctx context.Context) {
+	mongoClient := common.InitMongoClient(ctx)
+	defer mongoClient.Disconnect(ctx)
+
+	indexedColl := mongoClient.Database("ddex").Collection("indexed")
+	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
+	changeStream, err := indexedColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Parser: connected to mongo")
-	defer client.Disconnect(context.Background())
+	log.Println("Watching collection 'indexed'")
+	defer changeStream.Close(ctx)
 
-	coll := client.Database("ddex").Collection("indexed")
-	changeStream, err := coll.Watch(context.Background(), mongo.Pipeline{})
+	for changeStream.Next(ctx) {
+		var changeDoc bson.M
+		if err := changeStream.Decode(&changeDoc); err != nil {
+			log.Fatal(err)
+		}
+		fullDocument, _ := changeDoc["fullDocument"].(bson.M)
+		parseIndexed(mongoClient, fullDocument, ctx)
+	}
+
+	if err := changeStream.Err(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context) {
+	log.Printf("Processing new indexed document: %v\n", fullDocument)
+	indexedColl := client.Database("ddex").Collection("indexed")
+	parsedColl := client.Database("ddex").Collection("parsed")
+
+	// TODO process the delivery xml
+	// 1. Validate all referenced audio/image files exist within the delivery
+
+	session, err := client.StartSession()
 	if err != nil {
-		panic(err)
+		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
 	}
-	fmt.Println("Parser: watching collection 'indexed'")
-	defer changeStream.Close(context.Background())
+	err = mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
+		if err := session.StartTransaction(); err != nil {
+			return err
+		}
 
-	for changeStream.Next(context.Background()) {
-		fmt.Printf("Parser: received change event: %v\n", changeStream.Current)
-		// TODO process the event
+		// 2. Write each release in "delivery_xml" in the indexed doc as a bson doc in the 'parsed' collection
+		parsedDoc := bson.M{
+			"upload_etag":  fullDocument["upload_etag"],
+			"delivery_id":  fullDocument["delivery_id"],
+			"entity":       "track",
+			"publish_date": time.Now(),
+		}
+		result, err := parsedColl.InsertOne(ctx, parsedDoc)
+		if err != nil {
+			session.AbortTransaction(sessionContext)
+			return err
+		}
+		log.Println("New parsed release doc ID: ", result.InsertedID)
+
+		// 3. Set delivery status for delivery in 'indexed' collection
+		err = setDeliveryStatus(indexedColl, sessionContext, fullDocument["_id"].(primitive.ObjectID), constants.DeliveryStatusAwaitingPublishing)
+		if err != nil {
+			session.AbortTransaction(sessionContext)
+			return err
+		}
+
+		return session.CommitTransaction(sessionContext)
+	})
+
+	if err != nil {
+		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
 	}
+
+	session.EndSession(ctx)
+}
+
+func setDeliveryStatus(collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID, status string) error {
+	update := bson.M{"$set": bson.M{"delivery_status": status}}
+	_, err := collection.UpdateByID(ctx, documentId, update)
+	return err
+}
+
+func failAndUpdateStatus(err error, collection *mongo.Collection, ctx context.Context, documentId primitive.ObjectID) {
+	setDeliveryStatus(collection, ctx, documentId, constants.DeliveryStatusError)
+	log.Fatal(err)
 }

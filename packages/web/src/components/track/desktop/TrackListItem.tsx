@@ -1,15 +1,11 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import {
-  UID,
-  ID,
-  formatSeconds,
-  EnhancedCollectionTrack,
-  Genre
-} from '@audius/common'
+import { ID, UID } from '@audius/common/models'
+import { EnhancedCollectionTrack } from '@audius/common/store'
+import { Genre, formatSeconds } from '@audius/common/utils'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'

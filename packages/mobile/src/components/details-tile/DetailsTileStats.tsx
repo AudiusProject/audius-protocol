@@ -1,7 +1,6 @@
 import { View } from 'react-native'
 
-import IconFavorite from 'app/assets/images/iconHeart.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import { IconHeart, IconRepost } from '@audius/harmony-native'
 import Text from 'app/components/text'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
@@ -69,7 +68,7 @@ export const DetailsTileStats = ({
               count={favoriteCount ?? 0}
               onPress={onPressFavorites}
               renderLabel={(color) => (
-                <IconFavorite fill={color} height={16} width={16} />
+                <IconHeart fill={color} height={16} width={16} />
               )}
             />
           )}

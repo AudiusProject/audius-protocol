@@ -1,4 +1,4 @@
-import type { Env } from '@audius/common'
+import type { Env } from '@audius/common/services'
 import Config from 'react-native-config'
 
 import { env as envDev } from './env.dev'

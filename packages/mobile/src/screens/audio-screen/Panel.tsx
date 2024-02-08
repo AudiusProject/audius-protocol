@@ -1,18 +1,15 @@
-import type {
-  ChallengeRewardsInfo,
-  OptimisticUserChallenge
-} from '@audius/common'
+import type { OptimisticUserChallenge } from '@audius/common/models'
+import type { ChallengeRewardsInfo } from '@audius/common/utils'
 import {
   fillString,
   formatNumberCommas,
   isAudioMatchingChallenge
-} from '@audius/common'
+} from '@audius/common/utils'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCheck from 'app/assets/images/iconCheck.svg'
+import { IconArrowRight, IconCheck } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
@@ -247,7 +244,7 @@ export const Panel = ({
             variant={buttonType}
             iconPosition='right'
             size='medium'
-            icon={hasDisbursed ? undefined : IconArrow}
+            icon={hasDisbursed ? undefined : IconArrowRight}
             onPress={onPress}
             style={[styles.button, hasDisbursed ? styles.disbursed : null]}
           />

@@ -1,22 +1,21 @@
 import { useCallback, useState } from 'react'
 
-import type { CommonState } from '@audius/common'
+import type { CommonState } from '@audius/common/store'
 import {
-  uploadActions,
-  cacheTracksSelectors,
   accountSelectors,
+  cacheTracksSelectors,
   trackPageActions,
+  uploadActions,
   uploadSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
+import { IconShare, IconCloudUpload } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import IconShare from 'app/assets/images/iconShare.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Text, TextButton, Tile, Button } from 'app/components/core'
 import {
   LineupTileSkeleton,
@@ -120,7 +119,7 @@ export const UploadCompleteScreen = () => {
   return (
     <FormScreen
       title={messages.title}
-      icon={IconUpload}
+      icon={IconCloudUpload}
       variant='secondary'
       topbarLeft={null}
       url='/upload-complete'

@@ -1,4 +1,5 @@
-import { ErrorLevel, remoteConfig } from '@audius/common'
+import { ErrorLevel } from '@audius/common/models'
+import { remoteConfig } from '@audius/common/services'
 import optimizely, { Config } from '@optimizely/optimizely-sdk'
 import { isEmpty } from 'lodash'
 

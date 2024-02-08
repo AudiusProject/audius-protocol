@@ -1,28 +1,27 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
+  Name,
+  ChallengeName,
   ChallengeRewardID,
-  OptimisticUserChallenge,
-  removeNullable,
-  StringKeys,
+  OptimisticUserChallenge
+} from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
+import {
+  challengesSelectors,
+  audioRewardsPageSelectors,
+  audioRewardsPageActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+import {
   fillString,
   formatNumberCommas,
-  challengesSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  ChallengeName,
-  audioRewardsPageSelectors,
-  isAudioMatchingChallenge,
+  removeNullable,
   makeOptimisticChallengeSortComparator,
-  Name
-} from '@audius/common'
-import {
-  ProgressBar,
-  ButtonType,
-  Button,
-  IconCheck,
-  IconArrow
-} from '@audius/stems'
+  isAudioMatchingChallenge
+} from '@audius/common/utils'
+import { IconArrowRight as IconArrow, IconCheck } from '@audius/harmony'
+import { ProgressBar, ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -1,4 +1,5 @@
-import { Name, changePasswordActions, getContext } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { changePasswordActions, getContext } from '@audius/common/store'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
@@ -17,13 +18,16 @@ function* handleConfirmCredentials(
 ) {
   const { email, password } = action.payload
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const libs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibsTyped
+  ])
   yield* call(waitForWrite)
   try {
-    const confirmed = yield* call(
-      audiusBackendInstance.confirmCredentials,
-      email,
+    const confirmed = yield* call(libs.Account!.confirmCredentials, {
+      username: email,
       password
-    )
+    })
     if (!confirmed) {
       yield* put(confirmCredentialsFailed())
     } else {
@@ -37,14 +41,18 @@ function* handleConfirmCredentials(
 function* handleChangePassword(action: ReturnType<typeof changePassword>) {
   const { email, password, oldPassword } = action.payload
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const libs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibsTyped
+  ])
   yield* call(waitForWrite)
   try {
-    yield* call(
-      audiusBackendInstance.changePassword,
-      email,
-      password,
+    yield* call(libs.Account!.changeCredentials, {
+      newUsername: email,
+      newPassword: password,
+      oldUsername: email,
       oldPassword
-    )
+    })
     yield* put(changePasswordSucceeded())
     const trackEvent: TrackEvent = make(
       Name.SETTINGS_COMPLETE_CHANGE_PASSWORD,

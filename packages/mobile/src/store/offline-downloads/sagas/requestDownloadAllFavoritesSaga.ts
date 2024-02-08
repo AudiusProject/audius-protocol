@@ -1,8 +1,8 @@
 import {
   accountSelectors,
-  getContext,
-  savedPageSelectors
-} from '@audius/common'
+  savedPageSelectors,
+  getContext
+} from '@audius/common/store'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'

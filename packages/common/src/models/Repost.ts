@@ -1,4 +1,4 @@
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 import { User } from './User'
 

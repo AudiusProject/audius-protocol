@@ -1,5 +1,7 @@
 import { MouseEvent } from 'react'
 
+import { History } from 'history'
+
 import {
   AUDIUS_PRESS_LINK,
   COOKIE_POLICY,
@@ -30,7 +32,11 @@ const LANDING_PAGE_ROUTES = new Set([
  * @param setRenderPublicSite state setter to hide the public site
  */
 export const handleClickRoute =
-  (route: string, setRenderPublicSite: (shouldRender: boolean) => void) =>
+  (
+    route: string,
+    setRenderPublicSite: (shouldRender: boolean) => void,
+    history: History
+  ) =>
   (e?: MouseEvent) => {
     e?.preventDefault()
     // Http(s) routes and landing page routes should trigger a full window reload
@@ -40,6 +46,6 @@ export const handleClickRoute =
       pushWindowRoute(route)
     } else {
       setRenderPublicSite(false)
-      window.history.pushState('', '/', route)
+      history.push(route)
     }
   }

@@ -1,16 +1,18 @@
 import { useCallback } from 'react'
 
 import {
+  imageProfilePicEmpty as profilePicEmpty,
+  imageCoverPhotoBlank
+} from '@audius/common/assets'
+import {
   SquareSizes,
   WidthSizes,
   Supporting,
-  User,
-  Nullable,
-  cacheUsersSelectors,
-  imageCoverPhotoBlank,
-  imageProfilePicEmpty as profilePicEmpty
-} from '@audius/common'
-import { IconTrophy } from '@audius/stems'
+  User
+} from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { IconTrophy } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

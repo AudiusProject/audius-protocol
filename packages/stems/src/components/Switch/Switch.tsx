@@ -6,6 +6,9 @@ import styles from './Switch.module.css'
 
 export type SwitchProps = ComponentProps<'input'>
 
+/**
+ * @deprecated use @audius/harmony Switch instead
+ */
 export const Switch = (props: SwitchProps) => {
   const { disabled } = props
   return (

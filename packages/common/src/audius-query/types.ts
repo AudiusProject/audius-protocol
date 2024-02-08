@@ -11,7 +11,7 @@ import {
 import AsyncRetry from 'async-retry'
 import { Dispatch } from 'redux'
 
-import { Kind, Status } from 'models'
+import { Kind, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
@@ -46,6 +46,9 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
           Awaited<ReturnType<EndpointDefinitions[EndpointName]['fetch']>>
         >
       ) => void
+    ) => ThunkAction<any, any, any, any>
+    reset: <EndpointName extends keyof EndpointDefinitions>(
+      endpointName: EndpointName
     ) => ThunkAction<any, any, any, any>
   }
   /**

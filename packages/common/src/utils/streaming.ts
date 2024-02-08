@@ -1,5 +1,5 @@
-import { AccessSignature, Track } from 'models'
-import { AudiusBackend, QueryParams } from 'services/index'
+import { AccessSignature, Track } from '~/models'
+import { AudiusBackend, QueryParams } from '~/services/index'
 
 import { Nullable } from './typeUtils'
 

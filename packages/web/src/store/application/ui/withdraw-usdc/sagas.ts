@@ -1,24 +1,30 @@
 import {
-  withdrawUSDCActions,
-  solanaSelectors,
-  ErrorLevel,
-  SolanaWalletAddress,
-  getUSDCUserBank,
-  getContext,
-  TOKEN_LISTING_MAP,
-  getUserbankAccountInfo,
-  BNUSDC,
-  relayVersionedTransaction,
-  relayTransaction,
-  formatUSDCWeiToFloorCentsNumber,
   Name,
+  ErrorLevel,
+  Status,
   WithdrawUSDCTransferEventFields,
-  withdrawUSDCModalActions,
+  BNUSDC,
+  SolanaWalletAddress
+} from '@audius/common/models'
+import {
+  MEMO_PROGRAM_ID,
+  PREPARE_WITHDRAWAL_MEMO_STRING,
+  getUserbankAccountInfo,
+  relayTransaction,
+  relayVersionedTransaction
+} from '@audius/common/services'
+import {
+  getUSDCUserBank,
+  solanaSelectors,
+  withdrawUSDCActions,
   WithdrawUSDCModalPages,
+  withdrawUSDCModalActions,
+  TOKEN_LISTING_MAP,
   WithdrawMethod,
-  buyUSDCActions,
-  Status
-} from '@audius/common'
+  getContext,
+  buyUSDCActions
+} from '@audius/common/store'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync
@@ -27,6 +33,7 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
+  TransactionInstruction,
   sendAndConfirmTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -269,11 +276,37 @@ function* doWithdrawUSDCCoinflow({
         console.debug(
           'Withdraw USDC - destination associated token account does not exist. Creating...'
         )
-        yield* call(createDestinationTokenAccount, {
-          destinationWallet,
-          destinationTokenAccount,
-          feePayer: feePayerPubkey
-        })
+        try {
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
+              ...analyticsFields
+            })
+          )
+          yield* call(createDestinationTokenAccount, {
+            destinationWallet,
+            destinationTokenAccount,
+            feePayer: feePayerPubkey
+          })
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS,
+              ...analyticsFields
+            })
+          )
+        } catch (e: unknown) {
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED,
+              ...analyticsFields,
+              error: e as Error
+            })
+          )
+          throw e
+        }
 
         // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
         // to still withdraw the amount we specified, and if not, withdraw as much as we can.
@@ -312,6 +345,18 @@ function* doWithdrawUSDCCoinflow({
       }
     )
 
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: rootSolanaAccount.publicKey,
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(PREPARE_WITHDRAWAL_MEMO_STRING)
+    })
+
     // Relay the withdrawal transfer so that the user doesn't need SOL if the account already exists
     const { blockhash, lastValidBlockHeight } = yield* call([
       connection,
@@ -322,7 +367,10 @@ function* doWithdrawUSDCCoinflow({
       lastValidBlockHeight,
       feePayer: feePayerPubkey
     })
-    transferTransaction.add(...transferInstructions)
+
+    transferTransaction.add(...transferInstructions, memoInstruction)
+    transferTransaction.partialSign(rootSolanaAccount)
+
     const {
       res: transactionSignature,
       error,
@@ -335,14 +383,36 @@ function* doWithdrawUSDCCoinflow({
     if (!transactionSignature || error) {
       throw new Error(`Failed to transfer: [${errorCode}] ${error}`)
     }
-    console.debug('Withdraw USDC - successfully transferred USDC.', {
-      transactionSignature
-    })
+
+    console.debug(
+      'Withdraw USDC - successfully transferred USDC to root wallet for withdrawal.',
+      {
+        transactionSignature
+      }
+    )
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.WITHDRAW_USDC_TRANSFER_TO_ROOT_WALLET,
+        ...analyticsFields
+      })
+    )
+
     yield* call(
       [libs.solanaWeb3Manager.connection, 'confirmTransaction'],
       transactionSignature,
       'finalized'
     )
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.WITHDRAW_USDC_COINFLOW_WITHDRAWAL_READY,
+        ...analyticsFields
+      })
+    )
+
     yield* put(coinflowWithdrawalReady())
     const result = yield* race({
       succeeded: take(coinflowWithdrawalSucceeded),
@@ -350,7 +420,11 @@ function* doWithdrawUSDCCoinflow({
     })
 
     if (result.succeeded) {
-      yield* put(withdrawUSDCSucceeded({}))
+      yield* put(
+        withdrawUSDCSucceeded({
+          transaction: result.succeeded.payload.transaction
+        })
+      )
       yield* put(
         setWithdrawUSDCModalData({
           page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL
@@ -361,6 +435,13 @@ function* doWithdrawUSDCCoinflow({
         make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
       )
     } else {
+      yield* call(
+        track,
+        make({
+          eventName: Name.WITHDRAW_USDC_CANCELLED,
+          ...analyticsFields
+        })
+      )
       yield* put(buyUSDCActions.startRecoveryIfNecessary())
       // Wait for the recovery to succeed or error
       const action = yield* take<
@@ -480,11 +561,37 @@ function* doWithdrawUSDCManualTransfer({
         console.debug(
           'Withdraw USDC - destination associated token account does not exist. Creating...'
         )
-        yield* call(createDestinationTokenAccount, {
-          destinationWallet,
-          destinationTokenAccount,
-          feePayer: feePayerPubkey
-        })
+        try {
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
+              ...analyticsFields
+            })
+          )
+          yield* call(createDestinationTokenAccount, {
+            destinationWallet,
+            destinationTokenAccount,
+            feePayer: feePayerPubkey
+          })
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS,
+              ...analyticsFields
+            })
+          )
+        } catch (e: unknown) {
+          yield* call(
+            track,
+            make({
+              eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED,
+              ...analyticsFields,
+              error: e as Error
+            })
+          )
+          throw e
+        }
 
         // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
         // to still withdraw the amount we specified, and if not, withdraw as much as we can.

@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from 'express'
+import cors from 'cors'
 import path from 'path'
-import * as collectionController from './controllers/collectionController'
 
 export default function createApp() {
   /*
@@ -12,24 +12,27 @@ export default function createApp() {
    * Define API routes
    */
 
-  app.get('/api/env', (_req: Request, res: Response) => {
-    const envData = {
-      data: {
-        env: process.env.NODE_ENV,
-        ddexKey: process.env.DDEX_KEY,
-        optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY,
-      },
+  app.get(
+    '/api/env',
+    cors({
+      origin: 'http://localhost:5173',
+    }),
+    (_req: Request, res: Response) => {
+      const envData = {
+        data: {
+          env: process.env.NODE_ENV,
+          awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          awsBucketRaw: process.env.AWS_BUCKET_RAW,
+          awsBucketIndexed: process.env.AWS_BUCKET_INDEXED,
+          ddexKey: process.env.DDEX_KEY,
+          optimizelySdkKey: process.env.OPTIMIZELY_SDK_KEY,
+        },
+      }
+      res.json(envData)
     }
-    res.json(envData)
-  })
+  )
   app.get('/api/health_check', (_req: Request, res: Response) => {
     res.status(200).send('DDEX is alive!')
-  })
-  collectionController.collections.forEach((collection: string) => {
-    app.get(
-      `/api/${collection}`,
-      collectionController.getCollection(collection)
-    )
   })
 
   /*
@@ -48,11 +51,7 @@ export default function createApp() {
 
   // Fallback to handle client-side routing, excluding /api routes
   app.get('*', (req: Request, res: Response, next) => {
-    if (
-      req.url.startsWith('/api') ||
-      req.url.startsWith('/trpc') ||
-      req.url.startsWith('/panel')
-    ) {
+    if (req.url.startsWith('/api')) {
       return next()
     }
     res.sendFile(path.join(buildPath, 'index.html'))

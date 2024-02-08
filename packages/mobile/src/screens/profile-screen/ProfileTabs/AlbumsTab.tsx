@@ -1,10 +1,7 @@
 import { useEffect } from 'react'
 
-import {
-  profilePageActions,
-  profilePageSelectors,
-  Status
-} from '@audius/common'
+import { Status } from '@audius/common/models'
+import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { useIsFocused } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 

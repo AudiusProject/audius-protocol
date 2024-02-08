@@ -1,19 +1,13 @@
 import { useCallback, useState } from 'react'
 
+import { Name, PlaylistLibraryFolder } from '@audius/common/models'
 import {
-  Name,
-  PlaylistLibraryFolder,
   accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers
-} from '@audius/common'
-import {
-  IconFolder,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+} from '@audius/common/store'
+import { IconFolder } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

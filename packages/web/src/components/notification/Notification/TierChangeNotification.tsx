@@ -1,11 +1,11 @@
 import {
   notificationsSelectors,
+  badgeTiers,
   TierChangeNotification as TierChangeNotificationType,
-  BadgeTierInfo,
-  badgeTiers
-} from '@audius/common'
+  BadgeTierInfo
+} from '@audius/common/store'
 
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 
@@ -62,7 +62,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={<IconTier>{audioTierMapPng[tier]}</IconTier>}>
+      <NotificationHeader icon={<IconTier>{audioTierMapSVG[tier]}</IconTier>}>
         <NotificationTitle className={styles.title}>
           {tier} {messages.unlocked}
         </NotificationTitle>

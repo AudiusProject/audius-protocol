@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
+import { RepostSource, Collection, ID } from '@audius/common/models'
 import {
-  Collection,
   collectionPageSelectors,
-  CommonState,
-  ID,
   collectionsSocialActions,
-  RepostSource
-} from '@audius/common'
-import { ButtonProps, ButtonType, IconRepost } from '@audius/stems'
+  CommonState
+} from '@audius/common/store'
+import { IconRepost } from '@audius/harmony'
+import { ButtonProps, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

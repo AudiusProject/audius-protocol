@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { chatActions } from '@audius/common'
+import { chatActions } from '@audius/common/store'
+import { IconTrash } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconTrash,
   Modal,
   ModalContent,
   ModalFooter,

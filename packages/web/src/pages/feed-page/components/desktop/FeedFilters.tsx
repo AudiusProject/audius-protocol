@@ -1,11 +1,11 @@
-import { FeedFilter } from '@audius/common'
+import { ChangeEvent, useCallback } from 'react'
 
-import SelectablePills from 'components/selectable-pill/SelectablePills'
+import { FeedFilter } from '@audius/common/models'
+import { Flex, SelectablePill } from '@audius/harmony'
 
 type FeedFiltersProps = {
-  filter: FeedFilter
+  currentFilter: FeedFilter
   didSelectFilter: (filter: FeedFilter) => void
-  initialFilters: FeedFilter[]
 }
 
 const messages = {
@@ -20,27 +20,34 @@ const filterToTitle = {
   [FeedFilter.REPOST]: messages.reposts
 }
 
+const filters = [FeedFilter.ALL, FeedFilter.ORIGINAL, FeedFilter.REPOST]
+
 /**
  * FeedFilters are the row of selectable pills on the feed for filtering the feed by repost, original, and all.
  */
-const FeedFilters = ({
-  filter,
-  didSelectFilter,
-  initialFilters
-}: FeedFiltersProps) => {
-  const selectedIndex = initialFilters.indexOf(filter)
-  const onSelectIndex = (index: number) => {
-    if (index === selectedIndex) return
-    didSelectFilter(initialFilters[index])
-  }
+export const FeedFilters = (props: FeedFiltersProps) => {
+  const { currentFilter, didSelectFilter } = props
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      didSelectFilter(e.target.value as FeedFilter)
+    },
+    [didSelectFilter]
+  )
 
   return (
-    <SelectablePills
-      content={initialFilters.map((f) => filterToTitle[f])}
-      selectedIndex={selectedIndex}
-      onClickIndex={onSelectIndex}
-    />
+    <Flex gap='s' role='radiogroup' onChange={handleChange}>
+      {filters.map((filter) => (
+        <SelectablePill
+          name='feed-filter'
+          key={filter}
+          type='radio'
+          value={filter}
+          label={filterToTitle[filter]}
+          isSelected={currentFilter === filter}
+          size='large'
+        />
+      ))}
+    </Flex>
   )
 }
-
-export default FeedFilters

@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { SquareSizes, ID } from '@audius/common/models'
 import {
-  ID,
-  SquareSizes,
   accountSelectors,
   cacheCollectionsSelectors,
-  cacheUsersSelectors,
-  imageBlank as placeholderArt
-} from '@audius/common'
+  cacheUsersSelectors
+} from '@audius/common/store'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'

@@ -1,4 +1,4 @@
-import { lineupReducer } from '@audius/common'
+import { lineupReducer } from '@audius/common/store'
 import { createSlice } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 

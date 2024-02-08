@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
-  Status,
   transactionDetailsActions,
   transactionDetailsSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { IconTransaction } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -16,7 +17,6 @@ import {
 } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import IconTransaction from 'assets/img/iconTransaction.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

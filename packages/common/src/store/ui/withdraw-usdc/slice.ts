@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 
 import { CoinflowWithdrawState, WithdrawMethod } from './types'
 
@@ -14,6 +14,7 @@ type WithdrawUSDCState = {
   withdrawTransaction?: string
   destinationError?: Error
   amountError?: Error
+  lastCompletedTransactionSignature?: string
 }
 
 const initialState: WithdrawUSDCState = {
@@ -61,6 +62,7 @@ const slice = createSlice({
       state.withdrawTransaction = action.payload.transaction
       state.withdrawError = undefined
       state.withdrawStatus = Status.SUCCESS
+      state.lastCompletedTransactionSignature = action.payload.transaction
     },
     withdrawUSDCFailed: (state, action: PayloadAction<{ error: Error }>) => {
       state.withdrawStatus = Status.ERROR

@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 
-import { TwitterProfile } from '@audius/common'
+import { TwitterProfile } from '@audius/common/store'
 
 import TwitterAuth from 'components/twitter-auth/TwitterAuth'
 

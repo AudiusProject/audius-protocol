@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import type { Notification } from '@audius/common'
+import { Status } from '@audius/common/models'
+import type { Notification } from '@audius/common/store'
 import {
   notificationsActions,
-  Status,
   notificationsSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { useIsFocused } from '@react-navigation/native'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'

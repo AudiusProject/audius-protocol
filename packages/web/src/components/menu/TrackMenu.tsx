@@ -1,23 +1,25 @@
 import { useContext } from 'react'
 
 import {
-  ID,
-  PlayableType,
-  FavoriteSource,
-  RepostSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlayableType,
+  ID
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
-  playbackPositionActions,
-  playbackPositionSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
-  Genre,
-  FeatureFlags,
-  CommonState,
-  useEditTrackModal
-} from '@audius/common'
+  useEditTrackModal,
+  playbackPositionActions,
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'

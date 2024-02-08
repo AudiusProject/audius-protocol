@@ -1,7 +1,6 @@
+import { IconValidationCheck } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-
-import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 
 import { CompletionStage } from './PropTypes'
 import styles from './TaskCompletionItem.module.css'

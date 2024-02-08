@@ -1,22 +1,22 @@
 import { createElement, useCallback, useMemo } from 'react'
 
-import type { Collection, CommonState, ID } from '@audius/common'
+import { SquareSizes } from '@audius/common/models'
+import type { Collection, ID } from '@audius/common/models'
 import {
-  SquareSizes,
   cacheCollectionsSelectors,
   reachabilitySelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useOfflineTracksStatus } from 'app/hooks/useOfflineTrackStatus'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { formatCount } from 'app/utils/format'
-
-import type { ImageProps } from '../image/FastImage'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getIsReachable } = reachabilitySelectors

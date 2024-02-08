@@ -2,10 +2,10 @@ import { createContext, useContext } from 'react'
 
 import type { StorageNodeSelectorService } from '@audius/sdk'
 
-import { AnalyticsEvent, AllTrackingEvents } from 'models/Analytics'
-import { AudiusBackend } from 'services/audius-backend'
-import { LocalStorage } from 'services/local-storage'
-import { RemoteConfigInstance } from 'services/remote-config'
+import { AnalyticsEvent, AllTrackingEvents } from '~/models/Analytics'
+import { AudiusBackend } from '~/services/audius-backend'
+import { LocalStorage } from '~/services/local-storage'
+import { RemoteConfigInstance } from '~/services/remote-config'
 
 type AppContextType = {
   analytics: {

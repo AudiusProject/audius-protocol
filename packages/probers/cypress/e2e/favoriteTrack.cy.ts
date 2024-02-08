@@ -12,7 +12,9 @@ describe('Favorite Track', () => {
     const base64Entropy = Buffer.from(user.entropy).toString('base64')
     cy.visit(`${track.route}?login=${base64Entropy}`)
 
-    cy.findByText(user.name, { timeout: Cypress.env('initialLoadTimeout') }).should('exist')
+    cy.findByText(user.name, {
+      timeout: Cypress.env('initialLoadTimeout')
+    }).should('exist')
     cy.findByRole('heading', { name: track.name, timeout: 20000 }).should(
       'exist'
     )

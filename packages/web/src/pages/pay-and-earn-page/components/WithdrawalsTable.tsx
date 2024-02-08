@@ -2,8 +2,9 @@ import { MouseEvent, useCallback, useMemo } from 'react'
 
 import {
   USDCTransactionDetails,
-  formatUSDCWeiToUSDString
-} from '@audius/common'
+  USDCTransactionType
+} from '@audius/common/models'
+import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import moment from 'moment'
 
 import { Table } from 'components/table'
@@ -12,6 +13,10 @@ import { TransactionCell, TransactionRow } from '../types'
 import { isEmptyTransactionRow } from '../utils'
 
 import styles from './WithdrawalsTable.module.css'
+
+const messages = {
+  cash: 'Cash'
+}
 
 export type WithdrawalsTableColumn =
   | 'destination'
@@ -49,9 +54,13 @@ const defaultColumns: WithdrawalsTableColumn[] = [
 
 // Cell Render Functions
 const renderDestinationCell = (cellInfo: TransactionCell) => {
-  const { metadata } = cellInfo.row.original
-  return typeof metadata === 'string' ? (
-    <span className={styles.text}>{metadata}</span>
+  const { metadata, transactionType } = cellInfo.row.original
+  const destination =
+    transactionType === USDCTransactionType.WITHDRAWAL
+      ? messages.cash
+      : metadata
+  return typeof destination === 'string' ? (
+    <span className={styles.text}>{destination}</span>
   ) : (
     ''
   )

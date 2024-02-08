@@ -12,6 +12,11 @@ class PurchaseType(str, enum.Enum):
     album = "album"
 
 
+class PurchaseAccessType(str, enum.Enum):
+    stream = "stream"
+    download = "download"
+
+
 class USDCPurchase(Base, RepresentableMixin):
     __tablename__ = "usdc_purchases"
 
@@ -23,6 +28,7 @@ class USDCPurchase(Base, RepresentableMixin):
     extra_amount = Column(BigInteger, nullable=False, server_default=text("0"))
     content_type = Column(Enum(PurchaseType), nullable=False, index=True)
     content_id = Column(Integer, nullable=False)
+    access = Column(Enum(PurchaseAccessType), nullable=False)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")

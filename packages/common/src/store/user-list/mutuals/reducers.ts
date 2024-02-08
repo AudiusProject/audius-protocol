@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
-import { UserListReducerFactory } from 'store/user-list/reducer'
+import { UserListReducerFactory } from '~/store/user-list/reducer'
 
 import * as actions from './actions'
 import { MUTUALS_USER_LIST_TAG, MutualsOwnState } from './types'

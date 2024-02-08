@@ -1,4 +1,4 @@
-import type { CompletionCheckProps } from '@audius/harmony'
+import type { CompletionCheckProps } from '@audius/harmony/src/components/completion-check/types'
 import styled, { css } from '@emotion/native'
 import Animated, {
   Easing,
@@ -8,7 +8,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import { IconValidationCheck, IconValidationX } from 'app/harmony-native/icons'
+import {
+  IconValidationCheck,
+  IconMultiselectRemove
+} from 'app/harmony-native/icons'
 
 import { Flex } from '../layout'
 
@@ -52,7 +55,7 @@ const CompletionError = ({ value }: CompletionCheckProps) => {
 
   return (
     <CompletionIconBase style={[animationStyle]}>
-      <IconValidationX />
+      <IconMultiselectRemove />
     </CompletionIconBase>
   )
 }
@@ -83,3 +86,5 @@ export const CompletionCheck = (props: CompletionCheckProps) => {
     </Flex>
   )
 }
+
+export type { CompletionCheckProps }

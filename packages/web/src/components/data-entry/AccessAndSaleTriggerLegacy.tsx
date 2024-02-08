@@ -1,51 +1,49 @@
 import { useMemo } from 'react'
 
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
-  CollectibleGatedConditions,
-  FollowGatedConditions,
-  TipGatedConditions,
-  USDCPurchaseConditions,
-  Track,
-  TrackAvailabilityType,
-  accountSelectors,
+  StreamTrackAvailabilityType,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig,
-  Nullable,
-  AccessConditions
-} from '@audius/common'
+  CollectibleGatedConditions,
+  FollowGatedConditions,
+  TipGatedConditions,
+  USDCPurchaseConditions,
+  AccessConditions,
+  Track
+} from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCart,
   IconCollectible,
-  IconHidden,
+  IconVisibilityHidden,
   IconSpecialAccess,
-  IconVisibilityPublic
-} from '@audius/stems'
+  IconVisibilityPublic,
+  IconCart
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { defaultFieldVisibility } from 'pages/track-page/utils'
+import { AccessAndSaleFormSchema } from 'pages/upload-page/fields/AccessAndSaleField'
+import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleMenuFields'
+import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
 import {
-  AVAILABILITY_TYPE,
-  AccessAndSaleFormSchema,
   AccessAndSaleFormValues,
-  AccessAndSaleMenuFields,
   FIELD_VISIBILITY,
   IS_STREAM_GATED,
   IS_UNLISTED,
-  STREAM_CONDITIONS,
   PREVIEW,
   PRICE_HUMANIZED,
   SPECIAL_ACCESS_TYPE,
-  getCombinedDefaultGatedConditionValues
-} from 'pages/upload-page/fields/AccessAndSaleField'
-import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
+  STREAM_AVAILABILITY_TYPE,
+  STREAM_CONDITIONS,
+  SpecialAccessType
+} from 'pages/upload-page/fields/types'
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
@@ -148,9 +146,9 @@ export const AccessAndSaleTriggerLegacy = (
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
 
-    let availabilityType = TrackAvailabilityType.PUBLIC
+    let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
-      availabilityType = TrackAvailabilityType.USDC_PURCHASE
+      availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
       set(
         initialValues,
         PRICE_HUMANIZED,
@@ -160,15 +158,15 @@ export const AccessAndSaleTriggerLegacy = (
       )
     }
     if (isFollowGated || isTipGated) {
-      availabilityType = TrackAvailabilityType.SPECIAL_ACCESS
+      availabilityType = StreamTrackAvailabilityType.SPECIAL_ACCESS
     }
     if (isCollectibleGated) {
-      availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
+      availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
     if (isUnlisted && !isScheduledRelease) {
-      availabilityType = TrackAvailabilityType.HIDDEN
+      availabilityType = StreamTrackAvailabilityType.HIDDEN
     }
-    set(initialValues, AVAILABILITY_TYPE, availabilityType)
+    set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
     set(initialValues, PREVIEW, preview)
     set(
@@ -192,7 +190,7 @@ export const AccessAndSaleTriggerLegacy = (
   ])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
-    const availabilityType = get(values, AVAILABILITY_TYPE)
+    const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
     const preview = get(values, PREVIEW)
     const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
     const fieldVisibility = get(values, FIELD_VISIBILITY)
@@ -210,7 +208,7 @@ export const AccessAndSaleTriggerLegacy = (
 
     // For gated options, extract the correct stream conditions based on the selected availability type
     switch (availabilityType) {
-      case TrackAvailabilityType.USDC_PURCHASE: {
+      case StreamTrackAvailabilityType.USDC_PURCHASE: {
         newState.preview_start_seconds = preview ?? 0
         const {
           usdc_purchase: { price }
@@ -222,7 +220,7 @@ export const AccessAndSaleTriggerLegacy = (
         newState.is_stream_gated = true
         break
       }
-      case TrackAvailabilityType.SPECIAL_ACCESS: {
+      case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
         if (specialAccessType === SpecialAccessType.FOLLOW) {
           const { follow_user_id } = streamConditions as FollowGatedConditions
           newState.stream_conditions = { follow_user_id }
@@ -233,14 +231,14 @@ export const AccessAndSaleTriggerLegacy = (
         newState.is_stream_gated = true
         break
       }
-      case TrackAvailabilityType.COLLECTIBLE_GATED: {
+      case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
         const { nft_collection } =
           streamConditions as CollectibleGatedConditions
         newState.stream_conditions = { nft_collection }
         newState.is_stream_gated = true
         break
       }
-      case TrackAvailabilityType.HIDDEN: {
+      case StreamTrackAvailabilityType.HIDDEN: {
         newState = {
           ...newState,
           ...(fieldVisibility ?? undefined),
@@ -249,7 +247,7 @@ export const AccessAndSaleTriggerLegacy = (
         }
         break
       }
-      case TrackAvailabilityType.PUBLIC: {
+      case StreamTrackAvailabilityType.PUBLIC: {
         break
       }
     }
@@ -261,7 +259,7 @@ export const AccessAndSaleTriggerLegacy = (
   let AvailabilityIcon = IconVisibilityPublic
   if (isUnlisted && !isScheduledRelease) {
     availabilityButtonTitle = messages.hidden
-    AvailabilityIcon = IconHidden
+    AvailabilityIcon = IconVisibilityHidden
   } else if (isStreamGated) {
     if (isContentUSDCPurchaseGated(savedStreamConditions)) {
       availabilityButtonTitle = messages.premium
@@ -279,7 +277,7 @@ export const AccessAndSaleTriggerLegacy = (
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconHidden />}
+      icon={<IconVisibilityHidden />}
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(

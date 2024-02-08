@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Name,
-  ChallengeRewardNotification as ChallengeRewardNotificationType,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  audioRewardsPageSelectors,
+  ChallengeRewardNotification as ChallengeRewardNotificationType
+} from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

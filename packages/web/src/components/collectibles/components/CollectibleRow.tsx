@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { CollectibleMediaType, Collectible } from '@audius/common/models'
+import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
-  Collectible,
-  CollectibleMediaType,
-  formatDateWithTimezoneOffset
-} from '@audius/common'
+  IconRemove as IconHide,
+  IconDrag,
+  IconMultiselectAdd as IconShow
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import IconDrag from 'assets/img/iconDrag.svg'
-import IconShow from 'assets/img/iconMultiselectAdd.svg'
-import IconHide from 'assets/img/iconRemoveTrack.svg'
 import {
   collectibleMessages,
   editTableContainerClass

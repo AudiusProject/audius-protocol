@@ -12,6 +12,7 @@
   border-radius: var(--unit-2);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
+  text-align: left;
 }
 
 .borderOffset {
@@ -158,18 +159,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* Tags */
-.tags {
-  width: 100%;
-  display: inline-flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.tag {
-  margin: 4px;
 }
 
 /* Loading */

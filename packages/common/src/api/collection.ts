@@ -1,6 +1,6 @@
-import { createApi } from 'audius-query'
-import { ID, Kind } from 'models'
-import { Nullable } from 'utils'
+import { createApi } from '~/audius-query'
+import { ID, Kind } from '~/models'
+import { Nullable } from '~/utils'
 
 const collectionApi = createApi({
   reducerPath: 'collectionApi',

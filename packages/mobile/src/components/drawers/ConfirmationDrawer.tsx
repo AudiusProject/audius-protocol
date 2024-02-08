@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import type { Modals } from '@audius/common'
+import type { Modals } from '@audius/common/store'
 import { View } from 'react-native'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
+import { IconInfo } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'

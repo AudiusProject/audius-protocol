@@ -1,6 +1,7 @@
 import { createContext, useCallback, useState } from 'react'
 
-import { Nullable, playerSelectors, queueActions } from '@audius/common'
+import { queueActions, playerSelectors } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { useSelector, useDispatch } from 'react-redux'
 
 const { getPlaying } = playerSelectors

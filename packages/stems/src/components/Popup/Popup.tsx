@@ -229,10 +229,7 @@ const defaultTransformOrigin: Origin = {
 }
 
 /**
- * A popup is an in-place container that shows on top of the UI. A popup does
- * not impact the rest of the UI (e.g. graying it out). It differs
- * from modals, which do take over the whole UI and are usually
- * center-screened.
+ * @deprecated use `@audius/harmony` Popup instead
  */
 export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props,

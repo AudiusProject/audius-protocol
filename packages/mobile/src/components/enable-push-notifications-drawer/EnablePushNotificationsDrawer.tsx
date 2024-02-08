@@ -1,17 +1,22 @@
 import { useCallback } from 'react'
 
-import { settingsPageActions, PushNotificationSetting } from '@audius/common'
+import {
+  settingsPageActions,
+  PushNotificationSetting
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconCoSign from 'app/assets/images/iconCoSign.svg'
-import IconFollow from 'app/assets/images/iconFollow.svg'
-import IconNotification from 'app/assets/images/iconGradientNotification.svg'
-import IconHeart from 'app/assets/images/iconHeart.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconNewReleases from 'app/assets/images/iconNewReleases.svg'
-import IconRemix from 'app/assets/images/iconRemix.svg'
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import {
+  IconCosign,
+  IconUserFollow,
+  IconNotificationOn,
+  IconHeart,
+  IconMessage,
+  IconStars,
+  IconRemix,
+  IconRepost
+} from '@audius/harmony-native'
 import { Button, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
@@ -44,11 +49,11 @@ const actions = [
   },
   {
     label: messages.followers,
-    icon: IconFollow
+    icon: IconUserFollow
   },
   {
     label: messages.coSigns,
-    icon: IconCoSign
+    icon: IconCosign
   },
   {
     label: messages.remixes,
@@ -56,7 +61,7 @@ const actions = [
   },
   {
     label: messages.newReleases,
-    icon: IconNewReleases
+    icon: IconStars
   },
   {
     label: messages.messages,
@@ -137,7 +142,7 @@ export const EnablePushNotificationsDrawer = () => {
     <NativeDrawer drawerName='EnablePushNotifications'>
       <View style={styles.drawer}>
         <View style={styles.top}>
-          <IconNotification
+          <IconNotificationOn
             height={66}
             width={66}
             fill={pageHeaderGradientColor2}

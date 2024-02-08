@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { useCoinflowWithdrawalAdapter } from '@audius/common/hooks'
 import {
-  useCoinflowAdapter,
   useCoinflowWithdrawModal,
   withdrawUSDCActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { CoinflowWithdraw } from '@coinflowlabs/react'
 import { useDispatch } from 'react-redux'
 
@@ -40,7 +40,7 @@ export const CoinflowWithdrawModal = () => {
     onClosed
   } = useCoinflowWithdrawModal()
 
-  const adapter = useCoinflowAdapter()
+  const adapter = useCoinflowWithdrawalAdapter()
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {

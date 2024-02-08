@@ -1,4 +1,4 @@
-import { ShareType } from '@audius/common'
+import { ShareType } from '@audius/common/store'
 
 export type ShareProps = {
   onShareToDirectMessage: () => void

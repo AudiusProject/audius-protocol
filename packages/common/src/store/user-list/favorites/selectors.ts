@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { FavoriteType } from '../../../models/Favorite'
 import { ID } from '../../../models/Identifiers'

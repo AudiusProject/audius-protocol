@@ -1,25 +1,24 @@
 import { ComponentType, PureComponent } from 'react'
 
+import { Name, Theme } from '@audius/common/models'
 import {
-  Name,
-  Theme,
-  accountSelectors,
-  InstagramProfile,
-  settingsPageSelectors,
-  BrowserNotificationSetting,
-  EmailFrequency,
-  PushNotificationSetting,
-  settingsPageActions as settingPageActions,
-  makeGetTierAndVerifiedForUser,
-  modalsActions,
-  themeSelectors,
-  themeActions,
   accountActions,
-  TwitterProfile,
+  accountSelectors,
+  settingsPageSelectors,
+  settingsPageActions as settingPageActions,
+  BrowserNotificationSetting,
+  PushNotificationSetting,
+  EmailFrequency,
   signOutActions,
+  makeGetTierAndVerifiedForUser,
+  themeActions,
+  themeSelectors,
+  modalsActions,
   musicConfettiActions,
+  InstagramProfile,
+  TwitterProfile,
   TikTokProfile
-} from '@audius/common'
+} from '@audius/common/store'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

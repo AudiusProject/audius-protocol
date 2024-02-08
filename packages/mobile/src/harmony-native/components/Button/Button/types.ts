@@ -1,5 +1,6 @@
-import type { SpecialColors } from '@audius/harmony'
 import type { StyleProp, ViewStyle } from 'react-native'
+
+import type { SpecialColors } from '@audius/harmony-native'
 
 import type { BaseButtonProps } from '../BaseButton/types'
 

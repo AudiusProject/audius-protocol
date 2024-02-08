@@ -1,13 +1,13 @@
 import { ComponentType, SVGProps, useCallback, useEffect } from 'react'
 
+import { imageBlank } from '@audius/common/assets'
+import { SquareSizes, CoverArtSizes } from '@audius/common/models'
 import {
-  CoverArtSizes,
-  SquareSizes,
   cacheCollectionsSelectors,
-  imageBlank,
   useEditPlaylistModal
-} from '@audius/common'
-import { Button, ButtonType, IconPencil } from '@audius/stems'
+} from '@audius/common/store'
+import { IconPencil } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -79,7 +79,12 @@ export const Artwork = (props: ArtworkProps) => {
       image={gradient || imageOverride || image}
     >
       {Icon ? (
-        <Icon className={styles.imageIcon} style={{ background: gradient }} />
+        <Icon
+          color='staticWhite'
+          width='100%'
+          height='100%'
+          css={{ background: gradient, opacity: 0.3, mixBlendMode: 'overlay' }}
+        />
       ) : null}
       {isOwner ? (
         <span className={styles.imageEditButtonWrapper}>

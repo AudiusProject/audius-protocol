@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
-import { Button, IconArrow, ButtonType } from '@audius/stems'
+import { IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -55,7 +56,7 @@ const AppCTA = ({ onNextPage }: AppCTAProps) => {
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrow />}
+        rightIcon={<IconArrowRight />}
         type={ButtonType.PRIMARY_ALT}
         onClick={onNextPage}
         textClassName={styles.continueButtonText}

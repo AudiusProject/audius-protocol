@@ -5,10 +5,18 @@
   pointer-events: none;
 }
 
+.root path {
+  fill: var(--harmony-n-700);
+}
+
 .root:hover,
 .root:active,
-.root:focus {
+.root:focus,
+.root:hover path,
+.root:active path,
+.root:focus path {
   color: var(--nav-column-link-hover);
+  fill: var(--nav-column-link-hover);
 }
 
 .visible {

@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type NotificationsUIState = {

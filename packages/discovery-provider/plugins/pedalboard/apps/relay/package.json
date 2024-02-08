@@ -1,12 +1,12 @@
 {
   "name": "@pedalboard/relay",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "private": true,
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
-    "dev": "ts-node-dev --respawn ./src/index.ts",
+    "dev": "nodemon ./dist/index.js",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "sandbox": "npx ts-node ./src/scripts/sandbox.ts",

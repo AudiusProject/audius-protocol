@@ -1,27 +1,26 @@
 import { useContext } from 'react'
 
+import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
 import {
-  CommonState,
-  ID,
-  Kind,
-  LibraryCategory,
-  Lineup,
-  QueueItem,
-  SavedPageCollection,
   savedPageSelectors,
+  LibraryCategory,
   SavedPageTabs,
   SavedPageTrack,
-  Status,
   TrackRecord,
-  UID,
-  User
-} from '@audius/common'
-import { IconAlbum } from '@audius/harmony'
-import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
+  SavedPageCollection,
+  QueueItem,
+  CommonState
+} from '@audius/common/store'
+import {
+  IconAlbum,
+  IconNote,
+  IconPlaylists,
+  IconPause,
+  IconPlay
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import IconNote from 'assets/img/iconNote.svg'
-import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'

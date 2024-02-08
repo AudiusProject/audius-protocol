@@ -1,9 +1,10 @@
-import { ReactNode, ReactElement, useCallback } from 'react'
+import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
 
+import { Nullable } from '@audius/common/utils'
+import { Box, Text as HarmonyText, IconCaretRight } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconCaretRight,
   IconComponent,
   Modal,
   ModalContent,
@@ -15,6 +16,7 @@ import {
   Form,
   Formik,
   FormikConfig,
+  FormikErrors,
   FormikHelpers,
   FormikValues,
   useFormikContext
@@ -32,22 +34,50 @@ const messages = {
   save: 'Save'
 }
 
+export enum MenuFormCallbackStatus {
+  OPEN_ACCESS_AND_SALE = 'OPEN_ACCESS_AND_SALE'
+}
+
 type MenuFormProps = {
   isOpen: boolean
   onClose: () => void
   label: string
   icon: ReactNode
   menuFields: ReactNode
+  closeMenuCallback?: (data?: any) => void
+  displayMenuErrorMessage?: (errors: FormikErrors<any>) => Nullable<string>
 }
 
 const MenuForm = (props: MenuFormProps) => {
-  const { isOpen, onClose, label, icon, menuFields } = props
-  const { resetForm } = useFormikContext()
+  const {
+    isOpen,
+    onClose,
+    label,
+    icon,
+    menuFields,
+    closeMenuCallback,
+    displayMenuErrorMessage
+  } = props
+  const { resetForm, errors, initialStatus, status, setStatus } =
+    useFormikContext()
 
   const handleCancel = useCallback(() => {
     resetForm()
     onClose()
   }, [resetForm, onClose])
+
+  const errorMessage = useMemo(() => {
+    if (errors && displayMenuErrorMessage) {
+      return displayMenuErrorMessage(errors)
+    }
+  }, [displayMenuErrorMessage, errors])
+
+  useEffect(() => {
+    if (!isOpen) {
+      closeMenuCallback?.(status)
+      setStatus(initialStatus)
+    }
+  }, [isOpen, closeMenuCallback, status, setStatus, initialStatus])
 
   return (
     <Modal onClose={handleCancel} isOpen={isOpen} size='medium'>
@@ -57,7 +87,14 @@ const MenuForm = (props: MenuFormProps) => {
       <ModalContent>
         <Form id={label}>{menuFields}</Form>
       </ModalContent>
-      <ModalFooter>
+      <ModalFooter className={styles.footer}>
+        {errorMessage ? (
+          <Box pb='l' ph='xl'>
+            <HarmonyText variant='body' color='danger' size='s'>
+              {errorMessage}
+            </HarmonyText>
+          </Box>
+        ) : null}
         <Button
           form={label}
           type={ButtonType.PRIMARY}
@@ -101,8 +138,14 @@ type ContextualMenuProps<FormValues extends FormikValues> = {
   icon: ReactElement
   renderValue: () => JSX.Element | null
   menuFields: ReactNode
+  closeMenuCallback?: (data?: any) => void
+  forceOpen?: boolean
+  setForceOpen?: (value: boolean) => void
   error?: boolean
   errorMessage?: string
+  displayMenuErrorMessage?: (
+    errors: FormikErrors<FormValues>
+  ) => Nullable<string>
   previewOverride?: (toggleMenu: () => void) => ReactNode
 } & FormikConfig<FormValues>
 
@@ -116,12 +159,23 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     menuFields,
     renderValue,
     onSubmit,
+    forceOpen,
+    setForceOpen,
+    closeMenuCallback,
     error,
     errorMessage,
+    displayMenuErrorMessage,
     previewOverride,
     ...formikProps
   } = props
   const [isMenuOpen, toggleMenu] = useToggle(false)
+
+  useEffect(() => {
+    if (forceOpen && setForceOpen) {
+      setForceOpen(false)
+      toggleMenu()
+    }
+  }, [forceOpen, setForceOpen, toggleMenu])
 
   const preview = previewOverride ? (
     previewOverride(toggleMenu)
@@ -159,6 +213,8 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           isOpen={isMenuOpen}
           onClose={toggleMenu}
           menuFields={menuFields}
+          closeMenuCallback={closeMenuCallback}
+          displayMenuErrorMessage={displayMenuErrorMessage}
         />
       </Formik>
     </>

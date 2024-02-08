@@ -1,9 +1,6 @@
-import type {
-  BorderColors,
-  CornerRadiusOptions,
-  ShadowOptions
-} from 'foundations'
-
+import type { BorderColors } from '../../../foundations/color/semantic'
+import type { CornerRadiusOptions } from '../../../foundations/corner-radius'
+import type { ShadowOptions } from '../../../foundations/shadows'
 import type { FlexProps } from '../Flex'
 
 /**

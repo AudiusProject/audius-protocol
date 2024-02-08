@@ -4,10 +4,10 @@ import {
   mutualsUserListActions,
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import IconFollowing from 'app/assets/images/iconFollowing.svg'
+import { IconUserFollowing } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -29,7 +29,7 @@ export const MutualsScreen = () => {
   }, [dispatch, userId])
 
   return (
-    <UserListScreen title={messages.title} titleIcon={IconFollowing}>
+    <UserListScreen title={messages.title} titleIcon={IconUserFollowing}>
       <UserList
         userSelector={getUserList}
         tag={MUTUALS_USER_LIST_TAG}

@@ -1,20 +1,20 @@
 import { useCallback } from 'react'
 
-import type { TrendingRewardsModalType } from '@audius/common'
+import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  Theme,
-  StringKeys,
-  audioRewardsPageActions,
-  audioRewardsPageSelectors
-} from '@audius/common'
+  audioRewardsPageSelectors,
+  audioRewardsPageActions
+} from '@audius/common/store'
+import type { TrendingRewardsModalType } from '@audius/common/store'
 import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { IconArrowRight } from '@audius/harmony-native'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
-import IconArrow from 'app/assets/images/iconArrow.svg'
 import {
   SegmentedControl,
   Text,
@@ -264,7 +264,7 @@ export const TrendingRewardsDrawer = (titleIcon) => {
             <Button
               variant='primary'
               size='large'
-              icon={IconArrow}
+              icon={IconArrowRight}
               iconPosition='right'
               fullWidth
               title={textMap[modalType].button}

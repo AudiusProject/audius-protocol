@@ -1,18 +1,21 @@
 import { useRef, useCallback, useEffect, RefObject } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
-  Status,
-  Nullable,
+  notificationsActions,
   notificationsSelectors,
-  Notification as Notifications,
-  notificationsActions
-} from '@audius/common'
-import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
+  Notification as Notifications
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import {
+  Scrollbar,
+  IconNotificationOn as IconNotification
+} from '@audius/harmony'
+import { Popup, PopupPosition } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
 
-import IconNotification from 'assets/img/iconNotification.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getModalNotification,
@@ -134,7 +137,10 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
       >
         <div className={styles.panelContainer} ref={panelRef}>
           <div className={styles.header}>
-            <IconNotification className={styles.iconNotification} />
+            <IconNotification
+              color='staticWhite'
+              className={styles.iconNotification}
+            />
             <h3 className={styles.title}>{messages.title}</h3>
           </div>
           <Scrollbar className={styles.scrollContent} id={scrollbarId}>

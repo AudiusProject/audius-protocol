@@ -7,27 +7,29 @@ import {
   useRef
 } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  UID,
-  ID,
   ShareSource,
   RepostSource,
   FavoriteSource,
+  ID,
+  UID
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  useGatedContentAccess,
-  gatedContentActions,
-  Genre
-} from '@audius/common'
+  gatedContentActions
+} from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
+import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'

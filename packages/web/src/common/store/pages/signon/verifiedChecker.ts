@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 
 type TwitterUser = {
   verified: boolean

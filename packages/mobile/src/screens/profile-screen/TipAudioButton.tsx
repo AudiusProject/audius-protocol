@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { tippingActions, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors, tippingActions } from '@audius/common/store'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
+import { IconTokenGold } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -47,7 +47,7 @@ export const TipAudioButton = () => {
         Platform.OS === 'ios' ? messages.labelAlt : messages.label
       }
       title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
-      icon={IconGoldBadge}
+      icon={IconTokenGold}
       iconPosition='left'
       fullWidth
       onPress={handlePress}

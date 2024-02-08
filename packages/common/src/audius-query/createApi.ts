@@ -9,20 +9,25 @@ import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useBooleanOnce } from 'hooks/useBooleanOnce'
-import { CollectionMetadata, UserCollectionMetadata } from 'models/Collection'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { Kind } from 'models/Kind'
-import { Status, statusIsNotFinalized } from 'models/Status'
-import { UserMetadata } from 'models/User'
-import { getCollection } from 'store/cache/collections/selectors'
-import { reformatCollection } from 'store/cache/collections/utils/reformatCollection'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { reformatUser } from 'store/cache/users/utils'
-import { CommonState } from 'store/reducers'
-import { getErrorMessage } from 'utils/error'
-import { Nullable, removeNullable } from 'utils/typeUtils'
+import { useBooleanOnce } from '~/hooks/useBooleanOnce'
+import {
+  Collection,
+  CollectionMetadata,
+  UserCollectionMetadata
+} from '~/models/Collection'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { Kind } from '~/models/Kind'
+import { Status, statusIsNotFinalized } from '~/models/Status'
+import { User, UserMetadata } from '~/models/User'
+import { getCollection } from '~/store/cache/collections/selectors'
+import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
+import { getTrack } from '~/store/cache/tracks/selectors'
+import { reformatUser } from '~/store/cache/users/utils'
+import { CommonState } from '~/store/reducers'
+import { getErrorMessage } from '~/utils/error'
+import { Nullable, removeNullable } from '~/utils/typeUtils'
 
+import { Track } from '../models/Track'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 
@@ -49,6 +54,8 @@ import {
   MutationHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+
+type Entity = Collection | Track | User
 
 const { addEntries } = cacheActions
 
@@ -111,7 +118,14 @@ export const createApi = <
         if (updateAction) {
           dispatch(updateAction({ fetchArgs, nonNormalizedData: newState }))
         }
+      },
+    reset: (endpointName) => (dispatch: Dispatch) => {
+      const resetAction =
+        slice.actions[`reset${capitalize(endpointName as string)}`]
+      if (resetAction) {
+        dispatch(resetAction())
       }
+    }
   }
 
   return api
@@ -203,7 +217,7 @@ const useQueryState = <Args, Data>(
       const { kind, idArgKey, idListArgKey, permalinkArgKey, schemaKey } =
         endpoint.options
 
-      let cachedData = null
+      let cachedData: Nullable<Entity | number[]> = null
       if (idArgKey && fetchArgs[idArgKey]) {
         const idAsNumber =
           typeof fetchArgs[idArgKey] === 'number'

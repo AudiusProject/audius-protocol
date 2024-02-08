@@ -208,6 +208,12 @@ services:
       service: ddex-parser
     <<: *common
 
+  ddex-publisher:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    <<: *common
+
   ddex-mongo:
     extends:
       file: docker-compose.ddex.yml

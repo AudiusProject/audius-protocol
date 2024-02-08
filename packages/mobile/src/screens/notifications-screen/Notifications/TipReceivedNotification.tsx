@@ -1,22 +1,22 @@
 import { useCallback } from 'react'
 
+import { useUIAudio } from '@audius/common/hooks'
+import type {
+  TipReceiveNotification,
+  ReactionTypes
+} from '@audius/common/store'
 import {
-  useUIAudio,
-  formatNumberCommas,
   notificationsSelectors,
   reactionsUIActions,
   reactionsUISelectors
-} from '@audius/common'
-import type {
-  Nullable,
-  TipReceiveNotification,
-  ReactionTypes
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatNumberCommas } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { IconTipping } from '@audius/harmony-native'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
-import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
@@ -26,7 +26,7 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  ProfilePicture,
+  NotificationProfilePicture,
   TipText,
   UserNameLink,
   NotificationTwitterButton,
@@ -111,13 +111,13 @@ export const TipReceivedNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconTip}>
+      <NotificationHeader icon={IconTipping}>
         <NotificationTitle>
           {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} />{' '}
           {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}

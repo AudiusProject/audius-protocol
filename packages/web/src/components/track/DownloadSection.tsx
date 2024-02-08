@@ -2,18 +2,19 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
-  ID,
-  CommonState,
-  cacheTracksSelectors,
-  DownloadQuality,
+  useFileSizes,
   useDownloadableContentAccess,
+  useGatedContentAccess
+} from '@audius/common/hooks'
+import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import {
+  cacheTracksSelectors,
   usePremiumContentPurchaseModal,
+  CommonState,
   useWaitForDownloadModal,
-  ModalSource,
   tracksSocialActions as socialTracksActions,
-  toastActions,
-  Name
-} from '@audius/common'
+  toastActions
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
@@ -22,9 +23,9 @@ import {
   IconReceive,
   Button,
   IconCaretDown,
-  IconLockUnlocked
+  IconLockUnlocked,
+  SegmentedControl
 } from '@audius/harmony'
-import { SegmentedControl } from '@audius/stems'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -36,6 +37,7 @@ import {
   useAuthenticatedClickCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -54,7 +56,9 @@ const messages = {
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
-  followToDownload: 'Must follow artist to download.'
+  followToDownload: 'Must follow artist to download.',
+  purchaseableIsOwner: (price: string) =>
+    `Fans can unlock & download these files for a one time purchase of $${price}`
 }
 
 type DownloadSectionProps = {
@@ -69,21 +73,38 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shallowEqual
   )
   const { stemTracks } = useCurrentStems({ trackId })
-  const shouldDisplayDownloadAll = stemTracks.length > 1
+  const { hasDownloadAccess } = useGatedContentAccess(track)
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
     shouldDisplayPremiumDownloadUnlocked,
-    shouldDisplayDownloadFollowGated
+    shouldDisplayDownloadFollowGated,
+    shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
+
+  const shouldDisplayDownloadAll =
+    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
+    hasDownloadAccess
+
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
+  const formattedPrice = price
+    ? USDC(price / 100).toLocaleString('en-us', {
+        roundingMode: 'floor',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : undefined
   const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const fileSizes = useFileSizes({
+    audiusSdk,
+    trackIds: [trackId, ...stemTracks.map((s) => s.id)]
+  })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
@@ -163,6 +184,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     <Box border='default' borderRadius='m' css={{ overflow: 'hidden' }}>
       <Flex direction='column'>
         <Flex
+          gap='m'
           direction='row'
           justifyContent='space-between'
           alignItems='center'
@@ -172,62 +194,71 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             cursor: 'pointer'
           }}
         >
-          <Flex direction='row' alignItems='center' gap='s'>
-            <Icon icon={IconReceive} size='large' />
-            <Text variant='label' size='l' strength='strong'>
-              {messages.title}
+          <Flex
+            justifyContent='space-between'
+            wrap='wrap'
+            gap='m'
+            css={{ flexGrow: 1 }}
+          >
+            <Flex direction='row' alignItems='center' gap='s'>
+              <Icon icon={IconReceive} size='large' />
+              <Text variant='label' size='l' strength='strong'>
+                {messages.title}
+              </Text>
+            </Flex>
+            <Flex gap='l' alignItems='center'>
+              {shouldDisplayPremiumDownloadLocked &&
+              formattedPrice !== undefined ? (
+                <Button
+                  variant='primary'
+                  size='small'
+                  color='lightGreen'
+                  onClick={handlePurchaseClick}
+                >
+                  {messages.unlockAll(formattedPrice)}
+                </Button>
+              ) : null}
+              {shouldDisplayPremiumDownloadUnlocked ? (
+                <Flex gap='s'>
+                  <Flex
+                    borderRadius='3xl'
+                    ph='s'
+                    css={{
+                      backgroundColor: 'var(--special-light-green)',
+                      paddingTop: '1px',
+                      paddingBottom: '1px'
+                    }}
+                  >
+                    <IconLockUnlocked color='staticWhite' size='xs' />
+                  </Flex>
+                  <Text
+                    variant='label'
+                    size='l'
+                    strength='strong'
+                    color='subdued'
+                  >
+                    {messages.purchased}
+                  </Text>
+                </Flex>
+              ) : null}
+            </Flex>
+          </Flex>
+          <IconCaretDown
+            css={{
+              transition: 'transform var(--harmony-expressive)',
+              transform: expanded ? 'rotate(-180deg)' : undefined
+            }}
+            size='m'
+            color='default'
+          />
+        </Flex>
+        {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
+          <Flex pl='l' pr='l' pb='l'>
+            <Text variant='body' size='m' strength='strong'>
+              {messages.purchaseableIsOwner(formattedPrice)}
             </Text>
           </Flex>
-          <Flex gap='l' alignItems='center'>
-            {shouldDisplayPremiumDownloadLocked && price !== undefined ? (
-              <Button
-                variant='primary'
-                size='small'
-                color='lightGreen'
-                onClick={handlePurchaseClick}
-              >
-                {messages.unlockAll(
-                  USDC(price / 100).toLocaleString('en-us', {
-                    roundingMode: 'floor',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })
-                )}
-              </Button>
-            ) : null}
-            {shouldDisplayPremiumDownloadUnlocked ? (
-              <Flex gap='s'>
-                <Flex
-                  borderRadius='3xl'
-                  ph='s'
-                  css={{
-                    backgroundColor: 'var(--special-light-green)',
-                    paddingTop: '1px',
-                    paddingBottom: '1px'
-                  }}
-                >
-                  <IconLockUnlocked color='staticWhite' size='xs' />
-                </Flex>
-                <Text
-                  variant='label'
-                  size='l'
-                  strength='strong'
-                  color='subdued'
-                >
-                  {messages.purchased}
-                </Text>
-              </Flex>
-            ) : null}
-            <IconCaretDown
-              css={{
-                transition: 'transform var(--harmony-expressive)',
-                transform: expanded ? 'rotate(-180deg)' : undefined
-              }}
-              size='m'
-              color='default'
-            />
-          </Flex>
-        </Flex>
+        ) : null}
         <Expandable expanded={expanded}>
           <Box>
             {track?.is_original_available ? (
@@ -248,10 +279,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     }
                   />
                 </Flex>
-                <Flex gap='2xl' alignItems='center'>
-                  <Text>size</Text>
-                  {shouldDisplayDownloadAll ? downloadAllButton() : null}
-                </Flex>
+                {shouldDisplayDownloadAll ? downloadAllButton() : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
@@ -260,6 +288,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[trackId]}
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -268,12 +298,14 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
+                size={fileSizes[s.id]}
                 index={
                   i +
                   (track?.is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
             {/* Only display this row if original quality is not available,

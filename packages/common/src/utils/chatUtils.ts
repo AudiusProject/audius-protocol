@@ -1,6 +1,6 @@
 import type { ChatMessage } from '@audius/sdk'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'

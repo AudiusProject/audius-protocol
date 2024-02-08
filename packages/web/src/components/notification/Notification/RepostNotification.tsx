@@ -1,10 +1,10 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import {
-  Entity,
   notificationsSelectors,
+  Entity,
   RepostNotification as RepostNotificationType
-} from '@audius/common'
+} from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

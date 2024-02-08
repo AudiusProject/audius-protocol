@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import type { ChatMessageWithExtras } from '@audius/common'
+import { useCanSendMessage } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import type { ChatMessageWithExtras } from '@audius/common/models'
 import {
-  Status,
   accountSelectors,
   chatActions,
-  chatCanFetchMoreMessages,
   chatSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import {
+  encodeUrlName,
   decodeHashId,
   encodeHashId,
-  encodeUrlName,
   isEarliestUnread,
-  playerSelectors,
-  useCanSendMessage
-} from '@audius/common'
+  chatCanFetchMoreMessages
+} from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
@@ -30,17 +32,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
+import { IconKebabHorizontal, IconMessage } from '@audius/harmony-native'
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import {
   KeyboardAvoidingView,
   Screen,
-  ScreenContent
+  ScreenContent,
+  ProfilePicture
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
-import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -155,11 +156,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontSize: typography.fontSize.medium,
     fontFamily: typography.fontByWeight.bold,
     color: palette.neutral
-  },
-  profilePicture: {
-    width: spacing(6),
-    height: spacing(6),
-    marginRight: spacing(2)
   },
   loadingSpinnerContainer: {
     display: 'flex',
@@ -580,8 +576,9 @@ export const ChatScreen = () => {
                 style={styles.profileTitle}
               >
                 <ProfilePicture
-                  profile={otherUser}
-                  style={styles.profilePicture}
+                  userId={otherUser.user_id}
+                  size='small'
+                  mr='s'
                 />
                 <UserBadges
                   user={otherUser}

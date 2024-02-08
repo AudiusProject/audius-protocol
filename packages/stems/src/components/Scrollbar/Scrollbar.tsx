@@ -9,10 +9,7 @@ import styles from './Scrollbar.module.css'
 import { ScrollbarProps } from './types'
 
 /**
- * A container with a custom scrollbar, meant to be used for small scrolling areas within a
- * page/view (e.g. a scrolling navigation bar), not the entire page itself.
- * `Scrollbar` uses react-perfect-scrollbar (https://www.npmjs.com/package/react-perfect-scrollbar)
- * under the hood. For advanced use cases, refer to the documentation.
+ * @deprecated use `@audius/harmony` Scrollbar instead
  */
 export const Scrollbar = forwardRef(
   (

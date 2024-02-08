@@ -1,29 +1,29 @@
 import {
+  buyCryptoSagas,
+  buyUSDCSagas,
   castSagas,
   chatSagas,
+  reachabilitySagas,
+  remoteConfigSagas,
+  solanaSagas,
+  relatedArtistsSagas,
+  deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
+  duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
+  mobileOverflowMenuUISagas as overflowMenuSagas,
+  publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
+  shareModalUISagas as shareModalSagas,
+  stripeModalUISagas,
+  vipDiscordModalSagas,
+  toastSagas,
+  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
+  searchUsersModalSagas,
+  modalsSagas,
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   gatedContentSagas,
-  remoteConfigSagas as remoteConfig,
-  deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
-  duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
-  publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
-  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
-  mobileOverflowMenuUISagas as overflowMenuSagas,
-  shareModalUISagas as shareModalSagas,
-  vipDiscordModalSagas,
-  reachabilitySagas,
-  relatedArtistsSagas,
-  searchUsersModalSagas,
-  solanaSagas,
-  toastSagas,
-  confirmerSagas,
   purchaseContentSagas,
-  buyUSDCSagas,
-  buyCryptoSagas,
-  stripeModalUISagas,
-  modalsSagas
-} from '@audius/common'
+  confirmerSagas
+} from '@audius/common/store'
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
@@ -201,7 +201,7 @@ export default function* rootSaga() {
     ...toastSagas(),
 
     initKeyboardEvents,
-    ...remoteConfig(),
+    ...remoteConfigSagas(),
     ...oauthSagas(),
     ...walletsSagas()
   ]

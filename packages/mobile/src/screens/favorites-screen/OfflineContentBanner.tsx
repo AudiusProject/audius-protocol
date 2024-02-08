@@ -1,9 +1,9 @@
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import Animated, { SlideOutUp } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
-import IconNoWifi from 'app/assets/images/iconNoWifiSmall.svg'
+import { IconNoWifi } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'

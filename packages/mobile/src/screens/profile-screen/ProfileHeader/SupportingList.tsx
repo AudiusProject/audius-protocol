@@ -1,11 +1,9 @@
 import { useEffect, useMemo } from 'react'
 
-import type { Supporting } from '@audius/common'
-import {
-  useRankedSupportingForUser,
-  tippingActions,
-  MAX_PROFILE_SUPPORTING_TILES
-} from '@audius/common'
+import { useRankedSupportingForUser } from '@audius/common/hooks'
+import type { Supporting } from '@audius/common/models'
+import { tippingActions } from '@audius/common/store'
+import { MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
 import { FlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

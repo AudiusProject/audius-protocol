@@ -1,10 +1,9 @@
+import { ID, UserCollectionMetadata } from '@audius/common/models'
 import {
-  ID,
-  UserCollectionMetadata,
   accountSelectors,
   cacheCollectionsSelectors,
   getContext
-} from '@audius/common'
+} from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
