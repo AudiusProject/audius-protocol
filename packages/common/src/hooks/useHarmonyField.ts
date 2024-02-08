@@ -9,7 +9,7 @@ import { TextInputProps } from '@audius/harmony'
 import { useDebouncedCallback } from './useDebouncedCallback'
 import { useCallback, useEffect, useState } from 'react'
 
-export type UseAudiusFieldOptions = {
+export type UseHarmonyFieldProps = {
   /** Function to transform the input value on change, eg. a function to trim whitespace */
   transformValueOnChange?: (value: string) => string
   /** Function to transform the input value on blur, eg. a function to trim whitespace */
@@ -65,7 +65,7 @@ type FieldInputProps<Value> = Omit<FormikFieldInputProps<Value>, 'error'> &
  */
 export const useHarmonyField = <Value = any>(
   name: string,
-  options: UseAudiusFieldOptions = {}
+  options: UseHarmonyFieldProps = {}
 ): [FieldInputProps<Value>, FieldMetaProps<Value>, FieldHelperProps<Value>] => {
   const {
     debouncedValidationMs = 0,
