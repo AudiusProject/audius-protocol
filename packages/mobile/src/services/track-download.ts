@@ -1,7 +1,6 @@
 import type { DownloadTrackArgs } from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 import { tracksSocialActions } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
 import { Platform, Share } from 'react-native'
 import { zip } from 'react-native-zip-archive'
 import type {
@@ -19,14 +18,14 @@ import { audiusBackendInstance } from './audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
 
-let fetchTask: Nullable<StatefulPromise<FetchBlobResponse>> = null
+let fetchTasks: StatefulPromise<FetchBlobResponse>[] = []
 
 const audiusDownloadsDirectory = 'AudiusDownloads'
 
 const cancelDownloadTask = () => {
-  if (fetchTask) {
-    fetchTask.cancel()
-  }
+  fetchTasks.forEach((task) => {
+    task.cancel()
+  })
 }
 
 /**
@@ -48,10 +47,11 @@ const downloadOne = async ({
   const filePath = directory + '/' + filename
 
   try {
-    fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
+    const fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
       'GET',
       fileUrl
     )
+    fetchTasks = [fetchTask]
 
     // TODO: The RNFetchBlob library is currently broken for download progress events on both platforms.
     // fetchTask.progress({ interval: 250 }, (received, total) => {
@@ -92,12 +92,13 @@ const downloadMany = async ({
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   try {
-    const responsePromises = files.map(async ({ url, filename }) =>
+    const responsePromises = files.map(({ url, filename }) =>
       RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(
         'GET',
         url
       )
     )
+    fetchTasks = responsePromises
     const responses = await Promise.all(responsePromises)
     if (!responses.every((response) => response.info().status === 200)) {
       throw new Error('Download unsuccessful')
@@ -118,7 +119,11 @@ const downloadMany = async ({
   }
 }
 
-const download = async ({ files, rootDirectoryName }: DownloadTrackArgs) => {
+const download = async ({
+  files,
+  rootDirectoryName,
+  abortSignal
+}: DownloadTrackArgs) => {
   if (files.length === 0) return
 
   dispatch(
@@ -127,6 +132,15 @@ const download = async ({ files, rootDirectoryName }: DownloadTrackArgs) => {
       fileName: files[0].filename
     })
   )
+  if (abortSignal) {
+    abortSignal.onabort = () => {
+      cancelDownloadTask()
+    }
+  }
+  // TODO: Remove this method of canceling after the lossless
+  // feature set launches. The abort signal should be the way to do
+  // this task cancellation going forward. The corresponding slice
+  // may also be deleted.
   dispatch(setFetchCancel(cancelDownloadTask))
 
   const audiusDirectory =
