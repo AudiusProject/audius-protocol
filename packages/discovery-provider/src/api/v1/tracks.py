@@ -434,7 +434,7 @@ class TrackInspect(Resource):
         """
         Inspects the details of the file for a track.
         """
-        request_args = stream_parser.parse_args()
+        request_args = inspect_parser.parse_args()
         is_original = request_args.get("original")
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_access_info(decoded_id)
