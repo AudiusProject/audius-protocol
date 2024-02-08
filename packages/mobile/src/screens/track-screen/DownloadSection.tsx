@@ -159,14 +159,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             ) : null}
             {shouldDisplayPremiumDownloadUnlocked ? (
               <>
-                <Flex
-                  gap='s'
-                  direction='row'
-                  alignItems='center'
-                  style={css({
-                    backgroundColor: color.special.blue
-                  })}
-                >
+                <Flex gap='s' direction='row' alignItems='center'>
                   <Flex
                     borderRadius='3xl'
                     ph='s'
