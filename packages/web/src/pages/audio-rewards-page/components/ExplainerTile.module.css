@@ -130,21 +130,3 @@
   width: 200px;
   height: 200px;
 }
-
-.iconRemove {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  height: 24px;
-  width: 24px;
-  cursor: pointer;
-}
-.iconRemove:hover {
-  transform: scale(1.1);
-}
-.iconRemove:active {
-  transform: scale(0.95);
-}
-.iconRemove g path {
-  fill: var(--neutral-light-4);
-}

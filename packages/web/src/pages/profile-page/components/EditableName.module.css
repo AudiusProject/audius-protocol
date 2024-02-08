@@ -45,10 +45,6 @@
   margin-bottom: 8px;
 }
 
-.name > .editNameContainer > .iconPencil g path {
-  fill: var(--static-white);
-}
-
 .editNameContainer {
   line-height: normal;
   width: 100%;

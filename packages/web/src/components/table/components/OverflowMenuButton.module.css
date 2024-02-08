@@ -19,7 +19,7 @@
   opacity: 0;
 }
 
-.icon g path {
+.icon path {
   fill: var(--neutral-light-5);
 }
 .tableOptionsButton:hover .icon {

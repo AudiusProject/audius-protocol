@@ -18,8 +18,8 @@
   transition: all 0.07s ease-in-out;
 }
 
-.backButton g path,
-.forwardButton g path {
+.backButton path,
+.forwardButton path {
   fill: var(--neutral-light-4);
 }
 
@@ -27,8 +27,8 @@
   transform: scale(1.1);
 }
 
-.backButton:hover g path,
-.forwardButton:hover g path {
+.backButton:hover path,
+.forwardButton:hover path {
   fill: var(--neutral-light-2);
 }
 

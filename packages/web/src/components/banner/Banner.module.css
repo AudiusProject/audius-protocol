@@ -32,8 +32,8 @@
 .iconRemove:active {
   transform: scale(0.95);
 }
-.iconSave g path,
-.iconRemove g path {
+.iconSave path,
+.iconRemove path {
   fill: var(--static-white);
 }
 

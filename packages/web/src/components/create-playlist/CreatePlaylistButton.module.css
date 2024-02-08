@@ -19,7 +19,7 @@
   margin-right: 4px;
 }
 
-.createPlaylistButton g path {
+.createPlaylistButton path {
   transition: all ease-in-out 0.04s;
   fill: var(--neutral-light-2);
 }
@@ -28,7 +28,7 @@
   color: var(--neutral);
   transform: scale(1.02);
 }
-.createPlaylistButton:hover g path {
+.createPlaylistButton:hover path {
   fill: var(--neutral);
 }
 
