@@ -4,9 +4,16 @@ import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useGatedContentAccess
+  useGatedContentAccess,
+  useUploadingStems
 } from '@audius/common/hooks'
-import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import {
+  Name,
+  ModalSource,
+  DownloadQuality,
+  ID,
+  StemCategory
+} from '@audius/common/models'
 import {
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
@@ -74,6 +81,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   )
   const { stemTracks } = useCurrentStems({ trackId })
   const { hasDownloadAccess } = useGatedContentAccess(track)
+  const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -306,6 +314,25 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
                 isOriginal={quality === DownloadQuality.ORIGINAL}
+              />
+            ))}
+            {uploadingStems.map((s, i) => (
+              <DownloadRow
+                key={`uploading-stem-${i}`}
+                onDownload={() => {}}
+                hideDownload={shouldHideDownload}
+                size={s.size}
+                index={
+                  i +
+                  stemTracks.length +
+                  (track?.is_downloadable
+                    ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                    : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+                }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
+                category={s.category ?? StemCategory.OTHER}
+                filename={s.name}
+                isLoading
               />
             ))}
             {/* Only display this row if original quality is not available,
