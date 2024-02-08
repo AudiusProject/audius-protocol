@@ -28,7 +28,7 @@ update tracks tr
 set orig_filename = concat(
   sub.parent_title,
   ' - ',
-  (sub.stem_of->>'category')::text,
+  initcap((sub.stem_of->>'category')::text),
   case when sub.row_num > 1 then concat(' ', sub.row_num) else '' end,
   '.mp3'
 )
