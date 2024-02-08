@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
+import { UseQueryResult } from '@tanstack/react-query'
 
 import { trpc } from 'utils/trpc'
 
@@ -140,56 +141,66 @@ const Table = ({
   }
 }
 
-export const Collection = ({ collection }: { collection: CollectionT }) => {
-  const [nextId, setNextId] = useState<number | undefined>(undefined)
-  const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  let data: any, error, isLoading
+type CollectionData = {
+  items: Record<string, any>
+  hasMoreNext: boolean
+  hasMorePrev: boolean
+}
+
+interface QueryParams {
+  nextId?: string
+  prevId?: string
+}
+
+type QueryFunction = (
+  params: QueryParams,
+  options: { refetchInterval: number }
+) => UseQueryResult<CollectionData, unknown>
+
+const useCollectionQuery = ({
+  collection,
+  nextId,
+  prevId
+}: {
+  collection: string
+  nextId: string | undefined
+  prevId: string | undefined
+}) => {
+  // Determine which collection to query
+  let queryFunction: QueryFunction
   switch (collection) {
     case 'uploads':
-      ;({ data, error, isLoading } = trpc.uploads.listCollection.useQuery(
-        {
-          nextId,
-          prevId
-        },
-        {
-          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
-        }
-      ))
+      queryFunction = trpc.uploads.listCollection.useQuery
       break
     case 'indexed':
-      ;({ data, error, isLoading } = trpc.indexed.listCollection.useQuery(
-        {
-          nextId,
-          prevId
-        },
-        {
-          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
-        }
-      ))
+      queryFunction = trpc.indexed.listCollection.useQuery
       break
     case 'parsed':
-      ;({ data, error, isLoading } = trpc.parsed.listCollection.useQuery(
-        {
-          nextId,
-          prevId
-        },
-        {
-          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
-        }
-      ))
+      queryFunction = trpc.parsed.listCollection.useQuery
       break
     case 'published':
-      ;({ data, error, isLoading } = trpc.published.listCollection.useQuery(
-        {
-          nextId,
-          prevId
-        },
-        {
-          refetchInterval: 10000 // Refetch every 10000 milliseconds (10 seconds)
-        }
-      ))
+      queryFunction = trpc.published.listCollection.useQuery
       break
+    default:
+      throw new Error('Invalid collection')
   }
+
+  const { data, error, isLoading } = queryFunction(
+    { nextId, prevId },
+    { refetchInterval: 10000 }
+  )
+
+  return { data, error: error as Error | null, isLoading }
+}
+
+export const Collection = ({ collection }: { collection: CollectionT }) => {
+  const [nextId, setNextId] = useState<string | undefined>(undefined)
+  const [prevId, setPrevId] = useState<string | undefined>(undefined)
+  const { data, error, isLoading } = useCollectionQuery({
+    collection,
+    nextId,
+    prevId
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
@@ -215,7 +226,7 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
           Text div after harmony fixes font styling */}
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
-          {error && <div>Error: {error.message}</div>}
+          {error && <div>Error: {(error as Error).message}</div>}
           {data && <Table collection={collection} data={data} />}
 
           <Flex justifyContent='space-between'>
