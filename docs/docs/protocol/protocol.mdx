@@ -17,7 +17,11 @@ The Audius Protocol [repository](https://github.com/AudiusProject/audius-protoco
 
 If you are interested in operating a service, see the [`running a node`](/token/running-a-node/introduction) section. If you're interested in contributing to the Audius protocol, explore the code below!
 
-![](/img/architecture.png)
+```mermaid
+flowchart TD
+  A(((Artists)))-->|Publish Content|B([Audius Content Ledger])-->|Index Content Metadata|D[(Discovery Nodes)]-->|Discover Content|F;
+  A(((Artists)))-->|Upload Content|C[(Content Nodes)]-->|Stream Content|F(((Fans)));
+```
 
 Audius consists of three demographics of users: Artists (content creators), Fans (content consumers), and Service Providers. Some users check fall into all three demographics!
 
