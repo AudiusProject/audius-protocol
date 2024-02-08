@@ -178,6 +178,13 @@ export enum IntKeys {
   BUY_AUDIO_SLIPPAGE = 'BUY_AUDIO_SLIPPAGE',
 
   /**
+   * The maximum amount the price of SOL is allowed to slip before
+   * the Jupiter swap from USDC to SOL
+   * Expressed in percentage basis points (1pt = 0.01%).
+   */
+  BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS = 'BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS',
+
+  /**
    * The interval in milliseconds between polls for gated tracks to check for access
    */
   GATED_TRACK_POLL_INTERVAL_MS = 'GATED_TRACK_POLL_INTERVAL_MS',
