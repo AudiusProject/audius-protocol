@@ -15,6 +15,7 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
+import { DownloadQuality } from '~/models'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -103,45 +104,49 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
 
 export const useFileSizes = ({
   audiusSdk,
-  trackIds
+  trackIds,
+  downloadQuality
 }: {
   audiusSdk: () => Promise<AudiusSdk>
   trackIds: ID[]
+  downloadQuality: DownloadQuality
 }) => {
   const previousTrackIds = usePrevious(trackIds)
-  const [sizes, setSizes] = useState<{ [trackId: ID]: number }>({})
+  const previousDownloadQuality = usePrevious(downloadQuality)
+  const [sizes, setSizes] = useState<{ [trackId: ID]: { [k in DownloadQuality]: number } }>({})
   useEffect(() => {
-    if (!isEqual(previousTrackIds, trackIds)) {
+    if (!isEqual(previousTrackIds, trackIds) || previousDownloadQuality !== downloadQuality) {
       const asyncFn = async () => {
         const sdk = await audiusSdk()
         const sizeResults = await Promise.all(
           trackIds.map(async (trackId) => {
-            if (sizes[trackId]) {
+            if (sizes[trackId]?.[downloadQuality]) {
               return { trackId, size: sizes[trackId] }
             }
             try {
               const res = await sdk.tracks.inspectTrack({
-                trackId: encodeHashId(trackId)
+                trackId: encodeHashId(trackId),
+                original: downloadQuality === DownloadQuality.ORIGINAL
               })
               const size = res?.data?.size ?? null
-              return { trackId, size }
+              return { trackId, size: { [downloadQuality]: size, ...(sizes[trackId] ?? {}) } }
             } catch (e) {
               console.error(e)
-              return { trackId, size: null }
+              return { trackId, size: {} }
             }
           })
         )
         setSizes((sizes) => ({
           ...sizes,
           ...sizeResults.reduce((acc, curr) => {
-            acc[curr.trackId] = curr.size
+            acc[curr.trackId] = {...(acc[curr.trackId] || {}), ...curr.size}
             return acc
-          }, {} as { trackId: ID; size: number })
+          }, {} as { trackId: ID; size: { [k in DownloadQuality]: number } })
         }))
       }
       asyncFn()
     }
-  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes])
+  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes, downloadQuality, previousDownloadQuality])
   return sizes
 }
 
