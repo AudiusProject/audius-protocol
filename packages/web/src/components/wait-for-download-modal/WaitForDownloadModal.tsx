@@ -1,12 +1,15 @@
+import { useCallback } from 'react'
+
 import {
   CommonState,
   useWaitForDownloadModal,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  tracksSocialActions
 } from '@audius/common/store'
 import { Flex, IconReceive, Text } from '@audius/harmony'
 import { ModalHeader } from '@audius/stems'
 import cn from 'classnames'
-import { shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -27,18 +30,31 @@ export const WaitForDownloadModal = () => {
     isOpen,
     onClose,
     onClosed,
-    data: { contentId }
+    data: { trackIds }
   } = useWaitForDownloadModal()
+  const dispatch = useDispatch()
   const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: contentId }),
+    (state: CommonState) => getTrack(state, { id: trackIds[0] }),
     shallowEqual
   )
+
+  const handleClosed = useCallback(() => {
+    dispatch(tracksSocialActions.cancelDownloads())
+    onClosed()
+  }, [onClosed, dispatch])
+
+  const trackName =
+    trackIds.length === 1 &&
+    track?.orig_filename &&
+    track?.orig_filename?.length > 0
+      ? track.orig_filename
+      : track?.title
 
   return (
     <ModalDrawer
       isOpen={isOpen}
       onClose={onClose}
-      onClosed={onClosed}
+      onClosed={handleClosed}
       bodyClassName={styles.modal}
       isFullscreen
       useGradientTitle={false}
@@ -59,7 +75,7 @@ export const WaitForDownloadModal = () => {
       </ModalHeader>
       <Flex direction='column' p='xl' gap='xl' alignItems='center'>
         <Text variant='body' size='l' strength='strong'>
-          {track?.orig_filename}
+          {trackName}
         </Text>
         <LoadingSpinner className={styles.spinner} />
       </Flex>

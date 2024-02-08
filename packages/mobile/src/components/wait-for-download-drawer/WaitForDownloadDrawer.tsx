@@ -1,10 +1,13 @@
+import { useCallback } from 'react'
+
 import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
+  tracksSocialActions,
   useWaitForDownloadModal
 } from '@audius/common/store'
 import { css } from '@emotion/native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   Divider,
@@ -23,8 +26,9 @@ const messages = {
 }
 
 export const WaitForDownloadDrawer = () => {
+  const dispatch = useDispatch()
   const {
-    data: { contentId },
+    data: { trackIds },
     isOpen,
     onClose,
     onClosed
@@ -32,15 +36,22 @@ export const WaitForDownloadDrawer = () => {
 
   const { spacing } = useTheme()
   const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: contentId })
+    getTrack(state, { id: trackIds[0] })
   )
   const trackName =
-    track?.orig_filename && track?.orig_filename?.length > 0
+    trackIds.length === 1 &&
+    track?.orig_filename &&
+    track?.orig_filename?.length > 0
       ? track.orig_filename
       : track?.title
 
+  const handleClosed = useCallback(() => {
+    dispatch(tracksSocialActions.cancelDownloads())
+    onClosed()
+  }, [onClosed, dispatch])
+
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
+    <Drawer isOpen={isOpen} onClose={onClose} onClosed={handleClosed}>
       <Flex p='xl' gap='xl' alignItems='center'>
         <Flex direction='row' gap='s' justifyContent='center'>
           <IconReceive color='default' />

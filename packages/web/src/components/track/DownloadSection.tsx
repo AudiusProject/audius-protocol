@@ -125,7 +125,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
       } else if (track && track.access.download) {
-        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
+        openWaitForDownloadModal({
+          trackIds: parentTrackId ? [parentTrackId, ...trackIds] : trackIds
+        })
         dispatch(
           socialTracksActions.downloadTrack({
             trackIds,
