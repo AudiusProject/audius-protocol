@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   StemCategory,
@@ -160,15 +160,19 @@ const EditTrackModal = ({
     })
   }
 
-  const onAddStems = async (selectedStems: File[]) => {
-    const detectCategory = (filename: string): Nullable<StemCategory> => {
+  const detectCategory = useCallback(
+    (filename: string): Nullable<StemCategory> => {
       const lowerCaseFilename = filename.toLowerCase()
       return (
         stemDropdownRows.find((category) =>
           lowerCaseFilename.includes(category.toString().toLowerCase())
         ) ?? null
       )
-    }
+    },
+    []
+  )
+
+  const onAddStems = async (selectedStems: File[]) => {
     const processedFiles = processFiles(selectedStems, () => {})
     const newStems = (await Promise.all(processedFiles))
       .filter(removeNullable)

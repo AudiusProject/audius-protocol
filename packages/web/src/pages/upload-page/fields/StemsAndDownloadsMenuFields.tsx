@@ -235,16 +235,20 @@ export const StemsAndDownloadsMenuFields = () => {
     // TODO: show file error
   }
 
+  const detectCategory = useCallback(
+    (filename: string): Nullable<StemCategory> => {
+      const lowerCaseFilename = filename.toLowerCase()
+      return (
+        stemDropdownRows.find((category) =>
+          lowerCaseFilename.includes(category.toString().toLowerCase())
+        ) ?? null
+      )
+    },
+    []
+  )
+
   const onAddStemsToTrack = useCallback(
     async (selectedStems: File[]) => {
-      const detectCategory = (filename: string): Nullable<StemCategory> => {
-        const lowerCaseFilename = filename.toLowerCase()
-        return (
-          stemDropdownRows.find((category) =>
-            lowerCaseFilename.includes(category.toString().toLowerCase())
-          ) ?? null
-        )
-      }
       const processedFiles = processFiles(selectedStems, invalidAudioFile)
       const newStems = (await Promise.all(processedFiles))
         .filter(removeNullable)

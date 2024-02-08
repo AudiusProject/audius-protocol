@@ -5,11 +5,7 @@ import {
   stemCategoryFriendlyNames
 } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'
-import {
-  getDownloadFilename,
-  formatBytes,
-  Nullable
-} from '@audius/common/utils'
+import { getDownloadFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
