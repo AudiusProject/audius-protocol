@@ -1,5 +1,4 @@
 import { Nullable } from '../utils/typeUtils'
-import { PurchaseAccess } from './PurchaseContent'
 
 import { StringUSDC } from './Wallet'
 
@@ -28,7 +27,6 @@ export type USDCPurchaseDetails = {
   contentType: USDCContentPurchaseType
   contentId: number
   createdAt: string
-  access: PurchaseAccess
 }
 
 export type USDCTransactionDetails = {
