@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import Indexed from '../models/indexed'
 import Parsed from '../models/parsed'
 import Published from '../models/published'
 
@@ -16,17 +17,32 @@ export const publishReleases = async () => {
       }).session(session)
 
       for (const doc of documents) {
+        // TODO download audio/image files from "indexed" s3 bucket
         // TODO publish release using SDK
 
         // Move document to 'published' collection
         const publishedData = {
           ...doc.toObject(),
-          track_id: 'todo',
+          entity_id: 'todo',
+          created_at: new Date(),
         }
         const publishedDoc = new Published(publishedData)
         await publishedDoc.save({ session })
         await Parsed.deleteOne({ _id: doc._id }).session(session)
-        // TODO update indexed delivery_status to 'published'
+        // Update delivery_status to 'published' once all releases in the delivery are published
+        const remainingCount = await Parsed.countDocuments({
+          delivery_id: doc.delivery_id,
+          _id: { $ne: doc._id },
+        }).session(session)
+
+        if (remainingCount === 0) {
+          // Update delivery_status in indexed collection
+          await Indexed.updateOne(
+            { delivery_id: doc.delivery_id },
+            { $set: { delivery_status: 'published' } },
+            { session }
+          )
+        }
         console.log('Published release: ', publishedData)
       }
 

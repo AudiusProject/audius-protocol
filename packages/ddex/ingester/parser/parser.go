@@ -26,12 +26,13 @@ func Run(ctx context.Context) {
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
-		var changeDoc bson.M
+		var changeDoc struct {
+			FullDocument common.Indexed `bson:"fullDocument"`
+		}
 		if err := changeStream.Decode(&changeDoc); err != nil {
 			log.Fatal(err)
 		}
-		fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-		parseIndexed(mongoClient, fullDocument, ctx)
+		parseIndexed(mongoClient, changeDoc.FullDocument, ctx)
 	}
 
 	if err := changeStream.Err(); err != nil {
@@ -39,8 +40,8 @@ func Run(ctx context.Context) {
 	}
 }
 
-func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context) {
-	log.Printf("Processing new indexed document: %v\n", fullDocument)
+func parseIndexed(client *mongo.Client, indexed common.Indexed, ctx context.Context) {
+	log.Printf("Processing new indexed document: %v\n", indexed)
 	indexedColl := client.Database("ddex").Collection("indexed")
 	parsedColl := client.Database("ddex").Collection("parsed")
 
@@ -49,7 +50,7 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context
 
 	session, err := client.StartSession()
 	if err != nil {
-		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
+		failAndUpdateStatus(err, indexedColl, ctx, indexed.ID)
 	}
 	err = mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
 		if err := session.StartTransaction(); err != nil {
@@ -58,10 +59,11 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context
 
 		// 2. Write each release in "delivery_xml" in the indexed doc as a bson doc in the 'parsed' collection
 		parsedDoc := bson.M{
-			"upload_etag":  fullDocument["upload_etag"],
-			"delivery_id":  fullDocument["delivery_id"],
+			"upload_etag":  indexed.UploadETag,
+			"delivery_id":  indexed.DeliveryID,
 			"entity":       "track",
 			"publish_date": time.Now(),
+			"created_at":   time.Now(),
 		}
 		result, err := parsedColl.InsertOne(ctx, parsedDoc)
 		if err != nil {
@@ -71,7 +73,7 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context
 		log.Println("New parsed release doc ID: ", result.InsertedID)
 
 		// 3. Set delivery status for delivery in 'indexed' collection
-		err = setDeliveryStatus(indexedColl, sessionContext, fullDocument["_id"].(primitive.ObjectID), constants.DeliveryStatusAwaitingPublishing)
+		err = setDeliveryStatus(indexedColl, sessionContext, indexed.ID, constants.DeliveryStatusAwaitingPublishing)
 		if err != nil {
 			session.AbortTransaction(sessionContext)
 			return err
@@ -81,7 +83,7 @@ func parseIndexed(client *mongo.Client, fullDocument bson.M, ctx context.Context
 	})
 
 	if err != nil {
-		failAndUpdateStatus(err, indexedColl, ctx, fullDocument["_id"].(primitive.ObjectID))
+		failAndUpdateStatus(err, indexedColl, ctx, indexed.ID)
 	}
 
 	session.EndSession(ctx)

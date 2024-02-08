@@ -116,7 +116,7 @@ func persistUploads(client *mongo.Client, bucket string, uploads []*s3.Object, c
 		etag := strings.Trim(*upload.ETag, "\"")
 		// Only insert if a document doesn't already exist with this path and etag
 		filter := bson.M{"path": path, "upload_etag": etag}
-		update := bson.M{"$setOnInsert": bson.M{"path": path, "upload_etag": etag}}
+		update := bson.M{"$setOnInsert": bson.M{"path": path, "upload_etag": etag, "created_at": upload.LastModified}}
 		opts := options.Update().SetUpsert(true)
 		_, err := uploadsColl.UpdateOne(ctx, filter, update, opts)
 		if err != nil {

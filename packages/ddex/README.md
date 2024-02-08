@@ -14,6 +14,8 @@ To use dev envs: `cp .env.dev .env`
 
 Fill in all missing values. See the `Creating a bucket in S3` section below for how to set up S3.
 
+For docker compose to work: (at monorepo root) `cat packages/ddex/.env >> dev-tools/compose/.env`
+
 ### Setup
 1. (At the monorepo root) Generate a keyfile for mongodb:
 ```

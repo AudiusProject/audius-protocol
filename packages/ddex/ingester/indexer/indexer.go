@@ -5,12 +5,14 @@ import (
 	"context"
 	"fmt"
 	"ingester/common"
+	"ingester/constants"
 	"io"
 	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -71,16 +73,17 @@ func RunNewIndexer(ctx context.Context) {
 // processZIP unzips an "upload" into a "delivery" (or multiple deliveries if the ZIP file contains multiple folders with XML files).
 func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	// Decode the "upload" from Mongo
-	var changeDoc bson.M
+	var changeDoc struct {
+		FullDocument common.Upload `bson:"fullDocument"`
+	}
 	if err := changeStream.Decode(&changeDoc); err != nil {
 		log.Fatal(err)
 	}
-	fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
+	i.logger.Info("Indexer: Processing new upload", "upload", changeDoc.FullDocument)
 
 	// Download ZIP file from S3
-	uploadETag := fullDocument["upload_etag"].(string)
-	remotePath := fullDocument["path"].(string)
+	uploadETag := changeDoc.FullDocument.UploadETag
+	remotePath := changeDoc.FullDocument.Path
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
@@ -169,10 +172,12 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 
 	// Insert the delivery into the Mongo "indexed" collection
 	deliveryDoc := bson.M{
-		"delivery_id":   deliveryID,
-		"upload_etag":   uploadETag,
-		"xml_file_path": xmlRelativePath,
-		"xml_content":   primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"upload_etag":     uploadETag,
+		"delivery_id":     deliveryID,
+		"delivery_status": constants.DeliveryStatusValidating,
+		"xml_file_path":   xmlRelativePath,
+		"xml_content":     primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"created_at":      time.Now(),
 	}
 	if _, err := i.indexedColl.InsertOne(i.ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)
