@@ -270,7 +270,7 @@ function _M.validate_nethermind_rpc_request ()
 
         if body.method == "eth_sendRawTransaction" or body.method == "eth_sendTransaction" then
           ngx.log(ngx.WARN, "WOULD_BLOCK: ", data)
-          -- is_ok = false
+          is_ok = false
         end
 
         if not is_ok then
