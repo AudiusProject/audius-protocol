@@ -35,7 +35,6 @@ export const Button = (props: ButtonProps) => {
     type,
     color: themeColors,
     cornerRadius,
-    shadows,
     spacing,
     typography
   } = useTheme()
