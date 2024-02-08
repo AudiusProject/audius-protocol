@@ -20,6 +20,14 @@ export type UseAudiusFieldOptions = {
    */
   debouncedValidationMs?: number
   /**
+   * Delays onChange validation errors from showing.
+   * Requires validateOnChange to be true.
+   * Note: This doesn't delay the actual validation from running,
+   * just how long after the user stops typing that the error will appear.
+   * @default 0
+   */
+  debouncedIdleMs?: number
+  /**
    * Help text to appear below the input. If present, error help text will not show.
    */
   helperText?: string
@@ -61,6 +69,7 @@ export const useHarmonyField = <Value = any>(
 ): [FieldInputProps<Value>, FieldMetaProps<Value>, FieldHelperProps<Value>] => {
   const {
     debouncedValidationMs = 0,
+    debouncedIdleMs = 0,
     transformValueOnChange,
     transformValueOnBlur,
     helperText: helperTextProp,
@@ -108,13 +117,13 @@ export const useHarmonyField = <Value = any>(
   )
 
   // Debounced function that mimics onBlur if the user stops typing for a bit
-  const debouncedStopEditing = useDebouncedCallback(
+  const debouncedSetIdle = useDebouncedCallback(
     () => {
       setIsChanging(false)
       setTouched(true)
     },
     [setIsChanging, setTouched],
-    2000 // 2s, arbitrary
+    debouncedIdleMs
   )
 
   const onChange = useCallback(
@@ -123,7 +132,9 @@ export const useHarmonyField = <Value = any>(
       setIsChanging(true)
       // Stop editing if the user stops typing for a while, so that any
       // errors can show through even if the input doesn't leave focus
-      debouncedStopEditing()
+      if (validateOnChange) {
+        debouncedSetIdle()
+      }
 
       // Apply value transformations
       if (transformValueOnChange) {
