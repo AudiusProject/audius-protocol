@@ -25,7 +25,7 @@ export type UseAudiusFieldOptions = {
   helperText?: string
   /**
    * Whether to show errors prior to the first submission attempt.
-   * @default true
+   * @default false
    */
   showErrorBeforeSubmit?: boolean
   /**
@@ -64,7 +64,7 @@ export const useHarmonyField = <Value = any>(
     transformValueOnChange,
     transformValueOnBlur,
     helperText: helperTextProp,
-    showErrorBeforeSubmit = true,
+    showErrorBeforeSubmit = false,
     validateFieldOnChange
   } = options
   const [field, meta, helpers] = useFormikField(name)
