@@ -153,7 +153,6 @@ def test_process_user_bank_tx_details_valid_purchase(app):
     solana_client_manager_mock = create_autospec(SolanaClientManager)
 
     transaction = tx_response.value.transaction.transaction
-    print(f"REED {transaction}")
 
     tx_sig_str = str(transaction.signatures[0])
 
@@ -1007,7 +1006,8 @@ def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
         challenge_event_bus.dispatch.assert_has_calls(calls)
 
 
-def test_process_user_bank_txs_details_access_types(app):
+# Index tx with stream access in memo correctly
+def test_process_user_bank_txs_details_stream_access(app):
     with app.app_context():
         db = get_db()
         redis = get_redis()
@@ -1037,6 +1037,16 @@ def test_process_user_bank_txs_details_access_types(app):
         )
         assert purchase is not None
         assert purchase.access == PurchaseAccessType.stream
+
+
+# Index tx with download access in memo correctly
+def test_process_user_bank_txs_details_download_access(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
 
     tx_response = mock_valid_track_purchase_tx_download_access
     transaction = tx_response.value.transaction.transaction

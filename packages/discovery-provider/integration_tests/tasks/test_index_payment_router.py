@@ -90,6 +90,7 @@ test_entries = {
             "track_id": 1,
             "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
             "total_price_cents": 100,
+            "access": PurchaseAccessType.stream,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
@@ -925,7 +926,8 @@ def test_process_payment_router_txs_details_skip_unknown_PDA_ATAs(app):
         assert transaction_record is None
 
 
-def test_process_payment_router_tx_details_access_types(app):
+# Index tx with stream access in memo correctly
+def test_process_payment_router_tx_details_stream_access(app):
     with app.app_context():
         db = get_db()
     populate_mock_db(db, test_entries)
@@ -952,6 +954,14 @@ def test_process_payment_router_tx_details_access_types(app):
 
         assert purchase is not None
         assert purchase.access == PurchaseAccessType.stream
+
+
+# Index tx with download access in memo correctly
+def test_process_payment_router_tx_details_download_access(app):
+    with app.app_context():
+        db = get_db()
+    populate_mock_db(db, test_entries)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
 
     tx_response = mock_valid_track_purchase_download_access
     transaction = tx_response.value.transaction.transaction

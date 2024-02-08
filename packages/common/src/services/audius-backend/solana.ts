@@ -20,10 +20,15 @@ import BN from 'bn.js'
 
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
+import {
+  AnalyticsEvent,
+  ID,
+  Name,
+  SolanaWalletAddress,
+  PurchaseAccess
+} from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
-import { PurchaseAccess } from '~/store'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
@@ -480,7 +485,7 @@ export const createRootWalletRecoveryTransaction = async (
       splits: { [userBank.toString()]: new BN(amount.toString()) },
       purchaserUserId: 0, // ignored
       senderAccount: wallet.publicKey,
-      purchaseAccess: 'stream' //ignored
+      purchaseAccess: PurchaseAccess.STREAM //ignored
     })
 
   const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
@@ -667,7 +672,7 @@ export const createPaymentRouterRouteTransaction = async (
       splits,
       purchaserUserId: 0, // ignored
       senderAccount: sender,
-      purchaseAccess: 'stream' //ignored
+      purchaseAccess: PurchaseAccess.STREAM //ignored
     })
   return new Transaction({
     recentBlockhash: blockhash,

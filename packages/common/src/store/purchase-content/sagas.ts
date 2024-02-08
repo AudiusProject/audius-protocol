@@ -5,7 +5,11 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
+import {
+  PurchaseMethod,
+  PurchaseVendor,
+  PurchaseAccess
+} from '~/models/PurchaseContent'
 import { Track, isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
@@ -64,12 +68,7 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import {
-  ContentType,
-  PurchaseAccess,
-  PurchaseContentError,
-  PurchaseErrorCode
-} from './types'
+import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 import { getBalanceNeeded } from './utils'
 
 const { getUserId, getAccountUser } = accountSelectors
@@ -99,10 +98,12 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const trackInfo = yield* select(getTrack, { id: contentId })
   const purchaseConditions =
     trackInfo?.stream_conditions ?? trackInfo?.download_conditions
-  const purchaseAccess =
-    trackInfo?.is_download_gated && !trackInfo?.is_stream_gated
-      ? PurchaseAccess.DOWNLOAD
-      : PurchaseAccess.STREAM
+  // Stream access is a superset of download access - purchasing a stream-gated
+  // track also gets you download access, but purchasing a download-gated track
+  // only gets you download access (because the track was already free to stream).
+  const purchaseAccess = trackInfo?.is_stream_gated
+    ? PurchaseAccess.STREAM
+    : PurchaseAccess.DOWNLOAD
   if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
     throw new Error('Content is missing purchase conditions')
   }
