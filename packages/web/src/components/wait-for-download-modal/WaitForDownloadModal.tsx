@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
+import { DownloadQuality } from '@audius/common/models'
 import {
   CommonState,
   useWaitForDownloadModal,
   cacheTracksSelectors,
   tracksSocialActions
 } from '@audius/common/store'
+import { getDownloadFilename } from '@audius/common/utils'
 import { Flex, IconReceive, Text } from '@audius/harmony'
 import { ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -30,11 +32,12 @@ export const WaitForDownloadModal = () => {
     isOpen,
     onClose,
     onClosed,
-    data: { trackIds }
+    data: { parentTrackId, trackIds, quality }
   } = useWaitForDownloadModal()
   const dispatch = useDispatch()
   const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackIds[0] }),
+    (state: CommonState) =>
+      getTrack(state, { id: parentTrackId ?? trackIds[0] }),
     shallowEqual
   )
 
@@ -44,10 +47,11 @@ export const WaitForDownloadModal = () => {
   }, [onClosed, dispatch])
 
   const trackName =
-    trackIds.length === 1 &&
-    track?.orig_filename &&
-    track?.orig_filename?.length > 0
-      ? track.orig_filename
+    !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
+      ? getDownloadFilename({
+        filename: track.orig_filename,
+        isOriginal: quality === DownloadQuality.ORIGINAL
+      })
       : track?.title
 
   return (

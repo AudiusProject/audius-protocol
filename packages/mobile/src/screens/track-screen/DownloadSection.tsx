@@ -107,7 +107,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         toast({ content: messages.followToDownload })
       } else if (track && track.access.download) {
         openWaitForDownloadModal({
-          trackIds: parentTrackId ? [parentTrackId, ...trackIds] : trackIds
+          parentTrackId,
+          trackIds,
+          quality
         })
         dispatch(
           socialTracksActions.downloadTrack({

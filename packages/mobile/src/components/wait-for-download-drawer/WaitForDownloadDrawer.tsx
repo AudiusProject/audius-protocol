@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
+import { DownloadQuality } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
   tracksSocialActions,
   useWaitForDownloadModal
 } from '@audius/common/store'
+import { getDownloadFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -28,7 +30,7 @@ const messages = {
 export const WaitForDownloadDrawer = () => {
   const dispatch = useDispatch()
   const {
-    data: { trackIds },
+    data: { parentTrackId, trackIds, quality },
     isOpen,
     onClose,
     onClosed
@@ -36,13 +38,14 @@ export const WaitForDownloadDrawer = () => {
 
   const { spacing } = useTheme()
   const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackIds[0] })
+    getTrack(state, { id: parentTrackId ?? trackIds[0] })
   )
   const trackName =
-    trackIds.length === 1 &&
-    track?.orig_filename &&
-    track?.orig_filename?.length > 0
-      ? track.orig_filename
+    !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
+      ? getDownloadFilename({
+          filename: track.orig_filename,
+          isOriginal: quality === DownloadQuality.ORIGINAL
+        })
       : track?.title
 
   const handleClosed = useCallback(() => {

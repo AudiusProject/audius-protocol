@@ -1,18 +1,20 @@
+import { DownloadQuality } from '~/models'
 import { ID } from '~/models/Identifiers'
 
 import { createModal } from '../createModal'
 
 export type WaitForDownloadModalState = {
-  // List of track ids to download, if larger than 1
-  // the first track is the parent track id.
+  parentTrackId?: ID
   trackIds: ID[]
+  quality: DownloadQuality
 }
 
 const waitForDownloadModal = createModal<WaitForDownloadModalState>({
   reducerPath: 'WaitForDownloadModal',
   initialState: {
     isOpen: false,
-    trackIds: []
+    trackIds: [],
+    quality: DownloadQuality.MP3
   },
   sliceSelector: (state) => state.ui.modals
 })
