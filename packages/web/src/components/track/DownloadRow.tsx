@@ -49,10 +49,11 @@ export const DownloadRow = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+  const downloadableContentAccess = useDownloadableContentAccess({
+    trackId: trackId ?? 0
+  })
   const { shouldDisplayDownloadFollowGated } = trackId
-    ? useDownloadableContentAccess({
-        trackId
-      })
+    ? downloadableContentAccess
     : { shouldDisplayDownloadFollowGated: false }
 
   const downloadButton = () => (

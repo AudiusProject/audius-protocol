@@ -32,7 +32,6 @@ import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
-import { Nullable } from '@audius/common/utils'
 
 const MAX_ROWS = 10
 
@@ -243,7 +242,7 @@ type DownloadSectionProps = {
   onUpdateDownloadSettings: (downloadSettings: Download) => void
 }
 
-const SwitchSection = ({
+const DownloadSection = ({
   isOriginalAvailable,
   onUpdateIsOriginalAvailable,
   downloadSettings,
@@ -336,7 +335,7 @@ const SwitchSection = ({
           </>
         )}
       </div>
-    </div>
+    </Flex>
   )
 }
 

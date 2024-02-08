@@ -172,22 +172,25 @@ const EditTrackModal = ({
     []
   )
 
-  const onAddStems = async (selectedStems: File[]) => {
-    const processedFiles = processFiles(selectedStems, () => {})
-    const newStems = (await Promise.all(processedFiles))
-      .filter(removeNullable)
-      .map((processedFile) => {
-        const category = detectCategory(processedFile.file.name)
-        return {
-          ...processedFile,
-          category,
-          allowDelete: true,
-          allowCategorySwitch: true
-        }
-      })
+  const onAddStems = useCallback(
+    async (selectedStems: File[]) => {
+      const processedFiles = processFiles(selectedStems, () => {})
+      const newStems = (await Promise.all(processedFiles))
+        .filter(removeNullable)
+        .map((processedFile) => {
+          const category = detectCategory(processedFile.file.name)
+          return {
+            ...processedFile,
+            category,
+            allowDelete: true,
+            allowCategorySwitch: true
+          }
+        })
 
-    setPendingUploads((s) => [...s, ...newStems])
-  }
+      setPendingUploads((s) => [...s, ...newStems])
+    },
+    [detectCategory]
+  )
 
   const { combinedStems, onDeleteStem } = (() => {
     // Filter out pending deletes from the existing stems

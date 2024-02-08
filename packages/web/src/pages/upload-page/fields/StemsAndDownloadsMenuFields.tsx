@@ -263,7 +263,7 @@ export const StemsAndDownloadsMenuFields = () => {
         })
       setStems([...stemsValue, ...newStems])
     },
-    [setStems, stemsValue]
+    [detectCategory, setStems, stemsValue]
   )
 
   return (

@@ -284,7 +284,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         metadata.is_download_gated = true
       }
 
-      // set the redundant download json field for consistent
+      // set the redundant download json field for consistency
       // this will be cleaned up soon
       metadata.download = {
         is_downloadable: isDownloadable,
