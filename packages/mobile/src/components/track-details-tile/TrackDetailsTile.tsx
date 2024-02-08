@@ -80,9 +80,13 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type TrackDetailsTileProps = {
   trackId: ID
+  showLabel?: boolean
 }
 
-export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
+export const TrackDetailsTile = ({
+  trackId,
+  showLabel = true
+}: TrackDetailsTileProps) => {
   const styles = useStyles()
   const { accentBlue, specialLightGreen } = useThemeColors()
   const track = useSelector((state) => getTrack(state, { id: trackId }))
@@ -145,22 +149,24 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
           size={SquareSizes.SIZE_150_BY_150}
         />
         <View style={styles.metadataContainer}>
-          <View style={styles.streamContentLabelContainer}>
-            <IconComponent
-              fill={color}
-              width={spacing(5)}
-              height={spacing(5)}
-            />
-            <Text
-              fontSize='small'
-              colorValue={color}
-              weight='demiBold'
-              textTransform='uppercase'
-              style={styles.streamContentLabel}
-            >
-              {title}
-            </Text>
-          </View>
+          {showLabel ? (
+            <View style={styles.streamContentLabelContainer}>
+              <IconComponent
+                fill={color}
+                width={spacing(5)}
+                height={spacing(5)}
+              />
+              <Text
+                fontSize='small'
+                colorValue={color}
+                weight='demiBold'
+                textTransform='uppercase'
+                style={styles.streamContentLabel}
+              >
+                {title}
+              </Text>
+            </View>
+          ) : null}
           <Text
             fontSize='xl'
             weight='bold'

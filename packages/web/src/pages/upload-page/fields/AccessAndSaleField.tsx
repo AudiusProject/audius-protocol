@@ -11,7 +11,6 @@ import {
   CollectibleGatedConditions,
   FollowGatedConditions,
   TipGatedConditions,
-  Download,
   USDCPurchaseConditions
 } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -47,15 +46,16 @@ import { REMIX_OF } from './RemixSettingsField'
 import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
   AccessAndSaleFormValues,
-  DOWNLOAD,
   DOWNLOAD_CONDITIONS,
   DOWNLOAD_REQUIRES_FOLLOW,
   FIELD_VISIBILITY,
+  GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
   IS_SCHEDULED_RELEASE,
   IS_STREAM_GATED,
   IS_UNLISTED,
+  LAST_GATE_KEEPER,
   PREVIEW,
   PRICE,
   PRICE_HUMANIZED,
@@ -247,14 +247,14 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       DOWNLOAD_CONDITIONS
     )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
-    useField(IS_DOWNLOADABLE)
+    useTrackField<boolean>(IS_DOWNLOADABLE)
   const [
     { value: downloadRequiresFollow },
     ,
     { setValue: setDownloadRequiresFollow }
-  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
-  const [{ value: download }, , { setValue: setDownload }] =
-    useTrackField<Download>(DOWNLOAD)
+  ] = useTrackField<boolean>(DOWNLOAD_REQUIRES_FOLLOW)
+  const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
+    useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
@@ -286,7 +286,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
-    set(initialValues, DOWNLOAD, download)
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -326,10 +326,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     downloadConditions,
     isDownloadable,
     downloadRequiresFollow,
-    download,
     fieldVisibility,
     preview,
-    isScheduledRelease
+    isScheduledRelease,
+    lastGateKeeper
   ])
 
   const handleSubmit = useCallback(
@@ -339,6 +339,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
+      const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
@@ -348,7 +349,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
-
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {
@@ -367,10 +367,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setDownloadConditionsValue(conditions)
           setIsDownloadable(true)
           setDownloadRequiresFollow(false)
-          setDownload({
-            cid: null,
-            is_downloadable: true,
-            requires_follow: false
+          const downloadableGateKeeper =
+            isDownloadable &&
+            lastGateKeeper.downloadable === 'stemsAndDownloads'
+              ? 'stemsAndDownloads'
+              : 'accessAndSale'
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'accessAndSale',
+            downloadable: downloadableGateKeeper
           })
           break
         }
@@ -379,26 +384,23 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
             setDownloadConditionsValue({ follow_user_id })
-            setDownloadRequiresFollow(true)
-            setDownload({
-              cid: null,
-              is_downloadable: true,
-              requires_follow: true
-            })
+            if (isDownloadable) {
+              setDownloadRequiresFollow(true)
+            }
           } else {
             const { tip_user_id } = streamConditions as TipGatedConditions
             setStreamConditionsValue({ tip_user_id })
             setDownloadConditionsValue({ tip_user_id })
-            setDownloadRequiresFollow(false)
-            setDownload({
-              cid: null,
-              is_downloadable: true,
-              requires_follow: false
-            })
+            if (isDownloadable) {
+              setDownloadRequiresFollow(false)
+            }
           }
           setIsStreamGated(true)
           setIsDownloadGated(true)
-          setIsDownloadable(true)
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'accessAndSale'
+          })
           break
         }
         case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
@@ -408,12 +410,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setStreamConditionsValue({ nft_collection })
           setIsDownloadGated(true)
           setDownloadConditionsValue({ nft_collection })
-          setIsDownloadable(true)
-          setDownloadRequiresFollow(false)
-          setDownload({
-            cid: null,
-            is_downloadable: true,
-            requires_follow: false
+          if (isDownloadable) {
+            setDownloadRequiresFollow(false)
+          }
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'accessAndSale'
           })
           break
         }
@@ -423,10 +425,24 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
           })
           setIsUnlistedValue(true)
+          if (lastGateKeeper.access === 'accessAndSale') {
+            setIsDownloadGated(false)
+            setDownloadConditionsValue(null)
+          }
+          if (lastGateKeeper.downloadable === 'accessAndSale') {
+            setIsDownloadable(false)
+          }
           break
         }
         case StreamTrackAvailabilityType.PUBLIC: {
           setIsUnlistedValue(false)
+          if (lastGateKeeper.access === 'accessAndSale') {
+            setIsDownloadGated(false)
+            setDownloadConditionsValue(null)
+          }
+          if (lastGateKeeper.downloadable === 'accessAndSale') {
+            setIsDownloadable(false)
+          }
           break
         }
       }
@@ -440,8 +456,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setDownloadConditionsValue,
       setIsDownloadable,
       setDownloadRequiresFollow,
-      setDownload,
       setPreviewValue,
+      setLastGateKeeper,
+      isDownloadable,
       isUnlisted
     ]
   )

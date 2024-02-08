@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { Nullable } from '@audius/common/utils'
 import {
   Box,
   FilterButton,
@@ -61,7 +62,7 @@ type TrackPreviewProps = {
   isTitleEditable?: boolean
   onEditTitle?: (title: string) => void
   isStem?: boolean
-  stemCategory?: StemCategory
+  stemCategory?: Nullable<StemCategory>
   onEditStemCategory?: (stemCategory: StemCategory) => void
   isEdit?: boolean
   isDisabled?: boolean

@@ -11,9 +11,10 @@ import {
   Flex,
   IconCreditCard,
   IconDonate,
-  IconTransaction
+  IconTransaction,
+  Radio,
+  RadioGroup
 } from '@audius/harmony'
-import { RadioButton, RadioButtonGroup } from '@audius/stems'
 import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
@@ -145,7 +146,7 @@ export const PaymentMethod = ({
       }
     }
     return (
-      <RadioButtonGroup
+      <RadioGroup
         name={`summaryTable-label-${messages.paymentMethod}`}
         value={selectedMethod}
         onChange={handleRadioChange}
@@ -167,7 +168,7 @@ export const PaymentMethod = ({
               justifyContent='space-between'
               gap='s'
             >
-              <RadioButton value={id} disabled={disabled} />
+              <Radio value={id} disabled={disabled} />
               {Icon ? (
                 <Flex alignItems='center' ml='s'>
                   <Icon color='default' />
@@ -184,7 +185,7 @@ export const PaymentMethod = ({
             </Text>
           </Flex>
         ))}
-      </RadioButtonGroup>
+      </RadioGroup>
     )
   }
 

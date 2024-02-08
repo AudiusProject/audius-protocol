@@ -5,8 +5,7 @@ import { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconInfo } from '@audius/harmony'
-import { RadioButton, RadioButtonGroup } from '@audius/stems'
+import { IconInfo, Radio, RadioGroup } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -78,14 +77,14 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
 
   return (
     <>
-      <RadioButtonGroup
+      <RadioGroup
         className={styles.root}
         {...specialAccessTypeField}
         onChange={handleChange}
         defaultValue={SpecialAccessType.FOLLOW}
       >
         <label className={cn(styles.row, { [styles.disabled]: disabled })}>
-          <RadioButton
+          <Radio
             className={styles.radio}
             value={SpecialAccessType.FOLLOW}
             disabled={disabled}
@@ -93,7 +92,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
           <Text>{messages.followersOnly}</Text>
         </label>
         <label className={cn(styles.row, { [styles.disabled]: disabled })}>
-          <RadioButton
+          <Radio
             className={styles.radio}
             value={SpecialAccessType.TIP}
             disabled={disabled}
@@ -109,7 +108,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
             <IconInfo className={styles.icon} />
           </Tooltip>
         </label>
-      </RadioButtonGroup>
+      </RadioGroup>
       {isLosslessDownloadsEnabled && downloadConditions ? (
         <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
       ) : null}

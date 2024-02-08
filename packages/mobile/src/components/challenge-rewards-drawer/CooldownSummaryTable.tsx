@@ -22,7 +22,7 @@ export const CooldownSummaryTable = ({
     <SummaryTable
       title={messages.upcomingRewards}
       secondaryTitle={messages.audio}
-      summaryValueColor='neutral'
+      summaryValueColor='default'
       items={cooldownChallenges}
       summaryItem={cooldownChallengesSummary}
     />

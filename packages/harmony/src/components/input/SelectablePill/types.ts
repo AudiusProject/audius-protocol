@@ -10,7 +10,8 @@ type InternalProps = {
 }
 
 type BaseProps = {
-  size?: 'small' | 'large'
+  // Note: oversized should only be used in specific circumstances. Use with caution.
+  size?: 'small' | 'large' | 'oversized'
   isSelected?: boolean
   disabled?: boolean
   icon?: IconComponent
@@ -23,7 +24,7 @@ type LabelProps =
 type InputProps =
   | ({
       type: 'checkbox' | 'radio'
-    } & Omit<ComponentPropsWithoutRef<'input'>, 'chiildren' | 'size'>)
+    } & Omit<ComponentPropsWithoutRef<'input'>, 'children' | 'size'>)
   | ({
       type?: 'button' | 'submit' | 'reset' | undefined
     } & Omit<ComponentPropsWithoutRef<'button'>, 'children'>)
