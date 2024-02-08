@@ -80,18 +80,17 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
           otp: sanitizedOtp
         })
         if (confirmed) {
-          // Helper to move "password" to "oldPassword"
-          helpers.setFieldValue('oldPassword', values.password)
-          helpers.setFieldValue('password', '', false)
-          helpers.setFieldTouched('password', false)
-          helpers.setFieldTouched('confirmPassword', false)
+          // Move "password" to "oldPassword" to prevent it from conflicting
+          helpers.resetForm({
+            values: { ...values, oldPassword: password, password: '' }
+          })
           setPage(ChangePasswordPage.NewPassword)
         } else {
           helpers.setFieldError('otp', messages.accountMatchError)
         }
       } catch (e) {
         if (isOtpMissingError(e)) {
-          helpers.setFieldTouched('otp', false)
+          helpers.resetForm({ values })
           setPage(ChangePasswordPage.VerifyEmail)
         } else if (page === ChangePasswordPage.ConfirmCredentials) {
           helpers.setFieldError('password', messages.invalidCredentials)
