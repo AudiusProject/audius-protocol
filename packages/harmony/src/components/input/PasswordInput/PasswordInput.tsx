@@ -30,6 +30,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           hideVisibilityToggle ? null : (
             <IconButton
               icon={VisibilityIcon}
+              color='subdued'
               onClick={toggleIsPasswordVisible}
               aria-label={
                 isPasswordVisible
