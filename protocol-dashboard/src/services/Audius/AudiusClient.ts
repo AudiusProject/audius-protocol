@@ -26,7 +26,8 @@ import {
   toChecksumAddress,
   onSetup,
   onSetupFinished,
-  decodeCallData
+  decodeCallData,
+  onMetaMaskAccountLoaded
 } from './helpers'
 import { getUserDelegates } from './wrappers'
 
@@ -58,7 +59,11 @@ export class AudiusClient {
   _setupPromiseResolve: undefined | (() => void)
   isSetupPromise: undefined | Promise<void>
 
+  metaMaskAccountLoadedPromise: undefined | Promise<string>
+  _metaMaskAccountLoadedResolve: undefined | ((account: string | null) => void)
+
   isSetup = false // If the setup is complete
+  isMetaMaskAccountLoaded = false // If we're done trying to load the metamask account
   hasValidAccount = false // If metamask is set up correctly
   isAccountMisconfigured = false // If metamask is present and account is not connected
   isMisconfigured = false // If metamask is present and misconfigured (wrong network)
@@ -70,6 +75,7 @@ export class AudiusClient {
 
   onSetup = onSetup
   onSetupFinished = onSetupFinished
+  onMetaMaskAccountLoaded = onMetaMaskAccountLoaded
 
   // Wrapper functions
   getUserDelegates = getUserDelegates

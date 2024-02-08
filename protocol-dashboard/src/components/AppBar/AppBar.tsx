@@ -8,12 +8,12 @@ import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
-import React, { useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser } from 'store/cache/user/hooks'
-import { Address } from 'types'
+import { Address, Status } from 'types'
 import getActiveStake from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
@@ -36,33 +36,27 @@ const messages = {
   wallet: 'WALLET',
   staked: 'STAKED',
   profileAlt: 'User Profile',
-  connectProfile: 'Connect Audius Profile'
+  connectProfile: 'Connect Audius Profile',
+  loading: 'Loading...'
 }
 
 // TODO:
 // * Replace account img, wallet & tokens from store
 type UserAccountSnippetProps = { wallet: Address }
 type MisconfiguredProps = {
-  isAccountMisconfigured: boolean
   isMisconfigured: boolean
 }
 
-const Misconfigured = ({
-  isAccountMisconfigured,
-  isMisconfigured
-}: MisconfiguredProps) => {
+const Misconfigured = ({ isMisconfigured }: MisconfiguredProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
   const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
 
-  const onClickHandler = isMisconfigured ? undefined : onClick
   return (
     <>
       <div
-        onClick={onClickHandler}
-        className={clsx(styles.connectMetaMaskContainer, {
-          [styles.misconfigured]: isMisconfigured
-        })}
+        onClick={onClick}
+        className={clsx(styles.connectMetaMaskContainer, styles.cursorPointer)}
       >
         <div className={styles.connectMetaMaskDot}></div>
         <div className={styles.connectMetaMask}>
@@ -71,13 +65,37 @@ const Misconfigured = ({
             : messages.connectMetaMask}
         </div>
       </div>
-      <ConnectMetaMaskModal isOpen={isOpen} onClose={onClose} />
+      <ConnectMetaMaskModal
+        isMisconfigured={isMisconfigured}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </>
   )
 }
 
+type LoadingProps = {
+  status: 'green' | 'yellow'
+}
+
+const Loading = ({ status }: LoadingProps) => {
+  return (
+    <div className={styles.connectMetaMaskContainer}>
+      <div
+        className={clsx(styles.connectMetaMaskDot, {
+          [styles.yellow]: status === 'yellow',
+          [styles.green]: status === 'green'
+        })}
+      ></div>
+      <div className={clsx(styles.connectMetaMask, styles.loadingText)}>
+        {messages.loading}
+      </div>
+    </div>
+  )
+}
+
 const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
-  const { user, audiusProfile } = useUser({ wallet })
+  const { user, audiusProfile, status } = useUser({ wallet })
   const activeStake = user ? getActiveStake(user) : new BN('0')
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
@@ -86,6 +104,9 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
     }
   }, [user, pushRoute])
 
+  if (status === Status.Loading) {
+    return <Loading status="green" />
+  }
   if (!user) return null
 
   return (
@@ -144,6 +165,13 @@ type AppBarProps = {}
 const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
+  const [isAudiusClientSetup, setIsAudiusClientSetup] = useState(false)
+  const [isMisconfigured, setIsMisconfigured] = useState(false)
+  const [
+    isRetrievingAccountTimingOut,
+    setIsRetrievingAccountTimingOut
+  ] = useState(false)
+  const [isAccountMisconfigured, setIsAccountMisconfigured] = useState(false)
   const {
     data: audiusProfileData,
     status: audiusProfileDataStatus
@@ -153,7 +181,46 @@ const AppBar: React.FC<AppBarProps> = () => {
   const { pathname } = useLocation()
   const showBlock = isCryptoPage(pathname) && ethBlock
 
-  const { isMisconfigured, isAccountMisconfigured } = window.aud
+  const waitForSetup = async () => {
+    setTimeout(() => {
+      if (!isAudiusClientSetup) {
+        setIsRetrievingAccountTimingOut(true)
+      }
+    }, 11000)
+
+    // This will hang forever if an extension is not picked (in the case where user has
+    // both Phantom and MetaMask), hence the `retrievingAccountTimeOut` logic
+    const account = await window.aud.metaMaskAccountLoadedPromise
+    setIsAudiusClientSetup(true)
+    setIsRetrievingAccountTimingOut(false)
+    setIsMisconfigured(window.aud.isMisconfigured)
+    setIsAccountMisconfigured(window.aud.isAccountMisconfigured)
+  }
+
+  useEffect(() => {
+    waitForSetup()
+  }, [])
+
+  let accountSnippetContent: ReactNode
+  let isAccountSnippetContentClickable: boolean
+  if (
+    (!isAudiusClientSetup && isRetrievingAccountTimingOut) ||
+    (isAudiusClientSetup && (isMisconfigured || isAccountMisconfigured))
+  ) {
+    isAccountSnippetContentClickable = true
+    accountSnippetContent = <Misconfigured isMisconfigured={isMisconfigured} />
+  } else if (isLoggedIn && wallet) {
+    isAccountSnippetContentClickable = true
+    accountSnippetContent = <UserAccountSnippet wallet={wallet} />
+  } else if (window.ethereum) {
+    isAccountSnippetContentClickable = false
+    accountSnippetContent = (
+      <Loading status={window.aud.hasValidAccount ? 'green' : 'yellow'} />
+    )
+  } else {
+    isAccountSnippetContentClickable = false
+    accountSnippetContent = null
+  }
 
   return (
     <div className={styles.appBar}>
@@ -177,15 +244,12 @@ const AppBar: React.FC<AppBarProps> = () => {
           audiusProfileDataStatus === 'pending' ? null : (
             <ConnectAudiusProfileButton wallet={wallet} />
           )}
-          <div className={styles.userAccountSnippetContainer}>
-            {isMisconfigured || isAccountMisconfigured ? (
-              <Misconfigured
-                isMisconfigured={isMisconfigured}
-                isAccountMisconfigured={isAccountMisconfigured}
-              />
-            ) : (
-              isLoggedIn && wallet && <UserAccountSnippet wallet={wallet} />
-            )}
+          <div
+            className={clsx({
+              [styles.cursorPointer]: isAccountSnippetContentClickable
+            })}
+          >
+            {accountSnippetContent}
           </div>
         </div>
       )}

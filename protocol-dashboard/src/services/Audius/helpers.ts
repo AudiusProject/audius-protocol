@@ -19,10 +19,28 @@ export function onSetup(this: AudiusClient) {
   this.isSetupPromise = new Promise(resolve => {
     this._setupPromiseResolve = resolve
   })
+  this.metaMaskAccountLoadedPromise = new Promise(resolve => {
+    this._metaMaskAccountLoadedResolve = resolve
+  })
+}
+
+export function onMetaMaskAccountLoaded(
+  this: AudiusClient,
+  account: string | null
+) {
+  this.isMetaMaskAccountLoaded = true
+  if (this._metaMaskAccountLoadedResolve) {
+    this._metaMaskAccountLoadedResolve(account)
+  }
 }
 
 export function onSetupFinished(this: AudiusClient) {
-  if (this._setupPromiseResolve) this._setupPromiseResolve()
+  if (this._setupPromiseResolve) {
+    this._setupPromiseResolve()
+  }
+  if (!this.isMetaMaskAccountLoaded) {
+    this.onMetaMaskAccountLoaded(null)
+  }
 }
 
 export async function awaitSetup(this: AudiusClient): Promise<void> {

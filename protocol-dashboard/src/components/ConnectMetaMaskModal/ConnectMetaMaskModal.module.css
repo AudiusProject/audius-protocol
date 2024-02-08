@@ -3,7 +3,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
   margin: 27px auto;
 }
 
@@ -13,9 +13,21 @@
 }
 
 .okayBtn {
-  margin-right: 8px
+  margin-right: 8px;
 }
 
 .openMetaMaskBtn {
-  margin-left: 8px
+  margin-left: 8px;
+}
+
+.externalLink {
+  color: var(--neutral);
+}
+
+.externalLink:hover {
+  opacity: 0.8;
+}
+
+.externalLink:active {
+  opacity: 0.5;
 }

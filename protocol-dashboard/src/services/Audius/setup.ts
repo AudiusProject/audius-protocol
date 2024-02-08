@@ -58,10 +58,8 @@ const IS_STAGING =
 let willReload = false
 
 const getMetamaskChainId = async () => {
-  return parseInt(
-    await window.ethereum.request({ method: 'eth_chainId' }),
-    16
-  ).toString()
+  const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+  return parseInt(chainId, 16).toString()
 }
 
 /**
@@ -85,7 +83,7 @@ const getMetamaskIsOnEthMainnet = async () => {
 }
 
 export async function setup(this: AudiusClient): Promise<void> {
-  if (!window.web3 || !window.ethereum) {
+  if (!window.ethereum) {
     // Metamask is not installed
     this.isViewOnly = true
     this.libs = await configureReadOnlyLibs()
@@ -118,13 +116,20 @@ export async function setup(this: AudiusClient): Promise<void> {
           })
         }, 2000)
       }
-
       const isOnMainnetEth = await getMetamaskIsOnEthMainnet()
       if (!isOnMainnetEth) {
         this.isMisconfigured = true
+        this.onMetaMaskAccountLoaded(null)
         this.libs = await configureReadOnlyLibs()
       } else {
-        this.libs = await configureLibsWithAccount()
+        this.libs = await configureLibsWithAccount({
+          onMetaMaskAccountLoaded: (account: string) => {
+            if (!account) {
+              this.isAccountMisconfigured = true
+            }
+            this.onMetaMaskAccountLoaded(account)
+          }
+        })
         this.hasValidAccount = true
 
         // Failed to pull necessary info from metamask, configure read only
@@ -136,8 +141,9 @@ export async function setup(this: AudiusClient): Promise<void> {
       }
     } catch (err) {
       console.error(err)
-      this.libs = await configureReadOnlyLibs()
       this.isMisconfigured = true
+      this.onMetaMaskAccountLoaded(null)
+      this.libs = await configureReadOnlyLibs()
     }
   }
 
@@ -207,7 +213,11 @@ const configWeb3 = async (web3Provider: any, networkId: string) => {
   }
 }
 
-const configureLibsWithAccount = async () => {
+const configureLibsWithAccount = async ({
+  onMetaMaskAccountLoaded
+}: {
+  onMetaMaskAccountLoaded: (account: string) => void
+}) => {
   // @ts-ignore
   // let configuredMetamaskWeb3 = await AudiusLibs.configExternalWeb3(
   //   registryAddress!,
@@ -231,6 +241,8 @@ const configureLibsWithAccount = async () => {
     )
   })
   let metamaskAccount = metamaskAccounts[0]
+
+  onMetaMaskAccountLoaded(metamaskAccount)
 
   // Not connected or no accounts, return
   if (!metamaskAccount) {
