@@ -148,7 +148,7 @@ class DropdownInput extends Component {
               <div className={styles.placeholder}>{placeholder}</div>
             }
             showArrow={true}
-            suffixIcon={<IconCaretDown className={styles.arrow} />}
+            suffixIcon={<IconCaretDown size='xs' className={styles.arrow} />}
             defaultActiveFirstOption={false}
             optionFilterProp='children'
             onSelect={this.onSelect}

@@ -7,8 +7,8 @@ export default function createAppRouter(s3: ReturnType<typeof createS3>) {
   return router({
     upload: makeUploadRouter(s3),
     uploads: collectionRouters['uploads'],
-    indexed: collectionRouters['indexed'],
-    parsed: collectionRouters['parsed'],
-    published: collectionRouters['published'],
+    deliveries: collectionRouters['deliveries'],
+    pendingReleases: collectionRouters['pending_releases'],
+    publishedReleases: collectionRouters['published_releases'],
   })
 }

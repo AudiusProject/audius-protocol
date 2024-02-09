@@ -475,7 +475,8 @@ export const GiantTrackTile = ({
             size='small'
             css={({ spacing }) => ({
               // the link is too tall
-              marginTop: spacing.negativeUnit
+              marginTop: spacing.negativeUnit,
+              textTransform: 'none'
             })}
           >
             {albumInfo.playlist_name}

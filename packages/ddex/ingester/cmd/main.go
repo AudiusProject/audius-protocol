@@ -45,11 +45,11 @@ func main() {
 
 	switch *service {
 	case "crawler":
-		go crawler.Run(ctx)
+		go crawler.RunNewCrawler(ctx)
 	case "indexer":
 		go indexer.RunNewIndexer(ctx)
 	case "parser":
-		go parser.Run(ctx)
+		go parser.RunNewParser(ctx)
 	default:
 		fmt.Println("Unknown service: " + *service)
 	}

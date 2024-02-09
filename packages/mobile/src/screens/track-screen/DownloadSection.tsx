@@ -43,7 +43,7 @@ const messages = {
   title: 'Stems & Downloads',
   choose: 'Choose File Quality',
   mp3: 'MP3',
-  original: 'Original',
+  lossless: 'Lossless',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
@@ -66,7 +66,9 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   )
   const { stemTracks } = useCurrentStems({ trackId })
   const { hasDownloadAccess } = useGatedContentAccess(track)
-  const shouldDisplayDownloadAll = stemTracks.length > 1 && hasDownloadAccess
+  const shouldDisplayDownloadAll =
+    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
+    hasDownloadAccess
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -104,7 +106,11 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         // On mobile, show a toast instead of a tooltip
         toast({ content: messages.followToDownload })
       } else if (track && track.access.download) {
-        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
+        openWaitForDownloadModal({
+          parentTrackId,
+          trackIds,
+          quality
+        })
         dispatch(
           socialTracksActions.downloadTrack({
             trackIds,
@@ -153,14 +159,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             ) : null}
             {shouldDisplayPremiumDownloadUnlocked ? (
               <>
-                <Flex
-                  gap='s'
-                  direction='row'
-                  alignItems='center'
-                  style={css({
-                    backgroundColor: color.special.blue
-                  })}
-                >
+                <Flex gap='s' direction='row' alignItems='center'>
                   <Flex
                     borderRadius='3xl'
                     ph='s'
@@ -205,7 +204,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     },
     {
       key: DownloadQuality.ORIGINAL,
-      text: messages.original
+      text: messages.lossless
     }
   ]
 
@@ -223,6 +222,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               options={options}
               selected={quality}
               onSelectOption={(quality) => setQuality(quality)}
+              equalWidth
             />
           </Flex>
         ) : null}

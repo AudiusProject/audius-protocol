@@ -19,7 +19,8 @@
   fill: var(--neutral-light-4);
 }
 
-.favoriteButton svg {
+.favoriteButton svg,
+.shareButton svg {
   height: 30px !important;
   width: 30px !important;
 }

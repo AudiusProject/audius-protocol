@@ -210,7 +210,7 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    command: sh -c "./scripts/run-migrations.sh"
+    command: sh -c "./scripts/test-migrations.sh"
     environment:
       audius_db_url: 'postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider'
     depends_on:

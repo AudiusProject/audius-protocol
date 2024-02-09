@@ -87,8 +87,8 @@ export const KeyboardAvoidingView = ({
   return (
     <Animated.View
       style={[
-        style,
         styles.rootContainer,
+        style,
         {
           transform: [{ translateY: keyboardHeight.current }]
         }

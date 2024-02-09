@@ -42,6 +42,10 @@ export const FullWidth: Story = {
   render: (props) => <SegmentedControl {...props} fullWidth />
 }
 
+export const EqualWidth: Story = {
+  render: (props) => <SegmentedControl {...props} equalWidth />
+}
+
 export const IsMobile: Story = {
   render: (props) => <SegmentedControl {...props} isMobile />
 }

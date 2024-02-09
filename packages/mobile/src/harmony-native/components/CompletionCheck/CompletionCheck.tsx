@@ -8,10 +8,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import {
-  IconValidationCheck,
-  IconMultiselectRemove
-} from 'app/harmony-native/icons'
+import { IconValidationCheck, IconValidationX } from '@audius/harmony-native'
 
 import { Flex } from '../layout'
 
@@ -55,7 +52,7 @@ const CompletionError = ({ value }: CompletionCheckProps) => {
 
   return (
     <CompletionIconBase style={[animationStyle]}>
-      <IconMultiselectRemove />
+      <IconValidationX />
     </CompletionIconBase>
   )
 }

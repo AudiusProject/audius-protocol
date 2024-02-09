@@ -1,7 +1,6 @@
 import { ReactNode, useContext, useEffect, useState } from 'react'
 
-import { Tag } from '@audius/harmony'
-import { RadioButton, RadioGroupContext } from '@audius/stems'
+import { Tag, Radio, RadioGroupContext } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
@@ -62,12 +61,11 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
       })}
     >
       <div className={cn(layoutStyles.row, layoutStyles.gap4)}>
-        <RadioButton
-          className={styles.radio}
-          inputClassName={styles.input}
+        <Radio
           aria-label={label}
           value={value}
           disabled={disabled}
+          inputClassName={styles.input}
         />
         <Text className={styles.optionTitle} variant='title' size='large'>
           {icon}

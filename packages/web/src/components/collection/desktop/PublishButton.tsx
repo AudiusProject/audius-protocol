@@ -43,7 +43,7 @@ export const PublishButton = (props: PublishButtonProps) => {
 
   const [isConfirming, toggleIsConfirming] = useToggle(false)
 
-  const isDisabled = track_count === 0 || hasHiddenTracks
+  const isDisabled = !track_count || track_count === 0 || hasHiddenTracks
 
   const publishButtonElement = (
     <EntityActionButton

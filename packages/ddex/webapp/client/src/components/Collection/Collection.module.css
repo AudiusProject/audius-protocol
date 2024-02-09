@@ -23,7 +23,6 @@
 }
 
 .styledTable tbody tr:nth-of-type(even) {
-  /* background-color: #f3f3f3; */
   background-color: var(--harmony-background);
 }
 
@@ -31,8 +30,14 @@
   border-bottom: 2px solid var(--harmony-secondary);
 }
 
-.styledTable tbody tr.activeRow {
-  font-weight: bold;
-  color: var(--harmony-secondary);
+.styledTable tbody td.statusFailed {
+  background-color: #ffccbc;
 }
 
+.styledTable tbody td.statusPending {
+  background-color: #fff59d;
+}
+
+.styledTable tbody td.statusSuccess {
+  background-color: #c8e6c9;
+}

@@ -62,6 +62,7 @@ export const AccountDetails = () => {
           userId={accountUser.user_id}
           style={styles.accountImage}
           mb='l'
+          strokeWidth='thin'
         />
         <View style={styles.accountName}>
           <Text numberOfLines={1} style={styles.name} variant='h1' noGutter>

@@ -7,11 +7,13 @@ from integration_tests.tasks.payment_router_mock_transactions import (
     mock_invalid_track_purchase_insufficient_split_tx,
     mock_invalid_track_purchase_missing_split_tx,
     mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_valid_track_purchase_download_access,
     mock_valid_track_purchase_from_user_bank_single_recipient_tx,
     mock_valid_track_purchase_multi_recipient_pay_extra_tx,
     mock_valid_track_purchase_multi_recipient_tx,
     mock_valid_track_purchase_single_recipient_pay_extra_tx,
     mock_valid_track_purchase_single_recipient_tx,
+    mock_valid_track_purchase_stream_access,
     mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
     mock_valid_transfer_single_recipient_recovery_tx,
     mock_valid_transfer_without_purchase_multi_recipient_tx,
@@ -81,6 +83,7 @@ test_entries = {
     "tracks": [
         {"track_id": 1, "title": "track 1", "owner_id": 1},
         {"track_id": 2, "title": "track 2", "owner_id": 1},
+        {"track_id": 3, "title": "track 3", "owner_id": 1},
     ],
     "track_price_history": [
         {  # pay full price to trackOwner
@@ -96,7 +99,12 @@ test_entries = {
                 "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
             },
             "total_price_cents": 200,
-            "access": PurchaseAccessType.stream,
+        },
+        {  # download access type
+            "track_id": 3,
+            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "total_price_cents": 100,
+            "access": PurchaseAccessType.download,
         },
     ],
 }
@@ -916,3 +924,63 @@ def test_process_payment_router_txs_details_skip_unknown_PDA_ATAs(app):
             .first()
         )
         assert transaction_record is None
+
+
+# Index tx with stream access in memo correctly
+def test_process_payment_router_tx_details_stream_access(app):
+    with app.app_context():
+        db = get_db()
+    populate_mock_db(db, test_entries)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    tx_response = mock_valid_track_purchase_stream_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.stream
+
+
+# Index tx with download access in memo correctly
+def test_process_payment_router_tx_details_download_access(app):
+    with app.app_context():
+        db = get_db()
+    populate_mock_db(db, test_entries)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    tx_response = mock_valid_track_purchase_download_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.download

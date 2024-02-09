@@ -544,6 +544,7 @@ def extend_purchase(purchase):
     new_purchase["buyer_user_id"] = encode_int_id(purchase["buyer_user_id"])
     new_purchase["seller_user_id"] = encode_int_id(purchase["seller_user_id"])
     new_purchase["content_id"] = encode_int_id(purchase["content_id"])
+    new_purchase["access"] = purchase["access"]
     return new_purchase
 
 

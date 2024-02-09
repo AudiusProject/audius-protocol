@@ -61,7 +61,12 @@ export const StemFilesView = ({
             </HarmonyText>
           </Box>
         </Flex>
-        <Flex direction='column' borderRadius='m' border='default'>
+        <Flex
+          direction='column'
+          borderRadius='m'
+          border='default'
+          css={{ overflow: 'hidden' }}
+        >
           {stems.map((stem, i) => (
             <TrackPreviewNew
               className={styles.stemPreview}

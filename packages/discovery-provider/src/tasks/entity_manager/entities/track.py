@@ -87,16 +87,30 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    if track_metadata.get("stream_conditions", None) is not None:
-        stream_conditions = track_metadata["stream_conditions"]
-        if USDC_PURCHASE_KEY in stream_conditions:
-            usdc_purchase = stream_conditions[USDC_PURCHASE_KEY]
+    is_stream_gated = track_metadata.get(
+        "is_stream_gated", False
+    ) and track_metadata.get("stream_conditions", None)
+    is_download_gated = track_metadata.get(
+        "is_download_gated", False
+    ) and track_metadata.get("download_conditions", None)
+    if is_stream_gated or is_download_gated:
+        conditions = (
+            track_metadata["stream_conditions"]
+            if is_stream_gated
+            else track_metadata["download_conditions"]
+        )
+        if USDC_PURCHASE_KEY in conditions:
+            usdc_purchase = conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
-            new_record.access = PurchaseAccessType.stream
+            new_record.access = (
+                PurchaseAccessType.stream
+                if is_stream_gated
+                else PurchaseAccessType.download
+            )
             if "price" in usdc_purchase:
                 price = usdc_purchase["price"]
                 if isinstance(price, int):

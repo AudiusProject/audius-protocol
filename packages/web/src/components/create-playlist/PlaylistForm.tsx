@@ -10,7 +10,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { PlaylistSchema } from 'pages/upload-page/validation'
+import { createCollectionSchema } from 'pages/upload-page/validation'
 
 import { EditActions } from './FormActions'
 
@@ -49,11 +49,13 @@ type PlaylistFormProps = {
   onSave: (formFields: CollectionMetadata) => void
 }
 
-const playlistFormSchema = PlaylistSchema.pick({
-  artwork: true,
-  playlist_name: true,
-  description: true
-})
+const createCollectionFormSchema = (collectionType: 'album' | 'playlist') => {
+  return createCollectionSchema(collectionType).pick({
+    artwork: true,
+    playlist_name: true,
+    description: true
+  })
+}
 
 const PlaylistForm = ({
   isAlbum = false,
@@ -77,7 +79,9 @@ const PlaylistForm = ({
         description: metadata.description ?? ''
       }}
       onSubmit={onSave}
-      validationSchema={toFormikValidationSchema(playlistFormSchema)}
+      validationSchema={toFormikValidationSchema(
+        createCollectionFormSchema(isAlbum ? 'album' : 'playlist')
+      )}
     >
       <Form>
         <Flex direction='column' w='100%' gap='2xl'>

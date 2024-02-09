@@ -156,7 +156,7 @@ export type TrackMetadata = z.input<typeof TrackMetadataSchema>
 
 const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
 
-const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
+export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z.object({
     artwork: z
       .object({
@@ -165,7 +165,10 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       .nullable()
       .refine(
         (artwork) => {
-          return artwork !== null && artwork.url !== imageBlank
+          return (
+            collectionType === 'playlist' ||
+            (artwork !== null && artwork.url !== imageBlank)
+          )
         },
         {
           message: messages.artworkRequiredError

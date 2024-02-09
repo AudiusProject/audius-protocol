@@ -17,22 +17,22 @@ export const Sidebar: React.FC = () => {
             <Flex direction='column' gap='xl'>
               <li>
                 <Link to='/'>
-                  <PlainButton size='large'>Upload</PlainButton>
+                  <PlainButton size='large'>Uploads</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/indexed'>
-                  <PlainButton size='large'>Indexed</PlainButton>
+                <Link to='/deliveries'>
+                  <PlainButton size='large'>Indexed Deliveries</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/parsed'>
-                  <PlainButton size='large'>Parsed</PlainButton>
+                <Link to='/pending-releases'>
+                  <PlainButton size='large'>Pending Releases</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/published'>
-                  <PlainButton size='large'>Published</PlainButton>
+                <Link to='/published-releases'>
+                  <PlainButton size='large'>Published Releases</PlainButton>
                 </Link>
               </li>
             </Flex>

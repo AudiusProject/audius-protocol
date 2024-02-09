@@ -170,5 +170,6 @@ purchase = ns.model(
         "content_id": fields.String(required=True),
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=True),
+        "access": StringEnumToLower(required=True),
     },
 )

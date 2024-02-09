@@ -18,7 +18,7 @@ class PreviewButton extends Component {
           </div>
         ) : (
           <div>
-            <IconPlay className={styles.previewButton} />
+            <IconPlay color='default' className={styles.previewButton} />
           </div>
         )}
         <span>Preview</span>

@@ -7,7 +7,7 @@ import {
   getSignOn
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
-import { SignUpPath } from 'utils/route'
+import { FEED_PAGE, SignUpPath } from 'utils/route'
 
 const { getAccountUser } = accountSelectors
 
@@ -34,10 +34,11 @@ export const useDetermineAllowedRoute = () => {
     correctedRoute: string
   } => {
     if (user?.followee_count && user?.followee_count >= 3) {
+      setIsWelcomeModalOpen(true)
       return {
         allowedRoutes: [],
         isAllowedRoute: false,
-        correctedRoute: `/trending`
+        correctedRoute: FEED_PAGE
       }
     }
     const attemptedPath = requestedRoute.replace('/signup/', '')
