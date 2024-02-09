@@ -246,12 +246,11 @@ export class Web3Manager {
       const encodedABI = contractMethod.encodeABI()
       const nethermindEncodedAbi = nethermindContractMethod?.encodeABI()
 
-      let receipt: TransactionReceipt | undefined = undefined
-
       // contractRegistryKey should be "EntityManager"
       if (this.useDiscoveryRelay()) {
+        contractRegistryKey = contractRegistryKey || "EntityManager"
         const response = await this.discoveryProvider?.relay({
-          contractRegistryKey: contractRegistryKey || "EntityManager",
+          contractRegistryKey: contractRegistryKey,
           contractAddress,
           senderAddress: this.ownerWallet!.getAddressString(),
           encodedABI,
@@ -262,11 +261,8 @@ export class Web3Manager {
         })
         // discovery relay has built in retry
         // if null or undefined, fall back to identity
-        if (response !== null && response !== undefined) {
-          receipt = response.receipt
-        }
+        return this.parseLogs(response, contractRegistryKey)
       } else {
-        console.log({dr: this.useDiscoveryRelay(), receipt }, "here??")
         const response = await retry(
           async (bail) => {
             try {
@@ -308,11 +304,12 @@ export class Web3Manager {
             }
           }
         )
-        if (receipt === undefined) {
-          receipt = response!.receipt
-        }
+        return this.parseLogs(response, contractRegistryKey as string)
       }
+    }
+  }
 
+  parseLogs(response:  { receipt: TransactionReceipt } | undefined, contractRegistryKey: string): TransactionReceipt {
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
       // above) parses the event log into an 'events' key on the transaction receipt and
       // blows away the 'logs' key. However, using sendRawTransaction as our
@@ -321,12 +318,13 @@ export class Web3Manager {
       // this data in a different way in future (this parsing is messy).
       // More on Metamask's / Web3.js' behavior here:
       // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
-      if (receipt!.logs) {
+      const receipt = response!.receipt
+      if (receipt.logs) {
         const events: TransactionReceipt['events'] = {}
         // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
         const decoded = this.AudiusABIDecoder.decodeLogs(
           contractRegistryKey as string,
-          receipt!.logs
+          receipt.logs
         ) as unknown as DecodedLog[]
         decoded.forEach((evt) => {
           const returnValues: Record<string, string> = {}
@@ -336,10 +334,9 @@ export class Web3Manager {
           const eventLog = { returnValues }
           events[evt.name] = eventLog as EventLog
         })
-        receipt!.events = events
+        receipt.events = events
       }
-      return receipt!
-    }
+      return response!.receipt
   }
 
   // TODO - Remove this. Adapted from https://github.com/raiden-network/webui/pull/51/files

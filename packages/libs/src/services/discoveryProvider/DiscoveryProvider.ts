@@ -1083,7 +1083,7 @@ export class DiscoveryProvider {
 
   async relay(
     data: DiscoveryRelayBody
-  ): Promise<{ receipt: TransactionReceipt } | null | undefined> {
+  ): Promise<{ receipt: TransactionReceipt } | undefined> {
     const req = {
       endpoint: 'relay',
       method: 'post',
@@ -1092,7 +1092,7 @@ export class DiscoveryProvider {
       },
       data
     }
-    return await this._makeRequest(req, true, 5, true)
+    return await this._makeRequest(req, true, 5, true) || undefined
   }
 
   /**
