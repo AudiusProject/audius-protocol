@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
+import { ChangePasswordModalScreen } from '../change-password-screen'
 import { EditPlaylistModalScreen } from '../edit-playlist-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
 import { FeatureFlagOverrideModalScreen } from '../feature-flag-override-screen'
@@ -28,6 +30,11 @@ export const AppScreen = () => {
           name='FeatureFlagOverride'
           component={FeatureFlagOverrideModalScreen}
         />
+        <Stack.Screen
+          name='ChangePassword'
+          component={ChangePasswordModalScreen}
+        />
+        <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )
