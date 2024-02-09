@@ -103,7 +103,13 @@ const Table = ({
                 <td>{item._id}</td>
                 <td>{item.upload_etag}</td>
                 <td>{item.delivery_id}</td>
-                <td>{item.entity}</td>
+                <td>
+                  {item.create_track_release
+                    ? 'track'
+                    : item.create_album_release
+                      ? 'album'
+                      : 'unknown'}
+                </td>
                 <td>{item.publish_date}</td>
                 <td>{item.created_at}</td>
               </tr>
@@ -121,7 +127,6 @@ const Table = ({
               <th>Delivery ID</th>
               <th>Entity</th>
               <th>Publish Date</th>
-              <th>Entity ID</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -131,9 +136,14 @@ const Table = ({
                 <td>{item._id}</td>
                 <td>{item.upload_etag}</td>
                 <td>{item.delivery_id}</td>
-                <td>{item.entity}</td>
+                <td>
+                  {item.create_track_release
+                    ? 'track'
+                    : item.create_album_release
+                      ? 'album'
+                      : 'unknown'}
+                </td>
                 <td>{item.publish_date}</td>
-                <td>{item.entity_id}</td>
                 <td>{item.created_at}</td>
               </tr>
             ))}

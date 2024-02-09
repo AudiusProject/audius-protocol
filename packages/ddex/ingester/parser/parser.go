@@ -2,6 +2,7 @@ package parser
 
 import (
 	"context"
+	"fmt"
 	"ingester/common"
 	"ingester/constants"
 	"log"
@@ -22,6 +23,7 @@ type Parser struct {
 	logger              *slog.Logger
 }
 
+// RunNewParser starts the parser service, which listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius format track format.
 func RunNewParser(ctx context.Context) {
 	logger := slog.With("service", "parser")
 	mongoClient := common.InitMongoClient(ctx, logger)
@@ -64,57 +66,85 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	delivery := changeDoc.FullDocument
 	p.logger.Info("Processing new delivery", "_id", delivery.ID)
 
-	// TODO process the delivery xml
-	// 1. Validate all referenced audio/image files exist within the delivery
+	xmlData := delivery.XmlContent.Data
+	createTrackRelease, createAlbumRelease, errs := parseSonyXML(xmlData)
+	if len(errs) != 0 {
+		p.logger.Error("Failed to parse delivery. Printing errors...")
+		for _, err := range errs {
+			p.logger.Error(err.Error())
+		}
+		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("failed to parse delivery: %v", errs))
+	}
+	p.logger.Info("Parsed delivery", "createTrackRelease", fmt.Sprintf("%+v", createTrackRelease), "createAlbumRelease", fmt.Sprintf("%+v", createAlbumRelease))
+
+	// TODO: We can loop through each release and validate if its URLs exist in the delivery.
+	//       However, the DDEX spec actually says that a delivery can leave out the assets and just have the metadata (assuming they'll do another delivery with the assets closer to release date).
 
 	session, err := p.mongoClient.StartSession()
 	if err != nil {
-		p.failAndUpdateStatus(err, delivery.ID)
+		p.failAndUpdateStatus(delivery.ID, err)
 	}
-	err = mongo.WithSession(p.ctx, session, func(sessionContext mongo.SessionContext) error {
+	err = mongo.WithSession(p.ctx, session, func(sessionCtx mongo.SessionContext) error {
 		if err := session.StartTransaction(); err != nil {
 			return err
 		}
 
 		// 2. Write each release in "delivery_xml" in the delivery as a bson doc in the 'pending_releases' collection
-		pendingRelease := bson.M{
-			"upload_etag":  delivery.UploadETag,
-			"delivery_id":  delivery.ID,
-			"entity":       "track",
-			"publish_date": time.Now(),
-			"created_at":   time.Now(),
+		for _, track := range createTrackRelease {
+			pendingRelease := bson.M{
+				"upload_etag":          delivery.UploadETag,
+				"delivery_id":          delivery.ID,
+				"create_track_release": track,
+				"publish_date":         track.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"created_at":           time.Now(),
+			}
+			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
+			if err != nil {
+				session.AbortTransaction(sessionCtx)
+				return err
+			}
+			p.logger.Info("Inserted pending track release", "_id", result.InsertedID)
 		}
-		result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
-		if err != nil {
-			session.AbortTransaction(sessionContext)
-			return err
+		for _, album := range createAlbumRelease {
+			pendingRelease := bson.M{
+				"upload_etag":          delivery.UploadETag,
+				"delivery_id":          delivery.ID,
+				"create_album_release": album,
+				"publish_date":         album.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"created_at":           time.Now(),
+			}
+			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
+			if err != nil {
+				session.AbortTransaction(sessionCtx)
+				return err
+			}
+			p.logger.Info("Inserted pending album release", "_id", result.InsertedID)
 		}
-		p.logger.Info("New pending release", "_id", result.InsertedID)
 
 		// 3. Set delivery status for delivery in 'deliveries' collection
-		err = p.setDeliveryStatus(sessionContext, delivery.ID, constants.DeliveryStatusAwaitingPublishing)
+		err = p.setDeliveryStatus(delivery.ID, constants.DeliveryStatusAwaitingPublishing, sessionCtx)
 		if err != nil {
-			session.AbortTransaction(sessionContext)
+			session.AbortTransaction(sessionCtx)
 			return err
 		}
 
-		return session.CommitTransaction(sessionContext)
+		return session.CommitTransaction(sessionCtx)
 	})
 
 	if err != nil {
-		p.failAndUpdateStatus(err, delivery.ID)
+		p.failAndUpdateStatus(delivery.ID, err)
 	}
 
 	session.EndSession(p.ctx)
 }
 
-func (p *Parser) setDeliveryStatus(ctx context.Context, documentId primitive.ObjectID, status string) error {
+func (p *Parser) setDeliveryStatus(documentId primitive.ObjectID, status string, ctx context.Context) error {
 	update := bson.M{"$set": bson.M{"delivery_status": status}}
 	_, err := p.deliveriesColl.UpdateByID(ctx, documentId, update)
 	return err
 }
 
-func (p *Parser) failAndUpdateStatus(err error, documentId primitive.ObjectID) {
-	p.setDeliveryStatus(p.ctx, documentId, constants.DeliveryStatusError)
+func (p *Parser) failAndUpdateStatus(documentId primitive.ObjectID, err error) {
+	p.setDeliveryStatus(documentId, constants.DeliveryStatusError, p.ctx)
 	log.Fatal(err)
 }
