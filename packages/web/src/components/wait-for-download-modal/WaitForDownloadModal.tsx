@@ -49,9 +49,9 @@ export const WaitForDownloadModal = () => {
   const trackName =
     !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
       ? getDownloadFilename({
-        filename: track.orig_filename,
-        isOriginal: quality === DownloadQuality.ORIGINAL
-      })
+          filename: track.orig_filename,
+          isOriginal: quality === DownloadQuality.ORIGINAL
+        })
       : track?.title
 
   return (
