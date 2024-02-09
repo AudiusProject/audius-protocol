@@ -8,7 +8,11 @@ const nativeImports = `
 
 const webStyles = `
   const {className: classNameProp} = other
-  const className = shadow ? css({ filter: theme.shadows.drop }) : undefined
+  const className = css({
+     filter: shadow ? theme.shadows.drop : undefined,
+     minHeight: height,
+     minWidth: width
+  })
   other.className = cx(className, classNameProp)
 `
 
