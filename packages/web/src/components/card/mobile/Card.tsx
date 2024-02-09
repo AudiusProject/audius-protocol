@@ -89,6 +89,7 @@ const Card = ({
   const showRepostFavoriteStats =
     !isUser && reposts && favorites && onClickReposts && onClickFavorites
   const onClickWrapper = (e: React.MouseEvent) => {
+    console.log('asdf click wrapper')
     e.preventDefault()
     onClick(e)
   }

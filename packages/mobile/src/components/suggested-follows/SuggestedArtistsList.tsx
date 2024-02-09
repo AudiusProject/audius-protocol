@@ -48,6 +48,8 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
 
   const handleSelectArtist = useCallback(
     (userId: number) => {
+      console.log('asdf handle selected artist')
+
       const isSelected = selectedArtistIds.includes(userId)
       if (isSelected) {
         dispatch(removeFollowArtists([userId]))
@@ -79,7 +81,7 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
         return (
           <ProfileCard
             profile={artist}
-            onPress={() => handleSelectArtist(user_id)}
+            noNavigatePress={() => handleSelectArtist(user_id)}
             TileProps={{ as: LinearGradient, colors: gradientColors }}
             styles={textStyles}
           />

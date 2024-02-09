@@ -10,7 +10,7 @@ type CategoryHeaderProps = {
 
 const CategoryHeader = ({ categoryName, onMore }: CategoryHeaderProps) => {
   const secondary = onMore ? (
-    <More className={styles.more} text='More Results' onClick={onMore} />
+    <More className={styles.more} text='More Resultss' onClick={onMore} />
   ) : null
   return (
     <div className={styles.categoryHeader}>

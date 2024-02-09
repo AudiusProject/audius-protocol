@@ -26,7 +26,8 @@ const selectSearchAlbums = (state: CommonState) => {
     .filter((album) => album.user && !album.user.is_deactivated)
 }
 
-export const AlbumsTab = () => {
+export const AlbumsTab = ({ route }) => {
+  const { trackSearchResultSelect } = route.params
   const albums = useProxySelector(selectSearchAlbums, [])
   useFetchTabResultsEffect(SearchKind.ALBUMS)
 
@@ -36,6 +37,7 @@ export const AlbumsTab = () => {
       isLoading={!albums}
       collection={albums}
       ListEmptyComponent={<EmptyResults />}
+      trackSearchResultSelect={trackSearchResultSelect}
     />
   )
 }

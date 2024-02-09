@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 
+import type { ID } from '@audius/common'
 import { useIsFocused } from '@react-navigation/native'
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { useSelector } from 'react-redux'
 
 import {
   IconAlbum,
@@ -14,6 +17,8 @@ import {
   tabScreen
 } from 'app/components/top-tab-bar/TopTabNavigator'
 import { useRoute } from 'app/hooks/useRoute'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 
 import { SearchFocusContext } from './SearchFocusContext'
 import { SearchQueryContext } from './SearchQueryContext'
@@ -35,29 +40,55 @@ export const SearchResultsScreen = () => {
     () => ({ isTagSearch: false, query }),
     [query]
   )
-
+  const searchQuery = useSelector(getSearchBarText)
+  const trackSearchResultSelect = (
+    id: ID,
+    kind: 'track' | 'profile' | 'playlist' | 'album'
+  ) => {
+    track(
+      make({
+        eventName: EventNames.SEARCH_RESULT_SELECT,
+        term: searchQuery,
+        source: 'more results page',
+        kind,
+        id
+      })
+    )
+  }
   const profilesScreen = tabScreen({
     name: 'Profiles',
     Icon: IconUser,
-    component: ProfilesTab
+    component: ProfilesTab,
+    initialParams: {
+      onCardPress: (id) => trackSearchResultSelect(id, 'profile')
+    }
   })
 
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,
-    component: TracksTab
+    component: TracksTab,
+    initialParams: {
+      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'track')
+    }
   })
 
   const albumsScreen = tabScreen({
     name: 'Albums',
     Icon: IconAlbum,
-    component: AlbumsTab
+    component: AlbumsTab,
+    initialParams: {
+      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'playlist')
+    }
   })
 
   const playlistsScreen = tabScreen({
     name: 'Playlists',
     Icon: IconPlaylists,
-    component: PlaylistsTab
+    component: PlaylistsTab,
+    initialParams: {
+      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'playlist')
+    }
   })
 
   return (

@@ -20,7 +20,8 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
   getSearchTracksLineup
 )
 
-export const TracksTab = () => {
+export const TracksTab = ({ route }) => {
+  const { trackSearchResultSelect } = route.params
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const dispatch = useDispatch()
   const { query, isTagSearch } = useContext(SearchQueryContext)
@@ -43,7 +44,12 @@ export const TracksTab = () => {
       noResults={lineup?.entries.length === 0}
       status={lineup?.status}
     >
-      <Lineup actions={tracksActions} lineup={lineup} loadMore={loadMore} />
+      <Lineup
+        actions={tracksActions}
+        lineup={lineup}
+        loadMore={loadMore}
+        trackSearchResultSelect={trackSearchResultSelect}
+      />
     </SearchResultsTab>
   )
 }

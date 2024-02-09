@@ -31,16 +31,22 @@ export const make = <U extends Name, T>(
 ): {
   eventName: U
   type: typeof TRACK
-} & T => ({
-  type: TRACK,
-  eventName,
-  ...m
-})
+} & T => {
+  console.log('asdf make ', eventName, m)
+  return {
+    type: TRACK,
+    eventName,
+    ...m
+  }
+}
 
 export const useRecord = () => {
   const dispatch = useDispatchRedux()
   const record = useCallback(
-    (action: TrackEvent) => dispatch(action),
+    (action: TrackEvent) => {
+      console.log('asdf action: ', action)
+      dispatch(action)
+    },
     [dispatch]
   )
   return record

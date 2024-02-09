@@ -240,7 +240,7 @@ const CardSearchPage = ({
               id: user.user_id,
               userId: user.user_id,
               route: profilePage(user.handle),
-              primaryText: user.name,
+              primaryText: 'hi',
               secondaryText: followers,
               imageSize: user._profile_picture_sizes
             }
@@ -275,7 +275,10 @@ const CardSearchPage = ({
         imageSize={imageSize}
         primaryText={primaryText}
         secondaryText={secondaryText}
-        onClick={() => goToRoute(route)}
+        onClick={() => {
+          console.log('asdf click ', id, userId)
+          goToRoute(route)
+        }}
         className=''
       />
     )
@@ -295,7 +298,7 @@ const CardSearchPage = ({
 }
 
 const messages = {
-  title: 'More Results',
+  title: 'More Resultsss',
   tagSearchTitle: 'Tag Search',
   tracksTitle: 'Tracks',
   albumsTitle: 'Albums',

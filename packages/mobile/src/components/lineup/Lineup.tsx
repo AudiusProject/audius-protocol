@@ -5,7 +5,14 @@ import { Kind, Status } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
-import { Dimensions, StyleSheet, View } from 'react-native'
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from 'react-native'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
@@ -139,7 +146,8 @@ const LineupTileView = memo(function LineupTileView({
   showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
-  togglePlay
+  togglePlay,
+  trackSearchResultSelect
 }: LineupTileViewProps) {
   const LineupTile = getLineupTileComponent(item)
 
@@ -153,6 +161,7 @@ const LineupTileView = memo(function LineupTileView({
           showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
           showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
+          trackSearchResultSelect={trackSearchResultSelect}
           uid={item.uid}
         />
       </View>
@@ -171,7 +180,8 @@ const LineupItemTile = memo(function LineupItemTile({
   showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
-  togglePlay
+  togglePlay,
+  trackSearchResultSelect
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
@@ -188,6 +198,7 @@ const LineupItemTile = memo(function LineupItemTile({
         leadingElementId={leadingElementId}
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
+        trackSearchResultSelect={trackSearchResultSelect}
       />
     )
   }
@@ -227,6 +238,7 @@ export const Lineup = ({
   extraFetchOptions,
   ListFooterComponent,
   EndOfLineupComponent,
+  trackSearchResultSelect,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -387,6 +399,7 @@ export const Lineup = ({
           rankIconCount={rankIconCount}
           showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
+          trackSearchResultSelect={trackSearchResultSelect}
         />
       )
     },
@@ -395,7 +408,8 @@ export const Lineup = ({
       leadingElementId,
       rankIconCount,
       showLeadingElementArtistPick,
-      togglePlay
+      togglePlay,
+      trackSearchResultSelect
     ]
   )
 

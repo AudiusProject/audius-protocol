@@ -237,6 +237,7 @@ const VerificationPage = ({
 
   const instagramLogin = useCallback(
     (uuid: string, profile: InstagramProfile) => {
+      console.log('asdf instagram login', profile)
       if (!profile.is_verified) {
         setError(messages.errorVerifiedInstagram)
         setStatus(Status.ERROR)
@@ -283,6 +284,8 @@ const VerificationPage = ({
 
   const tikTokLogin = useCallback(
     (uuid: string, profile: TikTokProfile) => {
+      console.log('asdf tiktok login', profile)
+
       if (!profile.is_verified) {
         setError(messages.errorVerifiedTikTok)
         setStatus(Status.ERROR)

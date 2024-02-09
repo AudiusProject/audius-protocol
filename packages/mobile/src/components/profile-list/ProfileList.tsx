@@ -13,11 +13,13 @@ export type ProfileListProps = {
 } & Partial<ListProps>
 
 export const ProfileList = (props: ProfileListProps) => {
-  const { profiles, ...other } = props
+  const { profiles, onCardPress, ...other } = props
   return (
     <CardList
       data={profiles}
-      renderItem={({ item }) => <ProfileCard profile={item} />}
+      renderItem={({ item }) => (
+        <ProfileCard profile={item} onPress={onCardPress} />
+      )}
       LoadingCardComponent={ProfileCardSkeleton}
       {...other}
     />

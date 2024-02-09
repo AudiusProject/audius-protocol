@@ -45,6 +45,8 @@ export const track = async (
     if (!IS_PRODUCTION_BUILD) {
       console.info(`Amplitude | track`, eventName, properties)
     }
+    console.info(`Amplitude | track`, eventName, properties)
+
     // stop tracking analytics after we reach session limit
     if (trackCounter++ >= TRACK_LIMIT) return
 

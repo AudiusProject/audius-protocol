@@ -77,6 +77,7 @@ type TrackTileProps = LineupItemProps & {
 }
 
 export const TrackTileComponent = ({
+  trackSearchResultSelect,
   togglePlay,
   track,
   user,
@@ -139,16 +140,19 @@ export const TrackTileComponent = ({
   )
 
   const handlePress = useCallback(() => {
+    console.log('asdf handle press play')
     togglePlay({
       uid: lineupTileProps.uid,
       id: track_id,
       source: PlaybackSource.TRACK_TILE
     })
-  }, [togglePlay, lineupTileProps.uid, track_id])
+    trackSearchResultSelect(track_id)
+  }, [togglePlay, lineupTileProps.uid, track_id, trackSearchResultSelect])
 
   const handlePressTitle = useCallback(() => {
     navigation.push('Track', { id: track_id })
-  }, [navigation, track_id])
+    trackSearchResultSelect(track_id)
+  }, [navigation, trackSearchResultSelect, track_id])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })

@@ -32,11 +32,13 @@ type FullCollectionCardProps = {
   style?: StyleProp<ViewStyle>
   /** Override for what number to show as the # of tracks. Optional. */
   numTracks?: number
+  trackSearchResultSelect?: (id: ID) => void
 }
 
 type CollectionCardWithIdProps = {
   collectionId: ID
   style?: StyleProp<ViewStyle>
+  trackSearchResultSelect?: (id: ID) => void
 }
 
 type CollectionCardProps = FullCollectionCardProps | CollectionCardWithIdProps
@@ -44,12 +46,15 @@ type CollectionCardProps = FullCollectionCardProps | CollectionCardWithIdProps
 const FullCollectionCard = ({
   collection,
   numTracks,
-  style
+  style,
+  trackSearchResultSelect
 }: FullCollectionCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
+    console.log('asdf collection press: ', trackSearchResultSelect)
     navigation.push('Collection', { id: collection.playlist_id })
-  }, [navigation, collection])
+    trackSearchResultSelect?.(collection.playlist_id)
+  }, [navigation, collection.playlist_id, trackSearchResultSelect])
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -103,7 +108,8 @@ const useTrackCountWithOfflineOverride = (collection: Collection | null) => {
 
 const CollectionCardWithId = ({
   collectionId,
-  style
+  style,
+  trackSearchResultSelect
 }: CollectionCardWithIdProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
@@ -115,6 +121,7 @@ const CollectionCardWithId = ({
       collection={collection}
       numTracks={numTracks}
       style={style}
+      trackSearchResultSelect={trackSearchResultSelect}
     />
   ) : null
 }

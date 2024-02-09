@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import { useSelector } from 'react-redux'
 
 import { IconArrowRight } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'

@@ -21,7 +21,9 @@ const selectSearchUsers = (state: CommonState) => {
     .filter((artist) => !artist.is_deactivated)
 }
 
-export const ProfilesTab = () => {
+export const ProfilesTab = ({ route }) => {
+  const { onCardPress } = route.params
+  console.log('asdf profile tab on press: ', route.params)
   const users = useProxySelector(selectSearchUsers, [])
 
   useFetchTabResultsEffect(SearchKind.USERS)
@@ -29,6 +31,7 @@ export const ProfilesTab = () => {
   return (
     <ProfileList
       style={{ paddingTop: spacing(3) }}
+      onCardPress={onCardPress}
       isLoading={!users}
       profiles={users}
       ListEmptyComponent={<EmptyResults />}

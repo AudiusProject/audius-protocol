@@ -20,13 +20,14 @@ type ProfileCardProps = Partial<BaseProfileCardProps> & {
 }
 
 export const ProfileCard = (props: ProfileCardProps) => {
-  const { profile, onPress, ...other } = props
+  const { profile, noNavigatePress, onPress, ...other } = props
   const { user_id, handle } = profile
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
     navigation.push('Profile', { handle })
-  }, [navigation, handle])
+    onPress?.(user_id)
+  }, [navigation, handle, onPress, user_id])
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -44,7 +45,7 @@ export const ProfileCard = (props: ProfileCardProps) => {
       renderImage={renderImage}
       primaryText={profile.name}
       secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
-      onPress={onPress ?? handlePress}
+      onPress={noNavigatePress ?? handlePress}
       type='user'
       user={profile}
       {...other}
