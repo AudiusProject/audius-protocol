@@ -44,7 +44,7 @@ const downloadOne = async ({
   directory: string
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
   onFetchComplete?: (path: string) => Promise<void>
-  /** Automatically removed cached download after onFetchComplete. Should be `true` if the cached response is not used directly (i.e. iOS share flow) */
+  /** Automatically remove cached download after onFetchComplete. Should be `true` if the cached response is not used directly (i.e. iOS share flow) */
   flushOnComplete?: boolean
 }) => {
   const filePath = directory + '/' + filename
@@ -225,7 +225,11 @@ const download = async ({
          * the initial downloads to avoid showing notifications, then manually add a
          * notification for the zip file.
          */
-        directory: RNFetchBlob.fs.dirs.DownloadDir + '/' + rootDirectoryName,
+        directory: [
+          RNFetchBlob.fs.dirs.DownloadDir,
+          audiusDownloadsDirectory,
+          rootDirectoryName
+        ].join('/'),
         getFetchConfig: (filePath) => ({
           fileCache: true,
           path: filePath
