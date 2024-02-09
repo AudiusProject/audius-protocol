@@ -8,8 +8,7 @@ import {
   modalsActions
 } from '@audius/common/store'
 import { formatAudio, isNullOrUndefined } from '@audius/common/utils'
-import { IconInfo } from '@audius/harmony'
-import { Button, PlainButton } from '@audius/harmony'
+import { IconInfo, Button, PlainButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
