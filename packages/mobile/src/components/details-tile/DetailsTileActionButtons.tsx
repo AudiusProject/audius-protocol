@@ -100,7 +100,7 @@ export const DetailsTileActionButtons = ({
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
   )
-  const messages = getMessages(collection.is_album ? 'album' : 'playlist')
+  const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
   )
