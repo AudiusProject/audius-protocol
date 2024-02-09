@@ -245,60 +245,73 @@ export class Web3Manager {
     } else {
       const encodedABI = contractMethod.encodeABI()
       const nethermindEncodedAbi = nethermindContractMethod?.encodeABI()
-      const response = await retry(
-        async (bail) => {
-          try {
-            const baseURL = this.useDiscoveryRelay()
-              ? this.discoveryProvider?.discoveryProviderEndpoint
-              : this.identityService?.identityServiceEndpoint
-            return await this.identityService?.relay(
-              contractRegistryKey,
-              contractAddress,
-              this.ownerWallet!.getAddressString(),
-              encodedABI,
-              gasLimit,
-              this.userSuppliedHandle,
-              nethermindContractAddress,
-              nethermindEncodedAbi,
-              baseURL
-            )
-          } catch (e: any) {
-            // If forbidden, don't retry
-            if (e.response.status === 403) {
-              bail(e)
-              return
-            }
 
-            if (e.response.status >= 500) {
-              // force reselection since we're using
-              // identity service to relay
-              await this.discoveryProvider?.discoveryNodeSelector?.triggerReselection()
-              return
-            }
+      let receipt: TransactionReceipt | undefined = undefined
 
-            // Otherwise, throw to retry
-            throw e
-          }
-        },
-        {
-          // Retry function 5x by default
-          // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
-          minTimeout: 500,
-          maxTimeout: 4000,
-          factor: 3,
-          retries: txRetries,
-          onRetry: (err) => {
-            if (err) {
-              console.info(
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                `libs web3Manager transaction send retry error : ${err}`
-              )
-            }
-          }
+      // contractRegistryKey should be "EntityManager"
+      if (this.useDiscoveryRelay()) {
+        const response = await this.discoveryProvider?.relay({
+          contractRegistryKey: contractRegistryKey || "EntityManager",
+          contractAddress,
+          senderAddress: this.ownerWallet!.getAddressString(),
+          encodedABI,
+          gasLimit,
+          handle: this.userSuppliedHandle,
+          nethermindContractAddress,
+          nethermindEncodedAbi
+        })
+        // discovery relay has built in retry
+        // if null or undefined, fall back to identity
+        if (response !== null && response !== undefined) {
+          receipt = response.receipt
         }
-      )
+      } else {
+        console.log({dr: this.useDiscoveryRelay(), receipt }, "here??")
+        const response = await retry(
+          async (bail) => {
+            try {
+              return await this.identityService?.relay(
+                contractRegistryKey,
+                contractAddress,
+                this.ownerWallet!.getAddressString(),
+                encodedABI,
+                gasLimit,
+                this.userSuppliedHandle,
+                nethermindContractAddress,
+                nethermindEncodedAbi
+              )
+            } catch (e: any) {
+              // If forbidden, don't retry
+              if (e.response.status === 403) {
+                bail(e)
+                return
+              }
 
-      const receipt = response!.receipt
+              // Otherwise, throw to retry
+              throw e
+            }
+          },
+          {
+            // Retry function 5x by default
+            // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+            minTimeout: 500,
+            maxTimeout: 4000,
+            factor: 3,
+            retries: txRetries,
+            onRetry: (err) => {
+              if (err) {
+                console.info(
+                  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                  `libs web3Manager transaction send retry error : ${err}`
+                )
+              }
+            }
+          }
+        )
+        if (receipt === undefined) {
+          receipt = response!.receipt
+        }
+      }
 
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
       // above) parses the event log into an 'events' key on the transaction receipt and
@@ -308,12 +321,12 @@ export class Web3Manager {
       // this data in a different way in future (this parsing is messy).
       // More on Metamask's / Web3.js' behavior here:
       // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
-      if (receipt.logs) {
+      if (receipt!.logs) {
         const events: TransactionReceipt['events'] = {}
         // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
         const decoded = this.AudiusABIDecoder.decodeLogs(
           contractRegistryKey as string,
-          receipt.logs
+          receipt!.logs
         ) as unknown as DecodedLog[]
         decoded.forEach((evt) => {
           const returnValues: Record<string, string> = {}
@@ -323,9 +336,9 @@ export class Web3Manager {
           const eventLog = { returnValues }
           events[evt.name] = eventLog as EventLog
         })
-        receipt.events = events
+        receipt!.events = events
       }
-      return response!.receipt
+      return receipt!
     }
   }
 

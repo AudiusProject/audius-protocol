@@ -1087,9 +1087,12 @@ export class DiscoveryProvider {
     const req = {
       endpoint: 'relay',
       method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       data
     }
-    return await this._makeRequest(req, true, 0, true)
+    return await this._makeRequest(req, true, 5, true)
   }
 
   /**
@@ -1102,6 +1105,7 @@ export class DiscoveryProvider {
     const req = Requests.getUnclaimedId(type)
     return await this._makeRequest(req)
   }
+
 
   /* ------- INTERNAL FUNCTIONS ------- */
 
