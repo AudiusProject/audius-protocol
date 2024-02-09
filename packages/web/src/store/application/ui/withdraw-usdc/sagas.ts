@@ -61,6 +61,7 @@ const {
   coinflowWithdrawalSucceeded,
   withdrawUSDCFailed,
   withdrawUSDCSucceeded,
+  updateAmount,
   cleanup: cleanupWithdrawUSDC
 } = withdrawUSDCActions
 const { set: setWithdrawUSDCModalData, close: closeWithdrawUSDCModal } =
@@ -79,7 +80,7 @@ function* swapUSDCToSol({
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const rootSolanaAccount = yield* call(getRootSolanaAccount)
-  const { instructions, lookupTableAddresses } = yield* call(
+  const { instructions, lookupTableAddresses, usdcNeededAmount } = yield* call(
     createSwapUserbankToSolInstructions,
     {
       mint: 'usdc',
@@ -112,6 +113,7 @@ function* swapUSDCToSol({
   console.debug('Withdraw USDC - root wallet funded via swap.', {
     transactionSignature
   })
+  return { usdcNeededAmount }
 }
 
 /**
@@ -153,13 +155,18 @@ function* createDestinationTokenAccount({
     )) / LAMPORTS_PER_SOL
 
   const solRequired = feeAmount + rootSolanaAccountRent - existingBalance
+  let usdcNeededAmount = 0
   if (solRequired > 0) {
     // Swap USDC for SOL to fund the destination associated token account
     console.debug(
       'Withdraw USDC - not enough SOL to fund destination account, attempting to swap USDC for SOL...',
       { solRequired, feeAmount, existingBalance, rootSolanaAccountRent }
     )
-    yield* call(swapUSDCToSol, { amount: solRequired, feePayer })
+    const swapResponse = yield* call(swapUSDCToSol, {
+      amount: solRequired,
+      feePayer
+    })
+    usdcNeededAmount = swapResponse.usdcNeededAmount
   }
 
   // Then create and fund the destination associated token account
@@ -194,6 +201,7 @@ function* createDestinationTokenAccount({
     'Withdraw USDC - Successfully created destination associated token account.',
     { transactionSignature }
   )
+  return { usdcNeededAmount }
 }
 
 function* doWithdrawUSDCCoinflow({
@@ -252,6 +260,13 @@ function* doWithdrawUSDCCoinflow({
       mint: 'usdc'
     })
 
+    const accountInfo = yield* call(
+      getUserbankAccountInfo,
+      audiusBackendInstance,
+      { mint: 'usdc' }
+    )
+    const latestBalance = accountInfo?.amount ?? BigInt('0')
+
     if (isTokenAccountAddress) {
       // If the destination is already a token account, we can transfer directly
       destinationTokenAccountAddress = destinationAddress
@@ -284,11 +299,24 @@ function* doWithdrawUSDCCoinflow({
               ...analyticsFields
             })
           )
-          yield* call(createDestinationTokenAccount, {
-            destinationWallet,
-            destinationTokenAccount,
-            feePayer: feePayerPubkey
-          })
+          const { usdcNeededAmount } = yield* call(
+            createDestinationTokenAccount,
+            {
+              destinationWallet,
+              destinationTokenAccount,
+              feePayer: feePayerPubkey
+            }
+          )
+
+          withdrawalAmount = Math.min(
+            withdrawalAmount,
+            formatUSDCWeiToFloorCentsNumber(
+              new BN(
+                (latestBalance - BigInt(usdcNeededAmount)).toString()
+              ) as BNUSDC
+            )
+          )
+
           yield* call(
             track,
             make({
@@ -307,25 +335,10 @@ function* doWithdrawUSDCCoinflow({
           )
           throw e
         }
-
-        // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
-        // to still withdraw the amount we specified, and if not, withdraw as much as we can.
-        const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-        const accountInfo = yield* call(
-          getUserbankAccountInfo,
-          audiusBackendInstance,
-          { mint: 'usdc' }
-        )
-        const latestBalance = accountInfo?.amount ?? BigInt('0')
-        withdrawalAmount = Math.min(
-          withdrawalAmount,
-          formatUSDCWeiToFloorCentsNumber(
-            new BN(latestBalance.toString()) as BNUSDC
-          )
-        )
       }
     }
 
+    yield* put(updateAmount({ amount: withdrawalAmount }))
     // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
     const withdrawalAmountWei = new BN(withdrawalAmount)
       .mul(new BN(10 ** TOKEN_LISTING_MAP.USDC.decimals))
@@ -537,6 +550,13 @@ function* doWithdrawUSDCManualTransfer({
       mint: 'usdc'
     })
 
+    const accountInfo = yield* call(
+      getUserbankAccountInfo,
+      audiusBackendInstance,
+      { mint: 'usdc' }
+    )
+    const latestBalance = accountInfo?.amount ?? BigInt('0')
+
     if (isTokenAccountAddress) {
       // If the destination is already a token account, we can transfer directly
       destinationTokenAccountAddress = destinationAddress
@@ -569,11 +589,24 @@ function* doWithdrawUSDCManualTransfer({
               ...analyticsFields
             })
           )
-          yield* call(createDestinationTokenAccount, {
-            destinationWallet,
-            destinationTokenAccount,
-            feePayer: feePayerPubkey
-          })
+          const { usdcNeededAmount } = yield* call(
+            createDestinationTokenAccount,
+            {
+              destinationWallet,
+              destinationTokenAccount,
+              feePayer: feePayerPubkey
+            }
+          )
+
+          withdrawalAmount = Math.min(
+            withdrawalAmount,
+            formatUSDCWeiToFloorCentsNumber(
+              new BN(
+                (latestBalance - BigInt(usdcNeededAmount)).toString()
+              ) as BNUSDC
+            )
+          )
+
           yield* call(
             track,
             make({
@@ -592,24 +625,10 @@ function* doWithdrawUSDCManualTransfer({
           )
           throw e
         }
-
-        // At this point, we likely have swapped some USDC for SOL. Make sure that we are able
-        // to still withdraw the amount we specified, and if not, withdraw as much as we can.
-        const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-        const accountInfo = yield* call(
-          getUserbankAccountInfo,
-          audiusBackendInstance,
-          { mint: 'usdc' }
-        )
-        const latestBalance = accountInfo?.amount ?? BigInt('0')
-        withdrawalAmount = Math.min(
-          withdrawalAmount,
-          formatUSDCWeiToFloorCentsNumber(
-            new BN(latestBalance.toString()) as BNUSDC
-          )
-        )
       }
     }
+
+    yield* put(updateAmount({ amount: withdrawalAmount }))
 
     // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
     const withdrawalAmountWei = new BN(withdrawalAmount)

@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
-import { IconRemove } from '@audius/harmony'
+import { IconClose } from '@audius/harmony'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -397,7 +397,7 @@ const FullscreenDrawer = ({
               }}
             >
               <div className={styles.dismissContainer} onClick={onClose}>
-                <IconRemove />
+                <IconClose size='s' />
               </div>
               {children}
             </animated.div>

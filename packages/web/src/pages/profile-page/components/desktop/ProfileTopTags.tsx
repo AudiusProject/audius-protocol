@@ -46,7 +46,7 @@ export const ProfileTopTags = () => {
     return (
       <div>
         <div className={styles.tagsTitleContainer}>
-          <IconTrending className={styles.topTagsIcon} />
+          <IconTrending color='default' className={styles.topTagsIcon} />
           <span className={styles.tagsTitleText}>{messages.topTags}</span>
           <span className={styles.tagsLine} />
         </div>

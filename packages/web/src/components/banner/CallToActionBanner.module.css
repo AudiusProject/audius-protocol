@@ -75,6 +75,6 @@
   width: var(--unit-4);
 }
 
-.arrow g path {
+.arrow path {
   fill: var(--static-white);
 }

@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  ChangePasswordPage,
-  useChangePasswordFormConfiguration
+  ChangeEmailPage,
+  useChangeEmailFormConfiguration
 } from '@audius/common/hooks'
 import type {
   EventListenerCallback,
@@ -13,7 +13,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Formik, useFormikContext } from 'formik'
 import { TouchableOpacity } from 'react-native'
 
-import { IconArrowRight, IconClose, IconLock } from '@audius/harmony-native'
+import { IconArrowRight, IconClose } from '@audius/harmony-native'
 import { BackButton } from 'app/app/navigation/BackButton'
 import {
   Button,
@@ -27,17 +27,14 @@ import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+import { VerifyEmailSubScreen } from '../change-password-screen/SubScreens'
 
-import {
-  ConfirmCredentialsSubScreen,
-  VerifyEmailSubScreen,
-  NewPasswordSubScreen
-} from './SubScreens'
+import { ConfirmPasswordSubScreen, NewEmailSubScreen } from './SubScreens'
 
 const messages = {
-  change: 'Change Password',
+  change: 'Change Email',
   continue: 'Continue',
-  success: 'Password updated!'
+  success: 'Email updated!'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -57,9 +54,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 const Stack = createNativeStackNavigator()
 
-const ChangePasswordHeaderLeft = ({ page }: { page: ChangePasswordPage }) => {
+const ChangeEmailHeaderLeft = ({ page }: { page: ChangeEmailPage }) => {
   const navigation = useNavigation()
-  if (page === ChangePasswordPage.VerifyEmail) {
+  if (page === ChangeEmailPage.VerifyEmail) {
     return <BackButton />
   } else {
     return (
@@ -72,12 +69,12 @@ const ChangePasswordHeaderLeft = ({ page }: { page: ChangePasswordPage }) => {
   }
 }
 
-const ChangePasswordNavigator = ({
+const ChangeEmailNavigator = ({
   page,
   setPage
 }: {
-  page: ChangePasswordPage
-  setPage: (page: ChangePasswordPage) => void
+  page: ChangeEmailPage
+  setPage: (page: ChangeEmailPage) => void
 }) => {
   const { handleSubmit, isSubmitting } = useFormikContext()
   const styles = useStyles()
@@ -87,13 +84,13 @@ const ChangePasswordNavigator = ({
   const screenOptions = useAppScreenOptions({
     headerRight: () => null,
     headerLeft: () => {
-      return <ChangePasswordHeaderLeft page={page} />
+      return <ChangeEmailHeaderLeft page={page} />
     }
   })
 
   // Map hook page state to screen navigations
   useEffect(() => {
-    navigation.navigate(ChangePasswordPage[page])
+    navigation.navigate(ChangeEmailPage[page])
   }, [page, navigation])
 
   // Map navigations back to the hook page state
@@ -103,7 +100,7 @@ const ChangePasswordNavigator = ({
     (e) => {
       const state = e.data.state
       const route = state.routes[state.index]
-      const newPage = ChangePasswordPage[route?.name]
+      const newPage = ChangeEmailPage[route?.name]
       if (newPage !== page) {
         setPage(newPage)
       }
@@ -121,16 +118,16 @@ const ChangePasswordNavigator = ({
           }}
         >
           <Stack.Screen
-            name={ChangePasswordPage[ChangePasswordPage.ConfirmCredentials]}
-            component={ConfirmCredentialsSubScreen}
+            name={ChangeEmailPage[ChangeEmailPage.ConfirmPassword]}
+            component={ConfirmPasswordSubScreen}
           />
           <Stack.Screen
-            name={ChangePasswordPage[ChangePasswordPage.VerifyEmail]}
+            name={ChangeEmailPage[ChangeEmailPage.NewEmail]}
+            component={NewEmailSubScreen}
+          />
+          <Stack.Screen
+            name={ChangeEmailPage[ChangeEmailPage.VerifyEmail]}
             component={VerifyEmailSubScreen}
-          />
-          <Stack.Screen
-            name={ChangePasswordPage[ChangePasswordPage.NewPassword]}
-            component={NewPasswordSubScreen}
           />
         </Stack.Navigator>
         <KeyboardAvoidingView
@@ -142,13 +139,11 @@ const ChangePasswordNavigator = ({
             variant='primary'
             size='large'
             icon={
-              page === ChangePasswordPage.NewPassword
-                ? IconLock
-                : IconArrowRight
+              page === ChangeEmailPage.NewEmail ? undefined : IconArrowRight
             }
             iconPosition='right'
             title={
-              page === ChangePasswordPage.NewPassword
+              page === ChangeEmailPage.NewEmail
                 ? messages.change
                 : messages.continue
             }
@@ -163,7 +158,7 @@ const ChangePasswordNavigator = ({
   )
 }
 
-const ChangePasswordScreen = () => {
+const ChangeEmailScreen = () => {
   const navigation = useNavigation()
   const { toast } = useToast()
   const onSuccess = useCallback(() => {
@@ -171,19 +166,19 @@ const ChangePasswordScreen = () => {
     toast({ content: messages.success, type: 'info' })
   }, [navigation, toast])
   const { page, setPage, ...formikConfiguration } =
-    useChangePasswordFormConfiguration(onSuccess)
+    useChangeEmailFormConfiguration(onSuccess)
 
   return (
     <Formik {...formikConfiguration}>
-      <ChangePasswordNavigator page={page} setPage={setPage} />
+      <ChangeEmailNavigator page={page} setPage={setPage} />
     </Formik>
   )
 }
 
-export const ChangePasswordModalScreen = () => {
+export const ChangeEmailModalScreen = () => {
   return (
     <ModalScreen>
-      <ChangePasswordScreen />
+      <ChangeEmailScreen />
     </ModalScreen>
   )
 }

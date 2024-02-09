@@ -7,25 +7,13 @@
   composes: icon;
 }
 
-.iconFollow g {
-  fill: var(--secondary);
-}
-
 .iconRepost {
   composes: icon;
   height: 18px;
 }
 
-.iconRepost g path {
-  fill: var(--secondary);
-}
-
 .iconFavorite {
   composes: icon;
-}
-
-.iconFavorite g path {
-  fill: var(--secondary);
 }
 
 .iconMilestone {
@@ -33,17 +21,9 @@
   height: 24px;
 }
 
-.iconMilestone g path {
-  fill: var(--secondary);
-}
-
 .iconRelease {
   composes: icon;
   height: 28px;
-}
-
-.iconRelease g path {
-  fill: var(--secondary);
 }
 
 .iconRewards {
@@ -58,21 +38,8 @@
   composes: icon;
 }
 
-.iconTrending g path {
-  fill: var(--secondary);
-}
-
 .iconTier {
   margin-right: var(--unit-2);
-}
-
-.iconCart {
-  composes: icon;
-  height: var(--unit-6);
-}
-
-.iconCart path {
-  fill: var(--secondary);
 }
 
 .iconTier img {
@@ -85,28 +52,12 @@
   height: 24px;
 }
 
-.iconRemix g path {
-  fill: var(--secondary);
-}
-
 .iconTip {
   composes: icon;
   height: 24px;
 }
 
-.iconTip path {
-  fill: var(--secondary);
-}
-
-.iconAnnouncement g path {
-  fill: var(--secondary);
-}
-
 .iconAddTrackToPlaylist {
   composes: icon;
   height: 24px;
-}
-
-.iconAddTrackToPlaylist g path {
-  fill: var(--secondary);
 }

@@ -52,7 +52,3 @@
   width: 12px;
   height: 12px;
 }
-
-.pill .icon g path {
-  fill: var(--neutral-light-3);
-}

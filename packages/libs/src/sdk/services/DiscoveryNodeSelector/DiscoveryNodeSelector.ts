@@ -743,4 +743,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     }
     return undefined
   }
+
+  async triggerReselection() {
+    // force reselection while avoiding current node
+    await this.select(this.selectedNode)
+  }
 }
