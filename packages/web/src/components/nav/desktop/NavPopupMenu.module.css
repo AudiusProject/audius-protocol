@@ -107,3 +107,8 @@
 .item:hover .usdcPill path {
   fill: #2775ca;
 }
+
+.item .audioPill path,
+.item:hover .audioPill path {
+  fill: revert-layer;
+}
