@@ -42,6 +42,9 @@ export const ConfirmCredentialsSubScreen = () => (
       autoComplete='email'
       label={messages.email}
       autoFocus
+      keyboardType='email-address'
+      autoCorrect={false}
+      autoCapitalize='none'
     />
     <PasswordField name='password' label={messages.currentPassword} />
   </SubScreen>

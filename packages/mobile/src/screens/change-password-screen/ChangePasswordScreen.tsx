@@ -166,10 +166,12 @@ const ChangePasswordNavigator = ({
 const ChangePasswordScreen = () => {
   const navigation = useNavigation()
   const { toast } = useToast()
+
   const onSuccess = useCallback(() => {
     navigation.navigate('AccountSettingsScreen')
     toast({ content: messages.success, type: 'info' })
   }, [navigation, toast])
+
   const { page, setPage, ...formikConfiguration } =
     useChangePasswordFormConfiguration(onSuccess)
 
