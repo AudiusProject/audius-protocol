@@ -273,7 +273,7 @@ export class Web3Manager {
               // force reselection since we're using
               // identity service to relay
               await this.discoveryProvider?.discoveryNodeSelector?.triggerReselection()
-              return
+              throw e
             }
 
             // Otherwise, throw to retry
