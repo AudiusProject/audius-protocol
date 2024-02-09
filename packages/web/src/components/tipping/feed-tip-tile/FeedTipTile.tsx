@@ -36,6 +36,7 @@ import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
 import styles from './FeedTipTile.module.css'
+import { useEffectOnce } from 'react-use'
 const { beginTip, fetchRecentTips, setShowTip } = tippingActions
 const { getUsers } = cacheUsersSelectors
 const { getShowTip, getTipToDisplay } = tippingSelectors
