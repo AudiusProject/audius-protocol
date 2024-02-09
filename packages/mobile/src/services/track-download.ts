@@ -225,11 +225,7 @@ const download = async ({
          * the initial downloads to avoid showing notifications, then manually add a
          * notification for the zip file.
          */
-        directory: [
-          RNFetchBlob.fs.dirs.DownloadDir,
-          audiusDownloadsDirectory,
-          rootDirectoryName
-        ].join('/'),
+        directory: RNFetchBlob.fs.dirs.DownloadDir + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
           fileCache: true,
           path: filePath
