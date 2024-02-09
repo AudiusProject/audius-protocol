@@ -72,7 +72,14 @@ export const NewEmailSubScreen = () => {
         title={messages.changeYourEmail}
         description={messages.newEmailHelp}
       />
-      <HarmonyTextField name='email' label={messages.newEmail} />
+      <HarmonyTextField
+        name='email'
+        label={messages.newEmail}
+        autoComplete='off'
+        keyboardType='email-address'
+        autoCorrect={false}
+        autoCapitalize='none'
+      />
     </SubScreen>
   )
 }
