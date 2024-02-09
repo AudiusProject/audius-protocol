@@ -12,19 +12,6 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-// CreateTrackRelease contains everything the publisher app needs in order to upload a single track to Audius.
-type CreateTrackRelease struct {
-	DDEXReleaseRef string
-	metadata       common.TrackMetadata
-}
-
-// CreateAlbumRelease contains everything the publisher app needs in order to upload a new album to Audius (including all track audio files and cover art).
-type CreateAlbumRelease struct {
-	DDEXReleaseRef string
-	tracks         []common.TrackMetadata
-	metadata       common.CollectionMetadata
-}
-
 // SoundRecording represents the parsed details of a sound recording.
 type SoundRecording struct {
 	Type                  string
@@ -119,7 +106,7 @@ type ResourceGroupContentItem struct {
 
 // parseSonyXML parses the given XML data and returns structured data including releases, sound recordings, and images.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseSonyXML(xmlData []byte) (tracks []CreateTrackRelease, albums []CreateAlbumRelease, errs []error) {
+func parseSonyXML(xmlData []byte) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
 		errs = append(errs, err)
@@ -177,7 +164,7 @@ func parseSonyXML(xmlData []byte) (tracks []CreateTrackRelease, albums []CreateA
 }
 
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
-func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image) (track *CreateTrackRelease, album *CreateAlbumRelease, err error) {
+func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
 	releaseDate := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // TODO: This is deprecated. Need to use DealList
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
@@ -282,10 +269,10 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			}
 		}
 
-		album = &CreateAlbumRelease{
+		album = &common.CreateAlbumRelease{
 			DDEXReleaseRef: releaseRef,
-			tracks:         tracks,
-			metadata: common.CollectionMetadata{
+			Tracks:         tracks,
+			Metadata: common.CollectionMetadata{
 				PlaylistName:    title,
 				PlaylistOwnerID: artistName, // TODO: We don't have an ID here
 				ReleaseDate:     releaseDate,
@@ -370,9 +357,9 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		trackMetadata.Copyright = copyright
 		trackMetadata.CoverArtURL = coverArtURL
 
-		track = &CreateTrackRelease{
+		track = &common.CreateTrackRelease{
 			DDEXReleaseRef: releaseRef,
-			metadata:       *trackMetadata,
+			Metadata:       *trackMetadata,
 		}
 		return
 	}
@@ -657,9 +644,7 @@ func parseISODuration(isoDuration string) (time.Duration, error) {
 		}
 	}
 
-	// Convert to time.Duration
 	totalSeconds := hours*3600 + minutes*60 + seconds
 	duration := time.Duration(totalSeconds) * time.Second
-
 	return duration, nil
 }

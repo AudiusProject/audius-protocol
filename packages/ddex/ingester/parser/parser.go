@@ -23,7 +23,7 @@ type Parser struct {
 	logger              *slog.Logger
 }
 
-// RunNewParser starts the parser service, which listens for new indexed documents in the Mongo "indexed" collection and turns them into Audius format track format.
+// RunNewParser starts the parser service, which listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius format track format.
 func RunNewParser(ctx context.Context) {
 	logger := slog.With("service", "parser")
 	mongoClient := common.InitMongoClient(ctx, logger)
@@ -90,19 +90,36 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		}
 
 		// 2. Write each release in "delivery_xml" in the delivery as a bson doc in the 'pending_releases' collection
-		pendingRelease := bson.M{
-			"upload_etag":  delivery.UploadETag,
-			"delivery_id":  delivery.ID,
-			"entity":       "track",
-			"publish_date": time.Now(),
-			"created_at":   time.Now(),
+		for _, track := range createTrackRelease {
+			pendingRelease := bson.M{
+				"upload_etag":          delivery.UploadETag,
+				"delivery_id":          delivery.ID,
+				"create_track_release": track,
+				"publish_date":         track.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"created_at":           time.Now(),
+			}
+			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
+			if err != nil {
+				session.AbortTransaction(sessionCtx)
+				return err
+			}
+			p.logger.Info("Inserted pending track release", "_id", result.InsertedID)
 		}
-		result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
-		if err != nil {
-			session.AbortTransaction(sessionCtx)
-			return err
+		for _, album := range createAlbumRelease {
+			pendingRelease := bson.M{
+				"upload_etag":          delivery.UploadETag,
+				"delivery_id":          delivery.ID,
+				"create_album_release": album,
+				"publish_date":         album.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"created_at":           time.Now(),
+			}
+			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
+			if err != nil {
+				session.AbortTransaction(sessionCtx)
+				return err
+			}
+			p.logger.Info("Inserted pending album release", "_id", result.InsertedID)
 		}
-		p.logger.Info("Inserted pending release", "_id", result.InsertedID)
 
 		// 3. Set delivery status for delivery in 'deliveries' collection
 		err = p.setDeliveryStatus(delivery.ID, constants.DeliveryStatusAwaitingPublishing, sessionCtx)

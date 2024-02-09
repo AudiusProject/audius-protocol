@@ -155,14 +155,14 @@ type NullableString = *string
 type NullableInt = *int
 
 type TrackSegment struct {
-	Duration  string `json:"duration"`
-	Multihash CID    `json:"multihash"`
+	Duration  string `bson:"duration"`
+	Multihash CID    `bson:"multihash"`
 }
 
 type Download struct {
-	IsDownloadable NullableBool   `json:"is_downloadable"`
-	RequiresFollow NullableBool   `json:"requires_follow"`
-	CID            NullableString `json:"cid"`
+	IsDownloadable NullableBool   `bson:"is_downloadable"`
+	RequiresFollow NullableBool   `bson:"requires_follow"`
+	CID            NullableString `bson:"cid"`
 }
 
 type TokenStandard string
@@ -173,83 +173,83 @@ const (
 )
 
 type EthCollectibleGatedConditions struct {
-	Chain        string         `json:"chain"`
-	Standard     TokenStandard  `json:"standard"`
-	Address      string         `json:"address"`
-	Name         string         `json:"name"`
-	Slug         string         `json:"slug"`
-	ImageUrl     NullableString `json:"imageUrl"`
-	ExternalLink NullableString `json:"externalLink"`
+	Chain        string         `bson:"chain"`
+	Standard     TokenStandard  `bson:"standard"`
+	Address      string         `bson:"address"`
+	Name         string         `bson:"name"`
+	Slug         string         `bson:"slug"`
+	ImageUrl     NullableString `bson:"imageUrl"`
+	ExternalLink NullableString `bson:"externalLink"`
 }
 
 type SolCollectibleGatedConditions struct {
-	Chain        string         `json:"chain"`
-	Address      string         `json:"address"`
-	Name         string         `json:"name"`
-	ImageUrl     NullableString `json:"imageUrl"`
-	ExternalLink NullableString `json:"externalLink"`
+	Chain        string         `bson:"chain"`
+	Address      string         `bson:"address"`
+	Name         string         `bson:"name"`
+	ImageUrl     NullableString `bson:"imageUrl"`
+	ExternalLink NullableString `bson:"externalLink"`
 }
 
 type USDCPurchaseConditions struct {
 	USDCPurchase *struct {
-		Price  float64            `json:"price"`
-		Splits map[string]float64 `json:"splits"`
-	} `json:"usdc_purchase,omitempty"`
+		Price  float64            `bson:"price"`
+		Splits map[string]float64 `bson:"splits"`
+	} `bson:"usdc_purchase,omitempty"`
 }
 
 type GatedConditions struct {
-	NFTCollection *interface{} `json:"nft_collection,omitempty"`
-	FollowUserID  NullableInt  `json:"follow_user_id,omitempty"`
-	TipUserID     NullableInt  `json:"tip_user_id,omitempty"`
+	NFTCollection *interface{} `bson:"nft_collection,omitempty"`
+	FollowUserID  NullableInt  `bson:"follow_user_id,omitempty"`
+	TipUserID     NullableInt  `bson:"tip_user_id,omitempty"`
 	USDCPurchaseConditions
 }
 
 type TrackMetadata struct {
-	Title               string         `json:"title"`
-	ReleaseDate         string         `json:"release_date"`
-	Genre               Genre          `json:"genre"`
-	Duration            int            `json:"duration"`
-	PreviewStartSeconds NullableInt    `json:"preview_start_seconds,omitempty"`
-	ISRC                NullableString `json:"isrc,omitempty"`
+	Title               string         `bson:"title"`
+	ReleaseDate         string         `bson:"release_date"`
+	Genre               Genre          `bson:"genre"`
+	Duration            int            `bson:"duration"`
+	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
+	ISRC                NullableString `bson:"isrc,omitempty"`
 
 	// TODO: Handle License from PLineText?
-	License NullableString `json:"license,omitempty"`
+	License NullableString `bson:"license,omitempty"`
 
 	// TODO: We may have to leave these ones out
-	Description NullableString `json:"description,omitempty"` // Apparently there's supposed to be a <MarketingComment> that we use for this
-	Mood        NullableString `json:"mood,omitempty"`
-	Tags        NullableString `json:"tags,omitempty"`
+	Description NullableString `bson:"description,omitempty"` // Apparently there's supposed to be a <MarketingComment> that we use for this
+	Mood        NullableString `bson:"mood,omitempty"`
+	Tags        NullableString `bson:"tags,omitempty"`
 
 	// Extra fields (not in SDK)
-	Artists             []Artist `json:"artists"`
-	ArtistName          string   `json:"artist_name"`
-	Copyright           string   `json:"copyright"`
-	PreviewAudioFileURL string   `json:"preview_audio_file_url"`
-	AudioFileURL        string   `json:"audio_file_url"`
-	CoverArtURL         string   `json:"cover_art_url"`
+	Artists             []Artist `bson:"artists"`
+	ArtistName          string   `bson:"artist_name"`
+	Copyright           string   `bson:"copyright"`
+	PreviewAudioFileURL string   `bson:"preview_audio_file_url"`
+	AudioFileURL        string   `bson:"audio_file_url"`
+	CoverArtURL         string   `bson:"cover_art_url"`
 }
 
 // Not part of SDK
 type Artist struct {
-	Name  string   `json:"name"`
-	Roles []string `json:"roles"`
+	Name  string   `bson:"name"`
+	Roles []string `bson:"roles"`
 }
 
 type CollectionMetadata struct {
-	PlaylistName    string         `json:"playlist_name"`
-	PlaylistOwnerID string         `json:"playlist_owner_id"`
-	Description     NullableString `json:"description,omitempty"`
-	IsAlbum         bool           `json:"is_album"`
-	IsPrivate       bool           `json:"is_private"`
-	Tags            NullableString `json:"tags,omitempty"`
-	Genre           Genre          `json:"genre"`
-	Mood            Mood           `json:"mood"`
-	ReleaseDate     string         `json:"release_date"`
+	PlaylistName    string         `bson:"playlist_name"`
+	PlaylistOwnerID string         `bson:"playlist_owner_id"`
+	Description     NullableString `bson:"description,omitempty"`
+	IsAlbum         bool           `bson:"is_album"`
+	IsPrivate       bool           `bson:"is_private"`
+	Tags            NullableString `bson:"tags,omitempty"`
+	Genre           Genre          `bson:"genre"`
+	Mood            Mood           `bson:"mood"`
+	ReleaseDate     string         `bson:"release_date"`
 
 	// TODO: Handle these fields
-	License NullableString `json:"license,omitempty"`
-	UPC     NullableString `json:"upc,omitempty"`
+	License NullableString `bson:"license,omitempty"`
+	UPC     NullableString `bson:"upc,omitempty"`
 
 	// Extra fields (not in SDK)
-	CoverArtURL string `json:"cover_art_url"`
+	CoverArtURL string `bson:"cover_art_url"`
 }
