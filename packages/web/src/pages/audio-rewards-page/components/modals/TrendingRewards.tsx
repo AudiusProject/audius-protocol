@@ -211,7 +211,7 @@ const TrendingRewardsBody = ({
           text={textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
-          rightIcon={<IconArrow />}
+          rightIcon={<IconArrow size='s' />}
           iconClassName={wm(styles.buttonIcon)}
         />
         <span onClick={onClickToS} className={styles.terms}>
