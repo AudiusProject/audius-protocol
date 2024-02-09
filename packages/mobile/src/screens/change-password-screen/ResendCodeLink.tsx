@@ -1,10 +1,10 @@
 import { isOtpMissingError } from '@audius/common/hooks'
 import { useField } from 'formik'
+import { useAsyncFn } from 'react-use'
 
 import { TextLink } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { useAsyncFn } from 'react-use'
 
 const messages = {
   resend: 'Resend code.',
