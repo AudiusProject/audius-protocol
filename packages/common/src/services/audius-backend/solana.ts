@@ -485,7 +485,7 @@ export const createRootWalletRecoveryTransaction = async (
       splits: { [userBank.toString()]: new BN(amount.toString()) },
       purchaserUserId: 0, // ignored
       senderAccount: wallet.publicKey,
-      purchaseAccess: PurchaseAccess.STREAM //ignored
+      purchaseAccess: PurchaseAccess.STREAM // ignored
     })
 
   const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
@@ -672,7 +672,7 @@ export const createPaymentRouterRouteTransaction = async (
       splits,
       purchaserUserId: 0, // ignored
       senderAccount: sender,
-      purchaseAccess: PurchaseAccess.STREAM //ignored
+      purchaseAccess: PurchaseAccess.STREAM // ignored
     })
   return new Transaction({
     recentBlockhash: blockhash,

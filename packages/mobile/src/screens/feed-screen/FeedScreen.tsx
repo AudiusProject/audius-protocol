@@ -21,7 +21,6 @@ import { make, track } from 'app/services/analytics'
 
 import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
 import { FeedFilterButton } from './FeedFilterButton'
-import { useEffectOnce } from 'react-use'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 
