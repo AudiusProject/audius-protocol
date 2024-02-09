@@ -1,36 +1,33 @@
 import {
   FieldHelperProps,
+  FieldHookConfig,
   FieldMetaProps,
   FieldInputProps as FormikFieldInputProps,
   useFormikContext,
   useField as useFormikField
 } from 'formik'
-import { TextInputProps } from '@audius/harmony'
 import { useDebouncedCallback } from './useDebouncedCallback'
 import { useCallback, useEffect, useState } from 'react'
 
-export type UseHarmonyFieldProps = {
+export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
   /** Function to transform the input value on change, eg. a function to trim whitespace */
   transformValueOnChange?: (value: string) => string
   /** Function to transform the input value on blur, eg. a function to trim whitespace */
   transformValueOnBlur?: (value: string) => string
   /**
-   * Debounces onChange validation. Requires validateOnChange to be true.
+   * Debounces onChange validation.
+   * Requires validateOnChange to be true (either for the form or this field).
    * @default 0
    */
   debouncedValidationMs?: number
   /**
    * Delays onChange validation errors from showing.
-   * Requires validateOnChange to be true.
+   * Requires validateOnChange to be true (either for the form or this field).
    * Note: This doesn't delay the actual validation from running,
    * just how long after the user stops typing that the error will appear.
    * @default 0
    */
   debouncedIdleMs?: number
-  /**
-   * Help text to appear below the input. If present, error help text will not show.
-   */
-  helperText?: string
   /**
    * Whether to show errors prior to the first submission attempt.
    * @default false
@@ -44,38 +41,41 @@ export type UseHarmonyFieldProps = {
   validateFieldOnChange?: boolean
 }
 
-type CustomFieldInputProps = Pick<
-  TextInputProps,
-  'error' | 'helperText' | 'onChange' | 'onBlur'
->
-type FieldInputProps<Value> = Omit<FormikFieldInputProps<Value>, 'error'> &
-  CustomFieldInputProps
-
 /**
  * Wrapper around Formik's {@link useFormikField useField} that modifies the
- * returned results for Harmony components with the defaults fitting the design system.
- * @param name the name of the Formik field
- * @param options a config of optional settings to use when generating handlers, etc
- * @returns the props for Harmony's TextInput and PasswordInput
+ * returned results for Harmony compatible behavior, including the following
+ * configurable behaviors:
+ * - Only show errors after a submission has been attempted
+ * - Apply transformations to the value on blur or change
+ * - Debounce validations and/or error displays to prevent error spam
+ * - Allow overriding the Formik context's "validateOnChange"
+ * @param propsOrFieldName the field's name, or the full props for the hook.
  * @example
  * const MyComponent = () => {
- *    const [emailField] = useHarmonyField('email')
- *    return <TextInput {...field} label='Email' />
+ *    const [emailField] = useHarmonyField({ name: 'email', label: 'Email' })
+ *    return <TextInput {...field} />
  * }
  */
 export const useHarmonyField = <Value = any>(
-  name: string,
-  options: UseHarmonyFieldProps = {}
-): [FieldInputProps<Value>, FieldMetaProps<Value>, FieldHelperProps<Value>] => {
+  propsOrFieldName: string | UseHarmonyFieldProps<Value>
+): [
+  FormikFieldInputProps<Value>,
+  FieldMetaProps<Value>,
+  FieldHelperProps<Value>
+] => {
+  const props =
+    typeof propsOrFieldName === 'string'
+      ? { name: propsOrFieldName }
+      : propsOrFieldName
   const {
+    name,
     debouncedValidationMs = 0,
     debouncedIdleMs = 0,
     transformValueOnChange,
     transformValueOnBlur,
-    helperText: helperTextProp,
     showErrorBeforeSubmit = false,
     validateFieldOnChange
-  } = options
+  } = props
   const [field, meta, helpers] = useFormikField(name)
   const { touched, error } = meta
   const { setValue, setTouched } = helpers
@@ -105,9 +105,6 @@ export const useHarmonyField = <Value = any>(
       (showErrorBeforeSubmit || submitCount > 0) &&
       !isChanging
   )
-
-  // The help text falls back to the error message (if applicable)
-  const helperText = helperTextProp ?? (hasError ? error : undefined)
 
   // Debounced version of validate field
   const debouncedValidateField = useDebouncedCallback(
@@ -190,8 +187,7 @@ export const useHarmonyField = <Value = any>(
 
   const harmonyField = {
     ...field,
-    error: hasError,
-    helperText,
+    error: hasError ? error : undefined,
     onChange,
     onBlur
   }
