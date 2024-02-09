@@ -10,10 +10,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import {
-  PlaylistSchema,
-  createCollectionSchema
-} from 'pages/upload-page/validation'
+import { createCollectionSchema } from 'pages/upload-page/validation'
 
 import { EditActions } from './FormActions'
 
