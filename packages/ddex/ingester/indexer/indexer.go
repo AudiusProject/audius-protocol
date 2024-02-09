@@ -56,7 +56,7 @@ func RunNewIndexer(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	i.logger.Info("Indexer: Watching collection 'uploads'")
+	i.logger.Info("Watching collection 'uploads'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
@@ -76,7 +76,7 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 		log.Fatal(err)
 	}
 	fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
+	i.logger.Info("Processing new upload", "upload", fullDocument)
 
 	// Download ZIP file from S3
 	uploadETag := fullDocument["upload_etag"].(string)

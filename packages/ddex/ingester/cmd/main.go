@@ -49,7 +49,7 @@ func main() {
 	case "indexer":
 		go indexer.RunNewIndexer(ctx)
 	case "parser":
-		go parser.Run(ctx)
+		go parser.RunNewParser(ctx)
 	default:
 		fmt.Println("Unknown service: " + *service)
 	}
