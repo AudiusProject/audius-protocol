@@ -14,6 +14,7 @@
 .dismissButton {
   z-index: 1;
   position: absolute;
+  color: var(--neutral-light-2);
 }
 
 .titleContainer {
@@ -22,8 +23,8 @@
   justify-content: center;
   align-items: center;
   margin-left: var(--unit-7);
-  margin-right: var(--unit-4);
-  color: var(--neutral-light-4);
+  margin-right: var(--unit-7);
+  color: var(--neutral-light-2);
 }
 
 .titleContainer.noDismissButton {
@@ -34,8 +35,8 @@
   margin: 0;
   display: inline;
   font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-4);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-2);
   text-transform: uppercase;
 }
 
@@ -49,7 +50,7 @@
   display: inline;
   font-size: var(--font-s);
   font-weight: var(--font-medium);
-  color: var(--neutral-light-4);
+  color: var(--neutral-light-2);
 }
 
 .icon {
@@ -58,5 +59,5 @@
 }
 
 .icon path {
-  fill: var(--neutral-light-4);
+  fill: var(--neutral-light-2);
 }
