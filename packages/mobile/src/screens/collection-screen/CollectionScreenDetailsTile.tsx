@@ -260,7 +260,8 @@ export const CollectionScreenDetailsTile = ({
     styles,
     trackUids,
     trackCount,
-    isOwner
+    isOwner,
+    messages
   ])
 
   const isPlayable = isQueued || (trackCount > 0 && !!firstTrack)

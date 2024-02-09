@@ -5,6 +5,7 @@ import { isEqual } from 'lodash'
 import { shallowEqual, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
+import { DownloadQuality } from '~/models'
 import dayjs from '~/utils/dayjs'
 import { encodeHashId } from '~/utils/hashIds'
 
@@ -15,7 +16,6 @@ import { getHasAccount } from '../store/account/selectors'
 import { getTrack, getTracks } from '../store/cache/tracks/selectors'
 import { CommonState } from '../store/commonStore'
 import { getCurrentUploads } from '../store/stems-upload/selectors'
-import { DownloadQuality } from '~/models'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -113,9 +113,14 @@ export const useFileSizes = ({
 }) => {
   const previousTrackIds = usePrevious(trackIds)
   const previousDownloadQuality = usePrevious(downloadQuality)
-  const [sizes, setSizes] = useState<{ [trackId: ID]: { [k in DownloadQuality]: number } }>({})
+  const [sizes, setSizes] = useState<{
+    [trackId: ID]: { [k in DownloadQuality]: number }
+  }>({})
   useEffect(() => {
-    if (!isEqual(previousTrackIds, trackIds) || previousDownloadQuality !== downloadQuality) {
+    if (
+      !isEqual(previousTrackIds, trackIds) ||
+      previousDownloadQuality !== downloadQuality
+    ) {
       const asyncFn = async () => {
         const sdk = await audiusSdk()
         const sizeResults = await Promise.all(
@@ -129,7 +134,10 @@ export const useFileSizes = ({
                 original: downloadQuality === DownloadQuality.ORIGINAL
               })
               const size = res?.data?.size ?? null
-              return { trackId, size: { [downloadQuality]: size, ...(sizes[trackId] ?? {}) } }
+              return {
+                trackId,
+                size: { [downloadQuality]: size, ...(sizes[trackId] ?? {}) }
+              }
             } catch (e) {
               console.error(e)
               return { trackId, size: {} }
@@ -139,14 +147,22 @@ export const useFileSizes = ({
         setSizes((sizes) => ({
           ...sizes,
           ...sizeResults.reduce((acc, curr) => {
-            acc[curr.trackId] = {...(acc[curr.trackId] || {}), ...curr.size}
+            acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
             return acc
           }, {} as { trackId: ID; size: { [k in DownloadQuality]: number } })
         }))
       }
       asyncFn()
     }
-  }, [trackIds, previousTrackIds, audiusSdk, sizes, setSizes, downloadQuality, previousDownloadQuality])
+  }, [
+    trackIds,
+    previousTrackIds,
+    audiusSdk,
+    sizes,
+    setSizes,
+    downloadQuality,
+    previousDownloadQuality
+  ])
   return sizes
 }
 
