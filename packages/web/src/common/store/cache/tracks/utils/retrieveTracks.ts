@@ -247,7 +247,7 @@ export function* retrieveTracks({
   const trackId = ids[0]
   const track = tracks.entries[trackId]
 
-  if (canBeUnlisted && withStems) {
+  if (withStems) {
     yield* spawn(function* () {
       if (ids.length > 1 && track) {
         console.warn('Stems endpoint only supports fetching single tracks')
