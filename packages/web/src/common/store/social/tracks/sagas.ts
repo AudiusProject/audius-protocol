@@ -21,7 +21,15 @@ import {
   removeNullable
 } from '@audius/common/utils'
 import { capitalize } from 'lodash'
-import { call, select, takeEvery, put, fork } from 'typed-redux-saga'
+import {
+  call,
+  select,
+  takeEvery,
+  put,
+  fork,
+  take,
+  cancel
+} from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -658,7 +666,9 @@ function* downloadTrackV1Helper({
 
     const trackId = track.track_id
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = nftAccessSignatureMap[trackId]
+    const nftAccessSignature = original
+      ? nftAccessSignatureMap[trackId]?.original ?? null
+      : nftAccessSignatureMap[trackId]?.mp3 ?? null
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
       nftAccessSignature
@@ -755,11 +765,13 @@ const getFilename = ({
 function* downloadTracks({
   tracks,
   original,
-  rootDirectoryName
+  rootDirectoryName,
+  abortSignal
 }: {
   tracks: { trackId: ID; filename: string }[]
   original?: boolean
   rootDirectoryName?: string
+  abortSignal?: AbortSignal
 }) {
   const { trackId: parentTrackId } = tracks[0]
   try {
@@ -769,7 +781,9 @@ function* downloadTracks({
     let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = nftAccessSignatureMap[parentTrackId]
+    const nftAccessSignature = original
+      ? nftAccessSignatureMap[parentTrackId]?.original ?? null
+      : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
       nftAccessSignature
@@ -788,7 +802,8 @@ function* downloadTracks({
     })
     yield* call(trackDownload.downloadTracks, {
       files,
-      rootDirectoryName
+      rootDirectoryName,
+      abortSignal
     })
   } catch (e) {
     console.error(
@@ -803,71 +818,91 @@ function* watchDownloadTrack() {
   yield* takeEvery(
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
-      const { trackIds, parentTrackId, original } = action
-      if (
-        trackIds === undefined ||
-        trackIds.length === 0 ||
-        (trackIds.length > 1 && !parentTrackId)
-      ) {
-        console.error(
-          `Could not download track ${trackIds}: Invalid trackIds or missing parentTrackId`
+      const controller = new AbortController()
+      const task = yield* fork(function* () {
+        const { trackIds, parentTrackId, original } = action
+        if (
+          trackIds === undefined ||
+          trackIds.length === 0 ||
+          (trackIds.length > 1 && !parentTrackId)
+        ) {
+          console.error(
+            `Could not download track ${trackIds}: Invalid trackIds or missing parentTrackId`
+          )
+          return
+        }
+
+        yield* call(waitForRead)
+
+        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+        const isLosslessDownloadsEnabled = yield* call(
+          getFeatureEnabled,
+          FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
         )
-        return
-      }
+        if (!isLosslessDownloadsEnabled) {
+          yield* call(downloadTrackV1, action)
+          return
+        }
 
-      yield* call(waitForRead)
+        // Check if there is a logged in account and if not,
+        // wait for one so we can trigger the download immediately after
+        // logging in.
+        const accountUserId = yield* select(getUserId)
+        if (!accountUserId) {
+          yield* call(waitForValue, getUserId)
+        }
 
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const isLosslessDownloadsEnabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-      )
-      if (!isLosslessDownloadsEnabled) {
-        yield* call(downloadTrackV1, action)
-        return
-      }
-
-      // Check if there is a logged in account and if not,
-      // wait for one so we can trigger the download immediately after
-      // logging in.
-      const accountUserId = yield* select(getUserId)
-      if (!accountUserId) {
-        yield* call(waitForValue, getUserId)
-      }
-
-      const mainTrackId = parentTrackId ?? trackIds[0]
-      const mainTrack = yield* select(getTrack, {
-        id: mainTrackId
-      })
-      if (!mainTrack) return
-      const userId = mainTrack?.owner_id
-      const user = yield* select(getUser, { id: userId })
-      if (!user) return
-      const rootDirectoryName = `${user.name} - ${mainTrack.title} (Audius)`
-      // Mobile typecheck complains if this array isn't typed
-      const tracks: { trackId: ID; filename: string }[] = []
-
-      for (const trackId of [...trackIds, parentTrackId].filter(
-        removeNullable
-      )) {
-        const track: Track | null = yield* select(getTrack, { id: trackId })
-        if (!track) return
-
-        tracks.push({
-          trackId,
-          filename: getFilename({
-            track,
-            user,
-            original
-          })
+        const mainTrackId = parentTrackId ?? trackIds[0]
+        const mainTrack = yield* select(getTrack, {
+          id: mainTrackId
         })
-      }
+        if (!mainTrack) {
+          console.error(
+            `Failed to download because no mainTrack ${mainTrackId}`
+          )
+          return
+        }
+        const userId = mainTrack?.owner_id
+        const user = yield* select(getUser, { id: userId })
+        if (!user) {
+          console.error(`Failed to download because no user ${userId}`)
+          return
+        }
+        const rootDirectoryName = `${user.name} - ${mainTrack.title} (Audius)`
+        // Mobile typecheck complains if this array isn't typed
+        const tracks: { trackId: ID; filename: string }[] = []
 
-      yield* call(downloadTracks, {
-        tracks,
-        original,
-        rootDirectoryName
+        for (const trackId of [...trackIds, parentTrackId].filter(
+          removeNullable
+        )) {
+          const track: Track | null = yield* select(getTrack, { id: trackId })
+          if (!track) {
+            console.error(
+              `Skipping individual download because no track ${trackId}`
+            )
+            return
+          }
+
+          tracks.push({
+            trackId,
+            filename: getFilename({
+              track,
+              user,
+              original
+            })
+          })
+        }
+
+        yield* call(downloadTracks, {
+          tracks,
+          original,
+          rootDirectoryName,
+          abortSignal: controller.signal
+        })
       })
+      yield* take(socialActions.CANCEL_DOWNLOAD)
+      controller.abort()
+      yield* cancel(task)
     }
   )
 }

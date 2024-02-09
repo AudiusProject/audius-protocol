@@ -21,7 +21,11 @@ from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.payment_router import PaymentRouterTx
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -125,6 +129,7 @@ class PurchaseMetadataDict(TypedDict):
     id: int
     purchaser_user_id: int
     content_owner_id: int
+    access: PurchaseAccessType
 
 
 class RouteTransactionMemoType(str, enum.Enum):
@@ -217,72 +222,83 @@ def parse_route_transaction_memo(
                     blocknumber_str,
                     purchaser_user_id_str,
                 ) = content_metadata
-                type = PurchaseType[type_str.lower()]
-                id = int(id_str)
-                purchaser_user_id = int(purchaser_user_id_str)
-                blocknumber = int(blocknumber_str)
-
-                # TODO: Wait for blocknumber to be indexed by ACDC
-                logger.debug(
-                    f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
-                )
-                price = None
-                splits = None
-                content_owner_id = None
-                if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    content_owner_id = get_track_owner_id(session, id)
-                    if content_owner_id is None:
-                        logger.error(
-                            f"index_payment_router.py | Couldn't find content owner for track_id={id}"
-                        )
-                        continue
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                    result = (
-                        query.filter(
-                            TrackPriceHistory.track_id == id,
-                        )
-                        .order_by(desc(TrackPriceHistory.block_timestamp))
-                        .first()
-                    )
-                    if result is not None:
-                        price = result.total_price_cents
-                        splits = result.splits
-                else:
-                    logger.error(
-                        f"index_payment_router.py | Unknown content type {type}"
-                    )
-                if (
-                    price is not None
-                    and splits is not None
-                    and isinstance(splits, dict)
-                    and content_owner_id is not None
-                ):
-                    return RouteTransactionMemo(
-                        type=RouteTransactionMemoType.purchase,
-                        metadata={
-                            "type": type,
-                            "id": id,
-                            "price": price * USDC_PER_USD_CENT,
-                            "splits": splits,
-                            "purchaser_user_id": purchaser_user_id,
-                            "content_owner_id": content_owner_id,
-                        },
-                    )
-                else:
-                    logger.error(
-                        f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
-                    )
+                access_str = "stream"  # Default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
+                ) = content_metadata
             else:
                 logger.info(
                     f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
+                )
+
+            type = PurchaseType[type_str.lower()]
+            id = int(id_str)
+            purchaser_user_id = int(purchaser_user_id_str)
+            blocknumber = int(blocknumber_str)
+            access = PurchaseAccessType[access_str.lower()]
+
+            # TODO: Wait for blocknumber to be indexed by ACDC
+            logger.debug(
+                f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
+            )
+            price = None
+            splits = None
+            content_owner_id = None
+            if type == PurchaseType.track:
+                env = shared_config["discprov"]["env"]
+                content_owner_id = get_track_owner_id(session, id)
+                if content_owner_id is None:
+                    logger.error(
+                        f"index_payment_router.py | Couldn't find content owner for track_id={id}"
+                    )
+                    continue
+                query = session.query(TrackPriceHistory)
+                if env != "dev":
+                    # In local stack, the blocktime of solana-test-validator is offset.
+                    # The start time of the validator is baked into the prebuilt container.
+                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
+                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
+                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
+                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
+                    )
+                    .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            else:
+                logger.error(f"index_payment_router.py | Unknown content type {type}")
+            if (
+                price is not None
+                and splits is not None
+                and isinstance(splits, dict)
+                and content_owner_id is not None
+            ):
+                return RouteTransactionMemo(
+                    type=RouteTransactionMemoType.purchase,
+                    metadata={
+                        "type": type,
+                        "id": id,
+                        "price": price * USDC_PER_USD_CENT,
+                        "splits": splits,
+                        "purchaser_user_id": purchaser_user_id,
+                        "content_owner_id": content_owner_id,
+                        "access": access,
+                    },
+                )
+            else:
+                logger.error(
+                    f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
                 )
         except (ValueError, KeyError) as e:
             logger.info(
@@ -337,6 +353,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=purchase_metadata["access"],
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"

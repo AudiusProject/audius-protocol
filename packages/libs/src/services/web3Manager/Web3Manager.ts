@@ -268,6 +268,14 @@ export class Web3Manager {
               bail(e)
               return
             }
+
+            if (e.response.status >= 500) {
+              // force reselection since we're using
+              // identity service to relay
+              await this.discoveryProvider?.discoveryNodeSelector?.triggerReselection()
+              throw e
+            }
+
             // Otherwise, throw to retry
             throw e
           }

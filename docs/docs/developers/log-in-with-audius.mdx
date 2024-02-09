@@ -1,9 +1,12 @@
 ---
-sidebar_label: Log In with Audius
-sidebar_position: 3
+id: log-in-with-audius
+title: Log In With Audius
+pagination_label: Log In With Audius
+sidebar_label: Log In With Audius
+description: Audius Protocol Documentation
+
 ---
 
-# Log In with Audius
 
 <p align="center">
 <img src="/img/writeOAuth.png" width="252" alt="Log In with Audius popup" />
@@ -129,7 +132,7 @@ audiusSdk.oauth.renderButton({
 <div id="audiusLogInButton"></div>
 ```
 
-[`renderButton`](/developers/sdk-oauth-methods#oauthrenderbutton) replaces the given `element` with the Log In with Audius button.
+[`renderButton`](/developers/sdk-oauth-methods#renderbutton) replaces the given `element` with the Log In with Audius button.
 
 If `scope` is set to `"write"`, the user will be prompted to grant your app read/write access to their account (allowing your app to perform actions like uploading a track on the user's behalf). If `scope` is set to `"read"`, the user will be prompted to grant your app read-only access to their account.
 
@@ -147,7 +150,7 @@ Use [this playground](https://9ncjui.csb.app/) to explore the different button o
 
 :::
 
-If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthlogin).
+If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#login).
 
 <details>
 <summary>Optional: Show loader until the button is ready</summary>
@@ -215,7 +218,7 @@ Be careful to not expose API secrets on your frontend!
 
 - [Read full SDK `oauth` docs](sdk-oauth-methods)
 
-- [Explore the API docs](/developers/sdk/Tracks)
+- [Explore the API docs](/developers/sdk/tracks)
 
 :::note
 
@@ -337,7 +340,7 @@ If you specified `response_mode=query` when opening the login page, the login pa
 `https://mydemoapp.com/oauth/receive-token?state=a4e0761e-8c21-4e20-819d-5a4daeab4ea9&token={JWT}`
 :::
 
-Skip to [**Handling the response**](#handling-the-response) below for what to do next.
+Skip to [**Handling the response**](#3-verify-the-response) below for what to do next.
 
 #### **If you used `redirectURI=postmessage`**:
 
@@ -440,6 +443,6 @@ const track = await audiusSdk.tracks.favoriteTrack({
 });
 ```
 
-See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/Tracks) for further reading.
+See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/tracks) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)

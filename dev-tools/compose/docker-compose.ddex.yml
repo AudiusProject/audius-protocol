@@ -13,6 +13,7 @@ services:
     environment:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
     ports:
       - "9000:9000"
     networks:
@@ -27,6 +28,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
     depends_on:
       ddex-mongo:
         condition: service_healthy
@@ -43,6 +45,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
     depends_on:
       ddex-mongo:
         condition: service_healthy
@@ -59,6 +62,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
     depends_on:
       ddex-mongo:
         condition: service_healthy
@@ -79,6 +83,7 @@ services:
         TURBO_TOKEN: '${TURBO_TOKEN}'
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
     depends_on:
       ddex-mongo:
         condition: service_healthy

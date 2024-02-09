@@ -102,7 +102,8 @@ export function* watchPlay() {
 
       let queryParams: QueryParams = {}
       const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-      const nftAccessSignature = nftAccessSignatureMap[track.track_id]
+      const nftAccessSignature =
+        nftAccessSignatureMap[track.track_id]?.mp3 ?? null
       queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
         nftAccessSignature

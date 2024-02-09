@@ -16,9 +16,9 @@ import {
   Supporting,
   UserTip,
   AccessConditions,
-  AccessSignature,
   ID,
-  AccessPermissions
+  AccessPermissions,
+  NFTAccessSignature
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -289,5 +289,5 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
 }
 
 export type GetNFTGatedTrackSignaturesResponse = {
-  [id: ID]: AccessSignature
+  [id: ID]: NFTAccessSignature
 }

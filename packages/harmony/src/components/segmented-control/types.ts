@@ -14,7 +14,16 @@ export type SegmentedControlProps<T extends string> = {
   // Called on select option
   onSelectOption: (key: T) => void
 
+  /**
+   * Causes the control to take up the full width of the parent. Incompatible
+   * with `equalWidth`  */
   fullWidth?: boolean
+
+  /**
+   * Causes all tabs to be rendered at an equal width based on the largest natural
+   * content width. Incompatible with `fullWidth`
+   */
+  equalWidth?: boolean
 
   disabled?: boolean
 

@@ -40,7 +40,8 @@ import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
 import AccountSettingsPage from './AccountSettingsPage'
-import { ChangePasswordPage } from './ChangePasswordPage'
+import { ChangeEmailMobilePage } from './ChangeEmailPage'
+import { ChangePasswordMobilePage } from './ChangePasswordPage'
 import NotificationsSettingsPage from './NotificationsSettingsPage'
 import styles from './SettingsPage.module.css'
 import VerificationPage from './VerificationPage'
@@ -50,7 +51,8 @@ export enum SubPage {
   NOTIFICATIONS = 'notifications',
   ABOUT = 'about',
   VERIFICATION = 'verification',
-  CHANGE_PASSWORD = 'change-password'
+  CHANGE_PASSWORD = 'change password',
+  CHANGE_EMAIL = 'change email'
 }
 
 const messages = {
@@ -108,7 +110,8 @@ const SubPages = {
   [SubPage.ABOUT]: AboutSettingsPage as FC<SettingsPageProps>,
   [SubPage.NOTIFICATIONS]: NotificationsSettingsPage as FC<SettingsPageProps>,
   [SubPage.VERIFICATION]: VerificationPage as FC<SettingsPageProps>,
-  [SubPage.CHANGE_PASSWORD]: ChangePasswordPage as FC<SettingsPageProps>
+  [SubPage.CHANGE_PASSWORD]: ChangePasswordMobilePage as FC<SettingsPageProps>,
+  [SubPage.CHANGE_EMAIL]: ChangeEmailMobilePage as FC<SettingsPageProps>
 }
 
 const SettingsPage = (props: SettingsPageProps) => {

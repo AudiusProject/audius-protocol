@@ -9,13 +9,6 @@
   cursor: pointer;
 }
 
-.radio {
-  display: flex;
-  align-items: center;
-  height: var(--unit-9);
-  flex: 0 0 auto;
-}
-
 .optionTitle {
   display: flex;
   align-items: center;
@@ -27,8 +20,7 @@
 }
 
 .input {
-  height: 24px;
-  width: 24px;
+  /* this dummy class needs to exist for .input:checked to work. This will be removed when radio has label and icons */
 }
 
 .root.disabled {

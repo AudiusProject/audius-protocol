@@ -36,35 +36,47 @@ function browserDownload({ url, filename }: DownloadFile) {
 }
 
 class TrackDownload extends TrackDownloadBase {
-  async downloadTracks({ files, rootDirectoryName }: DownloadTrackArgs) {
+  async downloadTracks({
+    files,
+    rootDirectoryName,
+    abortSignal
+  }: DownloadTrackArgs) {
     const responsePromises = files.map(
-      async ({ url }) => await window.fetch(url)
+      async ({ url }) => await window.fetch(url, { signal: abortSignal })
     )
-    const responses = await Promise.all(responsePromises)
-    if (!responses.every((response) => response.ok)) {
-      throw new Error('Download unsuccessful')
+    try {
+      const responses = await Promise.all(responsePromises)
+      if (!responses.every((response) => response.ok)) {
+        throw new Error('Download unsuccessful')
+      }
+      const filename = rootDirectoryName ?? files[0].filename
+      let url
+      if (files.length === 1) {
+        url = responses[0].url
+      } else {
+        if (!rootDirectoryName)
+          throw new Error(
+            'rootDirectory must be supplied when downloading multiple files'
+          )
+        const blob = await downloadZip(
+          responses.map((r, i) => {
+            return {
+              name: rootDirectoryName + '/' + files[i].filename,
+              input: r
+            }
+          })
+        ).blob()
+        url = URL.createObjectURL(blob)
+      }
+      browserDownload({ url, filename })
+      window.store.dispatch(downloadFinished())
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') {
+        console.info('Download aborted by the user')
+      } else {
+        throw e
+      }
     }
-    const filename = rootDirectoryName ?? files[0].filename
-    let url
-    if (files.length === 1) {
-      url = responses[0].url
-    } else {
-      if (!rootDirectoryName)
-        throw new Error(
-          'rootDirectory must be supplied when downloading multiple files'
-        )
-      const blob = await downloadZip(
-        responses.map((r, i) => {
-          return {
-            name: rootDirectoryName + '/' + files[i].filename,
-            input: r
-          }
-        })
-      ).blob()
-      url = URL.createObjectURL(blob)
-    }
-    browserDownload({ url, filename })
-    window.store.dispatch(downloadFinished())
   }
 }
 

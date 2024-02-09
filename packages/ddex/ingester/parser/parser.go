@@ -15,43 +15,39 @@ import (
 )
 
 type Parser struct {
-	mongoClient *mongo.Client
-	indexedColl *mongo.Collection
-	parsedColl  *mongo.Collection
-	ctx         context.Context
-	logger      *slog.Logger
+	mongoClient         *mongo.Client
+	rawBucket           string
+	deliveriesColl      *mongo.Collection
+	pendingReleasesColl *mongo.Collection
+	ctx                 context.Context
+	logger              *slog.Logger
 }
 
 // RunNewParser starts the parser service, which listens for new indexed documents in the Mongo "indexed" collection and turns them into Audius format track format.
 func RunNewParser(ctx context.Context) {
-	mongoClient := common.InitMongoClient(ctx)
+	logger := slog.With("service", "parser")
+	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
-	indexedColl := mongoClient.Database("ddex").Collection("indexed")
-	parsedColl := mongoClient.Database("ddex").Collection("parsed")
 
 	p := &Parser{
-		mongoClient: mongoClient,
-		indexedColl: indexedColl,
-		parsedColl:  parsedColl,
-		ctx:         ctx,
-		logger:      slog.With("service", "parser"),
+		mongoClient:         mongoClient,
+		rawBucket:           common.MustGetenv("AWS_BUCKET_RAW"),
+		deliveriesColl:      mongoClient.Database("ddex").Collection("deliveries"),
+		pendingReleasesColl: mongoClient.Database("ddex").Collection("pending_releases"),
+		ctx:                 ctx,
+		logger:              logger,
 	}
 
 	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
-	changeStream, err := indexedColl.Watch(ctx, pipeline)
+	changeStream, err := p.deliveriesColl.Watch(ctx, pipeline)
 	if err != nil {
 		panic(err)
 	}
-	p.logger.Info("Watching collection 'indexed'")
+	p.logger.Info("Watching collection 'deliveries'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
-		var changeDoc bson.M
-		if err := changeStream.Decode(&changeDoc); err != nil {
-			log.Fatal(err)
-		}
-		fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-		p.parseIndexed(fullDocument)
+		p.processDelivery(changeStream)
 	}
 
 	if err := changeStream.Err(); err != nil {
@@ -59,16 +55,25 @@ func RunNewParser(ctx context.Context) {
 	}
 }
 
-func (p *Parser) parseIndexed(fullDocument bson.M) {
-	p.logger.Info("Processing new indexed document", "document", fullDocument)
-	xmlData := fullDocument["xml_content"].(primitive.Binary).Data
+func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
+	// Decode the "delivery" from Mongo
+	var changeDoc struct {
+		FullDocument common.Delivery `bson:"fullDocument"`
+	}
+	if err := changeStream.Decode(&changeDoc); err != nil {
+		log.Fatal(err)
+	}
+	delivery := changeDoc.FullDocument
+	p.logger.Info("Processing new delivery", "_id", delivery.ID)
+
+	xmlData := delivery.XmlContent.Data
 	createTrackRelease, createAlbumRelease, errs := parseSonyXML(xmlData)
 	if len(errs) != 0 {
 		p.logger.Error("Failed to parse delivery. Printing errors...")
 		for _, err := range errs {
 			p.logger.Error(err.Error())
 		}
-		p.failAndUpdateStatus(fullDocument["_id"].(primitive.ObjectID), fmt.Errorf("failed to parse delivery: %v", errs))
+		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("failed to parse delivery: %v", errs))
 	}
 	p.logger.Info("Parsed delivery", "createTrackRelease", fmt.Sprintf("%+v", createTrackRelease), "createAlbumRelease", fmt.Sprintf("%+v", createAlbumRelease))
 
@@ -77,29 +82,30 @@ func (p *Parser) parseIndexed(fullDocument bson.M) {
 
 	session, err := p.mongoClient.StartSession()
 	if err != nil {
-		p.failAndUpdateStatus(fullDocument["_id"].(primitive.ObjectID), err)
+		p.failAndUpdateStatus(delivery.ID, err)
 	}
 	err = mongo.WithSession(p.ctx, session, func(sessionCtx mongo.SessionContext) error {
 		if err := session.StartTransaction(); err != nil {
 			return err
 		}
 
-		// 2. Write each release in "delivery_xml" in the indexed doc as a bson doc in the 'parsed' collection
-		parsedDoc := bson.M{
-			"upload_etag":  fullDocument["upload_etag"],
-			"delivery_id":  fullDocument["delivery_id"],
+		// 2. Write each release in "delivery_xml" in the delivery as a bson doc in the 'pending_releases' collection
+		pendingRelease := bson.M{
+			"upload_etag":  delivery.UploadETag,
+			"delivery_id":  delivery.ID,
 			"entity":       "track",
 			"publish_date": time.Now(),
+			"created_at":   time.Now(),
 		}
-		result, err := p.parsedColl.InsertOne(p.ctx, parsedDoc)
+		result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
 		if err != nil {
 			session.AbortTransaction(sessionCtx)
 			return err
 		}
-		p.logger.Info("New parsed release doc", "id", result.InsertedID)
+		p.logger.Info("Inserted pending release", "_id", result.InsertedID)
 
-		// 3. Set delivery status for delivery in 'indexed' collection
-		err = p.setIndexedDeliveryStatus(fullDocument["_id"].(primitive.ObjectID), constants.DeliveryStatusAwaitingPublishing, sessionCtx)
+		// 3. Set delivery status for delivery in 'deliveries' collection
+		err = p.setDeliveryStatus(delivery.ID, constants.DeliveryStatusAwaitingPublishing, sessionCtx)
 		if err != nil {
 			session.AbortTransaction(sessionCtx)
 			return err
@@ -109,19 +115,19 @@ func (p *Parser) parseIndexed(fullDocument bson.M) {
 	})
 
 	if err != nil {
-		p.failAndUpdateStatus(fullDocument["_id"].(primitive.ObjectID), err)
+		p.failAndUpdateStatus(delivery.ID, err)
 	}
 
 	session.EndSession(p.ctx)
 }
 
-func (p *Parser) setIndexedDeliveryStatus(documentId primitive.ObjectID, status string, ctx context.Context) error {
+func (p *Parser) setDeliveryStatus(documentId primitive.ObjectID, status string, ctx context.Context) error {
 	update := bson.M{"$set": bson.M{"delivery_status": status}}
-	_, err := p.indexedColl.UpdateByID(ctx, documentId, update)
+	_, err := p.deliveriesColl.UpdateByID(ctx, documentId, update)
 	return err
 }
 
 func (p *Parser) failAndUpdateStatus(documentId primitive.ObjectID, err error) {
-	p.setIndexedDeliveryStatus(documentId, constants.DeliveryStatusError, p.ctx)
+	p.setDeliveryStatus(documentId, constants.DeliveryStatusError, p.ctx)
 	log.Fatal(err)
 }

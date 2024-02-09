@@ -309,8 +309,9 @@ class SearchBar extends Component {
               <div>
                 <span>View More Results</span>
                 <IconArrow
-                  height={'7px'}
-                  width={'7px'}
+                  color='default'
+                  height={8}
+                  width={8}
                   className={styles.iconArrow}
                 />
               </div>

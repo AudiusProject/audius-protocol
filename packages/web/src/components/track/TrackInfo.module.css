@@ -103,7 +103,7 @@
 .volumeIcon svg {
   height: 8px;
 }
-.volumeIcon g path {
+.volumeIcon path {
   fill: var(--primary);
 }
 

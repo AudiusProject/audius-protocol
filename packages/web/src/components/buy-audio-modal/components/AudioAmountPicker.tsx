@@ -7,14 +7,14 @@ import {
   useState
 } from 'react'
 
-import { IconLogoCircle } from '@audius/harmony'
 import {
-  RadioPillButton,
-  RadioButtonGroup,
+  IconLogoCircle,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
-} from '@audius/stems'
-import { debounce, uniqueId } from 'lodash'
+  TokenAmountInputChangeHandler,
+  RadioGroup,
+  SelectablePill
+} from '@audius/harmony'
+import { debounce } from 'lodash'
 
 import styles from './AudioAmountPicker.module.css'
 
@@ -109,50 +109,48 @@ export const AudioAmountPicker = ({
     }
   }, [isCustomAmountInputVisible, customAmountRef])
 
-  const id = useMemo(() => uniqueId(), [])
-
   return (
     <>
       {!isCustomAmountInputVisible ? (
         <AmountPreview amount={presetAmount} />
       ) : null}
-      <RadioButtonGroup
-        aria-labelledby={`audioAmountPicker-label-${id}`}
-        className={styles.presetAmountButtons}
-        name='AmountPicker'
+      <RadioGroup
+        direction='row'
+        wrap='wrap'
+        gap='s'
+        aria-labelledby={'audioAmountPicker-label'}
+        name='amount'
         value={value}
         onChange={handleChange}
       >
-        <div id={`audioAmountPicker-label-${id}`} className={styles.label}>
+        <div id={'audioAmountPicker-label'} className={styles.label}>
           {messages.amountOfAudio}
         </div>
         {presetAmounts.map((amount) => (
-          <RadioPillButton
+          <SelectablePill
             key={amount}
-            name={'amount'}
-            className={styles.presetAmountButton}
+            size='oversized'
+            type='radio'
+            css={{ flex: '1 30%' }}
             label={amount}
             aria-label={`${amount} audio`}
             value={amount}
           />
         ))}
         {hideCustomAmount ? null : (
-          <RadioPillButton
-            className={styles.customAmountButton}
-            name={'amount'}
-            label={
-              <span className={styles.customAmountButtonText}>
-                Custom Amount
-              </span>
-            }
-            value={'custom'}
+          <SelectablePill
+            size='oversized'
+            css={{ flexBasis: '100%' }}
+            type='radio'
+            value='custom'
+            label={messages.customAmount}
           />
         )}
-      </RadioButtonGroup>
+      </RadioGroup>
       {isCustomAmountInputVisible ? (
         <TokenAmountInput
-          inputRef={customAmountRef}
-          aria-label={messages.customAmount}
+          ref={customAmountRef}
+          label={messages.customAmount}
           placeholder={messages.placeholder}
           tokenLabel={messages.tokenLabel}
           value={customAmount}

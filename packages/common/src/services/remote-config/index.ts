@@ -3,8 +3,4 @@ export type { AllRemoteConfigKeys } from './types'
 export { FeatureFlags } from './feature-flags'
 export { remoteConfig } from './remote-config'
 export type { RemoteConfigInstance } from './remote-config'
-export {
-  remoteConfigIntDefaults,
-  remoteConfigDoubleDefaults,
-  remoteConfigBooleanDefaults
-} from './defaults'
+export * from './defaults'

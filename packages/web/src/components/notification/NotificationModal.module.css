@@ -32,7 +32,7 @@
   left: 0px;
 }
 
-.header .iconRemove g path {
+.header .iconRemove path {
   fill: var(--neutral-light-4);
 }
 
@@ -40,7 +40,7 @@
   transform: scale(1.1);
 }
 
-.header .iconRemove:hover g path {
+.header .iconRemove:hover path {
   fill: var(--neutral);
 }
 

@@ -8,3 +8,8 @@ export enum PurchaseVendor {
   STRIPE = 'Stripe',
   COINFLOW = 'Coinflow'
 }
+
+export enum PurchaseAccess {
+  STREAM = 'stream',
+  DOWNLOAD = 'download'
+}

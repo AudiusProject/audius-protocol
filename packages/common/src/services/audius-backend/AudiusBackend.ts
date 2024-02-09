@@ -1068,7 +1068,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function getUserEmail() {
+  async function getUserEmail(): Promise<string> {
     await waitForLibsInit()
     const { email } = await audiusLibs.Account.getUserEmail()
     return email
@@ -1674,20 +1674,6 @@ export const audiusBackend = ({
   async function resetPassword(email: string, password: string) {
     await waitForLibsInit()
     return audiusLibs.Account.resetPassword(email, password)
-  }
-
-  async function changePassword(
-    email: string,
-    password: string,
-    oldpassword: string
-  ) {
-    await waitForLibsInit()
-    return audiusLibs.Account.changePassword(email, password, oldpassword)
-  }
-
-  async function confirmCredentials(email: string, password: string) {
-    await waitForLibsInit()
-    return audiusLibs.Account.confirmCredentials(email, password)
   }
 
   async function sendRecoveryEmail() {
@@ -3260,9 +3246,7 @@ export const audiusBackend = ({
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
-    changePassword,
     clearNotificationBadges,
-    confirmCredentials,
     createPlaylist,
     currentDiscoveryProvider,
     dangerouslySetPlaylistOrder,

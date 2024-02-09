@@ -90,12 +90,11 @@ const useRefetchLineupOnTrackAdd = (
   }, [previousTrackCount, trackCount, dispatch])
 }
 
-const messages = {
-  empty:
-    'This playlist is empty. Start adding tracks to share it or make it public.',
-  emptyPublic: 'This playlist is empty',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
+  emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---'
-}
+})
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   trackListDivider: {
@@ -169,7 +168,7 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
-
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
 
   const details = useMemo(() => {
@@ -189,7 +188,13 @@ export const CollectionScreenDetailsTile = ({
       },
       ...extraDetails
     ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [isLineupLoading, trackCount, collectionDuration, extraDetails])
+  }, [
+    isLineupLoading,
+    trackCount,
+    messages.detailsPlaceholder,
+    collectionDuration,
+    extraDetails
+  ])
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {

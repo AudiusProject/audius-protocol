@@ -12,7 +12,7 @@ const messages = {
   youPaid: 'You Paid',
   zero: '$0.00',
   price: (val: string) => `$${val}`,
-  included: 'Included'
+  included: 'included'
 }
 
 type PurchaseSummaryTableProps = {
@@ -45,7 +45,7 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(basePrice))
     })
   }
-  const downloadCount = (stemsPurchaseCount || 0) + (downloadPurchaseCount || 0)
+  const downloadCount = (stemsPurchaseCount ?? 0) + (downloadPurchaseCount ?? 0)
   if (downloadCount > 0) {
     items.push({
       id: 'premiumTrackDownload',

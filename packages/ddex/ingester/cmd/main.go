@@ -45,7 +45,7 @@ func main() {
 
 	switch *service {
 	case "crawler":
-		go crawler.Run(ctx)
+		go crawler.RunNewCrawler(ctx)
 	case "indexer":
 		go indexer.RunNewIndexer(ctx)
 	case "parser":

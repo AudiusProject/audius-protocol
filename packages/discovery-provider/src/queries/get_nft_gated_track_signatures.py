@@ -114,6 +114,7 @@ def _get_eth_nft_gated_track_signatures(
 ):
     track_signature_map = {}
     track_cid_to_id_map = {}
+    track_id_to_original_cid_map = {}
 
     user_eth_wallets = list(
         map(Web3.to_checksum_address, eth_associated_wallets + [user_wallet])
@@ -137,6 +138,7 @@ def _get_eth_nft_gated_track_signatures(
         )
         erc721_collection_track_map[contract_address].append(track.track_cid)
         track_cid_to_id_map[track.track_cid] = track.track_id
+        track_id_to_original_cid_map[track.track_id] = track.orig_file_cid
 
     erc1155_gated_tracks = list(
         filter(
@@ -164,6 +166,7 @@ def _get_eth_nft_gated_track_signatures(
             contract_address
         ].union(track_token_id_set)
         track_cid_to_id_map[track.track_cid] = track.track_id
+        track_id_to_original_cid_map[track.track_id] = track.orig_file_cid
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Check ownership of nfts from erc721 collections from given contract addresses,
@@ -184,9 +187,8 @@ def _get_eth_nft_gated_track_signatures(
                 if future.result():
                     for track_cid in erc721_collection_track_map[contract_address]:
                         track_id = track_cid_to_id_map[track_cid]
-                        track_signature_map[
-                            track_id
-                        ] = get_gated_content_signature_for_user_wallet(
+                        original_cid = track_id_to_original_cid_map[track_id]
+                        mp3_signature = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -196,6 +198,22 @@ def _get_eth_nft_gated_track_signatures(
                                 "is_gated": True,
                             }
                         )
+                        original_signature = (
+                            get_gated_content_signature_for_user_wallet(
+                                {
+                                    "track_id": track_id,
+                                    "track_cid": original_cid,
+                                    "type": "track",
+                                    "user_wallet": user_wallet,
+                                    "user_id": user_id,
+                                    "is_gated": True,
+                                }
+                            )
+                        )
+                        track_signature_map[track_id] = {
+                            "mp3": mp3_signature,
+                            "original": original_signature,
+                        }
             except Exception as e:
                 logger.error(
                     f"Could not get future result for erc721 contract_address {contract_address}. Error: {e}"
@@ -222,9 +240,8 @@ def _get_eth_nft_gated_track_signatures(
                 if future.result():
                     for track_cid in erc1155_collection_track_map[contract_address]:
                         track_id = track_cid_to_id_map[track_cid]
-                        track_signature_map[
-                            track_id
-                        ] = get_gated_content_signature_for_user_wallet(
+                        original_cid = track_id_to_original_cid_map[track_id]
+                        mp3_signature = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -234,6 +251,22 @@ def _get_eth_nft_gated_track_signatures(
                                 "is_gated": True,
                             }
                         )
+                        original_signature = (
+                            get_gated_content_signature_for_user_wallet(
+                                {
+                                    "track_id": track_id,
+                                    "track_cid": original_cid,
+                                    "type": "track",
+                                    "user_wallet": user_wallet,
+                                    "user_id": user_id,
+                                    "is_gated": True,
+                                }
+                            )
+                        )
+                        track_signature_map[track_id] = {
+                            "mp3": mp3_signature,
+                            "original": original_signature,
+                        }
             except Exception as e:
                 logger.error(
                     f"Could not get future result for erc1155 contract_address {contract_address}. Error: {e}"
@@ -394,6 +427,7 @@ def _get_sol_nft_gated_track_signatures(
 ):
     track_signature_map = {}
     track_cid_to_id_map = {}
+    track_id_to_original_cid_map = {}
 
     # Build a map of collection mint address -> track ids
     # so that only one chain call will be made for gated tracks
@@ -403,6 +437,7 @@ def _get_sol_nft_gated_track_signatures(
         collection_mint_address = track.stream_conditions["nft_collection"]["address"]  # type: ignore
         collection_track_map[collection_mint_address].append(track.track_cid)
         track_cid_to_id_map[track.track_cid] = track.track_id
+        track_id_to_original_cid_map[track.track_id] = track.orig_file_cid
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Check ownership of nfts from collections from given collection mint addresses,
@@ -425,9 +460,8 @@ def _get_sol_nft_gated_track_signatures(
                 if future.result():
                     for track_cid in collection_track_map[collection_mint_address]:
                         track_id = track_cid_to_id_map[track_cid]
-                        track_signature_map[
-                            track_id
-                        ] = get_gated_content_signature_for_user_wallet(
+                        original_cid = track_id_to_original_cid_map[track_id]
+                        mp3_signature = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": cast(str, track_cid),
@@ -437,6 +471,22 @@ def _get_sol_nft_gated_track_signatures(
                                 "is_gated": True,
                             }
                         )
+                        original_signature = (
+                            get_gated_content_signature_for_user_wallet(
+                                {
+                                    "track_id": track_id,
+                                    "track_cid": cast(str, original_cid),
+                                    "type": "track",
+                                    "user_wallet": user_wallet,
+                                    "user_id": user_id,
+                                    "is_gated": True,
+                                }
+                            )
+                        )
+                        track_signature_map[track_id] = {
+                            "mp3": mp3_signature,
+                            "original": original_signature,
+                        }
             except Exception as e:
                 logger.error(
                     f"Could not get future result for collection_mint_address {collection_mint_address}. Error: {e}"
@@ -477,14 +527,14 @@ def get_nft_gated_track_signatures(
                 nft_gated_tracks,
             )
         )
-        eth_nft_gated_track_signatures = _get_eth_nft_gated_track_signatures(
+        eth_nft_gated_track_signature_maps = _get_eth_nft_gated_track_signatures(
             user_wallet=user_wallet,
             eth_associated_wallets=associated_wallets["eth"],
             tracks=eth_nft_gated_tracks,
             track_token_id_map=track_token_id_map,
             user_id=user_id,
         )
-        sol_nft_gated_track_signatures = _get_sol_nft_gated_track_signatures(
+        sol_nft_gated_track_signature_maps = _get_sol_nft_gated_track_signatures(
             user_wallet=user_wallet,
             sol_associated_wallets=associated_wallets["sol"],
             tracks=sol_nft_gated_tracks,
@@ -492,10 +542,10 @@ def get_nft_gated_track_signatures(
         )
 
         result = {}
-        for track_id, signature in eth_nft_gated_track_signatures.items():
-            result[track_id] = signature
-        for track_id, signature in sol_nft_gated_track_signatures.items():
-            result[track_id] = signature
+        for track_id, signature_map in eth_nft_gated_track_signature_maps.items():
+            result[track_id] = signature_map
+        for track_id, signature_map in sol_nft_gated_track_signature_maps.items():
+            result[track_id] = signature_map
 
         return result
 

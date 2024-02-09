@@ -145,7 +145,7 @@
   cursor: pointer;
 }
 
-.iconContainer:hover g path {
+.iconContainer:hover path {
   fill: #858199;
 }
 
@@ -161,7 +161,7 @@
   height: 5px;
 }
 
-.iconKebabHorizontal g path {
+.iconKebabHorizontal path {
   fill: var(--neutral-light-4);
 }
 

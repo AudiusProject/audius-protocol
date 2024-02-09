@@ -315,6 +315,13 @@ const RenderForm = ({
     }
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
+  const stemsPurchaseCount = track.is_download_gated
+    ? track._stems?.length ?? 0
+    : 0
+  const downloadPurchaseCount =
+    track.is_download_gated && track.download?.is_downloadable ? 1 : 0
+  const streamPurchaseCount = track.is_stream_gated ? 1 : 0
+
   return (
     <View style={styles.root}>
       {page === PurchaseContentPage.PURCHASE ? (
@@ -324,7 +331,7 @@ const RenderForm = ({
               <AudioMatchSection amount={Math.round(price / 100)} />
             ) : null}
             <View style={styles.formContentSection}>
-              <TrackDetailsTile trackId={track.track_id} />
+              <TrackDetailsTile trackId={track.track_id} showLabel={false} />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
                   amountPresets={presetValues}
@@ -334,6 +341,9 @@ const RenderForm = ({
               <View style={styles.bottomSection}>
                 <PurchaseSummaryTable
                   {...purchaseSummaryValues}
+                  stemsPurchaseCount={stemsPurchaseCount}
+                  downloadPurchaseCount={downloadPurchaseCount}
+                  streamPurchaseCount={streamPurchaseCount}
                   totalPriceInCents={totalPriceInCents}
                 />
                 {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (

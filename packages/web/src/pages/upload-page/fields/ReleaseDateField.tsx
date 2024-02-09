@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getLocalTimezone } from '@audius/common/utils'
-import { IconInfo, Flex, IconCalendarMonth } from '@audius/harmony'
-import { RadioButtonGroup, ModalContent } from '@audius/stems'
+import { IconInfo, Flex, IconCalendarMonth, RadioGroup } from '@audius/harmony'
+import { ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -202,9 +202,8 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
 
   return (
     <>
-      <RadioButtonGroup
+      <RadioGroup
         {...releaseDateTypeField}
-        className={styles.radioGroup}
         defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
       >
         <ModalRadioItem
@@ -216,7 +215,7 @@ export const ReleaseDateRadioItems = (props: ReleaseDateRadioProps) => {
           value={ReleaseDateType.SCHEDULED_RELEASE}
           label='Select a Release Date'
         />
-      </RadioButtonGroup>
+      </RadioGroup>
       <SelectReleaseDate {...props} />
     </>
   )

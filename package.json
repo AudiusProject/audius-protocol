@@ -30,6 +30,7 @@
     "web:dev": "npm run start:dev -w audius-client",
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
+    "web:e2e": "concurrently -k 'npm run start:stage -w audius-client' 'npm run cypress:open -w probers' ",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
     "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",

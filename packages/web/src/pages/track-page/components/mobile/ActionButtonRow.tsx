@@ -85,7 +85,7 @@ const ActionButtonRow = ({
     return (
       <IconButton
         aria-label='share'
-        className={cn(styles.actionButton, {
+        className={cn(styles.actionButton, styles.shareButton, {
           [styles.disabledButton]: !isPublished
         })}
         icon={<IconShare />}

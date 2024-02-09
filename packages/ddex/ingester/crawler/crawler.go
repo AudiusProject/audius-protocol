@@ -2,8 +2,9 @@ package crawler
 
 import (
 	"context"
+	"fmt"
 	"ingester/common"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -14,12 +15,32 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Run(ctx context.Context) {
-	s3Client, _ := common.InitS3Client()
-	mongoClient := common.InitMongoClient(ctx)
+type Crawler struct {
+	s3Client    *s3.S3
+	mongoClient *mongo.Client
+	rawBucket   string
+	cursorsColl *mongo.Collection
+	uploadsColl *mongo.Collection
+	ctx         context.Context
+	logger      *slog.Logger
+}
+
+func RunNewCrawler(ctx context.Context) {
+	logger := slog.With("service", "crawler")
+	s3Client, _ := common.InitS3Client(logger)
+	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
 
-	bucketName := common.MustGetenv("AWS_BUCKET_RAW")
+	c := &Crawler{
+		s3Client:    s3Client,
+		mongoClient: mongoClient,
+		rawBucket:   common.MustGetenv("AWS_BUCKET_RAW"),
+		cursorsColl: mongoClient.Database("ddex").Collection("cursors"),
+		uploadsColl: mongoClient.Database("ddex").Collection("uploads"),
+		ctx:         ctx,
+		logger:      logger,
+	}
+
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
@@ -28,30 +49,30 @@ func Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			lastPolledTime, err := getLastPolledTime(mongoClient, ctx)
+			lastPolledTime, err := c.getLastPolledTime()
 			if err != nil {
-				log.Println("Failed to retrieve s3 raw bucket's last polled time:", err)
+				c.logger.Error("Failed to retrieve s3 raw bucket's last polled time", "error", err)
 				continue
 			}
 
-			uploads, err := pollS3Bucket(s3Client, bucketName, lastPolledTime)
+			uploads, err := c.pollS3Bucket(lastPolledTime)
 			if err != nil {
-				log.Println("Error polling S3 bucket:", err)
+				c.logger.Error("Error polling S3 bucket", "error", err)
 				continue
 			}
 
 			if len(uploads) > 0 {
-				err = persistUploads(mongoClient, bucketName, uploads, ctx)
+				err = c.persistUploads(uploads)
 				if err != nil {
-					log.Println("Error inserting into mongodb:", err)
+					c.logger.Error("Error inserting into mongodb", "error", err)
 					continue
 				}
-				log.Printf("Processed %d new uploads", len(uploads))
+				c.logger.Info(fmt.Sprintf("Processed %d new uploads", len(uploads)))
 			}
 
-			err = updateLastPolledTime(mongoClient, time.Now(), ctx)
+			err = c.updateLastPolledTime(time.Now())
 			if err != nil {
-				log.Println("Failed to update s3 raw bucket's last polled time:", err)
+				c.logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
 			}
 
 			if ctx.Err() != nil {
@@ -61,26 +82,22 @@ func Run(ctx context.Context) {
 	}
 }
 
-func updateLastPolledTime(client *mongo.Client, lastPolledTime time.Time, ctx context.Context) error {
-	collection := client.Database("ddex").Collection("cursors")
-
+func (c *Crawler) updateLastPolledTime(lastPolledTime time.Time) error {
 	filter := bson.M{"service": "crawler"}
 	update := bson.M{"$set": bson.M{"s3RawLastPolledTime": lastPolledTime}}
 	opts := options.Update().SetUpsert(true)
 
-	_, err := collection.UpdateOne(ctx, filter, update, opts)
+	_, err := c.cursorsColl.UpdateOne(c.ctx, filter, update, opts)
 	return err
 }
 
-func getLastPolledTime(client *mongo.Client, ctx context.Context) (time.Time, error) {
-	collection := client.Database("ddex").Collection("cursors")
-
+func (c *Crawler) getLastPolledTime() (time.Time, error) {
 	var result struct {
 		LastPolledTime time.Time `bson:"s3RawLastPolledTime"`
 	}
 	filter := bson.M{"service": "crawler"}
 
-	err := collection.FindOne(ctx, filter).Decode(&result)
+	err := c.cursorsColl.FindOne(c.ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// No record found, return zero time
@@ -92,9 +109,9 @@ func getLastPolledTime(client *mongo.Client, ctx context.Context) (time.Time, er
 	return result.LastPolledTime, nil
 }
 
-func pollS3Bucket(s3Client *s3.S3, bucketName string, lastPolledTime time.Time) ([]*s3.Object, error) {
-	resp, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: aws.String(bucketName),
+func (c *Crawler) pollS3Bucket(lastPolledTime time.Time) ([]*s3.Object, error) {
+	resp, err := c.s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(c.rawBucket),
 	})
 	if err != nil {
 		return nil, err
@@ -109,16 +126,15 @@ func pollS3Bucket(s3Client *s3.S3, bucketName string, lastPolledTime time.Time) 
 	return newUploads, nil
 }
 
-func persistUploads(client *mongo.Client, bucket string, uploads []*s3.Object, ctx context.Context) error {
-	uploadsColl := client.Database("ddex").Collection("uploads")
+func (c *Crawler) persistUploads(uploads []*s3.Object) error {
 	for _, upload := range uploads {
-		path := "s3://" + bucket + "/" + *upload.Key
+		path := "s3://" + c.rawBucket + "/" + *upload.Key
 		etag := strings.Trim(*upload.ETag, "\"")
 		// Only insert if a document doesn't already exist with this path and etag
 		filter := bson.M{"path": path, "upload_etag": etag}
-		update := bson.M{"$setOnInsert": bson.M{"path": path, "upload_etag": etag}}
+		update := bson.M{"$setOnInsert": bson.M{"path": path, "upload_etag": etag, "created_at": upload.LastModified}}
 		opts := options.Update().SetUpsert(true)
-		_, err := uploadsColl.UpdateOne(ctx, filter, update, opts)
+		_, err := c.uploadsColl.UpdateOne(c.ctx, filter, update, opts)
 		if err != nil {
 			return err
 		}

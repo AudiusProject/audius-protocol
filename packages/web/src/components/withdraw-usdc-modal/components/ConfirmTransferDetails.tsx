@@ -57,7 +57,10 @@ export const ConfirmTransferDetails = () => {
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
   const [{ value: methodValue }] = useField(METHOD)
-  const [confirmField, { error: confirmError }] = useField(CONFIRM)
+  const [confirmField, { error: confirmError }] = useField({
+    name: CONFIRM,
+    type: 'checkbox'
+  })
 
   const { data: balance } = useUSDCBalance()
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
