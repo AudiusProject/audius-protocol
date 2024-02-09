@@ -1,13 +1,17 @@
+import { useEffect } from 'react'
+
+import { useCurrentStems } from '@audius/common/hooks'
 import { PurchaseAccess, USDCPurchaseDetails } from '@audius/common/models'
+import {
+  cacheTracksSelectors,
+  trackPageActions,
+  CommonState
+} from '@audius/common/store'
 import { formatUSDCWeiToUSDString } from '@audius/common/utils'
-import { cacheTracksSelectors, trackPageActions } from '@audius/common/store'
 import BN from 'bn.js'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
-import { useCurrentStems } from '@audius/common/hooks'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
-import { CommonState } from '@audius/common/store'
-import { useEffect } from 'react'
 
 const { getTrack } = cacheTracksSelectors
 const { fetchTrack } = trackPageActions
@@ -38,7 +42,7 @@ export const TransactionSummary = ({
 
   useEffect(() => {
     dispatch(fetchTrack(trackId, undefined, undefined, false))
-  }, [dispatch])
+  }, [dispatch, trackId])
 
   const items: SummaryTableItem[] = []
   if (transaction.access === PurchaseAccess.STREAM) {
