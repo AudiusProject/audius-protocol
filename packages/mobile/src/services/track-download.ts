@@ -36,13 +36,16 @@ const downloadOne = async ({
   filename,
   directory,
   getFetchConfig,
-  onFetchComplete
+  onFetchComplete,
+  flushOnComplete = false
 }: {
   fileUrl: string
   filename: string
   directory: string
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
   onFetchComplete?: (path: string) => Promise<void>
+  /** Automatically remove cached download after onFetchComplete. Should be `true` if the cached response is not used directly (i.e. iOS share flow) */
+  flushOnComplete?: boolean
 }) => {
   const filePath = directory + '/' + filename
 
@@ -64,7 +67,9 @@ const downloadOne = async ({
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
-    fetchRes.flush()
+    if (flushOnComplete) {
+      fetchRes.flush()
+    }
   } catch (err) {
     console.error(err)
 
@@ -145,14 +150,14 @@ const download = async ({
 
   const audiusDirectory =
     RNFetchBlob.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
-  const onFetchComplete = async (path: string) => {
-    dispatch(downloadFinished())
-    await Share.share({
-      url: path
-    })
-  }
 
   if (Platform.OS === 'ios') {
+    const onFetchComplete = async (path: string) => {
+      dispatch(downloadFinished())
+      await Share.share({
+        url: path
+      })
+    }
     if (files.length === 1) {
       const { url, filename } = files[0]
       downloadOne({
@@ -160,11 +165,13 @@ const download = async ({
         filename,
         directory: audiusDirectory,
         getFetchConfig: (filePath) => ({
-          // On iOS fetch & cache the track, let user choose where to download it
-          // with the share sheet, then delete the cached copy of the track.
+          /* iOS single file download will stage a file into a temporary location, then use the
+           * share sheet to let the user decide where to put it. Afterwards we delete the temp file.
+           */
           fileCache: true,
           path: filePath
         }),
+        flushOnComplete: true,
         onFetchComplete
       })
     } else {
@@ -172,8 +179,9 @@ const download = async ({
         files,
         directory: audiusDirectory + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
-          // On iOS fetch & cache the track, let user choose where to download it
-          // with the share sheet, then delete the cached copy of the track.
+          /* iOS multi-file download will download all files to a temp location and then create a ZIP and
+           * let the user decide where to put it with the Share sheet. The temp files are deleted after the ZIP is created.
+           */
           fileCache: true,
           path: filePath
         }),
@@ -186,9 +194,11 @@ const download = async ({
       downloadOne({
         fileUrl: url,
         filename,
+        /* Single file download on Android will use the Download Manager and go
+         * straight to the Downloads directory.
+         */
         directory: RNFetchBlob.fs.dirs.DownloadDir,
         getFetchConfig: (filePath) => ({
-          // On android save to FS and trigger notification that it is saved
           addAndroidDownloads: {
             description: filename,
             mediaScannable: true,
@@ -198,24 +208,38 @@ const download = async ({
             title: filename,
             useDownloadManager: true
           }
-        })
+        }),
+        onFetchComplete: async () => {
+          dispatch(downloadFinished())
+        }
       })
     } else {
+      if (!rootDirectoryName)
+        throw new Error(
+          'rootDirectory must be supplied when downloading multiple files'
+        )
       downloadMany({
         files,
-        directory: RNFetchBlob.fs.dirs.DownloadDir,
+        /* Multi-file download on Android will stage the files in a temporary directory
+         * under the downloads folder and then zip them. We don't use Download Manager for
+         * the initial downloads to avoid showing notifications, then manually add a
+         * notification for the zip file.
+         */
+        directory: RNFetchBlob.fs.dirs.DownloadDir + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
-          // On android save to FS and trigger notification that it is saved
-          addAndroidDownloads: {
-            description: rootDirectoryName,
-            mediaScannable: true,
-            mime: 'audio/mpeg',
-            notification: true,
-            path: filePath,
+          fileCache: true,
+          path: filePath
+        }),
+        onFetchComplete: async (path: string) => {
+          RNFetchBlob.android.addCompleteDownload({
             title: rootDirectoryName,
-            useDownloadManager: true
-          }
-        })
+            description: rootDirectoryName,
+            mime: 'application/zip',
+            path,
+            showNotification: true
+          })
+          dispatch(downloadFinished())
+        }
       })
     }
   }
