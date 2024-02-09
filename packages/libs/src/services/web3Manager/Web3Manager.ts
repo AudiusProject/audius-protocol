@@ -318,7 +318,6 @@ export class Web3Manager {
       // this data in a different way in future (this parsing is messy).
       // More on Metamask's / Web3.js' behavior here:
       // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
-      console.error({ response })
       const receipt = response!.receipt
       if (receipt.logs) {
         const events: TransactionReceipt['events'] = {}
