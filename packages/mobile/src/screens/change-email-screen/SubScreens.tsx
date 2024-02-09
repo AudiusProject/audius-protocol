@@ -23,13 +23,16 @@ const messages = {
 export const CurrentEmail = () => {
   const [{ value: oldEmail }, , { setValue: setOldEmail }] =
     useField('oldEmail')
+
   // Load the email for the user
   const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
+
   useEffect(() => {
     if (emailRequest.value) {
       setOldEmail(emailRequest.value)
     }
   }, [emailRequest.loading, emailRequest.value, setOldEmail])
+
   return (
     <Text variant='body' size='m'>
       {oldEmail !== '' ? (
