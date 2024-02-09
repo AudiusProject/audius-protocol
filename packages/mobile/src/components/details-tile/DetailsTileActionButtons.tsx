@@ -23,12 +23,11 @@ import { useThemeColors } from 'app/utils/theme'
 const { getCollecitonHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   publishButtonEmptyDisabledContent: 'You must add at least 1 track.',
-  publishButtonHiddenDisabledContent:
-    'You cannot make a playlist with hidden tracks public.',
-  shareButtonDisabledContent: 'You can’t share an empty playlist.'
-}
+  publishButtonHiddenDisabledContent: `You cannot make a ${collectionType} with hidden tracks public.`,
+  shareButtonDisabledContent: `You can’t share an empty ${collectionType}.`
+})
 
 type DetailsTileActionButtonsProps = {
   collectionId?: ID
@@ -101,6 +100,7 @@ export const DetailsTileActionButtons = ({
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
   )
+  const messages = getMessages(collection.is_album ? 'album' : 'playlist')
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
   )
