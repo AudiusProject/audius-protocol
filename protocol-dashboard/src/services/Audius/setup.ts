@@ -57,7 +57,7 @@ const IS_STAGING =
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
 
-const getMetamaskChainId = async () => {
+export const getMetamaskChainId = async () => {
   const chainId = await window.ethereum.request({ method: 'eth_chainId' })
   return parseInt(chainId, 16).toString()
 }

@@ -6,6 +6,7 @@ import {
   ETH_NETWORK_ID,
   decimalNetworkIdToHexNetworkId
 } from 'utils/switchNetwork'
+import { getMetamaskChainId } from 'services/Audius/setup'
 
 const messages = {
   connectTitle: 'Connect MetaMask to Continue',
@@ -13,6 +14,7 @@ const messages = {
   description: 'Please sign in with MetaMask to continue.',
   okayBtn: 'OKAY',
   openMetaMaskBtn: 'Open MetaMask',
+  openExtensionBtn: 'Open Wallet',
   chooseMetaMaskOnPhantom:
     'Please choose MetaMask as the extension you want to connect with.',
   ifNoPopupWindow:
@@ -118,10 +120,15 @@ const MisconfiguredMetaMaskContent = ({
     window.phantom?.solana?.isPhantom || !!window.ethereum.isPhantom
 
   const onOpenMetaMask = async () => {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: decimalNetworkIdToHexNetworkId(ETH_NETWORK_ID) }]
-    })
+    const chainId = await getMetamaskChainId()
+    if (chainId !== ETH_NETWORK_ID) {
+      window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: decimalNetworkIdToHexNetworkId(ETH_NETWORK_ID) }]
+      })
+    } else {
+      window.ethereum.enable()
+    }
   }
   return (
     <>
@@ -151,7 +158,7 @@ const MisconfiguredMetaMaskContent = ({
         />
 
         <Button
-          text={messages.openMetaMaskBtn}
+          text={messages.openExtensionBtn}
           className={styles.openMetaMaskBtn}
           type={ButtonType.PRIMARY}
           onClick={onOpenMetaMask}

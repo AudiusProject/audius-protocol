@@ -37,7 +37,7 @@ const messages = {
   staked: 'STAKED',
   profileAlt: 'User Profile',
   connectProfile: 'Connect Audius Profile',
-  loading: 'Loading...'
+  loading: 'Loading Account...'
 }
 
 // TODO:
@@ -74,19 +74,9 @@ const Misconfigured = ({ isMisconfigured }: MisconfiguredProps) => {
   )
 }
 
-type LoadingProps = {
-  status: 'green' | 'yellow'
-}
-
-const Loading = ({ status }: LoadingProps) => {
+const LoadingAccount = () => {
   return (
     <div className={styles.connectMetaMaskContainer}>
-      <div
-        className={clsx(styles.connectMetaMaskDot, {
-          [styles.yellow]: status === 'yellow',
-          [styles.green]: status === 'green'
-        })}
-      ></div>
       <div className={clsx(styles.connectMetaMask, styles.loadingText)}>
         {messages.loading}
       </div>
@@ -105,7 +95,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   }, [user, pushRoute])
 
   if (status === Status.Loading) {
-    return <Loading status="green" />
+    return <LoadingAccount />
   }
   if (!user) return null
 
@@ -214,9 +204,7 @@ const AppBar: React.FC<AppBarProps> = () => {
     accountSnippetContent = <UserAccountSnippet wallet={wallet} />
   } else if (window.ethereum) {
     isAccountSnippetContentClickable = false
-    accountSnippetContent = (
-      <Loading status={window.aud.hasValidAccount ? 'green' : 'yellow'} />
-    )
+    accountSnippetContent = <LoadingAccount />
   } else {
     isAccountSnippetContentClickable = false
     accountSnippetContent = null
