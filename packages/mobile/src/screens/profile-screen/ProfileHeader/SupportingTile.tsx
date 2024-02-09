@@ -145,6 +145,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
                 height: harmonySpacing.unit8
               })}
               mr='s'
+              strokeWidth='thin'
               userId={user.user_id}
             />
             <Text

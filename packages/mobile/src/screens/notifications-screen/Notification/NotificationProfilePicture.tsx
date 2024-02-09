@@ -45,6 +45,7 @@ export const NotificationProfilePicture = (
       userId={profile.user_id}
       size='medium'
       style={[css({ marginRight: spacing.s }), style]}
+      strokeWidth='thin'
       {...other}
     />
   )

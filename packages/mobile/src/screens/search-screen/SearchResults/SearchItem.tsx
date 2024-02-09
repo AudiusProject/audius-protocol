@@ -57,7 +57,7 @@ const UserSearchResult = (props: UserSearchResultProps) => {
 
   return (
     <SearchResultItem onPress={handlePress}>
-      <ProfilePicture userId={user.user_id} size='medium' />
+      <ProfilePicture userId={user.user_id} size='medium' strokeWidth='thin' />
       <UserBadges
         style={styles.badgeContainer}
         nameStyle={styles.name}
