@@ -1,6 +1,6 @@
 import { Nullable } from '../utils/typeUtils'
-import { PurchaseAccess } from './PurchaseContent'
 
+import { PurchaseAccess } from './PurchaseContent'
 import { StringUSDC } from './Wallet'
 
 export enum USDCTransactionType {
