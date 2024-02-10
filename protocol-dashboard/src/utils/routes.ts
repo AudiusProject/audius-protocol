@@ -7,17 +7,17 @@ import { useLocation } from 'react-router-dom'
 export const HOME = '/'
 export const HOME_TITLE = 'Overview'
 
-export const API = '/api'
+export const API = '/api/'
 export const API_TITLE = 'API Leaderboard'
 
 export const API_LEADERBOARD = '/api/leaderboard'
 export const API_LEADERBOARD_TITLE = 'API Leaderboard'
 
-export const ANALYTICS = '/analytics'
+export const ANALYTICS = '/analytics/*'
 export const ANALYTICS_TITLE = 'Analytics'
 
 // Services Pages
-export const SERVICES = '/services'
+export const SERVICES = '/services/'
 export const SERVICES_TITLE = 'Services Overview'
 
 export const SERVICES_DISCOVERY_PROVIDER = '/services/discovery-node'
@@ -53,7 +53,7 @@ export const SERVICES_ACCOUNT_OPERATOR = '/services/operator/:wallet'
 export const SERVICES_ACCOUNT_OPERATOR_TITLE = 'Operator'
 
 // Governance Pages
-export const GOVERNANCE = '/governance'
+export const GOVERNANCE = '/governance/'
 export const GOVERNANCE_TITLE = 'All Governance Proposals'
 export const GOVERNANCE_PROPOSAL = '/governance/proposal/:proposalId'
 export const GOVERNANCE_PROPOSAL_TITLE = 'Proposal'
