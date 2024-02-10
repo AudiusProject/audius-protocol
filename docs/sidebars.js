@@ -57,6 +57,14 @@ module.exports = {
       ],
       collapsed: true,
     },
+    {
+      type: 'category',
+      label: 'How To Guides',
+      items: [
+        'protocol/link-audius-account-to-protocol-dashboard',
+      ],
+      collapsed: true,
+    },
   ],
 
   token: [
