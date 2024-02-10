@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import path from 'path'
+import { createSdkService } from './services/sdkService'
 
 // Load env vars from ddex package root
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env') })
@@ -16,10 +17,11 @@ const port = process.env.DDEX_PORT || 9001
       process.env.DDEX_MONGODB_URL ||
       'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0'
     await dialDb(dbUrl)
+    const sdkService = createSdkService()
 
     const app = createApp()
 
-    publishReleases()
+    publishReleases(sdkService.getSdk())
 
     app.listen(port, () => {
       console.log(`[server]: Server is running at http://localhost:${port}`)
