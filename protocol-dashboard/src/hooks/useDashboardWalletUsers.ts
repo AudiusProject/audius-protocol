@@ -7,7 +7,6 @@ import {
   getAccountWallet,
   getIsAudiusProfileRefetchDisabled
 } from 'store/account/hooks'
-import { aud } from 'store/index'
 import { useEffect, useState } from 'react'
 import { safeService } from 'services/Safe'
 
@@ -36,7 +35,7 @@ export const useDashboardWalletUser = (wallet: string) => {
   const [hasInitted, setHasInitted] = useState(false)
   useEffect(() => {
     const awaitInit = async () => {
-      await aud.awaitSetup()
+      await window.aud.awaitSetup()
       setHasInitted(true)
     }
     awaitInit()
@@ -49,7 +48,7 @@ export const useDashboardWalletUser = (wallet: string) => {
   return useQuery({
     queryKey: getDashboardWalletUserQueryKey(wallet),
     queryFn: async () => {
-      const isEoa = await aud.isEoa(wallet)
+      const isEoa = await window.aud.isEoa(wallet)
       if (isEoa) {
         const res = await dashboardWalletUsersBatcher.fetch(wallet)
         return res ?? null
@@ -63,6 +62,7 @@ export const useDashboardWalletUser = (wallet: string) => {
               return res
             }
           }
+          return null
         } catch (e) {
           return null
         }
