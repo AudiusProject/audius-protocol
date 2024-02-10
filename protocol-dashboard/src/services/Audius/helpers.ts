@@ -39,6 +39,12 @@ export async function getEthWallet(this: AudiusClient) {
   return this.libs.ethWeb3Manager.ownerWallet
 }
 
+export async function isEoa(this: AudiusClient, wallet: string) {
+  const web3 = this.libs.ethWeb3Manager.web3
+  const code = await web3.eth.getCode(wallet)
+  return code === '0x'
+}
+
 export async function getAverageBlockTime(this: AudiusClient) {
   await this.hasPermissions()
   const web3 = this.libs.ethWeb3Manager.web3

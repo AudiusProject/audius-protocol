@@ -55,7 +55,7 @@ export const getBackupClient = () => {
 
 export const hasBackupClient = !!gqlBackupUri
 
-const aud = new Audius()
+export const aud = new Audius()
 window.aud = aud
 aud.setup()
 

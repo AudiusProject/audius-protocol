@@ -25,7 +25,6 @@ const initAudiusSdk = () => {
   } = bootstrapConfig
   const dnSelector = new DiscoveryNodeSelector({
     bootstrapServices: discoveryNodes
-    // initialSelectedNode: 'https://discoveryprovider4.staging.audius.co'
   })
   audiusSdk = sdk({
     appName: 'Audius Protocol Dashboard',
